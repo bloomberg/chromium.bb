@@ -19,6 +19,7 @@ namespace chromeos {
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
  public:
   typedef std::vector<CellularScanResult> CellularScanResults;
+  typedef std::vector<CellularSIMSlotInfo> CellularSIMSlotInfos;
 
   explicit DeviceState(const std::string& path);
   ~DeviceState() override;
@@ -52,8 +53,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
   const std::string& imei() const { return imei_; }
   const std::string& iccid() const { return iccid_; }
   const std::string& mdn() const { return mdn_; }
-  const base::ListValue& apn_list() const { return apn_list_; }
   const CellularScanResults& scan_results() const { return scan_results_; }
+  bool inhibited() const { return inhibited_; }
 
   // |ip_configs_| is kept up to date by NetworkStateHandler.
   const base::DictionaryValue& ip_configs() const { return ip_configs_; }
@@ -78,6 +79,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
       const std::string available_managed_network_path) {
     available_managed_network_path_ = available_managed_network_path;
   }
+
+  // Non-cellular devices return an empty list.
+  CellularSIMSlotInfos GetSimSlotInfos() const;
 
   // Returns a human readable string for the device.
   std::string GetName() const;
@@ -114,6 +118,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
   std::string iccid_;
   std::string mdn_;
   CellularScanResults scan_results_;
+  CellularSIMSlotInfos sim_slot_infos_;
+  bool inhibited_ = false;
 
   // Ethernet specific properties
   bool eap_authentication_completed_ = false;
@@ -128,7 +134,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
   base::DictionaryValue properties_;
 
   // List of APNs.
-  base::ListValue apn_list_;
+  base::Value apn_list_;
 
   // Dictionary of IPConfig properties, keyed by IpConfig path.
   base::DictionaryValue ip_configs_;
@@ -137,5 +143,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash
+namespace ash {
+using ::chromeos::DeviceState;
+}
 
 #endif  // CHROMEOS_NETWORK_DEVICE_STATE_H_

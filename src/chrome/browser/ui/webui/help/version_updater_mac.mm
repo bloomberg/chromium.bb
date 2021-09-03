@@ -35,7 +35,7 @@
 }
 
 // Initialize an observer with an updater. The updater owns this object.
-- (id)initWithUpdater:(VersionUpdaterMac*)updater;
+- (instancetype)initWithUpdater:(VersionUpdaterMac*)updater;
 
 // Notification callback, called with the status of keystone operations.
 - (void)handleStatusNotification:(NSNotification*)notification;
@@ -44,7 +44,7 @@
 
 @implementation KeystoneObserver
 
-- (id)initWithUpdater:(VersionUpdaterMac*)updater {
+- (instancetype)initWithUpdater:(VersionUpdaterMac*)updater {
   if ((self = [super init])) {
     _versionUpdater = updater;
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
@@ -78,7 +78,7 @@ int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes) {
 }
 
 void UpdateStatusFromChromiumUpdater(
-    const VersionUpdater::StatusCallback& status_callback,
+    VersionUpdater::StatusCallback status_callback,
     updater::UpdateService::UpdateState update_state) {
   VersionUpdater::Status status = VersionUpdater::Status::CHECKING;
   int progress = 0;
@@ -135,19 +135,18 @@ VersionUpdaterMac::VersionUpdaterMac()
 
 VersionUpdaterMac::~VersionUpdaterMac() {}
 
-void VersionUpdaterMac::CheckForUpdate(
-    const StatusCallback& status_callback,
-    const PromoteCallback& promote_callback) {
+void VersionUpdaterMac::CheckForUpdate(StatusCallback status_callback,
+                                       PromoteCallback promote_callback) {
 #if BUILDFLAG(ENABLE_CHROMIUM_UPDATER)
   if (!update_client_)
     update_client_ = BrowserUpdaterClient::Create();
 
-  update_client_->CheckForUpdate(
-      base::BindRepeating(&UpdateStatusFromChromiumUpdater, status_callback));
+  update_client_->CheckForUpdate(base::BindRepeating(
+      &UpdateStatusFromChromiumUpdater, std::move(status_callback)));
   return;
 #else
-  status_callback_ = status_callback;
-  promote_callback_ = promote_callback;
+  status_callback_ = std::move(status_callback);
+  promote_callback_ = std::move(promote_callback);
 
   KeystoneGlue* keystone_glue = [KeystoneGlue defaultKeystoneGlue];
   if (keystone_glue && ![keystone_glue isOnReadOnlyFilesystem]) {
@@ -180,7 +179,7 @@ void VersionUpdaterMac::CheckForUpdate(
     // There is no glue, or the application is on a read-only filesystem.
     // Updates and promotions are impossible.
     status_callback_.Run(DISABLED, 0, false, false, std::string(), 0,
-                         base::string16());
+                         std::u16string());
   }
 #endif  // BUILDFLAG(ENABLE_CHROMIUM_UPDATER)
 }
@@ -202,15 +201,15 @@ void VersionUpdaterMac::PromoteUpdater() const {
 }
 
 void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
-  AutoupdateStatus keystone_status =
-      static_cast<AutoupdateStatus>([base::mac::ObjCCastStrict<NSNumber>(
-          [dictionary objectForKey:kAutoupdateStatusStatus]) intValue]);
+  AutoupdateStatus keystone_status = static_cast<AutoupdateStatus>(
+      [base::mac::ObjCCastStrict<NSNumber>(dictionary[kAutoupdateStatusStatus])
+          intValue]);
   std::string error_messages =
       base::SysNSStringToUTF8(base::mac::ObjCCastStrict<NSString>(
-          [dictionary objectForKey:kAutoupdateStatusErrorMessages]));
+          dictionary[kAutoupdateStatusErrorMessages]));
 
   bool enable_promote_button = true;
-  base::string16 message;
+  std::u16string message;
 
   Status status;
   switch (keystone_status) {
@@ -270,7 +269,7 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
 
     case kAutoupdateNeedsPromotion: {
       status = FAILED;
-      base::string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+      std::u16string product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
       message =
           l10n_util::GetStringFUTF16(IDS_PROMOTE_INFOBAR_TEXT, product_name);
     } break;
@@ -289,13 +288,13 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
 
     if (status == FAILED) {
       if (!message.empty()) {
-        message += base::UTF8ToUTF16("<br/><br/>");
+        message += u"<br/><br/>";
       }
 
       message += l10n_util::GetStringUTF16(IDS_UPGRADE_ERROR_DETAILS);
-      message += base::UTF8ToUTF16("<br/><pre>");
+      message += u"<br/><pre>";
       message += base::UTF8ToUTF16(net::EscapeForHTML(error_messages));
-      message += base::UTF8ToUTF16("</pre>");
+      message += u"</pre>";
     }
   }
 

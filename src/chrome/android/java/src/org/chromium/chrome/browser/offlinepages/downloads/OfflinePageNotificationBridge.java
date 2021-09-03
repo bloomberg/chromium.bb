@@ -47,7 +47,7 @@ public class OfflinePageNotificationBridge {
                                             .setDownloadGuid(guid)
                                             .setFileName(displayName)
                                             .setIsResumable(false)
-                                            .setIsOffTheRecord(false)
+                                            .setOTRProfileId(null)
                                             .setBytesTotalSize(networkBytesUsed)
                                             .build();
 
@@ -94,7 +94,7 @@ public class OfflinePageNotificationBridge {
                                             .setFileName(displayName)
                                             .setFilePath(url)
                                             .setBytesReceived(bytesReceived)
-                                            .setIsOffTheRecord(false)
+                                            .setOTRProfileId(null)
                                             .setIsResumable(true)
                                             .setTimeRemainingInMillis(0)
                                             .build();
@@ -210,7 +210,7 @@ public class OfflinePageNotificationBridge {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR)) {
             intializeOfflineItemsCollection();
             DownloadManagerService.getDownloadManagerService()
-                    .getInfoBarController(false)
+                    .getInfoBarController(/*otrProfileID=*/null)
                     .onDownloadStarted();
         } else {
             Toast.makeText(ContextUtils.getApplicationContext(), R.string.download_started,

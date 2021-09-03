@@ -19,11 +19,12 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
-#include <cstring>  // memset
+#include <cstring>
 
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
+#include "src/utils/constants.h"
 #include "src/utils/memory.h"
 
 namespace libgav1 {
@@ -188,16 +189,6 @@ void IntraPredFuncs_C<block_width, block_height, Pixel>::Horizontal(
     Memset(dst, left[y], block_width);
     dst += stride;
   }
-}
-
-template <typename Pixel>
-inline Pixel Average(Pixel a, Pixel b) {
-  return static_cast<Pixel>((a + b + 1) >> 1);
-}
-
-template <typename Pixel>
-inline Pixel Average(Pixel a, Pixel b, Pixel c) {
-  return static_cast<Pixel>((a + 2 * b + c + 2) >> 2);
 }
 
 // IntraPredFuncs_C::Paeth
@@ -411,6 +402,10 @@ void FilterIntraPredictor_C(void* const dest, ptrdiff_t stride,
                           kFilterIntraTaps[pred][i][4] * p4 +
                           kFilterIntraTaps[pred][i][5] * p5 +
                           kFilterIntraTaps[pred][i][6] * p6;
+        // Section 7.11.2.3 specifies the right-hand side of the assignment as
+        //   Clip1( Round2Signed( pr, INTRA_FILTER_SCALE_BITS ) ).
+        // Since Clip1() clips a negative value to 0, it is safe to replace
+        // Round2Signed() with Round2().
         buffer[1 + yoffset][x + xoffset] = static_cast<Pixel>(
             Clip3(RightShiftWithRounding(value, 4), 0, kMaxPixel));
       }

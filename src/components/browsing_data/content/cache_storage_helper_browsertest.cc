@@ -26,10 +26,15 @@ using TestCompletionCallback =
 
 class CacheStorageHelperTest : public content::ContentBrowserTest {
  public:
-  content::CacheStorageContext* CacheStorageContext() {
-    return content::BrowserContext::GetDefaultStoragePartition(
-               shell()->web_contents()->GetBrowserContext())
-        ->GetCacheStorageContext();
+  content::StoragePartition* storage_partition() const {
+    return shell()
+        ->web_contents()
+        ->GetBrowserContext()
+        ->GetDefaultStoragePartition();
+  }
+
+  scoped_refptr<CannedCacheStorageHelper> MakeHelper() {
+    return base::MakeRefCounted<CannedCacheStorageHelper>(storage_partition());
   }
 };
 
@@ -37,14 +42,13 @@ IN_PROC_BROWSER_TEST_F(CacheStorageHelperTest, CannedAddCacheStorage) {
   const GURL origin1("http://host1:1/");
   const GURL origin2("http://host2:1/");
 
-  scoped_refptr<CannedCacheStorageHelper> helper(
-      new CannedCacheStorageHelper(CacheStorageContext()));
+  auto helper = MakeHelper();
   helper->Add(url::Origin::Create(origin1));
   helper->Add(url::Origin::Create(origin2));
 
   TestCompletionCallback callback;
-  helper->StartFetching(base::Bind(&TestCompletionCallback::callback,
-                                   base::Unretained(&callback)));
+  helper->StartFetching(base::BindOnce(&TestCompletionCallback::callback,
+                                       base::Unretained(&callback)));
 
   std::list<content::StorageUsageInfo> result = callback.result();
 
@@ -58,14 +62,13 @@ IN_PROC_BROWSER_TEST_F(CacheStorageHelperTest, CannedAddCacheStorage) {
 IN_PROC_BROWSER_TEST_F(CacheStorageHelperTest, CannedUnique) {
   const GURL origin("http://host1:1/");
 
-  scoped_refptr<CannedCacheStorageHelper> helper(
-      new CannedCacheStorageHelper(CacheStorageContext()));
+  auto helper = MakeHelper();
   helper->Add(url::Origin::Create(origin));
   helper->Add(url::Origin::Create(origin));
 
   TestCompletionCallback callback;
-  helper->StartFetching(base::Bind(&TestCompletionCallback::callback,
-                                   base::Unretained(&callback)));
+  helper->StartFetching(base::BindOnce(&TestCompletionCallback::callback,
+                                       base::Unretained(&callback)));
 
   std::list<content::StorageUsageInfo> result = callback.result();
 

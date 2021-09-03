@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/ime/edit_context.h"
+#include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -43,7 +45,7 @@ bool Editor::HandleEditingKeyboardEvent(KeyboardEvent* evt) {
     return false;
 
   String command_name = Behavior().InterpretKeyEvent(*evt);
-  const EditorCommand command = this->CreateCommand(command_name);
+  const EditorCommand command = CreateCommand(command_name);
 
   if (key_event->GetType() == WebInputEvent::Type::kRawKeyDown) {
     // WebKit doesn't have enough information about mode to decide how
@@ -59,7 +61,25 @@ bool Editor::HandleEditingKeyboardEvent(KeyboardEvent* evt) {
   if (command.Execute(evt))
     return true;
 
-  if (!Behavior().ShouldInsertCharacter(*evt) || !CanEdit())
+  if (!Behavior().ShouldInsertCharacter(*evt))
+    return false;
+
+  // If EditContext is active, redirect text to EditContext, otherwise, send
+  // text to the focused element.
+  auto* edit_context =
+      GetFrame().GetInputMethodController().GetActiveEditContext();
+  if (edit_context) {
+    if (DispatchBeforeInputInsertText(evt->target()->ToNode(),
+                                      key_event->text) !=
+        DispatchEventResult::kNotCanceled)
+      return true;
+
+    WebString text(WTF::String(key_event->text));
+    edit_context->InsertText(text);
+    return true;
+  }
+
+  if (!CanEdit())
     return false;
 
   const Element* const focused_element =

@@ -5,10 +5,7 @@
 #ifndef MEDIA_GPU_ANDROID_DIRECT_SHARED_IMAGE_VIDEO_PROVIDER_H_
 #define MEDIA_GPU_ANDROID_DIRECT_SHARED_IMAGE_VIDEO_PROVIDER_H_
 
-#include <memory>
-
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -24,6 +21,7 @@
 #include "media/gpu/android/video_frame_factory.h"
 #include "media/gpu/gles2_decoder_helper.h"
 #include "media/gpu/media_gpu_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace media {
@@ -41,9 +39,7 @@ class MEDIA_GPU_EXPORT DirectSharedImageVideoProvider
 
   // SharedImageVideoProvider
   void Initialize(GpuInitCB get_stub_cb) override;
-  void RequestImage(ImageReadyCB cb,
-                    const ImageSpec& spec,
-                    scoped_refptr<gpu::TextureOwner> texture_owner) override;
+  void RequestImage(ImageReadyCB cb, const ImageSpec& spec) override;
 
  private:
   base::SequenceBound<GpuSharedImageVideoFactory> gpu_factory_;
@@ -79,23 +75,17 @@ class GpuSharedImageVideoFactory
   // create the per-frame texture.  All of that is only needed for legacy
   // mailbox support, where we have to have one texture per CodecImage.
   void CreateImage(FactoryImageReadyCB cb,
-                   const SharedImageVideoProvider::ImageSpec& spec,
-                   scoped_refptr<gpu::TextureOwner> texture_owner);
+                   const SharedImageVideoProvider::ImageSpec& spec);
 
  private:
   // Creates a SharedImage for |mailbox|, and returns success or failure.
   bool CreateImageInternal(const SharedImageVideoProvider::ImageSpec& spec,
-                           scoped_refptr<gpu::TextureOwner> texture_owner,
                            gpu::Mailbox mailbox,
                            scoped_refptr<CodecImage> image);
 
   void OnWillDestroyStub(bool have_context) override;
 
   gpu::CommandBufferStub* stub_ = nullptr;
-
-  // A helper for creating textures. Only valid while |stub_| is valid.
-  std::unique_ptr<GLES2DecoderHelper> decoder_helper_;
-
   bool is_vulkan_ = false;
 
   THREAD_CHECKER(thread_checker_);

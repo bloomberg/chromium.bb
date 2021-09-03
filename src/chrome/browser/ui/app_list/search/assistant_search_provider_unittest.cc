@@ -15,6 +15,7 @@
 #include "ash/public/cpp/assistant/test_support/mock_assistant_controller.h"
 #include "ash/public/cpp/assistant/test_support/mock_assistant_state.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
@@ -49,7 +50,7 @@ class Expect {
     EXPECT_EQ(r_.metrics_type(), ash::SearchResultType::ASSISTANT);
     EXPECT_TRUE(r_.chip_icon().BackedBySameObjectAs(gfx::CreateVectorIcon(
         chromeos::kAssistantIcon,
-        ash::AppListConfig::instance().suggestion_chip_icon_dimension(),
+        ash::SharedAppListConfig::instance().suggestion_chip_icon_dimension(),
         gfx::kPlaceholderColor)));
   }
 

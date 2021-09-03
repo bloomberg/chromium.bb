@@ -90,11 +90,10 @@ void av1_rd_pick_intra_mode_sb(const struct AV1_COMP *cpi, struct macroblock *x,
  * in this function. The rd_cost struct is also updated with the RD stats
  * corresponding to the best mode found.
  */
-void av1_rd_pick_inter_mode_sb(struct AV1_COMP *cpi,
-                               struct TileDataEnc *tile_data,
-                               struct macroblock *x, struct RD_STATS *rd_cost,
-                               BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
-                               int64_t best_rd_so_far);
+void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
+                            struct macroblock *x, struct RD_STATS *rd_cost,
+                            BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
+                            int64_t best_rd_so_far);
 
 /*!\brief AV1 intra mode selection based on Non-RD optimized model.
  *
@@ -218,10 +217,10 @@ static INLINE int av1_encoder_get_relative_dist(int a, int b) {
 static INLINE int av1_get_sb_mi_size(const AV1_COMMON *const cm) {
   const int mi_alloc_size_1d = mi_size_wide[cm->mi_params.mi_alloc_bsize];
   int sb_mi_rows =
-      (mi_size_wide[cm->seq_params.sb_size] + mi_alloc_size_1d - 1) /
+      (mi_size_wide[cm->seq_params->sb_size] + mi_alloc_size_1d - 1) /
       mi_alloc_size_1d;
-  assert(mi_size_wide[cm->seq_params.sb_size] ==
-         mi_size_high[cm->seq_params.sb_size]);
+  assert(mi_size_wide[cm->seq_params->sb_size] ==
+         mi_size_high[cm->seq_params->sb_size]);
   int sb_mi_size = sb_mi_rows * sb_mi_rows;
 
   return sb_mi_size;
@@ -273,8 +272,16 @@ static INLINE int prune_ref_by_selective_ref_frame(
     int ref_frame_list[2] = { LAST3_FRAME, LAST2_FRAME };
 
     if (x != NULL) {
-      if (x->tpl_keep_ref_frame[LAST3_FRAME]) ref_frame_list[0] = NONE_FRAME;
-      if (x->tpl_keep_ref_frame[LAST2_FRAME]) ref_frame_list[1] = NONE_FRAME;
+      // Disable pruning if either tpl suggests that we keep the frame or
+      // the pred_mv gives us the best sad
+      if (x->tpl_keep_ref_frame[LAST3_FRAME] ||
+          x->pred_mv_sad[LAST3_FRAME] == x->best_pred_mv_sad) {
+        ref_frame_list[0] = NONE_FRAME;
+      }
+      if (x->tpl_keep_ref_frame[LAST2_FRAME] ||
+          x->pred_mv_sad[LAST2_FRAME] == x->best_pred_mv_sad) {
+        ref_frame_list[1] = NONE_FRAME;
+      }
     }
 
     if (prune_ref(ref_frame, ref_display_order_hint,
@@ -287,8 +294,16 @@ static INLINE int prune_ref_by_selective_ref_frame(
     int ref_frame_list[2] = { ALTREF2_FRAME, BWDREF_FRAME };
 
     if (x != NULL) {
-      if (x->tpl_keep_ref_frame[ALTREF2_FRAME]) ref_frame_list[0] = NONE_FRAME;
-      if (x->tpl_keep_ref_frame[BWDREF_FRAME]) ref_frame_list[1] = NONE_FRAME;
+      // Disable pruning if either tpl suggests that we keep the frame or
+      // the pred_mv gives us the best sad
+      if (x->tpl_keep_ref_frame[ALTREF2_FRAME] ||
+          x->pred_mv_sad[ALTREF2_FRAME] == x->best_pred_mv_sad) {
+        ref_frame_list[0] = NONE_FRAME;
+      }
+      if (x->tpl_keep_ref_frame[BWDREF_FRAME] ||
+          x->pred_mv_sad[BWDREF_FRAME] == x->best_pred_mv_sad) {
+        ref_frame_list[1] = NONE_FRAME;
+      }
     }
 
     if (prune_ref(ref_frame, ref_display_order_hint,

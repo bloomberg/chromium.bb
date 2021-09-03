@@ -12,6 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -25,6 +26,10 @@ namespace {
 // UMA metric name for shortcuts creation result.
 constexpr const char* kCreationResultMetric =
     "WebApp.Shortcuts.Creation.Result";
+
+// UMA metric name for shortcuts deletion result.
+constexpr const char* kDeletionResultMetric =
+    "WebApp.Shortcuts.Deletion.Success";
 
 // Result of shortcuts creation process.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -63,13 +68,34 @@ void AppShortcutManager::UpdateShortcuts(const AppId& app_id,
                   weak_ptr_factory_.GetWeakPtr(), base::UTF8ToUTF16(old_name)));
 }
 
+void AppShortcutManager::GetAppExistingShortCutLocation(
+    ShortcutLocationCallback callback,
+    std::unique_ptr<ShortcutInfo> shortcut_info) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Ownership of |shortcut_info| moves to the Reply, which is guaranteed to
+  // outlive the const reference.
+  const ShortcutInfo& shortcut_info_ref = *shortcut_info;
+  internals::GetShortcutIOTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&internals::GetAppExistingShortCutLocationImpl,
+                     std::cref(shortcut_info_ref)),
+      base::BindOnce(
+          [](std::unique_ptr<ShortcutInfo> shortcut_info,
+             ShortcutLocationCallback callback, ShortcutLocations locations) {
+            DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+            shortcut_info.reset();
+            std::move(callback).Run(locations);
+          },
+          std::move(shortcut_info), std::move(callback)));
+}
+
 void AppShortcutManager::SetShortcutUpdateCallbackForTesting(
     base::OnceCallback<void(const ShortcutInfo*)> callback) {
   GetShortcutUpdateCallbackForTesting() = std::move(callback);
 }
 
 bool AppShortcutManager::CanCreateShortcuts() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
 #else
   return true;
@@ -95,6 +121,21 @@ void AppShortcutManager::CreateShortcuts(const AppId& app_id,
                                  std::move(callback))));
 }
 
+void AppShortcutManager::DeleteShortcuts(
+    const AppId& app_id,
+    const base::FilePath& shortcuts_data_dir,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
+    DeleteShortcutsCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(CanCreateShortcuts());
+
+  internals::ScheduleDeletePlatformShortcuts(
+      shortcuts_data_dir, std::move(shortcut_info),
+      base::BindOnce(&AppShortcutManager::OnShortcutsDeleted,
+                     weak_ptr_factory_.GetWeakPtr(), app_id,
+                     std::move(callback)));
+}
+
 void AppShortcutManager::ReadAllShortcutsMenuIconsAndRegisterShortcutsMenu(
     const AppId& app_id,
     RegisterShortcutsMenuCallback callback) {
@@ -114,7 +155,7 @@ void AppShortcutManager::RegisterShortcutsMenuWithOs(
     const AppId& app_id,
     const std::vector<WebApplicationShortcutsMenuItemInfo>&
         shortcuts_menu_item_infos,
-    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps) {
+    const ShortcutsMenuIconBitmaps& shortcuts_menu_icon_bitmaps) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!web_app::ShouldRegisterShortcutsMenuWithOs() ||
       suppress_shortcuts_for_testing()) {
@@ -133,7 +174,7 @@ void AppShortcutManager::RegisterShortcutsMenuWithOs(
   web_app::RegisterShortcutsMenuWithOs(
       shortcut_info->extension_id, shortcut_info->profile_path,
       shortcut_data_dir, shortcuts_menu_item_infos,
-      shortcuts_menu_icons_bitmaps);
+      shortcuts_menu_icon_bitmaps);
 }
 
 void AppShortcutManager::UnregisterShortcutsMenuWithOs(const AppId& app_id) {
@@ -151,6 +192,15 @@ void AppShortcutManager::OnShortcutsCreated(const AppId& app_id,
   UMA_HISTOGRAM_ENUMERATION(kCreationResultMetric,
                             success ? CreationResult::kSuccess
                                     : CreationResult::kFailToCreateShortcut);
+  std::move(callback).Run(success);
+}
+
+void AppShortcutManager::OnShortcutsDeleted(const AppId& app_id,
+                                            DeleteShortcutsCallback callback,
+                                            bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  UMA_HISTOGRAM_BOOLEAN(kDeletionResultMetric, success);
+
   std::move(callback).Run(success);
 }
 
@@ -190,19 +240,19 @@ void AppShortcutManager::OnShortcutInfoRetrievedCreateShortcuts(
 void AppShortcutManager::OnShortcutsMenuIconsReadRegisterShortcutsMenu(
     const AppId& app_id,
     RegisterShortcutsMenuCallback callback,
-    ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps) {
+    ShortcutsMenuIconBitmaps shortcuts_menu_icon_bitmaps) {
   std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos =
       registrar_->GetAppShortcutsMenuItemInfos(app_id);
   if (!shortcuts_menu_item_infos.empty()) {
     RegisterShortcutsMenuWithOs(app_id, shortcuts_menu_item_infos,
-                                shortcuts_menu_icons_bitmaps);
+                                shortcuts_menu_icon_bitmaps);
   }
 
   std::move(callback).Run(/*shortcuts_menu_registered=*/true);
 }
 
 void AppShortcutManager::OnShortcutInfoRetrievedUpdateShortcuts(
-    base::string16 old_name,
+    std::u16string old_name,
     std::unique_ptr<ShortcutInfo> shortcut_info) {
   if (GetShortcutUpdateCallbackForTesting())
     std::move(GetShortcutUpdateCallbackForTesting()).Run(shortcut_info.get());

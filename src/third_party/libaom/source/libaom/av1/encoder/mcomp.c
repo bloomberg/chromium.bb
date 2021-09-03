@@ -34,12 +34,13 @@
 
 static INLINE void init_mv_cost_params(MV_COST_PARAMS *mv_cost_params,
                                        const MvCosts *mv_costs,
-                                       const MV *ref_mv) {
+                                       const MV *ref_mv, int errorperbit,
+                                       int sadperbit) {
   mv_cost_params->ref_mv = ref_mv;
   mv_cost_params->full_ref_mv = get_fullmv_from_mv(ref_mv);
   mv_cost_params->mv_cost_type = MV_COST_ENTROPY;
-  mv_cost_params->error_per_bit = mv_costs->errorperbit;
-  mv_cost_params->sad_per_bit = mv_costs->sadperbit;
+  mv_cost_params->error_per_bit = errorperbit;
+  mv_cost_params->sad_per_bit = sadperbit;
   mv_cost_params->mvjcost = mv_costs->nmv_joint_cost;
   mv_cost_params->mvcost[0] = mv_costs->mv_cost_stack[0];
   mv_cost_params->mvcost[1] = mv_costs->mv_cost_stack[1];
@@ -78,6 +79,13 @@ get_faster_search_method(SEARCH_METHODS search_method) {
   }
 }
 
+void av1_init_obmc_buffer(OBMCBuffer *obmc_buffer) {
+  obmc_buffer->wsrc = NULL;
+  obmc_buffer->mask = NULL;
+  obmc_buffer->above_pred = NULL;
+  obmc_buffer->left_pred = NULL;
+}
+
 void av1_make_default_fullpel_ms_params(
     FULLPEL_MOTION_SEARCH_PARAMS *ms_params, const struct AV1_COMP *cpi,
     const MACROBLOCK *x, BLOCK_SIZE bsize, const MV *ref_mv,
@@ -87,7 +95,7 @@ void av1_make_default_fullpel_ms_params(
 
   // High level params
   ms_params->bsize = bsize;
-  ms_params->vfp = &cpi->fn_ptr[bsize];
+  ms_params->vfp = &cpi->ppi->fn_ptr[bsize];
 
   init_ms_buffers(&ms_params->ms_buffers, x);
 
@@ -126,7 +134,19 @@ void av1_make_default_fullpel_ms_params(
   av1_set_mv_search_range(&ms_params->mv_limits, ref_mv);
 
   // Mvcost params
-  init_mv_cost_params(&ms_params->mv_cost_params, &x->mv_costs, ref_mv);
+  init_mv_cost_params(&ms_params->mv_cost_params, x->mv_costs, ref_mv,
+                      x->errorperbit, x->sadperbit);
+}
+
+void av1_set_ms_to_intra_mode(FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
+                              const IntraBCMVCosts *dv_costs) {
+  ms_params->is_intra_mode = 1;
+
+  MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
+
+  mv_cost_params->mvjcost = dv_costs->joint_mv;
+  mv_cost_params->mvcost[0] = dv_costs->dv_costs[0];
+  mv_cost_params->mvcost[1] = dv_costs->dv_costs[1];
 }
 
 void av1_make_default_subpel_ms_params(SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
@@ -143,10 +163,11 @@ void av1_make_default_subpel_ms_params(SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
   av1_set_subpel_mv_search_range(&ms_params->mv_limits, &x->mv_limits, ref_mv);
 
   // Mvcost params
-  init_mv_cost_params(&ms_params->mv_cost_params, &x->mv_costs, ref_mv);
+  init_mv_cost_params(&ms_params->mv_cost_params, x->mv_costs, ref_mv,
+                      x->errorperbit, x->sadperbit);
 
   // Subpel variance params
-  ms_params->var_params.vfp = &cpi->fn_ptr[bsize];
+  ms_params->var_params.vfp = &cpi->ppi->fn_ptr[bsize];
   ms_params->var_params.subpel_search_type =
       cpi->sf.mv_sf.use_accurate_subpel_search;
   ms_params->var_params.w = block_size_wide[bsize];
@@ -232,7 +253,7 @@ static INLINE int mv_cost(const MV *mv, const int *joint_cost,
 // nearest 2 ** 7.
 // This is NOT used during motion compensation.
 int av1_mv_bit_cost(const MV *mv, const MV *ref_mv, const int *mvjcost,
-                    int *mvcost[2], int weight) {
+                    int *const mvcost[2], int weight) {
   const MV diff = { mv->row - ref_mv->row, mv->col - ref_mv->col };
   return ROUND_POWER_OF_TWO(
       mv_cost(&diff, mvjcost, CONVERT_TO_CONST_MVCOST(mvcost)) * weight, 7);
@@ -269,6 +290,9 @@ static INLINE int mv_err_cost(const MV *mv, const MV *ref_mv,
 
 static INLINE int mv_err_cost_(const MV *mv,
                                const MV_COST_PARAMS *mv_cost_params) {
+  if (mv_cost_params->mv_cost_type == MV_COST_NONE) {
+    return 0;
+  }
   return mv_err_cost(mv, mv_cost_params->ref_mv, mv_cost_params->mvjcost,
                      mv_cost_params->mvcost, mv_cost_params->error_per_bit,
                      mv_cost_params->mv_cost_type);
@@ -1809,7 +1833,7 @@ int av1_intrabc_hash_search(const AV1_COMP *cpi, const MACROBLOCKD *xd,
       const MV dv = { GET_MV_SUBPEL(ref_block_hash.y - y_pos),
                       GET_MV_SUBPEL(ref_block_hash.x - x_pos) };
       if (!av1_is_dv_valid(dv, &cpi->common, xd, mi_row, mi_col, bsize,
-                           cpi->common.seq_params.mib_size_log2))
+                           cpi->common.seq_params->mib_size_log2))
         continue;
 
       FULLPEL_MV hash_mv;
@@ -1936,8 +1960,8 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
   if (xd->bd != 8) {
     unsigned int sad;
     best_int_mv->as_fullmv = kZeroFullMv;
-    sad = cpi->fn_ptr[bsize].sdf(x->plane[0].src.buf, src_stride,
-                                 xd->plane[0].pre[0].buf, ref_stride);
+    sad = cpi->ppi->fn_ptr[bsize].sdf(x->plane[0].src.buf, src_stride,
+                                      xd->plane[0].pre[0].buf, ref_stride);
 
     if (scaled_ref_frame) {
       int i;
@@ -1980,7 +2004,8 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
   FULLPEL_MV this_mv = best_int_mv->as_fullmv;
   src_buf = x->plane[0].src.buf;
   ref_buf = get_buf_from_fullmv(&xd->plane[0].pre[0], &this_mv);
-  best_sad = cpi->fn_ptr[bsize].sdf(src_buf, src_stride, ref_buf, ref_stride);
+  best_sad =
+      cpi->ppi->fn_ptr[bsize].sdf(src_buf, src_stride, ref_buf, ref_stride);
 
   {
     const uint8_t *const pos[4] = {
@@ -1990,7 +2015,8 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
       ref_buf + ref_stride,
     };
 
-    cpi->fn_ptr[bsize].sdx4df(src_buf, src_stride, pos, ref_stride, this_sad);
+    cpi->ppi->fn_ptr[bsize].sdx4df(src_buf, src_stride, pos, ref_stride,
+                                   this_sad);
   }
 
   for (idx = 0; idx < 4; ++idx) {
@@ -2013,7 +2039,8 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
 
   ref_buf = get_buf_from_fullmv(&xd->plane[0].pre[0], &this_mv);
 
-  tmp_sad = cpi->fn_ptr[bsize].sdf(src_buf, src_stride, ref_buf, ref_stride);
+  tmp_sad =
+      cpi->ppi->fn_ptr[bsize].sdf(src_buf, src_stride, ref_buf, ref_stride);
   if (best_sad > tmp_sad) {
     best_int_mv->as_fullmv = this_mv;
     best_sad = tmp_sad;
@@ -2244,7 +2271,6 @@ static INLINE int get_subpel_part(int x) { return x & 7; }
 
 // Gets the address of the ref buffer at subpel location (r, c), rounded to the
 // nearest fullpel precision toward - \infty
-
 static INLINE const uint8_t *get_buf_from_mv(const struct buf_2d *buf,
                                              const MV mv) {
   const int offset = (mv.row >> 3) * buf->stride + (mv.col >> 3);

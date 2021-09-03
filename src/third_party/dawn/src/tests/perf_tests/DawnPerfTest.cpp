@@ -234,27 +234,34 @@ void DawnPerfTestBase::DoRunLoop(double maxRunTime) {
     dawn_platform::Platform* platform = gTestEnv->GetPlatform();
 
     mNumStepsPerformed = 0;
-    cpuTime = 0;
+    mCpuTime = 0;
     mRunning = true;
 
-    wgpu::FenceDescriptor desc = {};
-    uint64_t signaledFenceValue = 0;
-    wgpu::Fence fence = mTest->queue.CreateFence(&desc);
+    uint64_t finishedIterations = 0;
+    uint64_t submittedIterations = 0;
 
     mTimer->Start();
 
     // This loop can be canceled by calling AbortTest().
     while (mRunning) {
         // Wait if there are too many steps in flight on the GPU.
-        while (signaledFenceValue - fence.GetCompletedValue() >= mMaxStepsInFlight) {
+        while (submittedIterations - finishedIterations >= mMaxStepsInFlight) {
             mTest->WaitABit();
         }
+
         TRACE_EVENT0(platform, General, "Step");
         double stepStart = mTimer->GetElapsedTime();
         Step();
-        cpuTime += mTimer->GetElapsedTime() - stepStart;
+        mCpuTime += mTimer->GetElapsedTime() - stepStart;
 
-        mTest->queue.Signal(fence, ++signaledFenceValue);
+        submittedIterations++;
+        mTest->queue.OnSubmittedWorkDone(
+            0u,
+            [](WGPUQueueWorkDoneStatus, void* userdata) {
+                uint64_t* counter = static_cast<uint64_t*>(userdata);
+                (*counter)++;
+            },
+            &finishedIterations);
 
         if (mRunning) {
             ++mNumStepsPerformed;
@@ -270,7 +277,7 @@ void DawnPerfTestBase::DoRunLoop(double maxRunTime) {
     // TODO(enga): When Dawn has multiple backgrounds threads, add a Device::WaitForIdleForTesting()
     // which waits for all threads to stop doing work. When we output results, there should
     // be no additional incoming trace events.
-    while (signaledFenceValue != fence.GetCompletedValue()) {
+    while (submittedIterations != finishedIterations) {
         mTest->WaitABit();
     }
 
@@ -340,7 +347,7 @@ void DawnPerfTestBase::OutputResults() {
     }
 
     PrintPerIterationResultFromSeconds("wall_time", mTimer->GetElapsedTime(), true);
-    PrintPerIterationResultFromSeconds("cpu_time", cpuTime, true);
+    PrintPerIterationResultFromSeconds("cpu_time", mCpuTime, true);
     PrintPerIterationResultFromSeconds("validation_time", totalValidationTime, true);
     PrintPerIterationResultFromSeconds("recording_time", totalRecordingTime, true);
 

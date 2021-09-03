@@ -15,43 +15,58 @@
 #ifndef DAWNNATIVE_RENDERENCODERBASE_H_
 #define DAWNNATIVE_RENDERENCODERBASE_H_
 
+#include "dawn_native/AttachmentState.h"
+#include "dawn_native/CommandBufferStateTracker.h"
 #include "dawn_native/Error.h"
+#include "dawn_native/PassResourceUsageTracker.h"
 #include "dawn_native/ProgrammablePassEncoder.h"
 
 namespace dawn_native {
 
     class RenderEncoderBase : public ProgrammablePassEncoder {
       public:
-        RenderEncoderBase(DeviceBase* device, EncodingContext* encodingContext);
+        RenderEncoderBase(DeviceBase* device,
+                          EncodingContext* encodingContext,
+                          Ref<AttachmentState> attachmentState);
 
-        void Draw(uint32_t vertexCount,
-                  uint32_t instanceCount = 1,
-                  uint32_t firstVertex = 0,
-                  uint32_t firstInstance = 0);
-        void DrawIndexed(uint32_t vertexCount,
-                         uint32_t instanceCount,
-                         uint32_t firstIndex,
-                         int32_t baseVertex,
-                         uint32_t firstInstance);
+        void APIDraw(uint32_t vertexCount,
+                     uint32_t instanceCount = 1,
+                     uint32_t firstVertex = 0,
+                     uint32_t firstInstance = 0);
+        void APIDrawIndexed(uint32_t vertexCount,
+                            uint32_t instanceCount,
+                            uint32_t firstIndex,
+                            int32_t baseVertex,
+                            uint32_t firstInstance);
 
-        void DrawIndirect(BufferBase* indirectBuffer, uint64_t indirectOffset);
-        void DrawIndexedIndirect(BufferBase* indirectBuffer, uint64_t indirectOffset);
+        void APIDrawIndirect(BufferBase* indirectBuffer, uint64_t indirectOffset);
+        void APIDrawIndexedIndirect(BufferBase* indirectBuffer, uint64_t indirectOffset);
 
-        void SetPipeline(RenderPipelineBase* pipeline);
+        void APISetPipeline(RenderPipelineBase* pipeline);
 
-        void SetVertexBuffer(uint32_t slot, BufferBase* buffer, uint64_t offset, uint64_t size);
-        void SetIndexBuffer(BufferBase* buffer, uint64_t offset, uint64_t size);
-        void SetIndexBufferWithFormat(BufferBase* buffer, wgpu::IndexFormat format, uint64_t offset,
-                                      uint64_t size);
+        void APISetVertexBuffer(uint32_t slot, BufferBase* buffer, uint64_t offset, uint64_t size);
+        void APISetIndexBuffer(BufferBase* buffer,
+                               wgpu::IndexFormat format,
+                               uint64_t offset,
+                               uint64_t size);
+
+        void APISetBindGroup(uint32_t groupIndex,
+                             BindGroupBase* group,
+                             uint32_t dynamicOffsetCount = 0,
+                             const uint32_t* dynamicOffsets = nullptr);
+
+        const AttachmentState* GetAttachmentState() const;
+        Ref<AttachmentState> AcquireAttachmentState();
 
       protected:
         // Construct an "error" render encoder base.
         RenderEncoderBase(DeviceBase* device, EncodingContext* encodingContext, ErrorTag errorTag);
 
-      private:
-        void SetIndexBufferCommon(BufferBase* buffer, wgpu::IndexFormat format, uint64_t offset,
-                                  uint64_t size, bool requireFormat);
+        CommandBufferStateTracker mCommandBufferState;
+        RenderPassResourceUsageTracker mUsageTracker;
 
+      private:
+        Ref<AttachmentState> mAttachmentState;
         const bool mDisableBaseVertex;
         const bool mDisableBaseInstance;
     };

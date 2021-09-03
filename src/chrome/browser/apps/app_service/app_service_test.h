@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -17,12 +16,14 @@ class Profile;
 
 namespace apps {
 
-class AppServiceProxy;
+class AppServiceProxyBase;
 
 // Helper class to initialize AppService in unit tests.
 class AppServiceTest {
  public:
   AppServiceTest();
+  AppServiceTest(const AppServiceTest&) = delete;
+  AppServiceTest& operator=(const AppServiceTest&) = delete;
   ~AppServiceTest();
 
   void SetUp(Profile* profile);
@@ -46,11 +47,9 @@ class AppServiceTest {
   void FlushMojoCalls();
 
  private:
-  AppServiceProxy* app_service_proxy_ = nullptr;
+  AppServiceProxyBase* app_service_proxy_ = nullptr;
 
   Profile* profile_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(AppServiceTest);
 };
 
 }  // namespace apps

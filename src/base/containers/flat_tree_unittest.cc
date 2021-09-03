@@ -6,7 +6,7 @@
 
 // Following tests are ported and extended tests from libcpp for std::set.
 // They can be found here:
-// https://github.com/llvm-mirror/libcxx/tree/master/test/std/containers/associative/set
+// https://github.com/llvm/llvm-project/tree/main/libcxx/test/std/containers/associative/set
 //
 // Not ported tests:
 // * No tests with PrivateConstructor and std::less<> changed to std::less<T>
@@ -28,6 +28,7 @@
 // * No tests with min_allocator and no tests counting allocations.
 //   Flat sets currently don't support allocators.
 
+#include <deque>
 #include <forward_list>
 #include <functional>
 #include <iterator>
@@ -197,6 +198,28 @@ TEST(FlatTree, IsMultipass) {
                 "BidirectionalIterator is multipass");
   static_assert(is_multipass<std::vector<int>::iterator>(),
                 "RandomAccessIterator is multipass");
+}
+
+// Tests that the compiler generated move operators propagrate noexcept
+// specifiers.
+TEST(FlatTree, NoExcept) {
+  struct MoveThrows {
+    MoveThrows(MoveThrows&&) noexcept(false) {}
+    MoveThrows& operator=(MoveThrows&&) noexcept(false) { return *this; }
+  };
+
+  using MoveThrowsTree = flat_tree<MoveThrows, base::identity, std::less<>,
+                                   std::array<MoveThrows, 1>>;
+
+  static_assert(std::is_nothrow_move_constructible<IntTree>::value,
+                "Error: IntTree is not nothrow move constructible");
+  static_assert(std::is_nothrow_move_assignable<IntTree>::value,
+                "Error: IntTree is not nothrow move assignable");
+
+  static_assert(!std::is_nothrow_move_constructible<MoveThrowsTree>::value,
+                "Error: MoveThrowsTree is nothrow move constructible");
+  static_assert(!std::is_nothrow_move_assignable<MoveThrowsTree>::value,
+                "Error: MoveThrowsTree is nothrow move assignable");
 }
 
 // ----------------------------------------------------------------------------

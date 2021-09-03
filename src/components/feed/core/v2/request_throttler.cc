@@ -6,19 +6,35 @@
 
 #include <vector>
 
-#include "base/time/clock.h"
+#include "base/logging.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/prefs.h"
 #include "components/prefs/pref_service.h"
 
 namespace feed {
 namespace {
+// Returns the maximum number of requests per day for this request type.
+// -1 indicates there is no limit.
 int GetMaxRequestsPerDay(NetworkRequestType request_type) {
+  const Config& config = GetFeedConfig();
   switch (request_type) {
     case NetworkRequestType::kFeedQuery:
-      return GetFeedConfig().max_feed_query_requests_per_day;
+    case NetworkRequestType::kWebFeedListContents:
+    case NetworkRequestType::kQueryInteractiveFeed:
+    case NetworkRequestType::kQueryBackgroundFeed:
+      return config.max_feed_query_requests_per_day;
     case NetworkRequestType::kUploadActions:
-      return GetFeedConfig().max_action_upload_requests_per_day;
+      return config.max_action_upload_requests_per_day;
+    case NetworkRequestType::kNextPage:
+    case NetworkRequestType::kQueryNextPage:
+      return config.max_next_page_requests_per_day;
+    case NetworkRequestType::kListWebFeeds:
+      return config.max_list_web_feeds_requests_per_day;
+    case NetworkRequestType::kListRecommendedWebFeeds:
+      return config.max_list_recommended_web_feeds_requests_per_day;
+    case NetworkRequestType::kUnfollowWebFeed:
+    case NetworkRequestType::kFollowWebFeed:
+      return -1;
   }
 }
 
@@ -32,17 +48,17 @@ int DaysSinceOrigin(const base::Time& time_value) {
 
 }  // namespace
 
-RequestThrottler::RequestThrottler(PrefService* pref_service,
-                                   const base::Clock* clock)
-    : pref_service_(pref_service), clock_(clock) {
+RequestThrottler::RequestThrottler(PrefService* pref_service)
+    : pref_service_(pref_service) {
   DCHECK(pref_service);
-  DCHECK(clock);
 }
 
 bool RequestThrottler::RequestQuota(NetworkRequestType request_type) {
   ResetCountersIfDayChanged();
 
   const int max_requests_per_day = GetMaxRequestsPerDay(request_type);
+  if (max_requests_per_day == -1)
+    return true;
 
   // Fetch request counts from prefs. There's an entry for each request type.
   // We may need to resize the list.
@@ -63,7 +79,7 @@ bool RequestThrottler::RequestQuota(NetworkRequestType request_type) {
 void RequestThrottler::ResetCountersIfDayChanged() {
   // Grant new quota on local midnight to spread out when clients that start
   // making un-throttled requests to server.
-  const base::Time now = clock_->Now();
+  const base::Time now = base::Time::Now();
   const bool day_changed =
       DaysSinceOrigin(feed::prefs::GetLastRequestTime(*pref_service_)) !=
       DaysSinceOrigin(now);

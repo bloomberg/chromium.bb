@@ -31,6 +31,10 @@ Node* LayoutShiftAttribution::node() const {
   return Performance::CanExposeNode(node_) ? node_ : nullptr;
 }
 
+Node* LayoutShiftAttribution::rawNodeForInspector() const {
+  return node_;
+}
+
 DOMRectReadOnly* LayoutShiftAttribution::previousRect() const {
   return previous_rect_;
 }
@@ -42,7 +46,6 @@ DOMRectReadOnly* LayoutShiftAttribution::currentRect() const {
 ScriptValue LayoutShiftAttribution::toJSONForBinding(
     ScriptState* script_state) const {
   V8ObjectBuilder builder(script_state);
-  builder.Add("node", node());
   builder.Add("previousRect", previous_rect_);
   builder.Add("currentRect", current_rect_);
   return builder.GetScriptValue();

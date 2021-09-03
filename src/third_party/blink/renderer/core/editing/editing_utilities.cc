@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -76,7 +77,6 @@
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
@@ -92,17 +92,6 @@ std::ostream& operator<<(std::ostream& os, PositionMoveType type) {
   DCHECK_GE(it, std::begin(kTexts)) << "Unknown PositionMoveType value";
   DCHECK_LT(it, std::end(kTexts)) << "Unknown PositionMoveType value";
   return os << *it;
-}
-
-InputEvent::EventCancelable InputTypeIsCancelable(
-    InputEvent::InputType input_type) {
-  using InputType = InputEvent::InputType;
-  switch (input_type) {
-    case InputType::kInsertCompositionText:
-      return InputEvent::EventCancelable::kNotCancelable;
-    default:
-      return InputEvent::EventCancelable::kIsCancelable;
-  }
 }
 
 UChar WhitespaceRebalancingCharToAppend(const String& string,
@@ -164,6 +153,11 @@ bool NeedsLayoutTreeUpdate(const PositionInFlatTree& position) {
 // for the purposes of editing.
 bool IsAtomicNode(const Node* node) {
   return node && (!node->hasChildren() || EditingIgnoresContent(*node));
+}
+
+bool IsAtomicNodeInFlatTree(const Node* node) {
+  return node && (!FlatTreeTraversal::HasChildren(*node) ||
+                  EditingIgnoresContent(*node));
 }
 
 template <typename Traversal>
@@ -338,8 +332,6 @@ bool IsNodeFullyContained(const EphemeralRange& range, const Node& node) {
 
 // TODO(editing-dev): We should implement real version which refers
 // "user-select" CSS property.
-// TODO(editing-dev): We should make |SelectionAdjuster| to use this funciton
-// instead of |isSelectionBondary()|.
 bool IsUserSelectContain(const Node& node) {
   return IsA<HTMLTextAreaElement>(node) || IsA<HTMLInputElement>(node) ||
          IsA<HTMLSelectElement>(node);
@@ -1339,30 +1331,52 @@ HTMLSpanElement* CreateTabSpanElement(Document& document) {
   return CreateTabSpanElement(document, nullptr);
 }
 
+// Returns user-select:contain boundary element of specified position.
+// Because of we've not yet implemented "user-select:contain", we consider
+// following elements having "user-select:contain"
+//  - root editable
+//  - inner editor of text control (<input> and <textarea>)
+// Note: inner editor of readonly text control isn't content editable.
+// TODO(yosin): We should handle elements with "user-select:contain".
+// See http:/crbug.com/658129
+static Element* UserSelectContainBoundaryOf(const Position& position) {
+  if (auto* text_control = EnclosingTextControl(position)) {
+    // for <input readonly>. See http://crbug.com/185089
+    return text_control->InnerEditorElement();
+  }
+  // Note: Until we implement "user-select:contain", we treat root editable
+  // element and text control as having "user-select:contain".
+  if (Element* editable = RootEditableElementOf(position))
+    return editable;
+  return nullptr;
+}
+
 PositionWithAffinity PositionRespectingEditingBoundary(
     const Position& position,
-    const PhysicalOffset& local_point,
-    Node* target_node) {
+    const HitTestResult& hit_test_result) {
+  Node* target_node = hit_test_result.InnerPossiblyPseudoNode();
+  DCHECK(target_node);
   const LayoutObject* target_object = target_node->GetLayoutObject();
   if (!target_object)
     return PositionWithAffinity();
 
-  PhysicalOffset selection_end_point = local_point;
-  Element* editable_element = RootEditableElementOf(position);
+  Element* editable_element = UserSelectContainBoundaryOf(position);
+  if (!editable_element || editable_element->contains(target_node))
+    return hit_test_result.GetPosition();
 
-  if (editable_element && !editable_element->contains(target_node)) {
-    const LayoutObject* editable_object = editable_element->GetLayoutObject();
-    if (!editable_object)
-      return PositionWithAffinity();
+  const LayoutObject* editable_object = editable_element->GetLayoutObject();
+  if (!editable_object)
+    return PositionWithAffinity();
 
-    // TODO(yosin): Is this kIgnoreTransforms correct here?
-    PhysicalOffset absolute_point = target_object->LocalToAbsolutePoint(
-        selection_end_point, kIgnoreTransforms);
-    selection_end_point = editable_object->AbsoluteToLocalPoint(
-        absolute_point, kIgnoreTransforms);
-    target_object = editable_object;
-  }
-
+  // TODO(yosin): Is this kIgnoreTransforms correct here?
+  PhysicalOffset selection_end_point = hit_test_result.LocalPoint();
+  PhysicalOffset absolute_point = target_object->LocalToAbsolutePoint(
+      selection_end_point, kIgnoreTransforms);
+  selection_end_point =
+      editable_object->AbsoluteToLocalPoint(absolute_point, kIgnoreTransforms);
+  target_object = editable_object;
+  // TODO(kojii): Support fragment-based |PositionForPoint|. LayoutObject-based
+  // |PositionForPoint| may not work if NG block fragmented.
   return target_object->PositionForPoint(selection_end_point);
 }
 
@@ -1374,15 +1388,28 @@ PositionWithAffinity AdjustForEditingBoundary(
   const Node& node = *position.ComputeContainerNode();
   if (HasEditableStyle(node))
     return position_with_affinity;
+  // TODO(yosin): Once we fix |MostBackwardCaretPosition()| to handle
+  // positions other than |kOffsetInAnchor|, we don't need to use
+  // |adjusted_position|, e.g. <outer><inner contenteditable> with position
+  // before <inner> vs. outer@0[1].
+  // [1] editing/selection/click-outside-editable-div.html
+  const Position& adjusted_position = HasEditableStyle(*position.AnchorNode())
+                                          ? position.ToOffsetInAnchor()
+                                          : position;
   const Position& forward =
-      MostForwardCaretPosition(position, kCanCrossEditingBoundary);
+      MostForwardCaretPosition(adjusted_position, kCanCrossEditingBoundary);
   if (HasEditableStyle(*forward.ComputeContainerNode()))
     return PositionWithAffinity(forward);
   const Position& backward =
-      MostBackwardCaretPosition(position, kCanCrossEditingBoundary);
+      MostBackwardCaretPosition(adjusted_position, kCanCrossEditingBoundary);
   if (HasEditableStyle(*backward.ComputeContainerNode()))
     return PositionWithAffinity(backward);
-  return position_with_affinity;
+  return PositionWithAffinity(adjusted_position,
+                              position_with_affinity.Affinity());
+}
+
+PositionWithAffinity AdjustForEditingBoundary(const Position& position) {
+  return AdjustForEditingBoundary(PositionWithAffinity(position));
 }
 
 Position ComputePositionForNodeRemoval(const Position& position,
@@ -1392,20 +1419,13 @@ Position ComputePositionForNodeRemoval(const Position& position,
   Node* container_node;
   Node* anchor_node;
   switch (position.AnchorType()) {
-    case PositionAnchorType::kBeforeChildren:
-      container_node = position.ComputeContainerNode();
-      if (!container_node ||
-          !node.IsShadowIncludingInclusiveAncestorOf(*container_node)) {
-        return position;
-      }
-      return Position::InParentBeforeNode(node);
     case PositionAnchorType::kAfterChildren:
       container_node = position.ComputeContainerNode();
       if (!container_node ||
           !node.IsShadowIncludingInclusiveAncestorOf(*container_node)) {
         return position;
       }
-      return Position::InParentAfterNode(node);
+      return Position::InParentBeforeNode(node);
     case PositionAnchorType::kOffsetInAnchor:
       container_node = position.ComputeContainerNode();
       if (container_node == node.parentNode() &&
@@ -1423,7 +1443,7 @@ Position ComputePositionForNodeRemoval(const Position& position,
       if (!anchor_node ||
           !node.IsShadowIncludingInclusiveAncestorOf(*anchor_node))
         return position;
-      return Position::InParentAfterNode(node);
+      return Position::InParentBeforeNode(node);
     case PositionAnchorType::kBeforeAnchor:
       anchor_node = position.AnchorNode();
       if (!anchor_node ||
@@ -1550,6 +1570,33 @@ VisiblePosition VisiblePositionForIndex(int index, ContainerNode* scope) {
   return CreateVisiblePosition(range.StartPosition());
 }
 
+template <typename Strategy>
+bool AreSameRangesAlgorithm(Node* node,
+                            const PositionTemplate<Strategy>& start_position,
+                            const PositionTemplate<Strategy>& end_position) {
+  DCHECK(node);
+  const EphemeralRange range =
+      CreateVisibleSelection(
+          SelectionInDOMTree::Builder().SelectAllChildren(*node).Build())
+          .ToNormalizedEphemeralRange();
+  return ToPositionInDOMTree(start_position) == range.StartPosition() &&
+         ToPositionInDOMTree(end_position) == range.EndPosition();
+}
+
+bool AreSameRanges(Node* node,
+                   const Position& start_position,
+                   const Position& end_position) {
+  return AreSameRangesAlgorithm<EditingStrategy>(node, start_position,
+                                                 end_position);
+}
+
+bool AreSameRanges(Node* node,
+                   const PositionInFlatTree& start_position,
+                   const PositionInFlatTree& end_position) {
+  return AreSameRangesAlgorithm<EditingInFlatTreeStrategy>(node, start_position,
+                                                           end_position);
+}
+
 bool IsRenderedAsNonInlineTableImageOrHR(const Node* node) {
   if (!node)
     return false;
@@ -1621,6 +1668,17 @@ wtf_size_t ComputeDistanceToRightGraphemeBoundary(const Position& position) {
 
 FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
   return caret_rect.layout_object->LocalRectToAbsoluteQuad(caret_rect.rect);
+}
+
+InputEvent::EventCancelable InputTypeIsCancelable(
+    InputEvent::InputType input_type) {
+  using InputType = InputEvent::InputType;
+  switch (input_type) {
+    case InputType::kInsertCompositionText:
+      return InputEvent::EventCancelable::kNotCancelable;
+    default:
+      return InputEvent::EventCancelable::kIsCancelable;
+  }
 }
 
 const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {

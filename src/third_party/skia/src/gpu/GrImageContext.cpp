@@ -18,7 +18,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 GrImageContext::GrImageContext(sk_sp<GrContextThreadSafeProxy> proxy)
             : INHERITED(std::move(proxy)) {
-    fProxyProvider = std::make_unique<GrProxyProvider>(this);
 }
 
 GrImageContext::~GrImageContext() {}
@@ -29,6 +28,10 @@ void GrImageContext::abandonContext() {
 
 bool GrImageContext::abandoned() {
     return fThreadSafeProxy->priv().abandoned();
+}
+
+sk_sp<GrImageContext> GrImageContext::MakeForPromiseImage(sk_sp<GrContextThreadSafeProxy> tsp) {
+    return sk_sp<GrImageContext>(new GrImageContext(std::move(tsp)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

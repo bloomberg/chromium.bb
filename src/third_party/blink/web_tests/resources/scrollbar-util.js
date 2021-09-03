@@ -53,7 +53,10 @@ function getScrollbarButtonScrollDelta(scroller) {
   }
 
   percentBasedDelta = (size) => {
-    return {
+    return internals.runtimeFlags.percentBasedScrollingEnabled ? {
+      x: SCROLLBAR_SCROLL_PERCENTAGE * size.x,
+      y: SCROLLBAR_SCROLL_PERCENTAGE * size.y
+    } : {
       x: Math.floor(SCROLLBAR_SCROLL_PERCENTAGE * size.x),
       y: Math.floor(SCROLLBAR_SCROLL_PERCENTAGE * size.y)
     }
@@ -189,5 +192,24 @@ function verticalThumb(scroller) {
   const scrollerRect = scroller.getBoundingClientRect();
   const thumbPoint = { x : scrollerRect.right - TRACK_WIDTH / 2,
                        y : scrollerRect.top + BUTTON_WIDTH + 2 };
+  return cssClientToCssVisual(thumbPoint);
+}
+
+// Returns a point that falls within the given scroller's horizontal thumb part.
+function horizontalThumb(scroller) {
+  assert_equals(scroller.scrollLeft, 0,
+                "horizontalThumb() requires scroller to have scrollLeft of 0");
+  const TRACK_WIDTH = calculateScrollbarThickness();
+  const BUTTON_WIDTH = calculateScrollbarButtonWidth();
+  if (scroller === document.documentElement || typeof(scroller) == 'undefined') {
+    // HTML element is special, since scrollbars are not part of its client rect
+    // and page scale doesn't affect the scrollbars. Use window properties instead.
+    let x = BUTTON_WIDTH + 6;
+    let y = window.innerHeight - TRACK_WIDTH / 2;
+    return {x: x, y: y};
+  }
+  const scrollerRect = scroller.getBoundingClientRect();
+  const thumbPoint = { x: scrollerRect.left + BUTTON_WIDTH + 2,
+                       y: scrollerRect.bottom - TRACK_WIDTH / 2 };
   return cssClientToCssVisual(thumbPoint);
 }

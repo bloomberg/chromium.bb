@@ -99,7 +99,7 @@ bool PseudoElement::IsWebExposed(PseudoId pseudo_id, const Node* parent) {
     case kPseudoIdMarker:
       if (parent && parent->IsPseudoElement())
         return RuntimeEnabledFeatures::CSSMarkerNestedPseudoElementEnabled();
-      return RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled();
+      return true;
     default:
       return true;
   }
@@ -121,9 +121,12 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)
   }
 }
 
-scoped_refptr<ComputedStyle> PseudoElement::CustomStyleForLayoutObject() {
-  return ParentOrShadowHostElement()->StyleForPseudoElement(
-      PseudoElementStyleRequest(pseudo_id_));
+scoped_refptr<ComputedStyle> PseudoElement::CustomStyleForLayoutObject(
+    const StyleRecalcContext& style_recalc_context) {
+  Element* parent = ParentOrShadowHostElement();
+  return parent->StyleForPseudoElement(
+      style_recalc_context,
+      StyleRequest(pseudo_id_, parent->GetComputedStyle()));
 }
 
 scoped_refptr<ComputedStyle> PseudoElement::LayoutStyleForDisplayContents(
@@ -131,7 +134,8 @@ scoped_refptr<ComputedStyle> PseudoElement::LayoutStyleForDisplayContents(
   // For display:contents we should not generate a box, but we generate a non-
   // observable inline box for pseudo elements to be able to locate the
   // anonymous layout objects for generated content during DetachLayoutTree().
-  scoped_refptr<ComputedStyle> layout_style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> layout_style =
+      GetDocument().GetStyleResolver().CreateComputedStyle();
   layout_style->InheritFrom(style);
   layout_style->SetContent(style.GetContentData());
   layout_style->SetDisplay(EDisplay::kInline);
@@ -234,7 +238,7 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
 }
 
 bool PseudoElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
-  return PseudoElementLayoutObjectIsNeeded(&style, this->parentElement());
+  return PseudoElementLayoutObjectIsNeeded(&style, parentElement());
 }
 
 bool PseudoElement::CanGeneratePseudoElement(PseudoId pseudo_id) const {
@@ -275,9 +279,8 @@ bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle* pseudo_style,
         return !pseudo_style->ContentPreventsBoxGeneration();
       const ComputedStyle* parent_style =
           originating_element->GetComputedStyle();
-      return parent_style &&
-             (parent_style->ListStyleType() != EListStyleType::kNone ||
-              parent_style->GeneratesMarkerImage());
+      return parent_style && (parent_style->GetListStyleType() ||
+                              parent_style->GeneratesMarkerImage());
     }
     default:
       NOTREACHED();

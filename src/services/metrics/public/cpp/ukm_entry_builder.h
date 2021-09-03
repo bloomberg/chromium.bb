@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_METRICS_PUBLIC_CPP_UKM_ENTRY_BUILDER_H
-#define SERVICES_METRICS_PUBLIC_CPP_UKM_ENTRY_BUILDER_H
-
-#include <string>
+#ifndef SERVICES_METRICS_PUBLIC_CPP_UKM_ENTRY_BUILDER_H_
+#define SERVICES_METRICS_PUBLIC_CPP_UKM_ENTRY_BUILDER_H_
 
 #include "base/macros.h"
 #include "services/metrics/public/cpp/metrics_export.h"
 #include "services/metrics/public/cpp/ukm_entry_builder_base.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/metrics/public/mojom/ukm_interface.mojom.h"
 
 namespace ukm {
 
@@ -42,4 +39,4 @@ class METRICS_EXPORT UkmEntryBuilder final
 
 }  // namespace ukm
 
-#endif  // SERVICES_METRICS_PUBLIC_CPP_UKM_ENTRY_BUILDER_H
+#endif  // SERVICES_METRICS_PUBLIC_CPP_UKM_ENTRY_BUILDER_H_

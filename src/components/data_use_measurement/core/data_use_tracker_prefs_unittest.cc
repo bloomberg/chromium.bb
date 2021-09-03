@@ -58,43 +58,43 @@ TEST(DataUseTrackerPrefsTest, PrefsOnMeteredConnection) {
   DataUseTrackerPrefsTest tracker_prefs_test_1(&clock, &test_prefs);
   tracker_prefs_test_1.data_use_tracker_prefs()->ReportNetworkServiceDataUse(
       true, true, true, 10);
-  EXPECT_EQ(1u,
-            test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->size());
+  EXPECT_EQ(
+      1u, test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->DictSize());
   tracker_prefs_test_1.data_use_tracker_prefs()->ReportNetworkServiceDataUse(
       true, true, true, 10);
-  EXPECT_EQ(1u,
-            test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->size());
+  EXPECT_EQ(
+      1u, test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->DictSize());
 
   // Verify other prefs are not set.
   EXPECT_TRUE(
-      test_prefs.GetDictionary(prefs::kDataUsedUserBackground)->empty());
+      test_prefs.GetDictionary(prefs::kDataUsedUserBackground)->DictEmpty());
   EXPECT_TRUE(
-      test_prefs.GetDictionary(prefs::kDataUsedServicesForeground)->empty());
+      test_prefs.GetDictionary(prefs::kDataUsedServicesForeground)->DictEmpty());
   EXPECT_TRUE(
-      test_prefs.GetDictionary(prefs::kDataUsedServicesBackground)->empty());
+      test_prefs.GetDictionary(prefs::kDataUsedServicesBackground)->DictEmpty());
 
   // Move clock forward 10 days. New data use reported must go in a separate
   // entry in the dictionary pref.
   clock.Advance(base::TimeDelta::FromDays(10));
   DataUseTrackerPrefsTest tracker_prefs_test_2(&clock, &test_prefs);
-  EXPECT_EQ(1u,
-            test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->size());
+  EXPECT_EQ(
+      1u, test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->DictSize());
   tracker_prefs_test_2.data_use_tracker_prefs()->ReportNetworkServiceDataUse(
       true, true, true, 10);
-  EXPECT_EQ(2u,
-            test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->size());
+  EXPECT_EQ(
+      2u, test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->DictSize());
 
   // Move clock forward 55 days. This should clean up the first entry since they
   // are now 65 days older (i.e., more than 60 days old). New data use reported
   // must go in a separate entry in the dictionary pref.
   clock.Advance(base::TimeDelta::FromDays(55));
   DataUseTrackerPrefsTest tracker_prefs_test_3(&clock, &test_prefs);
-  EXPECT_EQ(1u,
-            test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->size());
+  EXPECT_EQ(
+      1u, test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->DictSize());
   tracker_prefs_test_2.data_use_tracker_prefs()->ReportNetworkServiceDataUse(
       true, true, true, 10);
-  EXPECT_EQ(2u,
-            test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->size());
+  EXPECT_EQ(
+      2u, test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->DictSize());
 }
 
 // Verifies that the prefs are not updated on unmetered connections.
@@ -113,13 +113,13 @@ TEST(DataUseTrackerPrefsTest, PrefsOnUnmeteredConnection) {
 
   // Verify prefs are not set.
   EXPECT_TRUE(
-      test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->empty());
+      test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->DictEmpty());
   EXPECT_TRUE(
-      test_prefs.GetDictionary(prefs::kDataUsedUserBackground)->empty());
+      test_prefs.GetDictionary(prefs::kDataUsedUserBackground)->DictEmpty());
   EXPECT_TRUE(
-      test_prefs.GetDictionary(prefs::kDataUsedServicesForeground)->empty());
+      test_prefs.GetDictionary(prefs::kDataUsedServicesForeground)->DictEmpty());
   EXPECT_TRUE(
-      test_prefs.GetDictionary(prefs::kDataUsedServicesBackground)->empty());
+      test_prefs.GetDictionary(prefs::kDataUsedServicesBackground)->DictEmpty());
 }
 
 TEST(DataUseTrackerPrefsTest, TestBasicUserForeground) {
@@ -152,21 +152,21 @@ TEST(DataUseTrackerPrefsTest, TestBasicUserForeground) {
         true, test.foreground, test.user_initiated, 10);
     // Verify that the expected pref has an entry.
     EXPECT_FALSE(
-        test_prefs.GetDictionary(test.pref_expected_as_non_empty)->empty());
+        test_prefs.GetDictionary(test.pref_expected_as_non_empty)->DictEmpty());
 
     // Verify other prefs are not set.
     EXPECT_TRUE(
         test.pref_expected_as_non_empty == prefs::kDataUsedUserForeground ||
-        test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->empty());
+        test_prefs.GetDictionary(prefs::kDataUsedUserForeground)->DictEmpty());
     EXPECT_TRUE(
         test.pref_expected_as_non_empty == prefs::kDataUsedUserBackground ||
-        test_prefs.GetDictionary(prefs::kDataUsedUserBackground)->empty());
+        test_prefs.GetDictionary(prefs::kDataUsedUserBackground)->DictEmpty());
     EXPECT_TRUE(
         test.pref_expected_as_non_empty == prefs::kDataUsedServicesForeground ||
-        test_prefs.GetDictionary(prefs::kDataUsedServicesForeground)->empty());
+        test_prefs.GetDictionary(prefs::kDataUsedServicesForeground)->DictEmpty());
     EXPECT_TRUE(
         test.pref_expected_as_non_empty == prefs::kDataUsedServicesBackground ||
-        test_prefs.GetDictionary(prefs::kDataUsedServicesBackground)->empty());
+        test_prefs.GetDictionary(prefs::kDataUsedServicesBackground)->DictEmpty());
   }
 }
 

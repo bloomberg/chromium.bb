@@ -26,10 +26,14 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/conversions/conversions.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/platform/impression_conversions.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -38,10 +42,11 @@
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
 #include "third_party/blink/renderer/core/html/anchor_element_metrics_sender.h"
+#include "third_party/blink/renderer/core/html/conversion_measurement_parsing.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -124,6 +129,8 @@ bool HTMLAnchorElement::ShouldHaveFocusAppearance() const {
 }
 
 bool HTMLAnchorElement::IsMouseFocusable() const {
+  if (!IsFocusableStyleAfterUpdate())
+    return false;
   if (IsLink())
     return SupportsFocus();
 
@@ -131,9 +138,11 @@ bool HTMLAnchorElement::IsMouseFocusable() const {
 }
 
 bool HTMLAnchorElement::IsKeyboardFocusable() const {
-  DCHECK(GetDocument().IsActive());
+  if (!IsFocusableStyleAfterUpdate())
+    return false;
 
-  if (IsFocusable() && Element::SupportsFocus())
+  // Anchor is focusable if the base element supports focus and is focusable.
+  if (IsBaseElementFocusable() && Element::SupportsFocus())
     return HTMLElement::IsKeyboardFocusable();
 
   if (IsLink() && !GetDocument().GetPage()->GetChromeClient().TabsToLinks())
@@ -204,7 +213,7 @@ bool HTMLAnchorElement::HasActivationBehavior() const {
 }
 
 void HTMLAnchorElement::SetActive(bool active) {
-  if (HasEditableStyle(*this))
+  if (active && HasEditableStyle(*this))
     return;
 
   HTMLElement::SetActive(active);
@@ -213,6 +222,20 @@ void HTMLAnchorElement::SetActive(bool active) {
 void HTMLAnchorElement::AttributeChanged(
     const AttributeModificationParams& params) {
   HTMLElement::AttributeChanged(params);
+  if (params.name == html_names::kRegisterattributionsourceAttr &&
+      !params.new_value.IsNull() && HasImpression()) {
+    absl::optional<WebImpression> impression = GetImpressionForAnchor(this);
+    if (impression) {
+      mojo::AssociatedRemote<mojom::blink::ConversionHost> conversion_host;
+      GetDocument()
+          .GetFrame()
+          ->GetRemoteNavigationAssociatedInterfaces()
+          ->GetInterface(&conversion_host);
+      conversion_host->RegisterImpression(
+          ConvertWebImpressionToImpression(*impression));
+    }
+  }
+
   if (params.reason != AttributeModificationReason::kDirectly)
     return;
   if (params.name != html_names::kHrefAttr)
@@ -260,11 +283,6 @@ void HTMLAnchorElement::ParseAttribute(
   } else {
     HTMLElement::ParseAttribute(params);
   }
-}
-
-void HTMLAnchorElement::AccessKeyAction(bool send_mouse_events) {
-  DispatchSimulatedClick(
-      nullptr, send_mouse_events ? kSendMouseUpDownEvents : kSendNoEvents);
 }
 
 bool HTMLAnchorElement::IsURLAttribute(const Attribute& attribute) const {
@@ -354,92 +372,8 @@ bool HTMLAnchorElement::IsLiveLink() const {
 }
 
 bool HTMLAnchorElement::HasImpression() const {
-  return hasAttribute(html_names::kImpressiondataAttr) &&
-         hasAttribute(html_names::kConversiondestinationAttr);
-}
-
-base::Optional<WebImpression> HTMLAnchorElement::GetImpressionForNavigation()
-    const {
-  DCHECK(HasImpression());
-
-  if (!RuntimeEnabledFeatures::ConversionMeasurementEnabled(
-          GetExecutionContext()))
-    return base::nullopt;
-
-  if (!GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kConversionMeasurement)) {
-    String message =
-        "The 'conversion-measurement' feature policy must be enabled to "
-        "declare an impression.";
-    GetExecutionContext()->AddConsoleMessage(
-        MakeGarbageCollected<ConsoleMessage>(
-            mojom::blink::ConsoleMessageSource::kOther,
-            mojom::blink::ConsoleMessageLevel::kError, message));
-    return base::nullopt;
-  }
-
-  // Conversion measurement is only allowed when both the frame and the main
-  // frame (if different) have a secure origin.
-  LocalFrame* frame = GetDocument().GetFrame();
-  const Frame& main_frame = frame->Tree().Top();
-  if (!main_frame.GetSecurityContext()
-           ->GetSecurityOrigin()
-           ->IsPotentiallyTrustworthy()) {
-    return base::nullopt;
-  }
-  if (!frame->IsMainFrame() && !frame->GetSecurityContext()
-                                    ->GetSecurityOrigin()
-                                    ->IsPotentiallyTrustworthy()) {
-    return base::nullopt;
-  }
-
-  const AtomicString& conversion_destination_string =
-      FastGetAttribute(html_names::kConversiondestinationAttr);
-  scoped_refptr<const SecurityOrigin> conversion_destination =
-      SecurityOrigin::CreateFromString(conversion_destination_string);
-  if (!conversion_destination->IsPotentiallyTrustworthy())
-    return base::nullopt;
-
-  bool impression_data_is_valid = false;
-  uint64_t impression_data = FastGetAttribute(html_names::kImpressiondataAttr)
-                                 .GetString()
-                                 .HexToUInt64Strict(&impression_data_is_valid);
-
-  // Provide a default of 0 if the impression data was not valid.
-  impression_data = impression_data_is_valid ? impression_data : 0UL;
-
-  // Reporting origin is an optional attribute. Reporting origins must be
-  // secure.
-  base::Optional<WebSecurityOrigin> reporting_origin;
-  if (hasAttribute(html_names::kReportingoriginAttr)) {
-    const AtomicString& reporting_origin_string =
-        FastGetAttribute(html_names::kReportingoriginAttr);
-    reporting_origin =
-        SecurityOrigin::CreateFromString(reporting_origin_string);
-
-    if (!reporting_origin->IsPotentiallyTrustworthy())
-      return base::nullopt;
-  }
-
-  // Impression expiry is an optional attribute.
-  base::Optional<base::TimeDelta> expiry;
-  if (hasAttribute(html_names::kImpressionexpiryAttr)) {
-    bool expiry_is_valid = false;
-    uint64_t expiry_milliseconds =
-        FastGetAttribute(html_names::kImpressionexpiryAttr)
-            .GetString()
-            .ToUInt64Strict(&expiry_is_valid);
-    if (expiry_is_valid)
-      expiry = base::TimeDelta::FromMilliseconds(expiry_milliseconds);
-  }
-
-  UseCounter::Count(GetExecutionContext(),
-                    mojom::blink::WebFeature::kConversionAPIAll);
-  UseCounter::Count(GetExecutionContext(),
-                    mojom::blink::WebFeature::kImpressionRegistration);
-
-  return WebImpression{conversion_destination, reporting_origin,
-                       impression_data, expiry};
+  return hasAttribute(html_names::kAttributionsourceeventidAttr) &&
+         hasAttribute(html_names::kAttributiondestinationAttr);
 }
 
 void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
@@ -483,7 +417,11 @@ void HTMLAnchorElement::HandleClick(Event& event) {
                       WebFeature::kAnchorClickDispatchForNonConnectedNode);
   }
 
-  AnchorElementMetrics::MaybeReportClickedMetricsOnClick(this);
+  Document& top_document = GetDocument().TopDocument();
+  if (AnchorElementMetricsSender::HasAnchorElementMetricsSender(top_document)) {
+    AnchorElementMetricsSender::From(top_document)
+        ->MaybeReportClickedMetricsOnClick(*this);
+  }
 
   StringBuilder url;
   url.Append(StripLeadingAndTrailingHTMLSpaces(
@@ -551,11 +489,27 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   }
 
   frame_request.SetTriggeringEventInfo(
-      event.isTrusted() ? TriggeringEventInfo::kFromTrustedEvent
-                        : TriggeringEventInfo::kFromUntrustedEvent);
+      event.isTrusted()
+          ? mojom::blink::TriggeringEventInfo::kFromTrustedEvent
+          : mojom::blink::TriggeringEventInfo::kFromUntrustedEvent);
   frame_request.SetInputStartTime(event.PlatformTimeStamp());
 
   frame->MaybeLogAdClickNavigation();
+
+  if (request.HasUserGesture() && HasImpression()) {
+    // An impression must be attached prior to the
+    // FindOrCreateFrameForNavigation() call, as that call may result in
+    // performing a navigation if the call results in creating a new window with
+    // noopener set.
+    // At this time we don't know if the navigation will navigate a main frame
+    // or subframe. For example, a middle click on the anchor element will
+    // set `target_frame` to `frame`, but end up targeting a new window.
+    // Attach the impression regardless, the embedder will be able to drop
+    // impressions for subframe navigations.
+    absl::optional<WebImpression> impression = GetImpressionForAnchor(this);
+    if (impression)
+      frame_request.SetImpression(*impression);
+  }
 
   Frame* target_frame =
       frame->Tree().FindOrCreateFrameForNavigation(frame_request, target).frame;
@@ -569,14 +523,6 @@ void HTMLAnchorElement::HandleClick(Event& event) {
         FastGetAttribute(html_names::kHreftranslateAttr));
     UseCounter::Count(GetDocument(),
                       WebFeature::kHTMLAnchorElementHrefTranslateAttribute);
-  }
-
-  // Only attach impressions for main frame navigations.
-  if (target_frame && target_frame->IsMainFrame() && request.HasUserGesture() &&
-      HasImpression()) {
-    base::Optional<WebImpression> impression = GetImpressionForNavigation();
-    if (impression)
-      frame_request.SetImpression(*impression);
   }
 
   if (target_frame)
@@ -617,8 +563,9 @@ Node::InsertionNotificationRequest HTMLAnchorElement::InsertedInto(
   LogAddElementIfIsolatedWorldAndInDocument("a", html_names::kHrefAttr);
 
   Document& top_document = GetDocument().TopDocument();
-  if (AnchorElementMetricsSender::HasAnchorElementMetricsSender(top_document))
+  if (AnchorElementMetricsSender::HasAnchorElementMetricsSender(top_document)) {
     AnchorElementMetricsSender::From(top_document)->AddAnchorElement(*this);
+  }
 
   return request;
 }

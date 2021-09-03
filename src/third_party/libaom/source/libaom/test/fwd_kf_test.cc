@@ -45,8 +45,7 @@ class ForwardKeyTest
   virtual ~ForwardKeyTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cpu_used_ = 2;
@@ -142,8 +141,7 @@ class ForwardKeyPresenceTestLarge
   virtual ~ForwardKeyPresenceTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = end_usage_check_;

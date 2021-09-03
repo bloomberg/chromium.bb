@@ -7,13 +7,12 @@
 namespace security_interstitials {
 
 const base::Feature kInsecureFormSubmissionInterstitial{
-    "InsecureFormSubmissionInterstitial", base::FEATURE_DISABLED_BY_DEFAULT};
+    "InsecureFormSubmissionInterstitial", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char kInsecureFormSubmissionInterstitialMode[] = "mode";
-const char kInsecureFormSubmissionInterstitialModeIncludeRedirects[] =
+const char kInsecureFormSubmissionInterstitialModeIncludeAllRedirects[] =
     "include-redirects";
-const char
-    kInsecureFormSubmissionInterstitialModeIncludeRedirectsWithFormData[] =
-        "include-redirects-with-form-data";
+const char kInsecureFormSubmissionInterstitialModeNoRedirects[] =
+    "no-redirects";
 
 }  // namespace security_interstitials

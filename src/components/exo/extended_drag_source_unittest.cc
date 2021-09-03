@@ -18,7 +18,7 @@
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
-#include "components/exo/test/exo_test_file_helper.h"
+#include "components/exo/test/exo_test_data_exchange_delegate.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -45,7 +45,7 @@ class TestDataSourceDelegate : public DataSourceDelegate {
 
   // Overridden from DataSourceDelegate:
   void OnDataSourceDestroying(DataSource* device) override { delete this; }
-  void OnTarget(const base::Optional<std::string>& mime_type) override {}
+  void OnTarget(const absl::optional<std::string>& mime_type) override {}
   void OnSend(const std::string& mime_type, base::ScopedFD fd) override {}
   void OnCancelled() override { cancelled_ = true; }
   void OnDndDropPerformed() override {}
@@ -113,7 +113,8 @@ class ExtendedDragSourceTest : public test::ExoTestBase {
     drag_drop_controller_->set_should_block_during_drag_drop(false);
     drag_drop_controller_->set_enabled(true);
 
-    seat_ = std::make_unique<Seat>();
+    seat_ =
+        std::make_unique<Seat>(std::make_unique<TestDataExchangeDelegate>());
     data_source_ = std::make_unique<DataSource>(new TestDataSourceDelegate);
     extended_drag_source_ = std::make_unique<ExtendedDragSource>(
         data_source_.get(), new TestExtendedDragSourceDelegate(
@@ -134,7 +135,7 @@ class ExtendedDragSourceTest : public test::ExoTestBase {
                                 int operation,
                                 ui::mojom::DragEventSource source) {
     auto data = std::make_unique<ui::OSExchangeData>();
-    data->SetString(base::UTF8ToUTF16("I am being dragged"));
+    data->SetString(u"I am being dragged");
     drag_drop_controller_->set_toplevel_window_drag_delegate(
         extended_drag_source_.get());
     drag_drop_controller_->StartDragAndDrop(std::move(data),
@@ -157,12 +158,11 @@ class ExtendedDragSourceTest : public test::ExoTestBase {
 
 TEST_F(ExtendedDragSourceTest, DestroySource) {
   Surface origin;
-  TestFileHelper file_helper;
 
   // Give |origin| a root window and start DragDropOperation.
   GetContext()->AddChild(origin.window());
-  seat_->StartDrag(&file_helper, data_source_.get(), &origin, /*icon=*/nullptr,
-                   ui::mojom::DragEventSource::kMouse);
+  seat_->StartDrag(data_source_.get(), &origin,
+                   /*icon=*/nullptr, ui::mojom::DragEventSource::kMouse);
 
   // Ensure that destroying the data source invalidates its extended_drag_source
   // counterpart for the rest of its lifetime.

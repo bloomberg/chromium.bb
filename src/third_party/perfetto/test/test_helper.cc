@@ -16,6 +16,7 @@
 
 #include "test/test_helper.h"
 
+#include "perfetto/base/compiler.h"
 #include "perfetto/ext/tracing/core/trace_packet.h"
 #include "perfetto/ext/tracing/ipc/default_socket.h"
 #include "perfetto/tracing/core/tracing_service_state.h"
@@ -24,24 +25,51 @@
 
 namespace perfetto {
 
-uint64_t TestHelper::next_instance_num_ = 0;
-
-// If we're building on Android and starting the daemons ourselves,
-// create the sockets in a world-writable location.
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) && \
-    PERFETTO_BUILDFLAG(PERFETTO_START_DAEMONS)
-#define TEST_PRODUCER_SOCK_NAME "/data/local/tmp/traced_producer"
-#define TEST_CONSUMER_SOCK_NAME "/data/local/tmp/traced_consumer"
+namespace {
+const char* ProducerSocketForMode(TestHelper::Mode mode) {
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+  base::ignore_result(mode);
+  return ::perfetto::GetProducerSocket();
 #else
-#define TEST_PRODUCER_SOCK_NAME ::perfetto::GetProducerSocket()
-#define TEST_CONSUMER_SOCK_NAME ::perfetto::GetConsumerSocket()
+  switch (mode) {
+    case TestHelper::Mode::kStartDaemons:
+      return "/data/local/tmp/traced_producer";
+    case TestHelper::Mode::kUseSystemService:
+      return ::perfetto::GetProducerSocket();
+  }
+#endif
+}
+
+const char* ConsumerSocketForMode(TestHelper::Mode mode) {
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+  base::ignore_result(mode);
+  return ::perfetto::GetConsumerSocket();
+#else
+  switch (mode) {
+    case TestHelper::Mode::kStartDaemons:
+      return "/data/local/tmp/traced_consumer";
+    case TestHelper::Mode::kUseSystemService:
+      return ::perfetto::GetConsumerSocket();
+  }
+#endif
+}
+}  // namespace
+
+uint64_t TestHelper::next_instance_num_ = 0;
+#if PERFETTO_BUILDFLAG(PERFETTO_START_DAEMONS)
+TestHelper::Mode TestHelper::kDefaultMode = Mode::kStartDaemons;
+#else
+TestHelper::Mode TestHelper::kDefaultMode = Mode::kUseSystemService;
 #endif
 
-TestHelper::TestHelper(base::TestTaskRunner* task_runner)
+TestHelper::TestHelper(base::TestTaskRunner* task_runner, Mode mode)
     : instance_num_(next_instance_num_++),
       task_runner_(task_runner),
-      service_thread_(TEST_PRODUCER_SOCK_NAME, TEST_CONSUMER_SOCK_NAME),
-      fake_producer_thread_(TEST_PRODUCER_SOCK_NAME,
+      mode_(mode),
+      producer_socket_(ProducerSocketForMode(mode)),
+      consumer_socket_(ConsumerSocketForMode(mode)),
+      service_thread_(producer_socket_, consumer_socket_),
+      fake_producer_thread_(producer_socket_,
                             WrapTask(CreateCheckpoint("producer.connect")),
                             WrapTask(CreateCheckpoint("producer.setup")),
                             WrapTask(CreateCheckpoint("producer.enabled"))) {}
@@ -56,9 +84,10 @@ void TestHelper::OnDisconnect() {
 
 void TestHelper::OnTracingDisabled(const std::string& /*error*/) {
   std::move(on_stop_tracing_callback_)();
+  on_stop_tracing_callback_ = nullptr;
 }
 
-void TestHelper::OnTraceData(std::vector<TracePacket> packets, bool has_more) {
+void TestHelper::ReadTraceData(std::vector<TracePacket> packets) {
   for (auto& encoded_packet : packets) {
     protos::gen::TracePacket packet;
     PERFETTO_CHECK(
@@ -72,20 +101,18 @@ void TestHelper::OnTraceData(std::vector<TracePacket> packets, bool has_more) {
     PERFETTO_CHECK(packet.has_trusted_uid());
     trace_.push_back(std::move(packet));
   }
+}
 
+void TestHelper::OnTraceData(std::vector<TracePacket> packets, bool has_more) {
+  ReadTraceData(std::move(packets));
   if (!has_more) {
     std::move(on_packets_finished_callback_)();
   }
 }
 
-void TestHelper::StartService() {
-  service_thread_.Start();
-}
-
 void TestHelper::StartServiceIfRequired() {
-#if PERFETTO_BUILDFLAG(PERFETTO_START_DAEMONS)
-  StartService();
-#endif
+  if (mode_ == Mode::kStartDaemons)
+    service_thread_.Start();
 }
 
 FakeProducer* TestHelper::ConnectFakeProducer() {
@@ -100,8 +127,7 @@ void TestHelper::ConnectConsumer() {
   cur_consumer_num_++;
   on_connect_callback_ = CreateCheckpoint("consumer.connected." +
                                           std::to_string(cur_consumer_num_));
-  endpoint_ =
-      ConsumerIPCClient::Connect(TEST_CONSUMER_SOCK_NAME, this, task_runner_);
+  endpoint_ = ConsumerIPCClient::Connect(consumer_socket_, this, task_runner_);
 }
 
 void TestHelper::DetachConsumer(const std::string& key) {
@@ -123,6 +149,18 @@ bool TestHelper::AttachConsumer(const std::string& key) {
   return success;
 }
 
+bool TestHelper::SaveTraceForBugreportAndWait() {
+  bool success = false;
+  auto checkpoint = CreateCheckpoint("bugreport");
+  auto callback = [&success, checkpoint](bool s, const std::string&) {
+    success = s;
+    checkpoint();
+  };
+  endpoint_->SaveTraceForBugreport(callback);
+  RunUntilCheckpoint("bugreport");
+  return success;
+}
+
 void TestHelper::CreateProducerProvidedSmb() {
   fake_producer_thread_.CreateProducerProvidedSmb();
 }
@@ -141,8 +179,10 @@ void TestHelper::ProduceStartupEventBatch(
 
 void TestHelper::StartTracing(const TraceConfig& config,
                               base::ScopedFile file) {
+  PERFETTO_CHECK(!on_stop_tracing_callback_);
   trace_.clear();
-  on_stop_tracing_callback_ = CreateCheckpoint("stop.tracing");
+  on_stop_tracing_callback_ =
+      CreateCheckpoint("stop.tracing" + std::to_string(++trace_count_));
   endpoint_->EnableTracing(config, std::move(file));
 }
 
@@ -164,6 +204,10 @@ void TestHelper::ReadData(uint32_t read_count) {
   endpoint_->ReadBuffers();
 }
 
+void TestHelper::FreeBuffers() {
+  endpoint_->FreeBuffers();
+}
+
 void TestHelper::WaitForConsumerConnect() {
   RunUntilCheckpoint("consumer.connected." + std::to_string(cur_consumer_num_));
 }
@@ -177,7 +221,8 @@ void TestHelper::WaitForProducerEnabled() {
 }
 
 void TestHelper::WaitForTracingDisabled(uint32_t timeout_ms) {
-  RunUntilCheckpoint("stop.tracing", timeout_ms);
+  RunUntilCheckpoint(std::string("stop.tracing") + std::to_string(trace_count_),
+                     timeout_ms);
 }
 
 void TestHelper::WaitForReadData(uint32_t read_count, uint32_t timeout_ms) {
@@ -226,13 +271,13 @@ void TestHelper::OnTraceStats(bool, const TraceStats&) {}
 void TestHelper::OnObservableEvents(const ObservableEvents&) {}
 
 // static
-const char* TestHelper::GetConsumerSocketName() {
-  return TEST_CONSUMER_SOCK_NAME;
+const char* TestHelper::GetDefaultModeConsumerSocketName() {
+  return ConsumerSocketForMode(TestHelper::kDefaultMode);
 }
 
 // static
-const char* TestHelper::GetProducerSocketName() {
-  return TEST_PRODUCER_SOCK_NAME;
+const char* TestHelper::GetDefaultModeProducerSocketName() {
+  return ProducerSocketForMode(TestHelper::kDefaultMode);
 }
 
 }  // namespace perfetto

@@ -5,8 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_DEFAULT_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_DEFAULT_CONTROLLER_H_
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_controller.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -28,7 +29,7 @@ class ReadableStreamDefaultController : public ReadableStreamController {
   ReadableStreamDefaultController();
 
   // https://streams.spec.whatwg.org/#rs-default-controller-desired-size
-  base::Optional<double> desiredSize() const { return GetDesiredSize(); }
+  absl::optional<double> desiredSize() const { return GetDesiredSize(); }
 
   // https://streams.spec.whatwg.org/#rs-default-controller-close
   void close(ScriptState*, ExceptionState&);
@@ -56,7 +57,7 @@ class ReadableStreamDefaultController : public ReadableStreamController {
                     v8::Local<v8::Value> e);
 
   // https://streams.spec.whatwg.org/#readable-stream-default-controller-get-desired-size
-  base::Optional<double> GetDesiredSize() const;
+  absl::optional<double> GetDesiredSize() const;
 
   //
   // Used by TransformStream
@@ -69,6 +70,9 @@ class ReadableStreamDefaultController : public ReadableStreamController {
 
   static const char* EnqueueExceptionMessage(
       const ReadableStreamDefaultController*);
+
+  bool IsDefaultController() const override { return true; }
+  bool IsByteStreamController() const override { return false; }
 
   void Trace(Visitor*) const override;
 
@@ -123,6 +127,13 @@ class ReadableStreamDefaultController : public ReadableStreamController {
   Member<QueueWithSizes> queue_;
   double strategy_high_water_mark_ = 0.0;
   Member<StrategySizeAlgorithm> strategy_size_algorithm_;
+};
+
+template <>
+struct DowncastTraits<ReadableStreamDefaultController> {
+  static bool AllowFrom(const ReadableStreamController& controller) {
+    return controller.IsDefaultController();
+  }
 };
 
 }  // namespace blink

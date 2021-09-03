@@ -30,7 +30,9 @@ SupportRequirement::SupportRequirement()
 
 SupportRequirement::SupportRequirement(const SupportRequirement &other) = default;
 
-SupportRequirement::~SupportRequirement() {}
+SupportRequirement &SupportRequirement::operator=(const SupportRequirement &other) = default;
+
+SupportRequirement::~SupportRequirement() = default;
 
 InternalFormat::InternalFormat() : texture(), filter(), textureAttachment(), renderbuffer() {}
 
@@ -495,16 +497,18 @@ static GLenum GetNativeInternalFormat(const FunctionsGL *functions,
             result = GL_RGBA8;
         }
 
-        if (features.rgba4IsNotSupportedForColorRendering.enabled &&
-            internalFormat.sizedInternalFormat == GL_RGBA4)
+        if (internalFormat.sizedInternalFormat == GL_RGBA4 &&
+            (features.rgba4IsNotSupportedForColorRendering.enabled ||
+             features.promotePackedFormatsTo8BitPerChannel.enabled))
         {
             // Use an 8-bit format instead
             result = GL_RGBA8;
         }
 
         if (internalFormat.sizedInternalFormat == GL_RGB565 &&
-            !functions->isAtLeastGL(gl::Version(4, 1)) &&
-            !functions->hasGLExtension("GL_ARB_ES2_compatibility"))
+            ((!functions->isAtLeastGL(gl::Version(4, 1)) &&
+              !functions->hasGLExtension("GL_ARB_ES2_compatibility")) ||
+             features.promotePackedFormatsTo8BitPerChannel.enabled))
         {
             // GL_RGB565 is required for basic ES2 functionality but was not added to desktop GL
             // until 4.1.
@@ -691,15 +695,6 @@ static GLenum GetNativeCompressedFormat(const FunctionsGL *functions,
         }
     }
 
-    if (features.avoidDXT1sRGBTextureFormat.enabled)
-    {
-        if (format == GL_COMPRESSED_SRGB_S3TC_DXT1_EXT)
-        {
-            // Pass GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT instead to workaround driver bug.
-            result = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
-        }
-    }
-
     return result;
 }
 
@@ -732,13 +727,13 @@ static GLenum GetNativeType(const FunctionsGL *functions,
             }
         }
     }
-    else if (functions->standard == STANDARD_GL_ES && functions->version == gl::Version(2, 0))
+    else if (functions->isAtLeastGLES(gl::Version(2, 0)))
     {
         // On ES2, convert GL_HALF_FLOAT to GL_HALF_FLOAT_OES as a convenience for internal
         // functions. It should not be possible to get here by a normal glTexImage2D call.
         if (type == GL_HALF_FLOAT)
         {
-            ASSERT(functions->hasGLExtension("GL_OES_texture_half_float"));
+            ASSERT(functions->hasGLESExtension("GL_OES_texture_half_float"));
             result = GL_HALF_FLOAT_OES;
         }
     }

@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/synchronization/condition_variable.h"
@@ -184,10 +185,10 @@ class CustomThreadWatcher : public ThreadWatcher {
             quit_closure.Run();
         },
         base::Unretained(this), quit_closure, expected_state);
-    base::CancelableClosure timeout_closure(base::BindRepeating(
-        [](base::RepeatingClosure quit_closure) {
+    base::CancelableOnceClosure timeout_closure(base::BindOnce(
+        [](base::OnceClosure quit_closure) {
           ADD_FAILURE() << "WaitForWaitStateChange timed out";
-          quit_closure.Run();
+          std::move(quit_closure).Run();
         },
         quit_closure));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -237,8 +238,8 @@ class CustomThreadWatcher : public ThreadWatcher {
         },
         base::Unretained(this), quit_closure, expected_state,
         base::Unretained(&exit_state));
-    base::CancelableClosure timeout_closure(base::BindRepeating(
-        [](base::RepeatingClosure quit_closure) { quit_closure.Run(); },
+    base::CancelableOnceClosure timeout_closure(base::BindOnce(
+        [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
         quit_closure));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, timeout_closure.callback(),
@@ -270,8 +271,8 @@ class CustomThreadWatcher : public ThreadWatcher {
         },
         base::Unretained(this), quit_closure, expected_state,
         base::Unretained(&exit_state));
-    base::CancelableClosure timeout_closure(base::BindRepeating(
-        [](base::RepeatingClosure quit_closure) { quit_closure.Run(); },
+    base::CancelableOnceClosure timeout_closure(base::BindOnce(
+        [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
         quit_closure));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, timeout_closure.callback(),
@@ -316,7 +317,7 @@ class ThreadWatcherTest : public ::testing::Test {
     // Make sure UI and IO threads are started and ready.
     task_environment_.RunIOThreadUntilIdle();
 
-    watchdog_thread_.reset(new WatchDogThread());
+    watchdog_thread_ = std::make_unique<WatchDogThread>();
     watchdog_thread_->StartAndWaitForTesting();
 
     WatchDogThread::PostTask(
@@ -500,7 +501,7 @@ TEST_F(ThreadWatcherTest, ThreadNamesOnlyArgs) {
   while (tokens.GetNext()) {
     std::vector<base::StringPiece> values = base::SplitStringPiece(
         tokens.token_piece(), ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    std::string thread_name = values[0].as_string();
+    std::string thread_name(values[0]);
 
     auto it = crash_on_hang_threads.find(thread_name);
     bool crash_on_hang = (it != crash_on_hang_threads.end());
@@ -529,7 +530,7 @@ TEST_F(ThreadWatcherTest, CrashOnHangThreadsAllArgs) {
   while (tokens.GetNext()) {
     std::vector<base::StringPiece> values = base::SplitStringPiece(
         tokens.token_piece(), ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    std::string thread_name = values[0].as_string();
+    std::string thread_name(values[0]);
 
     auto it = crash_on_hang_threads.find(thread_name);
 

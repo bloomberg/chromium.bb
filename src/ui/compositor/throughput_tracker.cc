@@ -46,16 +46,21 @@ void ThroughputTracker::Start(ThroughputTrackerHost::ReportCallback callback) {
   host_->StartThroughputTracker(id_, std::move(callback));
 }
 
-void ThroughputTracker::Stop() {
+bool ThroughputTracker::Stop() {
   DCHECK(started_);
 
   started_ = false;
   if (host_)
-    host_->StopThroughtputTracker(id_);
+    return host_->StopThroughtputTracker(id_);
+
+  return false;
 }
 
 void ThroughputTracker::Cancel() {
-  DCHECK(started_);
+  // Some code calls Cancel() indirectly after receiving report. Allow this to
+  // happen and make it a no-op. See https://crbug.com/1193382.
+  if (!started_)
+    return;
 
   started_ = false;
   if (host_)

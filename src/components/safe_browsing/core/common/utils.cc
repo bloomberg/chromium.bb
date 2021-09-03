@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
 #include "crypto/sha2.h"
@@ -40,13 +41,13 @@ ChromeUserPopulation::ProfileManagementStatus GetProfileManagementStatus(
     return ChromeUserPopulation::ENTERPRISE_MANAGED;
   else
     return ChromeUserPopulation::NOT_MANAGED;
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   if (!bpc || !bpc->IsEnterpriseManaged())
     return ChromeUserPopulation::NOT_MANAGED;
   return ChromeUserPopulation::ENTERPRISE_MANAGED;
 #else
   return ChromeUserPopulation::UNAVAILABLE;
-#endif  // #if defined(OS_WIN) || defined(OS_CHROMEOS)
+#endif  // #if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void SetDelayInPref(PrefService* prefs,
@@ -88,7 +89,7 @@ bool CanGetReputationOfUrl(const GURL& url) {
   }
 
   if (net::IsLocalhost(url)) {
-    // Includes: "//localhost/", "//localhost.localdomain/", "//127.0.0.1/"
+    // Includes: "//localhost/", "//127.0.0.1/"
     return false;
   }
 
@@ -100,6 +101,54 @@ bool CanGetReputationOfUrl(const GURL& url) {
   }
 
   return true;
+}
+
+ResourceType GetResourceTypeFromRequestDestination(
+    network::mojom::RequestDestination request_destination) {
+  // This doesn't fully convert network::mojom::RequestDestination to
+  // ResourceType since they are not 1:1. It returns kSubResource for kPrefetch,
+  // kFavicon, kXhr, kPing, kNavigationPreloadMainFrame, and
+  // kNavigationPreloadSubFrame.
+  switch (request_destination) {
+    case network::mojom::RequestDestination::kDocument:
+      return ResourceType::kMainFrame;
+    case network::mojom::RequestDestination::kIframe:
+    case network::mojom::RequestDestination::kFrame:
+      return ResourceType::kSubFrame;
+    case network::mojom::RequestDestination::kStyle:
+    case network::mojom::RequestDestination::kXslt:
+      return ResourceType::kStylesheet;
+    case network::mojom::RequestDestination::kScript:
+      return ResourceType::kScript;
+    case network::mojom::RequestDestination::kImage:
+      return ResourceType::kImage;
+    case network::mojom::RequestDestination::kFont:
+      return ResourceType::kFontResource;
+    case network::mojom::RequestDestination::kObject:
+      return ResourceType::kObject;
+    case network::mojom::RequestDestination::kEmbed:
+      return ResourceType::kPluginResource;
+    case network::mojom::RequestDestination::kAudio:
+    case network::mojom::RequestDestination::kTrack:
+    case network::mojom::RequestDestination::kVideo:
+      return ResourceType::kMedia;
+    case network::mojom::RequestDestination::kWorker:
+      return ResourceType::kWorker;
+    case network::mojom::RequestDestination::kSharedWorker:
+      return ResourceType::kSharedWorker;
+    case network::mojom::RequestDestination::kServiceWorker:
+      return ResourceType::kServiceWorker;
+    case network::mojom::RequestDestination::kReport:
+      return ResourceType::kCspReport;
+    case network::mojom::RequestDestination::kAudioWorklet:
+    case network::mojom::RequestDestination::kManifest:
+    case network::mojom::RequestDestination::kPaintWorklet:
+    case network::mojom::RequestDestination::kWebBundle:
+    case network::mojom::RequestDestination::kEmpty:
+      return ResourceType::kSubResource;
+  }
+  NOTREACHED();
+  return ResourceType::kSubResource;
 }
 
 }  // namespace safe_browsing

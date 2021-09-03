@@ -96,12 +96,14 @@ void SecureDnsHandler::OnJavascriptAllowed() {
   pref_registrar_.Init(g_browser_process->local_state());
   pref_registrar_.Add(
       prefs::kDnsOverHttpsMode,
-      base::Bind(&SecureDnsHandler::SendSecureDnsSettingUpdatesToJavascript,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SecureDnsHandler::SendSecureDnsSettingUpdatesToJavascript,
+          base::Unretained(this)));
   pref_registrar_.Add(
       prefs::kDnsOverHttpsTemplates,
-      base::Bind(&SecureDnsHandler::SendSecureDnsSettingUpdatesToJavascript,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SecureDnsHandler::SendSecureDnsSettingUpdatesToJavascript,
+          base::Unretained(this)));
 }
 
 void SecureDnsHandler::OnJavascriptDisallowed() {
@@ -141,8 +143,10 @@ void SecureDnsHandler::SetNetworkContextForTesting(
 }
 
 network::mojom::NetworkContext* SecureDnsHandler::GetNetworkContext() {
-  return content::BrowserContext::GetDefaultStoragePartition(
-             web_ui()->GetWebContents()->GetBrowserContext())
+  return web_ui()
+      ->GetWebContents()
+      ->GetBrowserContext()
+      ->GetDefaultStoragePartition()
       ->GetNetworkContext();
 }
 

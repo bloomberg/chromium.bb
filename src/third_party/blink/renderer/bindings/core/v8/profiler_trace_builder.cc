@@ -53,20 +53,25 @@ void ProfilerTraceBuilder::Trace(Visitor* visitor) const {
 void ProfilerTraceBuilder::AddSample(const v8::CpuProfileNode* node,
                                      base::TimeTicks timestamp) {
   auto* sample = ProfilerSample::Create();
+  // TODO(yoav): This should not use MonotonicTimeToDOMHighResTimeStamp, as
+  // these timestamps are clamped, which makes no sense for traces. Since this
+  // only exposes time to traces, it's fine to define this as statically "cross
+  // origin isolated".
   auto relative_timestamp = Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timestamp, true);
+      time_origin_, timestamp, /*allow_negative_value=*/true,
+      /*cross_origin_isolated_capability=*/true);
 
   sample->setTimestamp(relative_timestamp);
-  if (base::Optional<wtf_size_t> stack_id = GetOrInsertStackId(node))
+  if (absl::optional<wtf_size_t> stack_id = GetOrInsertStackId(node))
     sample->setStackId(*stack_id);
 
   samples_.push_back(sample);
 }
 
-base::Optional<wtf_size_t> ProfilerTraceBuilder::GetOrInsertStackId(
+absl::optional<wtf_size_t> ProfilerTraceBuilder::GetOrInsertStackId(
     const v8::CpuProfileNode* node) {
   if (!node)
-    return base::Optional<wtf_size_t>();
+    return absl::optional<wtf_size_t>();
 
   // Omit frames that don't pass a cross-origin check.
   // Do this at the stack level (rather than the frame level) to avoid
@@ -88,7 +93,7 @@ base::Optional<wtf_size_t> ProfilerTraceBuilder::GetOrInsertStackId(
   auto* stack = ProfilerStack::Create();
   wtf_size_t frame_id = GetOrInsertFrameId(node);
   stack->setFrameId(frame_id);
-  if (base::Optional<int> parent_stack_id =
+  if (absl::optional<int> parent_stack_id =
           GetOrInsertStackId(node->GetParent()))
     stack->setParentId(*parent_stack_id);
 

@@ -175,6 +175,14 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
   int no_pred_cost;
   int t_pred_cost = INT_MAX;
   int tile_col, tile_row, mi_row, mi_col;
+
+  if (!seg->update_map) return;
+  if (cm->features.primary_ref_frame == PRIMARY_REF_NONE) {
+    seg->temporal_update = 0;
+    assert(seg->update_data == 1);
+    return;
+  }
+
   unsigned temporal_predictor_count[SEG_TEMPORAL_PRED_CTXS][2] = { { 0 } };
   unsigned no_pred_segcounts[MAX_SEGMENTS] = { 0 };
   unsigned t_unpred_seg_counts[MAX_SEGMENTS] = { 0 };
@@ -194,15 +202,15 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
                  tile_info.mi_row_start * cm->mi_params.mi_stride +
                  tile_info.mi_col_start;
         for (mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
-             mi_row += cm->seq_params.mib_size,
-            mi_ptr += cm->seq_params.mib_size * cm->mi_params.mi_stride) {
+             mi_row += cm->seq_params->mib_size,
+            mi_ptr += cm->seq_params->mib_size * cm->mi_params.mi_stride) {
           MB_MODE_INFO **mi = mi_ptr;
           for (mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
-               mi_col += cm->seq_params.mib_size,
-              mi += cm->seq_params.mib_size) {
+               mi_col += cm->seq_params->mib_size,
+              mi += cm->seq_params->mib_size) {
             count_segs_sb(cm, xd, &tile_info, mi, no_pred_segcounts,
                           temporal_predictor_count, t_unpred_seg_counts, mi_row,
-                          mi_col, cm->seq_params.sb_size);
+                          mi_col, cm->seq_params->sb_size);
           }
         }
       }

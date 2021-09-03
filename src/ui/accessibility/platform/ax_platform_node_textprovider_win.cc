@@ -300,9 +300,9 @@ ITextRangeProvider* AXPlatformNodeTextProviderWin::GetRangeFromChild(
       descendant->GetDelegate()->CreateTextPositionAt(0)->AsLeafTextPosition();
 
   AXNodePosition::AXPositionInstance end;
-  if (descendant->IsDocument()) {
-    // Fast path for getting the range of the web root.
-    end = start->CreatePositionAtEndOfDocument();
+  if (descendant->IsPlatformDocument()) {
+    // Fast path for getting the range of the web or PDF root.
+    end = start->CreatePositionAtEndOfContent();
   } else if (descendant->GetChildCount() == 0) {
     end = descendant->GetDelegate()
               ->CreateTextPositionAt(0)
@@ -321,6 +321,19 @@ ITextRangeProvider* AXPlatformNodeTextProviderWin::GetRangeFromChild(
 
   return AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
       ancestor, std::move(start), std::move(end));
+}
+
+ITextRangeProvider* AXPlatformNodeTextProviderWin::CreateDegenerateRangeAtStart(
+    ui::AXPlatformNodeWin* node) {
+  DCHECK(node);
+  DCHECK(node->GetDelegate());
+
+  // Create a degenerate range positioned at the node's start.
+  AXNodePosition::AXPositionInstance start, end;
+  start = node->GetDelegate()->CreateTextPositionAt(0)->AsLeafTextPosition();
+  end = start->Clone();
+  return AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+      node, std::move(start), std::move(end));
 }
 
 ui::AXPlatformNodeWin* AXPlatformNodeTextProviderWin::owner() const {

@@ -50,16 +50,16 @@ FrameCaret::FrameCaret(LocalFrame& frame,
     : selection_editor_(&selection_editor),
       frame_(frame),
       display_item_client_(new CaretDisplayItemClient()),
-      caret_blink_timer_(new TaskRunnerTimer<FrameCaret>(
-          frame.GetTaskRunner(TaskType::kInternalDefault),
-          this,
-          &FrameCaret::CaretBlinkTimerFired)) {}
+      caret_blink_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
+                         this,
+                         &FrameCaret::CaretBlinkTimerFired) {}
 
 FrameCaret::~FrameCaret() = default;
 
 void FrameCaret::Trace(Visitor* visitor) const {
   visitor->Trace(selection_editor_);
   visitor->Trace(frame_);
+  visitor->Trace(caret_blink_timer_);
 }
 
 const PositionWithAffinity FrameCaret::CaretPosition() const {
@@ -78,12 +78,6 @@ bool FrameCaret::IsActive() const {
 void FrameCaret::UpdateAppearance() {
   DCHECK_GE(frame_->GetDocument()->Lifecycle().GetState(),
             DocumentLifecycle::kLayoutClean);
-  // Paint a block cursor instead of a caret in overtype mode unless the caret
-  // is at the end of a line (in this case the FrameSelection will paint a
-  // blinking caret as usual).
-  const bool paint_block_cursor =
-      should_show_block_cursor_ && IsActive() &&
-      !IsLogicalEndOfLine(CreateVisiblePosition(CaretPosition()));
 
   bool new_should_show_caret = ShouldShowCaret();
   if (new_should_show_caret != should_show_caret_) {
@@ -91,8 +85,7 @@ void FrameCaret::UpdateAppearance() {
     ScheduleVisualUpdateForPaintInvalidationIfNeeded();
   }
 
-  bool should_blink = !paint_block_cursor && should_show_caret_;
-  if (!should_blink) {
+  if (!should_show_caret_) {
     StopCaretBlinkTimer();
     return;
   }
@@ -102,22 +95,22 @@ void FrameCaret::UpdateAppearance() {
 }
 
 void FrameCaret::StopCaretBlinkTimer() {
-  if (caret_blink_timer_->IsActive() ||
+  if (caret_blink_timer_.IsActive() ||
       display_item_client_->IsVisibleIfActive())
     ScheduleVisualUpdateForPaintInvalidationIfNeeded();
   display_item_client_->SetVisibleIfActive(false);
-  caret_blink_timer_->Stop();
+  caret_blink_timer_.Stop();
 }
 
 void FrameCaret::StartBlinkCaret() {
   // Start blinking with a black caret. Be sure not to restart if we're
   // already blinking in the right location.
-  if (caret_blink_timer_->IsActive())
+  if (caret_blink_timer_.IsActive())
     return;
 
   base::TimeDelta blink_interval = LayoutTheme::GetTheme().CaretBlinkInterval();
   if (!blink_interval.is_zero())
-    caret_blink_timer_->StartRepeating(blink_interval, FROM_HERE);
+    caret_blink_timer_.StartRepeating(blink_interval, FROM_HERE);
 
   display_item_client_->SetVisibleIfActive(true);
   ScheduleVisualUpdateForPaintInvalidationIfNeeded();
@@ -161,18 +154,21 @@ IntRect FrameCaret::AbsoluteCaretBounds() const {
   return AbsoluteCaretBoundsOf(CaretPosition());
 }
 
-void FrameCaret::SetShouldShowBlockCursor(bool should_show_block_cursor) {
-  should_show_block_cursor_ = should_show_block_cursor;
-  ScheduleVisualUpdateForPaintInvalidationIfNeeded();
-}
-
 bool FrameCaret::ShouldPaintCaret(const LayoutBlock& block) const {
   return display_item_client_->ShouldPaintCaret(block);
+}
+
+bool FrameCaret::ShouldPaintCaret(
+    const NGPhysicalBoxFragment& box_fragment) const {
+  return display_item_client_->ShouldPaintCaret(box_fragment);
 }
 
 void FrameCaret::PaintCaret(GraphicsContext& context,
                             const PhysicalOffset& paint_offset) const {
   display_item_client_->PaintCaret(context, paint_offset, DisplayItem::kCaret);
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      frame_->Selection().IsHandleVisible() && !frame_->Selection().IsHidden())
+    display_item_client_->RecordSelection(context, paint_offset);
 }
 
 bool FrameCaret::ShouldShowCaret() const {
@@ -219,8 +215,7 @@ void FrameCaret::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
 
 void FrameCaret::RecreateCaretBlinkTimerForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  caret_blink_timer_.reset(new TaskRunnerTimer<FrameCaret>(
-      std::move(task_runner), this, &FrameCaret::CaretBlinkTimerFired));
+  caret_blink_timer_.MoveToNewTaskRunner(std::move(task_runner));
 }
 
 bool FrameCaret::IsVisibleIfActiveForTesting() const {

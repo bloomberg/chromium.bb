@@ -5,10 +5,7 @@
 #ifndef CHROME_BROWSER_PLATFORM_UTIL_H_
 #define CHROME_BROWSER_PLATFORM_UTIL_H_
 
-#include <string>
-
 #include "base/callback_forward.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "ui/gfx/native_widget_types.h"
@@ -102,6 +99,9 @@ bool IsVisible(gfx::NativeView view);
 // gesture, if enabled in System Preferences. This function returns true if
 // the feature is supported and enabled, and false otherwise.
 bool IsSwipeTrackingFromScrollEventsEnabled();
+
+// Returns the active window which accepts keyboard inputs.
+NSWindow* GetActiveWindow();
 #endif
 
 // Returns true if the given browser window is in locked fullscreen mode

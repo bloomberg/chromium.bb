@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.reengagement.ReengagementNotificationController;
 import org.chromium.chrome.browser.share.ShareDelegate;
@@ -37,11 +39,12 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             ActivityTabProvider tabProvider, ObservableSupplier<Profile> profileSupplier,
             ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
             Supplier<ContextualSearchManager> contextualSearchManagerSupplier,
-            ObservableSupplier<TabModelSelector> tabModelSelectorSupplier) {
+            ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
+            BrowserControlsManager browserControlsManager) {
         super(activity, null, shareDelegateSupplier, tabProvider, profileSupplier,
                 bookmarkBridgeSupplier, contextualSearchManagerSupplier, tabModelSelectorSupplier,
                 new OneshotSupplierImpl<>(), new OneshotSupplierImpl<>(),
-                new OneshotSupplierImpl<>(), () -> null);
+                new OneshotSupplierImpl<>(), () -> null, browserControlsManager);
         mToolbarCoordinator = customTabToolbarCoordinator;
         mNavigationController = customTabNavigationController;
     }
@@ -66,5 +69,13 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                     mActivity, tracker, ReengagementActivity.class);
             controller.tryToReengageTheUser();
         }));
+    }
+
+    @Override
+    protected boolean shouldAllowThemingInNightMode() {
+        @ActivityType
+        int activityType = mActivity.getActivityType();
+        return activityType == ActivityType.TRUSTED_WEB_ACTIVITY
+                || activityType == ActivityType.WEB_APK;
     }
 }

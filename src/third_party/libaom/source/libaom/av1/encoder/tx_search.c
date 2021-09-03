@@ -12,7 +12,6 @@
 #include "av1/common/cfl.h"
 #include "av1/common/reconintra.h"
 #include "av1/encoder/block.h"
-#include "av1/encoder/encodetxb.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
 #include "av1/common/idct.h"
 #include "av1/encoder/model_rd.h"
@@ -20,6 +19,7 @@
 #include "av1/encoder/rdopt_utils.h"
 #include "av1/encoder/tx_prune_model_weights.h"
 #include "av1/encoder/tx_search.h"
+#include "av1/encoder/txb_rdopt.h"
 
 struct rdcost_block_args {
   const AV1_COMP *cpi;
@@ -263,10 +263,12 @@ static INLINE void init_rd_record_tree(TXB_RD_INFO_NODE *tree,
 static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize,
                                    TXB_RD_INFO_NODE *dst_rd_info) {
   TxfmSearchInfo *txfm_info = &x->txfm_search_info;
-  TXB_RD_RECORD *rd_records_table[4] = { txfm_info->txb_rd_record_8X8,
-                                         txfm_info->txb_rd_record_16X16,
-                                         txfm_info->txb_rd_record_32X32,
-                                         txfm_info->txb_rd_record_64X64 };
+  TXB_RD_RECORD *rd_records_table[4] = {
+    txfm_info->txb_rd_records->txb_rd_record_8X8,
+    txfm_info->txb_rd_records->txb_rd_record_16X16,
+    txfm_info->txb_rd_records->txb_rd_record_32X32,
+    txfm_info->txb_rd_records->txb_rd_record_64X64
+  };
   const TX_SIZE max_square_tx_size = max_txsize_lookup[bsize];
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
@@ -313,8 +315,8 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize,
             cur_diff_row += diff_stride;
           }
           const int hash = av1_get_crc32c_value(
-              &txfm_info->mb_rd_record.crc_calculator, (uint8_t *)hash_data,
-              2 * cur_tx_bw * cur_tx_bh);
+              &txfm_info->txb_rd_records->mb_rd_record.crc_calculator,
+              (uint8_t *)hash_data, 2 * cur_tx_bw * cur_tx_bh);
           // Find corresponding RD info based on the hash value.
           const int record_idx =
               row_in_sb * (MAX_MIB_SIZE >> (tx_size_idx + 1)) + col_in_sb;
@@ -336,9 +338,9 @@ static INLINE uint32_t get_block_residue_hash(MACROBLOCK *x, BLOCK_SIZE bsize) {
   const int rows = block_size_high[bsize];
   const int cols = block_size_wide[bsize];
   const int16_t *diff = x->plane[0].src_diff;
-  const uint32_t hash =
-      av1_get_crc32c_value(&x->txfm_search_info.mb_rd_record.crc_calculator,
-                           (uint8_t *)diff, 2 * rows * cols);
+  const uint32_t hash = av1_get_crc32c_value(
+      &x->txfm_search_info.txb_rd_records->mb_rd_record.crc_calculator,
+      (uint8_t *)diff, 2 * rows * cols);
   return (hash << 5) + bsize;
 }
 
@@ -616,7 +618,7 @@ static AOM_INLINE void get_energy_distribution_fine(
     assert(bw <= 32);
     assert(bh <= 32);
     assert(((bw - 1) >> w_shift) + (((bh - 1) >> h_shift) << 2) == 15);
-    if (cpi->common.seq_params.use_highbitdepth) {
+    if (cpi->common.seq_params->use_highbitdepth) {
       const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
       const uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
       for (int i = 0; i < bh; ++i)
@@ -641,43 +643,43 @@ static AOM_INLINE void get_energy_distribution_fine(
     const BLOCK_SIZE subsize = (BLOCK_SIZE)f_index;
     assert(block_size_wide[bsize] == 4 * block_size_wide[subsize]);
     assert(block_size_high[bsize] == 4 * block_size_high[subsize]);
-    cpi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[0]);
-    cpi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
-                            &esq[1]);
-    cpi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
-                            &esq[2]);
-    cpi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
-                            dst_stride, &esq[3]);
+    cpi->ppi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[0]);
+    cpi->ppi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4,
+                                 dst_stride, &esq[1]);
+    cpi->ppi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2,
+                                 dst_stride, &esq[2]);
+    cpi->ppi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+                                 dst_stride, &esq[3]);
     src += bh / 4 * src_stride;
     dst += bh / 4 * dst_stride;
 
-    cpi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[4]);
-    cpi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
-                            &esq[5]);
-    cpi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
-                            &esq[6]);
-    cpi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
-                            dst_stride, &esq[7]);
+    cpi->ppi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[4]);
+    cpi->ppi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4,
+                                 dst_stride, &esq[5]);
+    cpi->ppi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2,
+                                 dst_stride, &esq[6]);
+    cpi->ppi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+                                 dst_stride, &esq[7]);
     src += bh / 4 * src_stride;
     dst += bh / 4 * dst_stride;
 
-    cpi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[8]);
-    cpi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
-                            &esq[9]);
-    cpi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
-                            &esq[10]);
-    cpi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
-                            dst_stride, &esq[11]);
+    cpi->ppi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[8]);
+    cpi->ppi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4,
+                                 dst_stride, &esq[9]);
+    cpi->ppi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2,
+                                 dst_stride, &esq[10]);
+    cpi->ppi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+                                 dst_stride, &esq[11]);
     src += bh / 4 * src_stride;
     dst += bh / 4 * dst_stride;
 
-    cpi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[12]);
-    cpi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
-                            &esq[13]);
-    cpi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
-                            &esq[14]);
-    cpi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
-                            dst_stride, &esq[15]);
+    cpi->ppi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[12]);
+    cpi->ppi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4,
+                                 dst_stride, &esq[13]);
+    cpi->ppi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2,
+                                 dst_stride, &esq[14]);
+    cpi->ppi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+                                 dst_stride, &esq[15]);
   }
 
   double total = (double)esq[0] + esq[1] + esq[2] + esq[3] + esq[4] + esq[5] +
@@ -767,13 +769,13 @@ static AOM_INLINE void get_2x2_normalized_sses_and_sads(
 
         if (sse_norm_arr) {
           unsigned int this_sse;
-          cpi->fn_ptr[tx_bsize_half].vf(this_src, src_stride, this_dst,
-                                        dst_stride, &this_sse);
+          cpi->ppi->fn_ptr[tx_bsize_half].vf(this_src, src_stride, this_dst,
+                                             dst_stride, &this_sse);
           sse_norm_arr[row * 2 + col] = (double)this_sse / num_samples_half;
         }
 
         if (sad_norm_arr) {
-          const unsigned int this_sad = cpi->fn_ptr[tx_bsize_half].sdf(
+          const unsigned int this_sad = cpi->ppi->fn_ptr[tx_bsize_half].sdf(
               this_src, src_stride, this_dst, dst_stride);
           sad_norm_arr[row * 2 + col] = (double)this_sad / num_samples_half;
         }
@@ -830,11 +832,11 @@ static AOM_INLINE void PrintTransformUnitStats(
   const uint8_t *const dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << MI_SIZE_LOG2];
   unsigned int sse;
-  cpi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &sse);
+  cpi->ppi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &sse);
   const double sse_norm = (double)sse / num_samples;
 
   const unsigned int sad =
-      cpi->fn_ptr[tx_bsize].sdf(src, src_stride, dst, dst_stride);
+      cpi->ppi->fn_ptr[tx_bsize].sdf(src, src_stride, dst, dst_stride);
   const double sad_norm = (double)sad / num_samples;
 
   fprintf(fout, " %g %g", sse_norm, sad_norm);
@@ -903,8 +905,8 @@ static int64_t get_sse(const AV1_COMP *cpi, const MACROBLOCK *x) {
 
     if (x->skip_chroma_rd && plane) continue;
 
-    cpi->fn_ptr[bs].vf(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride,
-                       &sse);
+    cpi->ppi->fn_ptr[bs].vf(p->src.buf, p->src.stride, pd->dst.buf,
+                            pd->dst.stride, &sse);
     total_sse += sse;
   }
   total_sse <<= 4;
@@ -1028,7 +1030,7 @@ static AOM_INLINE void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   const double sse_norm = (double)sse / num_samples;
 
   const unsigned int sad =
-      cpi->fn_ptr[plane_bsize].sdf(src, src_stride, dst, dst_stride);
+      cpi->ppi->fn_ptr[plane_bsize].sdf(src, src_stride, dst, dst_stride);
   const double sad_norm =
       (double)sad / (1 << num_pels_log2_lookup[plane_bsize]);
 
@@ -1181,7 +1183,7 @@ static unsigned pixel_dist_visible_only(
   unsigned sse;
 
   if (txb_rows == visible_rows && txb_cols == visible_cols) {
-    cpi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &sse);
+    cpi->ppi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &sse);
     return sse;
   }
 
@@ -1293,7 +1295,8 @@ static uint32_t get_intra_txb_hash(MACROBLOCK *x, int plane, int blk_row,
     }
     hash_data = (uint8_t *)tmp_data;
   }
-  CRC32C *crc = &x->txfm_search_info.mb_rd_record.crc_calculator;
+  CRC32C *crc =
+      &x->txfm_search_info.txb_rd_records->mb_rd_record.crc_calculator;
   const uint32_t hash = av1_get_crc32c_value(crc, hash_data, 2 * txb_w * txb_h);
   return (hash << 5) + tx_size;
 }
@@ -1316,13 +1319,14 @@ static INLINE int is_intra_hash_match(const AV1_COMP *cpi, MACROBLOCK *x,
          plane == 0 && tx_size_wide[tx_size] == tx_size_high[tx_size]);
   const uint32_t intra_hash =
       get_intra_txb_hash(x, plane, blk_row, blk_col, plane_bsize, tx_size);
-  const int intra_hash_idx =
-      find_tx_size_rd_info(&txfm_info->txb_rd_record_intra, intra_hash);
-  *intra_txb_rd_info =
-      &txfm_info->txb_rd_record_intra.tx_rd_info[intra_hash_idx];
+  const int intra_hash_idx = find_tx_size_rd_info(
+      &txfm_info->txb_rd_records->txb_rd_record_intra, intra_hash);
+  *intra_txb_rd_info = &txfm_info->txb_rd_records->txb_rd_record_intra
+                            .tx_rd_info[intra_hash_idx];
   *cur_joint_ctx = (txb_ctx->dc_sign_ctx << 8) + txb_ctx->txb_skip_ctx;
   if ((*intra_txb_rd_info)->entropy_context == *cur_joint_ctx &&
-      txfm_info->txb_rd_record_intra.tx_rd_info[intra_hash_idx].valid) {
+      txfm_info->txb_rd_records->txb_rd_record_intra.tx_rd_info[intra_hash_idx]
+          .valid) {
     xd->tx_type_map[tx_type_map_idx] = (*intra_txb_rd_info)->tx_type;
     const TX_TYPE ref_tx_type =
         av1_get_tx_type(xd, get_plane_type(plane), blk_row, blk_col, tx_size,
@@ -1991,10 +1995,14 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
           ? fimode_to_intradir[mbmi->filter_intra_mode_info.filter_intra_mode]
           : mbmi->mode;
   uint16_t ext_tx_used_flag =
-      cpi->sf.tx_sf.tx_type_search.use_reduced_intra_txset &&
+      cpi->sf.tx_sf.tx_type_search.use_reduced_intra_txset != 0 &&
               tx_set_type == EXT_TX_SET_DTT4_IDTX_1DDCT
           ? av1_reduced_intra_tx_used_flag[intra_dir]
           : av1_ext_tx_used_flag[tx_set_type];
+
+  if (cpi->sf.tx_sf.tx_type_search.use_reduced_intra_txset == 2)
+    ext_tx_used_flag &= av1_derived_intra_tx_used_flag[intra_dir];
+
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_up_map[tx_size] > TX_32X32 ||
       ext_tx_used_flag == 0x0001 ||
       (is_inter && cpi->oxcf.txfm_cfg.use_inter_dct_only) ||
@@ -2016,7 +2024,8 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
     assert(plane == 0);
     allowed_tx_mask = ext_tx_used_flag;
     int num_allowed = 0;
-    const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
+    const FRAME_UPDATE_TYPE update_type =
+        get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
     const int *tx_type_probs =
         cpi->frame_probs.tx_type_probs[update_type][tx_size];
     int i;
@@ -2089,25 +2098,8 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
 
 #if CONFIG_RD_DEBUG
 static INLINE void update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
-                                         TX_SIZE tx_size, int blk_row,
-                                         int blk_col, int txb_coeff_cost) {
-  (void)blk_row;
-  (void)blk_col;
-  (void)tx_size;
+                                         int txb_coeff_cost) {
   rd_stats->txb_coeff_cost[plane] += txb_coeff_cost;
-
-  {
-    const int txb_h = tx_size_high_unit[tx_size];
-    const int txb_w = tx_size_wide_unit[tx_size];
-    int idx, idy;
-    for (idy = 0; idy < txb_h; ++idy)
-      for (idx = 0; idx < txb_w; ++idx)
-        rd_stats->txb_coeff_cost_map[plane][blk_row + idy][blk_col + idx] = 0;
-
-    rd_stats->txb_coeff_cost_map[plane][blk_row][blk_col] = txb_coeff_cost;
-  }
-  assert(blk_row < TXB_COEFF_COST_MAP_SIZE);
-  assert(blk_col < TXB_COEFF_COST_MAP_SIZE);
 }
 #endif
 
@@ -2345,7 +2337,7 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // TODO(any): Experiment with variance and mean based thresholds
   const int perform_block_coeff_opt =
       ((uint64_t)block_mse_q8 <=
-       (uint64_t)txfm_params->coeff_opt_dist_threshold * qstep * qstep);
+       (uint64_t)txfm_params->coeff_opt_thresholds[0] * qstep * qstep);
   skip_trellis |= !perform_block_coeff_opt;
 
   // Flag to indicate if distortion should be calculated in transform domain or
@@ -2403,8 +2395,7 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
     skip_trellis_based_on_satd[tx_type] = skip_trellis_opt_based_on_satd(
         x, &quant_param, plane, block, tx_size, cpi->oxcf.q_cfg.quant_b_adapt,
-        qstep, txfm_params->coeff_opt_satd_threshold, skip_trellis,
-        dc_only_blk);
+        qstep, txfm_params->coeff_opt_thresholds[1], skip_trellis, dc_only_blk);
 
     av1_quant(x, plane, block, &txfm_param, &quant_param);
 
@@ -2667,8 +2658,7 @@ static AOM_INLINE void try_tx_block_no_split(
            RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse));
   if (pick_skip_txfm) {
 #if CONFIG_RD_DEBUG
-    update_txb_coeff_cost(rd_stats, 0, tx_size, blk_row, blk_col,
-                          zero_blk_rate - rd_stats->rate);
+    update_txb_coeff_cost(rd_stats, 0, zero_blk_rate - rd_stats->rate);
 #endif  // CONFIG_RD_DEBUG
     rd_stats->rate = zero_blk_rate;
     rd_stats->dist = rd_stats->sse;
@@ -2713,11 +2703,12 @@ static AOM_INLINE void try_tx_block_split(
       x->mode_costs.txfm_partition_cost[txfm_partition_ctx][1];
 
   for (int r = 0, blk_idx = 0; r < txb_height; r += sub_txb_height) {
+    const int offsetr = blk_row + r;
+    if (offsetr >= max_blocks_high) break;
     for (int c = 0; c < txb_width; c += sub_txb_width, ++blk_idx) {
       assert(blk_idx < 4);
-      const int offsetr = blk_row + r;
       const int offsetc = blk_col + c;
-      if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
+      if (offsetc >= max_blocks_wide) continue;
 
       RD_STATS this_rd_stats;
       int this_cost_valid = 1;
@@ -3166,8 +3157,7 @@ static AOM_INLINE void block_rd_txfm(int plane, int block, int blk_row,
   }
 
 #if CONFIG_RD_DEBUG
-  update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
-                        this_rd_stats.rate);
+  update_txb_coeff_cost(&this_rd_stats, plane, this_rd_stats.rate);
 #endif  // CONFIG_RD_DEBUG
   av1_set_txb_context(x, plane, block, tx_size, a, l);
 
@@ -3198,6 +3188,127 @@ static AOM_INLINE void block_rd_txfm(int plane, int block, int blk_row,
 
   args->current_rd += rd;
   if (args->current_rd > args->best_rd) args->exit_early = 1;
+}
+
+int64_t av1_estimate_txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
+                              RD_STATS *rd_stats, int64_t ref_best_rd,
+                              BLOCK_SIZE bs, TX_SIZE tx_size) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
+  const TxfmSearchParams *txfm_params = &x->txfm_search_params;
+  const ModeCosts *mode_costs = &x->mode_costs;
+  const int is_inter = is_inter_block(mbmi);
+  const int tx_select = txfm_params->tx_mode_search_type == TX_MODE_SELECT &&
+                        block_signals_txsize(mbmi->bsize);
+  int tx_size_rate = 0;
+  if (tx_select) {
+    const int ctx = txfm_partition_context(
+        xd->above_txfm_context, xd->left_txfm_context, mbmi->bsize, tx_size);
+    tx_size_rate = mode_costs->txfm_partition_cost[ctx][0];
+  }
+  const int skip_ctx = av1_get_skip_txfm_context(xd);
+  const int no_skip_txfm_rate = mode_costs->skip_txfm_cost[skip_ctx][0];
+  const int skip_txfm_rate = mode_costs->skip_txfm_cost[skip_ctx][1];
+  const int64_t skip_txfm_rd = RDCOST(x->rdmult, skip_txfm_rate, 0);
+  const int64_t no_this_rd =
+      RDCOST(x->rdmult, no_skip_txfm_rate + tx_size_rate, 0);
+  mbmi->tx_size = tx_size;
+
+  const uint8_t txw_unit = tx_size_wide_unit[tx_size];
+  const uint8_t txh_unit = tx_size_high_unit[tx_size];
+  const int step = txw_unit * txh_unit;
+  const int max_blocks_wide = max_block_wide(xd, bs, 0);
+  const int max_blocks_high = max_block_high(xd, bs, 0);
+
+  struct rdcost_block_args args;
+  av1_zero(args);
+  args.x = x;
+  args.cpi = cpi;
+  args.best_rd = ref_best_rd;
+  args.current_rd = AOMMIN(no_this_rd, skip_txfm_rd);
+  av1_init_rd_stats(&args.rd_stats);
+  av1_get_entropy_contexts(bs, &xd->plane[0], args.t_above, args.t_left);
+  int i = 0;
+  for (int blk_row = 0; blk_row < max_blocks_high && !args.incomplete_exit;
+       blk_row += txh_unit) {
+    for (int blk_col = 0; blk_col < max_blocks_wide; blk_col += txw_unit) {
+      RD_STATS this_rd_stats;
+      av1_init_rd_stats(&this_rd_stats);
+
+      if (args.exit_early) {
+        args.incomplete_exit = 1;
+        break;
+      }
+
+      ENTROPY_CONTEXT *a = args.t_above + blk_col;
+      ENTROPY_CONTEXT *l = args.t_left + blk_row;
+      TXB_CTX txb_ctx;
+      get_txb_ctx(bs, tx_size, 0, a, l, &txb_ctx);
+
+      TxfmParam txfm_param;
+      QUANT_PARAM quant_param;
+      av1_setup_xform(&cpi->common, x, tx_size, DCT_DCT, &txfm_param);
+      av1_setup_quant(tx_size, 0, AV1_XFORM_QUANT_B, 0, &quant_param);
+
+      av1_xform(x, 0, i, blk_row, blk_col, bs, &txfm_param);
+      av1_quant(x, 0, i, &txfm_param, &quant_param);
+
+      this_rd_stats.rate =
+          cost_coeffs(x, 0, i, tx_size, txfm_param.tx_type, &txb_ctx, 0);
+
+      dist_block_tx_domain(x, 0, i, tx_size, &this_rd_stats.dist,
+                           &this_rd_stats.sse);
+
+      const int64_t no_skip_txfm_rd =
+          RDCOST(x->rdmult, this_rd_stats.rate, this_rd_stats.dist);
+      const int64_t skip_rd = RDCOST(x->rdmult, 0, this_rd_stats.sse);
+
+      this_rd_stats.skip_txfm &= !x->plane[0].eobs[i];
+
+      av1_merge_rd_stats(&args.rd_stats, &this_rd_stats);
+      args.current_rd += AOMMIN(no_skip_txfm_rd, skip_rd);
+
+      if (args.current_rd > ref_best_rd) {
+        args.exit_early = 1;
+        break;
+      }
+
+      av1_set_txb_context(x, 0, i, tx_size, a, l);
+      i += step;
+    }
+  }
+
+  if (args.incomplete_exit) av1_invalid_rd_stats(&args.rd_stats);
+
+  *rd_stats = args.rd_stats;
+  if (rd_stats->rate == INT_MAX) return INT64_MAX;
+
+  int64_t rd;
+  // rdstats->rate should include all the rate except skip/non-skip cost as the
+  // same is accounted in the caller functions after rd evaluation of all
+  // planes. However the decisions should be done after considering the
+  // skip/non-skip header cost
+  if (rd_stats->skip_txfm && is_inter) {
+    rd = RDCOST(x->rdmult, skip_txfm_rate, rd_stats->sse);
+  } else {
+    // Intra blocks are always signalled as non-skip
+    rd = RDCOST(x->rdmult, rd_stats->rate + no_skip_txfm_rate + tx_size_rate,
+                rd_stats->dist);
+    rd_stats->rate += tx_size_rate;
+  }
+  // Check if forcing the block to skip transform leads to smaller RD cost.
+  if (is_inter && !rd_stats->skip_txfm && !xd->lossless[mbmi->segment_id]) {
+    int64_t temp_skip_txfm_rd =
+        RDCOST(x->rdmult, skip_txfm_rate, rd_stats->sse);
+    if (temp_skip_txfm_rd <= rd) {
+      rd = temp_skip_txfm_rd;
+      rd_stats->rate = 0;
+      rd_stats->dist = rd_stats->sse;
+      rd_stats->skip_txfm = 1;
+    }
+  }
+
+  return rd;
 }
 
 int64_t av1_uniform_txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
@@ -3324,15 +3435,18 @@ static AOM_INLINE void tx_block_yrd(
     const int txb_width = tx_size_wide_unit[sub_txs];
     const int txb_height = tx_size_high_unit[sub_txs];
     const int step = txb_height * txb_width;
+    const int row_end =
+        AOMMIN(tx_size_high_unit[tx_size], max_blocks_high - blk_row);
+    const int col_end =
+        AOMMIN(tx_size_wide_unit[tx_size], max_blocks_wide - blk_col);
     RD_STATS pn_rd_stats;
     int64_t this_rd = 0;
     assert(txb_width > 0 && txb_height > 0);
 
-    for (int row = 0; row < tx_size_high_unit[tx_size]; row += txb_height) {
-      for (int col = 0; col < tx_size_wide_unit[tx_size]; col += txb_width) {
-        const int offsetr = blk_row + row;
+    for (int row = 0; row < row_end; row += txb_height) {
+      const int offsetr = blk_row + row;
+      for (int col = 0; col < col_end; col += txb_width) {
         const int offsetc = blk_col + col;
-        if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
         av1_init_rd_stats(&pn_rd_stats);
         tx_block_yrd(cpi, x, offsetr, offsetc, block, sub_txs, plane_bsize,
@@ -3583,7 +3697,7 @@ void av1_pick_recursive_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   const int n4 = bsize_to_num_blk(bsize);
   if (is_mb_rd_hash_enabled) {
     hash = get_block_residue_hash(x, bsize);
-    mb_rd_record = &x->txfm_search_info.mb_rd_record;
+    mb_rd_record = &x->txfm_search_info.txb_rd_records->mb_rd_record;
     const int match_index = find_mb_rd_info(mb_rd_record, ref_best_rd, hash);
     if (match_index != -1) {
       MB_RD_INFO *tx_rd_info = &mb_rd_record->tx_rd_info[match_index];
@@ -3665,7 +3779,7 @@ void av1_pick_uniform_tx_size_type_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
         (mi_col + mi_size_wide[bs] < xd->tile.mi_col_end);
     if (within_border) {
       hash = get_block_residue_hash(x, bs);
-      mb_rd_record = &x->txfm_search_info.mb_rd_record;
+      mb_rd_record = &x->txfm_search_info.txb_rd_records->mb_rd_record;
       const int match_index = find_mb_rd_info(mb_rd_record, ref_best_rd, hash);
       if (match_index != -1) {
         MB_RD_INFO *tx_rd_info = &mb_rd_record->tx_rd_info[match_index];
@@ -3858,18 +3972,7 @@ int av1_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   const int64_t skip_txfm_rdcosty =
       RDCOST(x->rdmult, mode_rate + skip_txfm_cost[1], rd_stats->sse);
   const int64_t min_rdcosty = AOMMIN(non_skip_txfm_rdcosty, skip_txfm_rdcosty);
-  if (min_rdcosty > ref_best_rd) {
-    const int64_t tokenonly_rdy =
-        AOMMIN(RDCOST(x->rdmult, rd_stats_y->rate, rd_stats_y->dist),
-               RDCOST(x->rdmult, 0, rd_stats_y->sse));
-    // Invalidate rd_stats_y to skip the rest of the motion modes search
-    if (tokenonly_rdy -
-            (tokenonly_rdy >> cpi->sf.inter_sf.prune_motion_mode_level) >
-        rd_thresh) {
-      av1_invalid_rd_stats(rd_stats_y);
-    }
-    return 0;
-  }
+  if (min_rdcosty > ref_best_rd) return 0;
 
   av1_init_rd_stats(rd_stats_uv);
   const int num_planes = av1_num_planes(cm);

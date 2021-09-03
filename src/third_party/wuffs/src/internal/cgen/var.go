@@ -24,30 +24,52 @@ import (
 
 var errNeedDerivedVar = errors.New("cgen: internal error: need derived var")
 
+// argsContainsArgsDotFoo returns whether the argNodes, a slice of *ast.Node
+// where each ast.Node is an ast.Arg, contains a "name: value" element whose
+// value is "args.foo".
+func argsContainsArgsDotFoo(argNodes []*a.Node, foo t.ID) bool {
+	for _, o := range argNodes {
+		if foo == o.AsArg().Value().IsArgsDotFoo() {
+			return true
+		}
+	}
+	return false
+}
+
 func (g *gen) needDerivedVar(name t.ID) bool {
+	if name == 0 {
+		return false
+	}
 	for _, o := range g.currFunk.astFunc.Body() {
 		err := o.Walk(func(p *a.Node) error {
-			// Look for p matching "args.name.etc(etc)".
-			if p.Kind() != a.KExpr {
-				return nil
+			switch p.Kind() {
+			case a.KExpr:
+				// Look for p matching "args.name.etc(etc)".
+				recv, meth, args := p.AsExpr().IsMethodCall()
+				if recv == nil {
+					return nil
+				}
+				if recv.IsArgsDotFoo() == name {
+					return errNeedDerivedVar
+				}
+				// Some built-in methods will also need a derived var for their
+				// arguments.
+				//
+				// TODO: use a comprehensive list of such methods.
+				switch meth {
+				case t.IDLimitedSwizzleU32InterleavedFromReader,
+					t.IDSwizzleInterleavedFromReader:
+					if recv.MType().Eq(typeExprPixelSwizzler) && argsContainsArgsDotFoo(args, name) {
+						return errNeedDerivedVar
+					}
+				}
+
+			case a.KIOBind:
+				if p.AsIOBind().IO().IsArgsDotFoo() == name {
+					return errNeedDerivedVar
+				}
 			}
-			q := p.AsExpr()
-			if q.Operator() != t.IDOpenParen {
-				return nil
-			}
-			q = q.LHS().AsExpr()
-			if q.Operator() != t.IDDot {
-				return nil
-			}
-			q = q.LHS().AsExpr()
-			if q.Operator() != t.IDDot || q.Ident() != name {
-				return nil
-			}
-			q = q.LHS().AsExpr()
-			if q.Operator() != 0 || q.Ident() != t.IDArgs {
-				return nil
-			}
-			return errNeedDerivedVar
+			return nil
 		})
 		if err == errNeedDerivedVar {
 			return true
@@ -69,160 +91,183 @@ func (g *gen) findDerivedVars() {
 	}
 }
 
-func (g *gen) writeLoadDerivedVar(b *buffer, hack string, prefix string, name t.ID, typ *a.TypeExpr, header bool) error {
-	// TODO: remove this hack. We're picking up the wrong name for "src:r,
-	// dummy:args.src".
-	if name.Str(g.tm) == "dummy" {
-		name = g.tm.ByName("src")
-	}
-	// TODO: also remove this hack.
-	if hack == "w" {
-		b.printf("%s%sw = %sw.data.ptr + %sw.meta.wi;\n", iopPrefix, vPrefix, uPrefix, uPrefix)
-		return nil
-	} else if hack == "r" {
-		b.printf("%s%sr = %sr.data.ptr + %sr.meta.ri;\n", iopPrefix, vPrefix, uPrefix, uPrefix)
-		return nil
-	}
-
-	elem := ""
-	if typ.IsIOType() {
-		if typ.QID()[1] == t.IDIOReader {
-			elem = "const uint8_t"
-		} else {
-			elem = "uint8_t"
+func (g *gen) derivedVarCNames(typ *a.TypeExpr) (elem string, i1 string, i2 string, isWriter bool, retErr error) {
+	if typ.Decorator() == 0 {
+		if qid := typ.QID(); qid[0] == t.IDBase {
+			switch qid[1] {
+			case t.IDIOReader:
+				return "uint8_t", "meta.ri", "meta.wi", false, nil
+			case t.IDIOWriter:
+				return "uint8_t", "meta.wi", "data.len", true, nil
+			case t.IDTokenReader:
+				return "wuffs_base__token", "meta.ri", "meta.wi", false, nil
+			case t.IDTokenWriter:
+				return "wuffs_base__token", "meta.wi", "data.len", true, nil
+			}
 		}
-	} else if typ.IsTokenType() {
-		if typ.QID()[1] == t.IDTokenReader {
-			elem = "const wuffs_base__token"
-		} else {
-			elem = "wuffs_base__token"
-		}
-	} else {
-		return nil
+	}
+	return "", "", "", false, fmt.Errorf("unsupported derivedVarCNames type %q", typ.Str(g.tm))
+}
+
+func (g *gen) writeInitialLoadDerivedVar(b *buffer, n *a.Field) error {
+	elem, i1, i2, isWriter, err := g.derivedVarCNames(n.XType())
+	if err != nil {
+		return err
+	}
+	preName := aPrefix + n.Name().Str(g.tm)
+	c := ""
+	if !isWriter {
+		c = "const "
 	}
 
-	if g.currFunk.derivedVars == nil {
-		return nil
-	}
-	if _, ok := g.currFunk.derivedVars[name]; !ok {
-		return nil
-	}
-
-	preName := prefix + name.Str(g.tm)
-	i1, i2 := "meta.ri", "meta.wi"
-	if q := typ.QID()[1]; (q == t.IDIOWriter) || (q == t.IDTokenWriter) {
-		i1, i2 = "meta.wi", "data.len"
-	}
-
-	if header {
-		b.printf("%s* %s%s = NULL;\n", elem, iopPrefix, preName)
-		b.printf("%s* %s%s WUFFS_BASE__POTENTIALLY_UNUSED = NULL;\n", elem, io0Prefix, preName)
-		b.printf("%s* %s%s WUFFS_BASE__POTENTIALLY_UNUSED = NULL;\n", elem, io1Prefix, preName)
-		b.printf("%s* %s%s WUFFS_BASE__POTENTIALLY_UNUSED = NULL;\n", elem, io2Prefix, preName)
-	}
+	b.printf("%s%s* %s%s = NULL;\n", c, elem, iopPrefix, preName)
+	b.printf("%s%s* %s%s WUFFS_BASE__POTENTIALLY_UNUSED = NULL;\n", c, elem, io0Prefix, preName)
+	b.printf("%s%s* %s%s WUFFS_BASE__POTENTIALLY_UNUSED = NULL;\n", c, elem, io1Prefix, preName)
+	b.printf("%s%s* %s%s WUFFS_BASE__POTENTIALLY_UNUSED = NULL;\n", c, elem, io2Prefix, preName)
 
 	b.printf("if (%s) {\n", preName)
 
-	if header {
-		b.printf("%s%s = %s->data.ptr;\n", io0Prefix, preName, preName)
-		b.printf("%s%s = %s%s + %s->%s;\n", io1Prefix, preName, io0Prefix, preName, preName, i1)
-		b.printf("%s%s = %s%s;\n", iopPrefix, preName, io1Prefix, preName)
-		b.printf("%s%s = %s%s + %s->%s;\n", io2Prefix, preName, io0Prefix, preName, preName, i2)
+	b.printf("%s%s = %s->data.ptr;\n", io0Prefix, preName, preName)
+	b.printf("%s%s = %s%s + %s->%s;\n", io1Prefix, preName, io0Prefix, preName, preName, i1)
+	b.printf("%s%s = %s%s;\n", iopPrefix, preName, io1Prefix, preName)
+	b.printf("%s%s = %s%s + %s->%s;\n", io2Prefix, preName, io0Prefix, preName, preName, i2)
 
-		if q := typ.QID()[1]; (q == t.IDIOWriter) || (q == t.IDTokenWriter) {
-			b.printf("if (%s->meta.closed) {\n", preName)
-			b.printf("%s%s = %s%s;\n", io2Prefix, preName, iopPrefix, preName)
-			b.printf("}\n")
-		}
-	} else {
-		b.printf("%s%s = %s->data.ptr + %s->%s;\n", iopPrefix, preName, preName, preName, i1)
+	if isWriter {
+		b.printf("if (%s->meta.closed) {\n", preName)
+		b.printf("%s%s = %s%s;\n", io2Prefix, preName, iopPrefix, preName)
+		b.printf("}\n")
 	}
 
 	b.printf("}\n")
 	return nil
 }
 
-func (g *gen) writeSaveDerivedVar(b *buffer, hack string, prefix string, name t.ID, typ *a.TypeExpr) error {
-	// TODO: remove this hack. We're picking up the wrong name for "src:r,
-	// dummy:args.src".
-	if name.Str(g.tm) == "dummy" {
-		name = g.tm.ByName("src")
+func (g *gen) writeFinalSaveDerivedVar(b *buffer, n *a.Field) error {
+	_, i1, _, _, err := g.derivedVarCNames(n.XType())
+	if err != nil {
+		return err
 	}
-	// TODO: also remove this hack.
-	if hack == "w" {
-		b.printf("%sw.meta.wi = ((size_t)(%s%sw - %sw.data.ptr));\n", uPrefix, iopPrefix, vPrefix, uPrefix)
-		return nil
-	} else if hack == "r" {
-		b.printf("%sr.meta.ri = ((size_t)(%s%sr - %sr.data.ptr));\n", uPrefix, iopPrefix, vPrefix, uPrefix)
-		return nil
-	}
+	preName := aPrefix + n.Name().Str(g.tm)
 
-	if !typ.IsIOTokenType() {
-		return nil
-	}
-	if g.currFunk.derivedVars == nil {
-		return nil
-	}
-	if _, ok := g.currFunk.derivedVars[name]; !ok {
-		return nil
-	}
-
-	preName := prefix + name.Str(g.tm)
-	index := "ri"
-	if q := typ.QID()[1]; (q == t.IDIOWriter) || (q == t.IDTokenWriter) {
-		index = "wi"
-	}
-
-	b.printf("if (%s) {\n%s->meta.%s = ((size_t)(%s%s - %s->data.ptr));\n}\n",
-		preName, preName, index, iopPrefix, preName, preName)
+	b.printf("if (%s) {\n%s->%s = ((size_t)(%s%s - %s->data.ptr));\n}\n",
+		preName, preName, i1, iopPrefix, preName, preName)
 	return nil
 }
 
-func (g *gen) writeLoadExprDerivedVars(b *buffer, n *a.Expr) error {
-	if g.currFunk.derivedVars == nil {
-		return nil
+func (g *gen) writeLoadDerivedVar(b *buffer, n *a.Expr) error {
+	_, i1, _, _, err := g.derivedVarCNames(n.MType())
+	if err != nil {
+		return err
 	}
-	if n.Operator() != t.IDOpenParen {
+
+	switch n.Operator() {
+	case 0:
+		name := n.Ident().Str(g.tm)
+		b.printf("%s%s%s = %s%s.data.ptr + %s%s.%s;\n",
+			iopPrefix, vPrefix, name, uPrefix, name, uPrefix, name, i1)
 		return nil
-	}
-	for _, o := range n.Args() {
-		o := o.AsArg()
-		prefix := aPrefix
-		// TODO: don't hard-code these.
-		hack := ""
-		if s := o.Value().Str(g.tm); s != "args.dst" && s != "args.src" && s != "w" && s != "r" {
-			continue
-		} else if s == "w" || s == "r" {
-			prefix = vPrefix
-			hack = s
+
+	case t.IDDot:
+		if lhs := n.LHS().AsExpr(); (lhs.Operator() == 0) && (lhs.Ident() == t.IDArgs) {
+			name := n.Ident().Str(g.tm)
+			b.printf("if (%s%s) {\n", aPrefix, name)
+			b.printf("%s%s%s = %s%s->data.ptr + %s%s->%s;\n",
+				iopPrefix, aPrefix, name, aPrefix, name, aPrefix, name, i1)
+			b.printf("}\n")
+			return nil
 		}
-		if err := g.writeLoadDerivedVar(b, hack, prefix, o.Name(), o.Value().MType(), false); err != nil {
-			return err
+	}
+
+	return fmt.Errorf("could not determine derived variables for %q", n.Str(g.tm))
+}
+
+func (g *gen) writeSaveDerivedVar(b *buffer, n *a.Expr) error {
+	_, i1, _, _, err := g.derivedVarCNames(n.MType())
+	if err != nil {
+		return err
+	}
+
+	switch n.Operator() {
+	case 0:
+		name := n.Ident().Str(g.tm)
+		b.printf("%s%s.%s = ((size_t)(%s%s%s - %s%s.data.ptr));\n",
+			uPrefix, name, i1, iopPrefix, vPrefix, name, uPrefix, name)
+		return nil
+
+	case t.IDDot:
+		if lhs := n.LHS().AsExpr(); (lhs.Operator() == 0) && (lhs.Ident() == t.IDArgs) {
+			name := n.Ident().Str(g.tm)
+			b.printf("if (%s%s) {\n", aPrefix, name)
+			b.printf("%s%s->%s = ((size_t)(%s%s%s - %s%s->data.ptr));\n",
+				aPrefix, name, i1, iopPrefix, aPrefix, name, aPrefix, name)
+			b.printf("}\n")
+			return nil
+		}
+	}
+
+	return fmt.Errorf("could not determine derived variables for %q", n.Str(g.tm))
+}
+
+func (g *gen) couldHaveDerivedVar(n *a.Expr) bool {
+	typ := n.MType()
+	if typ.Decorator() != 0 {
+		return false
+	}
+
+	qid := typ.QID()
+	if qid[0] != t.IDBase {
+		return false
+	}
+	switch qid[1] {
+	case t.IDIOReader, t.IDIOWriter, t.IDTokenReader, t.IDTokenWriter:
+		// No-op.
+	default:
+		return false
+	}
+
+	switch n.Operator() {
+	case t.IDDot:
+		if lhs := n.LHS().AsExpr(); (lhs.Operator() == 0) && (lhs.Ident() == t.IDArgs) {
+			if g.currFunk.derivedVars == nil {
+				return false
+			} else if _, ok := g.currFunk.derivedVars[n.Ident()]; !ok {
+				return false
+			}
+		}
+
+	case t.IDOpenParen:
+		switch n.LHS().AsExpr().Ident() {
+		case t.IDEmptyIOReader, t.IDEmptyIOWriter:
+			if n.LHS().AsExpr().LHS().AsExpr().MType().IsEtcUtilityType() {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func (g *gen) writeLoadExprDerivedVars(b *buffer, n *a.Expr) error {
+	if (g.currFunk.derivedVars != nil) && (n.Operator() == t.IDOpenParen) {
+		for _, o := range n.Args() {
+			if v := o.AsArg().Value(); g.couldHaveDerivedVar(v) {
+				if err := g.writeLoadDerivedVar(b, v); err != nil {
+					return err
+				}
+			}
 		}
 	}
 	return nil
 }
 
 func (g *gen) writeSaveExprDerivedVars(b *buffer, n *a.Expr) error {
-	if g.currFunk.derivedVars == nil {
-		return nil
-	}
-	if n.Operator() != t.IDOpenParen {
-		return nil
-	}
-	for _, o := range n.Args() {
-		o := o.AsArg()
-		prefix := aPrefix
-		// TODO: don't hard-code these.
-		hack := ""
-		if s := o.Value().Str(g.tm); s != "args.dst" && s != "args.src" && s != "w" && s != "r" {
-			continue
-		} else if s == "w" || s == "r" {
-			prefix = vPrefix
-			hack = s
-		}
-		if err := g.writeSaveDerivedVar(b, hack, prefix, o.Name(), o.Value().MType()); err != nil {
-			return err
+	if (g.currFunk.derivedVars != nil) && (n.Operator() == t.IDOpenParen) {
+		for _, o := range n.Args() {
+			if v := o.AsArg().Value(); g.couldHaveDerivedVar(v) {
+				if err := g.writeSaveDerivedVar(b, v); err != nil {
+					return err
+				}
+			}
 		}
 	}
 	return nil
@@ -279,10 +324,11 @@ func (g *gen) writeResumeSuspend(b *buffer, f *funk, suspend bool) error {
 func (g *gen) writeVars(b *buffer, f *funk, inStructDecl bool) error {
 	for _, n := range f.varList {
 		typ := n.XType()
-		if inStructDecl {
-			if typ.HasPointers() || f.varResumables == nil || !f.varResumables[n.Name()] {
-				continue
-			}
+		if typ.Innermost().IsEtcUtilityType() {
+			continue
+		} else if inStructDecl &&
+			(typ.HasPointers() || f.varResumables == nil || !f.varResumables[n.Name()]) {
+			continue
 		}
 
 		name := n.Name().Str(g.tm)
@@ -306,6 +352,8 @@ func (g *gen) writeVars(b *buffer, f *funk, inStructDecl bool) error {
 			b.writes(" = wuffs_base__make_status(NULL);\n")
 		} else if typ.IsIOType() {
 			b.printf(" = &%s%s;\n", uPrefix, name)
+		} else if typ.Eq(typeExprARMCRC32U32) {
+			b.writes(" = 0;\n")
 		} else {
 			b.writes(" = {0};\n")
 		}

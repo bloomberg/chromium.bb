@@ -7,20 +7,17 @@
 
 #include "base/check_op.h"
 #include "base/containers/stack_container.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "cc/paint/paint_export.h"
-#include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image.h"
+#include "cc/paint/paint_shader.h"
 #include "cc/paint/scoped_raster_flags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPoint3.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/skia/include/effects/SkBlurImageFilter.h"
-#include "third_party/skia/include/effects/SkDisplacementMapEffect.h"
-#include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
-#include "third_party/skia/include/effects/SkMatrixConvolutionImageFilter.h"
+#include "third_party/skia/include/effects/SkImageFilters.h"
 
 namespace viz {
 class GLRenderer;
@@ -33,7 +30,7 @@ class ImageProvider;
 
 class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
  public:
-  enum class Type : uint32_t {
+  enum class Type {
     // For serialization purposes, we reserve one enum to indicate that there
     // was no PaintFilter, ie the filter is "null".
     kNullFilter,
@@ -54,23 +51,23 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
     kOffset,
     kTile,
     kTurbulence,
-    kPaintFlags,
+    kShader,
     kMatrix,
     kLightingDistant,
     kLightingPoint,
     kLightingSpot,
     // Update the following if kLightingSpot is not the max anymore.
-    kMaxFilterType = kLightingSpot
+    kMaxValue = kLightingSpot
   };
-  enum class LightingType : uint32_t {
+  enum class LightingType {
     kDiffuse,
     kSpecular,
     // Update the following if kSpecular is not the max anymore.
-    kMaxLightingType = kSpecular
+    kMaxValue = kSpecular
   };
 
   using MapDirection = SkImageFilter::MapDirection;
-  using CropRect = SkImageFilter::CropRect;
+  using CropRect = SkRect;
 
   PaintFilter(const PaintFilter&) = delete;
   ~PaintFilter() override;
@@ -155,7 +152,7 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
   friend class viz::SoftwareRenderer;
 
   const Type type_;
-  base::Optional<CropRect> crop_rect_;
+  absl::optional<CropRect> crop_rect_;
   const bool has_discardable_images_;
 
   ImageAnalysisState image_analysis_state_ = ImageAnalysisState::kNoAnalysis;
@@ -186,11 +183,10 @@ class CC_PAINT_EXPORT ColorFilterPaintFilter final : public PaintFilter {
 
 class CC_PAINT_EXPORT BlurPaintFilter final : public PaintFilter {
  public:
-  using TileMode = SkBlurImageFilter::TileMode;
   static constexpr Type kType = Type::kBlur;
   BlurPaintFilter(SkScalar sigma_x,
                   SkScalar sigma_y,
-                  TileMode tile_mode,
+                  SkTileMode tile_mode,
                   sk_sp<PaintFilter> input,
                   const CropRect* crop_rect = nullptr);
   ~BlurPaintFilter() override;
@@ -199,7 +195,7 @@ class CC_PAINT_EXPORT BlurPaintFilter final : public PaintFilter {
 
   SkScalar sigma_x() const { return sigma_x_; }
   SkScalar sigma_y() const { return sigma_y_; }
-  TileMode tile_mode() const { return tile_mode_; }
+  SkTileMode tile_mode() const { return tile_mode_; }
 
   size_t SerializedSize() const override;
   bool operator==(const BlurPaintFilter& other) const;
@@ -211,13 +207,17 @@ class CC_PAINT_EXPORT BlurPaintFilter final : public PaintFilter {
  private:
   SkScalar sigma_x_;
   SkScalar sigma_y_;
-  TileMode tile_mode_;
+  SkTileMode tile_mode_;
   sk_sp<PaintFilter> input_;
 };
 
 class CC_PAINT_EXPORT DropShadowPaintFilter final : public PaintFilter {
  public:
-  using ShadowMode = SkDropShadowImageFilter::ShadowMode;
+  enum class ShadowMode {
+    kDrawShadowAndForeground,
+    kDrawShadowOnly,
+    kMaxValue = kDrawShadowOnly
+  };
   static constexpr Type kType = Type::kDropShadow;
   DropShadowPaintFilter(SkScalar dx,
                         SkScalar dy,
@@ -396,14 +396,13 @@ class CC_PAINT_EXPORT ArithmeticPaintFilter final : public PaintFilter {
 
 class CC_PAINT_EXPORT MatrixConvolutionPaintFilter final : public PaintFilter {
  public:
-  using TileMode = SkMatrixConvolutionImageFilter::TileMode;
   static constexpr Type kType = Type::kMatrixConvolution;
   MatrixConvolutionPaintFilter(const SkISize& kernel_size,
                                const SkScalar* kernel,
                                SkScalar gain,
                                SkScalar bias,
                                const SkIPoint& kernel_offset,
-                               TileMode tile_mode,
+                               SkTileMode tile_mode,
                                bool convolve_alpha,
                                sk_sp<PaintFilter> input,
                                const CropRect* crop_rect = nullptr);
@@ -414,7 +413,7 @@ class CC_PAINT_EXPORT MatrixConvolutionPaintFilter final : public PaintFilter {
   SkScalar gain() const { return gain_; }
   SkScalar bias() const { return bias_; }
   SkIPoint kernel_offset() const { return kernel_offset_; }
-  TileMode tile_mode() const { return tile_mode_; }
+  SkTileMode tile_mode() const { return tile_mode_; }
   bool convolve_alpha() const { return convolve_alpha_; }
   const sk_sp<PaintFilter>& input() const { return input_; }
 
@@ -431,7 +430,7 @@ class CC_PAINT_EXPORT MatrixConvolutionPaintFilter final : public PaintFilter {
   SkScalar gain_;
   SkScalar bias_;
   SkIPoint kernel_offset_;
-  TileMode tile_mode_;
+  SkTileMode tile_mode_;
   bool convolve_alpha_;
   sk_sp<PaintFilter> input_;
 };
@@ -439,18 +438,17 @@ class CC_PAINT_EXPORT MatrixConvolutionPaintFilter final : public PaintFilter {
 class CC_PAINT_EXPORT DisplacementMapEffectPaintFilter final
     : public PaintFilter {
  public:
-  using ChannelSelectorType = SkDisplacementMapEffect::ChannelSelectorType;
   static constexpr Type kType = Type::kDisplacementMapEffect;
-  DisplacementMapEffectPaintFilter(ChannelSelectorType channel_x,
-                                   ChannelSelectorType channel_y,
+  DisplacementMapEffectPaintFilter(SkColorChannel channel_x,
+                                   SkColorChannel channel_y,
                                    SkScalar scale,
                                    sk_sp<PaintFilter> displacement,
                                    sk_sp<PaintFilter> color,
                                    const CropRect* crop_rect = nullptr);
   ~DisplacementMapEffectPaintFilter() override;
 
-  ChannelSelectorType channel_x() const { return channel_x_; }
-  ChannelSelectorType channel_y() const { return channel_y_; }
+  SkColorChannel channel_x() const { return channel_x_; }
+  SkColorChannel channel_y() const { return channel_y_; }
   SkScalar scale() const { return scale_; }
   const sk_sp<PaintFilter>& displacement() const { return displacement_; }
   const sk_sp<PaintFilter>& color() const { return color_; }
@@ -463,8 +461,8 @@ class CC_PAINT_EXPORT DisplacementMapEffectPaintFilter final
       ImageProvider* image_provider) const override;
 
  private:
-  ChannelSelectorType channel_x_;
-  ChannelSelectorType channel_y_;
+  SkColorChannel channel_x_;
+  SkColorChannel channel_y_;
   SkScalar scale_;
   sk_sp<PaintFilter> displacement_;
   sk_sp<PaintFilter> color_;
@@ -554,7 +552,7 @@ class CC_PAINT_EXPORT MergePaintFilter final : public PaintFilter {
 
 class CC_PAINT_EXPORT MorphologyPaintFilter final : public PaintFilter {
  public:
-  enum class MorphType : uint32_t { kDilate, kErode, kMaxMorphType = kErode };
+  enum class MorphType { kDilate, kErode, kMaxValue = kErode };
   static constexpr Type kType = Type::kMorphology;
   MorphologyPaintFilter(MorphType morph_type,
                         float radius_x,
@@ -636,10 +634,10 @@ class CC_PAINT_EXPORT TilePaintFilter final : public PaintFilter {
 class CC_PAINT_EXPORT TurbulencePaintFilter final : public PaintFilter {
  public:
   static constexpr Type kType = Type::kTurbulence;
-  enum class TurbulenceType : uint32_t {
+  enum class TurbulenceType {
     kTurbulence,
     kFractalNoise,
-    kMaxTurbulenceType = kFractalNoise
+    kMaxValue = kFractalNoise
   };
   TurbulencePaintFilter(TurbulenceType turbulence_type,
                         SkScalar base_frequency_x,
@@ -673,29 +671,37 @@ class CC_PAINT_EXPORT TurbulencePaintFilter final : public PaintFilter {
   SkISize tile_size_;
 };
 
-class CC_PAINT_EXPORT PaintFlagsPaintFilter final : public PaintFilter {
+class CC_PAINT_EXPORT ShaderPaintFilter final : public PaintFilter {
  public:
-  static constexpr Type kType = Type::kPaintFlags;
-  explicit PaintFlagsPaintFilter(PaintFlags flags,
-                                 const CropRect* crop_rect = nullptr);
-  ~PaintFlagsPaintFilter() override;
+  static constexpr Type kType = Type::kShader;
 
-  const PaintFlags& flags() const { return flags_; }
+  using Dither = SkImageFilters::Dither;
+
+  ShaderPaintFilter(sk_sp<PaintShader> shader,
+                    uint8_t alpha,
+                    SkFilterQuality filter_quality,
+                    SkImageFilters::Dither dither,
+                    const CropRect* crop_rect = nullptr);
+
+  ~ShaderPaintFilter() override;
+
+  const PaintShader& shader() const { return *shader_; }
+  uint8_t alpha() const { return alpha_; }
+  SkFilterQuality filter_quality() const { return filter_quality_; }
+  SkImageFilters::Dither dither() const { return dither_; }
 
   size_t SerializedSize() const override;
-  bool operator==(const PaintFlagsPaintFilter& other) const;
+  bool operator==(const ShaderPaintFilter& other) const;
 
  protected:
   sk_sp<PaintFilter> SnapshotWithImagesInternal(
       ImageProvider* image_provider) const override;
 
  private:
-  PaintFlagsPaintFilter(PaintFlags flags,
-                        ImageProvider* image_provider,
-                        const CropRect* crop_rect);
-
-  PaintFlags flags_;
-  base::Optional<ScopedRasterFlags> raster_flags_;
+  sk_sp<PaintShader> shader_;
+  uint8_t alpha_;
+  SkFilterQuality filter_quality_;
+  SkImageFilters::Dither dither_;
 };
 
 class CC_PAINT_EXPORT MatrixPaintFilter final : public PaintFilter {

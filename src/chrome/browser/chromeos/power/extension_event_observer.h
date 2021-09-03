@@ -16,7 +16,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
@@ -96,7 +96,7 @@ class ExtensionEventObserver : public ProfileManagerObserver,
   // PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void DarkSuspendImminent() override;
-  void SuspendDone(const base::TimeDelta& duration) override;
+  void SuspendDone(base::TimeDelta duration) override;
 
  private:
   friend class TestApi;
@@ -114,7 +114,8 @@ class ExtensionEventObserver : public ProfileManagerObserver,
                      std::unique_ptr<KeepaliveSources>>
       keepalive_sources_;
 
-  ScopedObserver<extensions::ProcessManager, extensions::ProcessManagerObserver>
+  base::ScopedMultiSourceObservation<extensions::ProcessManager,
+                                     extensions::ProcessManagerObserver>
       process_manager_observers_{this};
 
   bool should_delay_suspend_ = true;
@@ -124,7 +125,7 @@ class ExtensionEventObserver : public ProfileManagerObserver,
   // empty, |this| isn't blocking suspend.
   base::UnguessableToken block_suspend_token_;
 
-  base::CancelableClosure suspend_readiness_callback_;
+  base::CancelableOnceClosure suspend_readiness_callback_;
 
   base::WeakPtrFactory<ExtensionEventObserver> weak_factory_{this};
 

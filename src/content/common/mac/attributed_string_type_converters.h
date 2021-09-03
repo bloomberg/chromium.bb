@@ -5,7 +5,6 @@
 #ifndef CONTENT_COMMON_MAC_ATTRIBUTED_STRING_TYPE_CONVERTERS_H_
 #define CONTENT_COMMON_MAC_ATTRIBUTED_STRING_TYPE_CONVERTERS_H_
 
-#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ui/base/mojom/attributed_string.mojom.h"
 #include "ui/gfx/range/range.h"

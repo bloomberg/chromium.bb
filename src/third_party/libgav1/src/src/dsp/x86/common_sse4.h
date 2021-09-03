@@ -20,7 +20,7 @@
 #include "src/utils/compiler_attributes.h"
 #include "src/utils/cpu.h"
 
-#if LIBGAV1_ENABLE_SSE4_1
+#if LIBGAV1_TARGETING_SSE4_1
 
 #include <emmintrin.h>
 #include <smmintrin.h>
@@ -28,7 +28,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <cstring>
 
 #if 0
@@ -71,6 +70,19 @@ inline void PrintRegX(const int r, const char* const name) {
 #define PR(var, N) PrintReg(var, #var, N)
 #define PD(var) PrintReg(var, #var);
 #define PX(var) PrintRegX(var, #var);
+
+#if LIBGAV1_MSAN
+#include <sanitizer/msan_interface.h>
+
+inline void PrintShadow(const void* r, const char* const name,
+                        const size_t size) {
+  fprintf(stderr, "Shadow for %s:\n", name);
+  __msan_print_shadow(r, size);
+}
+#define PS(var, N) PrintShadow(var, #var, N)
+
+#endif  // LIBGAV1_MSAN
+
 #endif  // 0
 
 namespace libgav1 {
@@ -96,7 +108,7 @@ inline __m128i Load2x2(const void* src1, const void* src2) {
 // Load 2 uint8_t values into |lane| * 2 and |lane| * 2 + 1.
 template <int lane>
 inline __m128i Load2(const void* const buf, __m128i val) {
-  uint16_t temp;
+  int16_t temp;
   memcpy(&temp, buf, 2);
   return _mm_insert_epi16(val, temp, lane);
 }
@@ -207,6 +219,7 @@ inline void StoreHi8(void* a, const __m128i v) {
 }
 
 inline void StoreAligned16(void* a, const __m128i v) {
+  assert((reinterpret_cast<uintptr_t>(a) & 0xf) == 0);
   _mm_store_si128(static_cast<__m128i*>(a), v);
 }
 
@@ -219,14 +232,14 @@ inline void StoreUnaligned16(void* a, const __m128i v) {
 
 inline __m128i RightShiftWithRounding_U16(const __m128i v_val_d, int bits) {
   assert(bits <= 16);
-  const __m128i v_bias_d =
-      _mm_set1_epi16(static_cast<int16_t>((1 << bits) >> 1));
-  const __m128i v_tmp_d = _mm_add_epi16(v_val_d, v_bias_d);
-  return _mm_srli_epi16(v_tmp_d, bits);
+  // Shift out all but the last bit.
+  const __m128i v_tmp_d = _mm_srli_epi16(v_val_d, bits - 1);
+  // Avg with zero will shift by 1 and round.
+  return _mm_avg_epu16(v_tmp_d, _mm_setzero_si128());
 }
 
 inline __m128i RightShiftWithRounding_S16(const __m128i v_val_d, int bits) {
-  assert(bits <= 16);
+  assert(bits < 16);
   const __m128i v_bias_d =
       _mm_set1_epi16(static_cast<int16_t>((1 << bits) >> 1));
   const __m128i v_tmp_d = _mm_add_epi16(v_val_d, v_bias_d);
@@ -245,6 +258,15 @@ inline __m128i RightShiftWithRounding_S32(const __m128i v_val_d, int bits) {
   return _mm_srai_epi32(v_tmp_d, bits);
 }
 
+// Use this when |bits| is not an immediate value.
+inline __m128i VariableRightShiftWithRounding_S32(const __m128i v_val_d,
+                                                  int bits) {
+  const __m128i v_bias_d =
+      _mm_set1_epi32(static_cast<int32_t>((1 << bits) >> 1));
+  const __m128i v_tmp_d = _mm_add_epi32(v_val_d, v_bias_d);
+  return _mm_sra_epi32(v_tmp_d, _mm_cvtsi32_si128(bits));
+}
+
 //------------------------------------------------------------------------------
 // Masking utilities
 inline __m128i MaskHighNBytes(int n) {
@@ -260,5 +282,5 @@ inline __m128i MaskHighNBytes(int n) {
 }  // namespace dsp
 }  // namespace libgav1
 
-#endif  // LIBGAV1_ENABLE_SSE4_1
+#endif  // LIBGAV1_TARGETING_SSE4_1
 #endif  // LIBGAV1_SRC_DSP_X86_COMMON_SSE4_H_

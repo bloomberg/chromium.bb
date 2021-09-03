@@ -17,6 +17,7 @@
 #ifndef SRC_PROFILING_PERF_UNWINDING_H_
 #define SRC_PROFILING_PERF_UNWINDING_H_
 
+#include <condition_variable>
 #include <map>
 #include <thread>
 
@@ -31,6 +32,8 @@
 #include "perfetto/ext/base/thread_checker.h"
 #include "perfetto/ext/base/unix_task_runner.h"
 #include "perfetto/ext/tracing/core/basic_types.h"
+#include "src/kallsyms/kernel_symbol_map.h"
+#include "src/kallsyms/lazy_kernel_symbolizer.h"
 #include "src/profiling/common/unwind_support.h"
 #include "src/profiling/perf/common_types.h"
 #include "src/profiling/perf/unwind_queue.h"
@@ -38,7 +41,7 @@
 namespace perfetto {
 namespace profiling {
 
-constexpr static uint32_t kUnwindQueueCapacity = 2048;
+constexpr static uint32_t kUnwindQueueCapacity = 1024;
 
 // Unwinds callstacks based on the sampled stack and register state (see
 // |ParsedSample|). Has a single unwinding ring queue, shared across
@@ -85,7 +88,7 @@ class Unwinder {
 
   ~Unwinder() { PERFETTO_DCHECK_THREAD(thread_checker_); }
 
-  void PostStartDataSource(DataSourceInstanceID ds_id);
+  void PostStartDataSource(DataSourceInstanceID ds_id, bool kernel_frames);
   void PostAdoptProcDescriptors(DataSourceInstanceID ds_id,
                                 pid_t pid,
                                 base::ScopedFile maps_fd,
@@ -93,12 +96,29 @@ class Unwinder {
   void PostRecordTimedOutProcDescriptors(DataSourceInstanceID ds_id, pid_t pid);
   void PostProcessQueue();
   void PostInitiateDataSourceStop(DataSourceInstanceID ds_id);
+  void PostPurgeDataSource(DataSourceInstanceID ds_id);
 
   void PostClearCachedStatePeriodic(DataSourceInstanceID ds_id,
                                     uint32_t period_ms);
 
   UnwindQueue<UnwindEntry, kUnwindQueueCapacity>& unwind_queue() {
     return unwind_queue_;
+  }
+
+  uint64_t GetEnqueuedFootprint() {
+    uint64_t freed =
+        footprint_tracker_.stack_bytes_freed.load(std::memory_order_acquire);
+    uint64_t allocated = footprint_tracker_.stack_bytes_allocated.load(
+        std::memory_order_relaxed);
+
+    // overflow not a concern in practice
+    PERFETTO_DCHECK(allocated >= freed);
+    return allocated - freed;
+  }
+
+  void IncrementEnqueuedFootprint(uint64_t increment) {
+    footprint_tracker_.stack_bytes_allocated.fetch_add(
+        increment, std::memory_order_relaxed);
   }
 
  private:
@@ -124,11 +144,21 @@ class Unwinder {
     std::map<pid_t, ProcessState> process_states;
   };
 
+  // Accounting for how much heap memory is attached to the enqueued samples at
+  // a given time. Read by the main thread, mutated by both threads.
+  // We track just the heap allocated for the sampled stacks, as it dominates
+  // the per-sample heap use.
+  struct QueueFootprintTracker {
+    std::atomic<uint64_t> stack_bytes_allocated;
+    std::atomic<uint64_t> stack_bytes_freed;
+  };
+
   // Must be instantiated via the |UnwinderHandle|.
   Unwinder(Delegate* delegate, base::UnixTaskRunner* task_runner);
 
   // Marks the data source as valid and active at the unwinding stage.
-  void StartDataSource(DataSourceInstanceID ds_id);
+  // Initializes kernel address symbolization if needed.
+  void StartDataSource(DataSourceInstanceID ds_id, bool kernel_frames);
 
   void AdoptProcDescriptors(DataSourceInstanceID ds_id,
                             pid_t pid,
@@ -149,6 +179,10 @@ class Unwinder {
                                UnwindingMetadata* unwind_state,
                                bool pid_unwound_before);
 
+  // Returns a list of symbolized kernel frames in the sample (if any).
+  std::vector<unwindstack::FrameData> SymbolizeKernelCallchain(
+      const ParsedSample& sample);
+
   // Marks the data source as shutting down at the unwinding stage. It is known
   // that no new samples for this source will be pushed into the queue, but we
   // need to delay the unwinder state teardown until all previously-enqueued
@@ -159,6 +193,14 @@ class Unwinder {
   // samples, and informs the service that it can continue the shutdown
   // sequence.
   void FinishDataSourceStop(DataSourceInstanceID ds_id);
+
+  // Immediately destroys the data source state, used for abrupt stops.
+  void PurgeDataSource(DataSourceInstanceID ds_id);
+
+  void DecrementEnqueuedFootprint(uint64_t decrement) {
+    footprint_tracker_.stack_bytes_freed.fetch_add(decrement,
+                                                   std::memory_order_relaxed);
+  }
 
   // Clears the parsed maps for all previously-sampled processes, and resets the
   // libunwindstack cache. This has the effect of deallocating the cached Elf
@@ -195,7 +237,9 @@ class Unwinder {
   base::UnixTaskRunner* const task_runner_;
   Delegate* const delegate_;
   UnwindQueue<UnwindEntry, kUnwindQueueCapacity> unwind_queue_;
+  QueueFootprintTracker footprint_tracker_;
   std::map<DataSourceInstanceID, DataSourceState> data_sources_;
+  LazyKernelSymbolizer kernel_symbolizer_;
 
   PERFETTO_THREAD_CHECKER(thread_checker_)
 };

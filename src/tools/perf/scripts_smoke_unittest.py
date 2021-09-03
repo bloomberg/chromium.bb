@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
 import json
 import logging
 import os
@@ -248,7 +249,7 @@ class ScriptsSmokeTest(unittest.TestCase):
     except AssertionError:
       try:
         with open(os.path.join(tempdir, benchmark, 'benchmark_log.txt')) as fh:
-          print fh.read()
+          print(fh.read())
       # pylint: disable=bare-except
       except:
         # pylint: enable=bare-except
@@ -383,7 +384,7 @@ class ScriptsSmokeTest(unittest.TestCase):
           tempdir, 'fake_gtest')
       output_paths.SetUp()
       return_code = run_performance_tests.execute_gtest_perf_test(
-          fake_command_generator, output_paths)
+          fake_command_generator, output_paths, is_unittest=True)
       self.assertEqual(return_code, 1)
       with open(output_paths.test_results) as fh:
         json_test_results = json.load(fh)

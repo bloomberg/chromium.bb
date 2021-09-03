@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -17,13 +18,14 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.LocaleList;
 import android.os.Parcel;
+import android.os.SystemClock;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewStructure;
 import android.view.WindowManager;
 import android.view.autofill.AutofillId;
@@ -46,15 +48,20 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.components.autofill.AutofillHintsServiceTestHelper;
 import org.chromium.components.autofill.AutofillManagerWrapper;
 import org.chromium.components.autofill.AutofillPopup;
 import org.chromium.components.autofill.AutofillProvider;
+import org.chromium.components.autofill.AutofillProviderTestHelper;
 import org.chromium.components.autofill.AutofillProviderUMA;
+import org.chromium.components.autofill_public.ViewType;
 import org.chromium.components.embedder_support.util.WebResourceResponseInfo;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -91,6 +98,7 @@ public class AwAutofillTest {
     public static final int AUTOFILL_COMMIT = 4;
     public static final int AUTOFILL_CANCEL = 5;
     public static final int AUTOFILL_SESSION_STARTED = 6;
+    public static final int AUTOFILL_QUERY_DONE = 7;
 
     /**
      * This class only implements the necessary methods of ViewStructure for testing.
@@ -467,6 +475,7 @@ public class AwAutofillTest {
 
     private class TestAutofillManagerWrapper extends AutofillManagerWrapper {
         private boolean mDisabled;
+        private boolean mQuerySucceed;
 
         public TestAutofillManagerWrapper(Context context) {
             super(context);
@@ -481,6 +490,14 @@ public class AwAutofillTest {
             return mDisabled;
         }
 
+        @Override
+        public boolean isAwGCurrentAutofillService() {
+            return sIsAwGCurrentAutofillService;
+        }
+
+        public boolean isQuerySucceed() {
+            return mQuerySucceed;
+        }
         @Override
         public void notifyVirtualViewEntered(View parent, int childId, Rect absBounds) {
             if (DEBUG) Log.i(TAG, "notifyVirtualViewEntered");
@@ -522,9 +539,17 @@ public class AwAutofillTest {
         }
 
         @Override
-        public void notifyNewSessionStarted() {
+        public void notifyNewSessionStarted(boolean hasServerPrediction) {
             if (DEBUG) Log.i(TAG, "notifyNewSessionStarted");
             mEventQueue.add(AUTOFILL_SESSION_STARTED);
+            mCallbackHelper.notifyCalled();
+        }
+
+        @Override
+        public void onQueryDone(boolean success) {
+            mQuerySucceed = success;
+            if (DEBUG) Log.i(TAG, "onQueryDone " + success);
+            mEventQueue.add(AUTOFILL_QUERY_DONE);
             mCallbackHelper.notifyCalled();
         }
     }
@@ -564,6 +589,7 @@ public class AwAutofillTest {
         private static final int TOTAL_CONTROLS = 1; // text1
 
         public static final int NO_FORM_SUBMISSION = -1;
+        public static final int NO_RECORD = -1;
 
         private int mCnt;
         private AwAutofillTest mTest;
@@ -576,8 +602,16 @@ public class AwAutofillTest {
         private MetricsUtils.HistogramDelta mUserChangedNonAutofilledField;
         private MetricsUtils.HistogramDelta mAutofillWebViewCreatedByActivityContext;
         private MetricsUtils.HistogramDelta mAutofillWebViewCreatedByAppContext;
+        private MetricsUtils.HistogramDelta mAutofillHasInvalidServerPrediction;
+        private MetricsUtils.HistogramDelta mAutofillHasValidServerPrediction;
+        private MetricsUtils.HistogramDelta mAwGIsCurrentService;
+        private MetricsUtils.HistogramDelta mAwGIsNotCurrentService;
         private volatile Integer mSourceValue;
+        private volatile Integer mServerPredictionAvailabilityValue;
+        private volatile Integer mAwGSuggestionAvailabilityValue;
         private HashMap<MetricsUtils.HistogramDelta, Integer> mSubmissionSourceDelta;
+        private HashMap<MetricsUtils.HistogramDelta, Integer> mServerPredictionAvailablityDelta;
+        private HashMap<MetricsUtils.HistogramDelta, Integer> mAwGSuggestionAvailablityDelta;
         private volatile Integer mHistogramSimpleCount;
 
         public AwAutofillSessionUMATestHelper(AwAutofillTest test, TestWebServer webServer) {
@@ -588,25 +622,44 @@ public class AwAutofillTest {
 
         public int getSessionValue() {
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> { mSessionValue = getUMAEnumerateValue(mSessionDelta); });
+                    () -> { mSessionValue = getUMAEnumerateValue(mSessionDelta, null); });
             return mSessionValue;
         }
 
         public int getSubmissionSourceValue() {
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> { mSourceValue = getUMAEnumerateValue(mSubmissionSourceDelta); });
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                mSourceValue = getUMAEnumerateValue(mSubmissionSourceDelta, NO_FORM_SUBMISSION);
+            });
             return mSourceValue;
         }
 
-        private int getUMAEnumerateValue(HashMap<MetricsUtils.HistogramDelta, Integer> deltas) {
-            int value = NO_FORM_SUBMISSION;
+        public int getServerPredictionAvailabilityValue() {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                mServerPredictionAvailabilityValue =
+                        getUMAEnumerateValue(mServerPredictionAvailablityDelta, null);
+            });
+            return mServerPredictionAvailabilityValue;
+        }
+
+        public int getAwGSuggestionAvailabilityValue() {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                mAwGSuggestionAvailabilityValue =
+                        getUMAEnumerateValue(mAwGSuggestionAvailablityDelta, NO_RECORD);
+            });
+            return mAwGSuggestionAvailabilityValue;
+        }
+
+        private int getUMAEnumerateValue(
+                HashMap<MetricsUtils.HistogramDelta, Integer> deltas, Integer defaultValue) {
+            Integer value = null;
             for (MetricsUtils.HistogramDelta delta : deltas.keySet()) {
                 if (delta.getDelta() != 0) {
-                    assertEquals(NO_FORM_SUBMISSION, value);
+                    assertNull(value);
                     value = deltas.get(delta);
                 }
             }
-            return value;
+            if (defaultValue == null) assertNotNull(value);
+            return value != null ? value : defaultValue;
         }
 
         public void triggerAutofill() throws Throwable {
@@ -617,6 +670,27 @@ public class AwAutofillTest {
             mCnt += mTest.waitForCallbackAndVerifyTypes(mCnt,
                     new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
                             AUTOFILL_VALUE_CHANGED});
+        }
+
+        public void simulateServerPredictionBeforeTriggeringAutofill(int serverType)
+                throws Throwable {
+            final String url = mWebServer.setResponse(FILE, DATA, null);
+            mTest.loadUrlSync(url);
+            simulateServerPrediction(serverType);
+            mTest.executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+            mTest.dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+            mCnt += mTest.waitForCallbackAndVerifyTypes(mCnt,
+                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
+                            AUTOFILL_VALUE_CHANGED});
+        }
+
+        public void simulateServerPrediction(int serverType) throws Throwable {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    ()
+                            -> AutofillProviderTestHelper
+                                       .simulateMainFrameAutofillServerResponseForTesting(
+                                               mTest.mAwContents.getWebContents(),
+                                               new String[] {"text1"}, new int[] {serverType}));
         }
 
         public void simulateUserSelectSuggestion() throws Throwable {
@@ -681,6 +755,23 @@ public class AwAutofillTest {
                                     AutofillProviderUMA.UMA_AUTOFILL_SUBMISSION_SOURCE, i),
                             i);
                 }
+                mServerPredictionAvailablityDelta =
+                        new HashMap<MetricsUtils.HistogramDelta, Integer>();
+                for (int i = 0; i < AutofillProviderUMA.SERVER_PREDICTION_AVAILABLE_COUNT; i++) {
+                    mServerPredictionAvailablityDelta.put(
+                            new MetricsUtils.HistogramDelta(
+                                    AutofillProviderUMA.UMA_AUTOFILL_SERVER_PREDICTION_AVAILABILITY,
+                                    i),
+                            i);
+                }
+                mAwGSuggestionAvailablityDelta =
+                        new HashMap<MetricsUtils.HistogramDelta, Integer>();
+                for (int i = 0; i < AutofillProviderUMA.AWG_SUGGSTION_AVAILABLE_COUNT; i++) {
+                    mAwGSuggestionAvailablityDelta.put(
+                            new MetricsUtils.HistogramDelta(
+                                    AutofillProviderUMA.UMA_AUTOFILL_AWG_SUGGSTION_AVAILABILITY, i),
+                            i);
+                }
                 mAutofillWebViewViewEnabled = new MetricsUtils.HistogramDelta(
                         AutofillProviderUMA.UMA_AUTOFILL_ENABLED, 1 /*true*/);
                 mAutofillWebViewViewDisabled = new MetricsUtils.HistogramDelta(
@@ -693,7 +784,15 @@ public class AwAutofillTest {
                         AutofillProviderUMA.UMA_AUTOFILL_USER_CHANGED_AUTOFILLED_FIELD, 1 /*true*/);
                 mUserChangedNonAutofilledField = new MetricsUtils.HistogramDelta(
                         AutofillProviderUMA.UMA_AUTOFILL_USER_CHANGED_AUTOFILLED_FIELD,
-                        0 /*falsTe*/);
+                        0 /*false*/);
+                mAutofillHasInvalidServerPrediction = new MetricsUtils.HistogramDelta(
+                        AutofillProviderUMA.UMA_AUTOFILL_VALID_SERVER_PREDICTION, 0 /*false*/);
+                mAutofillHasValidServerPrediction = new MetricsUtils.HistogramDelta(
+                        AutofillProviderUMA.UMA_AUTOFILL_VALID_SERVER_PREDICTION, 1 /*true*/);
+                mAwGIsNotCurrentService = new MetricsUtils.HistogramDelta(
+                        AutofillProviderUMA.UMA_AUTOFILL_AWG_IS_CURRENT_SERVICE, 0 /*false*/);
+                mAwGIsCurrentService = new MetricsUtils.HistogramDelta(
+                        AutofillProviderUMA.UMA_AUTOFILL_AWG_IS_CURRENT_SERVICE, 1 /*true*/);
             });
         }
 
@@ -716,6 +815,20 @@ public class AwAutofillTest {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 assertEquals(0, mAutofillWebViewViewEnabled.getDelta());
                 assertEquals(1, mAutofillWebViewViewDisabled.getDelta());
+            });
+        }
+
+        public void verifyAwGIsCurrentService(boolean current) {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                assertEquals(current ? 0 : 1, mAwGIsNotCurrentService.getDelta());
+                assertEquals(current ? 1 : 0, mAwGIsCurrentService.getDelta());
+            });
+        }
+
+        public void verifyServerPredictionValid(boolean valid) {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                assertEquals(valid ? 0 : 1, mAutofillHasInvalidServerPrediction.getDelta());
+                assertEquals(valid ? 1 : 0, mAutofillHasValidServerPrediction.getDelta());
             });
         }
 
@@ -750,6 +863,8 @@ public class AwAutofillTest {
         }
     }
 
+    private static boolean sIsAwGCurrentAutofillService = true;
+
     @Rule
     public AwActivityTestRule mRule = new AwActivityTestRule();
 
@@ -768,21 +883,30 @@ public class AwAutofillTest {
     @Before
     public void setUp() throws Exception {
         mWebServer = TestWebServer.start();
-        mUMATestHelper = new AwAutofillSessionUMATestHelper(this, mWebServer);
-        mContentsClient = new AwAutofillTestClient();
-        mTestContainerView = mRule.createAwTestContainerViewOnMainSync(
-                mContentsClient, false, new TestDependencyFactory() {
+        AutofillProvider.setAutofillManagerWrapperFactoryForTesting(
+                new AutofillProvider.AutofillManagerWrapperFactoryForTesting() {
                     @Override
-                    public AutofillProvider createAutofillProvider(
-                            Context context, ViewGroup containerView) {
+                    public AutofillManagerWrapper create(Context context) {
                         mTestAutofillManagerWrapper = new TestAutofillManagerWrapper(context);
-                        mAutofillProvider = new AutofillProvider(containerView,
-                                mTestAutofillManagerWrapper, context, "AwAutofillTest");
-                        return mAutofillProvider;
+                        return mTestAutofillManagerWrapper;
                     }
                 });
+        mUMATestHelper = new AwAutofillSessionUMATestHelper(this, mWebServer);
+        mContentsClient = new AwAutofillTestClient();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> AutofillProviderTestHelper.disableDownloadServerForTesting());
+        mTestContainerView = mRule.createAwTestContainerViewOnMainSync(
+                mContentsClient, false, new TestDependencyFactory());
         mAwContents = mTestContainerView.getAwContents();
         AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        mAutofillProvider = mAwContents.getAutofillProviderForTesting();
+    }
+
+    public void setUpAwGNotCurrent() throws Exception {
+        sIsAwGCurrentAutofillService = false;
+        mWebServer.shutdown();
+        // Initialize everything again.
+        setUp();
     }
 
     @After
@@ -877,7 +1001,7 @@ public class AwAutofillTest {
         // WebView shouldn't set class name.
         assertNull(viewStructure.getClassName());
         Bundle extras = viewStructure.getExtras();
-        assertEquals("AwAutofillTest", extras.getCharSequence("VIRTUAL_STRUCTURE_PROVIDER_NAME"));
+        assertEquals("Android WebView", extras.getCharSequence("VIRTUAL_STRUCTURE_PROVIDER_NAME"));
         assertTrue(0 < extras.getCharSequence("VIRTUAL_STRUCTURE_PROVIDER_VERSION").length());
         TestViewStructure.AwHtmlInfo htmlInfoForm = viewStructure.getHtmlInfo();
         assertEquals("form", htmlInfoForm.getTag());
@@ -992,6 +1116,7 @@ public class AwAutofillTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "https://crbug.com/1153875")
     public void testAutofillTriggersAfterReload() throws Throwable {
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<input type='text' id='text1' name='username'"
@@ -1616,6 +1741,8 @@ public class AwAutofillTest {
                 mUMATestHelper.getSessionValue());
         assertEquals(
                 AutofillProviderUMA.FORM_SUBMISSION, mUMATestHelper.getSubmissionSourceValue());
+        assertEquals(AutofillProviderUMA.AWG_HAS_SUGGESTION_AUTOFILLED,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
@@ -1632,6 +1759,8 @@ public class AwAutofillTest {
                 mUMATestHelper.getSessionValue());
         assertEquals(AwAutofillSessionUMATestHelper.NO_FORM_SUBMISSION,
                 mUMATestHelper.getSubmissionSourceValue());
+        assertEquals(AwAutofillSessionUMATestHelper.NO_RECORD,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
@@ -1653,6 +1782,8 @@ public class AwAutofillTest {
         assertEquals(count + 1,
                 mUMATestHelper.getHistogramSampleCount(
                         AutofillProviderUMA.UMA_AUTOFILL_SUGGESTION_TIME));
+        assertEquals(AwAutofillSessionUMATestHelper.NO_RECORD,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
@@ -1668,6 +1799,8 @@ public class AwAutofillTest {
                 mUMATestHelper.getSessionValue());
         assertEquals(
                 AutofillProviderUMA.FORM_SUBMISSION, mUMATestHelper.getSubmissionSourceValue());
+        assertEquals(AutofillProviderUMA.AWG_HAS_SUGGESTION_NO_AUTOFILL,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
@@ -1683,6 +1816,8 @@ public class AwAutofillTest {
         assertEquals(AwAutofillSessionUMATestHelper.NO_FORM_SUBMISSION,
                 mUMATestHelper.getSubmissionSourceValue());
         mUMATestHelper.verifyUserChangedNonAutofilledField();
+        assertEquals(AwAutofillSessionUMATestHelper.NO_RECORD,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
@@ -1698,6 +1833,8 @@ public class AwAutofillTest {
         assertEquals(
                 AutofillProviderUMA.FORM_SUBMISSION, mUMATestHelper.getSubmissionSourceValue());
         mUMATestHelper.verifyUserChangedNonAutofilledField();
+        assertEquals(AutofillProviderUMA.AWG_NO_SUGGESTION,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
@@ -1714,6 +1851,8 @@ public class AwAutofillTest {
         assertEquals(
                 AutofillProviderUMA.FORM_SUBMISSION, mUMATestHelper.getSubmissionSourceValue());
         mUMATestHelper.verifyUserDidntChangeForm();
+        assertEquals(AutofillProviderUMA.AWG_HAS_SUGGESTION_AUTOFILLED,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
@@ -1731,12 +1870,14 @@ public class AwAutofillTest {
         assertEquals(AwAutofillSessionUMATestHelper.NO_FORM_SUBMISSION,
                 mUMATestHelper.getSubmissionSourceValue());
         mUMATestHelper.verifyUserDidntChangeForm();
+        assertEquals(AwAutofillSessionUMATestHelper.NO_RECORD,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testUMAUserSelectNotSuggestionUserNotChangeFormNoFormSubmitted() throws Throwable {
+    public void testUMAUserNotSelectSuggestionUserNotChangeFormNoFormSubmitted() throws Throwable {
         mUMATestHelper.triggerAutofill();
         invokeOnProvideAutoFillVirtualStructure();
         invokeOnInputUIShown();
@@ -1747,6 +1888,8 @@ public class AwAutofillTest {
         assertEquals(AwAutofillSessionUMATestHelper.NO_FORM_SUBMISSION,
                 mUMATestHelper.getSubmissionSourceValue());
         mUMATestHelper.verifyUserDidntChangeForm();
+        assertEquals(AwAutofillSessionUMATestHelper.NO_RECORD,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
@@ -1763,6 +1906,8 @@ public class AwAutofillTest {
         assertEquals(
                 AutofillProviderUMA.FORM_SUBMISSION, mUMATestHelper.getSubmissionSourceValue());
         mUMATestHelper.verifyUserDidntChangeForm();
+        assertEquals(AutofillProviderUMA.AWG_HAS_SUGGESTION_NO_AUTOFILL,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
@@ -1777,6 +1922,8 @@ public class AwAutofillTest {
         assertEquals(AwAutofillSessionUMATestHelper.NO_FORM_SUBMISSION,
                 mUMATestHelper.getSubmissionSourceValue());
         mUMATestHelper.verifyUserDidntChangeForm();
+        assertEquals(AwAutofillSessionUMATestHelper.NO_RECORD,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
@@ -1791,6 +1938,8 @@ public class AwAutofillTest {
         assertEquals(
                 AutofillProviderUMA.FORM_SUBMISSION, mUMATestHelper.getSubmissionSourceValue());
         mUMATestHelper.verifyUserDidntChangeForm();
+        assertEquals(AutofillProviderUMA.AWG_NO_SUGGESTION,
+                mUMATestHelper.getAwGSuggestionAvailabilityValue());
     }
 
     @Test
@@ -1803,6 +1952,61 @@ public class AwAutofillTest {
                 AutofillProviderUMA.NO_CALLBACK_FORM_FRAMEWORK, mUMATestHelper.getSessionValue());
         assertEquals(AwAutofillSessionUMATestHelper.NO_FORM_SUBMISSION,
                 mUMATestHelper.getSubmissionSourceValue());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.P)
+    public void testUMAAwGIsCurrentService() throws Throwable {
+        mUMATestHelper.triggerAutofill();
+        mUMATestHelper.verifyAwGIsCurrentService(/*current=*/true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.P)
+    public void testUMAAwGIsNotCurrentService() throws Throwable {
+        setUpAwGNotCurrent();
+        mUMATestHelper.triggerAutofill();
+        mUMATestHelper.verifyAwGIsCurrentService(/*current=*/false);
+    }
+
+    @Test
+    @FlakyTest(message = "https://crbug.com/1161326")
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"enable-features=AndroidAutofillQueryServerFieldTypes"})
+    public void testUMANoServerPrediction() throws Throwable {
+        mUMATestHelper.triggerAutofill();
+        mUMATestHelper.startNewSession();
+        assertEquals(AutofillProviderUMA.SERVER_PREDICTION_NOT_AVAILABLE,
+                mUMATestHelper.getServerPredictionAvailabilityValue());
+    }
+
+    @Test
+    @FlakyTest(message = "https://crbug.com/1161326")
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"enable-features=AndroidAutofillQueryServerFieldTypes"})
+    public void testUMAServerPredictionArriveBeforeSessionStart() throws Throwable {
+        mUMATestHelper.simulateServerPredictionBeforeTriggeringAutofill(/*USERNAME*/ 86);
+        assertEquals(AutofillProviderUMA.SERVER_PREDICTION_AVAILABLE_ON_SESSION_STARTS,
+                mUMATestHelper.getServerPredictionAvailabilityValue());
+        mUMATestHelper.verifyServerPredictionValid(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"enable-features=AndroidAutofillQueryServerFieldTypes"})
+    public void testUMAServerPredictionArriveAfterSessionStart() throws Throwable {
+        mUMATestHelper.triggerAutofill();
+        mUMATestHelper.simulateServerPrediction(/*NO_SERVER_DATA*/ 0);
+        assertEquals(AutofillProviderUMA.SERVER_PREDICTION_AVAILABLE_AFTER_SESSION_STARTS,
+                mUMATestHelper.getServerPredictionAvailabilityValue());
+        mUMATestHelper.verifyServerPredictionValid(false);
     }
 
     @Test
@@ -2053,6 +2257,513 @@ public class AwAutofillTest {
         assertEquals(View.INVISIBLE, viewStructure.getChild(1).getVisibility());
     }
 
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"enable-features=AndroidAutofillQueryServerFieldTypes"})
+    public void testServerPredictionArrivesBeforeAutofillStart() throws Throwable {
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<input type='text' id='text1' name='username'>"
+                + "<input type='text' name='email' id='text2' autocomplete='email'/>"
+                + "</form></body></html>";
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> AutofillProviderTestHelper
+                                   .simulateMainFramePredictionsAutofillServerResponseForTesting(
+                                           mAwContents.getWebContents(),
+                                           new String[] {"text1", "text2"},
+                                           new int[][] {{/*USERNAME, EMAIL_ADDRESS*/ 86, 9},
+                                                   {/*EMAIL_ADDRESS*/ 9}}));
+
+        int cnt = 0;
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+
+        cnt += waitForCallbackAndVerifyTypes(cnt,
+                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
+                        AUTOFILL_VALUE_CHANGED});
+
+        invokeOnProvideAutoFillVirtualStructure();
+        TestViewStructure viewStructure = mTestValues.testViewStructure;
+        assertNotNull(viewStructure);
+        assertEquals(2, viewStructure.getChildCount());
+        assertEquals("USERNAME",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("USERNAME",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertEquals("USERNAME,EMAIL_ADDRESS",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                        "crowdsourcing-predictions-autofill-hints"));
+        assertEquals("EMAIL_ADDRESS",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("HTML_TYPE_EMAIL",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertEquals("EMAIL_ADDRESS",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                        "crowdsourcing-predictions-autofill-hints"));
+        // Binder will not be set if the prediction already arrives.
+        IBinder binder = viewStructure.getExtras().getBinder("AUTOFILL_HINTS_SERVICE");
+        assertNull(binder);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"enable-features=AndroidAutofillQueryServerFieldTypes"})
+    public void testServerPredictionPrimaryTypeArrivesBeforeAutofillStart() throws Throwable {
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<input type='text' id='text1' name='username'>"
+                + "<input type='text' name='email' id='text2' autocomplete='email'/>"
+                + "</form></body></html>";
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> AutofillProviderTestHelper
+                                   .simulateMainFrameAutofillServerResponseForTesting(
+                                           mAwContents.getWebContents(),
+                                           new String[] {"text1", "text2"},
+                                           new int[] {/*USERNAME, EMAIL_ADDRESS*/ 86, 9}));
+
+        int cnt = 0;
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+
+        cnt += waitForCallbackAndVerifyTypes(cnt,
+                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
+                        AUTOFILL_VALUE_CHANGED});
+
+        invokeOnProvideAutoFillVirtualStructure();
+        TestViewStructure viewStructure = mTestValues.testViewStructure;
+        assertNotNull(viewStructure);
+        assertEquals(2, viewStructure.getChildCount());
+        assertEquals("USERNAME",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("USERNAME",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertEquals("USERNAME",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                        "crowdsourcing-predictions-autofill-hints"));
+        assertEquals("EMAIL_ADDRESS",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("HTML_TYPE_EMAIL",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertEquals("EMAIL_ADDRESS",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                        "crowdsourcing-predictions-autofill-hints"));
+        // Binder will not be set if the prediction already arrives.
+        IBinder binder = viewStructure.getExtras().getBinder("AUTOFILL_HINTS_SERVICE");
+        assertNull(binder);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"enable-features=AndroidAutofillQueryServerFieldTypes"})
+    public void testServerPredictionArrivesAfterAutofillStart() throws Throwable {
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<input type='text' id='text1' name='username'>"
+                + "<input type='text' name='email' id='text2' autocomplete='email'/>"
+                + "</form></body></html>";
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+
+        int cnt = 0;
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+
+        cnt += waitForCallbackAndVerifyTypes(cnt,
+                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
+                        AUTOFILL_VALUE_CHANGED});
+
+        invokeOnProvideAutoFillVirtualStructure();
+        TestViewStructure viewStructure = mTestValues.testViewStructure;
+        assertNotNull(viewStructure);
+        assertEquals(2, viewStructure.getChildCount());
+        assertEquals("NO_SERVER_DATA",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("UNKNOWN_TYPE",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertNull(viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                "crowdsourcing-predictions-autofill-hints"));
+        assertEquals("NO_SERVER_DATA",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("HTML_TYPE_EMAIL",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertNull(viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                "crowdsourcing-predictions-autofill-hints"));
+
+        IBinder binder = viewStructure.getExtras().getBinder("AUTOFILL_HINTS_SERVICE");
+        assertNotNull(binder);
+        AutofillHintsServiceTestHelper autofillHintsServiceTestHelper =
+                new AutofillHintsServiceTestHelper();
+        autofillHintsServiceTestHelper.registerViewTypeService(binder);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> AutofillProviderTestHelper
+                                   .simulateMainFramePredictionsAutofillServerResponseForTesting(
+                                           mAwContents.getWebContents(),
+                                           new String[] {"text1", "text2"},
+                                           new int[][] {{/*USERNAME, EMAIL_ADDRESS*/ 86, 9},
+                                                   {/*EMAIL_ADDRESS*/ 9}}));
+
+        cnt += waitForCallbackAndVerifyTypes(cnt, new Integer[] {AUTOFILL_QUERY_DONE});
+        assertTrue(mTestAutofillManagerWrapper.isQuerySucceed());
+        autofillHintsServiceTestHelper.waitForCallbackInvoked();
+        List<ViewType> viewTypes = autofillHintsServiceTestHelper.getViewTypes();
+        assertEquals(2, viewTypes.size());
+        assertEquals(viewStructure.getChild(0).getAutofillId(), viewTypes.get(0).mAutofillId);
+        assertEquals("USERNAME", viewTypes.get(0).mServerType);
+        assertEquals("USERNAME", viewTypes.get(0).mComputedType);
+        assertArrayEquals(new String[] {"USERNAME", "EMAIL_ADDRESS"},
+                viewTypes.get(0).getServerPredictions());
+        assertEquals(viewStructure.getChild(1).getAutofillId(), viewTypes.get(1).mAutofillId);
+        assertEquals("EMAIL_ADDRESS", viewTypes.get(1).mServerType);
+        assertEquals("HTML_TYPE_EMAIL", viewTypes.get(1).mComputedType);
+        assertArrayEquals(new String[] {"EMAIL_ADDRESS"}, viewTypes.get(1).getServerPredictions());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"enable-features=AndroidAutofillQueryServerFieldTypes"})
+    public void testServerPredictionPrimaryTypeArrivesAfterAutofillStart() throws Throwable {
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<input type='text' id='text1' name='username'>"
+                + "<input type='text' name='email' id='text2' autocomplete='email'/>"
+                + "</form></body></html>";
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+
+        int cnt = 0;
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+
+        cnt += waitForCallbackAndVerifyTypes(cnt,
+                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
+                        AUTOFILL_VALUE_CHANGED});
+
+        invokeOnProvideAutoFillVirtualStructure();
+        TestViewStructure viewStructure = mTestValues.testViewStructure;
+        assertNotNull(viewStructure);
+        assertEquals(2, viewStructure.getChildCount());
+        assertEquals("NO_SERVER_DATA",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("UNKNOWN_TYPE",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertNull(viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                "crowdsourcing-predictions-autofill-hints"));
+        assertEquals("NO_SERVER_DATA",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("HTML_TYPE_EMAIL",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertNull(viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                "crowdsourcing-predictions-autofill-hints"));
+
+        IBinder binder = viewStructure.getExtras().getBinder("AUTOFILL_HINTS_SERVICE");
+        assertNotNull(binder);
+        AutofillHintsServiceTestHelper autofillHintsServiceTestHelper =
+                new AutofillHintsServiceTestHelper();
+        autofillHintsServiceTestHelper.registerViewTypeService(binder);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> AutofillProviderTestHelper
+                                   .simulateMainFrameAutofillServerResponseForTesting(
+                                           mAwContents.getWebContents(),
+                                           new String[] {"text1", "text2"},
+                                           new int[] {/*USERNAME, EMAIL_ADDRESS*/ 86, 9}));
+
+        cnt += waitForCallbackAndVerifyTypes(cnt, new Integer[] {AUTOFILL_QUERY_DONE});
+        assertTrue(mTestAutofillManagerWrapper.isQuerySucceed());
+        autofillHintsServiceTestHelper.waitForCallbackInvoked();
+        List<ViewType> viewTypes = autofillHintsServiceTestHelper.getViewTypes();
+        assertEquals(2, viewTypes.size());
+        assertEquals(viewStructure.getChild(0).getAutofillId(), viewTypes.get(0).mAutofillId);
+        assertEquals("USERNAME", viewTypes.get(0).mServerType);
+        assertEquals("USERNAME", viewTypes.get(0).mComputedType);
+        assertArrayEquals(new String[] {"USERNAME"}, viewTypes.get(0).getServerPredictions());
+        assertEquals(viewStructure.getChild(1).getAutofillId(), viewTypes.get(1).mAutofillId);
+        assertEquals("EMAIL_ADDRESS", viewTypes.get(1).mServerType);
+        assertEquals("HTML_TYPE_EMAIL", viewTypes.get(1).mComputedType);
+        assertArrayEquals(new String[] {"EMAIL_ADDRESS"}, viewTypes.get(1).getServerPredictions());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"enable-features=AndroidAutofillQueryServerFieldTypes"})
+    public void testServerPredictionArrivesBeforeCallbackRegistered() throws Throwable {
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<input type='text' id='text1' name='username'>"
+                + "<input type='text' name='email' id='text2' autocomplete='email'/>"
+                + "</form></body></html>";
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+
+        int cnt = 0;
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+
+        cnt += waitForCallbackAndVerifyTypes(cnt,
+                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
+                        AUTOFILL_VALUE_CHANGED});
+
+        invokeOnProvideAutoFillVirtualStructure();
+        TestViewStructure viewStructure = mTestValues.testViewStructure;
+        assertNotNull(viewStructure);
+        assertEquals(2, viewStructure.getChildCount());
+        assertEquals("NO_SERVER_DATA",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("UNKNOWN_TYPE",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertNull(viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                "crowdsourcing-predictions-autofill-hints"));
+        assertEquals("NO_SERVER_DATA",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("HTML_TYPE_EMAIL",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertNull(viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                "crowdsourcing-predictions-autofill-hints"));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> AutofillProviderTestHelper
+                                   .simulateMainFramePredictionsAutofillServerResponseForTesting(
+                                           mAwContents.getWebContents(),
+                                           new String[] {"text1", "text2"},
+                                           new int[][] {{/*USERNAME, EMAIL_ADDRESS*/ 86, 9},
+                                                   {/*EMAIL_ADDRESS*/ 9}}));
+
+        cnt += waitForCallbackAndVerifyTypes(cnt, new Integer[] {AUTOFILL_QUERY_DONE});
+        assertTrue(mTestAutofillManagerWrapper.isQuerySucceed());
+
+        IBinder binder = viewStructure.getExtras().getBinder("AUTOFILL_HINTS_SERVICE");
+        assertNotNull(binder);
+        AutofillHintsServiceTestHelper autofillHintsServiceTestHelper =
+                new AutofillHintsServiceTestHelper();
+        autofillHintsServiceTestHelper.registerViewTypeService(binder);
+        autofillHintsServiceTestHelper.waitForCallbackInvoked();
+        List<ViewType> viewTypes = autofillHintsServiceTestHelper.getViewTypes();
+        assertEquals(2, viewTypes.size());
+        assertEquals(viewStructure.getChild(0).getAutofillId(), viewTypes.get(0).mAutofillId);
+        assertEquals("USERNAME", viewTypes.get(0).mServerType);
+        assertEquals("USERNAME", viewTypes.get(0).mComputedType);
+        assertArrayEquals(new String[] {"USERNAME", "EMAIL_ADDRESS"},
+                viewTypes.get(0).getServerPredictions());
+        assertEquals(viewStructure.getChild(1).getAutofillId(), viewTypes.get(1).mAutofillId);
+        assertEquals("EMAIL_ADDRESS", viewTypes.get(1).mServerType);
+        assertEquals("HTML_TYPE_EMAIL", viewTypes.get(1).mComputedType);
+        assertArrayEquals(new String[] {"EMAIL_ADDRESS"}, viewTypes.get(1).getServerPredictions());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"disable-features=AndroidAutofillQueryServerFieldTypes"})
+    public void testServerPredictionQueryDisabled() throws Throwable {
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<input type='text' id='text1' name='username'>"
+                + "<input type='text' name='email' id='text2'/>"
+                + "</form></body></html>";
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+
+        int cnt = 0;
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+
+        cnt += waitForCallbackAndVerifyTypes(cnt,
+                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
+                        AUTOFILL_VALUE_CHANGED});
+
+        invokeOnProvideAutoFillVirtualStructure();
+        TestViewStructure viewStructure = mTestValues.testViewStructure;
+        assertNotNull(viewStructure);
+        assertEquals(2, viewStructure.getChildCount());
+        assertNull(viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                "crowdsourcing-autofill-hints"));
+        assertNull(viewStructure.getChild(0).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertNull(viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                "crowdsourcing-predictions-autofill-hints"));
+        assertNull(viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                "crowdsourcing-autofill-hints"));
+        assertNull(viewStructure.getChild(1).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertNull(viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                "crowdsourcing-predictions-autofill-hints"));
+        IBinder binder = viewStructure.getExtras().getBinder("AUTOFILL_HINTS_SERVICE");
+        assertNull(binder);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"enable-features=AndroidAutofillQueryServerFieldTypes"})
+    public void testServerQueryFailedAfterAutofillStart() throws Throwable {
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<input type='text' id='text1' name='username'>"
+                + "<input type='text' name='email' id='text2' autocomplete='email'/>"
+                + "</form></body></html>";
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+
+        int cnt = 0;
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+
+        cnt += waitForCallbackAndVerifyTypes(cnt,
+                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
+                        AUTOFILL_VALUE_CHANGED});
+
+        invokeOnProvideAutoFillVirtualStructure();
+        TestViewStructure viewStructure = mTestValues.testViewStructure;
+        assertNotNull(viewStructure);
+        assertEquals(2, viewStructure.getChildCount());
+        assertEquals("NO_SERVER_DATA",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("UNKNOWN_TYPE",
+                viewStructure.getChild(0).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertNull(viewStructure.getChild(0).getHtmlInfo().getAttribute(
+                "crowdsourcing-predictions-autofill-hints"));
+        assertEquals("NO_SERVER_DATA",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                        "crowdsourcing-autofill-hints"));
+        assertEquals("HTML_TYPE_EMAIL",
+                viewStructure.getChild(1).getHtmlInfo().getAttribute("computed-autofill-hints"));
+        assertNull(viewStructure.getChild(1).getHtmlInfo().getAttribute(
+                "crowdsourcing-predictions-autofill-hints"));
+        IBinder binder = viewStructure.getExtras().getBinder("AUTOFILL_HINTS_SERVICE");
+        assertNotNull(binder);
+        AutofillHintsServiceTestHelper autofillHintsServiceTestHelper =
+                new AutofillHintsServiceTestHelper();
+        autofillHintsServiceTestHelper.registerViewTypeService(binder);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> AutofillProviderTestHelper
+                                   .simulateMainFrameAutofillQueryFailedForTesting(
+                                           mAwContents.getWebContents()));
+
+        cnt += waitForCallbackAndVerifyTypes(cnt, new Integer[] {AUTOFILL_QUERY_DONE});
+        assertFalse(mTestAutofillManagerWrapper.isQuerySucceed());
+
+        autofillHintsServiceTestHelper.waitForCallbackInvoked();
+        assertTrue(autofillHintsServiceTestHelper.isQueryFailed());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testFieldAddedBeforeSuggestionSelected() throws Throwable {
+        // This test verifies that form filling works even in the case that the form has been
+        // modified (field was added) in the DOM between the decision to fill and executing the
+        // fill.
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<label>User Name:</label>"
+                + "<input type='text' id='text1' name='name'/>"
+                + "<label>Password:</label>"
+                + "<input type='password' id='pwdid' name='pwd'/>"
+                + "</form></body></html>";
+        int cnt = 0;
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+        cnt += waitForCallbackAndVerifyTypes(cnt,
+                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
+                        AUTOFILL_VALUE_CHANGED});
+        invokeOnProvideAutoFillVirtualStructure();
+        TestViewStructure viewStructure = mTestValues.testViewStructure;
+        assertNotNull(viewStructure);
+        assertEquals(2, viewStructure.getChildCount());
+
+        // Append a field.
+        executeJavaScriptAndWaitForResult("document.getElementById('pwdid').insertAdjacentHTML("
+                + "'afterend', '<input type=\"password\" id=\"pwdid2\"/>');");
+
+        // Autofill the original form.
+        SparseArray<AutofillValue> values = new SparseArray<AutofillValue>();
+        values.append(
+                viewStructure.getChild(0).getId(), AutofillValue.forText("example@example.com"));
+        values.append(viewStructure.getChild(1).getId(), AutofillValue.forText("password"));
+        cnt = getCallbackCount();
+        clearChangedValues();
+        invokeAutofill(values);
+        waitForCallbackAndVerifyTypes(
+                cnt, new Integer[] {AUTOFILL_VALUE_CHANGED, AUTOFILL_VALUE_CHANGED});
+
+        String value0 =
+                executeJavaScriptAndWaitForResult("document.getElementById('text1').value;");
+        assertEquals("\"example@example.com\"", value0);
+        String value1 =
+                executeJavaScriptAndWaitForResult("document.getElementById('pwdid').value;");
+        assertEquals("\"password\"", value1);
+        String value2 =
+                executeJavaScriptAndWaitForResult("document.getElementById('pwdid2').value;");
+        assertEquals("\"\"", value2);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testFirstFieldRemovedBeforeSuggestionSelected() throws Throwable {
+        // This test verifies that form filling works even if an element of the form that was
+        // supposed to be filled has been deleted between the time of decision to fill the form and
+        // executing the fill.
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<label>User Name:</label>"
+                + "<input type='text' id='text1' name='name'/>"
+                + "<label>Password:</label>"
+                + "<input type='password' id='pwdid' name='pwd'/>"
+                + "</form></body></html>";
+        int cnt = 0;
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+        // Focus on the second element, since the first one is about to be removed. Removing the
+        // element on which the fill was triggered would cancel the filling operation.
+        executeJavaScriptAndWaitForResult("document.getElementById('pwdid').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+        cnt += waitForCallbackAndVerifyTypes(cnt,
+                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
+                        AUTOFILL_VALUE_CHANGED});
+        invokeOnProvideAutoFillVirtualStructure();
+        TestViewStructure viewStructure = mTestValues.testViewStructure;
+        assertNotNull(viewStructure);
+        assertEquals(2, viewStructure.getChildCount());
+
+        // Remove the first field.
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').remove()");
+
+        // Autofill the original form.
+        SparseArray<AutofillValue> values = new SparseArray<AutofillValue>();
+        values.append(
+                viewStructure.getChild(0).getId(), AutofillValue.forText("example@example.com"));
+        values.append(viewStructure.getChild(1).getId(), AutofillValue.forText("password"));
+        cnt = getCallbackCount();
+        clearChangedValues();
+        invokeAutofill(values);
+        waitForCallbackAndVerifyTypes(
+                cnt, new Integer[] {AUTOFILL_VALUE_CHANGED, AUTOFILL_VALUE_CHANGED});
+
+        String value1 =
+                executeJavaScriptAndWaitForResult("document.getElementById('pwdid').value;");
+        assertEquals("\"password\"", value1);
+    }
+
     private void pollJavascriptResult(String script, String expectedResult) throws Throwable {
         AwActivityTestRule.pollInstrumentationThread(() -> {
             try {
@@ -2180,8 +2891,9 @@ public class AwAutofillTest {
     }
 
     private void dispatchDownAndUpKeyEvents(final int code) throws Throwable {
-        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, code));
-        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
+        long eventTime = SystemClock.uptimeMillis();
+        dispatchKeyEvent(new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, code, 0));
+        dispatchKeyEvent(new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, code, 0));
     }
 
     private boolean dispatchKeyEvent(final KeyEvent event) throws Throwable {

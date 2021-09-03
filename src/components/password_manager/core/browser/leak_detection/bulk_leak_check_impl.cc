@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
@@ -17,6 +17,7 @@
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace password_manager {
 namespace {
@@ -58,8 +59,8 @@ struct BulkLeakCheckImpl::CredentialHolder {
   std::unique_ptr<LeakDetectionRequestInterface> network_request_;
 };
 
-LeakCheckCredential::LeakCheckCredential(base::string16 username,
-                                         base::string16 password)
+LeakCheckCredential::LeakCheckCredential(std::u16string username,
+                                         std::u16string password)
     : username_(std::move(username)), password_(std::move(password)) {}
 
 LeakCheckCredential::LeakCheckCredential(LeakCheckCredential&&) = default;
@@ -76,7 +77,7 @@ BulkLeakCheckImpl::BulkLeakCheckImpl(
     : delegate_(delegate),
       identity_manager_(identity_manager),
       url_loader_factory_(std::move(url_loader_factory)),
-      encryption_key_(CreateNewKey()),
+      encryption_key_(CreateNewKey().value_or("")),
       payload_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
@@ -160,7 +161,7 @@ void BulkLeakCheckImpl::OnTokenReady(
 void BulkLeakCheckImpl::OnLookupLeakResponse(
     CredentialHolder* weak_holder,
     std::unique_ptr<SingleLookupResponse> response,
-    base::Optional<LeakDetectionError> error) {
+    absl::optional<LeakDetectionError> error) {
   std::unique_ptr<CredentialHolder> holder =
       RemoveFromQueue(weak_holder, &waiting_response_);
 

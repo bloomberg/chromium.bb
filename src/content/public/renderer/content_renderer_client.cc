@@ -4,7 +4,9 @@
 
 #include "content/public/renderer/content_renderer_client.h"
 
+#include "base/command_line.h"
 #include "build/build_config.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/demuxer.h"
 #include "media/base/renderer_factory.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
@@ -73,11 +75,7 @@ std::unique_ptr<media::Demuxer> ContentRendererClient::OverrideDemuxerForUrl(
   return nullptr;
 }
 
-blink::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
-  return nullptr;
-}
-
-std::unique_ptr<WebSocketHandshakeThrottleProvider>
+std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
 ContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return nullptr;
 }
@@ -110,7 +108,6 @@ ContentRendererClient::GetProtocolHandlerSecurityLevel() {
 #if defined(OS_ANDROID)
 bool ContentRendererClient::HandleNavigation(
     RenderFrame* render_frame,
-    bool is_content_initiated,
     bool render_view_was_created_by_renderer,
     blink::WebFrame* frame,
     const blink::WebURLRequest& request,
@@ -127,12 +124,9 @@ void ContentRendererClient::WillSendRequest(
     const blink::WebURL& url,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
-    GURL* new_url,
-    bool* force_ignore_site_for_cookies) {}
+    GURL* new_url) {}
 
-bool ContentRendererClient::IsPrefetchOnly(
-    RenderFrame* render_frame,
-    const blink::WebURLRequest& request) {
+bool ContentRendererClient::IsPrefetchOnly(RenderFrame* render_frame) {
   return false;
 }
 
@@ -157,7 +151,13 @@ bool ContentRendererClient::IsExternalPepperPlugin(
 
 bool ContentRendererClient::IsOriginIsolatedPepperPlugin(
     const base::FilePath& plugin_path) {
-  return false;
+  // Hosting plugins in-process is inherently incompatible with attempting to
+  // process-isolate plugins from different origins.
+  auto* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kPpapiInProcess))
+    return false;
+
+  return true;
 }
 
 void ContentRendererClient::AddSupportedKeySystems(
@@ -183,7 +183,7 @@ bool ContentRendererClient::IsSupportedBitstreamAudioCodec(
 }
 
 bool ContentRendererClient::ShouldReportDetailedMessageForSource(
-    const base::string16& source) {
+    const std::u16string& source) {
   return false;
 }
 
@@ -221,9 +221,9 @@ bool ContentRendererClient::ShouldEnforceWebRTCRoutingPreferences() {
   return true;
 }
 
-base::Optional<std::string>
+absl::optional<std::string>
 ContentRendererClient::WebRTCPlatformSpecificAudioProcessingConfiguration() {
-  return base::Optional<std::string>();
+  return absl::optional<std::string>();
 }
 
 GURL ContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
@@ -234,9 +234,9 @@ bool ContentRendererClient::IsIdleMediaSuspendEnabled() {
   return true;
 }
 
-std::unique_ptr<URLLoaderThrottleProvider>
+std::unique_ptr<blink::URLLoaderThrottleProvider>
 ContentRendererClient::CreateURLLoaderThrottleProvider(
-    URLLoaderThrottleProviderType provider_type) {
+    blink::URLLoaderThrottleProviderType provider_type) {
   return nullptr;
 }
 
@@ -252,19 +252,10 @@ bool ContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
 
 void ContentRendererClient::DidSetUserAgent(const std::string& user_agent) {}
 
-bool ContentRendererClient::RequiresHtmlImports(const GURL& url) {
-  return false;
-}
-
-base::Optional<::media::AudioRendererAlgorithmParameters>
+absl::optional<::media::AudioRendererAlgorithmParameters>
 ContentRendererClient::GetAudioRendererAlgorithmParameters(
     media::AudioParameters audio_parameters) {
-  return base::nullopt;
-}
-
-void ContentRendererClient::MaybeProxyURLLoaderFactory(
-    RenderFrame* render_frame,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver) {
+  return absl::nullopt;
 }
 
 bool ContentRendererClient::Dispatch(IPC::Message* msg) {

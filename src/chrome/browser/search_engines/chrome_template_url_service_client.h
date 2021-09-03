@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SEARCH_ENGINES_CHROME_TEMPLATE_URL_SERVICE_CLIENT_H_
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/search_engines/template_url_service_client.h"
@@ -26,7 +26,7 @@ class ChromeTemplateURLServiceClient : public TemplateURLServiceClient,
   void DeleteAllSearchTermsForKeyword(history::KeywordID keyword_Id) override;
   void SetKeywordSearchTermsForURL(const GURL& url,
                                    TemplateURLID id,
-                                   const base::string16& term) override;
+                                   const std::u16string& term) override;
   void AddKeywordGeneratedVisit(const GURL& url) override;
 
   // history::HistoryServiceObserver:
@@ -38,8 +38,9 @@ class ChromeTemplateURLServiceClient : public TemplateURLServiceClient,
 
  private:
   TemplateURLService* owner_;
-  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_{this};
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      history_service_observation_{this};
   history::HistoryService* history_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTemplateURLServiceClient);

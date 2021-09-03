@@ -40,7 +40,7 @@ TEST_F('ChromeVoxUserActionMonitorTest', 'UnitTest', function() {
         value: {'keys': {'keyCode': [KeyCode.SPACE]}},
       },
       {type: 'braille', value: 'jumpToTop'},
-      {type: 'gesture', value: 'swipeUp1'}
+      {type: 'gesture', value: Gesture.SWIPE_UP1}
     ];
     const onFinished = () => finished = true;
 
@@ -73,9 +73,9 @@ TEST_F('ChromeVoxUserActionMonitorTest', 'ActionUnitTest', function() {
       value: new KeySequence(TestUtils.createMockKeyEvent(KeyCode.A))
     });
     const gestureActionOne = UserActionMonitor.Action.fromActionInfo(
-        {type: 'gesture', value: 'swipeUp1'});
-    const gestureActionTwo =
-        new UserActionMonitor.Action({type: 'gesture', value: 'swipeUp2'});
+        {type: 'gesture', value: Gesture.SWIPE_UP1});
+    const gestureActionTwo = new UserActionMonitor.Action(
+        {type: 'gesture', value: Gesture.SWIPE_UP2});
 
     assertFalse(keySequenceActionOne.equals(keySequenceActionTwo));
     assertFalse(keySequenceActionOne.equals(gestureActionOne));
@@ -86,8 +86,8 @@ TEST_F('ChromeVoxUserActionMonitorTest', 'ActionUnitTest', function() {
 
     const cloneKeySequenceActionOne = UserActionMonitor.Action.fromActionInfo(
         {type: 'key_sequence', value: {keys: {keyCode: [KeyCode.SPACE]}}});
-    const cloneGestureActionOne =
-        new UserActionMonitor.Action({type: 'gesture', value: 'swipeUp1'});
+    const cloneGestureActionOne = new UserActionMonitor.Action(
+        {type: 'gesture', value: Gesture.SWIPE_UP1});
     assertTrue(keySequenceActionOne.equals(cloneKeySequenceActionOne));
     assertTrue(gestureActionOne.equals(cloneGestureActionOne));
   });
@@ -186,13 +186,13 @@ TEST_F('ChromeVoxUserActionMonitorTest', 'Output', function() {
     const actions = [
       {
         type: 'gesture',
-        value: 'swipeUp1',
+        value: Gesture.SWIPE_UP1,
         beforeActionMsg: 'First instruction',
         afterActionMsg: 'Congratulations!'
       },
       {
         type: 'gesture',
-        value: 'swipeUp1',
+        value: Gesture.SWIPE_UP1,
         beforeActionMsg: 'Second instruction',
         afterActionMsg: 'You did it!'
       }
@@ -443,5 +443,45 @@ TEST_F('ChromeVoxUserActionMonitorTest', 'StopPropagation', function() {
     keyboardHandler.onKeyUp(TestUtils.createMockKeyEvent(KeyCode.CONTROL));
     assertFalse(executedCommand);
     assertTrue(finished);
+  });
+});
+
+// Tests that we can match a gesture when it's performed.
+TEST_F('ChromeVoxUserActionMonitorTest', 'Gestures', function() {
+  this.runWithLoadedTree(this.simpleDoc, function() {
+    let finished = false;
+    const actions = [{type: 'gesture', value: Gesture.SWIPE_RIGHT1}];
+    const onFinished = () => finished = true;
+
+    ChromeVoxState.instance.createUserActionMonitor(actions, onFinished);
+    doGesture(Gesture.SWIPE_LEFT1)();
+    assertFalse(finished);
+    doGesture(Gesture.SWIPE_LEFT2)();
+    assertFalse(finished);
+    doGesture(Gesture.SWIPE_RIGHT1)();
+    assertTrue(finished);
+  });
+});
+
+// Tests that we can perform a command when an action has been matched.
+TEST_F('ChromeVoxUserActionMonitorTest', 'AfterActionCommand', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.simpleDoc, function() {
+    let finished = false;
+    const actions = [{
+      type: 'gesture',
+      value: Gesture.SWIPE_RIGHT1,
+      afterActionCmd: 'announceBatteryDescription'
+    }];
+    const onFinished = () => finished = true;
+
+    ChromeVoxState.instance.createUserActionMonitor(actions, onFinished);
+    mockFeedback
+        .call(() => {
+          doGesture(Gesture.SWIPE_RIGHT1)();
+          assertTrue(finished);
+        })
+        .expectSpeech(/Battery at [0-9]+ percent/)
+        .replay();
   });
 });

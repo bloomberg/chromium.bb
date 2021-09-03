@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BLOCK_BREAK_TOKEN_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BLOCK_BREAK_TOKEN_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
@@ -36,6 +37,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
     auto* token = new NGBlockBreakToken(PassKey(), node);
     token->is_break_before_ = true;
     token->is_forced_break_ = is_forced_break;
+    token->has_unpositioned_list_marker_ = node.IsListItem();
     return base::AdoptRef(token);
   }
 
@@ -104,6 +106,11 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // negative top margin) will be put into that column, not the next.
   bool IsAtBlockEnd() const { return is_at_block_end_; }
 
+  // True if earlier fragments could not position the list marker.
+  bool HasUnpositionedListMarker() const {
+    return has_unpositioned_list_marker_;
+  }
+
   // The break tokens for children of the layout node.
   //
   // Each child we have visited previously in the block-flow layout algorithm
@@ -124,13 +131,40 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   String ToString() const override;
 #endif
 
-  using PassKey = util::PassKey<NGBlockBreakToken>;
+  using PassKey = base::PassKey<NGBlockBreakToken>;
 
   // Must only be called from Create(), because it assumes that enough space
   // has been allocated in the flexible array to store the children.
   NGBlockBreakToken(PassKey, const NGBoxFragmentBuilder&);
 
   explicit NGBlockBreakToken(PassKey, NGLayoutInputNode node);
+
+  // This exposes a mutable part of the break token for |NGOutOfFlowLayoutPart|.
+  class MutableForOutOfFlow final {
+    STACK_ALLOCATED();
+
+   protected:
+    friend class NGOutOfFlowLayoutPart;
+    // Replace the child break token at the provided |index|.
+    void ReplaceChildBreakToken(const NGBreakToken* child_break_token,
+                                wtf_size_t index) {
+      DCHECK_LT(index, break_token_->num_children_);
+      break_token_->child_break_tokens_[index]->Release();
+      break_token_->child_break_tokens_[index] = child_break_token;
+      break_token_->child_break_tokens_[index]->AddRef();
+    }
+
+   private:
+    friend class NGBlockBreakToken;
+    explicit MutableForOutOfFlow(const NGBlockBreakToken* break_token)
+        : break_token_(const_cast<NGBlockBreakToken*>(break_token)) {}
+
+    NGBlockBreakToken* break_token_;
+  };
+
+  MutableForOutOfFlow GetMutableForOutOfFlow() const {
+    return MutableForOutOfFlow(this);
+  }
 
  private:
   LayoutUnit consumed_block_size_;

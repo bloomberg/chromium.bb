@@ -4,6 +4,7 @@
 
 #include "net/base/scheme_host_port_matcher.h"
 
+#include "base/containers/contains.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 
@@ -26,8 +27,8 @@ SchemeHostPortMatcher SchemeHostPortMatcher::FromRawString(
 
   base::StringTokenizer entries(raw, kParseRuleListDelimiterList);
   while (entries.GetNext()) {
-    auto rule =
-        SchemeHostPortMatcherRule::FromUntrimmedRawString(entries.token());
+    auto rule = SchemeHostPortMatcherRule::FromUntrimmedRawString(
+        entries.token_piece());
     if (rule) {
       result.AddAsLastRule(std::move(rule));
     }

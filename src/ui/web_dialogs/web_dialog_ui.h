@@ -5,12 +5,9 @@
 #ifndef UI_WEB_DIALOGS_WEB_DIALOG_UI_H_
 #define UI_WEB_DIALOGS_WEB_DIALOG_UI_H_
 
-#include <string>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/ui_base_types.h"

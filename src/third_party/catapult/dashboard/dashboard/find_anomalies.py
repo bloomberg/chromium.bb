@@ -79,7 +79,7 @@ def _ProcessTest(test_key):
   for s, rows in rows_by_stat.items():
     if rows:
       logging.info('Processing test: %s', test_key.id())
-      yield _ProcessTestStat(config, test, s, rows, ref_rows_by_stat.get(s))
+      yield _ProcessTestStat(test, s, rows, ref_rows_by_stat.get(s))
 
 
 def _EmailSheriff(sheriff, test_key, anomaly_key):
@@ -90,27 +90,54 @@ def _EmailSheriff(sheriff, test_key, anomaly_key):
 
 
 @ndb.tasklet
-def _ProcessTestStat(config, test, stat, rows, ref_rows):
-  test_key = test.key
-
+def _ProcessTestStat(test, stat, rows, ref_rows):
   # If there were no rows fetched, then there's nothing to analyze.
   if not rows:
     logging.error('No rows fetched for %s', test.test_path)
     raise ndb.Return(None)
 
+
+  # TODO(crbug/1158326): Use the data from the git-hosted anomaly configuration
+  # instead of the provided config.
+  # Get all the sheriff from sheriff-config match the path
+  client = SheriffConfigClient()
+  subscriptions, err_msg = client.Match(test.test_path)
+
+  # Breaks the process when Match failed to ensure find_anomaly do the best
+  # effort to find the subscriber. Leave retrying to upstream.
+  if err_msg is not None:
+    raise RuntimeError(err_msg)
+
+  # If we don't find any subscriptions, then we shouldn't waste resources on
+  # trying to find anomalies that we aren't going to alert on anyway.
+  if not subscriptions:
+    logging.error('No subscription for %s', test.test_path)
+    raise ndb.Return(None)
+
+  configs = {
+      s.name: [c.to_dict() for c in s.anomaly_configs
+              ] for s in subscriptions or [] if s.anomaly_configs
+  }
+  if configs:
+    logging.debug('matched anomaly configs: %s', configs)
+
   # Get anomalies and check if they happen in ref build also.
-  change_points = FindChangePointsForTest(rows, config)
+  test_key = test.key
+  anomaly_inputs = []
+  for matching_sub in subscriptions:
+    anomaly_configs = matching_sub.anomaly_configs or [
+        subscription.AnomalyConfig()
+    ]
+    for config in [c.to_dict() for c in anomaly_configs]:
+      change_points = FindChangePointsForTest(rows, config)
+      if ref_rows:
+        ref_change_points = FindChangePointsForTest(ref_rows, config)
+        change_points = _FilterAnomaliesFoundInRef(change_points,
+                                                   ref_change_points, test_key)
+      anomaly_inputs.extend(
+          (c, test, stat, rows, config, matching_sub) for c in change_points)
 
-  if ref_rows:
-    ref_change_points = FindChangePointsForTest(ref_rows, config)
-
-    # Filter using any jumps in ref
-    change_points = _FilterAnomaliesFoundInRef(change_points, ref_change_points,
-                                               test_key)
-
-  anomalies = yield [
-      _MakeAnomalyEntity(c, test, stat, rows) for c in change_points
-  ]
+  anomalies = yield [_MakeAnomalyEntity(*inputs) for inputs in anomaly_inputs]
 
   # If no new anomalies were found, then we're done.
   if not anomalies:
@@ -120,22 +147,9 @@ def _ProcessTestStat(config, test, stat, rows, ref_rows):
   logging.info(' Test: %s', test_key.id())
   logging.info(' Stat: %s', stat)
 
-  # Get all the sheriff from sheriff-config match the path
-  client = SheriffConfigClient()
-  subscriptions, err_msg = client.Match(test.test_path)
-  subscription_names = [s.name for s in subscriptions or []]
-
-  # Breaks the process when Match failed to ensure find_anomaly do the best
-  # effort to find the subscriber. Leave retrying to upstream.
-  if err_msg is not None:
-    raise RuntimeError(err_msg)
-
-  if not subscriptions:
-    logging.warning('No subscription for %s', test.test_path)
-
   for a in anomalies:
-    a.subscriptions = subscriptions
-    a.subscription_names = subscription_names
+    a.subscriptions = [a.matching_subscription]
+    a.subscription_names = [a.matching_subscription.name]
     a.internal_only = (
         any([
             s.visibility != subscription.VISIBILITY.PUBLIC
@@ -147,11 +161,12 @@ def _ProcessTestStat(config, test, stat, rows, ref_rows):
 
   # TODO(simonhatch): email_sheriff.EmailSheriff() isn't a tasklet yet, so this
   # code will run serially.
-  # Email sheriff about any new regressions.
+  # Email sheriff about any new regressions, but deduplicate them by the
+  # matched subscription.
   for anomaly_entity in anomalies:
     if anomaly_entity.bug_id is None and not anomaly_entity.is_improvement:
-      deferred.defer(_EmailSheriff, anomaly_entity.subscriptions, test.key,
-                     anomaly_entity.key)
+      deferred.defer(_EmailSheriff, [anomaly_entity.matching_subscription],
+                     test.key, anomaly_entity.key)
 
 
 @ndb.tasklet
@@ -348,7 +363,7 @@ def _GetDisplayRange(old_end, rows):
 
 
 @ndb.tasklet
-def _MakeAnomalyEntity(change_point, test, stat, rows):
+def _MakeAnomalyEntity(change_point, test, stat, rows, config, matching_sub):
   """Creates an Anomaly entity.
 
   Args:
@@ -356,12 +371,17 @@ def _MakeAnomalyEntity(change_point, test, stat, rows):
     test: The TestMetadata entity that the anomalies were found on.
     stat: The TestMetadata stat that the anomaly was found on.
     rows: List of Row entities that the anomalies were found on.
+    config: A dict representing the anomaly detection configuration
+        parameters used to produce this anomaly.
+    matching_sub: A subscription to which this anomaly is associated.
 
   Returns:
     An Anomaly entity, which is not yet put in the datastore.
   """
-  end_rev = change_point.x_value
-  start_rev = _GetImmediatelyPreviousRevisionNumber(end_rev, rows) + 1
+  end_rev = change_point.extended_end
+  start_rev = _GetImmediatelyPreviousRevisionNumber(
+      change_point.extended_start, rows) + 1
+  print(change_point.extended_start, change_point.extended_end)
   display_start = display_end = None
   if test.master_name == 'ClankInternal':
     display_start, display_end = _GetDisplayRange(change_point.x_value, rows)
@@ -377,7 +397,8 @@ def _MakeAnomalyEntity(change_point, test, stat, rows):
           suite_key,
           set([
               reserved_infos.BUG_COMPONENTS.name, reserved_infos.OWNERS.name,
-              reserved_infos.INFO_BLURB.name
+              reserved_infos.INFO_BLURB.name,
+              reserved_infos.ALERT_GROUPING.name,
           ])))
 
   bug_components = queried_diagnostics.get(reserved_infos.BUG_COMPONENTS.name,
@@ -400,6 +421,9 @@ def _MakeAnomalyEntity(change_point, test, stat, rows):
           queried_diagnostics.get(reserved_infos.INFO_BLURB.name,
                                   {}).get('values', [None])[0],
   }
+
+  alert_grouping = queried_diagnostics.get(reserved_infos.ALERT_GROUPING.name,
+                                           {}).get('values', [])
 
   # Compute additional anomaly metadata.
   def MinMax(iterable):
@@ -436,8 +460,12 @@ def _MakeAnomalyEntity(change_point, test, stat, rows):
       display_start=display_start,
       display_end=display_end,
       ownership=ownership_information,
+      alert_grouping=alert_grouping,
       earliest_input_timestamp=earliest_input_timestamp,
-      latest_input_timestamp=latest_input_timestamp)
+      latest_input_timestamp=latest_input_timestamp,
+      anomaly_config=config,
+      matching_subscription=matching_sub,
+  )
   raise ndb.Return(new_anomaly)
 
 

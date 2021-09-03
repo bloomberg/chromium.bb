@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 
+#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -49,7 +49,8 @@ void NetworkDropdownHandler::RegisterMessages() {
 
 void NetworkDropdownHandler::HandleLaunchInternetDetailDialog() {
   // Empty string opens the internet detail dialog for the default network.
-  InternetDetailDialog::ShowDialog("");
+  InternetDetailDialog::ShowDialog(
+      "", LoginDisplayHost::default_host()->GetNativeWindow());
 }
 
 void NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog() {
@@ -61,7 +62,8 @@ void NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog() {
                                   network_handler::ErrorCallback());
   }
   chromeos::InternetConfigDialog::ShowDialogForNetworkType(
-      ::onc::network_type::kWiFi);
+      ::onc::network_type::kWiFi,
+      LoginDisplayHost::default_host()->GetNativeWindow());
 }
 
 void NetworkDropdownHandler::HandleShowNetworkDetails(
@@ -79,14 +81,16 @@ void NetworkDropdownHandler::HandleShowNetworkDetails(
                                     network_handler::ErrorCallback());
     }
   }
-  InternetDetailDialog::ShowDialog(guid);
+  InternetDetailDialog::ShowDialog(
+      guid, LoginDisplayHost::default_host()->GetNativeWindow());
 }
 
 void NetworkDropdownHandler::HandleShowNetworkConfig(
     const base::ListValue* args) {
   std::string guid;
   args->GetString(0, &guid);
-  chromeos::InternetConfigDialog::ShowDialogForNetworkId(guid);
+  chromeos::InternetConfigDialog::ShowDialogForNetworkId(
+      guid, LoginDisplayHost::default_host()->GetNativeWindow());
 }
 
 }  // namespace chromeos

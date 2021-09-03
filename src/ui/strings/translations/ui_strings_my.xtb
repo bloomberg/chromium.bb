@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">အသင့်ပါ ဖန်သားပြင်ပြသမှု</translation>
 <translation id="335581015389089642">စကားပြောမှု</translation>
 <translation id="3389286852084373014">စာသား အလွန်ကြီးနေသည်</translation>
+<translation id="3406306243914553062">HTML အကြောင်းအရာ</translation>
 <translation id="348799646910989694">စင်ကို အလိုလိုဖျောက်ထားသည်</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> ကို ပင်ထိုးထားသည်</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{၁ ရက်ကျန်၏}other{# ရက်ကျန်၏}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">နံပါတ်</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />။ <ph name="TYPE_2" />။</translation>
 <translation id="3842239759367498783">သင့်မိုဘိုင်းစက်ကိရိယာ <ph name="TITLE" /> မှ ဆက်ဖတ်ပါ</translation>
 <translation id="385051799172605136">နောက်သို့</translation>
 <translation id="3889424535448813030">ညာ မြား</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{ပြီးခံသည့် ၁ လ}other{ပြီးခဲ့သည့် # လ}}</translation>
 <translation id="4289300219472526559">စတင် စကားပြော</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> ကို <ph name="FOLDER_NAME" /> ဖိုင်တွဲသို့ ရွှေ့လိုက်ပါပြီ။</translation>
+<translation id="4306392492252714209">ကလစ်ဘုတ်မှ ဖယ်ရှားလိုက်သည်။</translation>
 <translation id="4316910396681052118">အက်ပ်များ အားလုံး</translation>
 <translation id="4491109536499578614">ပုံ</translation>
 <translation id="4588090240171750605">ညာဖက်သို့ ရွှေ့ရန်</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">ဤရှာဖွေမှုကို သင်၏မှတ်တမ်းမှ ဖျက်လိုပါသလား။</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">အီမိုဂျီ</translation>
+<translation id="7620655452534002301">ဖယ်ရှားလိုက်သည်။</translation>
 <translation id="7658239707568436148">မလုပ်တော့</translation>
 <translation id="7781829728241885113">မနေ့က</translation>
 <translation id="7814458197256864873">&amp;ကူးယူ</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{၁ နာရီ အကြာက}other{# နာရီ အကြာက}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{၁ စက္ကန့်ကျန်၏}other{# စက္ကန့်ကျန်၏}}</translation>
 <translation id="8134065097954893699">ဤစာမျက်နှာကို ပြန်လည် စတင်နေသည်</translation>
-<translation id="8144660977431427332">သင်၏ ရှာဖွေမှုများကို Google Assistant က ပံ့ပိုးပေးထားခြင်းဖြစ်သည်။ <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />၊ အလိုအလျောက်ဖြည့်သည်</translation>
 <translation id="815598010540052116">အောက်ကို လှိမ့်ဆင်းရန်</translation>
 <translation id="8179976553408161302">အင်တာ</translation>
 <translation id="8210608804940886430">စာမျက်နှာ အောက်သို့</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />၊ <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Tab ကီးခလုတ်</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />၊ အက်ပ်</translation>
 <translation id="8259556432390118667">Hex အရောင် အညွှန်းကိန်း</translation>

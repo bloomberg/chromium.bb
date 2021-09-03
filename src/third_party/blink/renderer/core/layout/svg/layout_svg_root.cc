@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -76,8 +75,8 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
   auto* svg = To<SVGSVGElement>(GetNode());
   DCHECK(svg);
 
-  base::Optional<float> intrinsic_width = svg->IntrinsicWidth();
-  base::Optional<float> intrinsic_height = svg->IntrinsicHeight();
+  absl::optional<float> intrinsic_width = svg->IntrinsicWidth();
+  absl::optional<float> intrinsic_height = svg->IntrinsicHeight();
   intrinsic_sizing_info.size =
       FloatSize(intrinsic_width.value_or(0), intrinsic_height.value_or(0));
   intrinsic_sizing_info.has_width = intrinsic_width.has_value();
@@ -317,7 +316,6 @@ void LayoutSVGRoot::PaintReplaced(const PaintInfo& paint_info,
 
 void LayoutSVGRoot::WillBeDestroyed() {
   NOT_DESTROYED();
-  SVGResourcesCache::RemoveResources(*this);
   SVGResources::ClearClipPathFilterMask(To<SVGSVGElement>(*GetNode()), Style());
   LayoutReplaced::WillBeDestroyed();
 }
@@ -375,10 +373,8 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
                                          old_style, StyleRef());
   if (!Parent())
     return;
-  if (diff.HasDifference()) {
-    SVGResourcesCache::UpdateResources(*this);
-    LayoutSVGResourceContainer::StyleDidChange(*this, diff);
-  }
+  if (diff.HasDifference())
+    LayoutSVGResourceContainer::StyleChanged(*this, diff);
 }
 
 bool LayoutSVGRoot::IsChildAllowed(LayoutObject* child,
@@ -441,7 +437,7 @@ void LayoutSVGRoot::InsertedIntoTree() {
   LayoutReplaced::InsertedIntoTree();
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this,
                                                                          false);
-  if (SVGResourcesCache::AddResources(*this))
+  if (StyleRef().HasSVGEffect())
     SetNeedsPaintPropertyUpdate();
 }
 
@@ -449,7 +445,7 @@ void LayoutSVGRoot::WillBeRemovedFromTree() {
   NOT_DESTROYED();
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this,
                                                                          false);
-  if (SVGResourcesCache::RemoveResources(*this))
+  if (StyleRef().HasSVGEffect())
     SetNeedsPaintPropertyUpdate();
   LayoutReplaced::WillBeRemovedFromTree();
 }
@@ -521,14 +517,6 @@ void LayoutSVGRoot::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                        MapCoordinatesFlags mode) const {
   NOT_DESTROYED();
   LayoutReplaced::MapLocalToAncestor(ancestor, transform_state, mode);
-}
-
-const LayoutObject* LayoutSVGRoot::PushMappingToContainer(
-    const LayoutBoxModelObject* ancestor_to_stop_at,
-    LayoutGeometryMap& geometry_map) const {
-  NOT_DESTROYED();
-  return LayoutReplaced::PushMappingToContainer(ancestor_to_stop_at,
-                                                geometry_map);
 }
 
 void LayoutSVGRoot::UpdateCachedBoundaries() {

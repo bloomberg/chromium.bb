@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_client.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_context.h"
@@ -45,7 +46,6 @@
 #include "third_party/blink/renderer/modules/webdatabase/web_database_host.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -146,9 +146,9 @@ void DatabaseTracker::PrepareToOpenDatabase(Database* database) {
   // where the database is in an unusable state. To assist, we will record the
   // size of the database straight away so we can use it immediately, and the
   // real size will eventually be updated by the RPC from the browser.
-  WebDatabaseHost::GetInstance().DatabaseOpened(
-      *database->GetSecurityOrigin(), database->StringIdentifier(),
-      database->DisplayName(), database->EstimatedSize());
+  WebDatabaseHost::GetInstance().DatabaseOpened(*database->GetSecurityOrigin(),
+                                                database->StringIdentifier(),
+                                                database->DisplayName());
   // We write a temporary size of 0 to the QuotaTracker - we will be updated
   // with the correct size via RPC asynchronously.
   QuotaTracker::Instance().UpdateDatabaseSize(database->GetSecurityOrigin(),

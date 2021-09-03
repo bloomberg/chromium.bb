@@ -18,6 +18,19 @@ Polymer({
     /** @type {!LanguagesModel|undefined} */
     languages: Object,
 
+    /** @private {!Array<!chrome.languageSettingsPrivate.Language>} */
+    displayedLanguages_: {
+      type: Array,
+      computed: `getPossibleDeviceLanguages_(languages.supported,
+          languages.enabled.*, lowercaseQueryString_)`,
+    },
+
+    /** @private {boolean} */
+    displayedLanguagesEmpty_: {
+      type: Boolean,
+      computed: 'isZero_(displayedLanguages_.length)',
+    },
+
     /** @type {!LanguageHelper} */
     languageHelper: Object,
 
@@ -54,18 +67,27 @@ Polymer({
    * @private
    */
   getPossibleDeviceLanguages_() {
-    return this.languages.supported.filter(language => {
-      if (!language.supportsUI || language.isProhibitedLanguage ||
-          language.code === this.languages.prospectiveUILanguage) {
-        return false;
-      }
+    return this.languages.supported
+        .filter(language => {
+          if (!language.supportsUI || language.isProhibitedLanguage ||
+              language.code === this.languages.prospectiveUILanguage) {
+            return false;
+          }
 
-      return !this.lowercaseQueryString_ ||
-          language.displayName.toLowerCase().includes(
-              this.lowercaseQueryString_) ||
-          language.nativeDisplayName.toLowerCase().includes(
-              this.lowercaseQueryString_);
-    });
+          return !this.lowercaseQueryString_ ||
+              language.displayName.toLowerCase().includes(
+                  this.lowercaseQueryString_) ||
+              language.nativeDisplayName.toLowerCase().includes(
+                  this.lowercaseQueryString_);
+        })
+        .sort((a, b) => {
+          // Sort by native display name so the order of languages is
+          // deterministic in case the user selects the wrong language.
+          // We need to manually specify a locale in localeCompare for
+          // determinism (as changing language may change sort order if a locale
+          // is not manually specified).
+          return a.nativeDisplayName.localeCompare(b.nativeDisplayName, 'en');
+        });
   },
 
   /**
@@ -94,10 +116,10 @@ Polymer({
    * @private
    */
   getDisplayText_(language) {
-    let displayText = language.displayName;
-    // If the native name is different, add it.
+    let displayText = language.nativeDisplayName;
+    // If the local name is different, add it.
     if (language.displayName !== language.nativeDisplayName) {
-      displayText += ' - ' + language.nativeDisplayName;
+      displayText += ' - ' + language.displayName;
     }
     return displayText;
   },
@@ -143,5 +165,14 @@ Polymer({
     } else if (e.key !== 'PageDown' && e.key !== 'PageUp') {
       this.$.search.scrollIntoViewIfNeeded();
     }
+  },
+
+  /**
+   * @param {number} num
+   * @return {boolean}
+   * @private
+   */
+  isZero_(num) {
+    return num === 0;
   },
 });

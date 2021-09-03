@@ -4,13 +4,11 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 
-#include "base/feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -129,12 +127,9 @@ const CGFloat kLocationLabelVerticalOffset = -1;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport))
         self.pointerInteractionEnabled = YES;
     }
-#endif  // defined(__IPHONE_13_4)
   }
   return self;
 }
@@ -184,16 +179,12 @@ const CGFloat kLocationLabelVerticalOffset = -1;
     _trailingButton =
         [ExtendedTouchTargetButton buttonWithType:UIButtonTypeSystem];
     _trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
         _trailingButton.pointerInteractionEnabled = YES;
         // Make the pointer shape fit the location bar's semi-circle end shape.
         _trailingButton.pointerStyleProvider =
             CreateLiftEffectCirclePointerStyleProvider();
-      }
     }
-#endif  // defined(__IPHONE_13_4)
 
     // Setup label.
     _locationLabel.lineBreakMode = NSLineBreakByTruncatingHead;

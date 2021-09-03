@@ -12,7 +12,6 @@
 #include <random>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
@@ -124,6 +123,7 @@ class BASE_EXPORT SequenceManagerImpl
   std::string DescribeAllPendingTasks() const override;
   std::unique_ptr<NativeWorkHandle> OnNativeWorkPending(
       TaskQueue::QueuePriority priority) override;
+  void PrioritizeYieldingToNative(base::TimeTicks prioritize_until) override;
   void AddTaskObserver(TaskObserver* task_observer) override;
   void RemoveTaskObserver(TaskObserver* task_observer) override;
 
@@ -156,8 +156,6 @@ class BASE_EXPORT SequenceManagerImpl
 #endif
   bool IsIdleForTesting() override;
   void BindToCurrentThread(std::unique_ptr<MessagePump> pump);
-  void DeletePendingTasks();
-  bool HasTasks();
   MessagePumpType GetType() const;
 
   // Requests that a task to process work is scheduled.

@@ -3,6 +3,7 @@
 <translationbundle lang="ky">
 <translation id="1006017844123154345">Онлайнда ачуу</translation>
 <translation id="1044891598689252897">Сайттар кадимкидей иштейт</translation>
+<translation id="1100504063505580045">Учурдагы сүрөтчө</translation>
 <translation id="1124090076051167250">Ушуну менен сайттар жана колдонмолор Башкы экраныңызда сактаган маалымат менен cookie файлдар ээлеп турган <ph name="DATASIZE" /> орун бошотулат.</translation>
 <translation id="1124772482545689468">Колдонуучу</translation>
 <translation id="1178581264944972037">Бир азга токтотуу</translation>
@@ -13,15 +14,17 @@
 <translation id="1272079795634619415">Токтотуу</translation>
 <translation id="1289742167380433257">Интернет трафигин үнөмдөө үчүн Google бул барактагы сүрөттөрдү ыңгайлаштырды.</translation>
 <translation id="129382876167171263">Вебсайттар сактаган файлдар ушул жерде көрүнөт</translation>
+<translation id="1317194122196776028">Бул сайтты унутуу</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" />, <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> сайты кошулду</translation>
 <translation id="1383876407941801731">Издөө</translation>
 <translation id="1384959399684842514">Жүктөп алуу тындырылды</translation>
 <translation id="1415402041810619267">URL кесилди</translation>
-<translation id="1431402976894535801">Сайттарга кирип турганыңызды алар билбесин</translation>
 <translation id="1446450296470737166">MIDI түзмктрд толук көзмлд уркст</translation>
 <translation id="1509960214886564027">Функциялар көпчүлүк сайттарда туура иштебеши мүмкүн.</translation>
 <translation id="1620510694547887537">Камера</translation>
+<translation id="1644574205037202324">Таржымал</translation>
+<translation id="1647582022260550163">Уруксаттар чын эле баштапкы абалга келтирилип, cookie файлдары жана сайттагы маалымат тазалансынбы?</translation>
 <translation id="1660204651932907780">Сайттарга үн чыгарууга уруксат берилсин (сунушталат)</translation>
 <translation id="1677097821151855053">Cookie файлдары жана башка маалымат сизди эстеп калып, аккаунтка кирүү же жарнамаларды жекелештирүү ж.б. үчүн колдонулат. Бардык сайттардын cookie файлдарын башкаруу үчүн <ph name="BEGIN_LINK" />Жөндөөлөргө<ph name="END_LINK" /> өтүңүз.</translation>
 <translation id="1688867105868176567">Сайттын дайындары тазалансынбы?</translation>
@@ -39,7 +42,6 @@
 <translation id="1994173015038366702">Сайт URL'и</translation>
 <translation id="2025115093177348061">Кошумчаланган чындык</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> кайтуу үчүн таптап коюңуз</translation>
-<translation id="2054665754582400095">Сайтта же сайтта эместигиңиз</translation>
 <translation id="2079545284768500474">Кайтаруу</translation>
 <translation id="2091887806945687916">Үн</translation>
 <translation id="2107397443965016585">Сайттар корголгон мазмунду ойнотуудан мурда уруксат суралсын (сунушталат)</translation>
@@ -82,18 +84,19 @@
 <translation id="3114012059975132928">Видео ойноткуч</translation>
 <translation id="3115898365077584848">Маалыматты көрсөтүү</translation>
 <translation id="3123473560110926937">Айрым сайттарда бөгөттөлдү</translation>
-<translation id="3165371858310906303">Сайтка киргениңизди сайт билгиси келсе, суралсын</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> сакталган дайындар</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> колдонмосуна билдирмелерди жөнөтүүгө уруксат берүү үчүн, <ph name="BEGIN_LINK" />Android Жөндөөлөрүнөн<ph name="END_LINK" /> билдирмелерди күйгүзүңүз.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Сайттарга сенсорлорду колдонууга уруксат берүү (сунушталат)</translation>
 <translation id="3295602654194328831">Маалыматты жашыруу</translation>
+<translation id="3317660236277031814">Орноткон веб колдонмоңуз сүрөтчөсүн өзгөрттү.</translation>
 <translation id="3328801116991980348">Сайт жөнүндө маалымат</translation>
 <translation id="3333961966071413176">Бардык байланыштар</translation>
 <translation id="3386292677130313581">Сайттарга жайгашкан жериңиз тууралуу маалымат берүүдөн мурун уруксат суралсын (сунушталат)</translation>
+<translation id="345699454248713913">Орноткон веб колдонмоңуз аталышын өзгөрттү.</translation>
 <translation id="3538390592868664640">Сайттарга айланаңыздын 3D картасын түзүүгө же камераңыздын абалына көз салууга бөгөт коюуңуз</translation>
+<translation id="3551268116566418498">Жашыруун режимден чыгасызбы?</translation>
 <translation id="3586500876634962664">Камера менен микрофонду колдонуу</translation>
-<translation id="3587482841069643663">Баары</translation>
 <translation id="358794129225322306">Сайтка бир нече файлды автоматтык түрдө жүктөп алууга уруксат берүү.</translation>
 <translation id="3594780231884063836">Видеонун үнүн басуу</translation>
 <translation id="3596414637720633074">Жашыруун режимде үчүнчү тараптын cookie файлдарын бөгөттөө</translation>
@@ -101,9 +104,11 @@
 <translation id="3744111561329211289">Фонду шайкештирүү</translation>
 <translation id="3763247130972274048">10 сек. өткөрүп жиберүү үчүн видеонун сол же оң жагын эки жолу таптаңыз</translation>
 <translation id="381841723434055211">Телефон номерлери</translation>
+<translation id="3835233591525155343">Түзмөгүңүздүн колдонулушу</translation>
 <translation id="385051799172605136">Артка</translation>
 <translation id="3859306556332390985">Алдыга түрдүрүү</translation>
 <translation id="3955193568934677022">Сайттарга корголгон мазмунду ойнотууга уруксат берүү (сунушталат)</translation>
+<translation id="3967822245660637423">Жүктөп алуу аяктады</translation>
 <translation id="3987993985790029246">Шилтм көчр</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Аталышы</translation>
@@ -113,11 +118,12 @@
 <translation id="4200726100658658164">Жайгашкан жерди аныктоо жөндөөлөрүн ачуу</translation>
 <translation id="4226663524361240545">Билдирмелер кегенде түзмөк дирилдейт</translation>
 <translation id="4259722352634471385">Чабыттоо бөгөттөлгөн: <ph name="URL" /></translation>
+<translation id="4277239631747669329">Орноткон веб колдонмоңуз аталышын жана сүрөтчөсүн өзгөрттү.</translation>
 <translation id="4278390842282768270">Уруксат берилген</translation>
 <translation id="429312253194641664">Сайтта медиа файл ойнотулууда</translation>
 <translation id="42981349822642051">Жайып көрсөтүү</translation>
 <translation id="4336434711095810371">Бардык маалыматты өчүрүү</translation>
-<translation id="4433925000917964731">Барактын lite-версиясы Google аркылуу алынган.</translation>
+<translation id="4402755511846832236">Түзмөгүңүз активдүү колдонулуп жаткан учур сайттардан жашырылсын</translation>
 <translation id="4434045419905280838">Калкыма терезелер жана багыттоолор</translation>
 <translation id="445467742685312942">Сайттарга корголгон мазмунду ойнотууга уруксат берүү</translation>
 <translation id="4468959413250150279">Белгилүү бир сайттын үнүн өчүрүү.</translation>
@@ -128,7 +134,9 @@
 <translation id="4645575059429386691">Ата-энеңиз башкарат</translation>
 <translation id="4670064810192446073">Виртуалдык дүйнө</translation>
 <translation id="4708011789095599544">Бул вебсайттын cookie файлдары жана башка маалыматы чын эле тазалансынбы?</translation>
+<translation id="473775607612524610">Жаңыртуу</translation>
 <translation id="4751476147751820511">Кыймыл же жарык сенсорлору</translation>
+<translation id="4836046166855586901">Сайт түзмөктү активдүү колдонуп жаткан учур тууралуу билгиси келгенде уруксат суралсын</translation>
 <translation id="4883854917563148705">Башкарылган жөндөөлөрдү баштапкы абалга келтирүүгө болбойт</translation>
 <translation id="4887024562049524730">Сайттар виртуалдык чындык түзмөктөрүңүздү жана маалыматыңызды колдонгону жатканда уруксат суралсын (сунушталат)</translation>
 <translation id="4962975101802056554">Түзмөктөгү бардык уруксаттар жоюлсун</translation>
@@ -137,9 +145,11 @@
 <translation id="4996978546172906250">Төмөнкү аркылуу бөлүшүү</translation>
 <translation id="5039804452771397117">Уруксат берүү</translation>
 <translation id="5048398596102334565">Сайттарга сенсорлорду колдонууга уруксат берүү (сунушталат)</translation>
+<translation id="5050380848339752099">Бул сайт жашыруун режимден сырткары колдонмо менен маалыматты бөлүшкөнү жатат.</translation>
 <translation id="5063480226653192405">Колдонулушу</translation>
 <translation id="5100237604440890931">Жыйналган – жайып көрсөтүү үчүн чыкылдатыңыз.</translation>
 <translation id="5123685120097942451">Жашыруун өтмөк</translation>
+<translation id="5186036860380548585">Параметр экрандын жогору жагында берилген</translation>
 <translation id="5197729504361054390">Сиз тандаган байланыштар <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> менен бөлүшүлөт.</translation>
 <translation id="528192093759286357">Толук экрандан чыгуу үчүн жогорудан ылдый сүйрөп келип, "Артка" деген баскычка тийип коюңуз.</translation>
 <translation id="5300589172476337783">Көрсөтүү</translation>
@@ -149,13 +159,14 @@
 <translation id="5335288049665977812">Сайттарга JavaScript'ти иштетүүгө уруксат берилсин (сунушталат)</translation>
 <translation id="534295439873310000">NFC түзмөктөрү</translation>
 <translation id="5354152178998424783">Ушуну менен маалымат жана cookie-файлдары ээлеп турган <ph name="DATASIZE" /> орун бошотулат.</translation>
-<translation id="5384883051496921101">Бул сайт жашыруун режиминен сырткары колдонмо менен маалыматты бөлүшкөнү турат.</translation>
+<translation id="536508626067510330">Башкы экраныңыздагы сүрөтчө жаңыртылсынбы?</translation>
 <translation id="5391532827096253100">Бул сайтка туташуу корголгон эмес. Сайт тууралуу маалымат</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ дагы 1)}other{(+ дагы #)}}</translation>
 <translation id="5403592356182871684">Ысымдар</translation>
 <translation id="5489227211564503167"><ph name="TOTAL_TIME" /> ичинен <ph name="ELAPSED_TIME" /> өттү.</translation>
 <translation id="5494752089476963479">Тажатма же адаштыруучу жарнамаларды көрсөткөн сайттан келген жарнамалар бөгөттөлсүн</translation>
-<translation id="5502860503640766021"><ph name="PERMISSION_1" /> дайындарына уруксат берилди, <ph name="PERMISSION_2" /> бөгөттөлдү</translation>
+<translation id="549957179819296104">Жаңы сүрөтчө</translation>
+<translation id="5502860503640766021">Уруксат берилген: <ph name="PERMISSION_1" />. Бөгөттөлгөн: <ph name="PERMISSION_2" />.</translation>
 <translation id="5505264765875738116">Сайттар билдирмелерди жөнөтүүнү сурана алышпайт</translation>
 <translation id="5516455585884385570">Билдирменин жөндөөлөрүн ачуу</translation>
 <translation id="5527111080432883924">Алмашуу буфериндеги тексттер жана сүрөттөрдү сайттар окугусу келгенде суралсын (сунушталат)</translation>
@@ -171,9 +182,11 @@
 <translation id="5804241973901381774">Уруксаттар</translation>
 <translation id="5860033963881614850">Өчүк</translation>
 <translation id="5876056640971328065">Видеону тындыруу</translation>
+<translation id="5904826301761575486">Башкы экраныңыздагы аталышы жана сүрөтчөсү жаңыртылсынбы?</translation>
 <translation id="5916664084637901428">Күйүк</translation>
 <translation id="5922853908706496913">Экраныңыз бөлүшүлүүдө</translation>
 <translation id="5939518447894949180">Кайра коюу</translation>
+<translation id="5975083100439434680">Кичирейтүү</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" />, <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Бул сайттын түзмөгүңүзгө кирүү мүмкүнчүлүгүн көзөмөлдөңүз</translation>
 <translation id="6040143037577758943">Жабуу</translation>
@@ -186,6 +199,7 @@
 <translation id="6196640612572343990">Үчүнчү жактын кукилери бөгөттөлсүн</translation>
 <translation id="6206551242102657620">Туташуу корголгон. Сайт тууралуу маалымат</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Параметрлер</translation>
+<translation id="6260852843601447737">Жаап, эрежелерди бузуу тууралуу кабар берүү</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> жана <ph name="PERMISSION_2" /> бөгөттөлдү</translation>
 <translation id="6270391203985052864">Сайттар билдирмелерди жөнөтүүнү сурана алышат</translation>
 <translation id="6295158916970320988">Бардык сайттар</translation>
@@ -277,11 +291,12 @@
 <translation id="8444433999583714703"><ph name="APP_NAME" /> колдонмосуна жайгашкан жериңизге кирүүгө уруксат берүү үчүн, <ph name="BEGIN_LINK" />Android Жөндөөлөрүнөн<ph name="END_LINK" /> жайгашкан жер кызматын күйгүзүңүз.</translation>
 <translation id="8447861592752582886">Түзмөккө болгон уруксатты жоюу</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie файлы колдонулууда}other{# cookie файлы колдонулууда}}</translation>
-<translation id="8463851957836045671">Сайт тез жүктөлөт</translation>
+<translation id="8487700953926739672">Оффлайнда жеткиликтүү</translation>
 <translation id="851751545965956758">Сайттардын түзмөктөргө туташуусун бөгөттөө</translation>
 <translation id="8525306231823319788">Толук экран</translation>
 <translation id="857943718398505171">Уруксат берилген (сунушталат)</translation>
 <translation id="8609465669617005112">Өйдө жылуу</translation>
+<translation id="861748745608658996">Аталышы башкы экраныңызда жаңыртылсынбы?</translation>
 <translation id="8676374126336081632">Киргизилген нерсени тазалоо</translation>
 <translation id="868929229000858085">Байланыштарыңызды издеңиз</translation>
 <translation id="8702612070107455751">Оффлайн режиминдеги бардык дайын-даректер өчүрүлөт.</translation>
@@ -293,17 +308,18 @@
 <translation id="8801436777607969138">Белгилүү бир сайтта JavaScript'ти бөгөттөө.</translation>
 <translation id="8816026460808729765">Сайттардын сенсорлорду колдонуусун бөгөттөө</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8903921497873541725">Чоңойтуу</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC бул түзмөктө өчүрүлгөн. <ph name="BEGIN_LINK" />Android жөндөөлөрүнө<ph name="END_LINK" /> өтүп, аны күйгүзүңүз.</translation>
-<translation id="8929372349074745002">Адатта бул сайт тез ачылат</translation>
 <translation id="8941729603749328384">www.example.com</translation>
-<translation id="894871326938397531">Жашыруун режимден чыгасызбы?</translation>
 <translation id="8958424370300090006">Белгилүү бир сайттын cookie файлдарын бөгөттөө.</translation>
 <translation id="8959122750345127698">Чабыттоо жеткиликсиз: <ph name="URL" /></translation>
+<translation id="8986362086234534611">Унутуу</translation>
 <translation id="9019902583201351841">Ата-энеңиз башкарат</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> жана дагы <ph name="NUM_MORE" />}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> жана дагы <ph name="NUM_MORE" />}}</translation>
 <translation id="913657688200966289"><ph name="APP_NAME" /> колдонмосу үчүн уруксаттарды <ph name="BEGIN_LINK" />Android Жөндөөлөрүнөн<ph name="END_LINK" /> күйгүзүңүз.</translation>
+<translation id="930525582205581608">Бул сайт унутулсунбу?</translation>
 <translation id="965817943346481315">Эгер сайт тажатма же адаштыруучу жарнамаларды көрсөтүп баштаса, бөгөттөлсүн (сунушталат)</translation>
 <translation id="967624055006145463">Сакталган дайындар</translation>
 </translationbundle>

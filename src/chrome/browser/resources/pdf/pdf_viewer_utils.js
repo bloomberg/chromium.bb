@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+
 import {MessageData} from './controller.js';
 import {LayoutOptions} from './viewport.js';
 
@@ -38,7 +40,6 @@ export let DestinationMessageData;
 
 /**
  * @typedef {{
- *   hasUnsavedChanges: (boolean|undefined),
  *   fileName: string,
  *   dataToSave: !ArrayBuffer
  * }}
@@ -46,19 +47,27 @@ export let DestinationMessageData;
 export let RequiredSaveResult;
 
 /**
+ * Determines if the event has the platform-equivalent of the Windows ctrl key
+ * modifier.
+ * @param {!KeyboardEvent} e the event to handle.
+ * @return {boolean} Whether the event has the ctrl key modifier.
+ */
+export function hasCtrlModifier(e) {
+  let hasModifier = e.ctrlKey;
+  // <if expr="is_macosx">
+  hasModifier = e.metaKey;  // AKA Command.
+  // </if>
+  return hasModifier;
+}
+
+/**
  * Whether keydown events should currently be ignored. Events are ignored when
  * an editable element has focus, to allow for proper editing controls.
- * @param {Element} activeElement The currently selected DOM node.
  * @return {boolean} True if keydown events should be ignored.
  */
-export function shouldIgnoreKeyEvents(activeElement) {
-  while (activeElement.shadowRoot != null &&
-         activeElement.shadowRoot.activeElement != null) {
-    activeElement = activeElement.shadowRoot.activeElement;
-  }
-
-  return (
-      activeElement.isContentEditable ||
+export function shouldIgnoreKeyEvents() {
+  const activeElement = getDeepActiveElement();
+  return activeElement.isContentEditable ||
       (activeElement.tagName === 'INPUT' && activeElement.type !== 'radio') ||
-      activeElement.tagName === 'TEXTAREA');
+      activeElement.tagName === 'TEXTAREA';
 }

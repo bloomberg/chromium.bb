@@ -31,6 +31,7 @@ class PLATFORM_EXPORT ClientHintsPreferences {
   ClientHintsPreferences();
 
   void UpdateFrom(const ClientHintsPreferences&);
+  void CombineWith(const ClientHintsPreferences&);
 
   // Parses <meta http-equiv="accept-ch"> value |header_value|, and updates
   // |this| to enable the requested client hints. |url| is the URL of the page.
@@ -61,4 +62,4 @@ class PLATFORM_EXPORT ClientHintsPreferences {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_CLIENT_HINTS_PREFERENCES_H_

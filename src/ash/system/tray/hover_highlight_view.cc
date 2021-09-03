@@ -28,7 +28,7 @@ namespace ash {
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
     : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS), listener_(listener) {
   SetNotifyEnterExitOnChild(true);
-  SetInkDropMode(InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
 }
 
 HoverHighlightView::~HoverHighlightView() = default;
@@ -71,7 +71,7 @@ void HoverHighlightView::SetRightViewVisible(bool visible) {
   Layout();
 }
 
-void HoverHighlightView::SetSubText(const base::string16& sub_text) {
+void HoverHighlightView::SetSubText(const std::u16string& sub_text) {
   DCHECK(is_populated_);
   DCHECK(text_label_);
   DCHECK(!sub_text.empty());
@@ -89,7 +89,7 @@ void HoverHighlightView::SetSubText(const base::string16& sub_text) {
 }
 
 void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
-                                         const base::string16& text) {
+                                         const std::u16string& text) {
   DCHECK(!is_populated_);
   is_populated_ = true;
 
@@ -120,7 +120,7 @@ void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
   SetAccessibleName(text);
 }
 
-void HoverHighlightView::AddLabelRow(const base::string16& text) {
+void HoverHighlightView::AddLabelRow(const std::u16string& text) {
   DCHECK(!is_populated_);
   is_populated_ = true;
 
@@ -137,6 +137,14 @@ void HoverHighlightView::AddLabelRow(const base::string16& text) {
   tri_view_->AddView(TriView::Container::CENTER, text_label_);
 
   SetAccessibleName(text);
+}
+
+void HoverHighlightView::AddLabelRow(const std::u16string& text,
+                                     int start_inset) {
+  AddLabelRow(text);
+
+  tri_view_->SetMinSize(TriView::Container::START,
+                        gfx::Size(start_inset, kTrayPopupItemMinHeight));
 }
 
 void HoverHighlightView::SetExpandable(bool expandable) {
@@ -163,7 +171,7 @@ void HoverHighlightView::Reset() {
   is_populated_ = false;
 }
 
-void HoverHighlightView::OnSetTooltipText(const base::string16& tooltip_text) {
+void HoverHighlightView::OnSetTooltipText(const std::u16string& tooltip_text) {
   if (text_label_)
     text_label_->SetTooltipText(tooltip_text);
   if (sub_text_label_)

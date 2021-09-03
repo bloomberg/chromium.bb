@@ -1529,15 +1529,54 @@ TEST(DeoptExitSizeIsFixed) {
   STATIC_ASSERT(static_cast<int>(kFirstDeoptimizeKind) == 0);
   for (int i = 0; i < kDeoptimizeKindCount; i++) {
     DeoptimizeKind kind = static_cast<DeoptimizeKind>(i);
-    Builtins::Name target = Deoptimizer::GetDeoptimizationEntry(isolate, kind);
     Label before_exit;
     masm.bind(&before_exit);
-    masm.CallForDeoptimization(target, 42, &before_exit, kind, nullptr);
-    CHECK_EQ(masm.SizeOfCodeGeneratedSince(&before_exit),
-             kind == DeoptimizeKind::kLazy
-                 ? Deoptimizer::kLazyDeoptExitSize
-                 : Deoptimizer::kNonLazyDeoptExitSize);
+    if (kind == DeoptimizeKind::kEagerWithResume) {
+      Builtins::Name target = Deoptimizer::GetDeoptWithResumeBuiltin(
+          DeoptimizeReason::kDynamicCheckMaps);
+      masm.CallForDeoptimization(target, 42, &before_exit, kind, &before_exit,
+                                 nullptr);
+      CHECK_EQ(masm.SizeOfCodeGeneratedSince(&before_exit),
+               Deoptimizer::kEagerWithResumeBeforeArgsSize);
+    } else {
+      Builtins::Name target = Deoptimizer::GetDeoptimizationEntry(kind);
+      masm.CallForDeoptimization(target, 42, &before_exit, kind, &before_exit,
+                                 nullptr);
+      CHECK_EQ(masm.SizeOfCodeGeneratedSince(&before_exit),
+               kind == DeoptimizeKind::kLazy
+                   ? Deoptimizer::kLazyDeoptExitSize
+                   : Deoptimizer::kNonLazyDeoptExitSize);
+    }
   }
+}
+
+TEST(CpuFeatures_ProbeImpl) {
+  // Support for a newer extension implies support for the older extensions.
+  CHECK_IMPLIES(CpuFeatures::IsSupported(FMA3), CpuFeatures::IsSupported(AVX));
+  CHECK_IMPLIES(CpuFeatures::IsSupported(AVX2), CpuFeatures::IsSupported(AVX));
+  CHECK_IMPLIES(CpuFeatures::IsSupported(AVX),
+                CpuFeatures::IsSupported(SSE4_2));
+  CHECK_IMPLIES(CpuFeatures::IsSupported(SSE4_2),
+                CpuFeatures::IsSupported(SSE4_1));
+  CHECK_IMPLIES(CpuFeatures::IsSupported(SSE4_1),
+                CpuFeatures::IsSupported(SSSE3));
+  CHECK_IMPLIES(CpuFeatures::IsSupported(SSSE3),
+                CpuFeatures::IsSupported(SSE3));
+
+  // Check the reverse, if an older extension is not supported, a newer
+  // extension cannot be supported.
+  CHECK_IMPLIES(!CpuFeatures::IsSupported(SSE3),
+                !CpuFeatures::IsSupported(SSSE3));
+  CHECK_IMPLIES(!CpuFeatures::IsSupported(SSSE3),
+                !CpuFeatures::IsSupported(SSE4_1));
+  CHECK_IMPLIES(!CpuFeatures::IsSupported(SSE4_1),
+                !CpuFeatures::IsSupported(SSE4_2));
+  CHECK_IMPLIES(!CpuFeatures::IsSupported(SSE4_2),
+                !CpuFeatures::IsSupported(AVX));
+  CHECK_IMPLIES(!CpuFeatures::IsSupported(AVX),
+                !CpuFeatures::IsSupported(AVX2));
+  CHECK_IMPLIES(!CpuFeatures::IsSupported(AVX),
+                !CpuFeatures::IsSupported(FMA3));
 }
 
 #undef __

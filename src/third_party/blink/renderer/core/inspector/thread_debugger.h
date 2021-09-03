@@ -98,6 +98,7 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
                            v8_inspector::V8InspectorClient::TimerCallback,
                            void* data) override;
   void cancelTimer(void* data) override;
+  int64_t generateUniqueId() override;
 
   void OnTimer(TimerBase*);
 
@@ -106,6 +107,10 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
       bool enabled);
   static void MonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   static void UnmonitorEventsCallback(
+      const v8::FunctionCallbackInfo<v8::Value>&);
+  static void GetAccessibleNameCallback(
+      const v8::FunctionCallbackInfo<v8::Value>&);
+  static void GetAccessibleRoleCallback(
       const v8::FunctionCallbackInfo<v8::Value>&);
 
   static void GetEventListenersCallback(

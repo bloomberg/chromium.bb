@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_fetch_response_callback.mojom.h"
 
 namespace content {
 
@@ -53,23 +54,18 @@ void FakeServiceWorker::InitializeGlobalScope(
 
   // Enable callers to use these endpoints without us actually binding them
   // to an implementation.
-  mojo::AssociateWithDisconnectedPipe(registration_info->receiver.PassHandle());
+  registration_info->receiver.EnableUnassociatedUsage();
   if (registration_info->installing) {
-    mojo::AssociateWithDisconnectedPipe(
-        registration_info->installing->receiver.PassHandle());
+    registration_info->installing->receiver.EnableUnassociatedUsage();
   }
   if (registration_info->waiting) {
-    mojo::AssociateWithDisconnectedPipe(
-        registration_info->waiting->receiver.PassHandle());
+    registration_info->waiting->receiver.EnableUnassociatedUsage();
   }
   if (registration_info->active) {
-    mojo::AssociateWithDisconnectedPipe(
-        registration_info->active->receiver.PassHandle());
+    registration_info->active->receiver.EnableUnassociatedUsage();
   }
-
   if (service_worker_info) {
-    mojo::AssociateWithDisconnectedPipe(
-        service_worker_info->receiver.PassHandle());
+    service_worker_info->receiver.EnableUnassociatedUsage();
   }
 
   registration_info_ = std::move(registration_info);
@@ -144,7 +140,7 @@ void FakeServiceWorker::DispatchNotificationClickEvent(
     const std::string& notification_id,
     const blink::PlatformNotificationData& notification_data,
     int action_index,
-    const base::Optional<base::string16>& reply,
+    const absl::optional<std::u16string>& reply,
     DispatchNotificationClickEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
@@ -157,7 +153,7 @@ void FakeServiceWorker::DispatchNotificationCloseEvent(
 }
 
 void FakeServiceWorker::DispatchPushEvent(
-    const base::Optional<std::string>& payload,
+    const absl::optional<std::string>& payload,
     DispatchPushEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }

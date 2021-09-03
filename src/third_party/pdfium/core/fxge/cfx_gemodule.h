@@ -7,7 +7,15 @@
 #ifndef CORE_FXGE_CFX_GEMODULE_H_
 #define CORE_FXGE_CFX_GEMODULE_H_
 
+#include <stdint.h>
+
 #include <memory>
+
+#include "build/build_config.h"
+
+#if defined(OS_APPLE)
+#include "third_party/base/span.h"
+#endif
 
 class CFX_FontCache;
 class CFX_FontMgr;
@@ -18,11 +26,14 @@ class CFX_GEModule {
   class PlatformIface {
    public:
     static std::unique_ptr<PlatformIface> Create();
-    virtual ~PlatformIface() {}
+    virtual ~PlatformIface() = default;
 
     virtual void Init() = 0;
     virtual std::unique_ptr<SystemFontInfoIface>
     CreateDefaultSystemFontInfo() = 0;
+#if defined(OS_APPLE)
+    virtual void* CreatePlatformFont(pdfium::span<const uint8_t> font_span) = 0;
+#endif
   };
 
   static void Create(const char** pUserFontPaths);

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_util.h"
@@ -25,6 +26,51 @@ class GURL;
 namespace permissions {
 enum class PermissionRequestGestureType;
 class PermissionRequest;
+
+// Used for UMA to record the types of permission prompts shown.
+// When updating, you also need to update:
+//   1) The PermissionRequestType enum in tools/metrics/histograms/enums.xml.
+//   2) The PermissionRequestTypes suffix list in
+//      tools/metrics/histograms/histograms.xml.
+//   3) GetPermissionRequestString below.
+//
+// The usual rules of updating UMA values applies to this enum:
+// - don't remove values
+// - only ever add values at the end
+enum class RequestTypeForUma {
+  UNKNOWN = 0,
+  MULTIPLE = 1,
+  // UNUSED_PERMISSION = 2,
+  QUOTA = 3,
+  DOWNLOAD = 4,
+  // MEDIA_STREAM = 5,
+  REGISTER_PROTOCOL_HANDLER = 6,
+  PERMISSION_GEOLOCATION = 7,
+  PERMISSION_MIDI_SYSEX = 8,
+  PERMISSION_NOTIFICATIONS = 9,
+  PERMISSION_PROTECTED_MEDIA_IDENTIFIER = 10,
+  // PERMISSION_PUSH_MESSAGING = 11,
+  PERMISSION_FLASH = 12,
+  PERMISSION_MEDIASTREAM_MIC = 13,
+  PERMISSION_MEDIASTREAM_CAMERA = 14,
+  PERMISSION_ACCESSIBILITY_EVENTS = 15,
+  // PERMISSION_CLIPBOARD_READ = 16, // Replaced by
+  // PERMISSION_CLIPBOARD_READ_WRITE in M81.
+  PERMISSION_SECURITY_KEY_ATTESTATION = 17,
+  PERMISSION_PAYMENT_HANDLER = 18,
+  PERMISSION_NFC = 19,
+  PERMISSION_CLIPBOARD_READ_WRITE = 20,
+  PERMISSION_VR = 21,
+  PERMISSION_AR = 22,
+  PERMISSION_STORAGE_ACCESS = 23,
+  PERMISSION_CAMERA_PAN_TILT_ZOOM = 24,
+  PERMISSION_WINDOW_PLACEMENT = 25,
+  PERMISSION_FONT_ACCESS = 26,
+  PERMISSION_IDLE_DETECTION = 27,
+  PERMISSION_FILE_HANDLING = 28,
+  // NUM must be the last value in the enum.
+  NUM
+};
 
 // Any new values should be inserted immediately prior to NUM.
 enum class PermissionSourceUI {
@@ -146,11 +192,42 @@ enum class PermissionAutoRevocationHistory {
   PREVIOUSLY_AUTO_REVOKED = 0x01,
 };
 
+// This enum backs up the `AutoDSEPermissionRevertTransition` histogram enum.
+// Never reuse values and mirror any updates to it.
+// Describes the transition that has occured for the setting of a DSE origin
+// when DSE autogrant becomes disabled.
+enum class AutoDSEPermissionRevertTransition {
+  // The user has not previously made any decision so it results in an `ASK` end
+  // state.
+  NO_DECISION_ASK = 0,
+  // The user has decided to `ALLOW` the origin before it was the DSE origin and
+  // has not reverted this decision.
+  PRESERVE_ALLOW = 1,
+  // The user has previously `BLOCKED` the origin but has allowed it after it
+  // became the DSE origin. Resolve the conflict by setting it to `ASK` so the
+  // user will make a decision again.
+  CONFLICT_ASK = 2,
+  // The user has blocked the DSE origin and has not made a previous decision
+  // before the origin became the DSE origin.
+  PRESERVE_BLOCK_ASK = 3,
+  // The user has blocked the DSE origin and has `ALLOWED` it before it became
+  // the DSE origin, preserve the latest decision.
+  PRESERVE_BLOCK_ALLOW = 4,
+  // The user has blocked the DSE origin and has `BLOCKED` it before it became
+  // the DSE origin as well.
+  PRESERVE_BLOCK_BLOCK = 5,
+  // There has been an invalid transition.
+  INVALID_END_STATE = 6,
+
+  // Always keep at the end.
+  kMaxValue = INVALID_END_STATE,
+};
+
 // Provides a convenient way of logging UMA for permission related operations.
 class PermissionUmaUtil {
  public:
   using PredictionGrantLikelihood =
-      PermissionSuggestion_Likelihood_DiscretizedLikelihood;
+      PermissionPrediction_Likelihood_DiscretizedLikelihood;
 
   static const char kPermissionsPromptShown[];
   static const char kPermissionsPromptShownGesture[];
@@ -167,6 +244,10 @@ class PermissionUmaUtil {
 
   static void PermissionRequested(ContentSettingsType permission,
                                   const GURL& requesting_origin);
+
+  // Records the revocation UMA and UKM metrics for ContentSettingsTypes that
+  // have user facing permission prompts. The passed in `permission` must be
+  // such that PermissionUtil::IsPermission(permission) returns true.
   static void PermissionRevoked(ContentSettingsType permission,
                                 PermissionSourceUI source_ui,
                                 const GURL& revoked_origin,
@@ -196,18 +277,19 @@ class PermissionUmaUtil {
       const std::vector<PermissionRequest*>& requests,
       content::WebContents* web_contents,
       PermissionAction permission_action,
+      base::TimeDelta time_to_decision,
       PermissionPromptDisposition ui_disposition,
-      base::Optional<PermissionPromptDispositionReason> ui_reason,
-      base::Optional<PredictionGrantLikelihood> predicted_grant_likelihood);
+      absl::optional<PermissionPromptDispositionReason> ui_reason,
+      absl::optional<PredictionGrantLikelihood> predicted_grant_likelihood);
 
   static void RecordWithBatteryBucket(const std::string& histogram);
 
   static void RecordInfobarDetailsExpanded(bool expanded);
 
-  static void RecordCrowdDenyIsLoadedAtAbuseCheckTime(bool loaded);
+  static void RecordCrowdDenyDelayedPushNotification(base::TimeDelta delay);
 
   static void RecordCrowdDenyVersionAtAbuseCheckTime(
-      const base::Optional<base::Version>& version);
+      const absl::optional<base::Version>& version);
 
   // Record UMAs related to the Android "Missing permissions" infobar.
   static void RecordMissingPermissionInfobarShouldShow(
@@ -217,11 +299,28 @@ class PermissionUmaUtil {
       PermissionAction action,
       const std::vector<ContentSettingsType>& content_settings_types);
 
+  static void RecordPermissionUsage(ContentSettingsType permission_type,
+                                    content::BrowserContext* browser_context,
+                                    const content::WebContents* web_contents,
+                                    const GURL& requesting_origin);
+
   static void RecordTimeElapsedBetweenGrantAndUse(ContentSettingsType type,
                                                   base::TimeDelta delta);
 
   static void RecordTimeElapsedBetweenGrantAndRevoke(ContentSettingsType type,
                                                      base::TimeDelta delta);
+
+  static void RecordAutoDSEPermissionReverted(
+      ContentSettingsType permission_type,
+      ContentSetting backed_up_setting,
+      ContentSetting effective_setting,
+      ContentSetting end_state_setting);
+
+  static void RecordDSEEffectiveSetting(ContentSettingsType permission_type,
+                                        ContentSetting setting);
+
+  static std::string GetPermissionActionString(
+      PermissionAction permission_action);
 
   // A scoped class that will check the current resolved content setting on
   // construction and report a revocation metric accordingly if the revocation
@@ -254,19 +353,22 @@ class PermissionUmaUtil {
 
  private:
   friend class PermissionUmaUtilTest;
-
+  // Records UMA and UKM metrics for ContentSettingsTypes that have user facing
+  // permission prompts. The passed in `permission` must be such that
+  // PermissionUtil::IsPermission(permission) returns true.
   // web_contents may be null when for recording non-prompt actions.
   static void RecordPermissionAction(
       ContentSettingsType permission,
       PermissionAction action,
       PermissionSourceUI source_ui,
       PermissionRequestGestureType gesture_type,
+      base::TimeDelta time_to_decision,
       PermissionPromptDisposition ui_disposition,
-      base::Optional<PermissionPromptDispositionReason> ui_reason,
+      absl::optional<PermissionPromptDispositionReason> ui_reason,
       const GURL& requesting_origin,
       const content::WebContents* web_contents,
       content::BrowserContext* browser_context,
-      base::Optional<PredictionGrantLikelihood> predicted_grant_likelihood);
+      absl::optional<PredictionGrantLikelihood> predicted_grant_likelihood);
 
   // Records |count| total prior actions for a prompt of type |permission|
   // for a single origin using |prefix| for the metric.

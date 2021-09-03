@@ -6,6 +6,7 @@
 #define UTIL_CRYPTO_RANDOM_BYTES_H_
 
 #include <array>
+#include <cstdint>
 
 namespace openscreen {
 

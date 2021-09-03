@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -32,6 +33,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "ui/base/page_transition_types.h"
 
 using content::OpenURLParams;
@@ -39,18 +41,18 @@ using content::Referrer;
 using content::WebContents;
 
 // TODO(jam): http://crbug.com/350550
-#if !(defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER))
+#if !(BUILDFLAG(IS_CHROMEOS_ASH) && defined(ADDRESS_SANITIZER))
 
 namespace {
 
 void SimulateRendererCrash(Browser* browser) {
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-      content::NotificationService::AllSources());
-  browser->OpenURL(OpenURLParams(GURL(content::kChromeUICrashURL), Referrer(),
+  content::RenderProcessHostWatcher crash_observer(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  browser->OpenURL(OpenURLParams(GURL(blink::kChromeUICrashURL), Referrer(),
                                  WindowOpenDisposition::CURRENT_TAB,
                                  ui::PAGE_TRANSITION_TYPED, false));
-  observer.Wait();
+  crash_observer.Wait();
 }
 
 // A request handler which returns a different result each time but stays fresh
@@ -63,7 +65,7 @@ class CacheMaxAgeHandler {
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     if (request.relative_url != path_)
-      return std::unique_ptr<net::test_server::HttpResponse>();
+      return nullptr;
 
     request_count_++;
     std::unique_ptr<net::test_server::BasicHttpResponse> response(
@@ -102,8 +104,8 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, Reload) {
       "data:text/html,<script>document.title=new Date().valueOf()</script>");
   ui_test_utils::NavigateToURL(browser(), url);
 
-  base::string16 title_before_crash;
-  base::string16 title_after_crash;
+  std::u16string title_before_crash;
+  std::u16string title_after_crash;
 
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));
@@ -133,8 +135,8 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, ReloadCacheRevalidate) {
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(kTestPath));
 
-  base::string16 title_before_crash;
-  base::string16 title_after_crash;
+  std::u16string title_before_crash;
+  std::u16string title_after_crash;
 
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));
@@ -159,15 +161,16 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
       base::FilePath(kTitle2File)));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  base::string16 title_before_crash;
-  base::string16 title_after_crash;
+  std::u16string title_before_crash;
+  std::u16string title_after_crash;
 
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));
   SimulateRendererCrash(browser());
-  ASSERT_EQ(GURL(content::kChromeUICrashURL),
-            GetActiveWebContents()->GetController().GetVisibleEntry()->
-                GetVirtualURL());
+  ASSERT_EQ(GURL(blink::kChromeUICrashURL), GetActiveWebContents()
+                                                ->GetController()
+                                                .GetVisibleEntry()
+                                                ->GetVirtualURL());
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(content::WaitForLoadStop(GetActiveWebContents()));
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),

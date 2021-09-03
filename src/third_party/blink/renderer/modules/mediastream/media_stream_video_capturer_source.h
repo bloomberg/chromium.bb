@@ -66,6 +66,7 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
   FRIEND_TEST_ALL_PREFIXES(MediaStreamVideoCapturerSourceTest, ChangeSource);
 
   // MediaStreamVideoSource overrides.
+  void SetCanDiscardAlpha(bool can_discard_alpha) override;
   void RequestRefreshFrame() override;
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
   void OnLog(const std::string& message) override;
@@ -77,10 +78,11 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
   void StopSourceImpl() override;
   void StopSourceForRestartImpl() override;
   void RestartSourceImpl(const media::VideoCaptureFormat& new_format) override;
-  base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const override;
-  base::Optional<media::VideoCaptureParams> GetCurrentCaptureParams()
+  absl::optional<media::VideoCaptureFormat> GetCurrentFormat() const override;
+  absl::optional<media::VideoCaptureParams> GetCurrentCaptureParams()
       const override;
   void ChangeSourceImpl(const MediaStreamDevice& new_device) override;
+  base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() const override;
 
   // Method to bind as RunningCallback in VideoCapturerSource::StartCapture().
   void OnRunStateChanged(const media::VideoCaptureParams& new_capture_params,
@@ -107,6 +109,8 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
   media::VideoCaptureParams capture_params_;
   VideoCaptureDeliverFrameCB frame_callback_;
   DeviceCapturerFactoryCallback device_capturer_factory_callback_;
+
+  base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoCapturerSource);
 };

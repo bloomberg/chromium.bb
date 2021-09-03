@@ -6,7 +6,6 @@
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/test.h"
-#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -25,15 +24,9 @@ class AlarmsApiTest : public ExtensionApiTest,
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(StartEmbeddedTestServer());
-
-    // Service Workers are currently only available on certain channels, so set
-    // the channel for those tests.
-    if (GetParam() == ContextType::kServiceWorker)
-      current_channel_ = std::make_unique<ScopedWorkerBasedExtensionsChannel>();
   }
 
-  static std::unique_ptr<base::ListValue> BuildEventArguments(
-      const bool last_message) {
+  static std::vector<base::Value> BuildEventArguments(const bool last_message) {
     api::test::OnMessage::Info info;
     info.data = "";
     info.last_message = last_message;
@@ -41,16 +34,11 @@ class AlarmsApiTest : public ExtensionApiTest,
   }
 
   const Extension* LoadAlarmsExtensionIncognito(const char* path) {
-    int flags = kFlagEnableFileAccess | kFlagEnableIncognito;
-    if (GetParam() == ContextType::kServiceWorker)
-      flags |= kFlagRunAsServiceWorkerBasedExtension;
-
-    return LoadExtensionWithFlags(
-        test_data_dir_.AppendASCII("alarms").AppendASCII(path), flags);
+    return LoadExtension(
+        test_data_dir_.AppendASCII("alarms").AppendASCII(path),
+        {.allow_in_incognito = true,
+         .load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
-
- private:
-  std::unique_ptr<ScopedWorkerBasedExtensionsChannel> current_channel_;
 };
 
 INSTANTIATE_TEST_SUITE_P(EventPage,
@@ -65,7 +53,8 @@ INSTANTIATE_TEST_SUITE_P(ServiceWorker,
 IN_PROC_BROWSER_TEST_P(AlarmsApiTest, IncognitoSplit) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
-  Profile* incognito_profile = browser()->profile()->GetPrimaryOTRProfile();
+  Profile* incognito_profile =
+      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   ResultCatcher catcher_incognito;
   catcher_incognito.RestrictToBrowserContext(incognito_profile);
   ResultCatcher catcher;

@@ -8,9 +8,11 @@
 
 #include "base/run_loop.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/scoped_keyboard_layout_engine.h"
 #include "ui/ozone/common/features.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
@@ -58,10 +60,17 @@ void WaylandTest::SetUp() {
       {features::kUseOzonePlatform, ui::kWaylandOverlayDelegation}, {});
   ASSERT_TRUE(features::IsUsingOzonePlatform());
 
+  if (DeviceDataManager::HasInstance()) {
+    // Another instance may have already been set before.
+    DeviceDataManager::GetInstance()->ResetDeviceListsForTest();
+  } else {
+    DeviceDataManager::CreateInstance();
+  }
+
   ASSERT_TRUE(server_.Start(GetParam()));
   ASSERT_TRUE(connection_->Initialize());
-  screen_ = connection_->wayland_output_manager()->CreateWaylandScreen(
-      connection_.get());
+  connection_->event_source()->UseSingleThreadedPollingForTesting();
+  screen_ = connection_->wayland_output_manager()->CreateWaylandScreen();
   EXPECT_CALL(delegate_, OnAcceleratedWidgetAvailable(_))
       .WillOnce(SaveArg<0>(&widget_));
   PlatformWindowInitProperties properties;
@@ -69,6 +78,7 @@ void WaylandTest::SetUp() {
   properties.type = PlatformWindowType::kWindow;
   window_ = WaylandWindow::Create(&delegate_, connection_.get(),
                                   std::move(properties));
+  window_->set_update_visual_size_immediately(true);
   ASSERT_NE(widget_, gfx::kNullAcceleratedWidget);
 
   window_->Show(false);
@@ -87,6 +97,12 @@ void WaylandTest::SetUp() {
   ActivateSurface(server_.GetObject<wl::MockSurface>(id)->xdg_surface());
 
   Sync();
+
+  EXPECT_EQ(0u,
+            DeviceDataManager::GetInstance()->GetTouchscreenDevices().size());
+  EXPECT_EQ(0u, DeviceDataManager::GetInstance()->GetKeyboardDevices().size());
+  EXPECT_EQ(0u, DeviceDataManager::GetInstance()->GetMouseDevices().size());
+  EXPECT_EQ(0u, DeviceDataManager::GetInstance()->GetTouchpadDevices().size());
 
   initialized_ = true;
 }
@@ -117,18 +133,18 @@ void WaylandTest::SendConfigureEvent(wl::MockXdgSurface* xdg_surface,
   // surfaces send other data like states, heights and widths.
   // Please note that toplevel surfaces may not exist if the surface was created
   // for the popup role.
-  if (GetParam() == kXdgShellV6) {
-    zxdg_surface_v6_send_configure(xdg_surface->resource(), serial);
+  if (GetParam().shell_version == wl::ShellVersion::kV6) {
     if (xdg_surface->xdg_toplevel()) {
       zxdg_toplevel_v6_send_configure(xdg_surface->xdg_toplevel()->resource(),
                                       width, height, states);
     }
+    zxdg_surface_v6_send_configure(xdg_surface->resource(), serial);
   } else {
-    xdg_surface_send_configure(xdg_surface->resource(), serial);
     if (xdg_surface->xdg_toplevel()) {
       xdg_toplevel_send_configure(xdg_surface->xdg_toplevel()->resource(),
                                   width, height, states);
     }
+    xdg_surface_send_configure(xdg_surface->resource(), serial);
   }
 }
 

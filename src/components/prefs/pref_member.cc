@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/util/values/values_util.h"
+#include "base/values.h"
 #include "components/prefs/pref_service.h"
 
 using base::SequencedTaskRunner;
@@ -72,8 +73,9 @@ void PrefMemberBase::UpdateValueFromPref(base::OnceClosure callback) const {
   DCHECK(pref);
   if (!internal())
     CreateInternal();
-  internal()->UpdateValue(pref->GetValue()->DeepCopy(), pref->IsManaged(),
-                          pref->IsUserModifiable(), std::move(callback));
+  internal()->UpdateValue(
+      base::Value::ToUniquePtrValue(pref->GetValue()->Clone()).release(),
+      pref->IsManaged(), pref->IsUserModifiable(), std::move(callback));
 }
 
 void PrefMemberBase::VerifyPref() const {
@@ -129,15 +131,12 @@ bool PrefMemberVectorStringUpdate(const base::Value& value,
                                   std::vector<std::string>* string_vector) {
   if (!value.is_list())
     return false;
-  const base::ListValue* list = static_cast<const base::ListValue*>(&value);
 
   std::vector<std::string> local_vector;
-  for (auto it = list->begin(); it != list->end(); ++it) {
-    std::string string_value;
-    if (!it->GetAsString(&string_value))
+  for (const auto& item : value.GetList()) {
+    if (!item.is_string())
       return false;
-
-    local_vector.push_back(string_value);
+    local_vector.push_back(item.GetString());
   }
 
   string_vector->swap(local_vector);
@@ -154,7 +153,9 @@ void PrefMember<bool>::UpdatePref(const bool& value) {
 template <>
 bool PrefMember<bool>::Internal::UpdateValueInternal(
     const base::Value& value) const {
-  return value.GetAsBoolean(&value_);
+  if (value.is_bool())
+    value_ = value.GetBool();
+  return value.is_bool();
 }
 
 template <>
@@ -165,7 +166,9 @@ void PrefMember<int>::UpdatePref(const int& value) {
 template <>
 bool PrefMember<int>::Internal::UpdateValueInternal(
     const base::Value& value) const {
-  return value.GetAsInteger(&value_);
+  if (value.is_int())
+    value_ = value.GetInt();
+  return value.is_int();
 }
 
 template <>
@@ -176,7 +179,9 @@ void PrefMember<double>::UpdatePref(const double& value) {
 template <>
 bool PrefMember<double>::Internal::UpdateValueInternal(const base::Value& value)
     const {
-  return value.GetAsDouble(&value_);
+  if (value.is_double() || value.is_int())
+    value_ = value.GetDouble();
+  return value.is_double() || value.is_int();
 }
 
 template <>
@@ -188,7 +193,9 @@ template <>
 bool PrefMember<std::string>::Internal::UpdateValueInternal(
     const base::Value& value)
     const {
-  return value.GetAsString(&value_);
+  if (value.is_string())
+    value_ = value.GetString();
+  return value.is_string();
 }
 
 template <>
@@ -200,7 +207,7 @@ template <>
 bool PrefMember<base::FilePath>::Internal::UpdateValueInternal(
     const base::Value& value)
     const {
-  base::Optional<base::FilePath> path = util::ValueToFilePath(value);
+  absl::optional<base::FilePath> path = util::ValueToFilePath(value);
   if (!path)
     return false;
   value_ = *path;
@@ -211,7 +218,9 @@ template <>
 void PrefMember<std::vector<std::string> >::UpdatePref(
     const std::vector<std::string>& value) {
   base::ListValue list_value;
-  list_value.AppendStrings(value);
+  for (const std::string& val : value)
+    list_value.Append(val);
+
   prefs()->Set(pref_name(), list_value);
 }
 

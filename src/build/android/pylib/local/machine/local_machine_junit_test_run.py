@@ -2,13 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
+import collections
 import json
 import logging
 import multiprocessing
 import os
+import select
 import subprocess
+import sys
 import zipfile
 
+from six.moves import range  # pylint: disable=redefined-builtin
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_run
@@ -24,16 +29,18 @@ from py_utils import tempfile_ext
 _EXCLUDED_CLASSES_PREFIXES = ('android', 'junit', 'org/bouncycastle/util',
                               'org/hamcrest', 'org/junit', 'org/mockito')
 
-# Running time for chrome_junit_tests locally:
-# 1 shard: 3 min 15 sec, 4 shards: 1 min 29 sec,
-# 6 shards: 1 min 10 sec, 8 shards 1 min 6 sec,
-# 10 shards: 1 min 0 sec, 12 shards 1 min 10 sec, 16 shards: 1 min 4 sec
-_MAX_SHARDS = 10
+# Suites we shouldn't shard, usually because they don't contain enough test
+# cases.
+_EXCLUDED_SUITES = {
+    'password_check_junit_tests',
+    'touch_to_fill_junit_tests',
+}
+
 
 # It can actually take longer to run if you shard too much, especially on
 # smaller suites. Locally media_base_junit_tests takes 4.3 sec with 1 shard,
 # and 6 sec with 2 or more shards.
-_MIN_CLASSES_PER_SHARD = 4
+_MIN_CLASSES_PER_SHARD = 8
 
 
 class LocalMachineJunitTestRun(test_run.TestRun):
@@ -115,13 +122,17 @@ class LocalMachineJunitTestRun(test_run.TestRun):
 
     # This avoids searching through the classparth jars for tests classes,
     # which takes about 1-2 seconds.
-    if self._test_instance.shards == 1 or self._test_instance.test_filter:
+    # Do not shard when a test filter is present since we do not know at this
+    # point which tests will be filtered out.
+    if (self._test_instance.shards == 1 or self._test_instance.test_filter
+        or self._test_instance.suite in _EXCLUDED_SUITES):
       test_classes = []
       shards = 1
     else:
       test_classes = _GetTestClasses(wrapper_path)
       shards = ChooseNumOfShards(test_classes, self._test_instance.shards)
 
+    logging.info('Running tests on %d shard(s).', shards)
     group_test_list = GroupTestsForShard(shards, test_classes)
 
     with tempfile_ext.NamedTemporaryDirectory() as temp_dir:
@@ -141,9 +152,12 @@ class LocalMachineJunitTestRun(test_run.TestRun):
 
       AddPropertiesJar(cmd_list, temp_dir, self._test_instance.resource_apk)
 
-      procs = [subprocess.Popen(cmd) for cmd in cmd_list]
-      for proc in procs:
-        proc.wait()
+      procs = [
+          subprocess.Popen(cmd,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT) for cmd in cmd_list
+      ]
+      PrintProcessesStdout(procs)
 
       results_list = []
       try:
@@ -189,7 +203,11 @@ def ChooseNumOfShards(test_classes, shards):
   if shards > (len(test_classes) // _MIN_CLASSES_PER_SHARD) or shards < 1:
     shards = max(1, (len(test_classes) // _MIN_CLASSES_PER_SHARD))
 
-  shards = min(shards, (multiprocessing.cpu_count() // 2) + 1, _MAX_SHARDS)
+  # Local tests of explicit --shard values show that max speed is achieved
+  # at cpu_count() / 2.
+  # Using -XX:TieredStopAtLevel=1 is required for this result. The flag reduces
+  # CPU time by two-thirds, making sharding more effective.
+  shards = max(1, min(shards, multiprocessing.cpu_count() // 2))
   # Can have at minimum one test_class per shard.
   shards = min(len(test_classes), shards)
 
@@ -218,23 +236,48 @@ def GroupTestsForShard(num_of_shards, test_classes):
   return test_dict
 
 
+def PrintProcessesStdout(procs):
+  """Prints the stdout of all the processes.
+
+  Buffers the stdout of the processes and prints it when finished.
+
+  Args:
+    procs: A list of subprocesses.
+
+  Returns: N/A
+  """
+  streams = [p.stdout for p in procs]
+  outputs = collections.defaultdict(list)
+  first_fd = streams[0].fileno()
+
+  while streams:
+    rstreams, _, _ = select.select(streams, [], [])
+    for stream in rstreams:
+      line = stream.readline()
+      if line:
+        # Print out just one output so user can see work being done rather
+        # than waiting for it all at the end.
+        if stream.fileno() == first_fd:
+          sys.stdout.write(line)
+        else:
+          outputs[stream.fileno()].append(line)
+      else:
+        streams.remove(stream)  # End of stream.
+
+  for p in procs:
+    sys.stdout.write(''.join(outputs[p.stdout.fileno()]))
+
+
 def _GetTestClasses(file_path):
   test_jar_paths = subprocess.check_output([file_path, '--print-classpath'])
   test_jar_paths = test_jar_paths.split(':')
 
   test_classes = []
-  for test_jar in test_jar_paths:
+  for test_jar_path in test_jar_paths:
     # Avoid searching through jars that are for the test runner.
     # TODO(crbug.com/1144077): Use robolectric buildconfig file arg.
-    if 'third_party/robolectric/' in test_jar:
+    if 'third_party/robolectric/' in test_jar_path:
       continue
-
-    test_jar_path = os.path.join(constants.DIR_SOURCE_ROOT, test_jar)
-
-    # Bots write the classpath indexed from src.
-    if not os.path.exists(test_jar_path):
-      if test_jar.startswith('src' + os.path.sep):
-        test_jar_path = os.path.join(constants.DIR_SOURCE_ROOT, test_jar[4:])
 
     test_classes += _GetTestClassesFromJar(test_jar_path)
 
