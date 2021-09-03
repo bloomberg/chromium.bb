@@ -45,6 +45,7 @@
 #include "third_party/blink/public/web/web_text_check_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/events/custom_event.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/editing_tri_state.h"
@@ -399,7 +400,7 @@ static gfx::Rect ComputeSelectionRect(LocalFrame* selected_frame) {
 }
 
 // Forward declare this, it is implemented at the end of this file.
-static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const WebContextMenuData& data);
+static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const blink::ContextMenuData& data);
 
 bool ContextMenuController::ShouldShowContextMenuFromTouch(
     const ContextMenuData& data) {
@@ -815,19 +816,19 @@ static void ExposeString(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj
            v8::String::NewFromUtf8(isolate, value.data(), v8::NewStringType::kNormal, value.length()).ToLocalChecked()).Check();
 }
 
-static void ExposeStringVector(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const blink::WebVector<blink::WebString>& value)
+static void ExposeStringVector(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const std::vector<std::u16string>& value)
 {
   v8::Handle<v8::Array> array = v8::Array::New(isolate);
   v8::Handle<v8::Context> context = obj->CreationContext();
 
   for (unsigned i = 0; i < value.size(); ++i) {
-    std::string item = value[i].Utf8();
+    std::string item = blink::WebString::FromUTF16(value[i]).Utf8();
     array->Set(context, i, v8::String::NewFromUtf8(isolate, item.data(), v8::NewStringType::kNormal, item.length()).ToLocalChecked()).Check();
   }
   obj->Set(context, v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), array).Check();
 }
 
-static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const WebContextMenuData& data)
+static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const blink::ContextMenuData& data)
 {
   LocalFrame* frame = hitTestResult.InnerNodeFrame();
 
@@ -849,17 +850,17 @@ static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const Web
   ExposeBool(isolate, detail_obj, "canTranslate", data.edit_flags & kCanTranslate);
 
   ExposeInt(isolate, detail_obj, "mediaType", static_cast<int>(data.media_type));
-  ExposeString(isolate, detail_obj, "misspelledWord", data.misspelled_word.Utf8());
+  ExposeString(isolate, detail_obj, "misspelledWord", blink::WebString::FromUTF16(data.misspelled_word).Utf8());
   ExposeBool(isolate, detail_obj, "isSpellCheckingEnabled", data.is_spell_checking_enabled);
   ExposeStringVector(isolate, detail_obj, "dictionarySuggestions", data.dictionary_suggestions);
-  ExposeString(isolate, detail_obj, "selectedText", data.selected_text.Utf8());
+  ExposeString(isolate, detail_obj, "selectedText", WTF::String(data.selected_text.c_str()).Utf8());
   ExposeInt(isolate, detail_obj, "mousePositionX", data.mouse_position.x());
   ExposeInt(isolate, detail_obj, "mousePositionY", data.mouse_position.y());
-  ExposeString(isolate, detail_obj, "linkURL", data.link_url.GetString().Utf8());
+  ExposeString(isolate, detail_obj, "linkURL", data.link_url.spec());
   ExposeBool(isolate, detail_obj, "isEditable", data.is_editable);
-  ExposeString(isolate, detail_obj, "frameEncoding", data.frame_encoding.Utf8());
+  ExposeString(isolate, detail_obj, "frameEncoding", WTF::String(data.frame_encoding.c_str()).Utf8());
   ExposeBool(isolate, detail_obj, "hasImageContents", data.has_image_contents);
-  ExposeString(isolate, detail_obj, "srcURL", data.src_url.GetString().Utf8());
+  ExposeString(isolate, detail_obj, "srcURL", data.src_url.spec());
   ExposeBool(isolate, detail_obj, "fromContextMenuKey", data.source_type == kMenuSourceContextMenuKey);
 
   CustomEvent* event = CustomEvent::Create();
