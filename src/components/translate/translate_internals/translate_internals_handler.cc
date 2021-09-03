@@ -48,10 +48,7 @@ TranslateInternalsHandler::TranslateInternalsHandler() {
                           base::Unretained(this)));
 }
 
-TranslateInternalsHandler::~TranslateInternalsHandler() {
-  // |event_subscription_|, |error_subscription_| and |init_subscription_| are
-  // deleted automatically and un-register the callbacks automatically.
-}
+TranslateInternalsHandler::~TranslateInternalsHandler() = default;
 
 // static.
 void TranslateInternalsHandler::GetLanguages(base::DictionaryValue* dict) {
@@ -62,9 +59,8 @@ void TranslateInternalsHandler::GetLanguages(base::DictionaryValue* dict) {
   std::vector<std::string> language_codes;
   l10n_util::GetAcceptLanguagesForLocale(app_locale, &language_codes);
 
-  for (auto it = language_codes.begin(); it != language_codes.end(); ++it) {
-    const std::string& lang_code = *it;
-    base::string16 lang_name =
+  for (auto& lang_code : language_codes) {
+    std::u16string lang_name =
         l10n_util::GetDisplayNameForLocale(lang_code, app_locale, false);
     dict->SetString(lang_code, lang_name);
   }
@@ -95,12 +91,14 @@ void TranslateInternalsHandler::AddLanguageDetectionDetails(
   dict.SetDouble("time", details.time.ToJsTime());
   dict.SetString("url", details.url.spec());
   dict.SetString("content_language", details.content_language);
-  dict.SetString("cld_language", details.cld_language);
-  dict.SetBoolean("is_cld_reliable", details.is_cld_reliable);
+  dict.SetString("model_detected_language", details.model_detected_language);
+  dict.SetBoolean("is_model_reliable", details.is_model_reliable);
+  dict.SetDouble("model_reliability_score", details.model_reliability_score);
   dict.SetBoolean("has_notranslate", details.has_notranslate);
   dict.SetString("html_root_language", details.html_root_language);
   dict.SetString("adopted_language", details.adopted_language);
   dict.SetString("content", details.contents);
+  dict.SetString("detection_model_version", details.detection_model_version);
   SendMessageToJs("languageDetectionInfoAdded", dict);
 }
 
@@ -181,16 +179,14 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
     std::string site;
     if (!args->GetString(1, &site))
       return;
-    translate_prefs->RemoveSiteFromBlacklist(site);
+    translate_prefs->RemoveSiteFromNeverPromptList(site);
   } else if (pref_name == "whitelists") {
     std::string from, to;
     if (!args->GetString(1, &from))
       return;
     if (!args->GetString(2, &to))
       return;
-    translate_prefs->RemoveLanguagePairFromWhitelist(from, to);
-  } else if (pref_name == "too_often_denied") {
-    translate_prefs->ResetDenialState();
+    translate_prefs->RemoveLanguagePairFromAlwaysTranslateList(from, to);
   } else {
     return;
   }
@@ -229,7 +225,7 @@ void TranslateInternalsHandler::OnRequestInfo(const base::ListValue* /*args*/) {
 
 void TranslateInternalsHandler::SendMessageToJs(const std::string& message,
                                                 const base::Value& value) {
-  const char func[] = "cr.translateInternals.messageHandler";
+  const char func[] = "cr.webUIListenerCallback";
   base::Value message_data(message);
   std::vector<const base::Value*> args{&message_data, &value};
   CallJavascriptFunction(func, args);
@@ -243,15 +239,13 @@ void TranslateInternalsHandler::SendPrefsToJs() {
   static const char* const keys[] = {
       language::prefs::kFluentLanguages,
       prefs::kOfferTranslateEnabled,
-      translate::TranslatePrefs::kPrefTranslateRecentTarget,
-      translate::TranslatePrefs::kPrefTranslateSiteBlacklistDeprecated,
-      translate::TranslatePrefs::kPrefTranslateSiteBlacklistWithTime,
-      translate::TranslatePrefs::kPrefTranslateWhitelists,
+      prefs::kPrefTranslateRecentTarget,
+      translate::TranslatePrefs::kPrefNeverPromptSitesDeprecated,
+      translate::TranslatePrefs::kPrefNeverPromptSitesWithTime,
+      prefs::kPrefAlwaysTranslateList,
       translate::TranslatePrefs::kPrefTranslateDeniedCount,
       translate::TranslatePrefs::kPrefTranslateIgnoredCount,
       translate::TranslatePrefs::kPrefTranslateAcceptedCount,
-      translate::TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage,
-      translate::TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage,
       language::prefs::kAcceptLanguages,
   };
   for (const char* key : keys) {

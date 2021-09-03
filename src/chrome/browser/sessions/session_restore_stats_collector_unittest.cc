@@ -13,8 +13,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -138,7 +136,8 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
       : task_environment_{base::test::TaskEnvironment::TimeSource::MOCK_TIME} {}
 
   void SetUp() override {
-    test_web_contents_factory_.reset(new content::TestWebContentsFactory);
+    test_web_contents_factory_ =
+        std::make_unique<content::TestWebContentsFactory>();
 
     // Ownership of the reporting delegate is passed to the
     // SessionRestoreStatsCollector, but a raw pointer is kept to it so it can
@@ -181,23 +180,22 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
         test_web_contents_factory_->CreateWebContents(&testing_profile_);
     std::vector<std::unique_ptr<content::NavigationEntry>> entries;
     entries.push_back(content::NavigationEntry::Create());
-    contents->GetController().Restore(
-        0, content::RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
+    contents->GetController().Restore(0, content::RestoreType::kRestored,
+                                      &entries);
     // Create a last active time in the past.
     content::WebContentsTester::For(contents)->SetLastActiveTime(
         base::TimeTicks::Now() - base::TimeDelta::FromMinutes(1));
     restored_tabs_.push_back(
-        RestoredTab(contents, is_active, false, false, base::nullopt));
+        RestoredTab(contents, is_active, false, false, absl::nullopt));
     if (is_active)
       Show(restored_tabs_.size() - 1);
   }
 
-  // Generates a web contents destroyed notification for the given tab.
-  void GenerateWebContentsDestroyed(size_t tab_index) {
+  // Generates a render widget host destroyed notification for the given tab.
+  void GenerateRenderWidgetHostDestroyed(size_t tab_index) {
     content::WebContents* contents = restored_tabs_[tab_index].contents();
-    stats_collector_->Observe(content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                              content::Source<content::WebContents>(contents),
-                              content::NotificationService::NoDetails());
+    stats_collector_->RenderWidgetHostDestroyed(
+        contents->GetRenderWidgetHostView()->GetRenderWidgetHost());
   }
 
   // Generates a paint notification for the given tab.
@@ -205,10 +203,7 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
     content::WebContents* contents = restored_tabs_[tab_index].contents();
     content::RenderWidgetHost* host =
         contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
-    stats_collector_->Observe(
-        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
-        content::Source<content::RenderWidgetHost>(host),
-        content::NotificationService::NoDetails());
+    stats_collector_->RenderWidgetHostDidUpdateVisualProperties(host);
   }
 
   void GenerateRenderWidgetVisiblityChanged(size_t tab_index, bool visible) {
@@ -283,7 +278,7 @@ TEST_F(SessionRestoreStatsCollectorTest, ForegroundTabOccluded) {
   // was not visible at one point during restore.
   GenerateRenderWidgetHostDidUpdateBackingStore(0);
   // Destroy the tab.
-  GenerateWebContentsDestroyed(0);
+  GenerateRenderWidgetHostDestroyed(0);
   mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(
       1, 0,
       SessionRestoreStatsCollector::
@@ -340,7 +335,7 @@ TEST_F(SessionRestoreStatsCollectorTest, LoadingTabDestroyedBeforePaint) {
   mock_reporting_delegate.EnsureNoUnexpectedCalls();
 
   // Destroy the tab. Expect all timings to be zero.
-  GenerateWebContentsDestroyed(0);
+  GenerateRenderWidgetHostDestroyed(0);
   mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(
       1, 0, SessionRestoreStatsCollector::PAINT_FINISHED_UMA_NO_PAINT);
   mock_reporting_delegate.ExpectEnded();

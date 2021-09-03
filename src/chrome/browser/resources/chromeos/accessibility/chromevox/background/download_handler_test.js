@@ -34,6 +34,7 @@ ChromeVoxDownloadTest = class extends ChromeVoxNextE2ETest {
 
   /** @override */
   setUp() {
+    super.setUp();
     window.simulateEvent = this.simulateEvent.bind(this);
   }
 
@@ -78,7 +79,7 @@ ChromeVoxDownloadTest = class extends ChromeVoxNextE2ETest {
 
 TEST_F('ChromeVoxDownloadTest', 'DownloadStartedTest', function() {
   localStorage['announceDownloadNotifications'] = 'true';
-  this.addFakeApi();
+  this.addFakeApi('hours');
   const mockFeedback = this.createMockFeedback();
   DownloadHandler.init();
   // Simulate download started.
@@ -95,7 +96,7 @@ TEST_F('ChromeVoxDownloadTest', 'DownloadStartedTest', function() {
 
 TEST_F('ChromeVoxDownloadTest', 'DownloadCompletedTest', function() {
   localStorage['announceDownloadNotifications'] = 'true';
-  this.addFakeApi();
+  this.addFakeApi('hours');
   const mockFeedback = this.createMockFeedback();
   DownloadHandler.init();
   // Simulate download started.
@@ -122,7 +123,7 @@ TEST_F('ChromeVoxDownloadTest', 'DownloadCompletedTest', function() {
 
 TEST_F('ChromeVoxDownloadTest', 'DownloadInterruptedTest', function() {
   localStorage['announceDownloadNotifications'] = 'true';
-  this.addFakeApi();
+  this.addFakeApi('hours');
   const mockFeedback = this.createMockFeedback();
   DownloadHandler.init();
   // Simulate download started.
@@ -148,7 +149,7 @@ TEST_F('ChromeVoxDownloadTest', 'DownloadInterruptedTest', function() {
 
 TEST_F('ChromeVoxDownloadTest', 'DownloadPausedTest', function() {
   localStorage['announceDownloadNotifications'] = 'true';
-  this.addFakeApi();
+  this.addFakeApi('hours');
   const mockFeedback = this.createMockFeedback();
   DownloadHandler.init();
   // Simulate download started.
@@ -173,7 +174,7 @@ TEST_F('ChromeVoxDownloadTest', 'DownloadPausedTest', function() {
 
 TEST_F('ChromeVoxDownloadTest', 'DownloadResumedTest', function() {
   localStorage['announceDownloadNotifications'] = 'true';
-  this.addFakeApi();
+  this.addFakeApi('hours');
   const mockFeedback = this.createMockFeedback();
   DownloadHandler.init();
   // Simulate download started.
@@ -198,8 +199,7 @@ TEST_F('ChromeVoxDownloadTest', 'DownloadResumedTest', function() {
 });
 
 TEST_F(
-    'ChromeVoxDownloadTest', 'DISABLED_DownloadOneSecondRemainingTest',
-    function() {
+    'ChromeVoxDownloadTest', 'DownloadOneSecondRemainingTest', function() {
       localStorage['announceDownloadNotifications'] = 'true';
       this.addFakeApi('second');
       const mockFeedback = this.createMockFeedback();
@@ -223,7 +223,7 @@ TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxDownloadTest', 'DISABLED_DownloadMultipleSecondsRemainingTest',
+    'ChromeVoxDownloadTest', 'DownloadMultipleSecondsRemainingTest',
     function() {
       localStorage['announceDownloadNotifications'] = 'true';
       this.addFakeApi('seconds');
@@ -248,8 +248,7 @@ TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxDownloadTest', 'DISABLED_DownloadOneMinuteRemainingTest',
-    function() {
+    'ChromeVoxDownloadTest', 'DownloadOneMinuteRemainingTest', function() {
       localStorage['announceDownloadNotifications'] = 'true';
       this.addFakeApi('minute');
       const mockFeedback = this.createMockFeedback();
@@ -273,7 +272,7 @@ TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxDownloadTest', 'DISABLED_DownloadMultipleMinutesRemainingTest',
+    'ChromeVoxDownloadTest', 'DownloadMultipleMinutesRemainingTest',
     function() {
       localStorage['announceDownloadNotifications'] = 'true';
       this.addFakeApi('minutes');
@@ -298,8 +297,7 @@ TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxDownloadTest', 'DISABLED_DownloadOneHourRemainingTest',
-    function() {
+    'ChromeVoxDownloadTest', 'DownloadOneHourRemainingTest', function() {
       localStorage['announceDownloadNotifications'] = 'true';
       this.addFakeApi('hour');
       const mockFeedback = this.createMockFeedback();
@@ -323,8 +321,7 @@ TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxDownloadTest', 'DISABLED_DownloadMultipleHoursRemainingTest',
-    function() {
+    'ChromeVoxDownloadTest', 'DownloadMultipleHoursRemainingTest', function() {
       localStorage['announceDownloadNotifications'] = 'true';
       this.addFakeApi('hours');
       const mockFeedback = this.createMockFeedback();

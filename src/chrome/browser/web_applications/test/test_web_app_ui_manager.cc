@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 
@@ -18,7 +18,8 @@ TestWebAppUiManager::TestWebAppUiManager() = default;
 TestWebAppUiManager::~TestWebAppUiManager() = default;
 
 void TestWebAppUiManager::SetSubsystems(
-    AppRegistryController* app_registry_controller) {}
+    AppRegistryController* app_registry_controller,
+    OsIntegrationManager* os_integration_manager) {}
 
 void TestWebAppUiManager::Start() {}
 
@@ -54,12 +55,13 @@ void TestWebAppUiManager::NotifyOnAllAppWindowsClosed(
                      }));
 }
 
-void TestWebAppUiManager::UninstallAndReplaceIfExists(
+bool TestWebAppUiManager::UninstallAndReplaceIfExists(
     const std::vector<AppId>& from_apps,
     const AppId& to_app) {
   for (const AppId& from_app : from_apps) {
     uninstall_and_replace_map_[from_app] = to_app;
   }
+  return false;
 }
 
 bool TestWebAppUiManager::CanAddAppToQuickLaunchBar() const {
@@ -82,5 +84,11 @@ bool TestWebAppUiManager::CanReparentAppTabToWindow(
 void TestWebAppUiManager::ReparentAppTabToWindow(content::WebContents* contents,
                                                  const AppId& app_id,
                                                  bool shortcut_created) {}
+
+content::WebContents* TestWebAppUiManager::NavigateExistingWindow(
+    const AppId& app_id,
+    const GURL& url) {
+  return nullptr;
+}
 
 }  // namespace web_app

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream_body_manager.h"
+#include "quic/core/http/quic_spdy_stream_body_manager.h"
 
 #include <algorithm>
 #include <numeric>
@@ -10,9 +10,9 @@
 
 #include "absl/base/macros.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_test.h"
 
 namespace quic {
 
@@ -260,7 +260,7 @@ TEST_F(QuicSpdyStreamBodyManagerTest, ReadBody) {
       std::vector<iovec> iovecs;
       size_t offset = 0;
       for (size_t iov_length : iov_lengths[call_index]) {
-        CHECK(offset + iov_length <= buffer.size());
+        QUICHE_CHECK(offset + iov_length <= buffer.size());
         iovecs.push_back({&buffer[offset], iov_length});
         offset += iov_length;
       }

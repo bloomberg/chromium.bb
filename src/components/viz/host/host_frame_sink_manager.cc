@@ -8,9 +8,12 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/host/renderer_settings_creation.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
@@ -19,7 +22,9 @@
 namespace viz {
 
 HostFrameSinkManager::HostFrameSinkManager()
-    : debug_renderer_settings_(CreateDefaultDebugRendererSettings()) {}
+    : enable_sync_window_destruction_(
+          features::IsSyncWindowDestructionEnabled()),
+      debug_renderer_settings_(CreateDefaultDebugRendererSettings()) {}
 
 HostFrameSinkManager::~HostFrameSinkManager() = default;
 
@@ -83,7 +88,7 @@ void HostFrameSinkManager::InvalidateFrameSinkId(
   DCHECK(data.IsFrameSinkRegistered());
 
   const bool destroy_synchronously =
-      data.has_created_compositor_frame_sink && data.is_root;
+      data.has_created_compositor_frame_sink && data.wait_on_destruction;
 
   data.has_created_compositor_frame_sink = false;
   data.client = nullptr;
@@ -141,6 +146,10 @@ void HostFrameSinkManager::CreateRootCompositorFrameSink(
   data.is_root = true;
   data.has_created_compositor_frame_sink = true;
 
+  // Only wait on destruction if using GPU compositing for the window.
+  data.wait_on_destruction =
+      enable_sync_window_destruction_ && params->gpu_compositing;
+
   frame_sink_manager_->CreateRootCompositorFrameSink(std::move(params));
   display_hit_test_query_[frame_sink_id] = std::make_unique<HitTestQuery>();
 }
@@ -166,8 +175,10 @@ void HostFrameSinkManager::CreateCompositorFrameSink(
       frame_sink_id, std::move(receiver), std::move(client));
 }
 
-void HostFrameSinkManager::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
-                                               uint32_t frame_token) {
+void HostFrameSinkManager::OnFrameTokenChanged(
+    const FrameSinkId& frame_sink_id,
+    uint32_t frame_token,
+    base::TimeTicks activation_time) {
   DCHECK(frame_sink_id.is_valid());
   auto iter = frame_sink_data_map_.find(frame_sink_id);
   if (iter == frame_sink_data_map_.end())
@@ -175,7 +186,7 @@ void HostFrameSinkManager::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
 
   const FrameSinkData& data = iter->second;
   if (data.client)
-    data.client->OnFrameTokenChanged(frame_token);
+    data.client->OnFrameTokenChanged(frame_token, activation_time);
 }
 
 void HostFrameSinkManager::SetHitTestAsyncQueriedDebugRegions(
@@ -195,18 +206,9 @@ bool HostFrameSinkManager::RegisterFrameSinkHierarchy(
     return false;
   }
 
-  // TODO(crbug.com/1115094): Convert to DCHECKs after root cause of the
-  // deserialization error is identified.
-  CHECK(parent_frame_sink_id.is_valid()) << parent_frame_sink_id;
-  CHECK(child_frame_sink_id.is_valid()) << child_frame_sink_id;
-
   // Register and store the parent.
   frame_sink_manager_->RegisterFrameSinkHierarchy(parent_frame_sink_id,
                                                   child_frame_sink_id);
-
-  FrameSinkData& child_data = frame_sink_data_map_[child_frame_sink_id];
-  DCHECK(!base::Contains(child_data.parents, parent_frame_sink_id));
-  child_data.parents.push_back(parent_frame_sink_id);
 
   FrameSinkData& parent_data = iter->second;
   DCHECK(!base::Contains(parent_data.children, child_frame_sink_id));
@@ -219,50 +221,14 @@ void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
     const FrameSinkId& parent_frame_sink_id,
     const FrameSinkId& child_frame_sink_id) {
   // Unregister and clear the stored parent.
-  FrameSinkData& child_data = frame_sink_data_map_[child_frame_sink_id];
-  DCHECK(base::Contains(child_data.parents, parent_frame_sink_id));
-  base::Erase(child_data.parents, parent_frame_sink_id);
-
   FrameSinkData& parent_data = frame_sink_data_map_[parent_frame_sink_id];
   DCHECK(base::Contains(parent_data.children, child_frame_sink_id));
   base::Erase(parent_data.children, child_frame_sink_id);
+  if (parent_data.IsEmpty())
+    frame_sink_data_map_.erase(parent_frame_sink_id);
 
   frame_sink_manager_->UnregisterFrameSinkHierarchy(parent_frame_sink_id,
                                                     child_frame_sink_id);
-
-  // The reference parent_data will become invalid when the container is
-  // modified. So we have to call IsEmpty() in advance.
-  bool parent_data_is_empty = parent_data.IsEmpty();
-  if (child_data.IsEmpty())
-    frame_sink_data_map_.erase(child_frame_sink_id);
-
-  if (parent_data_is_empty)
-    frame_sink_data_map_.erase(parent_frame_sink_id);
-}
-
-bool HostFrameSinkManager::IsFrameSinkHierarchyRegistered(
-    const FrameSinkId& parent_frame_sink_id,
-    const FrameSinkId& child_frame_sink_id) const {
-  auto iter = frame_sink_data_map_.find(parent_frame_sink_id);
-  return iter != frame_sink_data_map_.end() &&
-         base::Contains(iter->second.children, child_frame_sink_id);
-}
-
-base::Optional<FrameSinkId> HostFrameSinkManager::FindRootFrameSinkId(
-    const FrameSinkId& start) const {
-  auto iter = frame_sink_data_map_.find(start);
-  if (iter == frame_sink_data_map_.end())
-    return base::nullopt;
-
-  if (iter->second.is_root)
-    return start;
-
-  for (const FrameSinkId& parent_id : iter->second.parents) {
-    base::Optional<FrameSinkId> root = FindRootFrameSinkId(parent_id);
-    if (root)
-      return root;
-  }
-  return base::nullopt;
 }
 
 void HostFrameSinkManager::AddVideoDetectorObserver(
@@ -296,15 +262,9 @@ void HostFrameSinkManager::RequestCopyOfOutput(
   frame_sink_manager_->RequestCopyOfOutput(surface_id, std::move(request));
 }
 
-void HostFrameSinkManager::StartThrottling(
-    const std::vector<FrameSinkId>& frame_sink_ids,
-    base::TimeDelta interval) {
-  DCHECK_GT(interval, base::TimeDelta());
-  frame_sink_manager_->StartThrottling(frame_sink_ids, interval);
-}
-
-void HostFrameSinkManager::EndThrottling() {
-  frame_sink_manager_->EndThrottling();
+void HostFrameSinkManager::Throttle(const std::vector<FrameSinkId>& ids,
+                                    base::TimeDelta interval) {
+  frame_sink_manager_->Throttle(ids, interval);
 }
 
 void HostFrameSinkManager::AddHitTestRegionObserver(
@@ -330,8 +290,10 @@ void HostFrameSinkManager::OnConnectionLost() {
 
   // CompositorFrameSinks are lost along with the connection to
   // mojom::FrameSinkManager.
-  for (auto& map_entry : frame_sink_data_map_)
+  for (auto& map_entry : frame_sink_data_map_) {
     map_entry.second.has_created_compositor_frame_sink = false;
+    map_entry.second.wait_on_destruction = false;
+  }
 
   if (!connection_lost_callback_.is_null())
     connection_lost_callback_.Run();

@@ -23,6 +23,7 @@
 
 #include "perfetto/base/logging.h"
 #include "perfetto/ext/base/string_utils.h"
+#include "perfetto/ext/base/version.h"
 #include "tools/trace_to_text/deobfuscate_profile.h"
 #include "tools/trace_to_text/symbolize_profile.h"
 #include "tools/trace_to_text/trace_to_hprof.h"
@@ -30,12 +31,6 @@
 #include "tools/trace_to_text/trace_to_profile.h"
 #include "tools/trace_to_text/trace_to_systrace.h"
 #include "tools/trace_to_text/trace_to_text.h"
-
-#if PERFETTO_BUILDFLAG(PERFETTO_VERSION_GEN)
-#include "perfetto_version.gen.h"
-#else
-#define PERFETTO_GET_GIT_REVISION() "unknown"
-#endif
 
 #if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
 #include <unistd.h>
@@ -47,16 +42,19 @@ namespace {
 
 int Usage(const char* argv0) {
   fprintf(stderr,
-          "Usage: %s systrace|json|ctrace|text|profile [--pid PID] "
-          "[--timestamps TIMESTAMP1,TIMESTAMP2,...] "
-          "[--truncate start|end] "
-          "[--full-sort] "
-          "[trace.pb] "
-          "[trace.txt]\n"
-          "\nProfile mode only:\n"
-          "\t--timestamps TIMESTAMP1,TIMESTAMP2,... generate profiles "
-          "only for these timestamps\n"
-          "\t--pid PID generate profiles only for this process id\n",
+          "Usage: %s MODE [OPTIONS] [input file] [output file]\n"
+          "modes:\n"
+          "  systrace|json|ctrace|text|profile|hprof|symbolize|deobfuscate\n"
+          "options:\n"
+          "  [--truncate start|end]\n"
+          "  [--full-sort]\n"
+          "\"profile\" mode options:\n"
+          "  [--perf] generate a perf profile instead of a heap profile\n"
+          "  [--no-annotations] do not suffix frame names with derived "
+          "annotations\n"
+          "  [--timestamps TIMESTAMP1,TIMESTAMP2,...] generate profiles "
+          "only for these *specific* timestamps\n"
+          "  [--pid PID] generate profiles only for this process id\n",
           argv0);
   return 1;
 }
@@ -77,9 +75,11 @@ int Main(int argc, char** argv) {
   uint64_t pid = 0;
   std::vector<uint64_t> timestamps;
   bool full_sort = false;
+  bool perf_profile = false;
+  bool profile_no_annotations = false;
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
-      printf("%s\n", PERFETTO_GET_GIT_REVISION());
+      printf("%s\n", base::GetVersionString());
       return 0;
     } else if (strcmp(argv[i], "-t") == 0 ||
                strcmp(argv[i], "--truncate") == 0) {
@@ -103,6 +103,10 @@ int Main(int argc, char** argv) {
       for (const std::string& ts : ts_strings) {
         timestamps.emplace_back(StringToUint64OrDie(ts.c_str()));
       }
+    } else if (strcmp(argv[i], "--perf") == 0) {
+      perf_profile = true;
+    } else if (strcmp(argv[i], "--no-annotations") == 0) {
+      profile_no_annotations = true;
     } else if (strcmp(argv[i], "--full-sort") == 0) {
       full_sort = true;
     } else {
@@ -110,7 +114,7 @@ int Main(int argc, char** argv) {
     }
   }
 
-  if (positional_args.size() < 1)
+  if (positional_args.empty())
     return Usage(argv[0]);
 
   std::istream* input_stream;
@@ -122,12 +126,14 @@ int Main(int argc, char** argv) {
       PERFETTO_FATAL("Could not open %s", file_path);
     input_stream = &file_istream;
   } else {
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
     if (isatty(STDIN_FILENO)) {
       PERFETTO_ELOG("Reading from stdin but it's connected to a TTY");
       PERFETTO_LOG("It is unlikely that you want to type in some binary.");
       PERFETTO_LOG("Either pass a file path to the cmdline or pipe stdin");
       return Usage(argv[0]);
     }
+#endif
     input_stream = &std::cin;
   }
 
@@ -150,6 +156,10 @@ int Main(int argc, char** argv) {
     PERFETTO_ELOG(
         "--pid and --timestamps are supported only for profile "
         "formats.");
+    return 1;
+  }
+  if (perf_profile && format != "profile") {
+    PERFETTO_ELOG("--perf requires profile format.");
     return 1;
   }
 
@@ -180,8 +190,13 @@ int Main(int argc, char** argv) {
   if (format == "text")
     return TraceToText(input_stream, output_stream);
 
-  if (format == "profile")
-    return TraceToProfile(input_stream, output_stream, pid, timestamps);
+  if (format == "profile") {
+    return perf_profile
+               ? TraceToPerfProfile(input_stream, output_stream, pid,
+                                    timestamps, !profile_no_annotations)
+               : TraceToHeapProfile(input_stream, output_stream, pid,
+                                    timestamps, !profile_no_annotations);
+  }
 
   if (format == "hprof")
     return TraceToHprof(input_stream, output_stream, pid, timestamps);

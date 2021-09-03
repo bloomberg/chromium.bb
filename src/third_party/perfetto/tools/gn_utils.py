@@ -28,6 +28,7 @@ import sys
 from compat import iteritems
 
 BUILDFLAGS_TARGET = '//gn:gen_buildflags'
+GEN_VERSION_TARGET = '//src/base:version_gen_h'
 TARGET_TOOLCHAIN = '//gn/standalone/toolchain:gcc_like_host'
 HOST_TOOLCHAIN = '//gn/standalone/toolchain:gcc_like_host'
 LINKER_UNIT_TYPES = ('executable', 'shared_library', 'static_library')
@@ -59,7 +60,9 @@ def repo_root():
 
 
 def _tool_path(name):
-  return os.path.join(repo_root(), 'tools', name)
+  wrapper = os.path.abspath(
+      os.path.join(repo_root(), 'tools', 'run_buildtools_binary.py'))
+  return ['python3', wrapper, name]
 
 
 def prepare_out_directory(gn_args, name, root=repo_root()):
@@ -74,18 +77,17 @@ def prepare_out_directory(gn_args, name, root=repo_root()):
   except OSError as e:
     if e.errno != errno.EEXIST:
       raise
-  _check_command_output([_tool_path('gn'), 'gen', out,
-                         '--args=%s' % gn_args],
-                        cwd=repo_root())
+  _check_command_output(
+      _tool_path('gn') + ['gen', out, '--args=%s' % gn_args], cwd=repo_root())
   return out
 
 
 def load_build_description(out):
   """Creates the JSON build description by running GN."""
-  desc = _check_command_output([
-      _tool_path('gn'), 'desc', out, '--format=json', '--all-toolchains', '//*'
-  ],
-                               cwd=repo_root())
+  desc = _check_command_output(
+      _tool_path('gn') +
+      ['desc', out, '--format=json', '--all-toolchains', '//*'],
+      cwd=repo_root())
   return json.loads(desc)
 
 
@@ -110,14 +112,14 @@ def build_targets(out, targets, quiet=False):
   targets = [t.replace('//', '') for t in targets]
   with open(os.devnull, 'w') as devnull:
     stdout = devnull if quiet else None
-    subprocess.check_call(
-        [_tool_path('ninja')] + targets, cwd=out, stdout=stdout)
+    cmd = _tool_path('ninja') + targets
+    subprocess.check_call(cmd, cwd=os.path.abspath(out), stdout=stdout)
 
 
 def compute_source_dependencies(out):
   """For each source file, computes a set of headers it depends on."""
-  ninja_deps = _check_command_output([_tool_path('ninja'), '-t', 'deps'],
-                                     cwd=out)
+  ninja_deps = _check_command_output(
+      _tool_path('ninja') + ['-t', 'deps'], cwd=out)
   deps = {}
   current_source = None
   for line in ninja_deps.split('\n'):
@@ -310,6 +312,9 @@ class GnParser(object):
       self.proto_paths = set()
 
       self.sources = set()
+      # TODO(primiano): consider whether the public section should be part of
+      # bubbled-up sources.
+      self.public_headers = set()  # 'public'
 
       # These are valid only for type == 'action'
       self.inputs = set()
@@ -414,6 +419,14 @@ class GnParser(object):
       # Args are typically relative to the root build dir (../../xxx)
       # because root build dir is typically out/xxx/).
       target.args = [re.sub('^../../', '//', x) for x in desc['args']]
+
+    # Default for 'public' is //* - all headers in 'sources' are public.
+    # TODO(primiano): if a 'public' section is specified (even if empty), then
+    # the rest of 'sources' is considered inaccessible by gn. Consider
+    # emulating that, so that generated build files don't end up with overly
+    # accessible headers.
+    public_headers = [x for x in desc.get('public', []) if x != '*']
+    target.public_headers.update(public_headers)
 
     target.cflags.update(desc.get('cflags', []) + desc.get('cflags_cc', []))
     target.libs.update(desc.get('libs', []))

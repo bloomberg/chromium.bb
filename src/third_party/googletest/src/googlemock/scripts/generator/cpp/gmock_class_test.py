@@ -156,7 +156,7 @@ class Foo {
 };
 """
     self.assertEqualIgnoreLeadingWhitespace(
-        'MOCK_METHOD(int, Bar, (void), (override));',
+        'MOCK_METHOD(int, Bar, (), (override));',
         self.GenerateMethodSource(source))
 
   def testStrangeNewlineInParameter(self):
@@ -361,26 +361,26 @@ class GenerateMocksTest(TestCase):
     source = """
 namespace Foo {
 namespace Bar { class Forward; }
-namespace Baz {
+namespace Baz::Qux {
 
 class Test {
  public:
   virtual void Foo();
 };
 
-}  // namespace Baz
+}  // namespace Baz::Qux
 }  // namespace Foo
 """
     expected = """\
 namespace Foo {
-namespace Baz {
+namespace Baz::Qux {
 
 class MockTest : public Test {
 public:
 MOCK_METHOD(void, Foo, (), (override));
 };
 
-}  // namespace Baz
+}  // namespace Baz::Qux
 }  // namespace Foo
 """
     self.assertEqualIgnoreLeadingWhitespace(expected,
@@ -428,8 +428,8 @@ class Test {
 };
 """
     expected = """\
-template <typename T0, typename T1>
-class MockTest : public Test<T0, T1> {
+template <typename S, typename T>
+class MockTest : public Test<S, T> {
 public:
 MOCK_METHOD(void, Foo, (), (override));
 };
@@ -449,6 +449,24 @@ class Test {
 class MockTest : public Test {
 public:
 MOCK_METHOD(void, Bar, (const FooType& test_arg), (override));
+};
+"""
+    self.assertEqualIgnoreLeadingWhitespace(expected,
+                                            self.GenerateMocks(source))
+
+  def testTemplatedClassWithTemplatedArguments(self):
+    source = """
+template <typename S, typename T, typename U, typename V, typename W>
+class Test {
+ public:
+  virtual U Foo(T some_arg);
+};
+"""
+    expected = """\
+template <typename S, typename T, typename U, typename V, typename W>
+class MockTest : public Test<S, T, U, V, W> {
+public:
+MOCK_METHOD(U, Foo, (T some_arg), (override));
 };
 """
     self.assertEqualIgnoreLeadingWhitespace(expected,

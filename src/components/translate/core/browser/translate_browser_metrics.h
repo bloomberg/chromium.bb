@@ -34,7 +34,10 @@ enum InitiationStatusType {
   INITIATION_STATUS_DISABLED_BY_KEY,
   INITIATION_STATUS_LANGUAGE_IN_ULP,
   INITIATION_STATUS_ABORTED_BY_RANKER,
-  INITIATION_STATUS_ABORTED_BY_TOO_OFTEN_DENIED,
+
+  // Deprecated, never used in practice
+  DEPRECATED_INITIATION_STATUS_ABORTED_BY_TOO_OFTEN_DENIED,
+
   INITIATION_STATUS_ABORTED_BY_MATCHES_PREVIOUS_LANGUAGE,
   INITIATION_STATUS_CREATE_INFOBAR,
   INITIATION_STATUS_SHOW_ICON,
@@ -80,9 +83,11 @@ enum class TargetLanguageOrigin {
   kApplicationUI,
   kAcceptLanguages,
   kDefaultEnglish,
+  kChangedByUser,
+  kUninitialized,
   // Insert new items here. Keep in sync with TranslateTargetLanguageOrigin in
   // enums.xml when adding values.
-  kMaxValue = kDefaultEnglish
+  kMaxValue = kUninitialized
 };
 
 enum class MenuTranslationUnavailableReason {
@@ -115,10 +120,6 @@ void ReportMenuTranslationUnavailableReason(
 void ReportLanguageDetectionContentLength(size_t length);
 
 void ReportLocalesOnDisabledByPrefs(base::StringPiece locale);
-
-// Called when Chrome Translate server sends the language list which includes
-// a undisplayable language in the user's locale.
-void ReportUndisplayableLanguage(base::StringPiece language);
 
 void ReportUnsupportedLanguageAtInitiation(base::StringPiece language);
 

@@ -11,11 +11,13 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
+#include "components/performance_manager/public/freezing/freezing.h"
 #include "components/tab_groups/tab_group_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/layout.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/geometry/point.h"
@@ -24,7 +26,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/masked_targeter_delegate.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view_observer.h"
 
 class AlertIndicator;
@@ -89,7 +90,7 @@ class Tab : public gfx::AnimationDelegate,
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  base::string16 GetTooltipText(const gfx::Point& p) const override;
+  std::u16string GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
   void PaintChildren(const views::PaintInfo& info) override;
@@ -108,7 +109,7 @@ class Tab : public gfx::AnimationDelegate,
   bool closing() const { return closing_; }
 
   // Returns the color for the tab's group, if any.
-  base::Optional<SkColor> GetGroupColor() const;
+  absl::optional<SkColor> GetGroupColor() const;
 
   // Returns the color used for the alert indicator icon.
   SkColor GetAlertIndicatorColor(TabAlertState state) const;
@@ -146,6 +147,11 @@ class Tab : public gfx::AnimationDelegate,
   // to the user that it needs their attention.
   void SetTabNeedsAttention(bool attention);
 
+  void SetFreezingVoteToken(
+      std::unique_ptr<performance_manager::freezing::FreezingVoteToken> token);
+  void ReleaseFreezingVoteToken();
+  bool HasFreezingVoteToken() const { return freezing_token_ ? true : false; }
+
   // Returns true if this tab became the active tab selected in
   // response to the last ui::ET_TAP_DOWN gesture dispatched to
   // this tab. Only used for collecting UMA metrics.
@@ -163,12 +169,12 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the text to show in a tab's tooltip: The contents |title|, followed
   // by a break, followed by a localized string describing the |alert_state|.
   // Exposed publicly for tests.
-  static base::string16 GetTooltipText(
-      const base::string16& title,
-      base::Optional<TabAlertState> alert_state);
+  static std::u16string GetTooltipText(
+      const std::u16string& title,
+      absl::optional<TabAlertState> alert_state);
 
   // Returns an alert state to be shown among given alert states.
-  static base::Optional<TabAlertState> GetAlertStateToShow(
+  static absl::optional<TabAlertState> GetAlertStateToShow(
       const std::vector<TabAlertState>& alert_states);
 
   bool showing_close_button_for_testing() const {
@@ -179,8 +185,9 @@ class Tab : public gfx::AnimationDelegate,
   class TabCloseButtonObserver;
   friend class AlertIndicatorTest;
   friend class TabTest;
-  friend class TabStripTest;
-  FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabCloseButtonVisibilityWhenStacked);
+  friend class TabStripTestBase;
+  FRIEND_TEST_ALL_PREFIXES(TabStripTestWithScrollingDisabled,
+                           TabCloseButtonVisibilityWhenStacked);
   FRIEND_TEST_ALL_PREFIXES(TabStripTest,
                            TabCloseButtonVisibilityWhenNotStacked);
   FRIEND_TEST_ALL_PREFIXES(TabTest, TitleTextHasSufficientContrast);
@@ -256,6 +263,9 @@ class Tab : public gfx::AnimationDelegate,
   // detect when it changes and layout appropriately.
   bool showing_close_button_ = false;
 
+  // Whether the tab is currently animating from a pinned to an unpinned state.
+  bool is_animating_from_pinned_ = false;
+
   // If there's room, we add additional padding to the left of the favicon to
   // balance the whitespace inside the non-hovered close button image;
   // otherwise, the tab contents look too close to the left edge. Once the tabs
@@ -279,6 +289,10 @@ class Tab : public gfx::AnimationDelegate,
 
   // Focus ring for accessibility.
   views::FocusRing* focus_ring_;
+
+  // Freezing token held while the tab is collapsed.
+  std::unique_ptr<performance_manager::freezing::FreezingVoteToken>
+      freezing_token_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_H_

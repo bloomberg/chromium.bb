@@ -35,6 +35,7 @@
 #include <memory>
 #include <unordered_set>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/impl/gc_info.h"
@@ -46,7 +47,6 @@
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
@@ -120,45 +120,6 @@ class WeakContainersWorklist {
  private:
   WTF::Mutex lock_;
   std::unordered_set<const HeapObjectHeader*> objects_;
-};
-
-class PLATFORM_EXPORT HeapAllocHooks {
-  STATIC_ONLY(HeapAllocHooks);
-
- public:
-  // TODO(hajimehoshi): Pass a type name of the allocated object.
-  typedef void AllocationHook(Address, size_t, const char*);
-  typedef void FreeHook(Address);
-
-  // Sets allocation hook. Only one hook is supported.
-  static void SetAllocationHook(AllocationHook* hook) {
-    CHECK(!allocation_hook_ || !hook);
-    allocation_hook_ = hook;
-  }
-
-  // Sets free hook. Only one hook is supported.
-  static void SetFreeHook(FreeHook* hook) {
-    CHECK(!free_hook_ || !hook);
-    free_hook_ = hook;
-  }
-
-  static void AllocationHookIfEnabled(Address address,
-                                      size_t size,
-                                      const char* type_name) {
-    AllocationHook* allocation_hook = allocation_hook_;
-    if (UNLIKELY(!!allocation_hook))
-      allocation_hook(address, size, type_name);
-  }
-
-  static void FreeHookIfEnabled(Address address) {
-    FreeHook* free_hook = free_hook_;
-    if (UNLIKELY(!!free_hook))
-      free_hook(address);
-  }
-
- private:
-  static AllocationHook* allocation_hook_;
-  static FreeHook* free_hook_;
 };
 
 class HeapCompact;
@@ -538,8 +499,6 @@ class GarbageCollected {
   using GCInfoFoldedType = typename GCInfoFolded<Derived>::Type;
 
   GarbageCollected() = default;
-
-  DISALLOW_COPY_AND_ASSIGN(GarbageCollected);
 };
 
 // Used for passing custom sizes to MakeGarbageCollected.
@@ -659,7 +618,6 @@ inline Address ThreadHeap::AllocateOnArenaIndex(ThreadState* state,
   NormalPageArena* arena = static_cast<NormalPageArena*>(Arena(arena_index));
   Address address =
       arena->AllocateObject(AllocationSizeFromSize(size), gc_info_index);
-  HeapAllocHooks::AllocationHookIfEnabled(address, size, type_name);
   return address;
 }
 

@@ -18,11 +18,12 @@ rtc_library("webrtc_fuzzer_main") {
   ]
 
   # When WebRTC fuzzer tests are built on Chromium bots they need to link
-  # with Chromium's implementation of metrics and field trial.
+  # with Chromium's implementation of metrics, field trial, and system time.
   if (build_with_chromium) {
     deps += [
       "../../../webrtc_overrides:field_trial",
       "../../../webrtc_overrides:metrics",
+      "../../../webrtc_overrides:system_time",
     ]
   }
 }
@@ -244,6 +245,7 @@ webrtc_fuzzer_test("congestion_controller_feedback_fuzzer") {
     "../../modules/remote_bitrate_estimator",
     "../../modules/rtp_rtcp:rtp_rtcp_format",
   ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/functional:bind_front" ]
 }
 
 rtc_library("audio_decoder_fuzzer") {
@@ -405,6 +407,23 @@ webrtc_fuzzer_test("sdp_parser_fuzzer") {
   seed_corpus = "corpora/sdp-corpus"
 }
 
+if (!build_with_chromium) {
+  # This target depends on test infrastructure that can't be built
+  # with Chromium at the moment.
+  # TODO(bugs.chromium.org/12534): Make this fuzzer build in Chromium.
+
+  webrtc_fuzzer_test("sdp_integration_fuzzer") {
+    sources = [ "sdp_integration_fuzzer.cc" ]
+    deps = [
+      "../../api:libjingle_peerconnection_api",
+      "../../pc:integration_test_helpers",
+      "../../pc:libjingle_peerconnection",
+      "../../test:test_support",
+    ]
+    seed_corpus = "corpora/sdp-corpus"
+  }
+}
+
 webrtc_fuzzer_test("stun_parser_fuzzer") {
   sources = [ "stun_parser_fuzzer.cc" ]
   deps = [
@@ -425,20 +444,12 @@ webrtc_fuzzer_test("stun_validator_fuzzer") {
   dict = "corpora/stun.tokens"
 }
 
-webrtc_fuzzer_test("mdns_parser_fuzzer") {
-  sources = [ "mdns_parser_fuzzer.cc" ]
-  deps = [
-    "../../p2p:rtc_p2p",
-    "../../rtc_base:rtc_base_approved",
-  ]
-  seed_corpus = "corpora/mdns-corpus"
-}
-
 webrtc_fuzzer_test("pseudotcp_parser_fuzzer") {
   sources = [ "pseudotcp_parser_fuzzer.cc" ]
   deps = [
     "../../p2p:rtc_p2p",
     "../../rtc_base",
+    "../../rtc_base:threading",
   ]
 }
 
@@ -594,6 +605,17 @@ webrtc_fuzzer_test("sctp_utils_fuzzer") {
   ]
 }
 
+webrtc_fuzzer_test("dcsctp_socket_fuzzer") {
+  sources = [ "dcsctp_socket_fuzzer.cc" ]
+  deps = [
+    "../../net/dcsctp/fuzzers:dcsctp_fuzzers",
+    "../../net/dcsctp/public:socket",
+    "../../net/dcsctp/public:types",
+    "../../net/dcsctp/socket:dcsctp_socket",
+    "../../rtc_base:rtc_base_approved",
+  ]
+}
+
 webrtc_fuzzer_test("rtp_header_parser_fuzzer") {
   sources = [ "rtp_header_parser_fuzzer.cc" ]
   deps = [ "../:rtp_test_utils" ]
@@ -611,6 +633,30 @@ webrtc_fuzzer_test("vp8_replay_fuzzer") {
     "utils:rtp_replayer",
   ]
   seed_corpus = "corpora/rtpdump-corpus/vp8"
+}
+
+if (rtc_build_libvpx) {
+  webrtc_fuzzer_test("vp9_encoder_references_fuzzer") {
+    sources = [ "vp9_encoder_references_fuzzer.cc" ]
+    deps = [
+      "..:test_support",
+      "../../api:array_view",
+      "../../api/transport:webrtc_key_value_config",
+      "../../api/video:video_frame",
+      "../../api/video_codecs:video_codecs_api",
+      "../../modules/video_coding:frame_dependencies_calculator",
+      "../../modules/video_coding:mock_libvpx_interface",
+      "../../modules/video_coding:webrtc_vp9",
+      "../../rtc_base:safe_compare",
+      rtc_libvpx_dir,
+    ]
+    absl_deps = [
+      "//third_party/abseil-cpp/absl/algorithm:container",
+      "//third_party/abseil-cpp/absl/base:core_headers",
+      "//third_party/abseil-cpp/absl/container:inlined_vector",
+    ]
+    defines = [ "RTC_ENABLE_VP9" ]
+  }
 }
 
 webrtc_fuzzer_test("vp9_replay_fuzzer") {

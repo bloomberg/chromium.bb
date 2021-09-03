@@ -83,6 +83,9 @@ public:
         kExplicit,
     };
 
+    // Initial text direction.
+    enum class Direction : uint8_t { kLTR, kRTL };
+
     enum Flags : uint32_t {
         kNone                       = 0x00,
 
@@ -97,6 +100,8 @@ public:
     struct TextDesc {
         const sk_sp<SkTypeface>&  fTypeface;
         SkScalar                  fTextSize,
+                                  fMinTextSize,
+                                  fMaxTextSize,
                                   fLineHeight,
                                   fLineShift,
                                   fAscent;
@@ -104,6 +109,7 @@ public:
         VAlign                    fVAlign;
         ResizePolicy              fResize;
         LinebreakPolicy           fLinebreak;
+        Direction                 fDirection;
         uint32_t                  fFlags;
     };
 

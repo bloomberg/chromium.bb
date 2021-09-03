@@ -56,9 +56,8 @@ std::string ToString(network::mojom::CrossOriginOpenerPolicyValue coop_value) {
   }
 }
 
-base::Optional<base::UnguessableToken> GetFrameToken(
-    FrameTreeNode* frame,
-    SiteInstance* site_instance) {
+absl::optional<blink::FrameToken> GetFrameToken(FrameTreeNode* frame,
+                                                SiteInstance* site_instance) {
   RenderFrameHostImpl* rfh = frame->current_frame_host();
   if (rfh->GetSiteInstance() == site_instance)
     return rfh->GetFrameToken();
@@ -68,7 +67,7 @@ base::Optional<base::UnguessableToken> GetFrameToken(
   if (proxy)
     return proxy->GetFrameToken();
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // Find all the related windows that might try to access the new document in
@@ -76,18 +75,15 @@ base::Optional<base::UnguessableToken> GetFrameToken(
 std::vector<FrameTreeNode*> CollectOtherWindowForCoopAccess(
     FrameTreeNode* frame) {
   DCHECK(frame->IsMainFrame());
-  SiteInstance* site_instance = frame->current_frame_host()->GetSiteInstance();
   int virtual_browsing_context_group =
       frame->current_frame_host()->virtual_browsing_context_group();
 
   std::vector<FrameTreeNode*> out;
-  for (WebContentsImpl* wc : WebContentsImpl::GetAllWebContents()) {
-    RenderFrameHostImpl* rfh = wc->GetMainFrame();
-
-    // Filters out windows from a different browsing context group.
-    if (!rfh->GetSiteInstance()->IsRelatedSiteInstance(site_instance))
-      continue;
-
+  for (RenderFrameHostImpl* rfh :
+       frame->current_frame_host()
+           ->delegate()
+           ->GetActiveTopLevelDocumentsInBrowsingContextGroup(
+               frame->current_frame_host())) {
     // Filter out windows from the same virtual browsing context group.
     if (rfh->virtual_browsing_context_group() == virtual_browsing_context_group)
       continue;
@@ -142,11 +138,13 @@ CrossOriginOpenerPolicyReporter::CrossOriginOpenerPolicyReporter(
     StoragePartition* storage_partition,
     const GURL& context_url,
     const GURL& context_referrer_url,
-    const network::CrossOriginOpenerPolicy& coop)
+    const network::CrossOriginOpenerPolicy& coop,
+    const net::NetworkIsolationKey& network_isolation_key)
     : storage_partition_(storage_partition),
       context_url_(context_url),
       context_referrer_url_(SanitizedURL(context_referrer_url)),
-      coop_(coop) {}
+      coop_(coop),
+      network_isolation_key_(network_isolation_key) {}
 
 CrossOriginOpenerPolicyReporter::~CrossOriginOpenerPolicyReporter() = default;
 
@@ -154,7 +152,7 @@ void CrossOriginOpenerPolicyReporter::QueueNavigationToCOOPReport(
     const GURL& previous_url,
     bool same_origin_with_previous,
     bool is_report_only) {
-  const base::Optional<std::string>& endpoint =
+  const absl::optional<std::string>& endpoint =
       is_report_only ? coop_.report_only_reporting_endpoint
                      : coop_.reporting_endpoint;
   if (!endpoint)
@@ -175,7 +173,7 @@ void CrossOriginOpenerPolicyReporter::QueueNavigationAwayFromCOOPReport(
     bool is_current_source,
     bool same_origin_with_next,
     bool is_report_only) {
-  const base::Optional<std::string>& endpoint =
+  const absl::optional<std::string>& endpoint =
       is_report_only ? coop_.report_only_reporting_endpoint
                      : coop_.reporting_endpoint;
   if (!endpoint)
@@ -241,11 +239,9 @@ void CrossOriginOpenerPolicyReporter::QueueAccessReport(
       break;
   }
 
-  // TODO(https://crbug.com/993805): Pass in the appropriate
-  // NetworkIsolationKey.
   storage_partition_->GetNetworkContext()->QueueReport(
-      "coop", endpoint, context_url_, net::NetworkIsolationKey::Todo(),
-      base::nullopt, std::move(body));
+      "coop", endpoint, context_url_, network_isolation_key_, absl::nullopt,
+      std::move(body));
 }
 
 // static
@@ -314,7 +310,7 @@ void CrossOriginOpenerPolicyReporter::MonitorAccesses(
   RenderFrameHostImpl* accessed_rfh = accessed_node->current_frame_host();
   SiteInstance* site_instance = accessing_rfh->GetSiteInstance();
 
-  base::Optional<base::UnguessableToken> accessed_window_token =
+  absl::optional<blink::FrameToken> accessed_window_token =
       GetFrameToken(accessed_node, site_instance);
   if (!accessed_window_token)
     return;
@@ -394,11 +390,9 @@ void CrossOriginOpenerPolicyReporter::QueueNavigationReport(
   body.SetString(
       kEffectivePolicy,
       ToString(is_report_only ? coop_.report_only_value : coop_.value));
-  // TODO(https://crbug.com/993805): Pass in the appropriate
-  // NetworkIsolationKey.
   storage_partition_->GetNetworkContext()->QueueReport(
-      "coop", endpoint, context_url_, net::NetworkIsolationKey::Todo(),
-      /*user_agent=*/base::nullopt, std::move(body));
+      "coop", endpoint, context_url_, network_isolation_key_,
+      /*user_agent=*/absl::nullopt, std::move(body));
 }
 
 }  // namespace content

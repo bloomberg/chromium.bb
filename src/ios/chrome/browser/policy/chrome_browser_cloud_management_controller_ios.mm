@@ -5,6 +5,8 @@
 #include "ios/chrome/browser/policy/chrome_browser_cloud_management_controller_ios.h"
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "components/enterprise/browser/reporting/report_generator.h"
 #include "components/enterprise/browser/reporting/report_scheduler.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
@@ -14,6 +16,8 @@
 #include "ios/chrome/browser/policy/browser_dm_token_storage_ios.h"
 #include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #include "ios/chrome/browser/policy/policy_features.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,7 +41,7 @@ int ChromeBrowserCloudManagementControllerIOS::GetUserDataDirKey() {
 }
 
 base::FilePath
-ChromeBrowserCloudManagementControllerIOS::GetExternalPolicyPath() {
+ChromeBrowserCloudManagementControllerIOS::GetExternalPolicyDir() {
   // External policies are not supported on iOS.
   return base::FilePath();
 }
@@ -107,8 +111,19 @@ ChromeBrowserCloudManagementControllerIOS::CreateReportScheduler(
     CloudPolicyClient* client) {
   auto generator = std::make_unique<enterprise_reporting::ReportGenerator>(
       &reporting_delegate_factory_);
+  auto real_time_generator =
+      std::make_unique<enterprise_reporting::RealTimeReportGenerator>(
+          &reporting_delegate_factory_);
   return std::make_unique<enterprise_reporting::ReportScheduler>(
-      client, std::move(generator), &reporting_delegate_factory_);
+      client, std::move(generator), std::move(real_time_generator),
+      &reporting_delegate_factory_);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+ChromeBrowserCloudManagementControllerIOS::GetBestEffortTaskRunner() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  return base::CreateSingleThreadTaskRunner(
+      {web::WebThread::UI, base::TaskPriority::BEST_EFFORT});
 }
 
 void ChromeBrowserCloudManagementControllerIOS::SetGaiaURLLoaderFactory(

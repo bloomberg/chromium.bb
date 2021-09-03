@@ -71,8 +71,10 @@ void MediaResourceProviderImpl::CreateCdm(
     fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
         request) {
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(
-          render_frame_host()->GetProcess()->GetBrowserContext())
+      render_frame_host()
+          ->GetProcess()
+          ->GetBrowserContext()
+          ->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess();
   media::CreateFetcherCB create_fetcher_cb = base::BindRepeating(
       &content::CreateProvisionFetcher, std::move(loader_factory));
@@ -166,7 +168,7 @@ std::unique_ptr<media::FuchsiaCdmManager> CreateCdmManager() {
   std::string cdm_data_directory =
       command_line->GetSwitchValueASCII(switches::kCdmDataDirectory);
 
-  base::Optional<uint64_t> cdm_data_quota_bytes;
+  absl::optional<uint64_t> cdm_data_quota_bytes;
   if (command_line->HasSwitch(switches::kCdmDataQuotaBytes)) {
     uint64_t value = 0;
     CHECK(base::StringToUint64(

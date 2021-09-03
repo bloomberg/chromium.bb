@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -502,6 +501,7 @@ bool Notification::HasPendingActivity() const {
 
 void Notification::Trace(Visitor* visitor) const {
   visitor->Trace(show_trigger_);
+  visitor->Trace(prepare_show_timer_);
   visitor->Trace(loader_);
   visitor->Trace(listener_receiver_);
   EventTargetWithInlineData::Trace(visitor);

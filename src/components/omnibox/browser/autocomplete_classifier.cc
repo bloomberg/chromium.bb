@@ -48,6 +48,9 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
       AutocompleteProvider::TYPE_MOST_VISITED_SITES |
       AutocompleteProvider::TYPE_VERBATIM_MATCH |
 #endif
+#if defined(OS_ANDROID)
+      AutocompleteProvider::TYPE_VOICE_SUGGEST |
+#endif
       AutocompleteProvider::TYPE_ZERO_SUGGEST |
       AutocompleteProvider::TYPE_ZERO_SUGGEST_LOCAL_HISTORY |
       (base::FeatureList::IsEnabled(omnibox::kDocumentProvider)
@@ -66,7 +69,7 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
 }
 
 void AutocompleteClassifier::Classify(
-    const base::string16& text,
+    const std::u16string& text,
     bool prefer_keyword,
     bool allow_exact_keyword_match,
     metrics::OmniboxEventProto::PageClassification page_classification,

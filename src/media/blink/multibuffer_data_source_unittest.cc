@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -20,6 +22,7 @@
 #include "media/blink/multibuffer_reader.h"
 #include "media/blink/resource_multibuffer_data_provider.h"
 #include "media/blink/test_response_generator.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 
@@ -119,14 +122,16 @@ class TestUrlData : public UrlData {
 
   ResourceMultiBuffer* multibuffer() override {
     if (!test_multibuffer_.get()) {
-      test_multibuffer_.reset(new TestResourceMultiBuffer(this, block_shift_));
+      test_multibuffer_ =
+          std::make_unique<TestResourceMultiBuffer>(this, block_shift_);
     }
     return test_multibuffer_.get();
   }
 
   TestResourceMultiBuffer* test_multibuffer() {
     if (!test_multibuffer_.get()) {
-      test_multibuffer_.reset(new TestResourceMultiBuffer(this, block_shift_));
+      test_multibuffer_ =
+          std::make_unique<TestResourceMultiBuffer>(this, block_shift_);
     }
     return test_multibuffer_.get();
   }
@@ -227,12 +232,13 @@ class MultibufferDataSourceTest : public testing::Test {
                           UrlData::CorsMode cors_mode,
                           size_t file_size = kFileSize) {
     GURL gurl(url);
-    data_source_.reset(new MockMultibufferDataSource(
+    data_source_ = std::make_unique<MockMultibufferDataSource>(
         base::ThreadTaskRunnerHandle::Get(),
-        url_index_->GetByUrl(gurl, cors_mode), &host_));
+        url_index_->GetByUrl(gurl, cors_mode, UrlIndex::kNormal), &host_);
     data_source_->SetPreload(preload_);
 
-    response_generator_.reset(new TestResponseGenerator(gurl, file_size));
+    response_generator_ =
+        std::make_unique<TestResponseGenerator>(gurl, file_size);
     EXPECT_CALL(*this, OnInitialize(expected));
     data_source_->Initialize(base::BindOnce(
         &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));
@@ -991,7 +997,9 @@ TEST_F(MultibufferDataSourceTest, Http_ShareData) {
   StrictMock<MockBufferedDataSourceHost> host2;
   MockMultibufferDataSource source2(
       base::ThreadTaskRunnerHandle::Get(),
-      url_index_->GetByUrl(GURL(kHttpUrl), UrlData::CORS_UNSPECIFIED), &host2);
+      url_index_->GetByUrl(GURL(kHttpUrl), UrlData::CORS_UNSPECIFIED,
+                           UrlIndex::kNormal),
+      &host2);
   source2.SetPreload(preload_);
 
   EXPECT_CALL(*this, OnInitialize(true));
@@ -1354,12 +1362,14 @@ TEST_F(MultibufferDataSourceTest,
 
 TEST_F(MultibufferDataSourceTest, SeekPastEOF) {
   GURL gurl(kHttpUrl);
-  data_source_.reset(new MockMultibufferDataSource(
+  data_source_ = std::make_unique<MockMultibufferDataSource>(
       base::ThreadTaskRunnerHandle::Get(),
-      url_index_->GetByUrl(gurl, UrlData::CORS_UNSPECIFIED), &host_));
+      url_index_->GetByUrl(gurl, UrlData::CORS_UNSPECIFIED, UrlIndex::kNormal),
+      &host_);
   data_source_->SetPreload(preload_);
 
-  response_generator_.reset(new TestResponseGenerator(gurl, kDataSize + 1));
+  response_generator_ =
+      std::make_unique<TestResponseGenerator>(gurl, kDataSize + 1);
   EXPECT_CALL(*this, OnInitialize(true));
   data_source_->Initialize(base::BindOnce(
       &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));
@@ -1396,7 +1406,6 @@ TEST_F(MultibufferDataSourceTest, Http_RetryThenRedirect) {
 
   // Issue a pending read but trigger an error to force a retry.
   EXPECT_CALL(*this, ReadCallback(kDataSize - 10));
-  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
   ReadAt(kDataSize + 10, kDataSize - 10);
   base::RunLoop run_loop;
   data_provider()->DidFail(response_generator_->GenerateError());
@@ -1408,9 +1417,11 @@ TEST_F(MultibufferDataSourceTest, Http_RetryThenRedirect) {
   blink::WebURLResponse response((GURL(kHttpUrl)));
   response.SetHttpStatusCode(307);
   data_provider()->WillFollowRedirect(url, response);
+
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
   Respond(response_generator_->Generate206(kDataSize));
   ReceiveData(kDataSize);
-  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
+
   FinishLoading();
   EXPECT_FALSE(loading());
   Stop();
@@ -1730,12 +1741,14 @@ TEST_F(MultibufferDataSourceTest, CheckBufferSizeAfterReadingALot) {
 // back to "idle" when we're done loading.
 TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
   GURL gurl(kHttpUrl);
-  data_source_.reset(new MockMultibufferDataSource(
+  data_source_ = std::make_unique<MockMultibufferDataSource>(
       base::ThreadTaskRunnerHandle::Get(),
-      url_index_->GetByUrl(gurl, UrlData::CORS_UNSPECIFIED), &host_));
+      url_index_->GetByUrl(gurl, UrlData::CORS_UNSPECIFIED, UrlIndex::kNormal),
+      &host_);
   data_source_->SetPreload(preload_);
 
-  response_generator_.reset(new TestResponseGenerator(gurl, kDataSize * 1));
+  response_generator_ =
+      std::make_unique<TestResponseGenerator>(gurl, kDataSize * 1);
   EXPECT_CALL(*this, OnInitialize(true));
   data_source_->Initialize(base::BindOnce(
       &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));

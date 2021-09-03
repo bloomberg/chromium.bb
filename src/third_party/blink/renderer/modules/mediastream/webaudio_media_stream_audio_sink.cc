@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/modules/mediastream/webaudio_media_stream_audio_sink.h"
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -65,12 +67,12 @@ void WebAudioMediaStreamAudioSink::OnSetFormat(
   // converter will request source_params.frames_per_buffer() each time.
   // This will not increase the complexity as there is only one client to
   // the converter.
-  audio_converter_.reset(
-      new media::AudioConverter(params, sink_params_, false));
+  audio_converter_ =
+      std::make_unique<media::AudioConverter>(params, sink_params_, false);
   audio_converter_->AddInput(this);
-  fifo_.reset(new media::AudioFifo(
+  fifo_ = std::make_unique<media::AudioFifo>(
       params.channels(),
-      kMaxNumberOfAudioFifoBuffers * params.frames_per_buffer()));
+      kMaxNumberOfAudioFifoBuffers * params.frames_per_buffer());
 }
 
 void WebAudioMediaStreamAudioSink::OnReadyStateChanged(
@@ -85,8 +87,9 @@ void WebAudioMediaStreamAudioSink::OnData(
     base::TimeTicks estimated_capture_time) {
   NON_REENTRANT_SCOPE(capture_reentrancy_checker_);
   DCHECK(!estimated_capture_time.is_null());
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
-               "WebAudioMediaStreamAudioSink::OnData");
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("mediastream"),
+               "WebAudioMediaStreamAudioSink::OnData", "this",
+               static_cast<void*>(this), "frames", audio_bus.frames());
 
   base::AutoLock auto_lock(lock_);
   if (!is_enabled_)
@@ -121,8 +124,9 @@ void WebAudioMediaStreamAudioSink::ProvideInput(
   NON_REENTRANT_SCOPE(provide_input_reentrancy_checker_);
   DCHECK_EQ(number_of_frames, kWebAudioRenderBufferSize);
 
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
-               "WebAudioMediaStreamAudioSink::ProvideInput");
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("mediastream"),
+               "WebAudioMediaStreamAudioSink::ProvideInput", "this",
+               static_cast<void*>(this), "frames", number_of_frames);
 
   if (!output_wrapper_ ||
       static_cast<size_t>(output_wrapper_->channels()) != audio_data.size()) {

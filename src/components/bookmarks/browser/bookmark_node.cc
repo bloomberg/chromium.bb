@@ -5,8 +5,11 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
@@ -20,12 +23,10 @@ namespace bookmarks {
 namespace {
 
 // Whitespace characters to strip from bookmark titles.
-const base::char16 kInvalidChars[] = {
-  '\n', '\r', '\t',
-  0x2028,  // Line separator
-  0x2029,  // Paragraph separator
-  0
-};
+const char16_t kInvalidChars[] = {'\n',   '\r', '\t',
+                                  0x2028,  // Line separator
+                                  0x2029,  // Paragraph separator
+                                  0};
 
 }  // namespace
 
@@ -43,17 +44,16 @@ const char BookmarkNode::kMobileBookmarksNodeGuid[] =
 const char BookmarkNode::kManagedNodeGuid[] =
     "00000000-0000-4000-a000-000000000005";
 
-BookmarkNode::BookmarkNode(int64_t id, const std::string& guid, const GURL& url)
+BookmarkNode::BookmarkNode(int64_t id, const base::GUID& guid, const GURL& url)
     : BookmarkNode(id, guid, url, url.is_empty() ? FOLDER : URL, false) {}
 
 BookmarkNode::~BookmarkNode() = default;
 
-void BookmarkNode::SetTitle(const base::string16& title) {
+void BookmarkNode::SetTitle(const std::u16string& title) {
   // Replace newlines and other problematic whitespace characters in
   // folder/bookmark names with spaces.
-  base::string16 trimmed_title;
-  base::ReplaceChars(title, kInvalidChars, base::ASCIIToUTF16(" "),
-                     &trimmed_title);
+  std::u16string trimmed_title;
+  base::ReplaceChars(title, kInvalidChars, u" ", &trimmed_title);
   ui::TreeNode<BookmarkNode>::SetTitle(trimmed_title);
 }
 
@@ -77,7 +77,7 @@ bool BookmarkNode::GetMetaInfo(const std::string& key,
 bool BookmarkNode::SetMetaInfo(const std::string& key,
                                const std::string& value) {
   if (!meta_info_map_)
-    meta_info_map_.reset(new MetaInfoMap);
+    meta_info_map_ = std::make_unique<MetaInfoMap>();
 
   auto it = meta_info_map_->find(key);
   if (it == meta_info_map_->end()) {
@@ -104,14 +104,14 @@ void BookmarkNode::SetMetaInfoMap(const MetaInfoMap& meta_info_map) {
   if (meta_info_map.empty())
     meta_info_map_.reset();
   else
-    meta_info_map_.reset(new MetaInfoMap(meta_info_map));
+    meta_info_map_ = std::make_unique<MetaInfoMap>(meta_info_map);
 }
 
 const BookmarkNode::MetaInfoMap* BookmarkNode::GetMetaInfoMap() const {
   return meta_info_map_.get();
 }
 
-const base::string16& BookmarkNode::GetTitledUrlNodeTitle() const {
+const std::u16string& BookmarkNode::GetTitledUrlNodeTitle() const {
   return GetTitle();
 }
 
@@ -128,7 +128,7 @@ std::vector<base::StringPiece16> BookmarkNode::GetTitledUrlNodeAncestorTitles()
 }
 
 BookmarkNode::BookmarkNode(int64_t id,
-                           const std::string& guid,
+                           const base::GUID& guid,
                            const GURL& url,
                            Type type,
                            bool is_permanent_node)
@@ -138,8 +138,8 @@ BookmarkNode::BookmarkNode(int64_t id,
       type_(type),
       date_added_(base::Time::Now()),
       is_permanent_node_(is_permanent_node) {
-  DCHECK((type == URL) != url.is_empty());
-  DCHECK(base::IsValidGUIDOutputString(guid));
+  DCHECK_NE(type == URL, url.is_empty());
+  DCHECK(guid.is_valid());
 }
 
 void BookmarkNode::InvalidateFavicon() {
@@ -154,9 +154,10 @@ void BookmarkNode::InvalidateFavicon() {
 std::unique_ptr<BookmarkPermanentNode>
 BookmarkPermanentNode::CreateManagedBookmarks(int64_t id) {
   // base::WrapUnique() used because the constructor is private.
-  return base::WrapUnique(
-      new BookmarkPermanentNode(id, FOLDER, kManagedNodeGuid, base::string16(),
-                                /*visible_when_empty=*/false));
+  return base::WrapUnique(new BookmarkPermanentNode(
+      id, FOLDER, base::GUID::ParseLowercase(kManagedNodeGuid),
+      std::u16string(),
+      /*visible_when_empty=*/false));
 }
 
 BookmarkPermanentNode::~BookmarkPermanentNode() = default;
@@ -171,7 +172,7 @@ std::unique_ptr<BookmarkPermanentNode> BookmarkPermanentNode::CreateBookmarkBar(
     bool visible_when_empty) {
   // base::WrapUnique() used because the constructor is private.
   return base::WrapUnique(new BookmarkPermanentNode(
-      id, BOOKMARK_BAR, kBookmarkBarNodeGuid,
+      id, BOOKMARK_BAR, base::GUID::ParseLowercase(kBookmarkBarNodeGuid),
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME),
       visible_when_empty));
 }
@@ -182,7 +183,7 @@ BookmarkPermanentNode::CreateOtherBookmarks(int64_t id,
                                             bool visible_when_empty) {
   // base::WrapUnique() used because the constructor is private.
   return base::WrapUnique(new BookmarkPermanentNode(
-      id, OTHER_NODE, kOtherBookmarksNodeGuid,
+      id, OTHER_NODE, base::GUID::ParseLowercase(kOtherBookmarksNodeGuid),
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME),
       visible_when_empty));
 }
@@ -193,15 +194,15 @@ BookmarkPermanentNode::CreateMobileBookmarks(int64_t id,
                                              bool visible_when_empty) {
   // base::WrapUnique() used because the constructor is private.
   return base::WrapUnique(new BookmarkPermanentNode(
-      id, MOBILE, kMobileBookmarksNodeGuid,
+      id, MOBILE, base::GUID::ParseLowercase(kMobileBookmarksNodeGuid),
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME),
       visible_when_empty));
 }
 
 BookmarkPermanentNode::BookmarkPermanentNode(int64_t id,
                                              Type type,
-                                             const std::string& guid,
-                                             const base::string16& title,
+                                             const base::GUID& guid,
+                                             const std::u16string& title,
                                              bool visible_when_empty)
     : BookmarkNode(id, guid, GURL(), type, /*is_permanent_node=*/true),
       visible_when_empty_(visible_when_empty) {

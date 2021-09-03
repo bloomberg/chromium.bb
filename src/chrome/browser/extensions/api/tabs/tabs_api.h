@@ -9,9 +9,10 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/tabs.h"
-#include "components/translate/content/browser/content_translate_driver.h"
+#include "components/translate/core/browser/translate_driver.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/api/execute_code_function.h"
@@ -24,6 +25,11 @@
 class GURL;
 class SkBitmap;
 class TabStripModel;
+
+namespace base {
+class TaskRunner;
+}
+
 namespace content {
 class WebContents;
 }
@@ -203,7 +209,7 @@ class TabsUngroupFunction : public ExtensionFunction {
 class TabsDetectLanguageFunction
     : public ExtensionFunction,
       public content::WebContentsObserver,
-      public translate::ContentTranslateDriver::Observer {
+      public translate::TranslateDriver::LanguageDetectionObserver {
  private:
   ~TabsDetectLanguageFunction() override {}
   ResponseAction Run() override;
@@ -213,7 +219,7 @@ class TabsDetectLanguageFunction
       const content::LoadCommittedDetails& load_details) override;
   void WebContentsDestroyed() override;
 
-  // translate::ContentTranslateDriver::Observer:
+  // translate::TranslateDriver::LanguageDetectionObserver:
   void OnLanguageDetermined(
       const translate::LanguageDetectionDetails& details) override;
 
@@ -234,8 +240,15 @@ class TabsCaptureVisibleTabFunction
   TabsCaptureVisibleTabFunction();
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  static void set_disable_throttling_for_tests(
+      bool disable_throttling_for_test) {
+    disable_throttling_for_test_ = disable_throttling_for_test;
+  }
+
   // ExtensionFunction implementation.
   ResponseAction Run() override;
+  void GetQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) const override;
+  bool ShouldSkipQuotaLimiting() const override;
 
  protected:
   ~TabsCaptureVisibleTabFunction() override {}
@@ -246,15 +259,23 @@ class TabsCaptureVisibleTabFunction
   content::WebContents* GetWebContentsForID(int window_id, std::string* error);
 
   // extensions::WebContentsCaptureClient:
-  bool IsScreenshotEnabled(content::WebContents* web_contents) const override;
+  ScreenshotAccess GetScreenshotAccess(
+      content::WebContents* web_contents) const override;
   bool ClientAllowsTransparency() override;
   void OnCaptureSuccess(const SkBitmap& bitmap) override;
   void OnCaptureFailure(CaptureResult result) override;
+
+  void EncodeBitmapOnWorkerThread(
+      scoped_refptr<base::TaskRunner> reply_task_runner,
+      const SkBitmap& bitmap);
+  void OnBitmapEncodedOnUIThread(bool success, std::string base64_result);
 
  private:
   DECLARE_EXTENSION_FUNCTION("tabs.captureVisibleTab", TABS_CAPTUREVISIBLETAB)
 
   static std::string CaptureResultToErrorMessage(CaptureResult result);
+
+  static bool disable_throttling_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(TabsCaptureVisibleTabFunction);
 };

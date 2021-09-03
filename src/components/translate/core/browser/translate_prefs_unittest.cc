@@ -16,7 +16,10 @@
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/language/core/browser/language_prefs.h"
+#include "components/language/core/browser/language_prefs_test_util.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -32,21 +35,8 @@
 namespace {
 
 using ::testing::ElementsAreArray;
+using ::testing::IsEmpty;
 using ::testing::UnorderedElementsAreArray;
-
-const char kTestLanguage[] = "en";
-
-#if defined(OS_CHROMEOS)
-const char kPreferredLanguagesPref[] = "settings.language.preferred_languages";
-#else
-const char* kPreferredLanguagesPref = nullptr;
-#endif
-const char kAcceptLanguagesPref[] = "intl.accept_languages";
-
-const char kTranslateBlockedLanguagesPref[] = "translate_blocked_languages";
-
-const char kForceTriggerTranslateCountPref[] =
-    "translate_force_trigger_on_english_count_for_backoff_1";
 
 }  // namespace
 
@@ -69,61 +59,28 @@ class TranslatePrefsTest : public testing::Test {
   TranslatePrefsTest() {
     language::LanguagePrefs::RegisterProfilePrefs(prefs_.registry());
     TranslatePrefs::RegisterProfilePrefs(prefs_.registry());
-    translate_prefs_ = std::make_unique<translate::TranslatePrefs>(
-        &prefs_, kAcceptLanguagesPref, kPreferredLanguagesPref);
+    translate_prefs_ = std::make_unique<translate::TranslatePrefs>(&prefs_);
+    accept_languages_tester_ =
+        std::make_unique<language::test::LanguagePrefTester>(&prefs_);
     now_ = base::Time::Now();
     two_days_ago_ = now_ - base::TimeDelta::FromDays(2);
   }
 
   void SetUp() override {
-    prefs_.SetString(kAcceptLanguagesPref, std::string());
-#if defined(OS_CHROMEOS)
-    prefs_.SetString(kPreferredLanguagesPref, std::string());
+    prefs_.SetString(language::prefs::kAcceptLanguages, std::string());
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    prefs_.SetString(language::prefs::kPreferredLanguages, std::string());
 #endif
     prefs_.registry()->RegisterBooleanPref(
         prefs::kOfferTranslateEnabled, true,
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   }
 
-  void SetLastDeniedTime(const std::string& language, base::Time time) {
-    DenialTimeUpdate update(&prefs_, language, 2);
-    update.AddDenialTime(time);
-  }
-
-  base::Time GetLastDeniedTime(const std::string& language) {
-    DenialTimeUpdate update(&prefs_, language, 2);
-    return update.GetOldestDenialTime();
-  }
-
-  // Checks that the provided strings are equivalent to the language prefs.
-  // Chrome OS uses a different pref, so we need to handle it separately.
-  void ExpectLanguagePrefs(const std::string& expected,
-                           const std::string& expected_chromeos) const {
-    if (expected.empty()) {
-      EXPECT_TRUE(prefs_.GetString(kAcceptLanguagesPref).empty());
-    } else {
-      EXPECT_EQ(expected, prefs_.GetString(kAcceptLanguagesPref));
-    }
-#if defined(OS_CHROMEOS)
-    if (expected_chromeos.empty()) {
-      EXPECT_TRUE(prefs_.GetString(kPreferredLanguagesPref).empty());
-    } else {
-      EXPECT_EQ(expected_chromeos, prefs_.GetString(kPreferredLanguagesPref));
-    }
-#endif
-  }
-
-  // Similar to function above: this one expects both ChromeOS and other
-  // platforms to have the same value of language prefs.
-  void ExpectLanguagePrefs(const std::string& expected) const {
-    ExpectLanguagePrefs(expected, expected);
-  }
-
   void ExpectBlockedLanguageListContent(
       const std::vector<std::string>& list) const {
-    const base::ListValue* const blacklist =
-        prefs_.GetList(kTranslateBlockedLanguagesPref);
-    ExpectEqualLanguageLists(*blacklist, list);
+    const base::ListValue* const never_prompt_list =
+        prefs_.GetList(language::prefs::kFluentLanguages);
+    ExpectEqualLanguageLists(*never_prompt_list, list);
   }
 
   // Returns a vector of language codes from the elements of the given
@@ -139,9 +96,9 @@ class TranslatePrefsTest : public testing::Test {
 
   // Returns a vector of display names from the elements of the given
   // |language_list|.
-  std::vector<base::string16> ExtractDisplayNames(
+  std::vector<std::u16string> ExtractDisplayNames(
       const std::vector<TranslateLanguageInfo>& language_list) const {
-    std::vector<base::string16> output;
+    std::vector<std::u16string> output;
     for (const auto& item : language_list) {
       output.push_back(base::UTF8ToUTF16(item.display_name));
     }
@@ -165,6 +122,7 @@ class TranslatePrefsTest : public testing::Test {
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
+  std::unique_ptr<language::test::LanguagePrefTester> accept_languages_tester_;
 
   // Shared time constants.
   base::Time now_;
@@ -173,152 +131,6 @@ class TranslatePrefsTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(TranslatePrefsTest, UpdateLastDeniedTime) {
-  // Test that denials with more than 24 hours difference between them do not
-  // block the language.
-  translate_prefs_->ResetDenialState();
-  SetLastDeniedTime(kTestLanguage, two_days_ago_);
-  ASSERT_FALSE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
-  translate_prefs_->UpdateLastDeniedTime(kTestLanguage);
-  base::Time last_denied = GetLastDeniedTime(kTestLanguage);
-  EXPECT_FALSE(last_denied.is_max());
-  EXPECT_GE(last_denied, now_);
-  EXPECT_LT(last_denied - now_, base::TimeDelta::FromSeconds(10));
-  EXPECT_FALSE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
-
-  // Ensure the first use simply writes the update time.
-  translate_prefs_->ResetDenialState();
-  translate_prefs_->UpdateLastDeniedTime(kTestLanguage);
-  last_denied = GetLastDeniedTime(kTestLanguage);
-  EXPECT_FALSE(last_denied.is_max());
-  EXPECT_GE(last_denied, now_);
-  EXPECT_LT(last_denied - now_, base::TimeDelta::FromSeconds(10));
-  EXPECT_FALSE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
-
-  // If it's denied again within the 24 hour period, language should be
-  // permanently denied.
-  translate_prefs_->UpdateLastDeniedTime(kTestLanguage);
-  last_denied = GetLastDeniedTime(kTestLanguage);
-  EXPECT_FALSE(last_denied.is_max());
-  EXPECT_GE(last_denied, now_);
-  EXPECT_LT(last_denied - now_, base::TimeDelta::FromSeconds(10));
-  EXPECT_TRUE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
-
-  // If the language is already permanently denied, don't bother updating the
-  // last_denied time.
-  ASSERT_TRUE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
-  SetLastDeniedTime(kTestLanguage, two_days_ago_);
-  translate_prefs_->UpdateLastDeniedTime(kTestLanguage);
-  last_denied = GetLastDeniedTime(kTestLanguage);
-  EXPECT_EQ(last_denied, two_days_ago_);
-}
-
-// Test that the default value for non-existing entries is base::Time::Null().
-TEST_F(TranslatePrefsTest, DenialTimeUpdate_DefaultTimeIsNull) {
-  DenialTimeUpdate update(&prefs_, kTestLanguage, 2);
-  EXPECT_TRUE(update.GetOldestDenialTime().is_null());
-}
-
-// Test that non-existing entries automatically create a ListValue.
-TEST_F(TranslatePrefsTest, DenialTimeUpdate_ForceListExistence) {
-  DictionaryPrefUpdate dict_update(
-      &prefs_, TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage);
-  base::DictionaryValue* denial_dict = dict_update.Get();
-  EXPECT_TRUE(denial_dict);
-
-  base::ListValue* list_value = nullptr;
-  bool has_list = denial_dict->GetList(kTestLanguage, &list_value);
-  EXPECT_FALSE(has_list);
-
-  // Calling GetDenialTimes will force creation of a properly populated list.
-  DenialTimeUpdate update(&prefs_, kTestLanguage, 2);
-  base::ListValue* time_list = update.GetDenialTimes();
-  EXPECT_TRUE(time_list);
-  EXPECT_EQ(0U, time_list->GetSize());
-}
-
-// Test that an existing update time record (which is a double in a dict)
-// is automatically migrated to a list of update times instead.
-TEST_F(TranslatePrefsTest, DenialTimeUpdate_Migrate) {
-  translate_prefs_->ResetDenialState();
-  DictionaryPrefUpdate dict_update(
-      &prefs_, TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage);
-  base::DictionaryValue* denial_dict = dict_update.Get();
-  EXPECT_TRUE(denial_dict);
-  denial_dict->SetDouble(kTestLanguage, two_days_ago_.ToJsTime());
-
-  base::ListValue* list_value = nullptr;
-  bool has_list = denial_dict->GetList(kTestLanguage, &list_value);
-  EXPECT_FALSE(has_list);
-
-  // Calling GetDenialTimes will force creation of a properly populated list.
-  DenialTimeUpdate update(&prefs_, kTestLanguage, 2);
-  base::ListValue* time_list = update.GetDenialTimes();
-  EXPECT_TRUE(time_list);
-
-  has_list = denial_dict->GetList(kTestLanguage, &list_value);
-  EXPECT_TRUE(has_list);
-  EXPECT_EQ(time_list, list_value);
-  EXPECT_EQ(1U, time_list->GetSize());
-  EXPECT_EQ(two_days_ago_, update.GetOldestDenialTime());
-}
-
-TEST_F(TranslatePrefsTest, DenialTimeUpdate_SlidingWindow) {
-  DenialTimeUpdate update(&prefs_, kTestLanguage, 4);
-
-  update.AddDenialTime(now_ - base::TimeDelta::FromMinutes(5));
-  EXPECT_EQ(update.GetOldestDenialTime(),
-            now_ - base::TimeDelta::FromMinutes(5));
-
-  update.AddDenialTime(now_ - base::TimeDelta::FromMinutes(4));
-  EXPECT_EQ(update.GetOldestDenialTime(),
-            now_ - base::TimeDelta::FromMinutes(5));
-
-  update.AddDenialTime(now_ - base::TimeDelta::FromMinutes(3));
-  EXPECT_EQ(update.GetOldestDenialTime(),
-            now_ - base::TimeDelta::FromMinutes(5));
-
-  update.AddDenialTime(now_ - base::TimeDelta::FromMinutes(2));
-  EXPECT_EQ(update.GetOldestDenialTime(),
-            now_ - base::TimeDelta::FromMinutes(4));
-
-  update.AddDenialTime(now_);
-  EXPECT_EQ(update.GetOldestDenialTime(),
-            now_ - base::TimeDelta::FromMinutes(3));
-
-  update.AddDenialTime(now_);
-  EXPECT_EQ(update.GetOldestDenialTime(),
-            now_ - base::TimeDelta::FromMinutes(2));
-}
-
-TEST_F(TranslatePrefsTest, UpdateLanguageList) {
-  // Empty update.
-  std::vector<std::string> languages;
-  translate_prefs_->UpdateLanguageList(languages);
-  ExpectLanguagePrefs("");
-
-  // One language.
-  languages = {"en"};
-  translate_prefs_->UpdateLanguageList(languages);
-  ExpectLanguagePrefs("en");
-
-  // More than one language.
-  languages = {"en", "ja", "it"};
-  translate_prefs_->UpdateLanguageList(languages);
-  ExpectLanguagePrefs("en,ja,it");
-
-  // Locale-specific codes.
-  // The list is exanded by adding the base languagese.
-  languages = {"en-US", "ja", "en-CA", "fr-CA"};
-  translate_prefs_->UpdateLanguageList(languages);
-  ExpectLanguagePrefs("en-US,ja,en-CA,fr-CA");
-
-  // List already expanded.
-  languages = {"en-US", "en", "fr", "fr-CA"};
-  translate_prefs_->UpdateLanguageList(languages);
-  ExpectLanguagePrefs("en-US,en,fr,fr-CA");
-}
-
 // Test that GetLanguageInfoList() returns the correct list of languages based
 // on the given locale.
 TEST_F(TranslatePrefsTest, GetLanguageInfoListCorrectLocale) {
@@ -326,7 +138,7 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListCorrectLocale) {
   std::vector<std::string> expected_codes;
 
   l10n_util::GetAcceptLanguagesForLocale("en-US", &expected_codes);
-  TranslatePrefs::GetLanguageInfoList("en-US", true /* translate_enabled */,
+  TranslatePrefs::GetLanguageInfoList("en-US", true /* translate_allowed */,
                                       &language_list);
   std::vector<std::string> codes = ExtractLanguageCodes(language_list);
   EXPECT_THAT(codes, UnorderedElementsAreArray(expected_codes));
@@ -335,7 +147,7 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListCorrectLocale) {
   expected_codes.clear();
   codes.clear();
   l10n_util::GetAcceptLanguagesForLocale("ja", &expected_codes);
-  TranslatePrefs::GetLanguageInfoList("ja", true /* translate_enabled */,
+  TranslatePrefs::GetLanguageInfoList("ja", true /* translate_allowed */,
                                       &language_list);
   codes = ExtractLanguageCodes(language_list);
   EXPECT_THAT(codes, UnorderedElementsAreArray(expected_codes));
@@ -344,7 +156,7 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListCorrectLocale) {
   expected_codes.clear();
   codes.clear();
   l10n_util::GetAcceptLanguagesForLocale("es-AR", &expected_codes);
-  TranslatePrefs::GetLanguageInfoList("es-AR", true /* translate_enabled */,
+  TranslatePrefs::GetLanguageInfoList("es-AR", true /* translate_allowed */,
                                       &language_list);
   codes = ExtractLanguageCodes(language_list);
   EXPECT_THAT(codes, UnorderedElementsAreArray(expected_codes));
@@ -355,17 +167,17 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListOutput) {
   std::vector<TranslateLanguageInfo> language_list;
 
   // Empty locale returns empty output.
-  TranslatePrefs::GetLanguageInfoList("", true /* translate_enabled */,
+  TranslatePrefs::GetLanguageInfoList("", true /* translate_allowed */,
                                       &language_list);
   EXPECT_TRUE(language_list.empty());
 
   // Output is sorted.
   language_list.clear();
-  TranslatePrefs::GetLanguageInfoList("en-US", true /* translate_enabled */,
+  TranslatePrefs::GetLanguageInfoList("en-US", true /* translate_allowed */,
                                       &language_list);
-  const std::vector<base::string16> display_names =
+  const std::vector<std::u16string> display_names =
       ExtractDisplayNames(language_list);
-  std::vector<base::string16> sorted(display_names);
+  std::vector<std::u16string> sorted(display_names);
   l10n_util::SortVectorWithStringKey("en-US", &sorted, false);
 
   EXPECT_THAT(display_names, ElementsAreArray(sorted));
@@ -375,7 +187,7 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoList) {
   std::vector<TranslateLanguageInfo> language_list;
   TranslateLanguageInfo language;
 
-  TranslatePrefs::GetLanguageInfoList("en-US", true /* translate_enabled */,
+  TranslatePrefs::GetLanguageInfoList("en-US", true /* translate_allowed */,
                                       &language_list);
 
   language = GetLanguageByCode("en", language_list);
@@ -397,6 +209,49 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoList) {
   language = GetLanguageByCode("zh-HK", language_list);
   EXPECT_EQ("zh-HK", language.code);
   EXPECT_TRUE(language.supports_translate);
+}
+
+// Test that GetTranslatableContentLanguages() returns the correct list.
+TEST_F(TranslatePrefsTest, GetTranslatableContentLanguagesCorrectLocale) {
+  std::vector<std::string> result_codes;
+
+  std::vector<std::string> content_languages;
+  std::vector<std::string> expected_translatable_codes;
+
+  // Set content languages.
+  content_languages = {"en"};
+  expected_translatable_codes = {"en"};
+  accept_languages_tester_->SetLanguagePrefs(content_languages);
+
+  // Empty locale returns empty output.
+  translate_prefs_->GetTranslatableContentLanguages("", &result_codes);
+  EXPECT_TRUE(result_codes.empty());
+
+  translate_prefs_->GetTranslatableContentLanguages("en-US", &result_codes);
+  EXPECT_THAT(expected_translatable_codes, result_codes);
+
+  // Set content languages. Waloon ("wa") is not translatable and shouldn't
+  // be included in the list.
+  content_languages = {"ja", "en", "en-US", "wa"};
+  expected_translatable_codes = {"ja", "en"};
+  accept_languages_tester_->SetLanguagePrefs(content_languages);
+  translate_prefs_->GetTranslatableContentLanguages("ja", &result_codes);
+  EXPECT_THAT(result_codes, expected_translatable_codes);
+
+  // Test with only untranslatable languages.
+  content_languages = {"wa", "ln"};
+  expected_translatable_codes = {};
+  accept_languages_tester_->SetLanguagePrefs(content_languages);
+
+  translate_prefs_->GetTranslatableContentLanguages("en-US", &result_codes);
+  EXPECT_THAT(expected_translatable_codes, result_codes);
+
+  // Verify that language codes are translated from Chrome to Translate format.
+  content_languages = {"en", "nb", "zh-HK"};
+  expected_translatable_codes = {"en", "no", "zh-TW"};
+  accept_languages_tester_->SetLanguagePrefs(content_languages);
+  translate_prefs_->GetTranslatableContentLanguages("ja", &result_codes);
+  EXPECT_THAT(result_codes, expected_translatable_codes);
 }
 
 TEST_F(TranslatePrefsTest, BlockLanguage) {
@@ -486,42 +341,41 @@ TEST_F(TranslatePrefsTest, AddToLanguageList) {
 
   // Force blocked false, language not already in list.
   languages = {"en"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->ResetBlockedLanguagesToDefault();
   translate_prefs_->AddToLanguageList("it-IT", /*force_blocked=*/false);
-  ExpectLanguagePrefs("en,it-IT");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,it-IT");
   ExpectBlockedLanguageListContent({"en", "it"});
 
   // Force blocked false, language from same family already in list.
   languages = {"en", "es-AR"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->ResetBlockedLanguagesToDefault();
   translate_prefs_->AddToLanguageList("es-ES", /*force_blocked=*/false);
-  ExpectLanguagePrefs("en,es-AR,es-ES");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,es-AR,es-ES");
   ExpectBlockedLanguageListContent({"en"});
 }
 
 TEST_F(TranslatePrefsTest, RemoveFromLanguageList) {
   std::vector<std::string> languages;
-
   // Unblock last language of a family.
   languages = {"en-US", "es-AR"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->ResetBlockedLanguagesToDefault();
   translate_prefs_->BlockLanguage("en-US");
   translate_prefs_->BlockLanguage("es-AR");
   translate_prefs_->RemoveFromLanguageList("es-AR");
-  ExpectLanguagePrefs("en-US");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en-US");
   ExpectBlockedLanguageListContent({"en"});
 
   // Do not unblock if not the last language of a family.
   languages = {"en-US", "es-AR", "es-ES"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->ResetBlockedLanguagesToDefault();
   translate_prefs_->BlockLanguage("en-US");
   translate_prefs_->BlockLanguage("es-AR");
   translate_prefs_->RemoveFromLanguageList("es-AR");
-  ExpectLanguagePrefs("en-US,es-ES");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en-US,es-ES");
   ExpectBlockedLanguageListContent({"en", "es"});
 }
 
@@ -531,29 +385,33 @@ TEST_F(TranslatePrefsTest, RemoveFromLanguageListRemovesRemainingUnsupported) {
   TranslateDownloadManager::GetInstance()->set_application_locale("en");
   std::vector<std::string> languages;
   languages = {"en", "en-US", "en-FOO"};
-  translate_prefs_->UpdateLanguageList(languages);
-  ExpectLanguagePrefs("en,en-US,en-FOO");
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,en-US,en-FOO");
   translate_prefs_->RemoveFromLanguageList("en-US");
-  ExpectLanguagePrefs("en,en-FOO");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,en-FOO");
   translate_prefs_->RemoveFromLanguageList("en");
-  ExpectLanguagePrefs("");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("");
 }
 
 TEST_F(TranslatePrefsTest, RemoveFromLanguageListClearsRecentLanguage) {
+  // Unset the recent target language when the last language of the target
+  // language family is removed
   std::vector<std::string> languages;
+  languages = {"en", "en-US", "es-AR"};
 
-  // Unblock last language of a family.
-  languages = {"en-US", "es-AR"};
-  translate_prefs_->UpdateLanguageList(languages);
-  translate_prefs_->SetRecentTargetLanguage("en-US");
-  EXPECT_EQ("en-US", translate_prefs_->GetRecentTargetLanguage());
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  translate_prefs_->SetRecentTargetLanguage("es-AR");
+  EXPECT_EQ("es", translate_prefs_->GetRecentTargetLanguage());
 
   translate_prefs_->RemoveFromLanguageList("es-AR");
-  EXPECT_EQ("en-US", translate_prefs_->GetRecentTargetLanguage());
+  EXPECT_EQ("", translate_prefs_->GetRecentTargetLanguage());
 
-  translate_prefs_->UpdateLanguageList(languages);
-  EXPECT_EQ("en-US", translate_prefs_->GetRecentTargetLanguage());
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  translate_prefs_->SetRecentTargetLanguage("en-US");
+  EXPECT_EQ("en", translate_prefs_->GetRecentTargetLanguage());
 
+  translate_prefs_->RemoveFromLanguageList("en");
+  EXPECT_EQ("en", translate_prefs_->GetRecentTargetLanguage());
   translate_prefs_->RemoveFromLanguageList("en-US");
   EXPECT_EQ("", translate_prefs_->GetRecentTargetLanguage());
 }
@@ -568,80 +426,80 @@ TEST_F(TranslatePrefsTest, MoveLanguageToTheTop) {
 
   // Empty language list.
   languages = {};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en-US", TranslatePrefs::kTop, offset,
                                       {"en-US"});
-  ExpectLanguagePrefs("");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("");
 
   // Search for empty string.
   languages = {"en"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("", TranslatePrefs::kTop, offset, {"en"});
-  ExpectLanguagePrefs("en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en");
 
   // List of enabled languages is empty.
   languages = {"en"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kTop, offset, {});
-  ExpectLanguagePrefs("en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en");
 
   // Everything empty.
   languages = {""};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("", TranslatePrefs::kTop, offset, {});
-  ExpectLanguagePrefs("");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("");
 
   // Only one element in the list.
   languages = {"en"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kTop, offset,
                                       {"en-US"});
-  ExpectLanguagePrefs("en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en");
 
   // Element is already at the top.
   languages = {"en", "fr"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kTop, offset,
                                       {"en", "fr"});
-  ExpectLanguagePrefs("en,fr");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr");
 
   // Below we test cases that result in a valid rearrangement of the list.
 
   // The language is already at the top of the enabled languages, but not at the
   // top of the list: we still need to push it to the top.
   languages = {"en", "fr", "it", "es"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("it", TranslatePrefs::kTop, offset,
                                       {"it", "es"});
-  ExpectLanguagePrefs("it,en,fr,es");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("it,en,fr,es");
 
   // Swap two languages.
   languages = {"en", "fr"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("fr", TranslatePrefs::kTop, offset,
                                       {"en", "fr"});
-  ExpectLanguagePrefs("fr,en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("fr,en");
 
   // Language in the middle.
   languages = {"en", "fr", "it", "es"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("it", TranslatePrefs::kTop, offset,
                                       {"en", "fr", "it", "es"});
-  ExpectLanguagePrefs("it,en,fr,es");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("it,en,fr,es");
 
   // Language at the bottom.
   languages = {"en", "fr", "it", "es"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("es", TranslatePrefs::kTop, offset,
                                       {"en", "fr", "it", "es"});
-  ExpectLanguagePrefs("es,en,fr,it");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("es,en,fr,it");
 
   // Skip languages that are not enabled.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("zh", TranslatePrefs::kTop, offset,
                                       {"en", "fr", "zh"});
-  ExpectLanguagePrefs("zh,en,fr,it,es");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("zh,en,fr,it,es");
 }
 
 TEST_F(TranslatePrefsTest, MoveLanguageUp) {
@@ -654,48 +512,93 @@ TEST_F(TranslatePrefsTest, MoveLanguageUp) {
 
   // Empty language list.
   languages = {};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en-US", TranslatePrefs::kUp, 1,
                                       {"en-US"});
-  ExpectLanguagePrefs("");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("");
 
   // Search for empty string.
   languages = {"en"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("", TranslatePrefs::kUp, 1, {"en"});
-  ExpectLanguagePrefs("en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en");
 
   // List of enabled languages is empty.
   languages = {"en"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kUp, 1, {});
-  ExpectLanguagePrefs("en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en");
 
   // Everything empty.
   languages = {""};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("", TranslatePrefs::kUp, 1, {});
-  ExpectLanguagePrefs("");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("");
 
   // Only one element in the list.
   languages = {"en"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kUp, 1, {"en"});
-  ExpectLanguagePrefs("en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en");
 
   // Element is already at the top.
   languages = {"en", "fr"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kUp, 1,
                                       {"en", "fr"});
-  ExpectLanguagePrefs("en,fr");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr");
 
   // The language is at the top of the enabled languages.
   languages = {"en", "fr", "it", "es"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("it", TranslatePrefs::kUp, 1,
                                       {"it", "es"});
-  ExpectLanguagePrefs("it,en,fr,es");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("it,en,fr,es");
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  //---------------------------------------------------------------------------
+  // Move with policy-forced languages present.
+  // Forced languages should always remain at the top of the languages list and
+  // can't be reordered.
+  // Only test on non-Chrome OS platforms.
+
+  // Try moving forced language up.
+  languages = {"it", "es", "zh"};
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  accept_languages_tester_->SetForcedLanguagePrefs({"en", "fr"});
+  translate_prefs_->RearrangeLanguage("fr", TranslatePrefs::kUp, 1,
+                                      {"en", "fr", "it", "es", "zh"});
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr,it,es,zh");
+  accept_languages_tester_->SetForcedLanguagePrefs({});  // Reset pref
+
+  // Try moving forced/user-selected duplicate languages.
+  languages = {"it", "es", "fr"};
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  accept_languages_tester_->SetForcedLanguagePrefs({"en", "fr"});
+  translate_prefs_->RearrangeLanguage("fr", TranslatePrefs::kUp, 1,
+                                      {"en", "fr", "it", "es", "zh"});
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr,it,es");
+  accept_languages_tester_->ExpectSelectedLanguagePrefs("it,fr,es");
+  accept_languages_tester_->SetForcedLanguagePrefs({});  // Reset pref
+
+  // Move top selected language up by 1.
+  languages = {"it", "es", "zh"};
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  accept_languages_tester_->SetForcedLanguagePrefs({"en", "fr"});
+  translate_prefs_->RearrangeLanguage("it", TranslatePrefs::kUp, 1,
+                                      {"en", "fr", "it", "es", "zh"});
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr,it,es,zh");
+  accept_languages_tester_->SetForcedLanguagePrefs({});  // Reset pref
+
+  // Try moving top selected language up to top of all languages.
+  languages = {"it", "es", "zh"};
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  accept_languages_tester_->SetForcedLanguagePrefs({"en", "fr"});
+  translate_prefs_->RearrangeLanguage("it", TranslatePrefs::kUp, 2,
+                                      {"en", "fr", "it", "es", "zh"});
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr,it,es,zh");
+  accept_languages_tester_->SetForcedLanguagePrefs({});  // Reset pref
+#endif
 
   //---------------------------------------------------------------------------
   // Below we test cases that result in a valid rearrangement of the list.
@@ -703,83 +606,118 @@ TEST_F(TranslatePrefsTest, MoveLanguageUp) {
 
   // Swap two languages.
   languages = {"en", "fr"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("fr", TranslatePrefs::kUp, 1,
                                       {"en", "fr"});
-  ExpectLanguagePrefs("fr,en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("fr,en");
 
   // Language in the middle.
   languages = {"en", "fr", "it", "es"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("it", TranslatePrefs::kUp, 1,
                                       {"en", "fr", "it", "es"});
-  ExpectLanguagePrefs("en,it,fr,es");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,it,fr,es");
 
   // Language at the bottom.
   languages = {"en", "fr", "it", "es"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("es", TranslatePrefs::kUp, 1,
                                       {"en", "fr", "it", "es"});
-  ExpectLanguagePrefs("en,fr,es,it");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr,es,it");
 
   // Skip languages that are not enabled.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("zh", TranslatePrefs::kUp, 1,
                                       {"en", "fr", "zh"});
-  ExpectLanguagePrefs("en,zh,fr,it,es");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,zh,fr,it,es");
 
   //---------------------------------------------------------------------------
   // Move by more than 1 position.
 
   // Move all the way to the top.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("es", TranslatePrefs::kUp, 3,
                                       {"en", "fr", "it", "es", "zh"});
-  ExpectLanguagePrefs("es,en,fr,it,zh");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("es,en,fr,it,zh");
 
   // Move to the middle of the list.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("es", TranslatePrefs::kUp, 2,
                                       {"en", "fr", "it", "es", "zh"});
-  ExpectLanguagePrefs("en,es,fr,it,zh");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,es,fr,it,zh");
 
   // Move up the last language.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("zh", TranslatePrefs::kUp, 3,
                                       {"en", "fr", "it", "es", "zh"});
-  ExpectLanguagePrefs("en,zh,fr,it,es");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,zh,fr,it,es");
 
   // Skip languages that are not enabled.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("zh", TranslatePrefs::kUp, 2,
                                       {"en", "fr", "es", "zh"});
-  ExpectLanguagePrefs("en,zh,fr,it,es");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,zh,fr,it,es");
 
   // Skip languages that are not enabled.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("zh", TranslatePrefs::kUp, 2,
                                       {"en", "fr", "it", "zh"});
-  ExpectLanguagePrefs("en,zh,fr,it,es");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,zh,fr,it,es");
 
   // Skip languages that are not enabled.
   languages = {"en", "fr", "it", "es", "zh", "de", "pt"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("de", TranslatePrefs::kUp, 3,
                                       {"it", "es", "zh", "de", "pt"});
-  ExpectLanguagePrefs("de,en,fr,it,es,zh,pt");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("de,en,fr,it,es,zh,pt");
 
   // If offset is too large, we effectively move to the top.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("es", TranslatePrefs::kUp, 7,
                                       {"en", "fr", "it", "es", "zh"});
-  ExpectLanguagePrefs("es,en,fr,it,zh");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("es,en,fr,it,zh");
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  //---------------------------------------------------------------------------
+  // Move with policy-forced languages present.
+  // Only test on non-Chrome OS platforms.
+
+  // Move bottom selected language to top of all languages.
+  languages = {"it", "es", "zh"};
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  accept_languages_tester_->SetForcedLanguagePrefs({"en", "fr"});
+  translate_prefs_->RearrangeLanguage("zh", TranslatePrefs::kUp, 4,
+                                      {"en", "fr", "it", "es", "zh"});
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr,zh,it,es");
+  accept_languages_tester_->SetForcedLanguagePrefs({});  // Reset pref
+
+  // Move middle selected language to top of all languages.
+  languages = {"it", "es", "zh"};
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  accept_languages_tester_->SetForcedLanguagePrefs({"en", "fr"});
+  translate_prefs_->RearrangeLanguage("es", TranslatePrefs::kUp, 3,
+                                      {"en", "fr", "it", "es", "zh"});
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr,es,it,zh");
+  accept_languages_tester_->SetForcedLanguagePrefs({});  // Reset pref
+
+  // Moving selected language up should cause it to jump over hidden duplicate
+  // languages within the kSelectedLanguages pref.
+  languages = {"it", "es", "zh"};
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  accept_languages_tester_->SetForcedLanguagePrefs({"en", "es", "fr"});
+  translate_prefs_->RearrangeLanguage("zh", TranslatePrefs::kUp, 1,
+                                      {"en", "es", "fr", "it", "zh"});
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,es,fr,zh,it");
+  accept_languages_tester_->ExpectSelectedLanguagePrefs("zh,it,es");
+  accept_languages_tester_->SetForcedLanguagePrefs({});  // Reset pref
+#endif
 }
 
 TEST_F(TranslatePrefsTest, MoveLanguageDown) {
@@ -792,49 +730,88 @@ TEST_F(TranslatePrefsTest, MoveLanguageDown) {
 
   // Empty language list.
   languages = {};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en-US", TranslatePrefs::kDown, 1,
                                       {"en-US"});
-  ExpectLanguagePrefs("");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("");
 
   // Search for empty string.
   languages = {"en"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("", TranslatePrefs::kDown, 1, {"en"});
-  ExpectLanguagePrefs("en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en");
 
   // List of enabled languages is empty.
   languages = {"en"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kDown, 1, {});
-  ExpectLanguagePrefs("en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en");
 
   // Everything empty.
   languages = {""};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("", TranslatePrefs::kDown, 1, {});
-  ExpectLanguagePrefs("");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("");
 
   // Only one element in the list.
   languages = {"en"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kDown, 1, {"en"});
-  ExpectLanguagePrefs("en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en");
 
   // Element is already at the bottom.
   languages = {"en", "fr"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("fr", TranslatePrefs::kDown, 1,
                                       {"en", "fr"});
-  ExpectLanguagePrefs("en,fr");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr");
 
   // The language is at the bottom of the enabled languages: we move it to the
   // very bottom of the list.
   languages = {"en", "fr", "it", "es"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("it", TranslatePrefs::kDown, 1,
                                       {"fr", "it"});
-  ExpectLanguagePrefs("en,fr,es,it");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr,es,it");
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  //---------------------------------------------------------------------------
+  // Move with policy-forced languages present.
+  // Only test on non-Chrome OS platforms.
+
+  // Try moving forced language down.
+  languages = {"it", "es", "zh"};
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  accept_languages_tester_->SetForcedLanguagePrefs({"en", "fr"});
+  translate_prefs_->RearrangeLanguage("fr", TranslatePrefs::kDown, 1,
+                                      {"en", "fr", "it", "es", "zh"});
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr,it,es,zh");
+  translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kDown, 1,
+                                      {"en", "fr", "it", "es", "zh"});
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr,it,es,zh");
+  accept_languages_tester_->SetForcedLanguagePrefs({});  // Reset pref
+
+  // Try moving forced/user-selected duplicate languages.
+  languages = {"en", "it", "es"};
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  accept_languages_tester_->SetForcedLanguagePrefs({"en", "fr"});
+  translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kDown, 1,
+                                      {"en", "fr", "it", "es"});
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,fr,it,es");
+  accept_languages_tester_->ExpectSelectedLanguagePrefs("it,en,es");
+  accept_languages_tester_->SetForcedLanguagePrefs({});  // Reset pref
+
+  // Moving selected language down should cause it to jump over hidden duplicate
+  // languages within the kSelectedLanguages pref.
+  languages = {"it", "es", "zh"};
+  accept_languages_tester_->SetLanguagePrefs(languages);
+  accept_languages_tester_->SetForcedLanguagePrefs({"en", "es", "fr"});
+  translate_prefs_->RearrangeLanguage("it", TranslatePrefs::kDown, 1,
+                                      {"en", "es", "fr", "it", "zh"});
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,es,fr,zh,it");
+  accept_languages_tester_->ExpectSelectedLanguagePrefs("es,zh,it");
+  accept_languages_tester_->SetForcedLanguagePrefs({});  // Reset pref
+#endif
 
   //---------------------------------------------------------------------------
   // Below we test cases that result in a valid rearrangement of the list.
@@ -842,107 +819,107 @@ TEST_F(TranslatePrefsTest, MoveLanguageDown) {
 
   // Swap two languages.
   languages = {"en", "fr"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kDown, 1,
                                       {"en", "fr"});
-  ExpectLanguagePrefs("fr,en");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("fr,en");
 
   // Language in the middle.
   languages = {"en", "fr", "it", "es"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("fr", TranslatePrefs::kDown, 1,
                                       {"en", "fr", "it", "es"});
-  ExpectLanguagePrefs("en,it,fr,es");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,it,fr,es");
 
   // Language at the top.
   languages = {"en", "fr", "it", "es"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kDown, 1,
                                       {"en", "fr", "it", "es"});
-  ExpectLanguagePrefs("fr,en,it,es");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("fr,en,it,es");
 
   // Skip languages that are not enabled.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kDown, 1,
                                       {"en", "es", "zh"});
-  ExpectLanguagePrefs("fr,it,es,en,zh");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("fr,it,es,en,zh");
 
   //---------------------------------------------------------------------------
   // Move by more than 1 position.
 
   // Move all the way to the bottom.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("fr", TranslatePrefs::kDown, 3,
                                       {"en", "fr", "it", "es", "zh"});
-  ExpectLanguagePrefs("en,it,es,zh,fr");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,it,es,zh,fr");
 
   // Move to the middle of the list.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("fr", TranslatePrefs::kDown, 2,
                                       {"en", "fr", "it", "es", "zh"});
-  ExpectLanguagePrefs("en,it,es,fr,zh");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,it,es,fr,zh");
 
   // Move down the first language.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kDown, 3,
                                       {"en", "fr", "it", "es", "zh"});
-  ExpectLanguagePrefs("fr,it,es,en,zh");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("fr,it,es,en,zh");
 
   // Skip languages that are not enabled.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kDown, 2,
                                       {"en", "fr", "es", "zh"});
-  ExpectLanguagePrefs("fr,it,es,en,zh");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("fr,it,es,en,zh");
 
   // Skip languages that are not enabled.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("en", TranslatePrefs::kDown, 2,
                                       {"en", "it", "es", "zh"});
-  ExpectLanguagePrefs("fr,it,es,en,zh");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("fr,it,es,en,zh");
 
   // Skip languages that are not enabled.
   languages = {"en", "fr", "it", "es", "zh", "de", "pt"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("fr", TranslatePrefs::kDown, 3,
                                       {"en", "fr", "it", "es", "zh"});
-  ExpectLanguagePrefs("en,it,es,zh,fr,de,pt");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,it,es,zh,fr,de,pt");
 
   // If offset is too large, we effectively move to the bottom.
   languages = {"en", "fr", "it", "es", "zh"};
-  translate_prefs_->UpdateLanguageList(languages);
+  accept_languages_tester_->SetLanguagePrefs(languages);
   translate_prefs_->RearrangeLanguage("fr", TranslatePrefs::kDown, 6,
                                       {"en", "fr", "it", "es", "zh"});
-  ExpectLanguagePrefs("en,it,es,zh,fr");
+  accept_languages_tester_->ExpectAcceptLanguagePrefs("en,it,es,zh,fr");
 }
 
-TEST_F(TranslatePrefsTest, SiteBlacklist) {
-  translate_prefs_->BlacklistSite("a.com");
+TEST_F(TranslatePrefsTest, SiteNeverPromptList) {
+  translate_prefs_->AddSiteToNeverPromptList("a.com");
   base::Time t = base::Time::Now();
   base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  translate_prefs_->BlacklistSite("b.com");
-  EXPECT_TRUE(translate_prefs_->IsSiteBlacklisted("a.com"));
-  EXPECT_TRUE(translate_prefs_->IsSiteBlacklisted("b.com"));
+  translate_prefs_->AddSiteToNeverPromptList("b.com");
+  EXPECT_TRUE(translate_prefs_->IsSiteOnNeverPromptList("a.com"));
+  EXPECT_TRUE(translate_prefs_->IsSiteOnNeverPromptList("b.com"));
 
   EXPECT_EQ(std::vector<std::string>({"a.com"}),
-            translate_prefs_->GetBlacklistedSitesBetween(base::Time(), t));
+            translate_prefs_->GetNeverPromptSitesBetween(base::Time(), t));
   EXPECT_EQ(std::vector<std::string>({"a.com", "b.com"}),
-            translate_prefs_->GetBlacklistedSitesBetween(base::Time(),
+            translate_prefs_->GetNeverPromptSitesBetween(base::Time(),
                                                          base::Time::Max()));
 
-  translate_prefs_->DeleteBlacklistedSitesBetween(t, base::Time::Max());
-  EXPECT_TRUE(translate_prefs_->IsSiteBlacklisted("a.com"));
-  EXPECT_FALSE(translate_prefs_->IsSiteBlacklisted("b.com"));
+  translate_prefs_->DeleteNeverPromptSitesBetween(t, base::Time::Max());
+  EXPECT_TRUE(translate_prefs_->IsSiteOnNeverPromptList("a.com"));
+  EXPECT_FALSE(translate_prefs_->IsSiteOnNeverPromptList("b.com"));
 
-  translate_prefs_->DeleteBlacklistedSitesBetween(base::Time(),
+  translate_prefs_->DeleteNeverPromptSitesBetween(base::Time(),
                                                   base::Time::Max());
-  EXPECT_FALSE(translate_prefs_->IsSiteBlacklisted("a.com"));
-  EXPECT_FALSE(translate_prefs_->IsSiteBlacklisted("b.com"));
+  EXPECT_FALSE(translate_prefs_->IsSiteOnNeverPromptList("a.com"));
+  EXPECT_FALSE(translate_prefs_->IsSiteOnNeverPromptList("b.com"));
 }
 
 TEST_F(TranslatePrefsTest, DefaultBlockedLanguages) {
@@ -956,14 +933,139 @@ TEST_F(TranslatePrefsTest, DefaultBlockedLanguages) {
   ExpectBlockedLanguageListContent(blocked_languages_expected);
 }
 
+TEST_F(TranslatePrefsTest, SetRecentTargetLanguage) {
+  // Make sure setting the recent target language uses the Translate synonym.
+  translate_prefs_->SetRecentTargetLanguage("en-US");
+  EXPECT_EQ("en", translate_prefs_->GetRecentTargetLanguage());
+
+  translate_prefs_->SetRecentTargetLanguage("en-412");
+  EXPECT_EQ("en", translate_prefs_->GetRecentTargetLanguage());
+
+  translate_prefs_->SetRecentTargetLanguage("fil");
+  EXPECT_EQ("tl", translate_prefs_->GetRecentTargetLanguage());
+
+  translate_prefs_->SetRecentTargetLanguage("nb");
+  EXPECT_EQ("no", translate_prefs_->GetRecentTargetLanguage());
+
+  translate_prefs_->SetRecentTargetLanguage("jv");
+  EXPECT_EQ("jw", translate_prefs_->GetRecentTargetLanguage());
+
+  translate_prefs_->SetRecentTargetLanguage("he");
+  EXPECT_EQ("iw", translate_prefs_->GetRecentTargetLanguage());
+
+  // The only translate languages to have a country code are variants of "zh".
+  translate_prefs_->SetRecentTargetLanguage("zh-TW");
+  EXPECT_EQ("zh-TW", translate_prefs_->GetRecentTargetLanguage());
+}
+
+// Series of tests for the AlwaysTranslateLanguagesList manipulation functions.
+TEST_F(TranslatePrefsTest, AlwaysTranslateLanguages) {
+  EXPECT_FALSE(translate_prefs_->HasLanguagePairsToAlwaysTranslate());
+  // Add translate language with country code.
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("af-ZA", "en-US");
+  EXPECT_TRUE(translate_prefs_->HasLanguagePairsToAlwaysTranslate());
+
+  // IsLanguagePairOnAlwaysTranslateList
+  EXPECT_TRUE(
+      translate_prefs_->IsLanguagePairOnAlwaysTranslateList("af", "en"));
+  EXPECT_FALSE(
+      translate_prefs_->IsLanguagePairOnAlwaysTranslateList("af", "es"));
+  EXPECT_FALSE(
+      translate_prefs_->IsLanguagePairOnAlwaysTranslateList("am", "en"));
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("am", "es");
+  EXPECT_TRUE(
+      translate_prefs_->IsLanguagePairOnAlwaysTranslateList("am", "es"));
+
+  // GetAlwaysTranslateLanguages
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("aa", "es");
+  // Use 'tl' as the translate language which is 'fil' as a Chrome language.
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("tl", "es");
+  std::vector<std::string> always_translate_languages =
+      translate_prefs_->GetAlwaysTranslateLanguages();
+  EXPECT_EQ(std::vector<std::string>({"aa", "af", "am", "fil"}),
+            always_translate_languages);
+  always_translate_languages.clear();
+
+  // RemoveLanguagePairs
+  translate_prefs_->RemoveLanguagePairFromAlwaysTranslateList("af",
+                                                              "<anything>");
+  always_translate_languages = translate_prefs_->GetAlwaysTranslateLanguages();
+  EXPECT_EQ(std::vector<std::string>({"aa", "am", "fil"}),
+            always_translate_languages);
+  translate_prefs_->RemoveLanguagePairFromAlwaysTranslateList("aa",
+                                                              "<anything>");
+  translate_prefs_->RemoveLanguagePairFromAlwaysTranslateList("am",
+                                                              "<anything>");
+  translate_prefs_->RemoveLanguagePairFromAlwaysTranslateList("tl",
+                                                              "<anything>");
+
+  // AlwaysTranslateList should be empty now
+  EXPECT_FALSE(translate_prefs_->HasLanguagePairsToAlwaysTranslate());
+
+  // SetLanguageAlwaysTranslateState
+  translate_prefs_->SetRecentTargetLanguage("es");
+  translate_prefs_->SetLanguageAlwaysTranslateState("am", true);
+  translate_prefs_->SetRecentTargetLanguage("en");
+  translate_prefs_->SetLanguageAlwaysTranslateState("am", true);
+  always_translate_languages = translate_prefs_->GetAlwaysTranslateLanguages();
+  EXPECT_EQ(std::vector<std::string>({"am"}), always_translate_languages);
+  translate_prefs_->SetLanguageAlwaysTranslateState("am", false);
+  EXPECT_FALSE(translate_prefs_->HasLanguagePairsToAlwaysTranslate());
+}
+
+// Test that a language can not be on both the never and always translate list.
+TEST_F(TranslatePrefsTest, NeverOnAlwaysAndNever) {
+  // "en" is a default blocked language, it should be present already.
+  ExpectBlockedLanguageListContent({"en"});
+
+  // Build up blocked language list to test removing languages.
+  translate_prefs_->BlockLanguage("fr-CA");
+  translate_prefs_->BlockLanguage("es-AR");
+  translate_prefs_->BlockLanguage("de-de");
+  ExpectBlockedLanguageListContent({"en", "fr", "es", "de"});
+
+  // Add "fr" to always translate list.  Should remove from blocked list.
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("fr", "en");
+  ExpectBlockedLanguageListContent({"en", "es", "de"});
+  // Adding "es" as a target language does nothing.
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("af", "es");
+  ExpectBlockedLanguageListContent({"en", "es", "de"});
+
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("en", "hi");
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("es", "en");
+  ExpectBlockedLanguageListContent({"de"});
+
+  // Can not delete the last item from the blocked list.  In this case the
+  // language will be on both list. (https://crbug.com/1196490).
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("de", "en");
+  ExpectBlockedLanguageListContent({"de"});
+
+  // Check that the always translate list is what we expect.
+  EXPECT_THAT(translate_prefs_->GetAlwaysTranslateLanguages(),
+              ElementsAreArray({"af", "de", "en", "es", "fr"}));
+
+  // Build up blocked language list and remove from always translate list.
+  translate_prefs_->BlockLanguage("fr-CA");
+  EXPECT_THAT(translate_prefs_->GetAlwaysTranslateLanguages(),
+              ElementsAreArray({"af", "de", "en", "es"}));
+  translate_prefs_->BlockLanguage("es-AR");
+  translate_prefs_->BlockLanguage("de");
+  translate_prefs_->BlockLanguage("af");
+  EXPECT_THAT(translate_prefs_->GetAlwaysTranslateLanguages(),
+              ElementsAreArray({"en"}));
+
+  translate_prefs_->BlockLanguage("en");
+  EXPECT_THAT(translate_prefs_->GetAlwaysTranslateLanguages(), IsEmpty());
+}
+
 TEST_F(TranslatePrefsTest, CanTranslateLanguage) {
-  prefs_.SetString(kAcceptLanguagesPref, "en");
+  prefs_.SetString(language::prefs::kAcceptLanguages, "en");
   TranslateDownloadManager::GetInstance()->set_application_locale("en");
 
   translate_prefs_->ResetToDefaults();
 
-  TranslateAcceptLanguages translate_accept_languages(&prefs_,
-                                                      kAcceptLanguagesPref);
+  TranslateAcceptLanguages translate_accept_languages(
+      &prefs_, language::prefs::kAcceptLanguages);
 
   // Unblocked language.
   EXPECT_TRUE(translate_prefs_->CanTranslateLanguage(
@@ -990,7 +1092,7 @@ TEST_F(TranslatePrefsTest, CanTranslateLanguage) {
 }
 
 TEST_F(TranslatePrefsTest, ForceTriggerOnEnglishPagesCount) {
-  prefs_.SetInteger(kForceTriggerTranslateCountPref,
+  prefs_.SetInteger(TranslatePrefs::kPrefForceTriggerTranslateCount,
                     std::numeric_limits<int>::max() - 1);
   EXPECT_EQ(std::numeric_limits<int>::max() - 1,
             translate_prefs_->GetForceTriggerOnEnglishPagesCount());

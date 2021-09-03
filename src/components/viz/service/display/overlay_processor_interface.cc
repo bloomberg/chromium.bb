@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/chromecast_buildflags.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
 #include "components/viz/service/display/display_compositor_memory_and_task_controller.h"
@@ -98,15 +99,22 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     return std::make_unique<OverlayProcessorStub>();
 
   return std::make_unique<OverlayProcessorWin>(
-      output_surface, std::make_unique<DCLayerOverlayProcessor>(
-                          debug_settings, /*allowed_yuv_overlay_count=*/1));
+      output_surface,
+      std::make_unique<DCLayerOverlayProcessor>(
+          debug_settings, /*allowed_yuv_overlay_count=*/capabilities
+                                  .supports_two_yuv_hardware_overlays
+                              ? 2
+                              : 1));
 #elif defined(USE_OZONE)
   if (!features::IsUsingOzonePlatform())
     return std::make_unique<OverlayProcessorStub>();
 
+#if !BUILDFLAG(IS_CHROMECAST)
   // In tests and Ozone/X11, we do not expect surfaceless surface support.
+  // For chromecast, we always need OverlayProcessorOzone.
   if (!capabilities.supports_surfaceless)
     return std::make_unique<OverlayProcessorStub>();
+#endif  // #if !BUILDFLAG(IS_CHROMECAST)
 
   std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates;
   if (!renderer_settings.overlay_strategies.empty()) {
@@ -117,7 +125,10 @@ OverlayProcessorInterface::CreateOverlayProcessor(
   }
 
   gpu::SharedImageInterface* sii = nullptr;
-  if (features::ShouldUseRealBuffersForPageFlipTest()) {
+  if (features::ShouldUseRealBuffersForPageFlipTest() &&
+      ui::OzonePlatform::GetInstance()
+          ->GetOverlayManager()
+          ->allow_sync_and_real_buffer_page_flip_testing()) {
     sii = shared_image_interface;
     CHECK(shared_image_interface);
   }
@@ -155,13 +166,18 @@ bool OverlayProcessorInterface::DisableSplittingQuads() const {
 OverlayProcessorInterface::OutputSurfaceOverlayPlane
 OverlayProcessorInterface::ProcessOutputSurfaceAsOverlay(
     const gfx::Size& viewport_size,
+    const gfx::Size& resource_size,
     const gfx::BufferFormat& buffer_format,
     const gfx::ColorSpace& color_space,
     bool has_alpha,
     const gpu::Mailbox& mailbox) {
   OutputSurfaceOverlayPlane overlay_plane;
   overlay_plane.transform = gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE;
-  overlay_plane.resource_size = viewport_size;
+  overlay_plane.uv_rect = gfx::RectF(
+      0.f, 0.f,
+      viewport_size.width() / static_cast<float>(resource_size.width()),
+      viewport_size.height() / static_cast<float>(resource_size.height()));
+  overlay_plane.resource_size = resource_size;
   overlay_plane.format = buffer_format;
   overlay_plane.color_space = color_space;
   overlay_plane.enable_blending = has_alpha;

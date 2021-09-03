@@ -10,12 +10,12 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
@@ -96,7 +96,8 @@ ArcVolumeMounterBridge::ArcVolumeMounterBridge(content::BrowserContext* context,
 }
 
 ArcVolumeMounterBridge::~ArcVolumeMounterBridge() {
-  DiskMountManager::GetInstance()->RemoveObserver(this);
+  if (DiskMountManager::GetInstance())  // for testing
+    DiskMountManager::GetInstance()->RemoveObserver(this);
   arc_bridge_service_->volume_mounter()->SetHost(nullptr);
   arc_bridge_service_->volume_mounter()->RemoveObserver(this);
 }
@@ -131,9 +132,11 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
   // TODO(niwa): Add a new DeviceType enum value for MyFiles.
   chromeos::DeviceType device_type = chromeos::DeviceType::DEVICE_TYPE_SD;
 
+  // Conditionally set MyFiles to be visible for P and invisible for R. In R, we
+  // use IsVisibleRead so this is not needed.
   volume_mounter_instance->OnMountEvent(mojom::MountPointInfo::New(
       DiskMountManager::MOUNTING, kMyFilesPath, kMyFilesPath, kMyFilesUuid,
-      device_label, device_type, false));
+      device_label, device_type, !IsArcVmEnabled()));
 }
 
 bool ArcVolumeMounterBridge::IsVisibleToAndroidApps(
@@ -228,7 +231,7 @@ void ArcVolumeMounterBridge::OnMountEvent(
       SendMountEventForRemovableMedia(event, mount_info.source_path,
                                       mount_info.mount_path, fs_uuid,
                                       device_label, device_type, visible);
-      delegate_->StopWatchingRemovableMedia(fs_uuid);
+      delegate_->StopWatchingRemovableMedia(mount_info.mount_path);
       break;
   }
 

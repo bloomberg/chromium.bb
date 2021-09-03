@@ -58,10 +58,10 @@ content::NavigationEntry* ChromeLocationBarModelDelegate::GetNavigationEntry()
   return controller ? controller->GetVisibleEntry() : nullptr;
 }
 
-base::string16
+std::u16string
 ChromeLocationBarModelDelegate::FormattedStringWithEquivalentMeaning(
     const GURL& url,
-    const base::string16& formatted_url) const {
+    const std::u16string& formatted_url) const {
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
       url, formatted_url, ChromeAutocompleteSchemeClassifier(GetProfile()),
       nullptr);
@@ -109,10 +109,8 @@ bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {
   if (login_tab_helper && login_tab_helper->IsShowingPrompt())
     return login_tab_helper->ShouldDisplayURL();
 
-  if (entry->IsViewSourceMode() ||
-      entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
+  if (entry->IsViewSourceMode())
     return true;
-  }
 
   const auto is_ntp = [](const GURL& url) {
     return url.SchemeIs(content::kChromeUIScheme) &&
@@ -198,9 +196,7 @@ bool ChromeLocationBarModelDelegate::IsNewTabPage() const {
   if (!search::DefaultSearchProviderIsGoogle(profile))
     return false;
 
-  GURL ntp_url(base::FeatureList::IsEnabled(ntp_features::kWebUI)
-                   ? chrome::kChromeUINewTabPageURL
-                   : chrome::kChromeSearchLocalNtpUrl);
+  GURL ntp_url(chrome::kChromeUINewTabPageURL);
   return ntp_url.scheme_piece() == entry->GetURL().scheme_piece() &&
          ntp_url.host_piece() == entry->GetURL().host_piece();
 }

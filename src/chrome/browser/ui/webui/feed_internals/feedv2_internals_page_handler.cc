@@ -11,11 +11,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
 #include "components/feed/core/common/pref_names.h"
-#include "components/feed/core/common/user_classifier.h"
 #include "components/feed/core/proto/v2/ui.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
+#include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/public/feed_service.h"
-#include "components/feed/core/v2/public/feed_stream_api.h"
 #include "components/feed/core/v2/public/types.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
@@ -59,6 +58,8 @@ void FeedV2InternalsPageHandler::GetGeneralProperties(
   properties->is_feed_allowed = IsFeedAllowed();
   properties->is_prefetching_enabled =
       offline_pages::prefetch_prefs::IsEnabled(pref_service_);
+  properties->is_web_feed_follow_intro_debug_enabled =
+      IsWebFeedFollowIntroDebugEnabled();
   if (debug_data.fetch_info)
     properties->feed_fetch_url = debug_data.fetch_info->base_request_url;
   if (debug_data.upload_info)
@@ -143,10 +144,10 @@ void FeedV2InternalsPageHandler::OverrideFeedHost(const GURL& host) {
       feed::prefs::kHostOverrideHost,
       host.is_valid() ? host.spec() : std::string());
 }
-void FeedV2InternalsPageHandler::OverrideActionUploadEndpoint(
+void FeedV2InternalsPageHandler::OverrideDiscoverApiEndpoint(
     const GURL& endpoint_url) {
   return pref_service_->SetString(
-      feed::prefs::kActionsEndpointOverride,
+      feed::prefs::kDiscoverAPIEndpointOverride,
       endpoint_url.is_valid() ? endpoint_url.spec() : std::string());
 }
 
@@ -157,4 +158,14 @@ void FeedV2InternalsPageHandler::OverrideFeedStreamData(
   slice->set_slice_id("SetByInternalsPage");
   slice->mutable_xsurface_slice()->set_xsurface_frame(data.data(), data.size());
   feed_stream_->SetForcedStreamUpdateForDebugging(stream_update);
+}
+
+bool FeedV2InternalsPageHandler::IsWebFeedFollowIntroDebugEnabled() {
+  return pref_service_->GetBoolean(feed::prefs::kEnableWebFeedFollowIntroDebug);
+}
+
+void FeedV2InternalsPageHandler::SetWebFeedFollowIntroDebugEnabled(
+    const bool enabled) {
+  pref_service_->SetBoolean(feed::prefs::kEnableWebFeedFollowIntroDebug,
+                            enabled);
 }

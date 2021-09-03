@@ -36,6 +36,12 @@ std::unique_ptr<SkShaper> SkShaper::Make(sk_sp<SkFontMgr> fontmgr) {
     return SkShaper::MakePrimitive();
 }
 
+void SkShaper::PurgeCaches() {
+#ifdef SK_SHAPER_HARFBUZZ_AVAILABLE
+    PurgeHarfBuzzCache();
+#endif
+}
+
 std::unique_ptr<SkShaper::BiDiRunIterator>
 SkShaper::MakeBiDiRunIterator(const char* utf8, size_t utf8Bytes, uint8_t bidiLevel) {
 #ifdef SK_UNICODE_AVAILABLE
@@ -219,8 +225,7 @@ SkShaper::RunHandler::Buffer SkTextBlobBuilderRunHandler::runBuffer(const RunInf
     int glyphCount = SkTFitsIn<int>(info.glyphCount) ? info.glyphCount : INT_MAX;
     int utf8RangeSize = SkTFitsIn<int>(info.utf8Range.size()) ? info.utf8Range.size() : INT_MAX;
 
-    const auto& runBuffer = SkTextBlobBuilderPriv::AllocRunTextPos(&fBuilder, info.fFont, glyphCount,
-                                                                   utf8RangeSize, SkString());
+    const auto& runBuffer = fBuilder.allocRunTextPos(info.fFont, glyphCount, utf8RangeSize);
     if (runBuffer.utf8text && fUtf8Text) {
         memcpy(runBuffer.utf8text, fUtf8Text + info.utf8Range.begin(), utf8RangeSize);
     }

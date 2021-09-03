@@ -25,7 +25,7 @@
 
 namespace libgav1 {
 
-enum { kSgrStride = kRestorationUnitWidth + 8 };  // anonymous enum
+enum { kSgrStride = kRestorationUnitWidth + 32 };  // anonymous enum
 
 // Self guided projection filter.
 struct SgrProjInfo {

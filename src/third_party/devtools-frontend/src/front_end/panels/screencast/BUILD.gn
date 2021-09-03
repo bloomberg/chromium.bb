@@ -1,0 +1,46 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("../../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../../scripts/build/ninja/devtools_module.gni")
+import("../visibility.gni")
+
+devtools_module("screencast") {
+  sources = [
+    "InputModel.ts",
+    "ScreencastApp.ts",
+    "ScreencastView.ts",
+  ]
+
+  deps = [
+    "../../core/common:bundle",
+    "../../core/host:bundle",
+    "../../core/i18n:bundle",
+    "../../core/sdk:bundle",
+    "../../generated:protocol",
+    "../../ui/legacy:bundle",
+  ]
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "screencast.ts"
+
+  deps = [ ":screencast" ]
+
+  visibility = [
+    ":*",
+    "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
+    "../../entrypoints/*",
+  ]
+
+  visibility += devtools_panels_visibility
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "screencast-meta.ts"
+
+  deps = [ ":bundle" ]
+
+  visibility = [ "../../entrypoints/*" ]
+}

@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
+#include "base/containers/contains.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -27,6 +28,7 @@ using base::TimeDelta;
 using feedback::FeedbackData;
 using testing::_;
 using testing::DoAll;
+using testing::Invoke;
 using testing::SaveArg;
 
 // Converts |params| to a string containing a JSON dictionary within an argument
@@ -126,12 +128,11 @@ class FeedbackPrivateApiUnittest : public FeedbackPrivateApiUnittestBase {
 
     scoped_refptr<FeedbackData> actual_feedback_data;
     EXPECT_CALL(*mock, SendFeedback(_, _))
-        .WillOnce(
-            DoAll(testing::SaveArg<0>(&actual_feedback_data),
-                  [](scoped_refptr<FeedbackData> feedback_data,
-                     const FeedbackService::SendFeedbackCallback& callback) {
-                    callback.Run(true);
-                  }));
+        .WillOnce([&](scoped_refptr<FeedbackData> feedback_data,
+                      FeedbackService::SendFeedbackCallback callback) {
+          actual_feedback_data = std::move(feedback_data);
+          std::move(callback).Run(true);
+        });
 
     FeedbackPrivateAPI::GetFactoryInstance()
         ->Get(browser_context())
