@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/cpu.h"
@@ -17,7 +18,6 @@
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -32,7 +32,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/sandbox_init.h"
-#include "content/public/common/service_names.mojom.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sync_channel.h"
@@ -83,7 +82,7 @@ PpapiThread::PpapiThread(base::RepeatingClosure quit_closure,
       next_plugin_dispatcher_id_(1) {
   plugin_globals_.SetPluginProxyDelegate(this);
 
-  blink_platform_impl_.reset(new PpapiBlinkPlatformImpl);
+  blink_platform_impl_ = std::make_unique<PpapiBlinkPlatformImpl>();
   blink::Platform::CreateMainThreadAndInitialize(blink_platform_impl_.get());
 
   scoped_refptr<ppapi::proxy::PluginMessageFilter> plugin_filter(

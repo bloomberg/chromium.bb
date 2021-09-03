@@ -99,8 +99,8 @@ class CORE_EXPORT DataObject : public GarbageCollected<DataObject>,
   void AddFilename(const String& filename,
                    const String& display_name,
                    const String& file_system_id,
-                   scoped_refptr<NativeFileSystemDropData>
-                       native_file_system_entry = nullptr);
+                   scoped_refptr<FileSystemAccessDropData>
+                       file_system_access_entry = nullptr);
 
   // Used for dragging in filesystem from the desktop.
   void SetFilesystemId(const String& file_system_id) {
@@ -145,4 +145,4 @@ class CORE_EXPORT DataObject : public GarbageCollected<DataObject>,
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_DATA_OBJECT_H_

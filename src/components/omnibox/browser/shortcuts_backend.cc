@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -117,12 +118,12 @@ void ShortcutsBackend::RemoveObserver(ShortcutsBackendObserver* obs) {
   observer_list_.RemoveObserver(obs);
 }
 
-void ShortcutsBackend::AddOrUpdateShortcut(const base::string16& text,
+void ShortcutsBackend::AddOrUpdateShortcut(const std::u16string& text,
                                            const AutocompleteMatch& match) {
 #if DCHECK_IS_ON()
   match.Validate();
 #endif  // DCHECK_IS_ON()
-  const base::string16 text_lowercase(base::i18n::ToLower(text));
+  const std::u16string text_lowercase(base::i18n::ToLower(text));
   const base::Time now(base::Time::Now());
   for (ShortcutMap::const_iterator it(
            shortcuts_map_.lower_bound(text_lowercase));
@@ -176,22 +177,16 @@ ShortcutsDatabase::Shortcut::MatchCore ShortcutsBackend::MatchToMatchCore(
           ? normalized_match->description_class
           : normalized_match->description_class_for_shortcuts;
 
-  auto fill_into_edit = normalized_match->swapped_fill_into_edit
-                            ? normalized_match->fill_into_edit_additional_text
-                            : normalized_match->fill_into_edit;
-
   return ShortcutsDatabase::Shortcut::MatchCore(
-      fill_into_edit, normalized_match->destination_url,
-      static_cast<int>(normalized_match->document_type),
-      normalized_match->contents,
+      normalized_match->fill_into_edit, normalized_match->destination_url,
+      normalized_match->document_type, normalized_match->contents,
       StripMatchMarkers(normalized_match->contents_class), description,
       StripMatchMarkers(description_class), normalized_match->transition,
       match_type, normalized_match->keyword);
 }
 
 void ShortcutsBackend::ShutdownOnUIThread() {
-  if (history_service_observation_.IsObserving())
-    history_service_observation_.RemoveObservation();
+  history_service_observation_.Reset();
 }
 
 void ShortcutsBackend::OnURLsDeleted(
@@ -224,8 +219,8 @@ void ShortcutsBackend::InitInternal() {
   db_->Init();
   ShortcutsDatabase::GuidToShortcutMap shortcuts;
   db_->LoadShortcuts(&shortcuts);
-  temp_shortcuts_map_.reset(new ShortcutMap);
-  temp_guid_map_.reset(new GuidMap);
+  temp_shortcuts_map_ = std::make_unique<ShortcutMap>();
+  temp_guid_map_ = std::make_unique<GuidMap>();
   for (ShortcutsDatabase::GuidToShortcutMap::const_iterator it(
            shortcuts.begin());
        it != shortcuts.end(); ++it) {

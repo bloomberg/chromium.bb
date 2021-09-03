@@ -17,7 +17,12 @@
 
 #include "config/av1_rtcd.h"
 
+#include "aom_ports/aom_timer.h"
 #include "av1/encoder/cnn.h"
+#include "av1/encoder/partition_cnn_weights.h"
+#include "test/acm_random.h"
+#include "test/function_equivalence_test.h"
+#include "test/util.h"
 
 #define SQR(x) ((x) * (x))
 
@@ -27,6 +32,9 @@
 
 #define MSE_FLOAT_TOL 1E-6
 #define MSE_INT_TOL 0
+
+// CNN convolve pixelwise error threshold for functional equivalence.
+#define CNN_CONVOLVE_PIXELWISE_FLOAT_TOL 1E-3f
 
 namespace {
 
@@ -2494,3 +2502,145 @@ TEST_F(CNNTest, TestMultiOutput) {
 
   aom_free(output_);
 }
+
+namespace {
+
+typedef void (*CNNConvolveNoMaxpoolPaddingValidFunc)(
+    const float **input, int in_width, int in_height, int in_stride,
+    const CNN_LAYER_CONFIG *layer_config, float **output, int out_stride,
+    int start_idx, int cstep, int channel_step);
+
+typedef libaom_test::FuncParam<CNNConvolveNoMaxpoolPaddingValidFunc>
+    CNNConvolveTestFuncs;
+
+class CNNConvolveTest : public ::testing::TestWithParam<CNNConvolveTestFuncs> {
+ protected:
+  virtual void SetUp() { params_ = GetParam(); }
+
+  void RunCNNConvolveSetup(int run_times) {
+    int in_width = 65;
+    int in_height = 65;
+
+    const CNN_CONFIG *cnn_config = &av1_intra_mode_cnn_partition_cnn_config;
+
+    for (int layer = 0; layer < cnn_config->num_layers; ++layer) {
+      int out_width = 0, out_height = 0;
+      int in_size = in_width * in_height;
+      // Get current layer output width and height.
+      av1_find_cnn_layer_output_size(in_height, in_width,
+                                     &cnn_config->layer_config[layer],
+                                     &out_width, &out_height);
+
+      int out_size = out_width * out_height;
+      float *input[20], *output_ref[20], *output_mod[20];
+
+      float *input_data =
+          (float *)aom_malloc(sizeof(*input_data) * in_size *
+                              cnn_config->layer_config[layer].in_channels);
+      float *temp_ptr = input_data;
+      for (int i = 0; i < cnn_config->layer_config[layer].in_channels; ++i) {
+        input[i] = temp_ptr;
+        for (int j = 0; j < in_size; j++) {
+          *(temp_ptr++) = ((float)rng_.Rand31() - (1 << 30)) / (1u << 31);
+        }
+      }
+
+      float *out_data_ref = (float *)aom_calloc(
+          sizeof(*out_data_ref),
+          out_size * cnn_config->layer_config[layer].out_channels);
+      float *out_data_mod = (float *)aom_calloc(
+          sizeof(*out_data_mod),
+          out_size * cnn_config->layer_config[layer].out_channels);
+      float *temp_ptr1 = out_data_ref;
+      float *temp_ptr2 = out_data_mod;
+      for (int i = 0; i < cnn_config->layer_config[layer].out_channels; ++i) {
+        output_ref[i] = temp_ptr1;
+        output_mod[i] = temp_ptr2;
+        temp_ptr1 += out_size;
+        temp_ptr2 += out_size;
+      }
+
+      RunCNNConvolveTest(input, in_width, in_height, out_size,
+                         &cnn_config->layer_config[layer], 0, 1, run_times,
+                         layer, output_ref, output_mod, out_width);
+
+      // Set current layer output width and height as next layer input width and
+      // height.
+      in_width = out_width;
+      in_height = out_height;
+
+      aom_free(input_data);
+      aom_free(out_data_ref);
+      aom_free(out_data_mod);
+    }
+  }
+
+  void RunCNNConvolveTest(float **input, int in_width, int in_height,
+                          int out_size, const CNN_LAYER_CONFIG *layer_config,
+                          int start_idx, int step, int run_times, int layer,
+                          float **output_ref, float **output_mod,
+                          int out_stride) {
+    const int cstep = layer_config->in_channels * layer_config->out_channels;
+    const int channel_step = AOMMAX(step, 1);
+    aom_usec_timer timer;
+    aom_usec_timer_start(&timer);
+    for (int i = 0; i < run_times; ++i) {
+      params_.ref_func((const float **)input, in_width, in_height, in_width,
+                       layer_config, output_ref, out_stride, start_idx, cstep,
+                       channel_step);
+    }
+    aom_usec_timer_mark(&timer);
+    const double time1 = static_cast<double>(aom_usec_timer_elapsed(&timer));
+
+    aom_usec_timer_start(&timer);
+    for (int i = 0; i < run_times; ++i) {
+      params_.tst_func((const float **)input, in_width, in_height, in_width,
+                       layer_config, output_mod, out_stride, start_idx, cstep,
+                       channel_step);
+    }
+    aom_usec_timer_mark(&timer);
+    const double time2 = static_cast<double>(aom_usec_timer_elapsed(&timer));
+
+    if (run_times > 1) {
+      printf("layer : %d \n", layer);
+      printf("%7.2f/%7.2fns (%3.2f)\n", time1, time2, time1 / time2);
+    } else {
+      for (int channel = 0; channel < layer_config->out_channels; ++channel) {
+        const float *buf_ref = output_ref[channel];
+        const float *buf_mod = output_mod[channel];
+
+        for (int i = 0; i < out_size; ++i) {
+          if (buf_ref[i] < CNN_CONVOLVE_PIXELWISE_FLOAT_TOL) {
+            ASSERT_LE(buf_ref[i], CNN_CONVOLVE_PIXELWISE_FLOAT_TOL)
+                << "Reference output was near-zero, test output was not ("
+                << buf_mod[i] << ")";
+          } else {
+            const float error = buf_ref[i] - buf_mod[i];
+            const float relative_error = fabsf(error / buf_ref[i]);
+            ASSERT_LE(relative_error, CNN_CONVOLVE_PIXELWISE_FLOAT_TOL)
+                << " channel " << channel << " pixel " << i << ": "
+                << buf_ref[i] << "/" << buf_mod[i] << std::endl;
+          }
+        }
+      }
+    }
+  }
+
+ private:
+  CNNConvolveTestFuncs params_;
+  libaom_test::ACMRandom rng_;
+};
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CNNConvolveTest);
+
+TEST_P(CNNConvolveTest, CheckOutput) { RunCNNConvolveSetup(1); }
+
+TEST_P(CNNConvolveTest, DISABLED_Speed) { RunCNNConvolveSetup(100000); }
+
+#if HAVE_AVX2 && !CONFIG_EXCLUDE_SIMD_MISMATCH
+INSTANTIATE_TEST_SUITE_P(AVX2, CNNConvolveTest,
+                         ::testing::Values(CNNConvolveTestFuncs(
+                             &av1_cnn_convolve_no_maxpool_padding_valid_c,
+                             &av1_cnn_convolve_no_maxpool_padding_valid_avx2)));
+#endif
+
+}  // namespace

@@ -182,11 +182,11 @@ bool ChromeContentBrowserClientPluginsPart::AllowPepperSocketAPI(
           extensions::SocketPermission::CheckParam check_params(
               params->type, params->host, params->port);
           if (permissions_data->CheckAPIPermissionWithParam(
-                  extensions::APIPermission::kSocket, &check_params)) {
+                  extensions::mojom::APIPermissionID::kSocket, &check_params)) {
             return true;
           }
         } else if (permissions_data->HasAPIPermission(
-                       extensions::APIPermission::kSocket)) {
+                       extensions::mojom::APIPermissionID::kSocket)) {
           return true;
         }
       }
@@ -219,7 +219,7 @@ bool ChromeContentBrowserClientPluginsPart::IsPepperVpnProviderAPIAllowed(
     const extensions::Extension* extension = extension_set->GetByID(url.host());
     if (extension) {
       if (extension->permissions_data()->HasAPIPermission(
-              extensions::APIPermission::kVpnProvider)) {
+              extensions::mojom::APIPermissionID::kVpnProvider)) {
         return true;
       }
     }

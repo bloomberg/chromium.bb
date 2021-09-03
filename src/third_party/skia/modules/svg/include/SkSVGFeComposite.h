@@ -14,7 +14,6 @@
 
 class SkSVGFeComposite final : public SkSVGFe {
 public:
-    ~SkSVGFeComposite() override = default;
     static sk_sp<SkSVGFeComposite> Make() {
         return sk_sp<SkSVGFeComposite>(new SkSVGFeComposite());
     }
@@ -29,6 +28,10 @@ public:
 protected:
     sk_sp<SkImageFilter> onMakeImageFilter(const SkSVGRenderContext&,
                                            const SkSVGFilterContext&) const override;
+
+    std::vector<SkSVGFeInputType> getInputs() const override {
+        return {this->getIn(), this->getIn2()};
+    }
 
     bool parseAndSetAttribute(const char*, const char*) override;
 

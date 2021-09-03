@@ -59,7 +59,7 @@ static void BeforeCallEnteredCallback(v8::Isolate* isolate) {
   CHECK(!ScriptForbiddenScope::IsScriptForbidden());
 }
 
-static void MicrotasksCompletedCallback(v8::Isolate* isolate) {
+static void MicrotasksCompletedCallback(v8::Isolate* isolate, void* data) {
   V8PerIsolateData::From(isolate)->RunEndOfScopeTasks();
 }
 
@@ -159,16 +159,12 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
 
   data->ClearScriptRegexpContext();
 
-  // Detach V8's garbage collector.
-  // Need to finalize an already running garbage collection as otherwise
-  // callbacks are missing and state gets out of sync.
-  ThreadState* const thread_state = ThreadState::Current();
-  thread_state->FinishIncrementalMarkingIfRunning(
-      BlinkGC::CollectionType::kMajor, BlinkGC::kHeapPointersOnStack,
-      BlinkGC::kAtomicMarking, BlinkGC::kEagerSweeping,
-      BlinkGC::GCReason::kThreadTerminationGC);
+  ThreadState::Current()->DetachFromIsolate();
+
   data->active_script_wrappable_manager_.Clear();
-  thread_state->DetachFromIsolate();
+  // Callbacks can be removed as they only cover single events (e.g. atomic
+  // pause) and they cannot get out of sync.
+  DCHECK_EQ(0u, data->gc_callback_depth_);
   isolate->RemoveGCPrologueCallback(data->prologue_callback_);
   isolate->RemoveGCEpilogueCallback(data->epilogue_callback_);
 }
@@ -291,7 +287,7 @@ V8PerIsolateData::FindOrCreateEternalNameCache(
   auto it = eternal_name_cache_.find(lookup_key);
   const Vector<v8::Eternal<v8::Name>>* vector = nullptr;
   if (UNLIKELY(it == eternal_name_cache_.end())) {
-    v8::Isolate* isolate = this->GetIsolate();
+    v8::Isolate* isolate = GetIsolate();
     Vector<v8::Eternal<v8::Name>> new_vector(names.size());
     std::transform(names.begin(), names.end(), new_vector.begin(),
                    [isolate](const char* name) {

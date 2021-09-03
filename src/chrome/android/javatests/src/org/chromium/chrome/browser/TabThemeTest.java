@@ -19,11 +19,11 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabThemeColorHelper;
+import org.chromium.chrome.browser.theme.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
@@ -50,7 +50,7 @@ public class TabThemeTest {
     /**
      * A WebContentsObserver for watching changes in the theme color.
      */
-    private static class ThemeColorWebContentsObserver extends EmptyTabObserver {
+    private static class ThemeColorWebContentsObserver implements ThemeColorObserver {
         private CallbackHelper mCallbackHelper;
         private int mColor;
 
@@ -59,7 +59,7 @@ public class TabThemeTest {
         }
 
         @Override
-        public void onDidChangeThemeColor(Tab tab, int color) {
+        public void onThemeColorChanged(int color, boolean shouldAnimate) {
             mColor = color;
             mCallbackHelper.notifyCalled();
         }
@@ -85,13 +85,18 @@ public class TabThemeTest {
         Assert.assertEquals(Integer.toHexString(color1), Integer.toHexString(color2));
     }
 
-    private static int getThemeColor(Tab tab) throws ExecutionException {
-        return TestThreadUtils.runOnUiThreadBlocking(() -> TabThemeColorHelper.getColor(tab));
+    private int getThemeColor() throws ExecutionException {
+        return TestThreadUtils.runOnUiThreadBlocking(
+                mActivityTestRule.getActivity()
+                        .getRootUiCoordinatorForTesting()
+                        .getTopUiThemeColorProvider()::getThemeColor);
     }
 
     private static int getDefaultThemeColor(Tab tab) throws ExecutionException {
-        return TestThreadUtils.runOnUiThreadBlocking(
-                () -> TabThemeColorHelper.getDefaultColor(tab));
+        return TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return ChromeColors.getDefaultThemeColor(
+                    tab.getContext().getResources(), tab.isIncognito());
+        });
     }
 
     /**
@@ -109,38 +114,41 @@ public class TabThemeTest {
 
         ThemeColorWebContentsObserver colorObserver = new ThemeColorWebContentsObserver();
         CallbackHelper themeColorHelper = colorObserver.getCallbackHelper();
-        tab.addObserver(colorObserver);
+        mActivityTestRule.getActivity()
+                .getRootUiCoordinatorForTesting()
+                .getTopUiThemeColorProvider()
+                .addThemeColorObserver(colorObserver);
 
         // Navigate to a themed page.
         int curCallCount = themeColorHelper.getCallCount();
         mActivityTestRule.loadUrl(testServer.getURL(THEMED_TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
-        assertColorsEqual(THEME_COLOR, getThemeColor(tab));
+        assertColorsEqual(THEME_COLOR, getThemeColor());
 
         // Navigate to a native page from a themed page.
         mActivityTestRule.loadUrl("chrome://newtab/");
         // WebContents does not set theme color for native pages, so don't wait for the call.
-        assertColorsEqual(getDefaultThemeColor(tab), getThemeColor(tab));
+        assertColorsEqual(getDefaultThemeColor(tab), getThemeColor());
 
         // Navigate to a themed page from a native page.
         curCallCount = themeColorHelper.getCallCount();
         mActivityTestRule.loadUrl(testServer.getURL(THEMED_TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
         assertColorsEqual(THEME_COLOR, colorObserver.getColor());
-        assertColorsEqual(THEME_COLOR, getThemeColor(tab));
+        assertColorsEqual(THEME_COLOR, getThemeColor());
 
         // Navigate to a non-native non-themed page.
         curCallCount = themeColorHelper.getCallCount();
         mActivityTestRule.loadUrl(testServer.getURL(TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
         assertColorsEqual(getDefaultThemeColor(tab), colorObserver.getColor());
-        assertColorsEqual(getDefaultThemeColor(tab), getThemeColor(tab));
+        assertColorsEqual(getDefaultThemeColor(tab), getThemeColor());
 
         // Navigate to a themed page from a non-native page.
         curCallCount = themeColorHelper.getCallCount();
         mActivityTestRule.loadUrl(testServer.getURL(THEMED_TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
         assertColorsEqual(THEME_COLOR, colorObserver.getColor());
-        assertColorsEqual(THEME_COLOR, getThemeColor(tab));
+        assertColorsEqual(THEME_COLOR, getThemeColor());
     }
 }

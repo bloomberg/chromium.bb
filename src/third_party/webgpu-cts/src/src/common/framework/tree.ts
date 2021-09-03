@@ -1,5 +1,4 @@
 import { TestFileLoader } from './file_loader.js';
-import { TestCaseRecorder } from './logging/test_case_recorder.js';
 import { CaseParamsRW } from './params_utils.js';
 import { compareQueries, Ordering } from './query/compare.js';
 import {
@@ -12,7 +11,7 @@ import {
 import { kBigSeparator, kWildcard, kPathSeparator, kParamSeparator } from './query/separators.js';
 import { stringifySingleParam } from './query/stringify_params.js';
 import { RunCase, RunFn } from './test_group.js';
-import { assert } from './util/util.js';
+import { assert, StacklessError } from './util/util.js';
 
 // `loadTreeForQuery()` loads a TestTree for a given queryToLoad.
 // The resulting tree is a linked-list all the way from `suite:*` to queryToLoad,
@@ -49,6 +48,7 @@ export interface TestSubtree<T extends TestQuery = TestQuery> {
   readonly children: Map<string, TestTreeNode>;
   readonly collapsible: boolean;
   description?: string;
+  readonly testCreationStack?: Error;
 }
 
 export interface TestTreeLeaf {
@@ -62,15 +62,50 @@ export interface TestTreeLeaf {
 
 export type TestTreeNode = TestSubtree | TestTreeLeaf;
 
+/**
+ * When iterating through "collapsed" tree nodes, indicates how many "query levels" to traverse
+ * through before starting to collapse nodes.
+ *
+ * Corresponds with TestQueryLevel, but excludes 4 (SingleCase):
+ * - 1 = MultiFile. Expands so every file is in the collapsed tree.
+ * - 2 = MultiTest. Expands so every test is in the collapsed tree.
+ * - 3 = MultiCase. Expands so every case is in the collapsed tree (i.e. collapsing disabled).
+ */
+export type ExpandThroughLevel = 1 | 2 | 3;
+
 export class TestTree {
+  /**
+   * The `queryToLoad` that this test tree was created for.
+   * Test trees are always rooted at `suite:*`, but they only contain nodes that fit
+   * within `forQuery`.
+   *
+   * This is used for `iterateCollapsedQueries` which only starts collapsing at the next
+   * `TestQueryLevel` after `forQuery`.
+   */
+  readonly forQuery: TestQuery;
   readonly root: TestSubtree;
 
-  constructor(root: TestSubtree) {
+  constructor(forQuery: TestQuery, root: TestSubtree) {
+    this.forQuery = forQuery;
     this.root = root;
+    assert(
+      root.query.level === 1 && root.query.depthInLevel === 0,
+      'TestTree root must be the root (suite:*)'
+    );
   }
 
-  iterateCollapsedQueries(): IterableIterator<TestQuery> {
-    return TestTree.iterateSubtreeCollapsedQueries(this.root);
+  /**
+   * Iterate through the leaves of a version of the tree which has been pruned to exclude
+   * subtrees which:
+   * - are at a deeper `TestQueryLevel` than `this.forQuery`, and
+   * - were not a `Ordering.StrictSubset` of any of the `subqueriesToExpand` during tree creation.
+   */
+  iterateCollapsedQueries(
+    includeEmptySubtrees: boolean,
+    alwaysExpandThroughLevel: ExpandThroughLevel
+  ): IterableIterator<TestQuery> {
+    const expandThrough = Math.max(this.forQuery.level, alwaysExpandThroughLevel);
+    return TestTree.iterateSubtreeCollapsedQueries(this.root, includeEmptySubtrees, expandThrough);
   }
 
   iterateLeaves(): IterableIterator<TestTreeLeaf> {
@@ -78,15 +113,14 @@ export class TestTree {
   }
 
   /**
-   * If a parent and its child are at different levels, then
-   * generally the parent has only one child, i.e.:
+   * Dissolve nodes which have only one child, e.g.:
    *   a,* { a,b,* { a,b:* { ... } } }
-   * Collapse that down into:
+   * collapses down into:
    *   a,* { a,b:* { ... } }
    * which is less needlessly verbose when displaying the tree in the standalone runner.
    */
-  dissolveLevelBoundaries(): void {
-    const newRoot = dissolveLevelBoundaries(this.root);
+  dissolveSingleChildTrees(): void {
+    const newRoot = dissolveSingleChildTrees(this.root);
     assert(newRoot === this.root);
   }
 
@@ -94,11 +128,27 @@ export class TestTree {
     return TestTree.subtreeToString('(root)', this.root, '');
   }
 
-  static *iterateSubtreeCollapsedQueries(subtree: TestSubtree): IterableIterator<TestQuery> {
+  static *iterateSubtreeCollapsedQueries(
+    subtree: TestSubtree,
+    includeEmptySubtrees: boolean,
+    expandThroughLevel: number
+  ): IterableIterator<TestQuery> {
     for (const [, child] of subtree.children) {
-      if ('children' in child && !child.collapsible) {
-        yield* TestTree.iterateSubtreeCollapsedQueries(child);
+      if ('children' in child) {
+        // Is a subtree
+        const collapsible = child.collapsible && child.query.level > expandThroughLevel;
+        if (child.children.size > 0 && !collapsible) {
+          yield* TestTree.iterateSubtreeCollapsedQueries(
+            child,
+            includeEmptySubtrees,
+            expandThroughLevel
+          );
+        } else if (child.children.size > 0 || includeEmptySubtrees) {
+          // Don't yield empty subtrees (e.g. files with no tests) unless includeEmptySubtrees
+          yield child.query;
+        }
       } else {
+        // Is a leaf
         yield child.query;
       }
     }
@@ -158,8 +208,7 @@ export async function loadTreeForQuery(
   // L3 =  case-level, e.g. suite:a,b:c,d:
   let foundCase = false;
   // L0 is suite:*
-  const subtreeL0 = makeTreeForSuite(suite);
-  isCollapsible(subtreeL0.query); // mark seenSubqueriesToExpand
+  const subtreeL0 = makeTreeForSuite(suite, isCollapsible);
   for (const entry of specs) {
     if (entry.file.length === 0 && 'readme' in entry) {
       // Suite-level readme.
@@ -186,7 +235,8 @@ export async function loadTreeForQuery(
       // the directory that has the README).
       const readmeSubtree: TestSubtree<TestQueryMultiFile> = addSubtreeForDirPath(
         subtreeL0,
-        entry.file
+        entry.file,
+        isCollapsible
       );
       assert(readmeSubtree.description === undefined);
       readmeSubtree.description = entry.readme.trim();
@@ -219,6 +269,7 @@ export async function loadTreeForQuery(
         subtreeL1,
         t.testPath,
         t.description,
+        t.testCreationStack,
         isCollapsible
       );
 
@@ -243,30 +294,36 @@ export async function loadTreeForQuery(
   }
 
   for (const [i, sq] of subqueriesToExpandEntries) {
-    const seen = seenSubqueriesToExpand[i];
-    assert(
-      seen,
-      `subqueriesToExpand entry did not match anything \
-(can happen due to overlap with another subquery): ${sq.toString()}`
-    );
+    const subquerySeen = seenSubqueriesToExpand[i];
+    if (!subquerySeen) {
+      throw new StacklessError(
+        `subqueriesToExpand entry did not match anything \
+(could be wrong, or could be redundant with a previous subquery):\n  ${sq.toString()}`
+      );
+    }
   }
   assert(foundCase, 'Query does not match any cases');
 
-  return new TestTree(subtreeL0);
+  return new TestTree(queryToLoad, subtreeL0);
 }
 
-function makeTreeForSuite(suite: string): TestSubtree<TestQueryMultiFile> {
+function makeTreeForSuite(
+  suite: string,
+  isCollapsible: (sq: TestQuery) => boolean
+): TestSubtree<TestQueryMultiFile> {
+  const query = new TestQueryMultiFile(suite, []);
   return {
     readableRelativeName: suite + kBigSeparator,
-    query: new TestQueryMultiFile(suite, []),
+    query,
     children: new Map(),
-    collapsible: false,
+    collapsible: isCollapsible(query),
   };
 }
 
 function addSubtreeForDirPath(
   tree: TestSubtree<TestQueryMultiFile>,
-  file: string[]
+  file: string[],
+  isCollapsible: (sq: TestQuery) => boolean
 ): TestSubtree<TestQueryMultiFile> {
   const subqueryFile: string[] = [];
   // To start, tree is suite:*
@@ -275,7 +332,11 @@ function addSubtreeForDirPath(
     subqueryFile.push(part);
     tree = getOrInsertSubtree(part, tree, () => {
       const query = new TestQueryMultiFile(tree.query.suite, subqueryFile);
-      return { readableRelativeName: part + kPathSeparator + kWildcard, query, collapsible: false };
+      return {
+        readableRelativeName: part + kPathSeparator + kWildcard,
+        query,
+        collapsible: isCollapsible(query),
+      };
     });
   }
   return tree;
@@ -285,11 +346,11 @@ function addSubtreeForFilePath(
   tree: TestSubtree<TestQueryMultiFile>,
   file: string[],
   description: string,
-  checkCollapsible: (sq: TestQuery) => boolean
+  isCollapsible: (sq: TestQuery) => boolean
 ): TestSubtree<TestQueryMultiTest> {
   // To start, tree is suite:*
   // This goes from that -> suite:a,* -> suite:a,b,*
-  tree = addSubtreeForDirPath(tree, file);
+  tree = addSubtreeForDirPath(tree, file, isCollapsible);
   // This goes from that -> suite:a,b:*
   const subtree = getOrInsertSubtree('', tree, () => {
     const query = new TestQueryMultiTest(tree.query.suite, tree.query.filePathParts, []);
@@ -298,7 +359,7 @@ function addSubtreeForFilePath(
       readableRelativeName: file[file.length - 1] + kBigSeparator + kWildcard,
       query,
       description,
-      collapsible: checkCollapsible(query),
+      collapsible: isCollapsible(query),
     };
   });
   return subtree;
@@ -307,7 +368,8 @@ function addSubtreeForFilePath(
 function addSubtreeForTestPath(
   tree: TestSubtree<TestQueryMultiTest>,
   test: readonly string[],
-  plan: string | undefined,
+  description: string | undefined,
+  testCreationStack: Error,
   isCollapsible: (sq: TestQuery) => boolean
 ): TestSubtree<TestQueryMultiCase> {
   const subqueryTest: string[] = [];
@@ -324,7 +386,6 @@ function addSubtreeForTestPath(
       return {
         readableRelativeName: part + kPathSeparator + kWildcard,
         query,
-        description: plan,
         collapsible: isCollapsible(query),
       };
     });
@@ -342,6 +403,8 @@ function addSubtreeForTestPath(
       readableRelativeName: subqueryTest[subqueryTest.length - 1] + kBigSeparator + kWildcard,
       kWildcard,
       query,
+      description,
+      testCreationStack,
       collapsible: isCollapsible(query),
     };
   });
@@ -410,27 +473,27 @@ function insertLeaf(parent: TestSubtree, query: TestQuerySingleCase, t: RunCase)
   const leaf: TestTreeLeaf = {
     readableRelativeName: readableNameForCase(query),
     query,
-    run: (rec: TestCaseRecorder) => t.run(rec),
+    run: (rec, expectations) => t.run(rec, query, expectations || []),
   };
   assert(!parent.children.has(key));
   parent.children.set(key, leaf);
 }
 
-function dissolveLevelBoundaries(tree: TestTreeNode): TestTreeNode {
+function dissolveSingleChildTrees(tree: TestTreeNode): TestTreeNode {
   if ('children' in tree) {
-    if (tree.children.size === 1 && tree.description === undefined) {
+    const shouldDissolveThisTree =
+      tree.children.size === 1 && tree.query.depthInLevel !== 0 && tree.description === undefined;
+    if (shouldDissolveThisTree) {
       // Loops exactly once
       for (const [, child] of tree.children) {
-        if (child.query.level > tree.query.level) {
-          const newtree = dissolveLevelBoundaries(child);
-
-          return newtree;
-        }
+        // Recurse on child
+        return dissolveSingleChildTrees(child);
       }
     }
 
     for (const [k, child] of tree.children) {
-      const newChild = dissolveLevelBoundaries(child);
+      // Recurse on each child
+      const newChild = dissolveSingleChildTrees(child);
       if (newChild !== child) {
         tree.children.set(k, newChild);
       }

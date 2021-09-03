@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_MEDIA_WEBRTC_DISPLAY_MEDIA_ACCESS_HANDLER_H_
 
 #include <memory>
-#include <string>
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
@@ -15,9 +14,8 @@
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_factory.h"
+#include "chrome/browser/tab_contents/web_contents_collection.h"
 #include "content/public/browser/desktop_media_id.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace extensions {
 class Extension;
@@ -26,7 +24,7 @@ class Extension;
 // MediaAccessHandler for getDisplayMedia API, see
 // https://w3c.github.io/mediacapture-screen-share.
 class DisplayMediaAccessHandler : public CaptureAccessHandlerBase,
-                                  public content::NotificationObserver {
+                                  public WebContentsCollection::Observer {
  public:
   DisplayMediaAccessHandler();
   DisplayMediaAccessHandler(
@@ -67,21 +65,18 @@ class DisplayMediaAccessHandler : public CaptureAccessHandlerBase,
   void OnPickerDialogResults(content::WebContents* web_contents,
                              content::DesktopMediaID source);
 
-  void AddNotificationObserver();
-
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   void DeletePendingAccessRequest(int render_process_id,
                                   int render_frame_id,
                                   int page_request_id);
 
+  // WebContentsCollection::Observer:
+  void WebContentsDestroyed(content::WebContents* web_cotents) override;
+
   bool display_notification_ = true;
   std::unique_ptr<DesktopMediaPickerFactory> picker_factory_;
   RequestsQueues pending_requests_;
-  content::NotificationRegistrar notifications_registrar_;
+
+  WebContentsCollection web_contents_collection_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayMediaAccessHandler);
 };

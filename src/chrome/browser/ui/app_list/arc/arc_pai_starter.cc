@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/arc/arc_optin_uma.h"
+#include "chrome/browser/ash/arc/arc_optin_uma.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/arc/arc_prefs.h"
@@ -51,7 +51,7 @@ ArcPaiStarter::~ArcPaiStarter() {
 // static
 std::unique_ptr<ArcPaiStarter> ArcPaiStarter::CreateIfNeeded(Profile* profile) {
   if (profile->GetPrefs()->GetBoolean(prefs::kArcPaiStarted))
-    return std::unique_ptr<ArcPaiStarter>();
+    return nullptr;
   return std::make_unique<ArcPaiStarter>(profile);
 }
 

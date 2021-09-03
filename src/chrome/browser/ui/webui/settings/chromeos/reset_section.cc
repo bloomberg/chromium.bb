@@ -69,8 +69,18 @@ void ResetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"powerwashLearnMoreUrl", IDS_FACTORY_RESET_HELP_URL},
       {"powerwashButtonRoleDescription",
        IDS_SETTINGS_FACTORY_RESET_BUTTON_ROLE},
+      {"powerwashDialogESimWarningTitle",
+       IDS_SETTINGS_FACTORY_RESET_ESIM_WARNING_TITLE},
+      {"powerwashDialogESimWarning", IDS_SETTINGS_FACTORY_RESET_ESIM_WARNING},
+      {"powerwashDialogESimListTitle",
+       IDS_SETTINGS_FACTORY_RESET_ESIM_LIST_TITLE},
+      {"powerwashDialogESimListItemTitle",
+       IDS_SETTINGS_FACTORY_RESET_ESIM_LIST_ITEM_TITLE},
+      {"powerwashDialogESimWarningCheckbox",
+       IDS_SETTINGS_FACTORY_RESET_ESIM_WARNING_CHECKBOX_LABEL},
+      {"powerwashContinue", IDS_SETTINGS_FACTORY_CONTINUE_BUTTON_LABEL},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 
   html_source->AddBoolean("allowPowerwash", IsPowerwashAllowed());
 

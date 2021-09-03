@@ -42,11 +42,11 @@ namespace {
     }                                            \
   } while (0)
 
-base::Optional<VideoFrameLayout> CreateLayout(
+absl::optional<VideoFrameLayout> CreateLayout(
     const ImageProcessor::PortConfig& config) {
   const VideoPixelFormat pixel_format = config.fourcc.ToVideoPixelFormat();
   if (config.planes.empty())
-    return base::nullopt;
+    return absl::nullopt;
 
   if (config.fourcc.IsMultiPlanar()) {
     return VideoFrameLayout::CreateWithPlanes(pixel_format, config.size,
@@ -149,7 +149,7 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
       image_processor_->input_config();
   const VideoFrame::StorageType input_storage_type =
       input_config.storage_type();
-  base::Optional<VideoFrameLayout> input_layout = CreateLayout(input_config);
+  absl::optional<VideoFrameLayout> input_layout = CreateLayout(input_config);
   ASSERT_TRUE_OR_RETURN_NULLPTR(input_layout);
 
   if (VideoFrame::IsStorageTypeMappable(input_storage_type)) {
@@ -157,16 +157,16 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
                            CreateVideoFrameFromImage(input_image).get(),
                            *input_layout, VideoFrame::STORAGE_OWNED_MEMORY);
   } else {
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     ASSERT_TRUE_OR_RETURN_NULLPTR(
         input_storage_type == VideoFrame::STORAGE_DMABUFS ||
         input_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
-    // NV12 and YV12 are the only formats that can be allocated with
-    // gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE. So
-    // gfx::BufferUsage::GPU_READ_CPU_READ_WRITE is specified for RGB formats.
+    // NV12 is the only format that can be allocated with
+    // gfx::BufferUsage::VEA_READ_CAMERA_AND_CPU_READ_WRITE. So
+    // gfx::BufferUsage::GPU_READ_CPU_READ_WRITE is specified for other formats.
     gfx::BufferUsage dst_buffer_usage =
-        IsYuvPlanar(input_image.PixelFormat())
-            ? gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE
+        (PIXEL_FORMAT_NV12 == input_image.PixelFormat())
+            ? gfx::BufferUsage::VEA_READ_CAMERA_AND_CPU_READ_WRITE
             : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
     return CloneVideoFrame(gpu_memory_buffer_factory_.get(),
                            CreateVideoFrameFromImage(input_image).get(),
@@ -186,7 +186,7 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateOutputFrame(
       image_processor_->output_config();
   const VideoFrame::StorageType output_storage_type =
       output_config.storage_type();
-  base::Optional<VideoFrameLayout> output_layout = CreateLayout(output_config);
+  absl::optional<VideoFrameLayout> output_layout = CreateLayout(output_config);
   ASSERT_TRUE_OR_RETURN_NULLPTR(output_layout);
   if (VideoFrame::IsStorageTypeMappable(output_storage_type)) {
     return VideoFrame::CreateFrameWithLayout(

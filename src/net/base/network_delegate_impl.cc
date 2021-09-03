@@ -27,7 +27,7 @@ int NetworkDelegateImpl::OnHeadersReceived(
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     const IPEndPoint& endpoint,
-    base::Optional<GURL>* preserve_fragment_on_redirect_url) {
+    absl::optional<GURL>* preserve_fragment_on_redirect_url) {
   return OK;
 }
 
@@ -45,8 +45,7 @@ void NetworkDelegateImpl::OnURLRequestDestroyed(URLRequest* request) {
 }
 
 void NetworkDelegateImpl::OnPACScriptError(int line_number,
-                                           const base::string16& error) {
-}
+                                           const std::u16string& error) {}
 
 bool NetworkDelegateImpl::OnCanGetCookies(const URLRequest& request,
                                           bool allowed_from_caller) {
@@ -63,7 +62,7 @@ bool NetworkDelegateImpl::OnCanSetCookie(const URLRequest& request,
 bool NetworkDelegateImpl::OnForcePrivacyMode(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin) const {
+    const absl::optional<url::Origin>& top_frame_origin) const {
   return false;
 }
 

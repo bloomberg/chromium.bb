@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2019 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@
 # cat ./traceconv | python -
 
 BASH_FALLBACK = """ "
-exec python - "$@" <<'#'EOF
+exec python3 - "$@" <<'#'EOF
 #"""
 
 import hashlib
@@ -29,11 +29,12 @@ import os
 import sys
 import subprocess
 import tempfile
+import platform
 
 
 TRACE_TO_TEXT_SHAS = {
-    'linux': 'a9078d79f6ed864ef883109fb23763c8538ca878',
-    'mac': 'a2a64aef0c8956d5a4fbda2ae0d1904dbe0cc7b9',
+    'linux': '7e3e10dfb324e31723efd63ac25037856e06eba0',
+    'mac': '21f0f42dd019b4f09addd404a114fbf2322ca8a4',
 }
 TRACE_TO_TEXT_PATH = tempfile.gettempdir()
 TRACE_TO_TEXT_BASE_URL = ('https://storage.googleapis.com/perfetto/')
@@ -70,16 +71,22 @@ def load_trace_to_text(platform):
 
 
 def main(argv):
-  platform = None
+  os_name = None
   if sys.platform.startswith('linux'):
-    platform = 'linux'
+    os_name = 'linux'
   elif sys.platform.startswith('darwin'):
-    platform = 'mac'
+    os_name = 'mac'
   else:
     print("Invalid platform: {}".format(sys.platform))
     return 1
 
-  trace_to_text_binary = load_trace_to_text(platform)
+  arch = platform.machine()
+  if arch not in ['x86_64', 'amd64']:
+    print("Prebuilts are only available for x86_64 (found '{}' instead).".format(arch))
+    print("Follow https://perfetto.dev/docs/contributing/build-instructions to build locally.")
+    return 1
+
+  trace_to_text_binary = load_trace_to_text(os_name)
   os.execv(trace_to_text_binary, [trace_to_text_binary] + argv[1:])
 
 

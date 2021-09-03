@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -52,7 +51,7 @@ bool GetBytesOfBufferSource(const NDEFRecordDataSource& buffer_source,
     data_length = array_buffer->ByteLength();
   } else if (buffer_source.IsArrayBufferView()) {
     const DOMArrayBufferView* array_buffer_view =
-        buffer_source.GetAsArrayBufferView().View();
+        buffer_source.GetAsArrayBufferView().Get();
     data = reinterpret_cast<uint8_t*>(array_buffer_view->BaseAddress());
     data_length = array_buffer_view->byteLength();
   } else {
@@ -528,8 +527,8 @@ DOMDataView* NDEFRecord::data() const {
   return DOMDataView::Create(dom_buffer, 0, payload_data_.size());
 }
 
-// https://w3c.github.io/web-nfc/#dfn-convert-ndefrecord-payloaddata-bytes
-base::Optional<HeapVector<Member<NDEFRecord>>> NDEFRecord::toRecords(
+// https://w3c.github.io/web-nfc/#dfn-convert-ndefrecord-data-bytes
+absl::optional<HeapVector<Member<NDEFRecord>>> NDEFRecord::toRecords(
     ExceptionState& exception_state) const {
   if (record_type_ != "smart-poster" &&
       category_ != device::mojom::blink::NDEFRecordTypeCategory::kExternal &&
@@ -538,11 +537,11 @@ base::Optional<HeapVector<Member<NDEFRecord>>> NDEFRecord::toRecords(
         DOMExceptionCode::kNotSupportedError,
         "Only {smart-poster, external, local} type records could have a ndef "
         "message as payload.");
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   if (!payload_message_)
-    return base::nullopt;
+    return absl::nullopt;
 
   return payload_message_->records();
 }

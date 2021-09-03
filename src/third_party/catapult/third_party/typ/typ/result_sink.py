@@ -21,15 +21,14 @@ See go/resultdb and go/resultsink for more details.
 """
 
 import base64
-import cgi
 import json
 import os
 import sys
 
-if sys.version_info.major == 2:
-  import httplib
-else:
-  import http.client as httplib
+import requests
+
+from typ import json_results
+from typ import expectations_parser
 
 # Valid status taken from the "TestStatus" enum in
 # https://source.chromium.org/chromium/infra/infra/+/master:go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto
@@ -40,12 +39,8 @@ VALID_STATUSES = {
     'ABORT',
     'SKIP',
 }
-# The maximum allowed size is 4096 bytes as per
-# https://source.chromium.org/chromium/infra/infra/+/master:go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto;drc=ca12b9f52b27f064b0fa47c39baa3b011ffa5790;l=96
-MAX_HTML_SUMMARY_LENGTH = 4096
-TRUNCATED_SUMMARY_KEY = 'Test Log'
-TRUNCATED_SUMMARY_MESSAGE = ('...Full output in "%s" artifact.</pre>' %
-                             TRUNCATED_SUMMARY_KEY)
+STDOUT_KEY = 'typ_stdout'
+STDERR_KEY = 'typ_stderr'
 
 
 class ResultSinkReporter(object):
@@ -58,6 +53,7 @@ class ResultSinkReporter(object):
         """
         self._host = host
         self._sink = None
+        self._chromium_src_dir = None
         if disable:
             return
 
@@ -69,21 +65,22 @@ class ResultSinkReporter(object):
         if not self._sink:
             return
 
-        self._address = self._sink['address']
-        self._url = '/prpc/luci.resultsink.v1.Sink/ReportTestResults'
+        self._url = ('http://%s/prpc/luci.resultsink.v1.Sink/ReportTestResults'
+                     % self._sink['address'])
         self._headers = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'Authorization': 'ResultSink %s' % self._sink['auth_token']
         }
+        self._session = requests.Session()
 
     @property
     def resultdb_supported(self):
         return self._sink is not None
 
     def report_individual_test_result(
-            self, test_name_prefix, result, artifact_output_dir,
-            expectation_tags):
+            self, test_name_prefix, result, artifact_output_dir, expectations,
+            test_file_location):
         """Reports typ results for a single test to ResultSink.
 
         Inputs are typically similar to what is passed to
@@ -99,8 +96,10 @@ class ResultSinkReporter(object):
                     artifacts are saved on disk. If a relative path, will be
                     automatically joined with the cwd. Use '.' instead of '' to
                     point to the cwd.
-            expectation_tags: A list of typ expectation tags that apply to the
-                    run tests.
+            expectations: An expectations_parser.TestExpectations instance, or
+                    None if one is not available.
+            test_file_location: A string containing the path to the file
+                    containing the test.
 
         Returns:
             0 if the result was reported successfully or ResultDB is not
@@ -109,7 +108,14 @@ class ResultSinkReporter(object):
         if not self.resultdb_supported:
             return 0
 
+        expectation_tags = expectations.tags if expectations else []
+
         test_id = test_name_prefix + result.name
+        raw_typ_expected_results = (
+                expectations.expectations_for(result.name).raw_results
+                if expectations
+                else [expectations_parser.RESULT_TAGS[
+                        json_results.ResultType.Pass]])
         result_is_expected = result.actual in result.expected
 
         tag_list = [
@@ -117,13 +123,16 @@ class ResultSinkReporter(object):
         ]
         for expectation in result.expected:
             tag_list.append(('typ_expectation', expectation))
+        for expectation in raw_typ_expected_results:
+            tag_list.append(('raw_typ_expectation', expectation))
         if expectation_tags:
             for tag in expectation_tags:
                 tag_list.append(('typ_tag', tag))
 
         artifacts = {}
         original_artifacts = result.artifacts or {}
-        assert TRUNCATED_SUMMARY_KEY not in original_artifacts
+        assert STDOUT_KEY not in original_artifacts
+        assert STDERR_KEY not in original_artifacts
         if original_artifacts:
             assert artifact_output_dir
             if not os.path.isabs(artifact_output_dir):
@@ -145,28 +154,34 @@ class ResultSinkReporter(object):
                             artifact_output_dir, artifact_filepaths[0]),
                 }
 
-        summary_content = 'stdout: %s\nstderr: %s' % (
-                cgi.escape(result.out), cgi.escape(result.err))
-        summary_content = summary_content.encode('utf-8')
-        html_summary = '<pre>%s</pre>' % summary_content
-        truncated_summary = None
-        if len(html_summary) > MAX_HTML_SUMMARY_LENGTH:
-            truncated_summary = (html_summary[:MAX_HTML_SUMMARY_LENGTH
-                                              - len(TRUNCATED_SUMMARY_MESSAGE)]
-                                 + TRUNCATED_SUMMARY_MESSAGE)
-            artifacts[TRUNCATED_SUMMARY_KEY] = {
-                'contents': base64.b64encode(summary_content)
-            }
-        html_summary = truncated_summary or html_summary
+        artifacts[STDOUT_KEY] = {
+            'contents': base64.b64encode(result.out.encode('utf-8'))
+        }
+        artifacts[STDERR_KEY] = {
+            'contents': base64.b64encode(result.err.encode('utf-8'))
+        }
+        html_summary = ('<p><text-artifact artifact-id="%s"/></p>'
+                        '<p><text-artifact artifact-id="%s"/></p>' % (
+                            STDOUT_KEY, STDERR_KEY))
+
+        test_location_in_repo = self._convert_path_to_repo_path(
+            test_file_location)
+        test_metadata = {
+            'name': test_id,
+            'location': {
+                'repo': 'https://chromium.googlesource.com/chromium/src',
+                'fileName': test_location_in_repo
+            },
+        }
 
         return self._report_result(
                 test_id, result.actual, result_is_expected, artifacts,
-                tag_list, html_summary, result.took)
+                tag_list, html_summary, result.took, test_metadata)
 
 
     def _report_result(
             self, test_id, status, expected, artifacts, tag_list, html_summary,
-            duration):
+            duration, test_metadata):
         """Reports a single test result to ResultSink.
 
         Args:
@@ -179,8 +194,8 @@ class ResultSinkReporter(object):
             tag_list: A list of tuples of (str, str), each element being a
                     key/value pair to add as tags to the reported result.
             html_summary: A string containing HTML summarizing the test run.
-                    Must be <= |MAX_HTML_SUMMARY_LENGTH|.
             duration: How long the test took in seconds.
+            test_metadata: A dict containing additional test metadata to upload.
 
         Returns:
             0 if the result was reported successfully or ResultDB is not
@@ -193,7 +208,7 @@ class ResultSinkReporter(object):
         # look up the correct component for bug filing.
         test_result = _create_json_test_result(
                 test_id, status, expected, artifacts, tag_list, html_summary,
-                duration)
+                duration, test_metadata)
 
         return self._post(json.dumps({'testResults': [test_result]}))
 
@@ -207,23 +222,42 @@ class ResultSinkReporter(object):
         Returns:
             0 if the POST succeeded, otherwise 1.
         """
-        # The "requests" module would make this simpler, but since we only need
-        # to make a single post and typ prefers to have minimal dependencies,
-        # use the built-in HTTP functionality instead.
-        connection = httplib.HTTPConnection(self._address)
-        connection.request(
-                'POST',
-                self._url,
-                body=content,
-                headers=self._headers)
-        retval = 0 if connection.getresponse().status == httplib.OK else 1
-        connection.close()
-        return retval
+        res = self._session.post(
+            url=self._url,
+            headers=self._headers,
+            data=content)
+        return 0 if res.ok else 1
+
+    def _convert_path_to_repo_path(self, filepath):
+        """Converts an absolute file path to a repo relative file path.
+
+        Args:
+            filepath: A string containing an absolute path to a file.
+
+        Returns:
+            A string containing the path to |filepath| in the Chromium
+            src repo, leading with //.
+        """
+        chromium_src_dir = self._get_chromium_src_dir()
+        assert chromium_src_dir in filepath
+        repo_location = filepath.replace(chromium_src_dir, '//', 1)
+        repo_location = repo_location.replace(self._host.sep, '/')
+        return repo_location
+
+    def _get_chromium_src_dir(self):
+        if not self._chromium_src_dir:
+          src_dir = self._host.abspath(
+                  self._host.join(self._host.dirname(__file__),
+                                  '..', '..', '..', '..', '..'))
+          if not src_dir.endswith(self._host.sep):
+              src_dir += self._host.sep
+          self._chromium_src_dir = src_dir
+        return self._chromium_src_dir
 
 
 def _create_json_test_result(
         test_id, status, expected, artifacts, tag_list, html_summary,
-        duration):
+        duration, test_metadata):
     """Formats data to be suitable for sending to ResultSink.
 
     Args:
@@ -235,26 +269,32 @@ def _create_json_test_result(
                 either a filepath or base64-encoded artifact content.
         tag_list: A list of tuples of (str, str), each element being a
                     key/value pair to add as tags to the reported result.
-        html_summary: A string containing HTML summarizing the test run. Must be
-                <= |MAX_HTML_SUMMARY_LENGTH|.
+        html_summary: A string containing HTML summarizing the test run.
         duration: How long the test took in seconds.
+        test_metadata: A dict containing additional test metadata to upload.
 
     Returns:
         A dict containing the provided data in a format that is ingestable by
         ResultSink.
     """
     assert status in VALID_STATUSES
-    assert len(html_summary) <= MAX_HTML_SUMMARY_LENGTH
     # This is based off the protobuf in
     # https://source.chromium.org/chromium/infra/infra/+/master:go/src/go.chromium.org/luci/resultdb/sink/proto/v1/test_result.proto
     test_result = {
             'testId': test_id,
             'status': status,
             'expected': expected,
-            'duration': str(duration) + 's',
+            # If the number is too large or small, python formats the number
+            # in scientific notation, but google.protobuf.duration doesn't
+            # accept an input formatted in scientific notation.
+            #
+            # .9fs because nanosecond is the smallest precision that
+            # google.protobuf.duration supports.
+            'duration': '%.9fs' % duration,
             'summaryHtml': html_summary,
             'artifacts': artifacts,
             'tags': [],
+            'testMetadata': test_metadata,
     }
     for (k, v) in tag_list:
         test_result['tags'].append({'key': k, 'value': v})

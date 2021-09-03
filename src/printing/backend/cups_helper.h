@@ -6,10 +6,9 @@
 #define PRINTING_BACKEND_CUPS_HELPER_H_
 
 #include <cups/cups.h>
-#include <cups/ppd.h>
 
+#include "base/component_export.h"
 #include "base/strings/string_piece.h"
-#include "printing/printing_export.h"
 
 class GURL;
 
@@ -20,7 +19,7 @@ struct PrinterSemanticCapsAndDefaults;
 
 // Helper wrapper around http_t structure, with connection and cleanup
 // functionality.
-class PRINTING_EXPORT HttpConnectionCUPS {
+class COMPONENT_EXPORT(PRINT_BACKEND) HttpConnectionCUPS {
  public:
   HttpConnectionCUPS(const GURL& print_server_url,
                      http_encryption_t encryption,
@@ -35,11 +34,11 @@ class PRINTING_EXPORT HttpConnectionCUPS {
 
 // Helper function to parse and convert PPD capabilitites to
 // semantic options.
-PRINTING_EXPORT bool ParsePpdCapabilities(
-    cups_dest_t* dest,
-    base::StringPiece locale,
-    base::StringPiece printer_capabilities,
-    PrinterSemanticCapsAndDefaults* printer_info);
+COMPONENT_EXPORT(PRINT_BACKEND)
+bool ParsePpdCapabilities(cups_dest_t* dest,
+                          base::StringPiece locale,
+                          base::StringPiece printer_capabilities,
+                          PrinterSemanticCapsAndDefaults* printer_info);
 
 }  // namespace printing
 

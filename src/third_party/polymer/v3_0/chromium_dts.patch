@@ -1,0 +1,13 @@
+diff --git a/components-chromium/polymer/polymer.d.ts b/components-chromium/polymer/polymer.d.ts
+index a9f1aa64c5b8..a202c7fb06ba 100644
+--- a/components-chromium/polymer/polymer.d.ts
++++ b/components-chromium/polymer/polymer.d.ts
+@@ -24,8 +24,6 @@ export {Debouncer, enqueueDebouncer} from './lib/utils/debounce.js';
+ export {html} from './lib/utils/html-tag.js';
+ export {matches, translate} from './lib/utils/path.js';
+ export {afterNextRender, beforeNextRender} from './lib/utils/render-status.js';
+-export {useShadow} from './lib/utils/settings.js';
+ export {TemplateInstanceBase, templatize} from './lib/utils/templatize.js';
+ export {PolymerElement} from './polymer-element.js';
+-export {Base} from './polymer-legacy.js';
+ export {gestures};

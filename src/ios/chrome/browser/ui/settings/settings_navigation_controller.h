@@ -66,6 +66,14 @@ extern NSString* const kSettingsDoneButtonId;
                                   (id<SettingsNavigationControllerDelegate>)
                                       delegate;
 
+// Creates a new SettingsNavigationController that displays the sync management
+// UI. |browser| is the browser where settings are being displayed and
+// should not be nil. |delegate| may be nil.
++ (instancetype)
+    syncSettingsControllerForBrowser:(Browser*)browser
+                            delegate:(id<SettingsNavigationControllerDelegate>)
+                                         delegate;
+
 // Creates a new SyncEncryptionPassphraseCollectionViewController and the chrome
 // around it. |browser| is the browser where settings are being displayed and
 // should not be nil. |delegate| may be nil.
@@ -128,6 +136,15 @@ extern NSString* const kSettingsDoneButtonId;
                                   delegate:
                                       (id<SettingsNavigationControllerDelegate>)
                                           delegate;
+
+// Creates a new DefaultBrowserSettingsTableViewController and the chrome
+// around it. |browser| is the browser where settings are being displayed and
+// should not be nil. |delegate| may be nil.
++ (instancetype)
+    defaultBrowserControllerForBrowser:(Browser*)browser
+                              delegate:
+                                  (id<SettingsNavigationControllerDelegate>)
+                                      delegate;
 
 // Initializes the UINavigationController with |rootViewController|.
 - (instancetype)initWithRootViewController:(UIViewController*)rootViewController

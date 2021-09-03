@@ -686,7 +686,6 @@ void LayoutTable::RecalcVisualOverflow() {
       section->RecalcVisualOverflow();
   }
 
-  RecalcPositionedDescendantsVisualOverflow();
   RecalcSelfVisualOverflow();
 }
 
@@ -1267,7 +1266,7 @@ LayoutTableCol* LayoutTable::FirstColumn() const {
   for (LayoutObject* child = FirstChild(); child;
        child = child->NextSibling()) {
     if (child->IsLayoutTableCol())
-      return ToLayoutTableCol(child);
+      return To<LayoutTableCol>(child);
   }
 
   return nullptr;

@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/batch_writer/quic_batch_writer_base.h"
+#include "quic/core/batch_writer/quic_batch_writer_base.h"
 #include <cstdint>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_server_stats.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_server_stats.h"
 
 namespace quic {
 
@@ -24,8 +23,20 @@ WriteResult QuicBatchWriterBase::WritePacket(
     PerPacketOptions* options) {
   const WriteResult result =
       InternalWritePacket(buffer, buf_len, self_address, peer_address, options);
-  if (result.status == WRITE_STATUS_BLOCKED) {
-    write_blocked_ = true;
+
+  if (GetQuicReloadableFlag(quic_batch_writer_fix_write_blocked)) {
+    if (IsWriteBlockedStatus(result.status)) {
+      if (result.status == WRITE_STATUS_BLOCKED_DATA_BUFFERED) {
+        QUIC_CODE_COUNT(quic_batch_writer_fix_write_blocked_data_buffered);
+      } else {
+        QUIC_CODE_COUNT(quic_batch_writer_fix_write_blocked_data_not_buffered);
+      }
+      write_blocked_ = true;
+    }
+  } else {
+    if (result.status == WRITE_STATUS_BLOCKED) {
+      write_blocked_ = true;
+    }
   }
   return result;
 }
@@ -121,10 +132,10 @@ WriteResult QuicBatchWriterBase::InternalWritePacket(
 
     // Since buffered_writes has been emptied, this write must have been
     // buffered successfully.
-    QUIC_BUG_IF(!buffered) << "Failed to push to an empty batch buffer."
-                           << "  self_addr:" << self_address.ToString()
-                           << ", peer_addr:" << peer_address.ToString()
-                           << ", buf_len:" << buf_len;
+    QUIC_BUG_IF(quic_bug_10826_1, !buffered)
+        << "Failed to push to an empty batch buffer."
+        << "  self_addr:" << self_address.ToString()
+        << ", peer_addr:" << peer_address.ToString() << ", buf_len:" << buf_len;
   }
 
   result.send_time_offset = release_time.release_time_offset;
@@ -141,12 +152,12 @@ QuicBatchWriterBase::FlushImplResult QuicBatchWriterBase::CheckedFlush() {
 
   // Either flush_result.write_result.status is not WRITE_STATUS_OK, or it is
   // WRITE_STATUS_OK and batch_buffer is empty.
-  DCHECK(flush_result.write_result.status != WRITE_STATUS_OK ||
-         buffered_writes().empty());
+  QUICHE_DCHECK(flush_result.write_result.status != WRITE_STATUS_OK ||
+                buffered_writes().empty());
 
   // Flush should never return WRITE_STATUS_BLOCKED_DATA_BUFFERED.
-  DCHECK(flush_result.write_result.status !=
-         WRITE_STATUS_BLOCKED_DATA_BUFFERED);
+  QUICHE_DCHECK(flush_result.write_result.status !=
+                WRITE_STATUS_BLOCKED_DATA_BUFFERED);
 
   return flush_result;
 }

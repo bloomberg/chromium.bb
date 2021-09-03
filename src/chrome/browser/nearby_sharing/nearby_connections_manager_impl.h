@@ -15,23 +15,20 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/nearby_sharing/nearby_connection_impl.h"
 #include "chrome/browser/nearby_sharing/nearby_file_handler.h"
-#include "chrome/browser/nearby_sharing/nearby_process_manager.h"
+#include "chromeos/services/nearby/public/cpp/nearby_process_manager.h"
 #include "chromeos/services/nearby/public/mojom/nearby_connections.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
-class Profile;
-
 // Concrete NearbyConnectionsManager implementation.
 class NearbyConnectionsManagerImpl
     : public NearbyConnectionsManager,
-      public NearbyProcessManager::Observer,
       public location::nearby::connections::mojom::EndpointDiscoveryListener,
       public location::nearby::connections::mojom::ConnectionLifecycleListener,
       public location::nearby::connections::mojom::PayloadListener {
  public:
-  NearbyConnectionsManagerImpl(NearbyProcessManager* process_manager,
-                               Profile* profile);
+  explicit NearbyConnectionsManagerImpl(
+      chromeos::nearby::NearbyProcessManager* process_manager);
   ~NearbyConnectionsManagerImpl() override;
   NearbyConnectionsManagerImpl(const NearbyConnectionsManagerImpl&) = delete;
   NearbyConnectionsManagerImpl& operator=(const NearbyConnectionsManagerImpl&) =
@@ -44,29 +41,30 @@ class NearbyConnectionsManagerImpl
                         PowerLevel power_level,
                         DataUsage data_usage,
                         ConnectionsCallback callback) override;
-  void StopAdvertising() override;
+  void StopAdvertising(ConnectionsCallback callback) override;
   void StartDiscovery(DiscoveryListener* listener,
                       DataUsage data_usage,
                       ConnectionsCallback callback) override;
   void StopDiscovery() override;
   void Connect(std::vector<uint8_t> endpoint_info,
                const std::string& endpoint_id,
-               base::Optional<std::vector<uint8_t>> bluetooth_mac_address,
+               absl::optional<std::vector<uint8_t>> bluetooth_mac_address,
                DataUsage data_usage,
                NearbyConnectionCallback callback) override;
   void Disconnect(const std::string& endpoint_id) override;
   void Send(const std::string& endpoint_id,
             PayloadPtr payload,
-            PayloadStatusListener* listener) override;
-  void RegisterPayloadStatusListener(int64_t payload_id,
-                                     PayloadStatusListener* listener) override;
+            base::WeakPtr<PayloadStatusListener> listener) override;
+  void RegisterPayloadStatusListener(
+      int64_t payload_id,
+      base::WeakPtr<PayloadStatusListener> listener) override;
   void RegisterPayloadPath(int64_t payload_id,
                            const base::FilePath& file_path,
                            ConnectionsCallback callback) override;
   Payload* GetIncomingPayload(int64_t payload_id) override;
   void Cancel(int64_t payload_id) override;
   void ClearIncomingPayloads() override;
-  base::Optional<std::vector<uint8_t>> GetRawAuthenticationToken(
+  absl::optional<std::vector<uint8_t>> GetRawAuthenticationToken(
       const std::string& endpoint_id) override;
   void UpgradeBandwidth(const std::string& endpoint_id) override;
 
@@ -98,11 +96,6 @@ class NearbyConnectionsManagerImpl
   FRIEND_TEST_ALL_PREFIXES(NearbyConnectionsManagerImplTest,
                            DiscoveryProcessStopped);
 
-  // NearbyProcessManager::Observer:
-  void OnNearbyProfileChanged(Profile* profile) override;
-  void OnNearbyProcessStarted() override;
-  void OnNearbyProcessStopped() override;
-
   // EndpointDiscoveryListener:
   void OnEndpointFound(const std::string& endpoint_id,
                        DiscoveredEndpointInfoPtr info) override;
@@ -127,7 +120,11 @@ class NearbyConnectionsManagerImpl
   void OnConnectionTimedOut(const std::string& endpoint_id);
   void OnConnectionRequested(const std::string& endpoint_id,
                              ConnectionsStatus status);
-  bool BindNearbyConnections();
+  void OnNearbyProcessStopped(
+      chromeos::nearby::NearbyProcessManager::NearbyProcessShutdownReason
+          shutdown_reason);
+  location::nearby::connections::mojom::NearbyConnections*
+  GetNearbyConnections();
   void Reset();
 
   void OnFileCreated(int64_t payload_id,
@@ -135,11 +132,13 @@ class NearbyConnectionsManagerImpl
                      NearbyFileHandler::CreateFileResult result);
 
   // For metrics.
-  base::Optional<Medium> GetUpgradedMedium(
+  absl::optional<Medium> GetUpgradedMedium(
       const std::string& endpoint_id) const;
 
-  NearbyProcessManager* process_manager_;
-  Profile* profile_;
+  chromeos::nearby::NearbyProcessManager* process_manager_;
+  std::unique_ptr<
+      chromeos::nearby::NearbyProcessManager::NearbyProcessReference>
+      process_reference_;
   NearbyFileHandler file_handler_;
   IncomingConnectionListener* incoming_connection_listener_ = nullptr;
   DiscoveryListener* discovery_listener_ = nullptr;
@@ -155,8 +154,9 @@ class NearbyConnectionsManagerImpl
   // A map of endpoint_id to timers that timeout a connection request.
   base::flat_map<std::string, std::unique_ptr<base::OneShotTimer>>
       connect_timeout_timers_;
-  // A map of payload_id to PayloadStatusListener*.
-  base::flat_map<int64_t, PayloadStatusListener*> payload_status_listeners_;
+  // A map of payload_id to PayloadStatusListener weak pointer.
+  base::flat_map<int64_t, base::WeakPtr<PayloadStatusListener>>
+      payload_status_listeners_;
   // A map of payload_id to PayloadPtr.
   base::flat_map<int64_t, PayloadPtr> incoming_payloads_;
 
@@ -166,15 +166,11 @@ class NearbyConnectionsManagerImpl
   // For metrics. A map of endpoint_id to current upgraded medium.
   base::flat_map<std::string, Medium> current_upgraded_mediums_;
 
-  ScopedObserver<NearbyProcessManager, NearbyProcessManager::Observer>
-      nearby_process_observer_{this};
   mojo::Receiver<EndpointDiscoveryListener> endpoint_discovery_listener_{this};
   mojo::ReceiverSet<ConnectionLifecycleListener>
       connection_lifecycle_listeners_;
   mojo::ReceiverSet<PayloadListener> payload_listeners_;
 
-  location::nearby::connections::mojom::NearbyConnections* nearby_connections_ =
-      nullptr;
   base::WeakPtrFactory<NearbyConnectionsManagerImpl> weak_ptr_factory_{this};
 };
 

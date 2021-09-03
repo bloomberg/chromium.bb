@@ -170,6 +170,7 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   void SetUp() override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // Creates a new tab with all the password manager test hooks and returns it
   // in |web_contents|.
@@ -245,9 +246,7 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   // A tab with some hooks injected.
   content::WebContents* web_contents_;
 
-  std::unique_ptr<
-      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
-      create_services_subscription_;
+  base::CallbackListSubscription create_services_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTestBase);
 };

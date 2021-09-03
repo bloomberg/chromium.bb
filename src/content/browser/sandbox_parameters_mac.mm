@@ -15,7 +15,6 @@
 #include "base/mac/mac_util.h"
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -27,9 +26,11 @@
 #include "content/public/common/content_switches.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "sandbox/mac/seatbelt_exec.h"
+#include "sandbox/policy/mac/params.h"
 #include "sandbox/policy/mac/sandbox_mac.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/common/pepper_plugin_info.h"
@@ -39,8 +40,12 @@ namespace content {
 
 namespace {
 
-// Set by SetNetworkTestCertsDirectoryForTesting().
-base::NoDestructor<base::Optional<base::FilePath>> g_network_test_certs_dir;
+absl::optional<base::FilePath>& GetNetworkTestCertsDirectory() {
+  // Set by SetNetworkTestCertsDirectoryForTesting().
+  static base::NoDestructor<absl::optional<base::FilePath>>
+      network_test_certs_dir;
+  return *network_test_certs_dir;
+}
 
 // Produce the OS version as an integer "1010", etc. and pass that to the
 // profile. The profile converts the string back to a number and can do
@@ -64,23 +69,20 @@ void AddDarwinDirs(sandbox::SeatbeltExecClient* client) {
   size_t rv = confstr(_CS_DARWIN_USER_CACHE_DIR, dir_path, sizeof(dir_path));
   PCHECK(rv != 0);
   CHECK(client->SetParameter(
-      "DARWIN_USER_CACHE_DIR",
-      sandbox::policy::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
-          .value()));
+      sandbox::policy::kParamDarwinUserCacheDir,
+      sandbox::policy::GetCanonicalPath(base::FilePath(dir_path)).value()));
 
   rv = confstr(_CS_DARWIN_USER_DIR, dir_path, sizeof(dir_path));
   PCHECK(rv != 0);
   CHECK(client->SetParameter(
-      "DARWIN_USER_DIR",
-      sandbox::policy::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
-          .value()));
+      sandbox::policy::kParamDarwinUserDir,
+      sandbox::policy::GetCanonicalPath(base::FilePath(dir_path)).value()));
 
   rv = confstr(_CS_DARWIN_USER_TEMP_DIR, dir_path, sizeof(dir_path));
   PCHECK(rv != 0);
   CHECK(client->SetParameter(
-      "DARWIN_USER_TEMP_DIR",
-      sandbox::policy::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
-          .value()));
+      sandbox::policy::kParamDarwinUserTempDir,
+      sandbox::policy::GetCanonicalPath(base::FilePath(dir_path)).value()));
 }
 
 // All of the below functions populate the |client| with the parameters that the
@@ -92,54 +94,48 @@ void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
   bool enable_logging =
       command_line->HasSwitch(sandbox::policy::switches::kEnableSandboxLogging);
 
+  CHECK(client->SetBooleanParameter(sandbox::policy::kParamEnableLogging,
+                                    enable_logging));
   CHECK(client->SetBooleanParameter(
-      sandbox::policy::SandboxMac::kSandboxEnableLogging, enable_logging));
-  CHECK(client->SetBooleanParameter(
-      sandbox::policy::SandboxMac::kSandboxDisableDenialLogging,
-      !enable_logging));
+      sandbox::policy::kParamDisableSandboxDenialLogging, !enable_logging));
 
   std::string bundle_path =
-      sandbox::policy::SandboxMac::GetCanonicalPath(base::mac::MainBundlePath())
-          .value();
-  CHECK(client->SetParameter(sandbox::policy::SandboxMac::kSandboxBundlePath,
-                             bundle_path));
+      sandbox::policy::GetCanonicalPath(base::mac::MainBundlePath()).value();
+  CHECK(client->SetParameter(sandbox::policy::kParamBundlePath, bundle_path));
 
   std::string bundle_id = base::mac::BaseBundleID();
   DCHECK(!bundle_id.empty()) << "base::mac::OuterBundle is unset";
-  CHECK(client->SetParameter(
-      sandbox::policy::SandboxMac::kSandboxChromeBundleId, bundle_id));
+  CHECK(client->SetParameter(sandbox::policy::kParamBundleId, bundle_id));
 
-  CHECK(client->SetParameter(sandbox::policy::SandboxMac::kSandboxBrowserPID,
+  CHECK(client->SetParameter(sandbox::policy::kParamBrowserPid,
                              std::to_string(getpid())));
 
   std::string logging_path =
       GetContentClient()->browser()->GetLoggingFileName(*command_line).value();
-  CHECK(client->SetParameter(
-      sandbox::policy::SandboxMac::kSandboxLoggingPathAsLiteral, logging_path));
+  CHECK(client->SetParameter(sandbox::policy::kParamLogFilePath, logging_path));
 
 #if defined(COMPONENT_BUILD)
   // For component builds, allow access to one directory level higher, where
   // the dylibs live.
   base::FilePath component_path = base::mac::MainBundlePath().Append("..");
   std::string component_path_canonical =
-      sandbox::policy::SandboxMac::GetCanonicalPath(component_path).value();
-  CHECK(client->SetParameter(sandbox::policy::SandboxMac::kSandboxComponentPath,
+      sandbox::policy::GetCanonicalPath(component_path).value();
+  CHECK(client->SetParameter(sandbox::policy::kParamComponentPath,
                              component_path_canonical));
 #endif
 
-  CHECK(client->SetParameter(sandbox::policy::SandboxMac::kSandboxOSVersion,
-                             GetOSVersion()));
+  CHECK(client->SetParameter(sandbox::policy::kParamOsVersion, GetOSVersion()));
 
   std::string homedir =
-      sandbox::policy::SandboxMac::GetCanonicalPath(base::GetHomeDir()).value();
-  CHECK(client->SetParameter(
-      sandbox::policy::SandboxMac::kSandboxHomedirAsLiteral, homedir));
+      sandbox::policy::GetCanonicalPath(base::GetHomeDir()).value();
+  CHECK(client->SetParameter(sandbox::policy::kParamHomedirAsLiteral, homedir));
 
   CHECK(client->SetBooleanParameter(
-      "FILTER_SYSCALLS",
+      sandbox::policy::kParamFilterSyscalls,
       base::FeatureList::IsEnabled(features::kMacSyscallSandbox)));
 
-  CHECK(client->SetBooleanParameter("FILTER_SYSCALLS_DEBUG", false));
+  CHECK(client->SetBooleanParameter(sandbox::policy::kParamFilterSyscallsDebug,
+                                    false));
 }
 
 void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {
@@ -150,21 +146,21 @@ void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {
 
   AddDarwinDirs(client);
 
-  CHECK(client->SetParameter("NETWORK_SERVICE_STORAGE_PATHS_COUNT",
-                             base::NumberToString(storage_paths.size())));
+  CHECK(client->SetParameter(
+      sandbox::policy::kParamNetworkServiceStoragePathsCount,
+      base::NumberToString(storage_paths.size())));
   for (size_t i = 0; i < storage_paths.size(); ++i) {
-    base::FilePath path =
-        sandbox::policy::SandboxMac::GetCanonicalPath(storage_paths[i]);
-    std::string param_name =
-        base::StringPrintf("NETWORK_SERVICE_STORAGE_PATH_%zu", i);
+    base::FilePath path = sandbox::policy::GetCanonicalPath(storage_paths[i]);
+    std::string param_name = base::StringPrintf(
+        "%s%zu", sandbox::policy::kParamNetworkServiceStoragePathN, i);
     CHECK(client->SetParameter(param_name, path.value())) << param_name;
   }
 
-  if (g_network_test_certs_dir->has_value()) {
-    CHECK(client->SetParameter("NETWORK_SERVICE_TEST_CERTS_DIR",
-                               sandbox::policy::SandboxMac::GetCanonicalPath(
-                                   **g_network_test_certs_dir)
-                                   .value()));
+  if (GetNetworkTestCertsDirectory().has_value()) {
+    CHECK(client->SetParameter(
+        sandbox::policy::kParamNetworkServiceTestCertsDir,
+        sandbox::policy::GetCanonicalPath(*GetNetworkTestCertsDirectory())
+            .value()));
   }
 }
 
@@ -175,8 +171,8 @@ void SetupPPAPISandboxParameters(sandbox::SeatbeltExecClient* client) {
   std::vector<content::WebPluginInfo> plugins;
   PluginService::GetInstance()->GetInternalPlugins(&plugins);
 
-  base::FilePath bundle_path = sandbox::policy::SandboxMac::GetCanonicalPath(
-      base::mac::MainBundlePath());
+  base::FilePath bundle_path =
+      sandbox::policy::GetCanonicalPath(base::mac::MainBundlePath());
 
   const std::string param_base_name = "PPAPI_PATH_";
   int index = 0;
@@ -195,21 +191,14 @@ void SetupPPAPISandboxParameters(sandbox::SeatbeltExecClient* client) {
 }
 #endif
 
-void SetupCDMSandboxParameters(sandbox::SeatbeltExecClient* client) {
+void SetupGpuSandboxParameters(sandbox::SeatbeltExecClient* client,
+                               const base::CommandLine& command_line) {
   SetupCommonSandboxParameters(client);
-
-  base::FilePath bundle_path = sandbox::policy::SandboxMac::GetCanonicalPath(
-      base::mac::FrameworkBundlePath().DirName());
-  CHECK(!bundle_path.empty());
-
-  CHECK(client->SetParameter(
-      sandbox::policy::SandboxMac::kSandboxBundleVersionPath,
-      bundle_path.value()));
-}
-
-void SetupUtilitySandboxParameters(sandbox::SeatbeltExecClient* client,
-                                   const base::CommandLine& command_line) {
-  SetupCommonSandboxParameters(client);
+  AddDarwinDirs(client);
+  CHECK(client->SetBooleanParameter(
+      sandbox::policy::kParamDisableMetalShaderCache,
+      command_line.HasSwitch(
+          sandbox::policy::switches::kDisableMetalShaderCache)));
 }
 
 }  // namespace
@@ -219,27 +208,19 @@ void SetupSandboxParameters(sandbox::policy::SandboxType sandbox_type,
                             sandbox::SeatbeltExecClient* client) {
   switch (sandbox_type) {
     case sandbox::policy::SandboxType::kAudio:
+    case sandbox::policy::SandboxType::kCdm:
+    case sandbox::policy::SandboxType::kMirroring:
     case sandbox::policy::SandboxType::kNaClLoader:
+    case sandbox::policy::SandboxType::kPrintBackend:
     case sandbox::policy::SandboxType::kPrintCompositor:
     case sandbox::policy::SandboxType::kRenderer:
+    case sandbox::policy::SandboxType::kUtility:
       SetupCommonSandboxParameters(client);
       break;
     case sandbox::policy::SandboxType::kGpu: {
-      SetupCommonSandboxParameters(client);
-      // Temporary for https://crbug.com/1126350.
-      CHECK(client->SetParameter("PARENT_DIR",
-                                 sandbox::policy::SandboxMac::GetCanonicalPath(
-                                     base::mac::OuterBundlePath().DirName())
-                                     .value()));
-      base::FilePath pwd;
-      CHECK(base::GetCurrentDirectory(&pwd));
-      CHECK(client->SetParameter("PWD", pwd.value()));
-      AddDarwinDirs(client);
+      SetupGpuSandboxParameters(client, command_line);
       break;
     }
-    case sandbox::policy::SandboxType::kCdm:
-      SetupCDMSandboxParameters(client);
-      break;
     case sandbox::policy::SandboxType::kNetwork:
       SetupNetworkSandboxParameters(client);
       break;
@@ -247,9 +228,6 @@ void SetupSandboxParameters(sandbox::policy::SandboxType sandbox_type,
 #if BUILDFLAG(ENABLE_PLUGINS)
       SetupPPAPISandboxParameters(client);
 #endif
-      break;
-    case sandbox::policy::SandboxType::kUtility:
-      SetupUtilitySandboxParameters(client, command_line);
       break;
     case sandbox::policy::SandboxType::kNoSandbox:
     case sandbox::policy::SandboxType::kVideoCapture:
@@ -265,7 +243,7 @@ void SetupSandboxParameters(sandbox::policy::SandboxType sandbox_type,
 }
 
 void SetNetworkTestCertsDirectoryForTesting(const base::FilePath& path) {
-  g_network_test_certs_dir->emplace(path);
+  GetNetworkTestCertsDirectory().emplace(path);
 }
 
 }  // namespace content

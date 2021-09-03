@@ -9,16 +9,16 @@ import android.view.WindowManager;
 import com.airbnb.lottie.LottieAnimationView;
 import com.airbnb.lottie.LottieDrawable;
 import com.airbnb.lottie.RenderMode;
-import org.skia.skottie.SkottieView.SkottieViewBuilder;
 
 public class PerfActivity extends Activity {
 
     int rawAssets[] = {
-            /*R.raw.star,*/ R.raw.movie_loading, R.raw.uk,  R.raw.white_material_wave_loading,
+            R.raw.star, R.raw.movie_loading, R.raw.uk,  R.raw.white_material_wave_loading,
             R.raw.check_animation, R.raw.confetti, R.raw.gears,
             R.raw.hand_sanitizer, R.raw.heart_preloader, R.raw.i_was_scared_after_that_brouhaha,
             R.raw.im_thirsty, R.raw.true_will, R.raw.workout_monkey_stay_healthy,
-            R.raw.ripple_loading_animation, R.raw.signature, R.raw.asdasd
+            R.raw.ripple_loading_animation, R.raw.signature, R.raw.asdasd, R.raw.celebration,
+            R.raw.check
     };
 
     @Override
@@ -60,8 +60,7 @@ public class PerfActivity extends Activity {
     }
 
     void runSkottie(int id) {
-        SkottieViewBuilder builder = new SkottieViewBuilder();
-        SkottieView view = builder.build(this);
+        SkottieView view = new SkottieView(this);
         view.setSource(getResources().openRawResource(id));
         view.start();
         setContentView(view);

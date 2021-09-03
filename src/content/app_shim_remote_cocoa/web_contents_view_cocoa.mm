@@ -13,11 +13,23 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 
 using remote_cocoa::mojom::DraggingInfo;
 using remote_cocoa::mojom::SelectionDirection;
 using remote_cocoa::mojom::Visibility;
 using content::DropData;
+
+// Ensure that the ui::DragDropTypes::DragOperation enum values stay in sync
+// with NSDragOperation constants, since the code below uses
+// NSDragOperationToDragOperation to filter invalid values.
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "enum mismatch: " #a)
+STATIC_ASSERT_ENUM(NSDragOperationNone, ui::DragDropTypes::DRAG_NONE);
+STATIC_ASSERT_ENUM(NSDragOperationCopy, ui::DragDropTypes::DRAG_COPY);
+STATIC_ASSERT_ENUM(NSDragOperationLink, ui::DragDropTypes::DRAG_LINK);
+STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewCocoa
@@ -26,7 +38,7 @@ using content::DropData;
   BOOL _inFullScreenTransition;
 }
 
-- (id)initWithViewsHostableView:(ui::ViewsHostableView*)v {
+- (instancetype)initWithViewsHostableView:(ui::ViewsHostableView*)v {
   self = [super initWithFrame:NSZeroRect];
   if (self != nil) {
     _viewsHostableView = v;
@@ -72,7 +84,8 @@ using content::DropData;
     ui::PopulateURLAndTitleFromPasteboard(&url, NULL, pboard, YES);
     info->url.emplace(url);
   }
-  info->operation_mask = [nsInfo draggingSourceOperationMask];
+  info->operation_mask = ui::DragDropTypes::NSDragOperationToDragOperation(
+      [nsInfo draggingSourceOperationMask]);
 }
 
 - (BOOL)allowsVibrancy {
@@ -85,13 +98,11 @@ using content::DropData;
 
 // Registers for the view for the appropriate drag types.
 - (void)registerDragTypes {
-  NSArray* types =
-      [NSArray arrayWithObjects:ui::kChromeDragDummyPboardType,
-                                kWebURLsWithTitlesPboardType, NSURLPboardType,
-                                NSStringPboardType, NSHTMLPboardType,
-                                NSRTFPboardType, NSFilenamesPboardType,
-                                ui::kWebCustomDataPboardType, nil];
-  [self registerForDraggedTypes:types];
+  [self registerForDraggedTypes:@[
+    ui::kChromeDragDummyPboardType, kWebURLsWithTitlesPboardType,
+    NSURLPboardType, NSStringPboardType, NSHTMLPboardType, NSRTFPboardType,
+    NSFilenamesPboardType, ui::kWebCustomDataPboardType
+  ]];
 }
 
 - (void)mouseEvent:(NSEvent*)theEvent {
@@ -152,7 +163,9 @@ using content::DropData;
 - (void)draggedImage:(NSImage*)anImage
              endedAt:(NSPoint)screenPoint
            operation:(NSDragOperation)operation {
-  [_dragSource endDragAt:screenPoint operation:operation];
+  [_dragSource
+      endDragAt:screenPoint
+      operation:ui::DragDropTypes::NSDragOperationToDragOperation(operation)];
 
   // Might as well throw out this object now.
   _dragSource.reset();
@@ -237,9 +250,8 @@ using content::DropData;
   if (![[self subviews] containsObject:view])
     return;
 
-  NSSelectionDirection ns_direction =
-      static_cast<NSSelectionDirection>([[[notification userInfo]
-          objectForKey:kSelectionDirection] unsignedIntegerValue]);
+  NSSelectionDirection ns_direction = static_cast<NSSelectionDirection>(
+      [[notification userInfo][kSelectionDirection] unsignedIntegerValue]);
 
   SelectionDirection direction;
   switch (ns_direction) {

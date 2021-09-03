@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/tls_connection.h"
+#include "quic/core/crypto/tls_connection.h"
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_bug_tracker.h"
 
 namespace quic {
 
@@ -36,7 +36,7 @@ class SslIndexSingleton {
     CRYPTO_library_init();
     ssl_ex_data_index_connection_ =
         SSL_get_ex_new_index(0, nullptr, nullptr, nullptr, nullptr);
-    CHECK_LE(0, ssl_ex_data_index_connection_);
+    QUICHE_CHECK_LE(0, ssl_ex_data_index_connection_);
   }
 
   SslIndexSingleton(const SslIndexSingleton&) = delete;
@@ -62,7 +62,8 @@ EncryptionLevel TlsConnection::QuicEncryptionLevel(
     case ssl_encryption_application:
       return ENCRYPTION_FORWARD_SECURE;
     default:
-      QUIC_BUG << "Invalid ssl_encryption_level_t " << static_cast<int>(level);
+      QUIC_BUG(quic_bug_10698_1)
+          << "Invalid ssl_encryption_level_t " << static_cast<int>(level);
       return ENCRYPTION_INITIAL;
   }
 }
@@ -80,7 +81,8 @@ enum ssl_encryption_level_t TlsConnection::BoringEncryptionLevel(
     case ENCRYPTION_FORWARD_SECURE:
       return ssl_encryption_application;
     default:
-      QUIC_BUG << "Invalid encryption level " << static_cast<int>(level);
+      QUIC_BUG(quic_bug_10698_2)
+          << "Invalid encryption level " << static_cast<int>(level);
       return ssl_encryption_initial;
   }
 }

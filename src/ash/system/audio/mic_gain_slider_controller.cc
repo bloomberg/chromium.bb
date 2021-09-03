@@ -8,8 +8,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 
-using chromeos::CrasAudioHandler;
-
 namespace ash {
 
 namespace {
@@ -38,7 +36,7 @@ void MicGainSliderController::SetMapDeviceSliderCallbackForTest(
 }
 
 views::View* MicGainSliderController::CreateView() {
-  return nullptr;
+  return new MicGainSliderView(this);
 }
 
 void MicGainSliderController::SliderValueChanged(

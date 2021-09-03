@@ -22,6 +22,9 @@
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "components/breadcrumbs/core/breadcrumb_manager.h"
+#include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
+#include "components/breadcrumbs/core/features.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/timer_update_scheduler.h"
 #include "components/gcm_driver/gcm_client_factory.h"
@@ -49,9 +52,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/component_updater/ios_component_updater_configurator.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_logger.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_manager.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_util.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
@@ -83,25 +84,6 @@
 #endif
 
 namespace {
-
-// If enabled local state file will have NSURLFileProtectionNone protection
-// level set for NSURLFileProtectionKey key. The purpose of this feature is to
-// understand if file protection interferes with "clean exit beacon" pref.
-const base::Feature kRemoveProtectionFromPrefFile{
-    "RemoveProtectionFromPrefFile", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Sets |level| value for NSURLFileProtectionKey key for the URL with given
-// |local_state_path|.
-void SetProtectionLevel(const base::FilePath& file_path, id level) {
-  NSString* file_path_string = base::SysUTF8ToNSString(file_path.value());
-  NSURL* file_path_url = [NSURL fileURLWithPath:file_path_string
-                                    isDirectory:NO];
-  NSError* error = nil;
-  BOOL protection_set = [file_path_url setResourceValue:level
-                                                 forKey:NSURLFileProtectionKey
-                                                  error:&error];
-  DCHECK(protection_set) << base::SysNSStringToUTF8(error.localizedDescription);
-}
 
 // Requests a network::mojom::ProxyResolvingSocketFactory on the UI thread.
 // Note that this cannot be called on a thread that is not the UI thread.
@@ -141,6 +123,10 @@ void SetLastSessionExitedCleanly(PrefService* local_state, bool clean) {
   [defaults synchronize];
   local_state->SetBoolean(prefs::kLastSessionExitedCleanly, clean);
 }
+
+// If enabled, keep logging and reporting UMA while chrome is backgrounded.
+const base::Feature kUmaBackgroundSessions{"IOSUMABackgroundSessions",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -187,8 +173,8 @@ void ApplicationContextImpl::PreMainMessageLoopRun() {
                                    GetSharedURLLoaderFactory());
   }
 
-  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
-    breadcrumb_manager_ = std::make_unique<BreadcrumbManager>();
+  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+    breadcrumb_manager_ = std::make_unique<breadcrumbs::BreadcrumbManager>();
     application_breadcrumbs_logger_ =
         std::make_unique<ApplicationBreadcrumbsLogger>(
             breadcrumb_manager_.get());
@@ -198,7 +184,12 @@ void ApplicationContextImpl::PreMainMessageLoopRun() {
     DCHECK(result);
 
     auto breadcrumb_persistent_storage_manager =
-        std::make_unique<BreadcrumbPersistentStorageManager>(storage_dir);
+        std::make_unique<breadcrumbs::BreadcrumbPersistentStorageManager>(
+            storage_dir,
+            breadcrumb_persistent_storage_util::
+                GetOldBreadcrumbPersistentStorageFilePath(storage_dir),
+            breadcrumb_persistent_storage_util::
+                GetOldBreadcrumbPersistentStorageTempFilePath(storage_dir));
 
     application_breadcrumbs_logger_->SetPersistentStorageManager(
         std::move(breadcrumb_persistent_storage_manager));
@@ -302,8 +293,11 @@ void ApplicationContextImpl::OnAppEnterBackground() {
 
   // Tell the metrics services they were cleanly shutdown.
   metrics::MetricsService* metrics_service = GetMetricsService();
-  if (metrics_service && local_state)
-    metrics_service->OnAppEnterBackground();
+  if (metrics_service && local_state) {
+    const bool keep_reporting =
+        base::FeatureList::IsEnabled(kUmaBackgroundSessions);
+    metrics_service->OnAppEnterBackground(keep_reporting);
+  }
   ukm::UkmService* ukm_service = GetMetricsServicesManager()->GetUkmService();
   if (ukm_service)
     ukm_service->OnAppEnterBackground();
@@ -381,11 +375,6 @@ ukm::UkmRecorder* ApplicationContextImpl::GetUkmRecorder() {
 variations::VariationsService* ApplicationContextImpl::GetVariationsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetMetricsServicesManager()->GetVariationsService();
-}
-
-rappor::RapporServiceImpl* ApplicationContextImpl::GetRapporServiceImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return GetMetricsServicesManager()->GetRapporServiceImpl();
 }
 
 net::NetLog* ApplicationContextImpl::GetNetLog() {
@@ -501,7 +490,7 @@ BrowserPolicyConnectorIOS* ApplicationContextImpl::GetBrowserPolicyConnector() {
   return browser_policy_connector_.get();
 }
 
-BreadcrumbPersistentStorageManager*
+breadcrumbs::BreadcrumbPersistentStorageManager*
 ApplicationContextImpl::GetBreadcrumbPersistentStorageManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return application_breadcrumbs_logger_
@@ -522,23 +511,6 @@ void ApplicationContextImpl::CreateLocalState() {
 
   base::FilePath local_state_path;
   CHECK(base::PathService::Get(ios::FILE_LOCAL_STATE, &local_state_path));
-
-  NSString* const kRemoveProtectionFromPrefFileKey =
-      @"RemoveProtectionFromPrefKey";
-  if (base::FeatureList::IsEnabled(kRemoveProtectionFromPrefFile)) {
-    SetProtectionLevel(local_state_path, NSURLFileProtectionNone);
-    [NSUserDefaults.standardUserDefaults
-        setBool:YES
-         forKey:kRemoveProtectionFromPrefFileKey];
-  } else if ([NSUserDefaults.standardUserDefaults
-                 boolForKey:kRemoveProtectionFromPrefFileKey]) {
-    // Restore default protection level when user is no longer in the
-    // experimental group.
-    SetProtectionLevel(local_state_path,
-                       NSFileProtectionCompleteUntilFirstUserAuthentication);
-    [NSUserDefaults.standardUserDefaults
-        removeObjectForKey:kRemoveProtectionFromPrefFileKey];
-  }
 
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple);
 
@@ -573,6 +545,7 @@ void ApplicationContextImpl::CreateLocalState() {
   // does not use this beacon directly.  This code should be merged with clean
   // exit beacon (as long as the user default workaround can also go into the
   // clean exit beacon).
+  // TODO(crbug.com/1208077): Use the CleanExitBeacon.
 
   // An enumeration of all possible permutations of the the beacon state in the
   // registry and in Local State.

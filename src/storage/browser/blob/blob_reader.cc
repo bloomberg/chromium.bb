@@ -79,7 +79,7 @@ BlobReader::BlobReader(const BlobDataHandle* blob_handle)
     if (blob_handle->IsBroken()) {
       net_error_ = ConvertBlobErrorToNetError(blob_handle->GetBlobStatus());
     } else {
-      blob_handle_.reset(new BlobDataHandle(*blob_handle));
+      blob_handle_ = std::make_unique<BlobDataHandle>(*blob_handle);
     }
   }
 }
@@ -137,7 +137,7 @@ void BlobReader::ReadSideData(StatusCallback done) {
                      std::move(done), side_data_size));
 }
 
-base::Optional<mojo_base::BigBuffer> BlobReader::TakeSideData() {
+absl::optional<mojo_base::BigBuffer> BlobReader::TakeSideData() {
   return std::move(side_data_);
 }
 
@@ -803,7 +803,7 @@ std::unique_ptr<network::DataPipeToSourceStream> BlobReader::CreateDataPipe(
   options.capacity_num_bytes =
       blink::BlobUtils::GetDataPipeCapacity(max_bytes_to_read);
 
-  MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
+  MojoResult result = mojo::CreateDataPipe(&options, producer, consumer);
 
   if (result != MOJO_RESULT_OK)
     return nullptr;

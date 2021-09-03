@@ -10,7 +10,10 @@
 #include "base/callback.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
+#include "components/autofill_assistant/browser/actions/action_test_utils.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
+#include "components/autofill_assistant/browser/wait_for_dom_observer.h"
+#include "components/autofill_assistant/browser/web/element.h"
 #include "components/autofill_assistant/browser/web/mock_web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -34,7 +37,7 @@ class WaitForDomActionTest : public testing::Test {
         .WillByDefault(RunOnceCallback<1>(
             ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
 
-    EXPECT_CALL(mock_action_delegate_, OnWaitForDom(_, _, _, _))
+    EXPECT_CALL(mock_action_delegate_, WaitForDomWithSlowWarning(_, _, _, _, _))
         .WillRepeatedly(Invoke(this, &WaitForDomActionTest::FakeWaitForDom));
   }
 
@@ -43,11 +46,11 @@ class WaitForDomActionTest : public testing::Test {
   void FakeWaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
+      WaitForDomObserver* observer,
       base::RepeatingCallback<
           void(BatchElementChecker*,
-               base::OnceCallback<void(const ClientStatus&)>)>& check_elements,
-      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>&
-          callback) {
+               base::OnceCallback<void(const ClientStatus&)>)> check_elements,
+      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback) {
     checker_ = std::make_unique<BatchElementChecker>();
     has_check_elements_result_ = false;
     check_elements.Run(
@@ -188,6 +191,49 @@ TEST_F(WaitForDomActionTest, ReportMatchesToServer) {
 
   EXPECT_THAT(capture.wait_for_dom_result().matching_condition_payloads(),
               ElementsAre("1", "2"));
+}
+
+TEST_F(WaitForDomActionTest, StoreMatchForLater) {
+  Selector expected_selector({"#element"});
+  test_util::MockFindElement(mock_web_controller_, expected_selector);
+
+  auto* condition = proto_.mutable_wait_condition();
+  *condition->mutable_match() = ToSelectorProto("#element");
+  condition->set_payload("1");
+  condition->mutable_client_id()->set_identifier("element");
+
+  EXPECT_CALL(callback_, Run(_));
+  Run();
+
+  EXPECT_TRUE(mock_action_delegate_.GetElementStore()->HasElement("element"));
+}
+
+TEST_F(WaitForDomActionTest, RemoveElementsNoLongerFound) {
+  Selector expected_found_selector({"#element-found"});
+  Selector expected_not_found_selector({"#element-not-found"});
+  test_util::MockFindElement(mock_web_controller_, expected_found_selector);
+  EXPECT_CALL(mock_web_controller_,
+              OnFindElement(expected_not_found_selector, _))
+      .WillOnce(
+          RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
+
+  // A previous run found this element.
+  mock_action_delegate_.GetElementStore()->AddElement("element2",
+                                                      DomObjectFrameStack());
+
+  auto* any_of = proto_.mutable_wait_condition()->mutable_any_of();
+  auto* condition1 = any_of->add_conditions();
+  *condition1->mutable_match() = ToSelectorProto("#element-found");
+  condition1->mutable_client_id()->set_identifier("element1");
+  auto* condition2 = any_of->add_conditions();
+  *condition2->mutable_match() = ToSelectorProto("#element-not-found");
+  condition2->mutable_client_id()->set_identifier("element2");
+
+  EXPECT_CALL(callback_, Run(_));
+  Run();
+
+  EXPECT_TRUE(mock_action_delegate_.GetElementStore()->HasElement("element1"));
+  EXPECT_FALSE(mock_action_delegate_.GetElementStore()->HasElement("element2"));
 }
 
 }  // namespace

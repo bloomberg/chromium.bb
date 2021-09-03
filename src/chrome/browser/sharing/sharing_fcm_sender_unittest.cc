@@ -88,19 +88,19 @@ class FakeWebPushSender : public WebPushSender {
     vapid_key_ = vapid_key;
     message_ = std::move(message);
     std::move(callback).Run(result_,
-                            base::make_optional<std::string>(kMessageId));
+                            absl::make_optional<std::string>(kMessageId));
   }
 
   const std::string& fcm_token() { return fcm_token_; }
   crypto::ECPrivateKey* vapid_key() { return vapid_key_; }
-  const base::Optional<WebPushMessage>& message() { return message_; }
+  const absl::optional<WebPushMessage>& message() { return message_; }
 
   void set_result(SendWebPushMessageResult result) { result_ = result; }
 
  private:
   std::string fcm_token_;
   crypto::ECPrivateKey* vapid_key_;
-  base::Optional<WebPushMessage> message_;
+  absl::optional<WebPushMessage> message_;
   SendWebPushMessageResult result_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebPushSender);
@@ -116,9 +116,9 @@ class FakeSharingMessageBridge : public SharingMessageBridge {
       std::unique_ptr<sync_pb::SharingMessageSpecifics> specifics,
       CommitFinishedCallback on_commit_callback) override {
     specifics_ = std::move(*specifics);
-    sync_pb::SharingMessageCommitError commit_erorr;
-    commit_erorr.set_error_code(error_code_);
-    std::move(on_commit_callback).Run(commit_erorr);
+    sync_pb::SharingMessageCommitError commit_error;
+    commit_error.set_error_code(error_code_);
+    std::move(on_commit_callback).Run(commit_error);
   }
 
   // SharingMessageBridge:
@@ -127,7 +127,7 @@ class FakeSharingMessageBridge : public SharingMessageBridge {
     return nullptr;
   }
 
-  const base::Optional<sync_pb::SharingMessageSpecifics>& specifics() {
+  const absl::optional<sync_pb::SharingMessageSpecifics>& specifics() {
     return specifics_;
   }
 
@@ -137,7 +137,7 @@ class FakeSharingMessageBridge : public SharingMessageBridge {
   }
 
  private:
-  base::Optional<sync_pb::SharingMessageSpecifics> specifics_;
+  absl::optional<sync_pb::SharingMessageSpecifics> specifics_;
   sync_pb::SharingMessageCommitError::ErrorCode error_code_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSharingMessageBridge);
@@ -156,10 +156,10 @@ class MockVapidKeyManager : public VapidKeyManager {
 class SharingFCMSenderTest : public testing::Test {
  public:
   void OnMessageSent(SharingSendMessageResult* result_out,
-                     base::Optional<std::string>* message_id_out,
+                     absl::optional<std::string>* message_id_out,
                      SharingChannelType* channel_type_out,
                      SharingSendMessageResult result,
-                     base::Optional<std::string> message_id,
+                     absl::optional<std::string> message_id,
                      SharingChannelType channel_type) {
     *result_out = result;
     *message_id_out = std::move(message_id);
@@ -218,7 +218,7 @@ TEST_F(SharingFCMSenderTest, NoFcmRegistration) {
   fcm_channel.set_sender_id_auth_secret(kSenderIdAuthSecret);
 
   SharingSendMessageResult result;
-  base::Optional<std::string> message_id;
+  absl::optional<std::string> message_id;
   SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
@@ -252,7 +252,7 @@ TEST_F(SharingFCMSenderTest, NoVapidKey) {
   fcm_channel.set_sender_id_auth_secret(kSenderIdAuthSecret);
 
   SharingSendMessageResult result;
-  base::Optional<std::string> message_id;
+  absl::optional<std::string> message_id;
   SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
@@ -282,7 +282,7 @@ TEST_F(SharingFCMSenderTest, NoChannelsSpecified) {
   // Don't set any channels.
 
   SharingSendMessageResult result;
-  base::Optional<std::string> message_id;
+  absl::optional<std::string> message_id;
   SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
@@ -316,7 +316,7 @@ TEST_F(SharingFCMSenderTest, SendViaSyncDisabled) {
   fcm_channel.set_sender_id_auth_secret(kSenderIdAuthSecret);
 
   SharingSendMessageResult result;
-  base::Optional<std::string> message_id;
+  absl::optional<std::string> message_id;
   SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
@@ -357,7 +357,7 @@ TEST_F(SharingFCMSenderTest, PreferVapid) {
   fcm_channel.set_sender_id_auth_secret(kSenderIdAuthSecret);
 
   SharingSendMessageResult result;
-  base::Optional<std::string> message_id;
+  absl::optional<std::string> message_id;
   SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
@@ -403,7 +403,7 @@ TEST_F(SharingFCMSenderTest, PreferSync) {
   fcm_channel.set_sender_id_auth_secret(kSenderIdAuthSecret);
 
   SharingSendMessageResult result;
-  base::Optional<std::string> message_id;
+  absl::optional<std::string> message_id;
   SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
@@ -470,7 +470,7 @@ TEST_P(SharingFCMSenderWebPushResultTest, ResultTest) {
   fcm_channel.set_vapid_auth_secret(kVapidAuthSecret);
 
   SharingSendMessageResult result;
-  base::Optional<std::string> message_id;
+  absl::optional<std::string> message_id;
   SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
@@ -506,7 +506,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::ValuesIn(kWebPushResultTestData));
 
 struct CommitErrorCodeTestData {
-  const sync_pb::SharingMessageCommitError::ErrorCode commit_erorr_code;
+  const sync_pb::SharingMessageCommitError::ErrorCode commit_error_code;
   const SharingSendMessageResult expected_result;
 } kCommitErrorCodeTestData[] = {
     {sync_pb::SharingMessageCommitError::NONE,
@@ -541,7 +541,7 @@ class SharingFCMSenderCommitErrorCodeTest
 TEST_P(SharingFCMSenderCommitErrorCodeTest, ErrorCodeTest) {
   test_sync_service_.SetActiveDataTypes({syncer::SHARING_MESSAGE});
 
-  fake_sharing_message_bridge_.set_error_code(GetParam().commit_erorr_code);
+  fake_sharing_message_bridge_.set_error_code(GetParam().commit_error_code);
 
   chrome_browser_sharing::FCMChannelConfiguration fcm_channel;
   fcm_channel.set_sender_id_fcm_token(kSenderIdFcmToken);
@@ -549,7 +549,7 @@ TEST_P(SharingFCMSenderCommitErrorCodeTest, ErrorCodeTest) {
   fcm_channel.set_sender_id_auth_secret(kSenderIdAuthSecret);
 
   SharingSendMessageResult result;
-  base::Optional<std::string> message_id;
+  absl::optional<std::string> message_id;
   SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
@@ -600,7 +600,7 @@ TEST_F(SharingFCMSenderTest, ServerTarget) {
   server_channel.set_auth_secret(kServerAuthSecret);
 
   SharingSendMessageResult result;
-  base::Optional<std::string> message_id;
+  absl::optional<std::string> message_id;
   SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();

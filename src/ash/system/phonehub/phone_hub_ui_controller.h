@@ -6,13 +6,16 @@
 #define ASH_SYSTEM_PHONEHUB_PHONE_HUB_UI_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/phonehub/onboarding_view.h"
 #include "ash/system/phonehub/phone_hub_content_view.h"
 #include "ash/system/phonehub/phone_status_view.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/timer/timer.h"
 #include "chromeos/components/phonehub/feature_status_provider.h"
 #include "chromeos/components/phonehub/onboarding_ui_tracker.h"
+#include "chromeos/components/phonehub/phone_model.h"
 
 namespace chromeos {
 namespace phonehub {
@@ -30,7 +33,9 @@ namespace ash {
 // corresponding main content view to be displayed in the tray bubble.
 class ASH_EXPORT PhoneHubUiController
     : public chromeos::phonehub::FeatureStatusProvider::Observer,
-      public chromeos::phonehub::OnboardingUiTracker::Observer {
+      public chromeos::phonehub::OnboardingUiTracker::Observer,
+      public chromeos::phonehub::PhoneModel::Observer,
+      public SessionObserver {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -46,10 +51,10 @@ class ASH_EXPORT PhoneHubUiController
     kOnboardingWithoutPhone,
     kOnboardingWithPhone,
     kBluetoothDisabled,
-    kInitialConnecting,
     kPhoneConnecting,
-    kConnectionError,
+    kPhoneDisconnected,
     kPhoneConnected,
+    kTetherConnectionPending,
   };
 
   PhoneHubUiController();
@@ -87,6 +92,12 @@ class ASH_EXPORT PhoneHubUiController
   // chromeos::phonehub::OnboardingUiTracker::Observer:
   void OnShouldShowOnboardingUiChanged() override;
 
+  // chromeos::phonehub::PhoneModel::Observer:
+  void OnModelChanged() override;
+
+  // SessionObserver:
+  void OnActiveUserSessionChanged(const AccountId& account_id) override;
+
   // Updates the current UI state and notifies observers.
   void UpdateUiState(PhoneHubUiController::UiState new_state);
 
@@ -96,14 +107,29 @@ class ASH_EXPORT PhoneHubUiController
   // Cleans up |phone_hub_manager_| by removing all observers.
   void CleanUpPhoneHubManager();
 
+  // When |connecting_view_grace_period_timer_| ends, triggers a change in
+  // the content view to show a disconnected view.
+  void OnConnectingViewTimerEnd();
+
   // The PhoneHubManager that provides data for the UI.
   chromeos::phonehub::PhoneHubManager* phone_hub_manager_ = nullptr;
 
   // The current UI state.
   UiState ui_state_ = UiState::kHidden;
 
+  // This value becomes true the first time the user opens the PhoneHub UI
+  // when the feature is in the enabled state, and a tether scan request is
+  // made.
+  bool has_requested_tether_scan_during_session_ = false;
+
   // Registered observers.
   base::ObserverList<Observer> observer_list_;
+
+  // The timer that dictates how long to show |kConnecting| after disconnect
+  // so when the connection fails on the first attempt and retries, it is not
+  // confusing to users when it shows disconnecting view, rather, it will show
+  // connecting view on this occasion.
+  base::OneShotTimer connecting_view_grace_period_timer_;
 };
 
 }  // namespace ash

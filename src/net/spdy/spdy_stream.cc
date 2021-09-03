@@ -23,6 +23,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
 #include "net/base/load_timing_info.h"
+#include "net/http/http_status_code.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -79,12 +80,11 @@ class SpdyStream::HeadersBufferProducer : public SpdyBufferProducer {
   std::unique_ptr<SpdyBuffer> ProduceBuffer() override {
     if (!stream_.get()) {
       NOTREACHED();
-      return std::unique_ptr<SpdyBuffer>();
+      return nullptr;
     }
     DCHECK_GT(stream_->stream_id(), 0u);
     return std::make_unique<SpdyBuffer>(stream_->ProduceHeadersFrame());
   }
-  size_t EstimateMemoryUsage() const override { return 0; }
 
  private:
   const base::WeakPtr<SpdyStream> stream_;
@@ -412,22 +412,27 @@ void SpdyStream::OnHeadersReceived(
 
       base::UmaHistogramSparse("Net.SpdyResponseCode", status);
 
-      // Include 1XX responses in the TTFB as per the resource timing spec
-      // for responseStart.
+      // Include informational responses (1xx) in the TTFB as per the resource
+      // timing spec for responseStart.
       if (recv_first_byte_time_.is_null())
         recv_first_byte_time_ = recv_first_byte_time;
+      // Also record the TTFB of non-informational responses.
+      if (status / 100 != 1) {
+        DCHECK(recv_first_byte_time_for_non_informational_response_.is_null());
+        recv_first_byte_time_for_non_informational_response_ =
+            recv_first_byte_time;
+      }
 
-      // Ignore informational headers like 103 Early Hints.
-      // TODO(bnc): Add support for 103 Early Hints, https://crbug.com/671310.
-      // However, do not ignore 101 Switching Protocols, because broken
-      // servers might send this as a response to a WebSocket request,
-      // in which case it needs to pass through so that the WebSocket layer
-      // can signal an error.
-      if (status / 100 == 1 && status != 101) {
-        // Record the timing of the 103 Early Hints response for the experiment
-        // (https://crbug.com/1093693).
-        if (status == 103 && first_early_hints_time_.is_null())
-          first_early_hints_time_ = recv_first_byte_time;
+      // Handle informational responses (1xx):
+      // * Pass through 101 Switching Protocols, because broken servers might
+      //   send this as a response to a WebSocket request, in which case it
+      //   needs to pass through so that the WebSocket layer can signal an
+      //   error.
+      // * Plumb 103 Early Hints to the delegate.
+      // * Ignore other informational responses.
+      if (status / 100 == 1 && status != HTTP_SWITCHING_PROTOCOLS) {
+        if (status == HTTP_EARLY_HINTS)
+          OnEarlyHintsReceived(response_headers, recv_first_byte_time);
         return;
       }
 
@@ -555,6 +560,8 @@ void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
   if (!buffer) {
     if (io_state_ == STATE_OPEN) {
       io_state_ = STATE_HALF_CLOSED_REMOTE;
+      // Inform the delegate of EOF. This may delete |this|.
+      delegate_->OnDataReceived(nullptr);
     } else if (io_state_ == STATE_HALF_CLOSED_LOCAL) {
       io_state_ = STATE_CLOSED;
       // Deletes |this|.
@@ -594,21 +601,12 @@ void SpdyStream::OnPaddingConsumed(size_t len) {
 
 void SpdyStream::OnFrameWriteComplete(spdy::SpdyFrameType frame_type,
                                       size_t frame_size) {
-  // PRIORITY writes are allowed at any time and do not trigger a state update.
-  if (frame_type == spdy::SpdyFrameType::PRIORITY) {
+  if (frame_type != spdy::SpdyFrameType::HEADERS &&
+      frame_type != spdy::SpdyFrameType::DATA) {
     return;
   }
 
-  // Frame types reserved in
-  // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00 ought to be
-  // ignored.
-  if (static_cast<uint8_t>(frame_type) % 0x1f == 0x0b)
-    return;
-
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
-  CHECK(frame_type == spdy::SpdyFrameType::HEADERS ||
-        frame_type == spdy::SpdyFrameType::DATA)
-      << frame_type;
 
   int result = (frame_type == spdy::SpdyFrameType::HEADERS)
                    ? OnHeadersSent()
@@ -832,17 +830,10 @@ bool SpdyStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   // first bytes of the HEADERS frame were received to BufferedSpdyFramer
   // (https://crbug.com/568024).
   load_timing_info->receive_headers_start = recv_first_byte_time_;
+  load_timing_info->receive_non_informational_headers_start =
+      recv_first_byte_time_for_non_informational_response_;
   load_timing_info->first_early_hints_time = first_early_hints_time_;
   return result;
-}
-
-size_t SpdyStream::EstimateMemoryUsage() const {
-  // TODO(xunjieli): https://crbug.com/669108. Estimate |pending_send_data_|
-  // once scoped_refptr support is in.
-  return base::trace_event::EstimateMemoryUsage(url_) +
-         base::trace_event::EstimateMemoryUsage(request_headers_) +
-         base::trace_event::EstimateMemoryUsage(pending_recv_data_) +
-         base::trace_event::EstimateMemoryUsage(response_headers_);
 }
 
 void SpdyStream::QueueNextDataFrame() {
@@ -900,6 +891,35 @@ void SpdyStream::QueueNextDataFrame() {
   session_->EnqueueStreamWrite(
       GetWeakPtr(), spdy::SpdyFrameType::DATA,
       std::make_unique<SimpleBufferProducer>(std::move(data_buffer)));
+}
+
+void SpdyStream::OnEarlyHintsReceived(
+    const spdy::Http2HeaderBlock& response_headers,
+    base::TimeTicks recv_first_byte_time) {
+  // Record the timing of the 103 Early Hints response for the experiment
+  // (https://crbug.com/1093693).
+  if (first_early_hints_time_.is_null())
+    first_early_hints_time_ = recv_first_byte_time;
+
+  // Transfer-encoding is a connection specific header.
+  if (response_headers.find("transfer-encoding") != response_headers.end()) {
+    const char error[] = "Received transfer-encoding header";
+    LogStreamError(ERR_HTTP2_PROTOCOL_ERROR, error);
+    session_->ResetStream(stream_id_, ERR_HTTP2_PROTOCOL_ERROR, error);
+    return;
+  }
+
+  if (type_ != SPDY_REQUEST_RESPONSE_STREAM || io_state_ == STATE_IDLE) {
+    const char error[] = "Early Hints received before request sent.";
+    LogStreamError(ERR_HTTP2_PROTOCOL_ERROR, error);
+    session_->ResetStream(stream_id_, ERR_HTTP2_PROTOCOL_ERROR, error);
+    return;
+  }
+
+  // `delegate_` must be attached at this point when `type_` is
+  // SPDY_REQUEST_RESPONSE_STREAM.
+  CHECK(delegate_);
+  delegate_->OnEarlyHintsReceived(response_headers);
 }
 
 void SpdyStream::SaveResponseHeaders(

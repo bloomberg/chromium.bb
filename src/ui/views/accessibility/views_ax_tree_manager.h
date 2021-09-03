@@ -11,7 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_event_generator.h"
@@ -27,6 +27,8 @@
 #include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/accessibility/ax_tree_source_views.h"
 #include "ui/views/views_export.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace ui {
 
@@ -38,7 +40,6 @@ namespace views {
 
 class AXAuraObjWrapper;
 class View;
-class Widget;
 
 // Manages an accessibility tree that mirrors the Views tree for a particular
 // widget.
@@ -51,10 +52,11 @@ class Widget;
 // deserialized into an AXTree, both in the same process.
 class VIEWS_EXPORT ViewsAXTreeManager : public ui::AXTreeManager,
                                         public ui::AXActionHandler,
-                                        public AXEventObserver {
+                                        public AXEventObserver,
+                                        public views::WidgetObserver {
  public:
   using GeneratedEventCallbackForTesting = base::RepeatingCallback<
-      void(Widget*, ui::AXEventGenerator::Event, ui::AXNode::AXID)>;
+      void(Widget*, ui::AXEventGenerator::Event, ui::AXNodeID)>;
 
   // Creates an instance of this class that manages an AXTree mirroring the
   // Views tree rooted at a given Widget.
@@ -80,8 +82,8 @@ class VIEWS_EXPORT ViewsAXTreeManager : public ui::AXTreeManager,
 
   // AXTreeManager implementation.
   ui::AXNode* GetNodeFromTree(const ui::AXTreeID tree_id,
-                              const ui::AXNode::AXID node_id) const override;
-  ui::AXNode* GetNodeFromTree(const ui::AXNode::AXID node_id) const override;
+                              const ui::AXNodeID node_id) const override;
+  ui::AXNode* GetNodeFromTree(const ui::AXNodeID node_id) const override;
   ui::AXTreeID GetTreeID() const override;
   ui::AXTreeID GetParentTreeID() const override;
   ui::AXNode* GetRootAsAXNode() const override;
@@ -93,9 +95,12 @@ class VIEWS_EXPORT ViewsAXTreeManager : public ui::AXTreeManager,
   // AXEventObserver implementation.
   void OnViewEvent(views::View* view, ax::mojom::Event event) override;
 
+  // WidgetObserver implementation.
+  void OnWidgetDestroyed(Widget* widget) override;
+  void OnWidgetClosing(Widget* widget) override;
+
  private:
-  using ViewsAXTreeSerializer =
-      ui::AXTreeSerializer<AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData>;
+  using ViewsAXTreeSerializer = ui::AXTreeSerializer<AXAuraObjWrapper*>;
 
   void SerializeTreeUpdates();
   void UnserializeTreeUpdates(const std::vector<ui::AXTreeUpdate>& updates);
@@ -110,7 +115,7 @@ class VIEWS_EXPORT ViewsAXTreeManager : public ui::AXTreeManager,
   // The Widget for which this class manages an AXTree.
   //
   // Weak, a Widget doesn't own this class.
-  Widget* const widget_;
+  Widget* widget_;
 
   // Set to true if we are still waiting for a task to serialize all previously
   // modified nodes.
@@ -118,11 +123,18 @@ class VIEWS_EXPORT ViewsAXTreeManager : public ui::AXTreeManager,
 
   // The set of nodes in the source tree that might have been modified after an
   // event has been fired on them.
-  std::set<ui::AXNode::AXID> modified_nodes_;
+  std::set<ui::AXNodeID> modified_nodes_;
 
   // The cache that maps objects in the Views tree to AXAuraObjWrapper objects
   // that are used to serialize the Views tree.
   AXAuraObjCache cache_;
+
+  // The ID for this AXTree.
+  ui::AXTreeID tree_id_;
+
+  // The AXTree that mirrors the Views tree and which is created by
+  // deserializing the updates from |tree_source_|.
+  ui::AXTree ax_tree_;
 
   // The tree source that enables us to serialize the Views tree.
   AXTreeSourceViews tree_source_;
@@ -130,10 +142,6 @@ class VIEWS_EXPORT ViewsAXTreeManager : public ui::AXTreeManager,
   // The serializer that serializes the Views tree into one or more
   // AXTreeUpdate.
   ViewsAXTreeSerializer tree_serializer_;
-
-  // The AXTree that mirrors the Views tree and which is created by
-  // deserializing the updates from |tree_source_|.
-  ui::AXTree ax_tree_;
 
   // For automatically generating events based on changes to |tree_|.
   ui::AXEventGenerator event_generator_;
@@ -143,7 +151,9 @@ class VIEWS_EXPORT ViewsAXTreeManager : public ui::AXTreeManager,
 
   // To prevent any use-after-free, members below this line should be declared
   // last.
-  ScopedObserver<AXEventManager, AXEventObserver> views_event_observer_{this};
+  base::ScopedObservation<AXEventManager, AXEventObserver>
+      views_event_observer_{this};
+  base::ScopedObservation<Widget, views::WidgetObserver> widget_observer_{this};
   base::WeakPtrFactory<ViewsAXTreeManager> weak_factory_{this};
 };
 

@@ -9,76 +9,113 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
-import org.chromium.chrome.browser.feed.FeedV1ActionOptions;
-import org.chromium.chrome.browser.feed.StreamLifecycleManager;
-import org.chromium.chrome.browser.feed.shared.FeedFeatures;
+import org.chromium.chrome.browser.feed.FeedSurfaceLifecycleManager;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
-import org.chromium.chrome.browser.feed.shared.stream.Stream;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
+import org.chromium.chrome.browser.ntp.ScrollableContainerDelegate;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /** The coordinator to control the explore surface. */
 class ExploreSurfaceCoordinator implements FeedSurfaceDelegate {
-    private final ChromeActivity mActivity;
+    private final Activity mActivity;
     private final PropertyModelChangeProcessor mPropertyModelChangeProcessor;
-    private final FeedSurfaceCreator mFeedSurfaceCreator;
+    private final FeedSurfaceController mFeedSurfaceController;
     private final Supplier<Tab> mParentTabSupplier;
     private final boolean mHasHeader;
+    private final SnackbarManager mSnackbarManager;
+    private final Supplier<ShareDelegate> mShareDelegateSupplier;
+    private final WindowAndroid mWindowAndroid;
+    private final TabModelSelector mTabModelSelector;
+    private ExploreSurfaceFeedLifecycleManager mExploreSurfaceFeedLifecycleManager;
 
     // mExploreSurfaceNavigationDelegate is lightweight, we keep it across FeedSurfaceCoordinators
     // after creating it during the first show.
     private ExploreSurfaceNavigationDelegate mExploreSurfaceNavigationDelegate;
 
-    /** Interface to create {@link FeedSurfaceCoordinator} */
-    interface FeedSurfaceCreator {
+    /** Interface to control the {@link FeedSurfaceDelegate} */
+    interface FeedSurfaceController {
         /**
          * Creates the {@link FeedSurfaceCoordinator} for the specified mode.
          * @param isInNightMode Whether or not the feed surface is going to display in night mode.
+         * @param launchOrigin Where the feed was launched from.
          * @return The {@link FeedSurfaceCoordinator}.
          */
-        FeedSurfaceCoordinator createFeedSurfaceCoordinator(
-                boolean isInNightMode, boolean isPlaceholderShown);
+        FeedSurfaceCoordinator createFeedSurfaceCoordinator(boolean isInNightMode,
+                boolean isPlaceholderShown, @NewTabPageLaunchOrigin int launchOrigin);
     }
 
-    ExploreSurfaceCoordinator(ChromeActivity activity, ViewGroup parentView,
-            PropertyModel containerPropertyModel, boolean hasHeader,
-            BottomSheetController bottomSheetController, Supplier<Tab> parentTabSupplier) {
+    /**
+     * @param activity The current {@link Activity}.
+     * @param parentView The parent {@link ViewGroup} for the start surface.
+     * @param containerPropertyModel The {@link PropertyModel} for the container.
+     * @param hasHeader Whether the surface has a header.
+     * @param bottomSheetController Controls the state of the bottom sheet.
+     * @param parentTabSupplier Supplies the current {@link Tab}.
+     * @param scrollableContainerDelegate Delegate for the scrollable container.
+     * @param snackbarManager Manages the snackbar.
+     * @param shareDelegateSupplier Supplies the {@link ShareDelegate}.
+     * @param windowAndroid The current {@link WindowAndroid}.
+     * @param tabModelSelector The current {@link TabModelSelector}.
+     */
+    ExploreSurfaceCoordinator(@NonNull Activity activity, @NonNull ViewGroup parentView,
+            @NonNull PropertyModel containerPropertyModel, boolean hasHeader,
+            @NonNull BottomSheetController bottomSheetController,
+            @NonNull Supplier<Tab> parentTabSupplier,
+            @NonNull ScrollableContainerDelegate scrollableContainerDelegate,
+            @NonNull SnackbarManager snackbarManager,
+            @NonNull Supplier<ShareDelegate> shareDelegateSupplier,
+            @NonNull WindowAndroid windowAndroid, @NonNull TabModelSelector tabModelSelector) {
         mActivity = activity;
         mHasHeader = hasHeader;
         mParentTabSupplier = parentTabSupplier;
+        mSnackbarManager = snackbarManager;
+        mShareDelegateSupplier = shareDelegateSupplier;
+        mWindowAndroid = windowAndroid;
+        mTabModelSelector = tabModelSelector;
 
         mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(
                 containerPropertyModel, parentView, ExploreSurfaceViewBinder::bind);
-        mFeedSurfaceCreator = new FeedSurfaceCreator() {
+        mFeedSurfaceController = new FeedSurfaceController() {
             @Override
-            public FeedSurfaceCoordinator createFeedSurfaceCoordinator(
-                    boolean isInNightMode, boolean isPlaceholderShown) {
-                return internalCreateFeedSurfaceCoordinator(
-                        mHasHeader, isInNightMode, isPlaceholderShown, bottomSheetController);
+            public FeedSurfaceCoordinator createFeedSurfaceCoordinator(boolean isInNightMode,
+                    boolean isPlaceholderShown, @NewTabPageLaunchOrigin int launchOrigin) {
+                return internalCreateFeedSurfaceCoordinator(mHasHeader, isInNightMode,
+                        isPlaceholderShown, bottomSheetController, scrollableContainerDelegate,
+                        launchOrigin);
             }
         };
     }
 
     /**
-     * Gets the {@link FeedSurfaceCreator}.
-     * @return the {@link FeedSurfaceCreator}.
+     * Gets the {@link FeedSurfaceController}.
+     * @return the {@link FeedSurfaceController}.
      */
-    FeedSurfaceCreator getFeedSurfaceCreator() {
-        return mFeedSurfaceCreator;
+    FeedSurfaceController getFeedSurfaceController() {
+        return mFeedSurfaceController;
     }
 
     // Implements FeedSurfaceDelegate.
     @Override
-    public StreamLifecycleManager createStreamLifecycleManager(Stream stream, Activity activity) {
-        return new ExploreSurfaceStreamLifecycleManager(stream, activity, mHasHeader);
+    public FeedSurfaceLifecycleManager createStreamLifecycleManager(
+            Activity activity, FeedSurfaceCoordinator coordinator) {
+        mExploreSurfaceFeedLifecycleManager =
+                new ExploreSurfaceFeedLifecycleManager(activity, mHasHeader, coordinator);
+        return mExploreSurfaceFeedLifecycleManager;
     }
 
     @Override
@@ -88,7 +125,9 @@ class ExploreSurfaceCoordinator implements FeedSurfaceDelegate {
 
     private FeedSurfaceCoordinator internalCreateFeedSurfaceCoordinator(boolean hasHeader,
             boolean isInNightMode, boolean isPlaceholderShown,
-            BottomSheetController bottomSheetController) {
+            BottomSheetController bottomSheetController,
+            ScrollableContainerDelegate scrollableContainerDelegate,
+            @NewTabPageLaunchOrigin int launchOrigin) {
         if (mExploreSurfaceNavigationDelegate == null) {
             mExploreSurfaceNavigationDelegate =
                     new ExploreSurfaceNavigationDelegate(mParentTabSupplier);
@@ -98,26 +137,21 @@ class ExploreSurfaceCoordinator implements FeedSurfaceDelegate {
         SectionHeaderView sectionHeaderView = null;
         if (hasHeader) {
             LayoutInflater inflater = LayoutInflater.from(mActivity);
-            if (FeedFeatures.isReportingUserActions()) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)) {
                 sectionHeaderView = (SectionHeaderView) inflater.inflate(
-                        R.layout.new_tab_page_snippets_expandable_header_with_menu, null, false);
+                        org.chromium.chrome.R.layout.new_tab_page_multi_feed_header, null, false);
             } else {
-                sectionHeaderView =
-                        (SectionHeaderView) inflater.inflate(R.layout.ss_feed_header, null, false);
+                sectionHeaderView = (SectionHeaderView) inflater.inflate(
+                        org.chromium.chrome.R.layout.new_tab_page_feed_v2_expandable_header, null,
+                        false);
             }
         }
 
-        FeedV1ActionOptions feedActionOptions = new FeedV1ActionOptions();
-        feedActionOptions.inhibitDownload = true;
-        feedActionOptions.inhibitOpenInIncognito = true;
-        feedActionOptions.inhibitOpenInNewTab = true;
-        feedActionOptions.inhibitLearnMore = true;
-
-        FeedSurfaceCoordinator feedSurfaceCoordinator = new FeedSurfaceCoordinator(mActivity,
-                mActivity.getSnackbarManager(), mActivity.getTabModelSelector(),
-                mActivity.getActivityTabProvider(), null, null, sectionHeaderView,
-                feedActionOptions, isInNightMode, this, mExploreSurfaceNavigationDelegate, profile,
-                isPlaceholderShown, bottomSheetController);
+        FeedSurfaceCoordinator feedSurfaceCoordinator =
+                new FeedSurfaceCoordinator(mActivity, mSnackbarManager, mWindowAndroid, null, null,
+                        sectionHeaderView, isInNightMode, this, mExploreSurfaceNavigationDelegate,
+                        profile, isPlaceholderShown, bottomSheetController, mShareDelegateSupplier,
+                        scrollableContainerDelegate, mTabModelSelector, launchOrigin);
         feedSurfaceCoordinator.getView().setId(R.id.start_surface_explore_view);
         return feedSurfaceCoordinator;
         // TODO(crbug.com/982018): Customize surface background for incognito and dark mode.

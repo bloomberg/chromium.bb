@@ -6,16 +6,23 @@
 
 #include <utility>
 
-#include "base/time/default_clock.h"
-#include "base/time/default_tick_clock.h"
+#include "base/command_line.h"
+#include "base/hash/hash.h"
+#include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
+#include "base/scoped_observation.h"
+#include "base/strings/strcat.h"
 #include "build/build_config.h"
+#include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/feed_network_impl.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/image_fetcher.h"
 #include "components/feed/core/v2/metrics_reporter.h"
-#include "components/feed/core/v2/refresh_task_scheduler.h"
+#include "components/feed/core/v2/persistent_key_value_store_impl.h"
+#include "components/feed/core/v2/prefs.h"
+#include "components/feed/core/v2/public/refresh_task_scheduler.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -61,7 +68,7 @@ class FeedService::HistoryObserverImpl
       : feed_stream_(feed_stream), identity_manager_(identity_manager) {
     // May be null for some profiles.
     if (history_service)
-      history_service->AddObserver(this);
+      scoped_history_service_observer_.Observe(history_service);
   }
   HistoryObserverImpl(const HistoryObserverImpl&) = delete;
   HistoryObserverImpl& operator=(const HistoryObserverImpl&) = delete;
@@ -69,20 +76,26 @@ class FeedService::HistoryObserverImpl
   // history::HistoryServiceObserver.
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override {
-    if (internal::ShouldClearFeed(identity_manager_->HasPrimaryAccount(),
-                                  deletion_info))
+    if (internal::ShouldClearFeed(
+            identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync),
+            deletion_info))
       feed_stream_->OnAllHistoryDeleted();
   }
 
  private:
   FeedStream* feed_stream_;
   signin::IdentityManager* identity_manager_;
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      scoped_history_service_observer_{this};
 };
 
 class FeedService::NetworkDelegateImpl : public FeedNetworkImpl::Delegate {
  public:
-  explicit NetworkDelegateImpl(FeedService::Delegate* service_delegate)
-      : service_delegate_(service_delegate) {}
+  NetworkDelegateImpl(FeedService::Delegate* service_delegate,
+                      signin::IdentityManager* identity_manager)
+      : service_delegate_(service_delegate),
+        identity_manager_(identity_manager) {}
   NetworkDelegateImpl(const NetworkDelegateImpl&) = delete;
   NetworkDelegateImpl& operator=(const NetworkDelegateImpl&) = delete;
 
@@ -91,8 +104,14 @@ class FeedService::NetworkDelegateImpl : public FeedNetworkImpl::Delegate {
     return service_delegate_->GetLanguageTag();
   }
 
+  std::string GetSyncSignedInGaia() override {
+    return identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+        .gaia;
+  }
+
  private:
   FeedService::Delegate* service_delegate_;
+  signin::IdentityManager* identity_manager_;
 };
 
 class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
@@ -112,7 +131,11 @@ class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
   }
 
   // FeedStream::Delegate.
-  bool IsEulaAccepted() override { return eula_notifier_.IsEulaAccepted(); }
+  bool IsEulaAccepted() override {
+    return eula_notifier_.IsEulaAccepted() ||
+           base::CommandLine::ForCurrentProcess()->HasSwitch(
+               "feed-screenshot-mode");
+  }
   bool IsOffline() override { return net::NetworkChangeNotifier::IsOffline(); }
   DisplayMetrics GetDisplayMetrics() override {
     return service_delegate_->GetDisplayMetrics();
@@ -120,11 +143,20 @@ class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
   std::string GetLanguageTag() override {
     return service_delegate_->GetLanguageTag();
   }
+  bool IsAutoplayEnabled() override {
+    return service_delegate_->IsAutoplayEnabled();
+  }
   void ClearAll() override { service_delegate_->ClearAll(); }
   void PrefetchImage(const GURL& url) override {
     service_delegate_->PrefetchImage(url);
   }
-  bool IsSignedIn() override { return identity_manager_->HasPrimaryAccount(); }
+  std::string GetSyncSignedInGaia() override {
+    return identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+        .gaia;
+  }
+  void RegisterExperiments(const Experiments& experiments) override {
+    service_delegate_->RegisterExperiments(experiments);
+  }
 
  private:
   FeedService::Delegate* service_delegate_;
@@ -146,13 +178,18 @@ class FeedService::IdentityManagerObserverImpl
   ~IdentityManagerObserverImpl() override {
     identity_manager_->RemoveObserver(this);
   }
-  void OnPrimaryAccountSet(
-      const CoreAccountInfo& primary_account_info) override {
-    feed_stream_->OnSignedIn();
-  }
-  void OnPrimaryAccountCleared(
-      const CoreAccountInfo& previous_primary_account_info) override {
-    feed_stream_->OnSignedOut();
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event) override {
+    switch (event.GetEventTypeFor(signin::ConsentLevel::kSync)) {
+      case signin::PrimaryAccountChangeEvent::Type::kSet:
+        feed_stream_->OnSignedIn();
+        return;
+      case signin::PrimaryAccountChangeEvent::Type::kCleared:
+        feed_stream_->OnSignedOut();
+        return;
+      case signin::PrimaryAccountChangeEvent::Type::kNone:
+        return;
+    }
   }
 
  private:
@@ -169,10 +206,10 @@ FeedService::FeedService(
     PrefService* profile_prefs,
     PrefService* local_state,
     std::unique_ptr<leveldb_proto::ProtoDatabase<feedstore::Record>> database,
+    std::unique_ptr<leveldb_proto::ProtoDatabase<feedkvstore::Entry>>
+        key_value_store_database,
     signin::IdentityManager* identity_manager,
     history::HistoryService* history_service,
-    offline_pages::PrefetchService* prefetch_service,
-    offline_pages::OfflinePageModel* offline_page_model,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& api_key,
@@ -181,21 +218,23 @@ FeedService::FeedService(
       refresh_task_scheduler_(std::move(refresh_task_scheduler)) {
   stream_delegate_ = std::make_unique<StreamDelegateImpl>(
       local_state, delegate_.get(), identity_manager);
-  network_delegate_ = std::make_unique<NetworkDelegateImpl>(delegate_.get());
-  metrics_reporter_ = std::make_unique<MetricsReporter>(
-      base::DefaultTickClock::GetInstance(), profile_prefs);
+  network_delegate_ =
+      std::make_unique<NetworkDelegateImpl>(delegate_.get(), identity_manager);
+  metrics_reporter_ = std::make_unique<MetricsReporter>(profile_prefs);
   feed_network_ = std::make_unique<FeedNetworkImpl>(
       network_delegate_.get(), identity_manager, api_key, url_loader_factory,
-      base::DefaultTickClock::GetInstance(), profile_prefs);
+      profile_prefs);
   image_fetcher_ = std::make_unique<ImageFetcher>(url_loader_factory);
   store_ = std::make_unique<FeedStore>(std::move(database));
+  persistent_key_value_store_ = std::make_unique<PersistentKeyValueStoreImpl>(
+      std::move(key_value_store_database));
 
   stream_ = std::make_unique<FeedStream>(
       refresh_task_scheduler_.get(), metrics_reporter_.get(),
       stream_delegate_.get(), profile_prefs, feed_network_.get(),
-      image_fetcher_.get(), store_.get(), prefetch_service, offline_page_model,
-      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      image_fetcher_.get(), store_.get(), persistent_key_value_store_.get(),
       chrome_info);
+  api_ = stream_.get();
 
   history_observer_ = std::make_unique<HistoryObserverImpl>(
       history_service, static_cast<FeedStream*>(stream_.get()),
@@ -206,6 +245,8 @@ FeedService::FeedService(
       identity_manager, stream_.get());
   identity_manager->AddObserver(identity_manager_observer_.get());
 
+  delegate_->RegisterExperiments(prefs::GetExperiments(*profile_prefs));
+
 #if defined(OS_ANDROID)
   application_status_listener_ =
       base::android::ApplicationStatusListener::New(base::BindRepeating(
@@ -213,10 +254,19 @@ FeedService::FeedService(
 #endif
 }
 
+FeedService::FeedService() = default;
+
+// static
+std::unique_ptr<FeedService> FeedService::CreateForTesting(FeedApi* api) {
+  auto result = base::WrapUnique(new FeedService());
+  result->api_ = api;
+  return result;
+}
+
 FeedService::~FeedService() = default;
 
-FeedStreamApi* FeedService::GetStream() {
-  return stream_.get();
+FeedApi* FeedService::GetStream() {
+  return api_;
 }
 
 void FeedService::ClearCachedData() {
@@ -225,8 +275,25 @@ void FeedService::ClearCachedData() {
 
 // static
 bool FeedService::IsEnabled(const PrefService& pref_service) {
-  return feed::IsV2Enabled() &&
-         pref_service.GetBoolean(feed::prefs::kEnableSnippets);
+  return pref_service.GetBoolean(feed::prefs::kEnableSnippets);
+}
+
+// static
+uint64_t FeedService::GetReliabilityLoggingId(const std::string& metrics_id,
+                                              PrefService* prefs) {
+  // The reliability logging ID is generated from the UMA client ID so that it
+  // changes whenever the UMA client ID changes. We hash the UMA client ID with
+  // a random salt so that the UMA client ID can't be guessed from the
+  // reliability logging ID. The salt never leaves the client.
+  uint64_t salt;
+  if (!prefs->HasPrefPath(prefs::kReliabilityLoggingIdSalt)) {
+    salt = base::RandUint64();
+    prefs->SetUint64(prefs::kReliabilityLoggingIdSalt, salt);
+  } else {
+    salt = prefs->GetUint64(prefs::kReliabilityLoggingIdSalt);
+  }
+  return base::FastHash(base::StrCat(
+      {metrics_id, std::string(reinterpret_cast<char*>(&salt), sizeof(salt))}));
 }
 
 #if defined(OS_ANDROID)

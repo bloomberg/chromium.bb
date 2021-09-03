@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "media/base/audio_capturer_source.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -21,6 +22,8 @@
 using ::testing::InvokeWithoutArgs;
 
 namespace mirroring {
+
+using AudioSourceErrorCode = media::AudioCapturerSource::ErrorCode;
 
 namespace {
 
@@ -36,7 +39,7 @@ class MockDelegate final : public media::AudioInputIPCDelegate {
   ~MockDelegate() override {}
 
   MOCK_METHOD0(StreamCreated, void());
-  MOCK_METHOD0(OnError, void());
+  MOCK_METHOD1(OnError, void(AudioSourceErrorCode code));
   MOCK_METHOD1(OnMuted, void(bool muted));
   MOCK_METHOD0(OnIPCClosed, void());
 
@@ -102,9 +105,19 @@ class CapturedAudioInputTest : public ::testing::Test {
   void SignalStreamError() {
     EXPECT_TRUE(stream_client_.is_bound());
     base::RunLoop run_loop;
-    EXPECT_CALL(delegate_, OnError())
+    EXPECT_CALL(delegate_, OnError(AudioSourceErrorCode::kUnknown))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-    stream_client_->OnError();
+    stream_client_->OnError(media::mojom::InputStreamErrorCode::kUnknown);
+    run_loop.Run();
+  }
+
+  void SignalStreamPermissionsError() {
+    EXPECT_TRUE(stream_client_.is_bound());
+    base::RunLoop run_loop;
+    EXPECT_CALL(delegate_, OnError(AudioSourceErrorCode::kSystemPermissions))
+        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+    stream_client_->OnError(
+        media::mojom::InputStreamErrorCode::kSystemPermissions);
     run_loop.Run();
   }
 
@@ -155,6 +168,12 @@ TEST_F(CapturedAudioInputTest, CreateStream) {
 TEST_F(CapturedAudioInputTest, PropagatesStreamError) {
   CreateStream();
   SignalStreamError();
+  CloseStream();
+}
+
+TEST_F(CapturedAudioInputTest, PropagatesStreamPermissionsError) {
+  CreateStream();
+  SignalStreamPermissionsError();
   CloseStream();
 }
 

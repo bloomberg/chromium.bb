@@ -84,6 +84,8 @@ ModuleInspector::ModuleInspector(
     const OnModuleInspectedCallback& on_module_inspected_callback)
     : on_module_inspected_callback_(on_module_inspected_callback),
       is_after_startup_(false),
+      util_win_factory_callback_(
+          base::BindRepeating(&LaunchUtilWinServiceInstance)),
       inspection_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
@@ -101,7 +103,8 @@ ModuleInspector::ModuleInspector(
       has_new_inspection_results_(false),
       connection_error_retry_count_(kConnectionErrorRetryCount),
       background_inspection_disabled_(
-          base::FeatureList::IsEnabled(kDisableBackgroundModuleInspection)) {
+          base::FeatureList::IsEnabled(kDisableBackgroundModuleInspection)),
+      is_waiting_on_util_win_service_(false) {
   // Use BEST_EFFORT as those will only run after startup is finished.
   content::BrowserThread::PostBestEffortTask(
       FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
@@ -161,13 +164,18 @@ base::FilePath ModuleInspector::GetInspectionResultsCachePath() {
   return user_data_dir.Append(L"Module Info Cache");
 }
 
+void ModuleInspector::SetUtilWinFactoryCallbackForTesting(
+    UtilWinFactoryCallback util_win_factory_callback) {
+  util_win_factory_callback_ = std::move(util_win_factory_callback);
+}
+
 void ModuleInspector::EnsureUtilWinServiceBound() {
   DCHECK(base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature));
 
-  if (test_remote_util_win_ || remote_util_win_)
+  if (remote_util_win_)
     return;
 
-  remote_util_win_ = LaunchUtilWinServiceInstance();
+  remote_util_win_ = util_win_factory_callback_.Run();
   remote_util_win_.reset_on_idle_timeout(base::TimeDelta::FromSeconds(5));
   remote_util_win_.set_disconnect_handler(
       base::BindOnce(&ModuleInspector::OnUtilWinServiceConnectionError,
@@ -217,9 +225,17 @@ void ModuleInspector::OnUtilWinServiceConnectionError() {
   // Disconnect from the service.
   remote_util_win_.reset();
 
-  // Restart the inspection if there is work to do and the retry limit wasn't
-  // reached.
-  if (!queue_.empty() && connection_error_retry_count_--)
+  // If the retry limit was reached, give up.
+  if (connection_error_retry_count_ == 0)
+    return;
+  --connection_error_retry_count_;
+
+  bool was_waiting_on_util_win_service = is_waiting_on_util_win_service_;
+  is_waiting_on_util_win_service_ = false;
+
+  // If this connection error happened while the ModuleInspector was waiting on
+  // the service, restart the inspection process.
+  if (was_waiting_on_util_win_service)
     StartInspectingModule();
 }
 
@@ -247,12 +263,8 @@ void ModuleInspector::StartInspectingModule() {
   if (base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature)) {
     EnsureUtilWinServiceBound();
 
-    // Use the test UtilWin remote if it exists.
-    chrome::mojom::UtilWin* util_win = test_remote_util_win_
-                                           ? test_remote_util_win_.get()
-                                           : remote_util_win_.get();
-
-    util_win->InspectModule(
+    is_waiting_on_util_win_service_ = true;
+    remote_util_win_->InspectModule(
         module_key.module_path,
         base::BindOnce(&ModuleInspector::OnModuleNewlyInspected,
                        weak_ptr_factory_.GetWeakPtr(), module_key));
@@ -280,6 +292,8 @@ void ModuleInspector::OnModuleNewlyInspected(
     const ModuleInfoKey& module_key,
     ModuleInspectionResult inspection_result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  is_waiting_on_util_win_service_ = false;
 
   // Convert the prefix of known Windows directories to their environment
   // variable mappings (ie, %systemroot$). This makes i18n localized paths

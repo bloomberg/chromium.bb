@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -28,6 +29,7 @@
 ConfirmBubbleViews::ConfirmBubbleViews(
     std::unique_ptr<ConfirmBubbleModel> model)
     : model_(std::move(model)) {
+  SetModalType(ui::MODAL_TYPE_WINDOW);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  model_->GetButtonLabel(ui::DIALOG_BUTTON_OK));
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
@@ -48,7 +50,7 @@ ConfirmBubbleViews::ConfirmBubbleViews(
   help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
+      views::DialogContentType::kText, views::DialogContentType::kText));
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
 
@@ -76,11 +78,7 @@ ConfirmBubbleViews::ConfirmBubbleViews(
 ConfirmBubbleViews::~ConfirmBubbleViews() {
 }
 
-ui::ModalType ConfirmBubbleViews::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
-}
-
-base::string16 ConfirmBubbleViews::GetWindowTitle() const {
+std::u16string ConfirmBubbleViews::GetWindowTitle() const {
   return model_->GetTitle();
 }
 
@@ -92,6 +90,9 @@ void ConfirmBubbleViews::OnDialogInitialized() {
   GetWidget()->GetRootView()->GetViewAccessibility().OverrideDescribedBy(
       label_);
 }
+
+BEGIN_METADATA(ConfirmBubbleViews, views::DialogDelegateView)
+END_METADATA
 
 namespace chrome {
 

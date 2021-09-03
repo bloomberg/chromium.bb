@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TREE_NODE_H_
 
 #include "base/check_op.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace WTF {
 
@@ -147,7 +146,7 @@ class TreeNode {
     while (old_parent->HasChildren()) {
       NodeType* child = old_parent->FirstChild();
       old_parent->RemoveChild(child);
-      this->AppendChild(child);
+      AppendChild(child);
     }
   }
 
@@ -210,4 +209,4 @@ using WTF::TreeNode;
 using WTF::TraverseNext;
 using WTF::TraverseNextPostOrder;
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TREE_NODE_H_

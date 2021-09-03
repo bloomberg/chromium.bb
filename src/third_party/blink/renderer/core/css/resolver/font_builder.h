@@ -34,8 +34,9 @@
 
 namespace blink {
 
-class FontSelector;
 class ComputedStyle;
+class FontSelector;
+class TreeScope;
 
 class CORE_EXPORT FontBuilder {
   STACK_ALLOCATED();
@@ -65,6 +66,8 @@ class CORE_EXPORT FontBuilder {
   void SetWeight(FontSelectionValue);
 
   void SetFamilyDescription(const FontDescription::FamilyDescription&);
+  // font-family is a tree-scoped reference.
+  void SetFamilyTreeScope(const TreeScope*);
   void SetFeatureSettings(scoped_refptr<FontFeatureSettings>);
   void SetLocale(scoped_refptr<const LayoutLocale>);
   void SetVariantCaps(FontDescription::FontVariantCaps);
@@ -81,7 +84,7 @@ class CORE_EXPORT FontBuilder {
   void UpdateFontDescription(FontDescription&,
                              FontOrientation = FontOrientation::kHorizontal);
   void CreateFont(ComputedStyle&, const ComputedStyle* parent_style);
-  void CreateFontForDocument(ComputedStyle&);
+  void CreateInitialFont(ComputedStyle&);
 
   bool FontDirty() const { return flags_; }
 
@@ -141,7 +144,11 @@ class CORE_EXPORT FontBuilder {
                                          float effective_zoom,
                                          float specified_size);
 
-  Document* document_;
+  FontSelector* FontSelectorFromTreeScope(const TreeScope* tree_scope);
+  FontSelector* ComputeFontSelector(const ComputedStyle& style);
+
+  Document* document_{nullptr};
+  const TreeScope* family_tree_scope_{nullptr};
   FontDescription font_description_;
 
   enum class PropertySetFlag {
@@ -173,9 +180,9 @@ class CORE_EXPORT FontBuilder {
     return flags_ & (1 << unsigned(flag));
   }
 
-  unsigned flags_;
+  unsigned flags_{0};
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_FONT_BUILDER_H_

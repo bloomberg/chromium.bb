@@ -26,6 +26,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -61,6 +62,7 @@ using ::base::android::JavaParamRef;
 using ::base::android::JavaRef;
 using ::base::android::ScopedJavaGlobalRef;
 using ::base::android::ScopedJavaLocalRef;
+using payments::FullCardRequest;
 
 Profile* GetProfile() {
   return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
@@ -79,7 +81,7 @@ void MaybeSetRawInfo(AutofillProfile* profile,
 
 // Self-deleting requester of full card details, including full PAN and the CVC
 // number.
-class FullCardRequester : public payments::FullCardRequest::ResultDelegate,
+class FullCardRequester : public FullCardRequest::ResultDelegate,
                           public base::SupportsWeakPtr<FullCardRequester> {
  public:
   FullCardRequester() {}
@@ -93,34 +95,37 @@ class FullCardRequester : public payments::FullCardRequest::ResultDelegate,
     jdelegate_.Reset(env, jdelegate);
 
     if (!card_) {
-      OnFullCardRequestFailed();
+      OnFullCardRequestFailed(FullCardRequest::FailureType::GENERIC_FAILURE);
       return;
     }
 
     content::WebContents* contents =
         content::WebContents::FromJavaWebContents(jweb_contents);
     if (!contents) {
-      OnFullCardRequestFailed();
+      OnFullCardRequestFailed(FullCardRequest::FailureType::GENERIC_FAILURE);
       return;
     }
 
     ContentAutofillDriverFactory* factory =
         ContentAutofillDriverFactory::FromWebContents(contents);
     if (!factory) {
-      OnFullCardRequestFailed();
+      OnFullCardRequestFailed(FullCardRequest::FailureType::GENERIC_FAILURE);
       return;
     }
 
     ContentAutofillDriver* driver =
         factory->DriverForFrame(contents->GetMainFrame());
     if (!driver) {
-      OnFullCardRequestFailed();
+      OnFullCardRequestFailed(FullCardRequest::FailureType::GENERIC_FAILURE);
       return;
     }
 
-    driver->autofill_manager()->GetOrCreateFullCardRequest()->GetFullCard(
-        *card_, AutofillClient::UNMASK_FOR_PAYMENT_REQUEST, AsWeakPtr(),
-        driver->autofill_manager()->GetAsFullCardRequestUIDelegate());
+    driver->browser_autofill_manager()
+        ->GetOrCreateFullCardRequest()
+        ->GetFullCard(*card_, AutofillClient::UNMASK_FOR_PAYMENT_REQUEST,
+                      AsWeakPtr(),
+                      driver->browser_autofill_manager()
+                          ->GetAsFullCardRequestUIDelegate());
   }
 
  private:
@@ -130,7 +135,7 @@ class FullCardRequester : public payments::FullCardRequest::ResultDelegate,
   void OnFullCardRequestSucceeded(
       const payments::FullCardRequest& /* full_card_request */,
       const CreditCard& card,
-      const base::string16& cvc) override {
+      const std::u16string& cvc) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_FullCardRequestDelegate_onFullCardDetails(
         env, jdelegate_,
@@ -140,7 +145,8 @@ class FullCardRequester : public payments::FullCardRequest::ResultDelegate,
   }
 
   // payments::FullCardRequest::ResultDelegate:
-  void OnFullCardRequestFailed() override {
+  void OnFullCardRequestFailed(
+      FullCardRequest::FailureType failure_type) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_FullCardRequestDelegate_onFullCardError(env, jdelegate_);
     delete this;
@@ -214,8 +220,8 @@ PersonalDataManagerAndroid::CreateJavaCreditCardFromNative(
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR)),
       ConvertUTF8ToJavaString(env,
                               payment_request_data.basic_card_issuer_network),
-      ResourceMapper::MapToJavaDrawableId(
-          payment_request_data.icon_resource_id),
+      ResourceMapper::MapToJavaDrawableId(autofill::GetIconResourceID(
+          card.CardIconStringForAutofillSuggestion())),
       ConvertUTF8ToJavaString(env, card.billing_address_id()),
       ConvertUTF8ToJavaString(env, card.server_id()),
       ConvertUTF16ToJavaString(env,
@@ -321,6 +327,8 @@ void PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
       AutofillType(NAME_FULL),
       ConvertJavaStringToUTF16(Java_AutofillProfile_getFullName(env, jprofile)),
       g_browser_process->GetApplicationLocale());
+  MaybeSetRawInfo(profile, autofill::NAME_HONORIFIC_PREFIX,
+                  Java_AutofillProfile_getHonorificPrefix(env, jprofile));
   MaybeSetRawInfo(profile, autofill::COMPANY_NAME,
                   Java_AutofillProfile_getCompanyName(env, jprofile));
   MaybeSetRawInfo(profile, autofill::ADDRESS_HOME_STREET_ADDRESS,
@@ -348,6 +356,7 @@ void PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
                   Java_AutofillProfile_getEmailAddress(env, jprofile));
   profile->set_language_code(ConvertJavaStringToUTF8(
       Java_AutofillProfile_getLanguageCode(env, jprofile)));
+  profile->FinalizeAfterImport();
 }
 
 jboolean PersonalDataManagerAndroid::IsDataLoaded(
@@ -553,7 +562,7 @@ void PersonalDataManagerAndroid::UpdateServerCardBillingAddress(
   CreditCard card;
   PopulateNativeCreditCardFromJava(jcard, env, &card);
 
-  personal_data_manager_->UpdateServerCardMetadata(card);
+  personal_data_manager_->UpdateServerCardsMetadata({card});
 }
 
 ScopedJavaLocalRef<jstring>
@@ -562,7 +571,7 @@ PersonalDataManagerAndroid::GetBasicCardIssuerNetwork(
     const JavaParamRef<jobject>& unused_obj,
     const JavaParamRef<jstring>& jcard_number,
     const jboolean jempty_if_invalid) {
-  base::string16 card_number = ConvertJavaStringToUTF16(env, jcard_number);
+  std::u16string card_number = ConvertJavaStringToUTF16(env, jcard_number);
 
   if (static_cast<bool>(jempty_if_invalid) &&
       !IsValidCreditCardNumber(card_number)) {
@@ -644,7 +653,7 @@ void PersonalDataManagerAndroid::RecordAndLogProfileUse(
   AutofillProfile* profile = personal_data_manager_->GetProfileByGUID(
       ConvertJavaStringToUTF8(env, jguid));
   if (profile)
-    personal_data_manager_->RecordUseOf(*profile);
+    personal_data_manager_->RecordUseOf(profile);
 }
 
 void PersonalDataManagerAndroid::SetProfileUseStatsForTesting(
@@ -688,7 +697,7 @@ void PersonalDataManagerAndroid::RecordAndLogCreditCardUse(
   CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
       ConvertJavaStringToUTF8(env, jguid));
   if (card)
-    personal_data_manager_->RecordUseOf(*card);
+    personal_data_manager_->RecordUseOf(card);
 }
 
 void PersonalDataManagerAndroid::SetCreditCardUseStatsForTesting(
@@ -730,6 +739,13 @@ jlong PersonalDataManagerAndroid::GetCurrentDateForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& unused_obj) {
   return base::Time::Now().ToTimeT();
+}
+
+void PersonalDataManagerAndroid::ClearServerDataForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj) {
+  personal_data_manager_->ClearAllServerData();
+  personal_data_manager_->NotifyPersonalDataObserver();
 }
 
 void PersonalDataManagerAndroid::LoadRulesForAddressNormalization(
@@ -819,7 +835,7 @@ void PersonalDataManagerAndroid::SetSyncServiceForTesting(JNIEnv* env) {
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileGUIDs(
     JNIEnv* env,
     const std::vector<AutofillProfile*>& profiles) {
-  std::vector<base::string16> guids;
+  std::vector<std::u16string> guids;
   for (AutofillProfile* profile : profiles)
     guids.push_back(base::UTF8ToUTF16(profile->guid()));
 
@@ -829,7 +845,7 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileGUIDs(
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetCreditCardGUIDs(
     JNIEnv* env,
     const std::vector<CreditCard*>& credit_cards) {
-  std::vector<base::string16> guids;
+  std::vector<std::u16string> guids;
   for (CreditCard* credit_card : credit_cards)
     guids.push_back(base::UTF8ToUTF16(credit_card->guid()));
 
@@ -866,7 +882,7 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
   ServerFieldType excluded_field =
       include_name_in_label ? UNKNOWN_TYPE : NAME_FULL;
 
-  std::vector<base::string16> labels;
+  std::vector<std::u16string> labels;
   AutofillProfile::CreateInferredLabels(
       profiles, suggested_fields.get(), excluded_field, minimal_fields_shown,
       g_browser_process->GetApplicationLocale(), &labels);

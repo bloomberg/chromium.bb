@@ -2,41 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_version_manager.h"
+#include "quic/core/quic_version_manager.h"
 
 #include <algorithm>
 
 #include "absl/base/macros.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
 
 namespace quic {
 
 QuicVersionManager::QuicVersionManager(
     ParsedQuicVersionVector supported_versions)
-    : disable_version_draft_29_(
+    : enable_version_rfcv1_(GetQuicReloadableFlag(quic_enable_version_rfcv1)),
+      disable_version_draft_29_(
           GetQuicReloadableFlag(quic_disable_version_draft_29)),
-      disable_version_draft_27_(
-          GetQuicReloadableFlag(quic_disable_version_draft_27)),
       disable_version_t051_(GetQuicReloadableFlag(quic_disable_version_t051)),
-      disable_version_t050_(GetQuicReloadableFlag(quic_disable_version_t050)),
       disable_version_q050_(GetQuicReloadableFlag(quic_disable_version_q050)),
       disable_version_q046_(GetQuicReloadableFlag(quic_disable_version_q046)),
       disable_version_q043_(GetQuicReloadableFlag(quic_disable_version_q043)),
       allowed_supported_versions_(std::move(supported_versions)) {
-  static_assert(SupportedVersions().size() == 7u,
+  static_assert(SupportedVersions().size() == 6u,
                 "Supported versions out of sync");
   RefilterSupportedVersions();
 }
 
 QuicVersionManager::~QuicVersionManager() {}
-
-const QuicTransportVersionVector&
-QuicVersionManager::GetSupportedTransportVersions() {
-  MaybeRefilterSupportedVersions();
-  return filtered_transport_versions_;
-}
 
 const ParsedQuicVersionVector& QuicVersionManager::GetSupportedVersions() {
   MaybeRefilterSupportedVersions();
@@ -55,28 +47,24 @@ const std::vector<std::string>& QuicVersionManager::GetSupportedAlpns() {
 }
 
 void QuicVersionManager::MaybeRefilterSupportedVersions() {
-  static_assert(SupportedVersions().size() == 7u,
+  static_assert(SupportedVersions().size() == 6u,
                 "Supported versions out of sync");
-  if (disable_version_draft_29_ !=
+  if (enable_version_rfcv1_ !=
+          GetQuicReloadableFlag(quic_enable_version_rfcv1) ||
+      disable_version_draft_29_ !=
           GetQuicReloadableFlag(quic_disable_version_draft_29) ||
-      disable_version_draft_27_ !=
-          GetQuicReloadableFlag(quic_disable_version_draft_27) ||
       disable_version_t051_ !=
           GetQuicReloadableFlag(quic_disable_version_t051) ||
-      disable_version_t050_ !=
-          GetQuicReloadableFlag(quic_disable_version_t050) ||
       disable_version_q050_ !=
           GetQuicReloadableFlag(quic_disable_version_q050) ||
       disable_version_q046_ !=
           GetQuicReloadableFlag(quic_disable_version_q046) ||
       disable_version_q043_ !=
           GetQuicReloadableFlag(quic_disable_version_q043)) {
+    enable_version_rfcv1_ = GetQuicReloadableFlag(quic_enable_version_rfcv1);
     disable_version_draft_29_ =
         GetQuicReloadableFlag(quic_disable_version_draft_29);
-    disable_version_draft_27_ =
-        GetQuicReloadableFlag(quic_disable_version_draft_27);
     disable_version_t051_ = GetQuicReloadableFlag(quic_disable_version_t051);
-    disable_version_t050_ = GetQuicReloadableFlag(quic_disable_version_t050);
     disable_version_q050_ = GetQuicReloadableFlag(quic_disable_version_q050);
     disable_version_q046_ = GetQuicReloadableFlag(quic_disable_version_q046);
     disable_version_q043_ = GetQuicReloadableFlag(quic_disable_version_q043);

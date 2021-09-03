@@ -19,15 +19,19 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/chrome_capture_mode_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/dbus/cros_disks_client.h"
 #include "content/public/test/browser_test.h"
 #include "media/base/media_tracks.h"
 #include "media/base/mock_media_log.h"
 #include "media/formats/webm/webm_stream_parser.h"
 #include "ui/aura/window.h"
+#include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
@@ -147,11 +151,17 @@ class RecordingServiceBrowserTest : public InProcessBrowserTest {
 
   // Reads the video file at the given |path| and verifies its WebM contents. At
   // the end it deletes the file to save space, since video files can be big.
-  void VerifyVideoFileAndDelete(const base::FilePath& path) const {
+  // |allow_empty| can be set to true if an empty video file is possible.
+  void VerifyVideoFileAndDelete(const base::FilePath& path,
+                                bool allow_empty = false) const {
     base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(base::PathExists(path));
     std::string file_content;
     EXPECT_TRUE(base::ReadFileToString(path, &file_content));
+
+    if (allow_empty && file_content.empty())
+      return;
+
     EXPECT_FALSE(file_content.empty());
     EXPECT_TRUE(WebmVerifier().Verify(file_content));
     EXPECT_TRUE(base::DeleteFile(path));
@@ -180,18 +190,65 @@ IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest, RecordFullscreen) {
   FinishVideoRecordingTest(&test_api);
 }
 
-// This test is currently disabled since it will always fail on the bots for
-// now, since audio is not captured on the bots, and currently window recording
-// captures no video frames, so the resulting video file will always be empty.
-// TODO(crbug.com/1143930): Re-enable this once window capture is working.
-IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest, DISABLED_RecordWindow) {
+IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest, RecordWindow) {
   ash::CaptureModeTestApi test_api;
   test_api.StartForWindow(/*for_video=*/true);
   auto* generator = GetEventGenerator();
   // Move the mouse cursor above the browser window to select it for window
-  // capture.
-  generator->MoveMouseTo(GetBrowserWindow()->GetBoundsInScreen().CenterPoint());
+  // capture (make sure it doesn't hover over the capture bar).
+  generator->MoveMouseTo(GetBrowserWindow()->GetBoundsInScreen().top_center());
   FinishVideoRecordingTest(&test_api);
+}
+
+IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest, RecordWindowMultiDisplay) {
+  display::test::DisplayManagerTestApi(ash::ShellTestApi().display_manager())
+      .UpdateDisplay("300x200,301+0-400x400");
+
+  ash::CaptureModeTestApi capture_mode_test_api;
+  capture_mode_test_api.StartForWindow(/*for_video=*/true);
+  auto* generator = GetEventGenerator();
+  // Move the mouse cursor above the browser window to select it for window
+  // capture (make sure it doesn't hover over the capture bar).
+  generator->MoveMouseTo(GetBrowserWindow()->GetBoundsInScreen().top_center());
+  capture_mode_test_api.PerformCapture();
+  capture_mode_test_api.FlushRecordingServiceForTesting();
+
+  // Moves the browser window to the display at the given |screen_point|.
+  auto move_browser_to_display_at_point = [&](const gfx::Point& screen_point) {
+    auto* screen = display::Screen::GetScreen();
+    aura::Window* new_root =
+        screen->GetWindowAtScreenPoint(screen_point)->GetRootWindow();
+    auto* browser_window = GetBrowserWindow();
+    EXPECT_NE(new_root, browser_window->GetRootWindow());
+    auto* target_container =
+        new_root->GetChildById(browser_window->parent()->GetId());
+    DCHECK(target_container);
+    target_container->AddChild(browser_window);
+    EXPECT_EQ(new_root, browser_window->GetRootWindow());
+  };
+
+  // Record for a little bit, then move the window to the secondary display.
+  WaitForMilliseconds(600);
+  move_browser_to_display_at_point(gfx::Point(320, 50));
+  capture_mode_test_api.FlushRecordingServiceForTesting();
+
+  // Record for a little bit, then resize the browser window.
+  WaitForMilliseconds(600);
+  GetBrowserWindow()->SetBounds(gfx::Rect(310, 10, 300, 300));
+  capture_mode_test_api.FlushRecordingServiceForTesting();
+
+  // Record for a little bit, then move the browser window back to the smaller
+  // display.
+  WaitForMilliseconds(600);
+  move_browser_to_display_at_point(gfx::Point(0, 0));
+  capture_mode_test_api.FlushRecordingServiceForTesting();
+
+  // Record for a little bit, then end recording. The output video file should
+  // still be valid.
+  WaitForMilliseconds(600);
+  capture_mode_test_api.StopVideoRecording();
+  const base::FilePath video_path = WaitForVideoFileToBeSaved();
+  VerifyVideoFileAndDelete(video_path);
 }
 
 IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest, RecordRegion) {
@@ -200,6 +257,34 @@ IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest, RecordRegion) {
   // Select a random partial region of the screen.
   test_api.SetUserSelectedRegion(gfx::Rect(10, 20, 100, 50));
   FinishVideoRecordingTest(&test_api);
+}
+
+IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest,
+                       RecordingServiceEndpointDropped) {
+  ash::CaptureModeTestApi test_api;
+  test_api.StartForFullscreen(/*for_video=*/true);
+  test_api.PerformCapture();
+  test_api.FlushRecordingServiceForTesting();
+  WaitForMilliseconds(1000);
+  test_api.ResetRecordingServiceRemote();
+  const base::FilePath video_path = WaitForVideoFileToBeSaved();
+  VerifyVideoFileAndDelete(video_path);
+}
+
+IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest,
+                       RecordingServiceClientEndpointDropped) {
+  ash::CaptureModeTestApi test_api;
+  test_api.StartForFullscreen(/*for_video=*/true);
+  test_api.PerformCapture();
+  test_api.FlushRecordingServiceForTesting();
+  WaitForMilliseconds(1000);
+  test_api.ResetRecordingServiceClientReceiver();
+  const base::FilePath video_path = WaitForVideoFileToBeSaved();
+  // Due to buffering on the service side, the channel might get dropped before
+  // any flushing of those beffers ever happens, and since dropping the client
+  // end point will immediately terminate the service, nothing may ever get
+  // flushed, and the resulting video file can be empty.
+  VerifyVideoFileAndDelete(video_path, /*allow_empty=*/true);
 }
 
 // Doing multiple recordings one after the other should produce non-corrupt webm
@@ -226,4 +311,26 @@ IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest,
   ChromeCaptureModeDelegate::Get()->SetIsScreenCaptureLocked(true);
   const base::FilePath video_path = WaitForVideoFileToBeSaved();
   VerifyVideoFileAndDelete(video_path);
+}
+
+// Tests that an invalid downloads path set in the browser settings (such as one
+// that points to a location in a non-existing removable device) won't affect
+// where the recordings are saved, and the recording file will be successfully
+// saved. https://crbug.com/1192406.
+IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest, InvalidDownloadsPath) {
+  auto* download_prefs =
+      DownloadPrefs::FromBrowserContext(browser()->profile());
+  const base::FilePath removable_path =
+      chromeos::CrosDisksClient::GetRemovableDiskMountPoint();
+  const base::FilePath invalid_path =
+      removable_path.Append(FILE_PATH_LITERAL("backup"));
+  download_prefs->SetDownloadPath(invalid_path);
+  // The invalid path will still be accepted by the browser, but won't be used
+  // by Capture Mode.
+  EXPECT_EQ(invalid_path, download_prefs->DownloadPath());
+  EXPECT_NE(invalid_path,
+            ChromeCaptureModeDelegate::Get()->GetScreenCaptureDir());
+  ash::CaptureModeTestApi test_api;
+  test_api.StartForFullscreen(/*for_video=*/true);
+  FinishVideoRecordingTest(&test_api);
 }

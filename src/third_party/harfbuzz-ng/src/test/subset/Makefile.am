@@ -13,7 +13,9 @@ libs:
 EXTRA_DIST += \
 	meson.build \
 	run-tests.py \
+	run-repack-tests.py \
 	subset_test_suite.py \
+	repack_test.py \
 	$(NULL)
 
 CLEANFILES += \

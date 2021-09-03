@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,10 +7,12 @@
 
 # pylint: disable=protected-access
 
+from __future__ import absolute_import
 import collections
 import tempfile
 import unittest
 
+from six.moves import range  # pylint: disable=redefined-builtin
 from pylib.base import base_test_result
 from pylib.instrumentation import instrumentation_test_instance
 
@@ -33,7 +35,6 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
          mock.patch('%s._initializeDataDependencyAttributes' % c)), (
          mock.patch('%s._initializeTestFilterAttributes' %c)), (
          mock.patch('%s._initializeFlagAttributes' % c)), (
-         mock.patch('%s._initializeDriverAttributes' % c)), (
          mock.patch('%s._initializeTestControlAttributes' % c)), (
          mock.patch('%s._initializeTestCoverageAttributes' % c)), (
          mock.patch('%s._initializeSkiaGoldAttributes' % c)):

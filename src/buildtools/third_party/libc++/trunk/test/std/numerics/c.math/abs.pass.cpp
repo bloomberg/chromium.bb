@@ -35,9 +35,9 @@ void test_abs()
 
 void test_big()
 {
-    long long int big_value = std::numeric_limits<long long int>::max(); // a value to big for ints to store
+    long long int big_value = std::numeric_limits<long long int>::max(); // a value too big for ints to store
     long long int negative_big_value = -big_value;
-    assert(std::abs(negative_big_value) == big_value); // make sure it doesnt get casted to a smaller type
+    assert(std::abs(negative_big_value) == big_value); // make sure it doesn't get casted to a smaller type
 }
 
 // The following is helpful to keep in mind:
@@ -47,7 +47,7 @@ int main(int, char**)
 {
     // On some systems char is unsigned.
     // If that is the case, we should just test signed char twice.
-    typedef typename std::conditional<
+    typedef std::conditional<
         std::is_signed<char>::value, char, signed char
     >::type SignedChar;
 
@@ -63,10 +63,10 @@ int main(int, char**)
 
     // Here there is no guarantee that int is larger than int8_t so we
     // use a helper type trait to conditional test against int.
-    test_abs<std::int8_t, typename correct_size_int<std::int8_t>::type>();
-    test_abs<std::int16_t, typename correct_size_int<std::int16_t>::type>();
-    test_abs<std::int32_t, typename correct_size_int<std::int32_t>::type>();
-    test_abs<std::int64_t, typename correct_size_int<std::int64_t>::type>();
+    test_abs<std::int8_t, correct_size_int<std::int8_t>::type>();
+    test_abs<std::int16_t, correct_size_int<std::int16_t>::type>();
+    test_abs<std::int32_t, correct_size_int<std::int32_t>::type>();
+    test_abs<std::int64_t, correct_size_int<std::int64_t>::type>();
 
     test_abs<long double, long double>();
     test_abs<double, double>();

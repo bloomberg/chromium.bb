@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_CONTROLLER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/find_bar/find_bar_platform_helper.h"
 #include "components/find_in_page/find_result_observer.h"
 #include "components/find_in_page/find_tab_helper.h"
@@ -68,10 +68,10 @@ class FindBarController : public content::NotificationObserver,
   void OnFindEmptyText(content::WebContents* web_contents) override;
   void OnFindResultAvailable(content::WebContents* web_contents) override;
 
-  void SetText(base::string16 text);
+  void SetText(std::u16string text);
 
   // Called when the find text is updated in response to a user action.
-  void OnUserChangedFindText(base::string16 text);
+  void OnUserChangedFindText(std::u16string text);
 
   FindBar* find_bar() const { return find_bar_.get(); }
 
@@ -89,7 +89,7 @@ class FindBarController : public content::NotificationObserver,
   void MaybeSetPrepopulateText();
 
   // Gets the text that is selected in the current tab, or an empty string.
-  base::string16 GetSelectedText();
+  std::u16string GetSelectedText();
 
   content::NotificationRegistrar registrar_;
 
@@ -109,8 +109,9 @@ class FindBarController : public content::NotificationObserver,
   // replacing user-entered text with selection.
   bool has_user_modified_text_ = false;
 
-  ScopedObserver<find_in_page::FindTabHelper, find_in_page::FindResultObserver>
-      find_tab_observer_{this};
+  base::ScopedObservation<find_in_page::FindTabHelper,
+                          find_in_page::FindResultObserver>
+      find_tab_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FindBarController);
 };

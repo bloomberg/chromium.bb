@@ -30,6 +30,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
@@ -60,7 +61,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-forward.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "components/crx_file/id_util.h"
 #endif
@@ -113,47 +114,6 @@ bool HasIgnoredAction(const helpers::IgnoredActions& ignored_actions,
 }
 
 }  // namespace
-
-// A mock event router that responds to events with a pre-arranged queue of
-// Tasks.
-class TestIPCSender : public IPC::Sender {
- public:
-  using SentMessages = std::list<std::unique_ptr<IPC::Message>>;
-
-  // Adds a Task to the queue. We will fire these in order as events are
-  // dispatched.
-  void PushTask(const base::Closure& task) {
-    task_queue_.push(task);
-  }
-
-  size_t GetNumTasks() { return task_queue_.size(); }
-
-  SentMessages::const_iterator sent_begin() const {
-    return sent_messages_.begin();
-  }
-
-  SentMessages::const_iterator sent_end() const {
-    return sent_messages_.end();
-  }
-
- private:
-  // IPC::Sender
-  bool Send(IPC::Message* message) override {
-    EXPECT_EQ(static_cast<uint32_t>(ExtensionMsg_DispatchEvent::ID),
-              message->type());
-
-    EXPECT_FALSE(task_queue_.empty());
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  task_queue_.front());
-    task_queue_.pop();
-
-    sent_messages_.push_back(base::WrapUnique(message));
-    return true;
-  }
-
-  base::queue<base::Closure> task_queue_;
-  SentMessages sent_messages_;
-};
 
 class ExtensionWebRequestTest : public testing::Test {
  public:
@@ -287,22 +247,21 @@ TEST(ExtensionWebRequestHelpersTest,
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
-  base::ListValue list_value;
-  list_value.AppendInteger('1');
-  list_value.AppendInteger('2');
-  list_value.AppendInteger('3');
-  list_value.AppendInteger(0xFE);
-  list_value.AppendInteger(0xD1);
+  base::Value list_value(base::Value::Type::LIST);
+  list_value.Append('1');
+  list_value.Append('2');
+  list_value.Append('3');
+  list_value.Append(0xFE);
+  list_value.Append(0xD1);
 
   unsigned char char_value[] = {'1', '2', '3', 0xFE, 0xD1};
   std::string string_value(reinterpret_cast<char *>(char_value), 5);
 
-  std::unique_ptr<base::ListValue> converted_list(
-      StringToCharList(string_value));
-  EXPECT_TRUE(list_value.Equals(converted_list.get()));
+  base::Value converted_list(StringToCharList(string_value));
+  EXPECT_TRUE(list_value.Equals(&converted_list));
 
   std::string converted_string;
-  EXPECT_TRUE(CharListToString(&list_value, &converted_string));
+  EXPECT_TRUE(CharListToString(list_value.GetList(), &converted_string));
   EXPECT_EQ(string_value, converted_string);
 }
 
@@ -515,8 +474,8 @@ TEST(ExtensionWebRequestHelpersTest,
 TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {
   const bool cancel = true;
 
-  base::string16 username = base::ASCIIToUTF16("foo");
-  base::string16 password = base::ASCIIToUTF16("bar");
+  std::u16string username = u"foo";
+  std::u16string password = u"bar";
   net::AuthCredentials credentials(username, password);
 
   EventResponseDelta delta = CalculateOnAuthRequiredDelta(
@@ -529,7 +488,7 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeCancelOfResponses) {
   EventResponseDeltas deltas;
-  base::Optional<extensions::ExtensionId> canceled_by_extension;
+  absl::optional<extensions::ExtensionId> canceled_by_extension;
 
   // Single event that does not cancel.
   {
@@ -885,7 +844,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   modify_headers_action.request_headers_to_modify = {
       DNRRequestAction::HeaderInfo(
           "key5", api::declarative_net_request::HEADER_OPERATION_REMOVE,
-          base::nullopt)};
+          absl::nullopt)};
   info.dnr_actions = std::vector<DNRRequestAction>();
   info.dnr_actions->push_back(std::move(modify_headers_action));
 
@@ -976,14 +935,14 @@ TEST(ExtensionWebRequestHelpersTest,
           "dnr_action_1"),
       DNRRequestAction::HeaderInfo(
           "key3", api::declarative_net_request::HEADER_OPERATION_REMOVE,
-          base::nullopt)};
+          absl::nullopt)};
 
   DNRRequestAction action_2 =
       CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
   action_2.request_headers_to_modify = {
       DNRRequestAction::HeaderInfo(
           "referer", api::declarative_net_request::HEADER_OPERATION_REMOVE,
-          base::nullopt),
+          absl::nullopt),
       DNRRequestAction::HeaderInfo(
           "cookie", api::declarative_net_request::HEADER_OPERATION_SET,
           "dnr_action_2"),
@@ -1496,7 +1455,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   modify_headers_action.response_headers_to_modify = {
       DNRRequestAction::HeaderInfo(
           "key3", api::declarative_net_request::HEADER_OPERATION_REMOVE,
-          base::nullopt)};
+          absl::nullopt)};
 
   info.dnr_actions = std::vector<DNRRequestAction>();
   info.dnr_actions->push_back(std::move(modify_headers_action));
@@ -1737,9 +1696,9 @@ TEST(ExtensionWebRequestHelpersTest,
                  "dnr_action_1"),
 
       HeaderInfo("key7", api::declarative_net_request::HEADER_OPERATION_REMOVE,
-                 base::nullopt),
+                 absl::nullopt),
       HeaderInfo("key8", api::declarative_net_request::HEADER_OPERATION_REMOVE,
-                 base::nullopt),
+                 absl::nullopt),
 
       HeaderInfo("same_ext_key",
                  api::declarative_net_request::HEADER_OPERATION_SET,
@@ -1761,14 +1720,14 @@ TEST(ExtensionWebRequestHelpersTest,
       HeaderInfo("key2", api::declarative_net_request::HEADER_OPERATION_SET,
                  "dnr_action_3"),
       HeaderInfo("key3", api::declarative_net_request::HEADER_OPERATION_REMOVE,
-                 base::nullopt),
+                 absl::nullopt),
 
       HeaderInfo("key4", api::declarative_net_request::HEADER_OPERATION_APPEND,
                  "dnr_action_3"),
       HeaderInfo("key5", api::declarative_net_request::HEADER_OPERATION_SET,
                  "dnr_action_3"),
       HeaderInfo("key6", api::declarative_net_request::HEADER_OPERATION_REMOVE,
-                 base::nullopt),
+                 absl::nullopt),
 
       HeaderInfo("key7", api::declarative_net_request::HEADER_OPERATION_APPEND,
                  "dnr_action_3"),
@@ -1868,10 +1827,10 @@ TEST(ExtensionWebRequestHelpersTest,
                  "dnr_action_1"),
       HeaderInfo("set-cookie",
                  api::declarative_net_request::HEADER_OPERATION_REMOVE,
-                 base::nullopt),
+                 absl::nullopt),
       HeaderInfo("warning",
                  api::declarative_net_request::HEADER_OPERATION_REMOVE,
-                 base::nullopt)};
+                 absl::nullopt)};
 
   DNRRequestAction action_2 =
       CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
@@ -1950,9 +1909,9 @@ TEST(ExtensionWebRequestHelpersTest,
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
   helpers::IgnoredActions ignored_actions;
   EventResponseDeltas deltas;
-  base::string16 username = base::ASCIIToUTF16("foo");
-  base::string16 password = base::ASCIIToUTF16("bar");
-  base::string16 password2 = base::ASCIIToUTF16("baz");
+  std::u16string username = u"foo";
+  std::u16string password = u"bar";
+  std::u16string password2 = u"baz";
 
   // Check that we can handle if not returning credentials.
   {

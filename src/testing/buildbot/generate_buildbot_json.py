@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -12,6 +12,7 @@ import ast
 import collections
 import copy
 import difflib
+import functools
 import glob
 import itertools
 import json
@@ -50,13 +51,17 @@ class BaseGenerator(object):
     raise NotImplementedError()
 
 
+def custom_cmp(a, b):
+  return int(a > b) - int(a < b)
+
+
 def cmp_tests(a, b):
   # Prefer to compare based on the "test" key.
-  val = cmp(a['test'], b['test'])
+  val = custom_cmp(a['test'], b['test'])
   if val != 0:
     return val
   if 'name' in a and 'name' in b:
-    return cmp(a['name'], b['name']) # pragma: no cover
+    return custom_cmp(a['name'], b['name'])  # pragma: no cover
   if 'name' not in a and 'name' not in b:
     return 0 # pragma: no cover
   # Prefer to put variants of the same test after the first one.
@@ -74,7 +79,7 @@ class GPUTelemetryTestGenerator(BaseGenerator):
 
   def generate(self, waterfall, tester_name, tester_config, input_tests):
     isolated_scripts = []
-    for test_name, test_config in sorted(input_tests.iteritems()):
+    for test_name, test_config in sorted(input_tests.items()):
       test = self.bb_gen.generate_gpu_telemetry_test(
           waterfall, tester_name, tester_config, test_name, test_config,
           self._is_android_webview)
@@ -97,7 +102,7 @@ class GTestGenerator(BaseGenerator):
     # key (see gles2_conform_d3d9_test and similar variants). Avoid
     # losing the order by avoiding coalescing the dictionaries into one.
     gtests = []
-    for test_name, test_config in sorted(input_tests.iteritems()):
+    for test_name, test_config in sorted(input_tests.items()):
       # Variants allow more than one definition for a given test, and is defined
       # in array format from resolve_variants().
       if not isinstance(test_config, list):
@@ -112,7 +117,7 @@ class GTestGenerator(BaseGenerator):
     return gtests
 
   def sort(self, tests):
-    return sorted(tests, cmp=cmp_tests)
+    return sorted(tests, key=functools.cmp_to_key(cmp_tests))
 
 
 class IsolatedScriptTestGenerator(BaseGenerator):
@@ -121,7 +126,7 @@ class IsolatedScriptTestGenerator(BaseGenerator):
 
   def generate(self, waterfall, tester_name, tester_config, input_tests):
     isolated_scripts = []
-    for test_name, test_config in sorted(input_tests.iteritems()):
+    for test_name, test_config in sorted(input_tests.items()):
       # Variants allow more than one definition for a given test, and is defined
       # in array format from resolve_variants().
       if not isinstance(test_config, list):
@@ -144,7 +149,7 @@ class ScriptGenerator(BaseGenerator):
 
   def generate(self, waterfall, tester_name, tester_config, input_tests):
     scripts = []
-    for test_name, test_config in sorted(input_tests.iteritems()):
+    for test_name, test_config in sorted(input_tests.items()):
       test = self.bb_gen.generate_script_test(
         waterfall, tester_name, tester_config, test_name, test_config)
       if test:
@@ -161,11 +166,30 @@ class JUnitGenerator(BaseGenerator):
 
   def generate(self, waterfall, tester_name, tester_config, input_tests):
     scripts = []
-    for test_name, test_config in sorted(input_tests.iteritems()):
+    for test_name, test_config in sorted(input_tests.items()):
       test = self.bb_gen.generate_junit_test(
         waterfall, tester_name, tester_config, test_name, test_config)
       if test:
         scripts.append(test)
+    return scripts
+
+  def sort(self, tests):
+    return sorted(tests, key=lambda x: x['test'])
+
+
+class SkylabGenerator(BaseGenerator):
+  def __init__(self, bb_gen):
+    super(SkylabGenerator, self).__init__(bb_gen)
+
+  def generate(self, waterfall, tester_name, tester_config, input_tests):
+    scripts = []
+    for test_name, test_config in sorted(input_tests.items()):
+      for config in test_config:
+        test = self.bb_gen.generate_skylab_test(waterfall, tester_name,
+                                                tester_config, test_name,
+                                                config)
+        if test:
+          scripts.append(test)
     return scripts
 
   def sort(self, tests):
@@ -338,7 +362,7 @@ class BBJSONGenerator(object):
 
   def print_line(self, line):
     # Exists so that tests can mock
-    print line # pragma: no cover
+    print(line)  # pragma: no cover
 
   def read_file(self, relative_path):
     with open(self.generate_abs_file_path(relative_path)) as fp:
@@ -346,7 +370,7 @@ class BBJSONGenerator(object):
 
   def write_file(self, relative_path, contents):
     with open(self.generate_abs_file_path(relative_path), 'wb') as fp:
-      fp.write(contents)
+      fp.write(contents.encode('utf-8'))
 
   def pyl_file_path(self, filename):
     if self.args and self.args.pyl_files_dir:
@@ -369,6 +393,9 @@ class BBJSONGenerator(object):
 
   def is_chromeos(self, tester_config):
     return tester_config.get('os_type') == 'chromeos'
+
+  def is_lacros(self, tester_config):
+    return tester_config.get('os_type') == 'lacros'
 
   def is_linux(self, tester_config):
     return tester_config.get('os_type') == 'linux'
@@ -523,7 +550,7 @@ class BBJSONGenerator(object):
             # swarming dimension_sets that we have to merge. It will fail
             # to merge / override 'args' arrays which are different
             # length.
-            for idx in xrange(len(b[key])):
+            for idx in range(len(b[key])):
               try:
                 a[key][idx] = self.dictionary_merge(a[key][idx], b[key][idx],
                                                     path + [str(key), str(idx)],
@@ -557,6 +584,7 @@ class BBJSONGenerator(object):
         args.extend(val)
 
     add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
+    add_conditional_args('lacros_args', self.is_lacros)
     add_conditional_args('linux_args', self.is_linux)
     add_conditional_args('android_args', self.is_android)
     add_conditional_args('chromeos_args', self.is_chromeos)
@@ -587,13 +615,19 @@ class BBJSONGenerator(object):
           tester_config['swarming']['dimension_sets'])
       self.dictionary_merge(generated_test['swarming'],
                             tester_config['swarming'])
-    # Apply any Android-specific Swarming dimensions after the generic ones.
+    # Apply any platform-specific Swarming dimensions after the generic ones.
     if 'android_swarming' in generated_test:
       if self.is_android(tester_config): # pragma: no cover
         self.dictionary_merge(
           generated_test['swarming'],
           generated_test['android_swarming']) # pragma: no cover
       del generated_test['android_swarming'] # pragma: no cover
+    if 'chromeos_swarming' in generated_test:
+      if self.is_chromeos(tester_config):  # pragma: no cover
+        self.dictionary_merge(
+            generated_test['swarming'],
+            generated_test['chromeos_swarming'])  # pragma: no cover
+      del generated_test['chromeos_swarming']  # pragma: no cover
 
   def clean_swarming_dictionary(self, swarming_dict):
     # Clean out redundant entries from a test's "swarming" dictionary.
@@ -608,7 +642,7 @@ class BBJSONGenerator(object):
         del swarming_dict['hard_timeout'] # pragma: no cover
     if not swarming_dict.get('can_use_on_swarming_builders', False):
       # Remove all other keys.
-      for k in swarming_dict.keys(): # pragma: no cover
+      for k in list(swarming_dict):  # pragma: no cover
         if k != 'can_use_on_swarming_builders': # pragma: no cover
           del swarming_dict[k] # pragma: no cover
 
@@ -638,12 +672,12 @@ class BBJSONGenerator(object):
     replacements = self.get_test_replacements(
         test, test_name, tester_name) or {}
     valid_replacement_keys = ['args', 'non_precommit_args', 'precommit_args']
-    for key, replacement_dict in replacements.iteritems():
+    for key, replacement_dict in replacements.items():
       if key not in valid_replacement_keys:
         raise BBGenErr(
             'Given replacement key %s for %s on %s is not in the list of valid '
             'keys %s' % (key, test_name, tester_name, valid_replacement_keys))
-      for replacement_key, replacement_val in replacement_dict.iteritems():
+      for replacement_key, replacement_val in replacement_dict.items():
         found_key = False
         for i, test_key in enumerate(test.get(key, [])):
           # Handle both the key/value being replaced being defined as two
@@ -679,6 +713,24 @@ class BBJSONGenerator(object):
           'script': '//testing/trigger_scripts/chromeos_device_trigger.py',
         }
 
+  def add_logdog_butler_cipd_package(self, tester_config, result):
+    if not tester_config.get('skip_cipd_packages', False):
+      cipd_packages = result['swarming'].get('cipd_packages', [])
+      already_added = len([
+          package for package in cipd_packages
+          if package.get('cipd_package', "").find('logdog/butler') > 0
+      ]) > 0
+      if not already_added:
+        cipd_packages.append({
+            'cipd_package':
+            'infra/tools/luci/logdog/butler/${platform}',
+            'location':
+            'bin',
+            'revision':
+            'git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c',
+        })
+        result['swarming']['cipd_packages'] = cipd_packages
+
   def add_android_presentation_args(self, tester_config, test_name, result):
     args = result.get('args', [])
     bucket = tester_config.get('results_bucket', 'chromium-result-details')
@@ -695,16 +747,6 @@ class BBJSONGenerator(object):
         'script': '//build/android/pylib/results/presentation/'
           'test_results_presentation.py',
       }
-    if not tester_config.get('skip_cipd_packages', False):
-      cipd_packages = result['swarming'].get('cipd_packages', [])
-      cipd_packages.append(
-        {
-          'cipd_package': 'infra/tools/luci/logdog/butler/${platform}',
-          'location': 'bin',
-          'revision': 'git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c',
-        }
-      )
-      result['swarming']['cipd_packages'] = cipd_packages
     if not tester_config.get('skip_output_links', False):
       result['swarming']['output_links'] = [
         {
@@ -735,10 +777,13 @@ class BBJSONGenerator(object):
     self.initialize_args_for_test(
         result, tester_config, additional_arg_keys=['gtest_args'])
     if self.is_android(tester_config) and tester_config.get(
-        'use_swarming',
-        True) and not test_config.get('use_isolated_scripts_api', False):
-      self.add_android_presentation_args(tester_config, test_name, result)
-      result['args'] = result.get('args', []) + ['--recover-devices']
+        'use_swarming', True):
+      if not test_config.get('use_isolated_scripts_api', False):
+        # TODO(https://crbug.com/1137998) make Android presentation work with
+        # isolated scripts in test_results_presentation.py merge script
+        self.add_android_presentation_args(tester_config, test_name, result)
+        result['args'] = result.get('args', []) + ['--recover-devices']
+      self.add_logdog_butler_cipd_package(tester_config, result)
 
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
@@ -769,8 +814,13 @@ class BBJSONGenerator(object):
     result['name'] = result.get('name', test_name)
     self.initialize_swarming_dictionary_for_test(result, tester_config)
     self.initialize_args_for_test(result, tester_config)
-    if tester_config.get('use_android_presentation', False):
-      self.add_android_presentation_args(tester_config, test_name, result)
+    if self.is_android(tester_config) and tester_config.get(
+        'use_swarming', True):
+      if tester_config.get('use_android_presentation', False):
+        # TODO(https://crbug.com/1137998) make Android presentation work with
+        # isolated scripts in test_results_presentation.py merge script
+        self.add_android_presentation_args(tester_config, test_name, result)
+      self.add_logdog_butler_cipd_package(tester_config, result)
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
@@ -818,6 +868,21 @@ class BBJSONGenerator(object):
     self.initialize_args_for_test(result, tester_config)
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
+    self.substitute_magic_args(result)
+    return result
+
+  def generate_skylab_test(self, waterfall, tester_name, tester_config,
+                           test_name, test_config):
+    if not self.should_run_on_tester(waterfall, tester_name, test_name,
+                                     test_config):
+      return None
+    result = copy.deepcopy(test_config)
+    result.update({
+        'test': test_name,
+    })
+    self.initialize_args_for_test(result, tester_config)
+    result = self.update_and_cleanup_test(result, test_name, tester_name,
+                                          tester_config, waterfall)
     self.substitute_magic_args(result)
     return result
 
@@ -918,6 +983,8 @@ class BBJSONGenerator(object):
             JUnitGenerator(self),
         'scripts':
             ScriptGenerator(self),
+        'skylab_tests':
+            SkylabGenerator(self),
     }
 
   def get_test_type_remapper(self):
@@ -944,7 +1011,7 @@ class BBJSONGenerator(object):
     other_suites = self.test_suites.get(other_test_type, {})
     basic_suites = self.test_suites.get('basic_suites', {})
 
-    for suite, suite_def in target_suites.iteritems():
+    for suite, suite_def in target_suites.items():
       if suite in basic_suites:
         raise BBGenErr('%s names may not duplicate basic test suite names '
                        '(error found while processsing %s)'
@@ -969,17 +1036,17 @@ class BBJSONGenerator(object):
     new_test_suites = {}
     test_types = ['basic_suites', 'compound_suites', 'matrix_compound_suites']
     for category in test_types:
-      for name, value in self.test_suites.get(category, {}).iteritems():
+      for name, value in self.test_suites.get(category, {}).items():
         new_test_suites[name] = value
     self.test_suites = new_test_suites
 
   def resolve_test_id_prefixes(self):
-    for suite in self.test_suites['basic_suites'].itervalues():
-      for key, test in suite.iteritems():
+    for suite in self.test_suites['basic_suites'].values():
+      for key, test in suite.items():
         assert isinstance(test, dict)
 
         # This assumes the recipe logic which prefers 'test' to 'isolate_name'
-        # https://source.chromium.org/chromium/chromium/tools/build/+/master:scripts/slave/recipe_modules/chromium_tests/generators.py;l=89;drc=14c062ba0eb418d3c4623dde41a753241b9df06b
+        # https://source.chromium.org/chromium/chromium/tools/build/+/main:scripts/slave/recipe_modules/chromium_tests/generators.py;l=89;drc=14c062ba0eb418d3c4623dde41a753241b9df06b
         # TODO(crbug.com/1035124): clean this up.
         isolate_name = test.get('test') or test.get('isolate_name') or key
         gn_entry = self.gn_isolate_map.get(isolate_name)
@@ -1012,7 +1079,7 @@ class BBJSONGenerator(object):
     # referenced by compound suites exist.
     basic_suites = self.test_suites.get('basic_suites')
 
-    for name, value in compound_suites.iteritems():
+    for name, value in compound_suites.items():
       # Resolve this to a dictionary.
       full_suite = {}
       for entry in value:
@@ -1041,7 +1108,7 @@ class BBJSONGenerator(object):
 
     # Each test in a basic test suite will have a definition per variant.
     test_suite = {}
-    for test_name, test_config in basic_test_definition.iteritems():
+    for test_name, test_config in basic_test_definition.items():
       definitions = []
       for variant in variants:
         # Unpack the variant from variants.pyl if it's string based.
@@ -1078,6 +1145,12 @@ class BBJSONGenerator(object):
         basic_swarming_def.update(variant_swarming_def)
         cloned_config['swarming'] = basic_swarming_def
 
+        # Copy all skylab fields defined by the variant.
+        skylab_config = cloned_variant.get('skylab')
+        if skylab_config:
+          for k, v in skylab_config.items():
+            cloned_config[k] = v
+
         # The identifier is used to make the name of the test unique.
         # Generators in the recipe uniquely identify a test by it's name, so we
         # don't want to have the same name for each variant.
@@ -1096,10 +1169,10 @@ class BBJSONGenerator(object):
     # referenced by matrix suites exist.
     basic_suites = self.test_suites.get('basic_suites')
 
-    for test_name, matrix_config in matrix_compound_suites.iteritems():
+    for test_name, matrix_config in matrix_compound_suites.items():
       full_suite = {}
 
-      for test_suite, mtx_test_suite_config in matrix_config.iteritems():
+      for test_suite, mtx_test_suite_config in matrix_config.items():
         basic_test_def = copy.deepcopy(basic_suites[test_suite])
 
         if 'variants' in mtx_test_suite_config:
@@ -1112,8 +1185,8 @@ class BBJSONGenerator(object):
 
   def link_waterfalls_to_test_suites(self):
     for waterfall in self.waterfalls:
-      for tester_name, tester in waterfall['machines'].iteritems():
-        for suite, value in tester.get('test_suites', {}).iteritems():
+      for tester_name, tester in waterfall['machines'].items():
+        for suite, value in tester.get('test_suites', {}).items():
           if not value in self.test_suites:
             # Hard / impossible to cover this in the unit test.
             raise self.unknown_test_suite(
@@ -1265,6 +1338,18 @@ class BBJSONGenerator(object):
       # Values specified under $mixin_append should be appended to existing
       # lists, rather than replacing them.
       mixin_append = mixin['$mixin_append']
+
+      # Append swarming named cache and delete swarming key, since it's under
+      # another layer of dict.
+      if 'named_caches' in mixin_append.get('swarming', {}):
+        new_test['swarming'].setdefault('named_caches', [])
+        new_test['swarming']['named_caches'].extend(
+            mixin_append['swarming']['named_caches'])
+        if len(mixin_append['swarming']) > 1:
+          raise BBGenErr('Only named_caches is supported under swarming key in '
+                         '$mixin_append, but there are: %s' %
+                         sorted(mixin_append['swarming'].keys()))
+        del mixin_append['swarming']
       for key in mixin_append:
         new_test.setdefault(key, [])
         if not isinstance(mixin_append[key], list):
@@ -1290,9 +1375,8 @@ class BBJSONGenerator(object):
       A dictionary mapping builders to test specs
       """
     return {
-      name: self.get_tests_for_config(waterfall, name, config)
-        for name, config
-        in waterfall['machines'].iteritems()
+        name: self.get_tests_for_config(waterfall, name, config)
+        for name, config in waterfall['machines'].items()
     }
 
   def get_tests_for_config(self, waterfall, name, config):
@@ -1305,7 +1389,7 @@ class BBJSONGenerator(object):
     if 'additional_compile_targets' in config:
       tests['additional_compile_targets'] = config[
         'additional_compile_targets']
-    for test_type, input_tests in config.get('test_suites', {}).iteritems():
+    for test_type, input_tests in config.get('test_suites', {}).items():
       if test_type not in generator_map:
         raise self.unknown_test_suite_type(
           test_type, name, waterfall['name']) # pragma: no cover
@@ -1406,11 +1490,6 @@ class BBJSONGenerator(object):
         'ANGLE GPU Android Release (Nexus 5X)',
         'ANGLE GPU Linux Release (Intel HD 630)',
         'ANGLE GPU Linux Release (NVIDIA)',
-        'ANGLE GPU Mac Release (Intel)',
-        'ANGLE GPU Mac Retina Release (AMD)',
-        'ANGLE GPU Mac Retina Release (NVIDIA)',
-        'ANGLE GPU Win10 x64 Release (Intel HD 630)',
-        'ANGLE GPU Win10 x64 Release (NVIDIA)',
         'Optional Android Release (Nexus 5X)',
         'Optional Linux Release (Intel HD 630)',
         'Optional Linux Release (NVIDIA)',
@@ -1419,7 +1498,6 @@ class BBJSONGenerator(object):
         'Optional Mac Retina Release (NVIDIA)',
         'Optional Win10 x64 Release (Intel HD 630)',
         'Optional Win10 x64 Release (NVIDIA)',
-        'Win7 ANGLE Tryserver (AMD)',
         # chromium.chromiumos
         'linux-lacros-rel',
         # chromium.fyi
@@ -1439,6 +1517,14 @@ class BBJSONGenerator(object):
         'win32-dbg',
         'win-archive-dbg',
         'win32-archive-dbg',
+        # New LTC isn't created when LTC becomes LTS, so these builders can go
+        # away
+        "chromeos-arm-generic-ltc",
+        "chromeos-betty-pi-arc-chrome-ltc",
+        "chromeos-eve-chrome-ltc",
+        "chromeos-kevin-chrome-ltc",
+        "linux-chromeos-ltc",
+        "linux64-ltc",
         # TODO(https://crbug.com/1127088): remove once LTS version has been set
         "chromeos-arm-generic-lts",
         "chromeos-betty-pi-arc-chrome-lts",
@@ -1446,6 +1532,9 @@ class BBJSONGenerator(object):
         "chromeos-kevin-chrome-lts",
         "linux-chromeos-lts",
         "linux64-lts",
+        # TODO crbug.com/1143924: Remove once experimentation is complete
+        'Linux Builder Robocrop',
+        'Linux Tests Robocrop',
     ]
 
   def get_internal_waterfalls(self):
@@ -1496,8 +1585,8 @@ class BBJSONGenerator(object):
     suites_seen = set()
     generator_map = self.get_test_generator_map()
     for waterfall in self.waterfalls:
-      for bot_name, tester in waterfall['machines'].iteritems():
-        for suite_type, suite in tester.get('test_suites', {}).iteritems():
+      for bot_name, tester in waterfall['machines'].items():
+        for suite_type, suite in tester.get('test_suites', {}).items():
           if suite_type not in generator_map:
             raise self.unknown_test_suite_type(suite_type, bot_name,
                                                waterfall['name'])
@@ -1522,17 +1611,17 @@ class BBJSONGenerator(object):
     all_bots = set()
     missing_bots = set()
     for waterfall in self.waterfalls:
-      for bot_name, tester in waterfall['machines'].iteritems():
+      for bot_name, tester in waterfall['machines'].items():
         all_bots.add(bot_name)
         # In order to disambiguate between bots with the same name on
         # different waterfalls, support has been added to various
         # exceptions for concatenating the waterfall name after the bot
         # name.
         all_bots.add(bot_name + ' ' + waterfall['name'])
-    for exception in self.exceptions.itervalues():
+    for exception in self.exceptions.values():
       removals = (exception.get('remove_from', []) +
                   exception.get('remove_gtest_from', []) +
-                  exception.get('modifications', {}).keys())
+                  list(exception.get('modifications', {}).keys()))
       for removal in removals:
         if removal not in all_bots:
           missing_bots.add(removal)
@@ -1546,7 +1635,7 @@ class BBJSONGenerator(object):
     seen_mixins = set()
     for waterfall in self.waterfalls:
       seen_mixins = seen_mixins.union(waterfall.get('mixins', set()))
-      for bot_name, tester in waterfall['machines'].iteritems():
+      for bot_name, tester in waterfall['machines'].items():
         seen_mixins = seen_mixins.union(tester.get('mixins', set()))
     for suite in self.test_suites.values():
       if isinstance(suite, list):
@@ -1557,6 +1646,12 @@ class BBJSONGenerator(object):
       for test in suite.values():
         assert isinstance(test, dict)
         seen_mixins = seen_mixins.union(test.get('mixins', set()))
+
+    for variant in self.variants:
+      # Unpack the variant from variants.pyl if it's string based.
+      if isinstance(variant, str):
+        variant = self.variants[variant]
+      seen_mixins = seen_mixins.union(variant.get('mixins', set()))
 
     missing_mixins = set(self.mixins.keys()) - seen_mixins
     if missing_mixins:
@@ -1821,7 +1916,8 @@ class BBJSONGenerator(object):
     # by this script already.
     self.resolve_configuration_files()
     ungenerated_files = set()
-    for filename, expected_contents in self.generate_outputs().items():
+    outputs = self.generate_outputs()
+    for filename, expected_contents in outputs.items():
       expected = self.jsonify(expected_contents)
       file_path = filename + '.json'
       current = self.read_file(self.pyl_file_path(file_path))
@@ -1842,6 +1938,31 @@ class BBJSONGenerator(object):
           'The following files have not been properly '
            'autogenerated by generate_buildbot_json.py: ' +
            ', '.join([filename + '.json' for filename in ungenerated_files]))
+
+    for builder_group, builders in outputs.items():
+      for builder, step_types in builders.items():
+        for step_data in step_types.get('gtest_tests', []):
+          step_name = step_data.get('name', step_data['test'])
+          self._check_swarming_config(builder_group, builder, step_name,
+                                      step_data)
+        for step_data in step_types.get('isolated_scripts', []):
+          step_name = step_data.get('name', step_data['isolate_name'])
+          self._check_swarming_config(builder_group, builder, step_name,
+                                      step_data)
+
+  def _check_swarming_config(self, filename, builder, step_name, step_data):
+    # TODO(crbug.com/1203436): Ensure all swarming tests specify os and cpu, not
+    # just mac tests.
+    if ('mac' in builder.lower()
+        and step_data['swarming']['can_use_on_swarming_builders']):
+      dimension_sets = step_data['swarming'].get('dimension_sets')
+      if not dimension_sets:
+        raise BBGenErr('%s: %s / %s : os and cpu must be specified for mac '
+                       'swarmed tests' % (filename, builder, step_name))
+      for s in dimension_sets:
+        if not s.get('os') or not s.get('cpu'):
+          raise BBGenErr('%s: %s / %s : os and cpu must be specified for mac '
+                         'swarmed tests' % (filename, builder, step_name))
 
   def check_consistency(self, verbose=False):
     self.check_input_file_consistency(verbose) # pragma: no cover
@@ -1973,7 +2094,7 @@ class BBJSONGenerator(object):
     configuration, not grouped by their test suite.
     """
     tests = {}
-    for test_suite in test_suites.itervalues():
+    for test_suite in test_suites.values():
       for test in test_suite:
         test_info = test_suite[test]
         test_name = test

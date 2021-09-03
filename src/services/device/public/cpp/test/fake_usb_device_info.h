@@ -22,6 +22,8 @@ namespace device {
 
 // This class acts like device::UsbDevice and provides mojom::UsbDeviceInfo.
 // It should be used together with FakeUsbDeviceManager just for testing.
+// For convenience, a default configuration will be set if the chosen
+// constructor does not explicitly set these.
 class FakeUsbDeviceInfo : public base::RefCounted<FakeUsbDeviceInfo> {
  public:
   class Observer : public base::CheckedObserver {
@@ -38,6 +40,8 @@ class FakeUsbDeviceInfo : public base::RefCounted<FakeUsbDeviceInfo> {
                     uint16_t device_version,
                     uint16_t vendor_id,
                     uint16_t product_id,
+                    uint32_t bus_number,
+                    uint32_t port_number,
                     const std::string& manufacturer_string,
                     const std::string& product_string,
                     const std::string& serial_number);
@@ -74,6 +78,12 @@ class FakeUsbDeviceInfo : public base::RefCounted<FakeUsbDeviceInfo> {
   bool SetActiveConfig(uint8_t value);
   void SetMockDevice(MockUsbMojoDevice* device) { mock_device_ = device; }
   MockUsbMojoDevice* mock_device() const { return mock_device_; }
+
+  static mojom::UsbConfigurationInfoPtr CreateConfiguration(
+      uint8_t device_class,
+      uint8_t subclass_code,
+      uint8_t protocol_code,
+      uint8_t configuration_value = 1);
 
  protected:
   friend class RefCounted<FakeUsbDeviceInfo>;

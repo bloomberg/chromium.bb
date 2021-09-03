@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import absolute_import
 import atexit
 import copy
 import logging
@@ -66,7 +68,6 @@ class BrowserFinderOptions(optparse.Values):
     self.interval_profiling_periods = []
     self.interval_profiling_frequency = 1000
     self.interval_profiler_options = ''
-    self.capture_screen_video = False
 
     self.experimental_system_tracing = False
     self.experimental_system_data_sources = False
@@ -198,6 +199,13 @@ class BrowserFinderOptions(optparse.Values):
         dest='capture_screen_video', action='store_true',
         help='Capture the screen during the test and save it to a video file '
              '(note that it is supported only on some platforms)')
+    group.add_option(
+        '--periodic-screenshot-frequency-ms',
+        dest='periodic_screenshot_frequency_ms', type=int,
+        help='During each story, capture a screenshot every x ms and '
+             'save it to a file (Linux/Windows/[La]CrOS only).'
+             'NOTE: This significantly impacts performance, '
+             'so it should only be used while debugging.')
     parser.add_option_group(group)
 
     # Platform options
@@ -247,8 +255,7 @@ class BrowserFinderOptions(optparse.Values):
         'base module. Ignored on Non-Android platforms.')
     group.add_option(
         '--compile-apk',
-        action='store_true',
-        help='Will compile the APK under test using dex2oat in speed mode. '
+        help='Compiles the APK under test using dex2oat in the specified mode. '
         'Ignored on non-Android platforms.')
     group.add_option(
         '--avd-config',
@@ -348,9 +355,9 @@ class BrowserFinderOptions(optparse.Values):
         if binary_manager.NeedsInit():
           binary_manager.InitDependencyManager([])
         devices = device_finder.GetDevicesMatchingOptions(self)
-        print 'Available devices:'
+        print('Available devices:')
         for device in devices:
-          print ' ', device.name
+          print(' ', device.name)
         sys.exit(0)
 
       if self.browser_executable and not self.browser_type:
@@ -369,21 +376,22 @@ class BrowserFinderOptions(optparse.Values):
             browser_types[device.name] = sorted(
                 [browser.browser_type for browser in possible_browsers])
           except browser_finder_exceptions.BrowserFinderException as ex:
-            print >> sys.stderr, 'ERROR: ', ex
+            print('ERROR: ', ex, file=sys.stderr)
             sys.exit(1)
-        print 'Available browsers:'
+        print('Available browsers:')
         if len(browser_types) == 0:
-          print '  No devices were found.'
+          print('  No devices were found.')
         for device_name in sorted(browser_types.keys()):
-          print '  ', device_name
+          print('  ', device_name)
           for browser_type in browser_types[device_name]:
-            print '    ', browser_type
+            print('    ', browser_type)
           if len(browser_types[device_name]) == 0:
-            print '     No browsers found for this device'
+            print('     No browsers found for this device')
         sys.exit(0)
 
-      if self.browser_type == 'cros-chrome' and self.cros_remote and (
-          self.cros_remote_ssh_port < 0):
+      if ((self.browser_type == 'cros-chrome' or
+           self.browser_type == 'lacros-chrome') and
+          self.cros_remote and (self.cros_remote_ssh_port < 0)):
         try:
           self.cros_remote_ssh_port = socket.getservbyname('ssh')
         except OSError as e:
@@ -398,7 +406,7 @@ class BrowserFinderOptions(optparse.Values):
       # incorrect profiles so this will not be supported.
       if (len(self.interval_profiling_periods) > 1
           and 'story_run' in self.interval_profiling_periods):
-        print 'Cannot specify other periods along with the story_run period.'
+        print('Cannot specify other periods along with the story_run period.')
         sys.exit(1)
 
       self.interval_profiler_options = shlex.split(
@@ -756,7 +764,7 @@ def CreateChromeBrowserOptions(br_options):
   browser_type = br_options.browser_type
 
   if (platform.GetHostPlatform().GetOSName() == 'chromeos' or
-      (browser_type and browser_type.startswith('cros'))):
+      (browser_type and 'cros' in browser_type)):
     return CrosBrowserOptions(br_options)
 
   return br_options

@@ -35,14 +35,12 @@ class ViewsContentClientMainParts : public content::BrowserMainParts {
       const content::MainFunctionParams& content_params,
       ViewsContentClient* views_content_client);
 
-  // Invoked before the BrowserMainLoop constructor.
-  static void PreCreateMainMessageLoop();
+  static void PreBrowserMain();
 
   ~ViewsContentClientMainParts() override;
 
   // content::BrowserMainParts:
-  void PreMainMessageLoopRun() override;
-  bool MainMessageLoopRun(int* result_code) override;
+  int PreMainMessageLoopRun() override;
   void PostMainMessageLoopRun() override;
 
   content::ShellBrowserContext* browser_context() {

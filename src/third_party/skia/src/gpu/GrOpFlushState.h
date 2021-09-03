@@ -58,28 +58,31 @@ public:
     /** Additional data required on a per-op basis when executing GrOps. */
     struct OpArgs {
         // TODO: why does OpArgs have the op we're going to pass it to as a member? Remove it.
-        explicit OpArgs(GrOp* op, GrSurfaceProxyView* surfaceView, GrAppliedClip* appliedClip,
+        explicit OpArgs(GrOp* op, const GrSurfaceProxyView& surfaceView, bool usesMSAASurface,
+                        GrAppliedClip* appliedClip,
                         const GrXferProcessor::DstProxyView& dstProxyView,
-                        GrXferBarrierFlags renderPassXferBarriers)
+                        GrXferBarrierFlags renderPassXferBarriers, GrLoadOp colorLoadOp)
                 : fOp(op)
                 , fSurfaceView(surfaceView)
-                , fRenderTargetProxy(surfaceView->asRenderTargetProxy())
+                , fRenderTargetProxy(surfaceView.asRenderTargetProxy())
+                , fUsesMSAASurface(usesMSAASurface)
                 , fAppliedClip(appliedClip)
                 , fDstProxyView(dstProxyView)
-                , fRenderPassXferBarriers(renderPassXferBarriers) {
-            SkASSERT(surfaceView->asRenderTargetProxy());
+                , fRenderPassXferBarriers(renderPassXferBarriers)
+                , fColorLoadOp(colorLoadOp) {
+            SkASSERT(surfaceView.asRenderTargetProxy());
         }
 
-        GrSurfaceOrigin origin() const { return fSurfaceView->origin(); }
-        GrSwizzle writeSwizzle() const { return fSurfaceView->swizzle(); }
-
         GrOp* op() { return fOp; }
-        const GrSurfaceProxyView* writeView() const { return fSurfaceView; }
-        GrRenderTargetProxy* proxy() const { return fRenderTargetProxy; }
+        const GrSurfaceProxyView& writeView() const { return fSurfaceView; }
+        GrRenderTargetProxy* rtProxy() const { return fRenderTargetProxy; }
+        // True if the op under consideration belongs to an opsTask that renders to an MSAA buffer.
+        bool usesMSAASurface() const { return fUsesMSAASurface; }
         GrAppliedClip* appliedClip() { return fAppliedClip; }
         const GrAppliedClip* appliedClip() const { return fAppliedClip; }
         const GrXferProcessor::DstProxyView& dstProxyView() const { return fDstProxyView; }
         GrXferBarrierFlags renderPassBarriers() const { return fRenderPassXferBarriers; }
+        GrLoadOp colorLoadOp() const { return fColorLoadOp; }
 
 #ifdef SK_DEBUG
         void validate() const {
@@ -90,11 +93,13 @@ public:
 
     private:
         GrOp*                         fOp;
-        GrSurfaceProxyView*           fSurfaceView;
+        const GrSurfaceProxyView&     fSurfaceView;
         GrRenderTargetProxy*          fRenderTargetProxy;
+        bool                          fUsesMSAASurface;
         GrAppliedClip*                fAppliedClip;
         GrXferProcessor::DstProxyView fDstProxyView;   // TODO: do we still need the dst proxy here?
         GrXferBarrierFlags            fRenderPassXferBarriers;
+        GrLoadOp                      fColorLoadOp;
     };
 
     void setOpArgs(OpArgs* opArgs) { fOpArgs = opArgs; }
@@ -134,18 +139,24 @@ public:
     uint16_t* makeIndexSpaceAtLeast(int minIndexCount, int fallbackIndexCount,
                                     sk_sp<const GrBuffer>*, int* startIndex,
                                     int* actualIndexCount) final;
-    GrDrawIndirectCommand* makeDrawIndirectSpace(int drawCount, sk_sp<const GrBuffer>* buffer,
-                                                 size_t* offset) override {
+    GrDrawIndirectWriter makeDrawIndirectSpace(int drawCount, sk_sp<const GrBuffer>* buffer,
+                                               size_t* offset) override {
         return fDrawIndirectPool.makeSpace(drawCount, buffer, offset);
     }
-    GrDrawIndexedIndirectCommand* makeDrawIndexedIndirectSpace(
-            int drawCount, sk_sp<const GrBuffer>* buffer, size_t* offset) override {
+    GrDrawIndexedIndirectWriter makeDrawIndexedIndirectSpace(int drawCount,
+                                                             sk_sp<const GrBuffer>* buffer,
+                                                             size_t* offset) override {
         return fDrawIndirectPool.makeIndexedSpace(drawCount, buffer, offset);
     }
     void putBackIndices(int indexCount) final;
     void putBackVertices(int vertices, size_t vertexStride) final;
-    const GrSurfaceProxyView* writeView() const final { return this->drawOpArgs().writeView(); }
-    GrRenderTargetProxy* proxy() const final { return this->drawOpArgs().proxy(); }
+    void putBackIndirectDraws(int drawCount) final { fDrawIndirectPool.putBack(drawCount); }
+    void putBackIndexedIndirectDraws(int drawCount) final {
+        fDrawIndirectPool.putBackIndexed(drawCount);
+    }
+    const GrSurfaceProxyView& writeView() const final { return this->drawOpArgs().writeView(); }
+    GrRenderTargetProxy* rtProxy() const final { return this->drawOpArgs().rtProxy(); }
+    bool usesMSAASurface() const final { return this->drawOpArgs().usesMSAASurface(); }
     const GrAppliedClip* appliedClip() const final { return this->drawOpArgs().appliedClip(); }
     const GrAppliedHardClip& appliedHardClip() const {
         return (fOpArgs->appliedClip()) ?
@@ -158,6 +169,10 @@ public:
 
     GrXferBarrierFlags renderPassBarriers() const final {
         return this->drawOpArgs().renderPassBarriers();
+    }
+
+    GrLoadOp colorLoadOp() const final {
+        return this->drawOpArgs().colorLoadOp();
     }
 
     GrDeferredUploadTarget* deferredUploadTarget() final { return this; }
@@ -188,11 +203,12 @@ public:
 
     // This is a convenience method for when the primitive processor has exactly one texture. It
     // binds one texture for the primitive processor, and any others for FPs on the pipeline.
-    void bindTextures(const GrPrimitiveProcessor& primProc,
-                      const GrSurfaceProxy& singlePrimProcTexture, const GrPipeline& pipeline) {
-        SkASSERT(primProc.numTextureSamplers() == 1);
-        const GrSurfaceProxy* ptr = &singlePrimProcTexture;
-        this->bindTextures(primProc, &ptr, pipeline);
+    void bindTextures(const GrGeometryProcessor& geomProc,
+                      const GrSurfaceProxy& singleGeomProcTexture,
+                      const GrPipeline& pipeline) {
+        SkASSERT(geomProc.numTextureSamplers() == 1);
+        const GrSurfaceProxy* ptr = &singleGeomProcTexture;
+        this->bindTextures(geomProc, &ptr, pipeline);
     }
 
     // Makes the appropriate bindBuffers() and draw*() calls for the provided mesh.
@@ -205,9 +221,10 @@ public:
     void setScissorRect(const SkIRect& scissorRect) {
         fOpsRenderPass->setScissorRect(scissorRect);
     }
-    void bindTextures(const GrPrimitiveProcessor& primProc,
-                      const GrSurfaceProxy* const primProcTextures[], const GrPipeline& pipeline) {
-        fOpsRenderPass->bindTextures(primProc, primProcTextures, pipeline);
+    void bindTextures(const GrGeometryProcessor& geomProc,
+                      const GrSurfaceProxy* const geomProcTextures[],
+                      const GrPipeline& pipeline) {
+        fOpsRenderPass->bindTextures(geomProc, geomProcTextures, pipeline);
     }
     void bindBuffers(sk_sp<const GrBuffer> indexBuffer, sk_sp<const GrBuffer> instanceBuffer,
                      sk_sp<const GrBuffer> vertexBuffer,
@@ -263,8 +280,8 @@ private:
         // the stack (for CCPR). In either case this object does not need to manage its
         // lifetime.
         const GrGeometryProcessor* fGeometryProcessor = nullptr;
-        // Must have GrPrimitiveProcessor::numTextureSamplers() entries. Can be null if no samplers.
-        const GrSurfaceProxy* const* fPrimProcProxies = nullptr;
+        // Must have GrGeometryProcessor::numTextureSamplers() entries. Can be null if no samplers.
+        const GrSurfaceProxy* const* fGeomProcProxies = nullptr;
         const GrSimpleMesh* fMeshes = nullptr;
         const GrOp* fOp = nullptr;
         int fMeshCnt = 0;

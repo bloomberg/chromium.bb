@@ -47,7 +47,8 @@ constexpr char kIsUserSignedInKey[] = "isUserSignedIn";
 bool IsUserSignedIn(Profile* profile) {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  return identity_manager && identity_manager->HasPrimaryAccount();
+  return identity_manager &&
+         identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
 }
 
 content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
@@ -73,6 +74,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       {"historyMenuButton", IDS_HISTORY_HISTORY_MENU_DESCRIPTION},
       {"historyMenuItem", IDS_HISTORY_HISTORY_MENU_ITEM},
       {"itemsSelected", IDS_HISTORY_ITEMS_SELECTED},
+      {"itemsUnselected", IDS_HISTORY_ITEMS_UNSELECTED},
       {"loading", IDS_HISTORY_LOADING},
       {"menu", IDS_MENU},
       {"moreFromSite", IDS_HISTORY_MORE_FROM_SITE},
@@ -92,7 +94,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       {"signInPromoDesc", IDS_HISTORY_SIGN_IN_PROMO_DESC},
       {"title", IDS_HISTORY_TITLE},
   };
-  AddLocalizedStringsBulk(source, kStrings);
+  source->AddLocalizedStrings(kStrings);
 
   source->AddString(
       "sidebarFooter",
@@ -112,7 +114,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
 
   webui::SetupWebUIDataSource(
-      source, base::make_span(kHistoryResources, kHistoryResourcesSize), "",
+      source, base::make_span(kHistoryResources, kHistoryResourcesSize),
       IDR_HISTORY_HISTORY_HTML);
 
   return source;
@@ -140,9 +142,9 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
       foreign_session_handler.get();
   web_ui->AddMessageHandler(std::move(foreign_session_handler));
   foreign_session_handler_ptr->InitializeForeignSessions();
-  web_ui->AddMessageHandler(std::make_unique<HistoryLoginHandler>(
-      base::Bind(&HistoryUI::UpdateDataSource, base::Unretained(this))));
-
+  web_ui->AddMessageHandler(
+      std::make_unique<HistoryLoginHandler>(base::BindRepeating(
+          &HistoryUI::UpdateDataSource, base::Unretained(this))));
 }
 
 HistoryUI::~HistoryUI() {}

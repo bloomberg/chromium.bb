@@ -19,6 +19,7 @@
 #include "base/task/task_traits.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -27,8 +28,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_switches.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #endif
 
 #if defined(OS_WIN)
@@ -108,7 +109,8 @@ bool IsRunningInAppMode() {
 base::CommandLine CommandLineArgsForLauncher(
     const GURL& url,
     const std::string& extension_app_id,
-    const base::FilePath& profile_path) {
+    const base::FilePath& profile_path,
+    const std::string& run_on_os_login_mode) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   base::CommandLine new_cmd_line(base::CommandLine::NO_PROGRAM);
@@ -128,6 +130,12 @@ base::CommandLine CommandLineArgsForLauncher(
     // Note: Do not change this flag!  Old Gears shortcuts will break if you do!
     new_cmd_line.AppendSwitchASCII(switches::kApp, url.spec());
   }
+
+  if (!run_on_os_login_mode.empty()) {
+    new_cmd_line.AppendSwitchASCII(switches::kAppRunOnOsLoginMode,
+                                   run_on_os_login_mode);
+  }
+
   return new_cmd_line;
 }
 
@@ -149,7 +157,7 @@ void AppendProfileArgs(const base::FilePath& profile_path,
       command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   base::FilePath profile = cmd_line.GetSwitchValuePath(
       chromeos::switches::kLoginProfile);
   if (!profile.empty())
@@ -162,7 +170,7 @@ void AppendProfileArgs(const base::FilePath& profile_path,
 }
 
 #if !defined(OS_WIN)
-base::string16 GetAppShortcutsSubdirName() {
+std::u16string GetAppShortcutsSubdirName() {
   if (chrome::GetChannel() == version_info::Channel::CANARY)
     return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY);
   return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);
@@ -262,7 +270,7 @@ void DefaultBrowserWorker::SetAsDefaultImpl(
     base::OnceClosure on_finished_callback) {
   switch (GetDefaultWebClientSetPermission()) {
     case SET_DEFAULT_NOT_ALLOWED:
-      NOTREACHED();
+      DCHECK(false);  // Only fatal in debug builds
       break;
     case SET_DEFAULT_UNATTENDED:
       SetAsDefaultBrowser();

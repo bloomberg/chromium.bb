@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -96,15 +95,14 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
   // How long to wait between status uploads.
   base::TimeDelta upload_frequency_;
 
-  // Observer to changes in the upload frequency.
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      upload_frequency_observer_;
+  // Subscription for the callback about changes in the upload frequency.
+  base::CallbackListSubscription upload_frequency_subscription_;
 
   // The time the last upload was performed.
   base::Time last_upload_;
 
   // Callback invoked via a delay to upload device status.
-  base::CancelableClosure upload_callback_;
+  base::CancelableOnceClosure upload_callback_;
 
   // True if there has been any captured media in this session.
   bool has_captured_media_;
