@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "ui/display/display.h"
 #include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -40,6 +41,12 @@ class CastTouchDeviceManager;
 // doesn't really do anything when using OzonePlatformCast.
 class CastDisplayConfigurator : public display::NativeDisplayObserver {
  public:
+  class Observer {
+   public:
+    virtual ~Observer() = default;
+    virtual void OnDisplayStateChanged() = 0;
+  };
+
   explicit CastDisplayConfigurator(CastScreen* screen);
   ~CastDisplayConfigurator() override;
 
@@ -50,6 +57,9 @@ class CastDisplayConfigurator : public display::NativeDisplayObserver {
   void EnableDisplay(display::ConfigureCallback callback);
   void DisableDisplay(display::ConfigureCallback callback);
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   void ConfigureDisplayFromCommandLine();
   void SetColorMatrix(const std::vector<float>& color_matrix);
   void SetGammaCorrection(
@@ -58,17 +68,20 @@ class CastDisplayConfigurator : public display::NativeDisplayObserver {
 
  private:
   void ForceInitialConfigure();
+  void NotifyObservers();
   void OnDisplaysAcquired(
       bool force_initial_configure,
       const std::vector<display::DisplaySnapshot*>& displays);
   void OnDisplayConfigured(display::DisplaySnapshot* display,
                            const display::DisplayMode* mode,
                            const gfx::Point& origin,
-                           const base::flat_map<int64_t, bool>& statuses);
+                           bool statuses);
   void UpdateScreen(int64_t display_id,
                     const gfx::Rect& bounds,
                     float device_scale_factor,
                     display::Display::Rotation rotation);
+
+  base::ObserverList<Observer>::Unchecked observers_;
 
   std::unique_ptr<display::NativeDisplayDelegate> delegate_;
   std::unique_ptr<CastTouchDeviceManager> touch_device_manager_;

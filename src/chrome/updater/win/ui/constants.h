@@ -7,8 +7,6 @@
 
 #include <windows.h>
 
-#include "base/strings/string16.h"
-
 namespace updater {
 namespace ui {
 
@@ -36,9 +34,9 @@ constexpr int kMsPerSec = 1000;
 constexpr int kSecPerMin = 60;
 constexpr int kSecondsPerHour = 60 * 60;
 
-extern const base::char16 kLegacyUiDisplayedEventEnvironmentVariableName[];
+extern const wchar_t kLegacyUiDisplayedEventEnvironmentVariableName[];
 
-extern const base::char16 kDialogFont[];
+extern const wchar_t kDialogFont[];
 
 }  // namespace ui
 }  // namespace updater

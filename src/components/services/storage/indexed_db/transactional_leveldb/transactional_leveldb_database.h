@@ -6,11 +6,11 @@
 #define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_DATABASE_H_
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/containers/flat_set.h"
 #include "base/containers/mru_cache.h"
-#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

@@ -9,70 +9,40 @@
 
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
-#include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/allocator/partition_allocator/random.h"
+#include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
 
+// Prefetch *x into memory.
+#if defined(__clang__) || defined(COMPILER_GCC)
+#define PA_PREFETCH(x) __builtin_prefetch(x)
+#else
+#define PA_PREFETCH(x)
+#endif
+
 namespace base {
 
 namespace internal {
-
-ALWAYS_INLINE void* PartitionPointerAdjustSubtract(bool allow_extras,
-                                                   void* ptr) {
-  if (allow_extras) {
-    ptr = PartitionTagPointerAdjustSubtract(ptr);
-    ptr = PartitionCookiePointerAdjustSubtract(ptr);
-    ptr = PartitionRefCountPointerAdjustSubtract(ptr);
-  }
-  return ptr;
-}
-
-ALWAYS_INLINE void* PartitionPointerAdjustAdd(bool allow_extras, void* ptr) {
-  if (allow_extras) {
-    ptr = PartitionTagPointerAdjustAdd(ptr);
-    ptr = PartitionCookiePointerAdjustAdd(ptr);
-    ptr = PartitionRefCountPointerAdjustAdd(ptr);
-  }
-  return ptr;
-}
-
-ALWAYS_INLINE size_t PartitionSizeAdjustAdd(bool allow_extras, size_t size) {
-  if (allow_extras) {
-    size = PartitionTagSizeAdjustAdd(size);
-    size = PartitionCookieSizeAdjustAdd(size);
-    size = PartitionRefCountSizeAdjustAdd(size);
-  }
-  return size;
-}
-
-ALWAYS_INLINE size_t PartitionSizeAdjustSubtract(bool allow_extras,
-                                                 size_t size) {
-  if (allow_extras) {
-    size = PartitionTagSizeAdjustSubtract(size);
-    size = PartitionCookieSizeAdjustSubtract(size);
-    size = PartitionRefCountSizeAdjustSubtract(size);
-  }
-  return size;
-}
-
 // This is a `memset` that resists being optimized away. Adapted from
 // boringssl/src/crypto/mem.c. (Copying and pasting is bad, but //base can't
 // depend on //third_party, and this is small enough.)
-ALWAYS_INLINE void SecureZero(void* p, size_t size) {
+ALWAYS_INLINE void SecureMemset(void* ptr, uint8_t value, size_t size) {
 #if defined(OS_WIN)
-  SecureZeroMemory(p, size);
-#else
-  memset(p, 0, size);
+  if (value == 0) {
+    SecureZeroMemory(ptr, size);
+    return;
+  }
+#endif  // defined(OS_WIN)
+  memset(ptr, value, size);
 
   // As best as we can tell, this is sufficient to break any optimisations that
   // might try to eliminate "superfluous" memsets. If there's an easy way to
   // detect memset_s, it would be better to use that.
-  __asm__ __volatile__("" : : "r"(p) : "memory");
-#endif
+  __asm__ __volatile__("" : : "r"(ptr) : "memory");
 }
 
 // Returns true if we've hit the end of a random-length period. We don't want to

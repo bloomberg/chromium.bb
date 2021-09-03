@@ -224,7 +224,7 @@ int SenderPacketRouter::SendJustTheRtpPackets(Clock::time_point send_time,
 
 namespace {
 constexpr int kBitsPerByte = 8;
-constexpr auto kOneSecondInMilliseconds = to_microseconds(seconds(1));
+constexpr auto kOneSecondInMilliseconds = to_milliseconds(seconds(1));
 }  // namespace
 
 // static

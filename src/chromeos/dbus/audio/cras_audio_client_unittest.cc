@@ -35,6 +35,9 @@ const uint64_t kInternalMicId = 20001;
 const uint32_t kInputMaxSupportedChannels = 1;
 const uint32_t kOutputMaxSupportedChannels = 2;
 
+const uint32_t kInputAudioEffect = cras::EFFECT_TYPE_NOISE_CANCELLATION;
+const uint32_t kOutputAudioEffect = 0;
+
 const AudioNode kInternalSpeaker(false,
                                  kInternalSpeakerId,
                                  false /* has_v2_stable_device_id */,
@@ -45,7 +48,8 @@ const AudioNode kInternalSpeaker(false,
                                  "Speaker",
                                  false,
                                  0,
-                                 kOutputMaxSupportedChannels);
+                                 kOutputMaxSupportedChannels,
+                                 kOutputAudioEffect);
 
 const AudioNode kInternalMic(true,
                              kInternalMicId,
@@ -57,7 +61,8 @@ const AudioNode kInternalMic(true,
                              "Internal Mic",
                              false,
                              0,
-                             kInputMaxSupportedChannels);
+                             kInputMaxSupportedChannels,
+                             kInputAudioEffect);
 
 const AudioNode kInternalSpeakerV2(
     false,
@@ -72,7 +77,8 @@ const AudioNode kInternalSpeakerV2(
     "Speaker",
     false,
     0,
-    kOutputMaxSupportedChannels);
+    kOutputMaxSupportedChannels,
+    kOutputAudioEffect);
 
 const AudioNode kInternalMicV2(true,
                                kInternalMicId,
@@ -86,7 +92,8 @@ const AudioNode kInternalMicV2(true,
                                "Internal Mic",
                                false,
                                0,
-                               kInputMaxSupportedChannels);
+                               kInputMaxSupportedChannels,
+                               kInputAudioEffect);
 
 // A mock CrasAudioClient Observer.
 class MockObserver : public CrasAudioClient::Observer {
@@ -101,6 +108,9 @@ class MockObserver : public CrasAudioClient::Observer {
   MOCK_METHOD2(OutputNodeVolumeChanged, void(uint64_t node_id, int volume));
   MOCK_METHOD2(HotwordTriggered, void(uint64_t tv_sec, uint64_t tv_nsec));
   MOCK_METHOD0(NumberOfActiveStreamsChanged, void());
+  MOCK_METHOD1(
+      NumberOfInputStreamsWithPermissionChanged,
+      void(const base::flat_map<std::string, uint32_t>& num_input_streams));
   MOCK_METHOD2(BluetoothBatteryChanged,
                void(const std::string& address, uint32_t level));
 };
@@ -286,6 +296,11 @@ void WriteNodesToResponse(const AudioNodeList& node_list,
       sub_writer.CloseContainer(&entry_writer);
     }
 
+    sub_writer.OpenDictEntry(&entry_writer);
+    entry_writer.AppendString(cras::kAudioEffectProperty);
+    entry_writer.AppendVariantOfUint32(node_list[i].audio_effect);
+    sub_writer.CloseContainer(&entry_writer);
+
     writer->CloseContainer(&sub_writer);
   }
 }
@@ -293,7 +308,7 @@ void WriteNodesToResponse(const AudioNodeList& node_list,
 // Expect the AudioNodeList result.
 void ExpectAudioNodeListResult(bool* called,
                                const AudioNodeList& expected_node_list,
-                               base::Optional<AudioNodeList> result) {
+                               absl::optional<AudioNodeList> result) {
   *called = true;
   ASSERT_TRUE(result.has_value());
   const AudioNodeList& node_list = result.value();
@@ -312,6 +327,7 @@ void ExpectAudioNodeListResult(bool* called,
     EXPECT_EQ(expected_node_list[i].plugged_time, node_list[i].plugged_time);
     EXPECT_EQ(expected_node_list[i].StableDeviceIdVersion(),
               node_list[i].StableDeviceIdVersion());
+    EXPECT_EQ(expected_node_list[i].audio_effect, node_list[i].audio_effect);
   }
 }
 
@@ -414,6 +430,17 @@ class CrasAudioClientTest : public testing::Test {
         .WillRepeatedly(
             Invoke(this, &CrasAudioClientTest::OnNumberOfActiveStreamsChanged));
 
+    // Set and expectation so mock_cras_proxy's monitoring
+    // NumberOfInputStreamsWithPermissionChanged ConnectToSignal will use
+    // OnNumberOfInputStreamsWithPermissionChanged to run the callback.
+    EXPECT_CALL(*mock_cras_proxy_.get(),
+                DoConnectToSignal(
+                    interface_name_,
+                    cras::kNumberOfInputStreamsWithPermissionChanged, _, _))
+        .WillRepeatedly(Invoke(
+            this,
+            &CrasAudioClientTest::OnNumberOfInputStreamsWithPermissionChanged));
+
     // Set an expectation so mock_cras_proxy's monitoring
     // BluetoothBatteryChanged ConnectToSignal will use
     // OnBluetoothBatteryChanged() to run the callback.
@@ -506,6 +533,15 @@ class CrasAudioClientTest : public testing::Test {
     number_of_active_streams_changed_handler_.Run(signal);
   }
 
+  // Send number-of-input-streams-with-permission-changed signal to the tested
+  // client.
+  void SendNumberOfInputStreamsWithPermissionChangedSignal(
+      dbus::Signal* signal) {
+    ASSERT_FALSE(
+        number_of_input_streams_with_permission_changed_handler_.is_null());
+    number_of_input_streams_with_permission_changed_handler_.Run(signal);
+  }
+
   // Send Bluetooth battery changed signal to the tested client.
   void SendBluetoothBatteryChangedSignal(dbus::Signal* signal) {
     ASSERT_FALSE(bluetooth_battery_changed_handler_.is_null());
@@ -539,6 +575,10 @@ class CrasAudioClientTest : public testing::Test {
   dbus::ObjectProxy::SignalCallback hotword_triggered_handler_;
   // The NumberOfActiveStreamsChanged signal handler given by the tested client.
   dbus::ObjectProxy::SignalCallback number_of_active_streams_changed_handler_;
+  // The NumberOfInputStreamsWithPermissionChanged signal handler given by the
+  // tested client.
+  dbus::ObjectProxy::SignalCallback
+      number_of_input_streams_with_permission_changed_handler_;
   // The BluetoothBatteryChanged signal handler given by the tested client.
   dbus::ObjectProxy::SignalCallback bluetooth_battery_changed_handler_;
   // The name of the method which is expected to be called.
@@ -655,6 +695,18 @@ class CrasAudioClientTest : public testing::Test {
       const dbus::ObjectProxy::SignalCallback& signal_callback,
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     number_of_active_streams_changed_handler_ = signal_callback;
+    const bool success = true;
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
+                                  interface_name, signal_name, success));
+  }
+
+  void OnNumberOfInputStreamsWithPermissionChanged(
+      const std::string& interface_name,
+      const std::string& signal_name,
+      const dbus::ObjectProxy::SignalCallback& signal_callback,
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
+    number_of_input_streams_with_permission_changed_handler_ = signal_callback;
     const bool success = true;
     task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
@@ -801,6 +853,48 @@ TEST_F(CrasAudioClientTest, NumberOfActiveStreamsChanged) {
 
   // Run the signal callback again and make sure the observer isn't called.
   SendNumberOfActiveStreamsChangedSignal(&signal);
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, NumberOfInputStreamsWithPermissionChanged) {
+  dbus::Signal signal(cras::kCrasControlInterface,
+                      cras::kNumberOfInputStreamsWithPermissionChanged);
+  dbus::MessageWriter writer(&signal);
+  base::flat_map<std::string, uint32_t> num_input_streams = {
+      {"CRAS_CLIENT_TYPE_CHROME", 1}, {"CRAS_CLIENT_TYPE_CROSVM", 0}};
+  for (auto& it : num_input_streams) {
+    dbus::MessageWriter sub_writer(nullptr);
+    dbus::MessageWriter entry_writer(nullptr);
+    writer.OpenArray("{sv}", &sub_writer);
+    sub_writer.OpenDictEntry(&entry_writer);
+    entry_writer.AppendString(cras::kClientType);
+    entry_writer.AppendVariantOfString(it.first);
+    sub_writer.CloseContainer(&entry_writer);
+    sub_writer.OpenDictEntry(&entry_writer);
+    entry_writer.AppendString(cras::kNumStreamsWithPermission);
+    entry_writer.AppendVariantOfUint32(it.second);
+    sub_writer.CloseContainer(&entry_writer);
+    writer.CloseContainer(&sub_writer);
+  }
+
+  MockObserver observer;
+  EXPECT_CALL(observer,
+              NumberOfInputStreamsWithPermissionChanged(num_input_streams))
+      .Times(1);
+
+  client()->AddObserver(&observer);
+
+  SendNumberOfInputStreamsWithPermissionChangedSignal(&signal);
+
+  client()->RemoveObserver(&observer);
+
+  EXPECT_CALL(observer,
+              NumberOfInputStreamsWithPermissionChanged(num_input_streams))
+      .Times(0);
+
+  // Run the signal callback again and make sure the observer isn't called.
+  SendNumberOfInputStreamsWithPermissionChangedSignal(&signal);
 
   base::RunLoop().RunUntilIdle();
 }
@@ -1043,6 +1137,22 @@ TEST_F(CrasAudioClientTest, SetInputMute) {
                        response.get());
   // Call method.
   client()->SetInputMute(kInputMuteOn);
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetNoiseCancellationEnabled) {
+  const bool kNoiseCancellationOn = true;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(
+      cras::kSetNoiseCancellationEnabled,
+      base::BindRepeating(&ExpectBoolArgument, kNoiseCancellationOn),
+      response.get());
+  // Call method.
+  client()->SetNoiseCancellationEnabled(kNoiseCancellationOn);
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 }

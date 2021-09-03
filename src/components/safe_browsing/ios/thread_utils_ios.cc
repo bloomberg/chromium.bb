@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/core/common/thread_utils.h"
 
+#include "base/task/post_task.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 
@@ -17,9 +18,6 @@ static WebThread::ID WebThreadID(ThreadID thread_id) {
       return WebThread::UI;
     case ThreadID::IO:
       return WebThread::IO;
-    default:
-      NOTREACHED();
-      return WebThread::UI;
   }
 }
 
@@ -27,8 +25,8 @@ bool CurrentlyOnThread(ThreadID thread_id) {
   return WebThread::CurrentlyOn(WebThreadID(thread_id));
 }
 
-base::TaskTraits CreateTaskTraits(ThreadID thread_id) {
-  return {WebThreadID(thread_id)};
+scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(ThreadID thread_id) {
+  return base::CreateSingleThreadTaskRunner({WebThreadID(thread_id)});
 }
 
 }  // namespace safe_browsing

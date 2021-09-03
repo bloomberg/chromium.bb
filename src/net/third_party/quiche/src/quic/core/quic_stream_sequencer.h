@@ -9,10 +9,10 @@
 #include <map>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream_sequencer_buffer.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_stream_sequencer_buffer.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -42,8 +42,16 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
     // being closed.
     virtual void OnUnrecoverableError(QuicErrorCode error,
                                       const std::string& details) = 0;
+    // Called when an error has occurred which should result in the connection
+    // being closed, specifying the wire error code |ietf_error| explicitly.
+    virtual void OnUnrecoverableError(QuicErrorCode error,
+                                      QuicIetfTransportErrorCodes ietf_error,
+                                      const std::string& details) = 0;
     // Returns the stream id of this stream.
     virtual QuicStreamId id() const = 0;
+
+    // Returns the QUIC version being used by this stream.
+    virtual ParsedQuicVersion version() const = 0;
   };
 
   explicit QuicStreamSequencer(StreamInterface* quic_stream);

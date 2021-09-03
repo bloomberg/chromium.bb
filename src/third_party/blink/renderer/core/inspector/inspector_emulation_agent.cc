@@ -48,8 +48,9 @@ InspectorEmulationAgent::InspectorEmulationAgent(
       navigator_platform_override_(&agent_state_,
                                    /*default_value=*/WTF::String()),
       user_agent_override_(&agent_state_, /*default_value=*/WTF::String()),
-      serialized_ua_metadata_override_(&agent_state_,
-                                       /*default_value=*/WTF::String()),
+      serialized_ua_metadata_override_(
+          &agent_state_,
+          /*default_value=*/std::vector<uint8_t>()),
       accept_language_override_(&agent_state_,
                                 /*default_value=*/WTF::String()),
       locale_override_(&agent_state_, /*default_value=*/WTF::String()),
@@ -74,14 +75,15 @@ void InspectorEmulationAgent::Restore() {
   // Since serialized_ua_metadata_override_ can't directly be converted back
   // to appropriate protocol message, we initially pass null and decode it
   // directly.
-  WTF::String save_serialized_ua_metadata_override =
+  std::vector<uint8_t> save_serialized_ua_metadata_override =
       serialized_ua_metadata_override_.Get();
   setUserAgentOverride(
       user_agent_override_.Get(), accept_language_override_.Get(),
       navigator_platform_override_.Get(),
       protocol::Maybe<protocol::Emulation::UserAgentMetadata>());
-  ua_metadata_override_ = blink::UserAgentMetadata::Demarshal(
-      save_serialized_ua_metadata_override.Latin1());
+  ua_metadata_override_ = blink::UserAgentMetadata::Demarshal(std::string(
+      reinterpret_cast<char*>(save_serialized_ua_metadata_override.data()),
+      save_serialized_ua_metadata_override.size()));
   serialized_ua_metadata_override_.Set(save_serialized_ua_metadata_override);
 
   if (!locale_override_.Get().IsEmpty())
@@ -446,7 +448,7 @@ void InspectorEmulationAgent::FrameStartedLoading(LocalFrame*) {
   if (pending_virtual_time_policy_) {
     wait_for_navigation_.Set(false);
     ApplyVirtualTimePolicy(*pending_virtual_time_policy_);
-    pending_virtual_time_policy_ = base::nullopt;
+    pending_virtual_time_policy_ = absl::nullopt;
   }
 }
 
@@ -455,10 +457,10 @@ AtomicString InspectorEmulationAgent::OverrideAcceptImageHeader(
   String header(ImageAcceptHeader());
   for (String type : *disabled_image_types) {
     // The header string is expected to be like
-    // `image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8` and is
-    // expected to be always ending with `image/*,*/*;q=xxx`, therefore, to
-    // remove a type we replace `image/x,` with empty string. Only webp and avif
-    // types can be disabled.
+    // `image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8`
+    // and is expected to be always ending with `image/*,*/*;q=xxx`, therefore,
+    // to remove a type we replace `image/x,` with empty string. Only webp, avif
+    // and jxl types can be disabled.
     header.Replace(String(type + ","), "");
   }
   return AtomicString(header);
@@ -529,7 +531,7 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
     return response;
   if (!color.isJust()) {
     // Clear the override and state.
-    GetWebViewImpl()->ClearBaseBackgroundColorOverride();
+    GetWebViewImpl()->SetBaseBackgroundColorOverrideForInspector(absl::nullopt);
     default_background_color_override_rgba_.Clear();
     return Response::Success();
   }
@@ -538,7 +540,7 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
   default_background_color_override_rgba_.Set(rgba->Serialize());
   // Clamping of values is done by Color() constructor.
   int alpha = static_cast<int>(lroundf(255.0f * rgba->getA(1.0f)));
-  GetWebViewImpl()->SetBaseBackgroundColorOverride(
+  GetWebViewImpl()->SetBaseBackgroundColorOverrideForInspector(
       Color(rgba->getR(), rgba->getG(), rgba->getB(), alpha).Rgb());
   return Response::Success();
 }
@@ -587,24 +589,37 @@ Response InspectorEmulationAgent::setUserAgentOverride(
   }
 
   if (ua_metadata_override.isJust()) {
+    blink::UserAgentMetadata default_ua_metadata =
+        Platform::Current()->UserAgentMetadata();
+
     if (user_agent.IsEmpty()) {
-      ua_metadata_override_ = base::nullopt;
-      serialized_ua_metadata_override_.Set(WTF::String());
+      ua_metadata_override_ = absl::nullopt;
+      serialized_ua_metadata_override_.Set(std::vector<uint8_t>());
       return Response::InvalidParams(
           "Can't specify UserAgentMetadata but no UA string");
     }
     std::unique_ptr<protocol::Emulation::UserAgentMetadata> ua_metadata =
         ua_metadata_override.takeJust();
     ua_metadata_override_.emplace();
-    if (ua_metadata->getBrands()) {
-      for (const auto& bv : *ua_metadata->getBrands()) {
+    if (ua_metadata->hasBrands()) {
+      for (const auto& bv : *ua_metadata->getBrands(nullptr)) {
         blink::UserAgentBrandVersion out_bv;
         out_bv.brand = bv->getBrand().Ascii();
         out_bv.major_version = bv->getVersion().Ascii();
         ua_metadata_override_->brand_version_list.push_back(std::move(out_bv));
       }
+    } else {
+      ua_metadata_override_->brand_version_list =
+          std::move(default_ua_metadata.brand_version_list);
     }
-    ua_metadata_override_->full_version = ua_metadata->getFullVersion().Ascii();
+
+    if (ua_metadata->hasFullVersion()) {
+      ua_metadata_override_->full_version =
+          ua_metadata->getFullVersion("").Ascii();
+    } else {
+      ua_metadata_override_->full_version =
+          std::move(default_ua_metadata.full_version);
+    }
     ua_metadata_override_->platform = ua_metadata->getPlatform().Ascii();
     ua_metadata_override_->platform_version =
         ua_metadata->getPlatformVersion().Ascii();
@@ -613,14 +628,16 @@ Response InspectorEmulationAgent::setUserAgentOverride(
     ua_metadata_override_->model = ua_metadata->getModel().Ascii();
     ua_metadata_override_->mobile = ua_metadata->getMobile();
   } else {
-    ua_metadata_override_ = base::nullopt;
+    ua_metadata_override_ = absl::nullopt;
   }
 
   std::string marshalled =
       blink::UserAgentMetadata::Marshal(ua_metadata_override_)
           .value_or(std::string());
-  serialized_ua_metadata_override_.Set(
-      WTF::String(marshalled.data(), marshalled.size()));
+  std::vector<uint8_t> marshalled_as_bytes;
+  marshalled_as_bytes.insert(marshalled_as_bytes.end(), marshalled.begin(),
+                             marshalled.end());
+  serialized_ua_metadata_override_.Set(std::move(marshalled_as_bytes));
 
   return Response::Success();
 }
@@ -693,7 +710,7 @@ void InspectorEmulationAgent::ApplyUserAgentOverride(String* user_agent) {
 }
 
 void InspectorEmulationAgent::ApplyUserAgentMetadataOverride(
-    base::Optional<blink::UserAgentMetadata>* ua_metadata) {
+    absl::optional<blink::UserAgentMetadata>* ua_metadata) {
   // This applies when UA override is set.
   if (!user_agent_override_.Get().IsEmpty()) {
     *ua_metadata = ua_metadata_override_;
@@ -732,6 +749,7 @@ protocol::Response InspectorEmulationAgent::setDisabledImageTypes(
   namespace DisabledImageTypeEnum = protocol::Emulation::DisabledImageTypeEnum;
   for (protocol::Emulation::DisabledImageType type : *disabled_types) {
     if (DisabledImageTypeEnum::Avif == type ||
+        DisabledImageTypeEnum::Jxl == type ||
         DisabledImageTypeEnum::Webp == type) {
       disabled_image_types_.Set(prefix + type, true);
       continue;

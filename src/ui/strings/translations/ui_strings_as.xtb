@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">বিল্ট-ইন ডিছপ্লে’</translation>
 <translation id="335581015389089642">কথন</translation>
 <translation id="3389286852084373014">পাঠখিনি যথেষ্ট দীঘল</translation>
+<translation id="3406306243914553062">HTML সমল</translation>
 <translation id="348799646910989694">শ্বেল্ফ স্বয়ংক্রিয়ভাৱে লুকুওৱা হয়</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> পিন কৰা হৈছে</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{১ দিন বাকী আছে}one{# দিন বাকী আছে}other{# দিন বাকী আছে}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">নম্বৰ</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> জি. বি./ছেকেণ্ড</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> জিবি</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />। <ph name="TYPE_2" />।</translation>
 <translation id="3842239759367498783">আপোনাৰ ম’বাইল ডিভাইচ <ph name="TITLE" />ৰ পৰা পঢ়ি থাকক</translation>
 <translation id="385051799172605136">উভতি যাওক</translation>
 <translation id="3889424535448813030">সোঁমুৱা কাঁড়</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{১মাহ পূর্বে}one{#মাহ পূর্বে}other{#মাহ পূর্বে}}</translation>
 <translation id="4289300219472526559">কথা কওক</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" />ক <ph name="FOLDER_NAME" /> ফ’ল্ডাৰলৈ স্থানান্তৰ কৰা হ’ল।</translation>
+<translation id="4306392492252714209">ক্লিপব’ৰ্ডৰ পৰা আঁতৰাওক।</translation>
 <translation id="4316910396681052118">সকলো এপ্</translation>
 <translation id="4491109536499578614">প্ৰতিচ্ছবি</translation>
 <translation id="4588090240171750605">সোঁফাললৈ স্ক্ৰ’ল কৰক</translation>
@@ -211,6 +214,7 @@
 <translation id="7430878839542012341">এই সন্ধানৰ তথ্য আপোনাৰ ইতিহাসৰ পৰা বিলোপ কৰিব নেকি?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> টি.বি.</translation>
 <translation id="7507604095951736240">ইম’জি</translation>
+<translation id="7620655452534002301">আঁতৰোৱা হ’ল।</translation>
 <translation id="7658239707568436148">বাতিল কৰক</translation>
 <translation id="7781829728241885113">কালি</translation>
 <translation id="7814458197256864873">&amp;প্ৰতিলিপি কৰক</translation>
@@ -226,11 +230,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{১ ঘণ্টা পূৰ্বে}one{# ঘণ্টা পূৰ্বে}other{# ঘণ্টা পূৰ্বে}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{১ ছেকেণ্ড বাকী আছে}one{# ছেকেণ্ড বাকী আছে}other{# ছেকেণ্ড বাকী আছে}}</translation>
 <translation id="8134065097954893699">এই পৃষ্ঠাটো পুনৰ ল'ড হৈ আছে</translation>
-<translation id="8144660977431427332">আপোনাৰ সন্ধানসমূহ Google Assistantৰ দ্বাৰা সঞ্চালিত। <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, স্বয়ংক্ৰিয়ভাৱে সম্পূৰ্ণ কৰা হৈছে</translation>
 <translation id="815598010540052116">তললৈ স্ক্ৰল কৰক</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Page Down</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">টেব</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, এপ্‌</translation>
 <translation id="8259556432390118667">হেক্স ৰঙৰ মান</translation>

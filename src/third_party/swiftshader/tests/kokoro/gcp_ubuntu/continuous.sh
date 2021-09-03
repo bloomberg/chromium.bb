@@ -13,12 +13,12 @@ sudo aptitude update -yq
 sudo aptitude install -yq cmake
 cmake --version
 
-# Specify we want to build with GCC 7
+# Specify we want to build with GCC 9
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 sudo aptitude update -yq
-sudo aptitude install -yq gcc-7 g++-7
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100 --slave /usr/bin/g++ g++ /usr/bin/g++-7
-sudo update-alternatives --set gcc "/usr/bin/gcc-7"
+sudo aptitude install -yq gcc-9 g++-9
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100 --slave /usr/bin/g++ g++ /usr/bin/g++-9
+sudo update-alternatives --set gcc "/usr/bin/gcc-9"
 
 mkdir -p build && cd build
 
@@ -50,17 +50,28 @@ build/vk-unittests
 cd build
 cmake .. "-DREACTOR_ENABLE_PRINT=1"
 cmake --build . --target ReactorUnitTests -- -j $(nproc)
+cmake .. "-DREACTOR_ENABLE_PRINT=0"
 cd ..
 build/ReactorUnitTests --gtest_filter=ReactorUnitTests.Print*
+
+# Incrementally build with REACTOR_EMIT_ASM_FILE and run unit test
+cd build
+cmake .. "-DREACTOR_EMIT_ASM_FILE=1"
+cmake --build . --target ReactorUnitTests -- -j $(nproc)
+cmake .. "-DREACTOR_EMIT_ASM_FILE=0"
+cd ..
+build/ReactorUnitTests --gtest_filter=ReactorUnitTests.EmitAsm
 
 # Incrementally build with REACTOR_EMIT_DEBUG_INFO to ensure it builds
 cd build
 cmake .. "-DREACTOR_EMIT_DEBUG_INFO=1"
 cmake --build . --target ReactorUnitTests -- -j $(nproc)
+cmake .. "-DREACTOR_EMIT_DEBUG_INFO=0"
 cd ..
 
 # Incrementally build with REACTOR_EMIT_PRINT_LOCATION to ensure it builds
 cd build
 cmake .. "-DREACTOR_EMIT_PRINT_LOCATION=1"
 cmake --build . --target ReactorUnitTests -- -j $(nproc)
+cmake .. "-DREACTOR_EMIT_PRINT_LOCATION=0"
 cd ..

@@ -22,8 +22,6 @@
 
 #include <d3dcompiler.h>
 
-class DynamicLib;
-
 namespace dawn_native { namespace d3d12 {
 
     // Loads the functions required from the platform dynamically so that we don't need to rely on
@@ -91,8 +89,9 @@ namespace dawn_native { namespace d3d12 {
         MaybeError LoadD3D12();
         MaybeError LoadD3D11();
         MaybeError LoadDXGI();
-        void LoadDXIL();
-        void LoadDXCompiler();
+        void LoadDXCLibraries();
+        void LoadDXIL(const std::string& baseWindowsSDKPath);
+        void LoadDXCompiler(const std::string& baseWindowsSDKPath);
         MaybeError LoadFXCompiler();
         void LoadPIXRuntime();
 
@@ -107,4 +106,4 @@ namespace dawn_native { namespace d3d12 {
 
 }}  // namespace dawn_native::d3d12
 
-#endif  // DAWNNATIVE_VULKAN_VULKANFUNCTIONS_H_
+#endif  // DAWNNATIVE_D3D12_PLATFORMFUNCTIONS_H_

@@ -9,7 +9,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
-class Profile;
 class ExtensionFunction;
 
 // Provides Chrome-specific details to ExtensionFunction
@@ -21,8 +20,6 @@ class ChromeExtensionFunctionDetails {
   // instance.
   explicit ChromeExtensionFunctionDetails(ExtensionFunction* function);
   ~ChromeExtensionFunctionDetails();
-
-  Profile* GetProfile() const;
 
   // Gets the "current" browser, if any.
   //

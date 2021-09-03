@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -23,25 +22,20 @@ ForeignLayerDisplayItem::ForeignLayerDisplayItem(
     const IntPoint& offset)
     : DisplayItem(client,
                   type,
-                  sizeof(*this),
                   IntRect(offset, IntSize(layer->bounds()))),
-      offset_(offset),
       layer_(std::move(layer)) {
   DCHECK(IsForeignLayerType(type));
 }
 
-bool ForeignLayerDisplayItem::Equals(const DisplayItem& other) const {
-  return DisplayItem::Equals(other) &&
-         GetLayer() ==
-             static_cast<const ForeignLayerDisplayItem&>(other).GetLayer();
+bool ForeignLayerDisplayItem::EqualsForUnderInvalidationImpl(
+    const ForeignLayerDisplayItem& other) const {
+  DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
+  return GetLayer() == other.GetLayer();
 }
 
 #if DCHECK_IS_ON()
-void ForeignLayerDisplayItem::PropertiesAsJSON(JSONObject& json) const {
-  DisplayItem::PropertiesAsJSON(json);
+void ForeignLayerDisplayItem::PropertiesAsJSONImpl(JSONObject& json) const {
   json.SetInteger("layer", GetLayer()->id());
-  json.SetDouble("offset_x", Offset().X());
-  json.SetDouble("offset_y", Offset().Y());
 }
 #endif
 
@@ -54,7 +48,7 @@ void RecordForeignLayer(GraphicsContext& context,
   PaintController& paint_controller = context.GetPaintController();
   // This is like ScopedPaintChunkProperties but uses null id because foreign
   // layer chunk doesn't need an id nor a client.
-  base::Optional<PropertyTreeStateOrAlias> previous_properties;
+  absl::optional<PropertyTreeStateOrAlias> previous_properties;
   if (properties) {
     previous_properties.emplace(paint_controller.CurrentPaintChunkProperties());
     paint_controller.UpdateCurrentPaintChunkProperties(nullptr, *properties);

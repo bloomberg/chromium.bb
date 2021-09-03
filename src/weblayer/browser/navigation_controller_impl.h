@@ -24,7 +24,7 @@
 namespace content {
 class NavigationHandle;
 class NavigationThrottle;
-}
+}  // namespace content
 
 namespace weblayer {
 class NavigationImpl;
@@ -63,6 +63,8 @@ class NavigationControllerImpl : public NavigationController,
       const base::TimeTicks& navigation_start,
       const base::TimeDelta& largest_contentful_paint);
 
+  void OnPageDestroyed(Page* page);
+
 #if defined(OS_ANDROID)
   void SetNavigationControllerImpl(
       JNIEnv* env,
@@ -71,6 +73,7 @@ class NavigationControllerImpl : public NavigationController,
                 const base::android::JavaParamRef<jstring>& url,
                 jboolean should_replace_current_entry,
                 jboolean disable_intent_processing,
+                jboolean allow_intent_launches_in_background,
                 jboolean disable_network_error_auto_reload,
                 jboolean enable_auto_play,
                 const base::android::JavaParamRef<jobject>& response);
@@ -92,6 +95,9 @@ class NavigationControllerImpl : public NavigationController,
       JNIEnv* env,
       int index);
   bool IsNavigationEntrySkippable(JNIEnv* env, int index);
+  base::android::ScopedJavaGlobalRef<jobject> GetNavigationImplFromId(
+      JNIEnv* env,
+      int64_t id);
 #endif
 
   bool should_delay_web_contents_deletion() {

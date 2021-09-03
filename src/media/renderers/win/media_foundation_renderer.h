@@ -23,7 +23,6 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
-#include "media/base/win/mf_initializer.h"
 #include "media/renderers/win/media_engine_extension.h"
 #include "media/renderers/win/media_engine_notify_impl.h"
 #include "media/renderers/win/media_foundation_protection_manager.h"
@@ -55,7 +54,7 @@ class MEDIA_EXPORT MediaFoundationRenderer
                   RendererClient* client,
                   PipelineStatusCallback init_cb) override;
   void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) override;
-  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
+  void SetLatencyHint(absl::optional<base::TimeDelta> latency_hint) override;
   void Flush(base::OnceClosure flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
   void SetPlaybackRate(double playback_rate) override;
@@ -87,7 +86,7 @@ class MEDIA_EXPORT MediaFoundationRenderer
   void OnVideoNaturalSizeChange();
   void OnTimeUpdate();
 
-  void OnCdmProxyReceived(Microsoft::WRL::ComPtr<IMFCdmProxy> cdm_proxy);
+  void OnCdmProxyReceived(scoped_refptr<MediaFoundationCdmProxy> cdm_proxy);
 
   HRESULT SetDCompModeInternal(bool enabled);
   HRESULT GetDCompSurfaceInternal(HANDLE* surface_handle);
@@ -104,9 +103,6 @@ class MEDIA_EXPORT MediaFoundationRenderer
   // Once set, will force |mf_media_engine_| to use DirectComposition mode.
   // This is used for testing.
   const bool force_dcomp_mode_for_testing_;
-
-  // Keep this here so it's destroyed after all Media Foundation members below.
-  MFSessionLifetime mf_session_life_time_;
 
   RendererClient* renderer_client_;
 

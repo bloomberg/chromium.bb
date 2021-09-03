@@ -8,9 +8,9 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/android/instantapps/instant_apps_infobar_delegate.h"
-#include "chrome/browser/ui/android/infobars/chrome_confirm_infobar.h"
+#include "components/infobars/android/confirm_infobar.h"
 
-class InstantAppsInfoBar : public ChromeConfirmInfoBar {
+class InstantAppsInfoBar : public infobars::ConfirmInfoBar {
  public:
   InstantAppsInfoBar(
       std::unique_ptr<InstantAppsInfoBarDelegate> delegate);
@@ -20,7 +20,8 @@ class InstantAppsInfoBar : public ChromeConfirmInfoBar {
  private:
   // ConfimInfoBar:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
-      JNIEnv* env) override;
+      JNIEnv* env,
+      const ResourceIdMapper& resource_id_mapper) override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_infobar_;
 

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.m.js';
-//
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
-// #import {assertEquals, assertDeepEquals, assertFalse, assertNotEquals, assertTrue} from '../chai_assert.js';
+import {CrToolbarSearchFieldElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
+
+import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr-toolbar-search-field. */
@@ -20,7 +20,7 @@ suite('cr-toolbar-search-field', function() {
 
   /** @param {string} term */
   function simulateSearch(term) {
-    field.$$('#searchInput').value = term;
+    field.shadowRoot.querySelector('#searchInput').value = term;
     field.onSearchTermInput();
     field.onSearchTermSearch();
   }
@@ -59,16 +59,17 @@ suite('cr-toolbar-search-field', function() {
     assertFalse(field.showingSearch);
     field.click();
     assertTrue(field.showingSearch);
-    const searchInput = /** @type {!HTMLElement} */ (field.$$('#searchInput'));
+    const searchInput = /** @type {!HTMLElement} */ (
+        field.shadowRoot.querySelector('#searchInput'));
     assertEquals(searchInput, field.root.activeElement);
 
-    field.$$('#searchInput').blur();
+    field.shadowRoot.querySelector('#searchInput').blur();
     assertFalse(field.showingSearch);
 
     field.click();
     assertEquals(searchInput, field.root.activeElement);
 
-    MockInteractions.pressAndReleaseKeyOn(searchInput, 27, '', 'Escape');
+    pressAndReleaseKeyOn(searchInput, 27, '', 'Escape');
     assertFalse(field.showingSearch, 'Pressing escape closes field.');
     assertNotEquals(searchInput, field.root.activeElement);
   });
@@ -76,15 +77,17 @@ suite('cr-toolbar-search-field', function() {
   test('clear search button clears and refocuses input', function() {
     field.click();
     simulateSearch('query1');
-    Polymer.dom.flush();
+    flush();
     assertTrue(field.hasSearchText);
 
-    const clearSearch = field.$$('#clearSearch');
+    const clearSearch = field.shadowRoot.querySelector('#clearSearch');
     clearSearch.focus();
     clearSearch.click();
     assertTrue(field.showingSearch);
     assertEquals('', field.getValue());
-    assertEquals(field.$$('#searchInput'), field.root.activeElement);
+    assertEquals(
+        field.shadowRoot.querySelector('#searchInput'),
+        field.root.activeElement);
     assertFalse(field.hasSearchText);
     assertFalse(field.spinnerActive);
   });
@@ -92,10 +95,10 @@ suite('cr-toolbar-search-field', function() {
   test('notifies on new searches', function() {
     field.click();
     simulateSearch('query1');
-    Polymer.dom.flush();
+    flush();
     assertEquals('query1', field.getValue());
 
-    field.$$('#clearSearch').click();
+    field.shadowRoot.querySelector('#clearSearch').click();
     assertTrue(field.showingSearch);
     assertEquals('', field.getValue());
 
@@ -129,13 +132,13 @@ suite('cr-toolbar-search-field', function() {
     field.click();
     const query = 'foo        bar     baz';
     simulateSearch(query);
-    Polymer.dom.flush();
+    flush();
     assertEquals(query, field.getValue());
 
     // Expecting effectively the same query to be ignored.
     const effectivelySameQuery = 'foo   bar    baz';
     simulateSearch(effectivelySameQuery);
-    Polymer.dom.flush();
+    flush();
     assertEquals(effectivelySameQuery, field.getValue());
 
     assertDeepEquals(['foo bar baz'], searches);
@@ -145,13 +148,13 @@ suite('cr-toolbar-search-field', function() {
     field.click();
     const query = ' foo';
     simulateSearch(query);
-    Polymer.dom.flush();
+    flush();
     assertEquals(query, field.getValue());
 
     // Expecting effectively the same query to be ignored.
     const effectivelySameQuery = '     foo';
     simulateSearch(effectivelySameQuery);
-    Polymer.dom.flush();
+    flush();
     assertEquals(effectivelySameQuery, field.getValue());
 
     assertDeepEquals(['foo'], searches);
@@ -161,13 +164,13 @@ suite('cr-toolbar-search-field', function() {
     field.click();
     const query = 'foo  ';
     simulateSearch(query);
-    Polymer.dom.flush();
+    flush();
     assertEquals(query, field.getValue());
 
     // Expecting effectively the same query to be ignored.
     const effectivelySameQuery = 'foo        ';
     simulateSearch(effectivelySameQuery);
-    Polymer.dom.flush();
+    flush();
     assertEquals(effectivelySameQuery, field.getValue());
 
     assertDeepEquals(['foo '], searches);
@@ -193,7 +196,7 @@ suite('cr-toolbar-search-field', function() {
   test('blur does not close field when a search is active', function() {
     field.click();
     simulateSearch('test');
-    field.$$('#searchInput').blur();
+    field.shadowRoot.querySelector('#searchInput').blur();
 
     assertTrue(field.showingSearch);
   });
@@ -205,17 +208,17 @@ suite('cr-toolbar-search-field', function() {
     assertFalse(field.hasSearchText);
     simulateSearch('test');
     assertTrue(field.hasSearchText);
-    Polymer.dom.flush();
+    flush();
 
-    const clearSearch = field.$$('#clearSearch');
+    const clearSearch = field.shadowRoot.querySelector('#clearSearch');
     assertFalse(clearSearch.hidden);
     assertTrue(field.showingSearch);
   });
 
   test('closes when value is cleared while unfocused', function() {
-    field.$$('#searchInput').focus();
+    field.shadowRoot.querySelector('#searchInput').focus();
     simulateSearch('test');
-    Polymer.dom.flush();
+    flush();
 
     // Does not close the field if it is focused when cleared.
     assertTrue(field.showingSearch);
@@ -224,7 +227,7 @@ suite('cr-toolbar-search-field', function() {
 
     // Does close the field if it is blurred before being cleared.
     simulateSearch('test');
-    field.$$('#searchInput').blur();
+    field.shadowRoot.querySelector('#searchInput').blur();
     field.setValue('');
     assertFalse(field.showingSearch);
   });

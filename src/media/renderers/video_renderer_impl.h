@@ -73,7 +73,7 @@ class MEDIA_EXPORT VideoRendererImpl
   void StartPlayingFrom(base::TimeDelta timestamp) override;
   void OnTimeProgressing() override;
   void OnTimeStopped() override;
-  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
+  void SetLatencyHint(absl::optional<base::TimeDelta> latency_hint) override;
 
   void SetTickClockForTesting(const base::TickClock* tick_clock);
   size_t frames_queued_for_testing() const {
@@ -88,7 +88,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // VideoRendererSink::RenderCallback implementation.
   scoped_refptr<VideoFrame> Render(base::TimeTicks deadline_min,
                                    base::TimeTicks deadline_max,
-                                   bool background_rendering) override;
+                                   RenderingMode rendering_mode) override;
   void OnFrameDropped() override;
   base::TimeDelta GetPreferredRenderInterval() override;
 
@@ -112,8 +112,7 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Callback for |video_decoder_stream_| to deliver decoded video frames and
   // report video decoding status.
-  void FrameReady(VideoDecoderStream::ReadStatus status,
-                  scoped_refptr<VideoFrame> frame);
+  void FrameReady(VideoDecoderStream::ReadResult result);
 
   // Helper method for enqueueing a frame to |alogorithm_|.
   void AddReadyFrame_Locked(scoped_refptr<VideoFrame> frame);
@@ -339,11 +338,11 @@ class MEDIA_EXPORT VideoRendererImpl
   FrameRateEstimator fps_estimator_;
 
   // Last FPS, if any, reported to the client.
-  base::Optional<int> last_reported_fps_;
+  absl::optional<int> last_reported_fps_;
 
   // Value saved from last call to SetLatencyHint(). Used to recompute buffering
   // limits as framerate fluctuates.
-  base::Optional<base::TimeDelta> latency_hint_;
+  absl::optional<base::TimeDelta> latency_hint_;
 
   // When latency_hint_ > 0, we make regular adjustments to buffering caps as
   // |algorithm_->average_frame_duration()| fluctuates, but we only want to emit

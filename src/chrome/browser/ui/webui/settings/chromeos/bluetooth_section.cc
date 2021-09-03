@@ -125,8 +125,8 @@ BluetoothSection::BluetoothSection(Profile* profile,
   // Note: May be uninitialized in tests.
   if (bluez::BluezDBusManager::IsInitialized()) {
     device::BluetoothAdapterFactory::Get()->GetAdapter(
-        base::Bind(&BluetoothSection::OnFetchBluetoothAdapter,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BluetoothSection::OnFetchBluetoothAdapter,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -190,7 +190,7 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"bluetoothDeviceType_unknown",
        IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_UNKNOWN},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
   chromeos::bluetooth_dialog::AddLocalizedStrings(html_source);
 }
 

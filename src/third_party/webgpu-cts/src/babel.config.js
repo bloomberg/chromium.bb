@@ -3,9 +3,6 @@ module.exports = function (api) {
   return {
     presets: ['@babel/preset-typescript'],
     plugins: [
-      '@babel/plugin-proposal-logical-assignment-operators',
-      '@babel/plugin-proposal-nullish-coalescing-operator',
-      '@babel/plugin-proposal-optional-chaining',
       'const-enum',
       [
         'add-header-comment',

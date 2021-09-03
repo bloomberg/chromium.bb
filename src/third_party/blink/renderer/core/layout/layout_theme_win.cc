@@ -7,7 +7,6 @@
 #include <windows.h>
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
@@ -60,9 +59,14 @@ Color LayoutThemeWin::SystemColor(
       return LayoutThemeDefault::SystemColor(css_value_id, color_scheme);
   }
 
+  // Fall back to the default system colors if the color scheme is dark and
+  // forced colors is not enabled.
   if (!WebTestSupport::IsRunningWebTest() && Platform::Current() &&
-      Platform::Current()->ThemeEngine()) {
-    const base::Optional<SkColor> system_color =
+      Platform::Current()->ThemeEngine() &&
+      (color_scheme != mojom::blink::ColorScheme::kDark ||
+       Platform::Current()->ThemeEngine()->GetForcedColors() !=
+           ForcedColors::kNone)) {
+    const absl::optional<SkColor> system_color =
         Platform::Current()->ThemeEngine()->GetSystemColor(theme_color);
     if (system_color)
       return Color(system_color.value());

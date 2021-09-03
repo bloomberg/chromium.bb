@@ -6,18 +6,19 @@
 
 #include <stddef.h>
 
+#include <string>
+
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
-#include "base/stl_util.h"
-#include "base/strings/string16.h"
+#include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -178,17 +179,21 @@ display::DisplayManager* GetDisplayManager() {
   return Shell::Get()->display_manager();
 }
 
-// Returns true id the current user can write display preferences to
+// Returns true if the current user can write display preferences to
 // Local State.
 bool UserCanSaveDisplayPreference() {
   SessionControllerImpl* controller = Shell::Get()->session_controller();
   auto user_type = controller->GetUserType();
   if (!user_type)
     return false;
+
   return *user_type == user_manager::USER_TYPE_REGULAR ||
          *user_type == user_manager::USER_TYPE_CHILD ||
-         *user_type == user_manager::USER_TYPE_SUPERVISED ||
-         *user_type == user_manager::USER_TYPE_KIOSK_APP;
+         *user_type == user_manager::USER_TYPE_SUPERVISED_DEPRECATED ||
+         *user_type == user_manager::USER_TYPE_KIOSK_APP ||
+         (*user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT &&
+          Shell::Get()->local_state()->GetBoolean(
+              prefs::kAllowMGSToStoreDisplayProperties));
 }
 
 void LoadDisplayLayouts(PrefService* local_state) {
@@ -456,8 +461,8 @@ void LoadDisplayMixedMirrorModeParams(PrefService* local_state) {
   }
 
   GetDisplayManager()->set_mixed_mirror_mode_params(
-      base::Optional<display::MixedMirrorModeParams>(
-          base::in_place, mirroring_source_id, mirroring_destination_ids));
+      absl::optional<display::MixedMirrorModeParams>(
+          absl::in_place, mirroring_source_id, mirroring_destination_ids));
 }
 
 void StoreDisplayLayoutPref(PrefService* pref_service,
@@ -471,8 +476,9 @@ void StoreDisplayLayoutPref(PrefService* pref_service,
   std::unique_ptr<base::Value> layout_value(new base::DictionaryValue());
   if (pref_data->HasKey(name)) {
     base::Value* value = nullptr;
-    if (pref_data->Get(name, &value) && value != nullptr)
-      layout_value.reset(value->DeepCopy());
+    if (pref_data->Get(name, &value) && value != nullptr) {
+      layout_value = base::Value::ToUniquePtrValue(value->Clone());
+    }
   }
   if (display::DisplayLayoutToJson(display_layout, layout_value.get()))
     pref_data->Set(name, std::move(layout_value));
@@ -670,7 +676,7 @@ void StoreDisplayTouchAssociations(PrefService* pref_service) {
           base::NumberToString(association_info.first),
           association_info_value->Clone());
     }
-    if (association_info_map_value.empty())
+    if (association_info_map_value.DictEmpty())
       continue;
 
     // Move the already serialized entry of AssociationInfoMap from
@@ -722,7 +728,7 @@ void StoreExternalDisplayMirrorInfo(PrefService* pref_service) {
 // |mixed_mirror_mode_params| is null.
 void StoreDisplayMixedMirrorModeParams(
     PrefService* pref_service,
-    const base::Optional<display::MixedMirrorModeParams>& mixed_params) {
+    const absl::optional<display::MixedMirrorModeParams>& mixed_params) {
   DictionaryPrefUpdate update(pref_service,
                               prefs::kDisplayMixedMirrorModeParams);
   base::DictionaryValue* pref_data = update.Get();
@@ -760,6 +766,8 @@ void DisplayPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kDisplayTouchPortAssociations);
   registry->RegisterListPref(prefs::kExternalDisplayMirrorInfo);
   registry->RegisterDictionaryPref(prefs::kDisplayMixedMirrorModeParams);
+  registry->RegisterBooleanPref(prefs::kAllowMGSToStoreDisplayProperties,
+                                false);
 }
 
 DisplayPrefs::DisplayPrefs(PrefService* local_state)
@@ -890,7 +898,7 @@ bool DisplayPrefs::ParseTouchCalibrationStringForTest(
 }
 
 void DisplayPrefs::StoreDisplayMixedMirrorModeParamsForTest(
-    const base::Optional<display::MixedMirrorModeParams>& mixed_params) {
+    const absl::optional<display::MixedMirrorModeParams>& mixed_params) {
   StoreDisplayMixedMirrorModeParams(local_state_, mixed_params);
 }
 

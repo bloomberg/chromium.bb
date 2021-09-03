@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_smb_provider_client.h"
 #include "content/public/test/browser_task_environment.h"
@@ -67,11 +67,13 @@ class SmbFileSystemTest : public testing::Test {
     // The mock needs to be marked as leaked because ownership is passed to
     // DBusThreadManager.
     testing::Mock::AllowLeak(mock_client.get());
+    chromeos::DBusThreadManager::Initialize();
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSmbProviderClient(
         std::move(mock_client));
   }
 
   void TearDown() override {
+    chromeos::DBusThreadManager::Shutdown();
     // Because the mock is potentially leaked, expectations needs to be manually
     // verified.
     EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(mock_client_));

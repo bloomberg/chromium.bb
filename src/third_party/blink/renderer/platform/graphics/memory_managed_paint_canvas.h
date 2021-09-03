@@ -5,11 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_MEMORY_MANAGED_PAINT_CANVAS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_MEMORY_MANAGED_PAINT_CANVAS_H_
 
-#include <memory>
-
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/record_paint_canvas.h"
-#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -31,10 +29,12 @@ class PLATFORM_EXPORT MemoryManagedPaintCanvas final
   void drawImage(const cc::PaintImage& image,
                  SkScalar left,
                  SkScalar top,
+                 const SkSamplingOptions&,
                  const cc::PaintFlags* flags) override;
   void drawImageRect(const cc::PaintImage& image,
                      const SkRect& src,
                      const SkRect& dst,
+                     const SkSamplingOptions&,
                      const cc::PaintFlags* flags,
                      SkCanvas::SrcRectConstraint constraint) override;
 

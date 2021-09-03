@@ -66,11 +66,11 @@ class MODULES_EXPORT RTCDataChannel final
   bool reliable() const;
 
   bool ordered() const;
-  base::Optional<uint16_t> maxPacketLifeTime() const;
-  base::Optional<uint16_t> maxRetransmits() const;
+  absl::optional<uint16_t> maxPacketLifeTime() const;
+  absl::optional<uint16_t> maxRetransmits() const;
   String protocol() const;
   bool negotiated() const;
-  base::Optional<uint16_t> id() const;
+  absl::optional<uint16_t> id() const;
   String readyState() const;
   unsigned bufferedAmount() const;
 
@@ -176,7 +176,7 @@ class MODULES_EXPORT RTCDataChannel final
   enum BinaryType { kBinaryTypeBlob, kBinaryTypeArrayBuffer };
   BinaryType binary_type_;
 
-  TaskRunnerTimer<RTCDataChannel> scheduled_event_timer_;
+  HeapTaskRunnerTimer<RTCDataChannel> scheduled_event_timer_;
   HeapVector<Member<Event>> scheduled_events_;
   FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, Open);
   FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, Close);
@@ -193,7 +193,6 @@ class MODULES_EXPORT RTCDataChannel final
   unsigned buffered_amount_;
   bool stopped_;
   bool closed_from_owner_;
-  bool is_rtp_data_channel_;
   scoped_refptr<Observer> observer_;
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
   THREAD_CHECKER(thread_checker_);

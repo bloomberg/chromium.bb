@@ -4,11 +4,12 @@
 
 #include "services/device/serial/bluetooth_serial_port_impl.h"
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "net/base/io_buffer.h"
 #include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 #include "services/device/public/cpp/serial/serial_switches.h"
-#include "services/device/serial/buffer.h"
 
 namespace device {
 
@@ -53,7 +54,7 @@ BluetoothSerialPortImpl::BluetoothSerialPortImpl(
 
 BluetoothSerialPortImpl::~BluetoothSerialPortImpl() {
   if (bluetooth_socket_)
-    bluetooth_socket_->Close();
+    bluetooth_socket_->Disconnect(base::DoNothing());
 }
 
 void BluetoothSerialPortImpl::OpenSocket(OpenCallback callback) {
@@ -66,14 +67,15 @@ void BluetoothSerialPortImpl::OpenSocket(OpenCallback callback) {
 
   BluetoothDevice::UUIDSet device_uuids = device->GetUUIDs();
   if (base::Contains(device_uuids, GetSerialPortProfileUUID())) {
-    auto copyable_callback =
-        base::AdaptCallbackForRepeating(std::move(callback));
+    auto split_callback = base::SplitOnceCallback(std::move(callback));
     device->ConnectToService(
         GetSerialPortProfileUUID(),
         base::BindOnce(&BluetoothSerialPortImpl::OnSocketConnected,
-                       weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(split_callback.first)),
         base::BindOnce(&BluetoothSerialPortImpl::OnSocketConnectedError,
-                       weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(split_callback.second)));
     return;
   }
 
@@ -345,6 +347,12 @@ void BluetoothSerialPortImpl::OnBluetoothSocketSendError(
   in_stream_.reset();
 }
 
+void BluetoothSerialPortImpl::OnSocketDisconnected(CloseCallback callback) {
+  std::move(callback).Run();
+  bluetooth_socket_.reset();  // Avoid calling Disconnect() twice.
+  delete this;
+}
+
 void BluetoothSerialPortImpl::Flush(mojom::SerialPortFlushMode mode,
                                     FlushCallback callback) {
   NOTIMPLEMENTED();
@@ -387,8 +395,9 @@ void BluetoothSerialPortImpl::GetPortInfo(GetPortInfoCallback callback) {
 }
 
 void BluetoothSerialPortImpl::Close(CloseCallback callback) {
-  std::move(callback).Run();
-  delete this;
+  bluetooth_socket_->Disconnect(
+      base::BindOnce(&BluetoothSerialPortImpl::OnSocketDisconnected,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 }  // namespace device

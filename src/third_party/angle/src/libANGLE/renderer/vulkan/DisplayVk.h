@@ -12,6 +12,7 @@
 
 #include "common/MemoryBuffer.h"
 #include "libANGLE/renderer/DisplayImpl.h"
+#include "libANGLE/renderer/vulkan/ResourceVk.h"
 #include "libANGLE/renderer/vulkan/vk_cache_utils.h"
 #include "libANGLE/renderer/vulkan/vk_utils.h"
 
@@ -24,7 +25,7 @@ using ShareContextSet = std::set<ContextVk *>;
 class ShareGroupVk : public ShareGroupImpl
 {
   public:
-    ShareGroupVk() {}
+    ShareGroupVk();
     void onDestroy(const egl::Display *display) override;
 
     // PipelineLayoutCache and DescriptorSetLayoutCache can be shared between multiple threads
@@ -33,6 +34,19 @@ class ShareGroupVk : public ShareGroupImpl
     PipelineLayoutCache &getPipelineLayoutCache() { return mPipelineLayoutCache; }
     DescriptorSetLayoutCache &getDescriptorSetLayoutCache() { return mDescriptorSetLayoutCache; }
     ShareContextSet *getShareContextSet() { return &mShareContextSet; }
+
+    std::vector<vk::ResourceUseList> &&releaseResourceUseLists()
+    {
+        return std::move(mResourceUseLists);
+    }
+    void acquireResourceUseList(vk::ResourceUseList &&resourceUseList)
+    {
+        mResourceUseLists.emplace_back(std::move(resourceUseList));
+    }
+
+    bool isSyncObjectPendingFlush() { return mSyncObjectPendingFlush; }
+    void setSyncObjectPendingFlush() { mSyncObjectPendingFlush = true; }
+    void clearSyncObjectPendingFlush() { mSyncObjectPendingFlush = false; }
 
   private:
     // ANGLE uses a PipelineLayout cache to store compatible pipeline layouts.
@@ -43,6 +57,12 @@ class ShareGroupVk : public ShareGroupImpl
 
     // The list of contexts within the share group
     ShareContextSet mShareContextSet;
+
+    // List of resources currently used that need to be freed when any ContextVk in this
+    // ShareGroupVk submits the next command.
+    std::vector<vk::ResourceUseList> mResourceUseLists;
+
+    bool mSyncObjectPendingFlush;
 };
 
 class DisplayVk : public DisplayImpl, public vk::Context
@@ -62,9 +82,9 @@ class DisplayVk : public DisplayImpl, public vk::Context
     bool testDeviceLost() override;
     egl::Error restoreLostDevice(const egl::Display *display) override;
 
-    std::string getVendorString() const override;
-
-    DeviceImpl *createDevice() override;
+    std::string getRendererDescription() override;
+    std::string getVendorString() override;
+    std::string getVersionString() override;
 
     egl::Error waitClient(const gl::Context *context) override;
     egl::Error waitNative(const gl::Context *context, EGLint engine) override;

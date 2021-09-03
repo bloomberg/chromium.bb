@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 from modulegraph import modulegraph
 import pkg_resources
@@ -259,7 +260,7 @@ class TestFunctions (unittest.TestCase):
 
         info = modulegraph.moduleInfoForPath("/somewhere/else/file.py")
         self.assertEqual(info[0], "file")
-        if sys.version_info[:2] >= (3,4):
+        if sys.version_info[:2] >= (3, 4):
             self.assertEqual(info[1], "r")
         else:
             self.assertEqual(info[1], "U")
@@ -282,7 +283,7 @@ class TestFunctions (unittest.TestCase):
             self.assertEqual(info[1], "rb")
             self.assertEqual(info[2], imp.C_EXTENSION)
 
-    if sys.version_info[:2] > (2,5):
+    if sys.version_info[:2] > (2, 5):
         exec(textwrap.dedent('''\
             def test_deprecated(self):
                 saved_add = modulegraph.addPackagePath
@@ -555,10 +556,10 @@ class TestModuleGraph (unittest.TestCase):
             pkgs = graph.nspackages
             self.assertTrue('namedpkg' in pkgs)
             self.assertEqual(set(pkgs['namedpkg']),
-                    set([
+                    {
                         os.path.join(TESTDATA, subdir, "parent", "namedpkg"),
                         os.path.join(TESTDATA, subdir, "child", "namedpkg"),
-                    ]))
+                    })
             self.assertFalse(os.path.exists(os.path.join(TESTDATA, subdir, "parent", "namedpkg", "__init__.py")))
             self.assertFalse(os.path.exists(os.path.join(TESTDATA, subdir, "child", "namedpkg", "__init__.py")))
 
@@ -609,10 +610,10 @@ class TestModuleGraph (unittest.TestCase):
         master = graph.createNode(modulegraph.Node, 'root')
         m = graph.run_script(script, master)
         self.assertEqual(list(graph.get_edges(master)[0])[0], m)
-        self.assertEqual(set(graph.get_edges(m)[0]), set([
+        self.assertEqual(set(graph.get_edges(m)[0]), {
             graph.findNode('sys'),
             graph.findNode('os'),
-        ]))
+        })
 
     @expectedFailure
     def test_import_hook(self):
@@ -778,7 +779,7 @@ class TestModuleGraph (unittest.TestCase):
             '''), '<test>', 'exec', 0, False)
         graph.scan_code(code, mod)
         modules = [node.identifier for node in graph.nodes()]
-        self.assertEqual(set(node_map), set(['sys', 'os.path', 'shutil']))
+        self.assertEqual(set(node_map), {'sys', 'os.path', 'shutil'})
 
 
         # from module import a, b, c
@@ -904,8 +905,7 @@ class TestModuleGraph (unittest.TestCase):
                     expected.append([type(n).__name__, n.identifier])
 
             expected.sort()
-            actual = [item.split() for item in lines[3:]]
-            actual.sort()
+            actual = sorted([item.split() for item in lines[3:]])
             self.assertEqual(expected, actual)
 
 

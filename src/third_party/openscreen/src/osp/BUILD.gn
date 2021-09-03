@@ -5,22 +5,14 @@
 import("build/config/services.gni")
 
 source_set("osp") {
-  public_deps = [
-    "public",
-  ]
-  deps = [
-    "impl",
-  ]
+  public_deps = [ "public" ]
+  deps = [ "impl" ]
 }
 
 if (use_chromium_quic) {
   source_set("osp_with_chromium_quic") {
-    public_deps = [
-      ":osp",
-    ]
-    deps = [
-      "impl:chromium_quic_integration",
-    ]
+    public_deps = [ ":osp" ]
+    deps = [ "impl:chromium_quic_integration" ]
   }
 }
 
@@ -44,10 +36,13 @@ source_set("unittests") {
   ]
 
   deps = [
+    "../platform:base",
     "../platform:test",
     "../third_party/abseil",
     "../third_party/googletest:gmock",
     "../third_party/googletest:gtest",
+    "../third_party/tinycbor",
+    "../util",
     "impl",
     "impl/quic:test_support",
     "public",
@@ -63,9 +58,7 @@ source_set("unittests") {
 
 if (use_chromium_quic && use_mdns_responder) {
   executable("osp_demo") {
-    sources = [
-      "demo/osp_demo.cc",
-    ]
+    sources = [ "demo/osp_demo.cc" ]
     deps = [
       ":osp_with_chromium_quic",
       "//osp/impl/discovery/mdns",

@@ -9,13 +9,14 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/base/locale_util.h"
+#include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
-namespace chromeos {
-
-class CoreOobeView;
+namespace ash {
 class TermsOfServiceScreen;
+}
+
+namespace chromeos {
 
 // Interface for dependency injection between TermsOfServiceScreen and its
 // WebUI representation.
@@ -26,7 +27,7 @@ class TermsOfServiceScreenView {
   virtual ~TermsOfServiceScreenView() {}
 
   // Sets screen this view belongs to.
-  virtual void SetScreen(TermsOfServiceScreen* screen) = 0;
+  virtual void SetScreen(ash::TermsOfServiceScreen* screen) = 0;
 
   // Shows the contents of the screen.
   virtual void Show() = 0;
@@ -34,8 +35,8 @@ class TermsOfServiceScreenView {
   // Hides the contents of the screen.
   virtual void Hide() = 0;
 
-  // Sets the domain name whose Terms of Service are being shown.
-  virtual void SetDomain(const std::string& domain) = 0;
+  // Sets the manager whose Terms of Service are being shown.
+  virtual void SetManager(const std::string& manager) = 0;
 
   // Called when the download of the Terms of Service fails. Show an error
   // message to the user.
@@ -55,8 +56,7 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
  public:
   using TView = TermsOfServiceScreenView;
 
-  TermsOfServiceScreenHandler(JSCallsContainer* js_calls_container,
-                              CoreOobeView* core_oobe_view);
+  explicit TermsOfServiceScreenHandler(JSCallsContainer* js_calls_container);
   ~TermsOfServiceScreenHandler() override;
 
   // BaseScreenHandler:
@@ -64,10 +64,10 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
       ::login::LocalizedValuesBuilder* builder) override;
 
   // TermsOfServiceScreenView:
-  void SetScreen(TermsOfServiceScreen* screen) override;
+  void SetScreen(ash::TermsOfServiceScreen* screen) override;
   void Show() override;
   void Hide() override;
-  void SetDomain(const std::string& domain) override;
+  void SetManager(const std::string& manager) override;
   void OnLoadError() override;
   void OnLoadSuccess(const std::string& terms_of_service) override;
   bool AreTermsLoaded() override;
@@ -76,32 +76,26 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler:
   void Initialize() override;
 
-  // Callback invoked after the UI locale has been changed.
-  void OnLanguageChangedCallback(
-      const locale_util::LanguageSwitchResult& result);
-
   // Switch to the user's preferred input method and show the screen. This
   // method is called after it has been ensured that the current UI locale
   // matches the UI locale chosen by the user.
   void DoShow();
 
-  // Update the domain name shown in the UI.
-  void UpdateDomainInUI();
+  // Update the manager shown in the UI.
+  void UpdateManagerInUI();
 
   // Update the UI to show an error message or the Terms of Service, depending
   // on whether the download of the Terms of Service was successful. Does
   // nothing if the download is still in progress.
   void UpdateTermsOfServiceInUI();
 
-  TermsOfServiceScreen* screen_ = nullptr;
-
-  CoreOobeView* core_oobe_view_ = nullptr;
+  ash::TermsOfServiceScreen* screen_ = nullptr;
 
   // Whether the screen should be shown right after initialization.
   bool show_on_init_ = false;
 
-  // The domain name whose Terms of Service are being shown.
-  std::string domain_;
+  // The manager whose Terms of Service are being shown.
+  std::string manager_;
 
   // Set to `true` when the download of the Terms of Service fails.
   bool load_error_ = false;
@@ -113,5 +107,11 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::TermsOfServiceScreenView;
+}
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_TERMS_OF_SERVICE_SCREEN_HANDLER_H_

@@ -43,6 +43,7 @@
 uint8_t *dav1d_data_create_internal(Dav1dData *const buf, const size_t sz) {
     validate_input_or_ret(buf != NULL, NULL);
 
+    if (sz > SIZE_MAX / 2) return NULL;
     buf->ref = dav1d_ref_create(sz);
     if (!buf->ref) return NULL;
     buf->data = buf->ref->const_data;
@@ -99,18 +100,6 @@ void dav1d_data_ref(Dav1dData *const dst, const Dav1dData *const src) {
     }
     if (src->m.user_data.ref) dav1d_ref_inc(src->m.user_data.ref);
     *dst = *src;
-}
-
-void dav1d_data_move_ref(Dav1dData *const dst, Dav1dData *const src) {
-    validate_input(dst != NULL);
-    validate_input(dst->data == NULL);
-    validate_input(src != NULL);
-
-    if (src->ref)
-        validate_input(src->data != NULL);
-
-    *dst = *src;
-    memset(src, 0, sizeof(*src));
 }
 
 void dav1d_data_props_copy(Dav1dDataProps *const dst,

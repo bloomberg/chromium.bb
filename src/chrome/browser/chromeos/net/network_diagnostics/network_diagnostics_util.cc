@@ -149,6 +149,68 @@ Profile* GetUserProfile() {
   return profile;
 }
 
+const std::array<uint8_t, kStunHeaderSize>& GetStunHeader() {
+  static std::array<uint8_t, kStunHeaderSize> stun_header = {
+      0x00, 0x01, 0x00, 0x00, 0x21, 0x12, 0xa4, 0x42, 0x79, 0x64,
+      0x66, 0x36, 0x66, 0x53, 0x42, 0x73, 0x76, 0x77, 0x76, 0x75};
+
+  return stun_header;
+}
+
+net::NetworkTrafficAnnotationTag GetStunNetworkAnnotationTag() {
+  return net::DefineNetworkTrafficAnnotation("network_diagnostics_routines",
+                                             R"(
+      semantics {
+        sender: "NetworkDiagnosticsRoutines"
+        description:
+            "Routines send network traffic to hosts in order to "
+            "validate the internet connection on a device."
+        trigger:
+            "A routine attempts a socket connection or makes an http/s "
+            "request."
+        data:
+          "For UDP connections, data is sent along with the origin "
+          "(scheme-host-port). The primary purpose of the UDP prober is to "
+          "send a STUN packet header to a STUN server. For TCP connections, "
+          "only the origin is sent. No user identifier is sent along with the "
+          "data."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        cookies_allowed: NO
+      }
+  )");
+}
+
+std::vector<int> GetUdpPortsForGoogleStunServer() {
+  return {19302, 19303, 19304, 19305, 19306, 19307, 19308, 19309};
+}
+
+std::vector<int> GetUdpPortsForCustomStunServer() {
+  return {3478};
+}
+
+std::vector<int> GetTcpPortsForGoogleStunServer() {
+  return {19305, 19306, 19307, 19308};
+}
+
+std::vector<int> GetTcpPortsForCustomStunServer() {
+  return {3478};
+}
+
+std::vector<GURL> GetDefaultMediaUrls() {
+  const char* const kHostnames[] = {
+      "https://apis.google.com",           "https://talkgadget.google.com",
+      "https://clients6.google.com",       "https://hangouts.google.com",
+      "https://client-channel.google.com", "https://googleapis.com",
+      "https://accounts.google.com",       "https://clients4.google.com"};
+  std::vector<GURL> hostnames;
+  for (auto* const& hostname : kHostnames) {
+    hostnames.push_back(GURL(hostname));
+  }
+  return hostnames;
+}
+
 }  // namespace util
 
 }  // namespace network_diagnostics

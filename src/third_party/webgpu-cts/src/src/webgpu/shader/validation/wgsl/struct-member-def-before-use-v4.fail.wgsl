@@ -1,5 +1,5 @@
-# v-0006 - Fails because struct `foo` does not have a member `c`however `f.c`
-# is used.
+// v-0007 - Fails because struct `foo` does not have a member `c`however `f.c`
+// is used.
 
 struct foo {
   [[offset (0)]] b : f32;
@@ -7,7 +7,7 @@ struct foo {
 };
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var f : foo;
   f.c = 2;
   return;

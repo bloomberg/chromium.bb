@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">מסך מובנה</translation>
 <translation id="335581015389089642">דיבור</translation>
 <translation id="3389286852084373014">הטקסט ארוך מדי</translation>
+<translation id="3406306243914553062">‏תוכן HTML</translation>
 <translation id="348799646910989694">המדף יוסתר באופן אוטומטי</translation>
 <translation id="3554637740840164787">הפריט <ph name="ITEM_TITLE" /> הוצמד</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{נותר יום אחד}two{נותרו יומיים}many{נותרו # ימים}other{נותרו # ימים}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">מספר</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" />GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">אפשר להמשיך לקרוא מהמכשיר הנייד <ph name="TITLE" /></translation>
 <translation id="385051799172605136">חזרה</translation>
 <translation id="3889424535448813030">חץ לימין</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{לפני חודש אחד}two{לפני חודשיים}many{לפני # חודשים}other{לפני # חודשים}}</translation>
 <translation id="4289300219472526559">יש להתחיל לדבר</translation>
 <translation id="430191667033048642">האפליקציה <ph name="MOVED_APP_NAME" /> הועברה אל התיקייה <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">הסרה מהלוח.</translation>
 <translation id="4316910396681052118">כל האפליקציות</translation>
 <translation id="4491109536499578614">תמונה</translation>
 <translation id="4588090240171750605">גלילה ימינה</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">למחוק את החיפוש הזה מההיסטוריה?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">אמוג'י</translation>
+<translation id="7620655452534002301">הרשומה הוסר.</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="7814458197256864873">&amp;העתקה</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{לפני שעה אחת}two{לפני שעתיים}many{לפני # שעות}other{לפני # שעות}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{נותרה שנ‘ אחת}two{נותרו # שנ‘}many{נותרו # שנ‘}other{נותרו # שנ‘}}</translation>
 <translation id="8134065097954893699">טעינה מחדש של הדף הזה</translation>
-<translation id="8144660977431427332">‏החיפושים שלך מופעלים על ידי Google Assistant. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, השלמה אוטומטית</translation>
 <translation id="815598010540052116">גלילה למטה</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">דף למטה</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">כרטיסייה</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, אפליקציה</translation>
 <translation id="8259556432390118667">ערך צבע הקסדצימלי</translation>

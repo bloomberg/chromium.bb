@@ -18,6 +18,7 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -226,8 +227,8 @@ arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
   if (const auto* device =
           GetStateHandler()->GetDeviceState(network_state->device_path())) {
     mojo->network_interface = device->interface();
-    for (const auto& kv : device->ip_configs())
-      AddIpConfiguration(mojo.get(), kv.second.get());
+    for (const auto& kv : device->ip_configs().DictItems())
+      AddIpConfiguration(mojo.get(), &kv.second);
   }
 
   if (shill_dict) {
@@ -524,20 +525,21 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
                         base::Value(details->passphrase.value()));
     }
   }
-  properties->SetWithoutPathExpansion(onc::network_config::kWiFi,
-                                      std::move(wifi_dict));
+  properties->SetKey(onc::network_config::kWiFi,
+                     base::Value::FromUniquePtrValue(std::move(wifi_dict)));
 
   std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
-  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
+  // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
   // the callee interface.
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   GetManagedConfigurationHandler()->CreateConfiguration(
       user_id_hash, *properties,
       base::BindOnce(&ArcNetHostImpl::CreateNetworkSuccessCallback,
-                     weak_factory_.GetWeakPtr(), repeating_callback),
+                     weak_factory_.GetWeakPtr(),
+                     std::move(split_callback.first)),
       base::BindOnce(&ArcNetHostImpl::CreateNetworkFailureCallback,
-                     weak_factory_.GetWeakPtr(), repeating_callback));
+                     weak_factory_.GetWeakPtr(),
+                     std::move(split_callback.second)));
 }
 
 bool ArcNetHostImpl::GetNetworkPathFromGuid(const std::string& guid,
@@ -573,13 +575,15 @@ void ArcNetHostImpl::ForgetNetwork(const std::string& guid,
   }
 
   cached_guid_.clear();
-  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
+  // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
   // the callee interface.
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   GetManagedConfigurationHandler()->RemoveConfiguration(
-      path, base::BindOnce(&ForgetNetworkSuccessCallback, repeating_callback),
-      base::BindOnce(&ForgetNetworkFailureCallback, repeating_callback));
+      path,
+      base::BindOnce(&ForgetNetworkSuccessCallback,
+                     std::move(split_callback.first)),
+      base::BindOnce(&ForgetNetworkFailureCallback,
+                     std::move(split_callback.second)));
 }
 
 void ArcNetHostImpl::StartConnect(const std::string& guid,
@@ -591,13 +595,15 @@ void ArcNetHostImpl::StartConnect(const std::string& guid,
     return;
   }
 
-  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
+  // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
   // the callee interface.
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   GetNetworkConnectionHandler()->ConnectToNetwork(
-      path, base::BindOnce(&StartConnectSuccessCallback, repeating_callback),
-      base::BindOnce(&StartConnectFailureCallback, repeating_callback),
+      path,
+      base::BindOnce(&StartConnectSuccessCallback,
+                     std::move(split_callback.first)),
+      base::BindOnce(&StartConnectFailureCallback,
+                     std::move(split_callback.second)),
       false /* check_error_state */, chromeos::ConnectCallbackMode::ON_STARTED);
 }
 
@@ -610,13 +616,15 @@ void ArcNetHostImpl::StartDisconnect(const std::string& guid,
     return;
   }
 
-  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
+  // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
   // the callee interface.
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   GetNetworkConnectionHandler()->DisconnectNetwork(
-      path, base::BindOnce(&StartDisconnectSuccessCallback, repeating_callback),
-      base::BindOnce(&StartDisconnectFailureCallback, repeating_callback));
+      path,
+      base::BindOnce(&StartDisconnectSuccessCallback,
+                     std::move(split_callback.first)),
+      base::BindOnce(&StartDisconnectFailureCallback,
+                     std::move(split_callback.second)));
 }
 
 void ArcNetHostImpl::GetWifiEnabledState(GetWifiEnabledStateCallback callback) {
@@ -639,6 +647,7 @@ void ArcNetHostImpl::SetWifiEnabledState(bool is_enabled,
     return;
   }
 
+  NET_LOG(USER) << __func__ << ":" << is_enabled;
   GetStateHandler()->SetTechnologyEnabled(
       chromeos::NetworkTypePattern::WiFi(), is_enabled,
       chromeos::network_handler::ErrorCallback());
@@ -730,19 +739,21 @@ ArcNetHostImpl::TranslateVpnConfigurationToOnc(
   ip_dict->SetKey(onc::ipconfig::kRoutingPrefix, base::Value(32));
   ip_dict->SetKey(onc::ipconfig::kGateway, base::Value(cfg.ipv4_gateway));
 
-  ip_dict->SetWithoutPathExpansion(onc::ipconfig::kNameServers,
-                                   TranslateStringListToValue(cfg.nameservers));
-  ip_dict->SetWithoutPathExpansion(onc::ipconfig::kSearchDomains,
-                                   TranslateStringListToValue(cfg.domains));
-  ip_dict->SetWithoutPathExpansion(
-      onc::ipconfig::kIncludedRoutes,
-      TranslateStringListToValue(cfg.split_include));
-  ip_dict->SetWithoutPathExpansion(
-      onc::ipconfig::kExcludedRoutes,
-      TranslateStringListToValue(cfg.split_exclude));
+  ip_dict->SetKey(onc::ipconfig::kNameServers,
+                  base::Value::FromUniquePtrValue(
+                      TranslateStringListToValue(cfg.nameservers)));
+  ip_dict->SetKey(
+      onc::ipconfig::kSearchDomains,
+      base::Value::FromUniquePtrValue(TranslateStringListToValue(cfg.domains)));
+  ip_dict->SetKey(onc::ipconfig::kIncludedRoutes,
+                  base::Value::FromUniquePtrValue(
+                      TranslateStringListToValue(cfg.split_include)));
+  ip_dict->SetKey(onc::ipconfig::kExcludedRoutes,
+                  base::Value::FromUniquePtrValue(
+                      TranslateStringListToValue(cfg.split_exclude)));
 
-  top_dict->SetWithoutPathExpansion(onc::network_config::kStaticIPConfig,
-                                    std::move(ip_dict));
+  top_dict->SetKey(onc::network_config::kStaticIPConfig,
+                   base::Value::FromUniquePtrValue(std::move(ip_dict)));
 
   // VPN dictionary
   std::unique_ptr<base::DictionaryValue> vpn_dict =
@@ -756,10 +767,11 @@ ArcNetHostImpl::TranslateVpnConfigurationToOnc(
   arcvpn_dict->SetKey(
       onc::arc_vpn::kTunnelChrome,
       base::Value(cfg.tunnel_chrome_traffic ? "true" : "false"));
-  vpn_dict->SetWithoutPathExpansion(onc::vpn::kArcVpn, std::move(arcvpn_dict));
+  vpn_dict->SetKey(onc::vpn::kArcVpn,
+                   base::Value::FromUniquePtrValue(std::move(arcvpn_dict)));
 
-  top_dict->SetWithoutPathExpansion(onc::network_config::kVPN,
-                                    std::move(vpn_dict));
+  top_dict->SetKey(onc::network_config::kVPN,
+                   base::Value::FromUniquePtrValue(std::move(vpn_dict)));
 
   return top_dict;
 }
@@ -865,7 +877,7 @@ void ArcNetHostImpl::NetworkPropertiesUpdated(
 
 void ArcNetHostImpl::ReceiveShillProperties(
     const std::string& service_path,
-    base::Optional<base::Value> shill_properties) {
+    absl::optional<base::Value> shill_properties) {
   if (!shill_properties) {
     LOG(ERROR) << "Failed to get shill Service properties for " << service_path;
     return;

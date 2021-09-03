@@ -403,9 +403,9 @@ void WebViewProxy::handleInputEvents(const InputEvent *events, size_t eventsCoun
     blink::WebLocalFrame* localWebFrame = webFrame->ToWebLocalFrame();
     content::RenderFrameImpl* render_frame =
         content::RenderFrameImpl::FromWebFrame(localWebFrame);
-    content::RenderWidget* render_widget = render_frame->GetLocalRootRenderWidget();
+    blink::WebFrameWidget* web_widget = render_frame->GetLocalRootWebFrameWidget();
     
-    RendererUtil::handleInputEvents(render_widget, events, eventsCount);
+    RendererUtil::handleInputEvents(web_widget, events, eventsCount);
 }
 
 void WebViewProxy::setDelegate(WebViewDelegate *delegate)

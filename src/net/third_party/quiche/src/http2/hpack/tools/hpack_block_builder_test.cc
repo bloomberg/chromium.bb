@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/tools/hpack_block_builder.h"
+#include "http2/hpack/tools/hpack_block_builder.h"
 
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
+#include "absl/strings/escaping.h"
+#include "http2/platform/api/http2_string_utils.h"
+#include "common/platform/api/quiche_test.h"
 
 namespace http2 {
 namespace test {
@@ -97,7 +98,7 @@ TEST(HpackBlockBuilderTest, ExamplesFromSpecC3) {
     // 0x0010:  2e63 6f6d                                .com
 
     const std::string expected =
-        Http2HexDecode("828684410f7777772e6578616d706c652e636f6d");
+        absl::HexStringToBytes("828684410f7777772e6578616d706c652e636f6d");
     EXPECT_EQ(expected, b.buffer());
   }
 }
@@ -128,7 +129,7 @@ TEST(HpackBlockBuilderTest, ExamplesFromSpecC4) {
     // 0x0010:  ff                                       .
 
     const std::string expected =
-        Http2HexDecode("828684418cf1e3c2e5f23a6ba0ab90f4ff");
+        absl::HexStringToBytes("828684418cf1e3c2e5f23a6ba0ab90f4ff");
     EXPECT_EQ(expected, b.buffer());
   }
 }

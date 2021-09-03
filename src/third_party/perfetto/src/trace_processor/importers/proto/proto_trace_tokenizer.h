@@ -22,8 +22,8 @@
 #include "perfetto/protozero/proto_utils.h"
 #include "perfetto/trace_processor/status.h"
 #include "src/trace_processor/importers/gzip/gzip_utils.h"
-#include "src/trace_processor/trace_blob_view.h"
 #include "src/trace_processor/util/status_macros.h"
+#include "src/trace_processor/util/trace_blob_view.h"
 
 #include "protos/perfetto/trace/trace.pbzero.h"
 #include "protos/perfetto/trace/trace_packet.pbzero.h"
@@ -59,8 +59,10 @@ class ProtoTraceTokenizer {
       const uint8_t* pos = &partial_buf_[0];
       uint8_t proto_field_tag = *pos;
       uint64_t field_size = 0;
+      // We cannot do &partial_buf_[partial_buf_.size()] because that crashes
+      // on MSVC STL debug builds, so does &*partial_buf_.end().
       const uint8_t* next = protozero::proto_utils::ParseVarInt(
-          ++pos, &*partial_buf_.end(), &field_size);
+          ++pos, &partial_buf_.front() + partial_buf_.size(), &field_size);
       bool parse_failed = next == pos;
       pos = next;
       if (proto_field_tag != kTracePacketTag || field_size == 0 ||

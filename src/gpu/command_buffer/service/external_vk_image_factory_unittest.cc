@@ -166,7 +166,7 @@ TEST_F(ExternalVkImageFactoryTest, DawnWrite_SkiaVulkanRead) {
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_OutputAttachment,
+        WGPUTextureUsage_RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 
@@ -188,7 +188,7 @@ TEST_F(ExternalVkImageFactoryTest, DawnWrite_SkiaVulkanRead) {
     pass.EndPass();
     wgpu::CommandBuffer commands = encoder.Finish();
 
-    wgpu::Queue queue = dawn_device_.GetDefaultQueue();
+    wgpu::Queue queue = dawn_device_.GetQueue();
     queue.Submit(1, &commands);
   }
 
@@ -205,7 +205,8 @@ TEST_F(ExternalVkImageFactoryTest, DawnWrite_SkiaVulkanRead) {
         &begin_semaphores, &end_semaphores);
 
     context_state_->gr_context()->wait(begin_semaphores.size(),
-                                       begin_semaphores.data());
+                                       begin_semaphores.data(),
+                                       /*deleteSemaphoresAfterWait=*/false);
 
     EXPECT_TRUE(skia_scoped_access);
 
@@ -291,7 +292,8 @@ TEST_F(ExternalVkImageFactoryTest, SkiaVulkanWrite_DawnRead) {
         gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
 
     SkSurface* dest_surface = skia_scoped_access->surface();
-    dest_surface->wait(begin_semaphores.size(), begin_semaphores.data());
+    dest_surface->wait(begin_semaphores.size(), begin_semaphores.data(),
+                       /*deleteSemaphoresAfterWait=*/false);
     SkCanvas* dest_canvas = dest_surface->getCanvas();
 
     // Color the top half blue, and the bottom half green
@@ -359,7 +361,7 @@ TEST_F(ExternalVkImageFactoryTest, SkiaVulkanWrite_DawnRead) {
     }
 
     wgpu::CommandBuffer commands = encoder.Finish();
-    wgpu::Queue queue = dawn_device_.GetDefaultQueue();
+    wgpu::Queue queue = dawn_device_.GetQueue();
     queue.Submit(1, &commands);
 
     // Map the buffer to read back data

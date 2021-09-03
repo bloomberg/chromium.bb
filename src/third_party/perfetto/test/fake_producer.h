@@ -22,6 +22,7 @@
 #include <string>
 
 #include "perfetto/ext/base/thread_checker.h"
+#include "perfetto/ext/base/unix_socket.h"
 #include "perfetto/ext/tracing/core/producer.h"
 #include "perfetto/ext/tracing/ipc/producer_ipc_client.h"
 #include "perfetto/tracing/core/data_source_descriptor.h"
@@ -80,6 +81,9 @@ class FakeProducer : public Producer {
   void Flush(FlushRequestID, const DataSourceInstanceID*, size_t) override;
   void ClearIncrementalState(const DataSourceInstanceID* /*data_source_ids*/,
                              size_t /*num_data_sources*/) override {}
+
+  // For testing, access to the fd used to communicate with the TracingService.
+  base::SocketHandle unix_socket_fd();
 
  private:
   void SetupFromConfig(const protos::gen::TestConfig& config);

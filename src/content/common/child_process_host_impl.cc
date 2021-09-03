@@ -19,12 +19,12 @@
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/common/child_process_host_delegate.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc.mojom.h"
@@ -86,11 +86,7 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
 #if defined(OS_MAC)
   std::string child_base_name = child_path.BaseName().value();
 
-  if (flags != CHILD_NORMAL && base::mac::AmIBundled()
-#if defined(ARCH_CPU_ARM64)
-      && flags != CHILD_LAUNCH_X86_64
-#endif  // ARCH_CPU_ARM64
-  ) {
+  if (flags != CHILD_NORMAL && base::mac::AmIBundled()) {
     // This is a specialized helper, with the |child_path| at
     // ../Framework.framework/Versions/X/Helpers/Chromium Helper.app/Contents/
     // MacOS/Chromium Helper. Go back up to the "Helpers" directory to select
@@ -104,7 +100,9 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
 #if BUILDFLAG(ENABLE_PLUGINS)
     } else if (flags == CHILD_PLUGIN) {
       child_base_name += kMacHelperSuffix_plugin;
-#endif
+#endif  // ENABLE_PLUGINS
+    } else if (flags > CHILD_EMBEDDER_FIRST) {
+      return GetContentClient()->GetChildProcessPath(flags, child_path);
     } else {
       NOTREACHED();
     }
@@ -114,7 +112,7 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
                      .Append("MacOS")
                      .Append(child_base_name);
   }
-#endif
+#endif  // OS_MAC
 
   return child_path;
 }
@@ -167,17 +165,17 @@ void ChildProcessHostImpl::BindReceiver(mojo::GenericPendingReceiver receiver) {
   child_process_->BindReceiver(std::move(receiver));
 }
 
-void ChildProcessHostImpl::RunService(
+void ChildProcessHostImpl::RunServiceDeprecated(
     const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-  child_process_->RunService(service_name, std::move(receiver));
+    mojo::ScopedMessagePipeHandle service_pipe) {
+  child_process_->RunServiceDeprecated(service_name, std::move(service_pipe));
 }
 
 void ChildProcessHostImpl::ForceShutdown() {
   child_process_->ProcessShutdown();
 }
 
-base::Optional<mojo::OutgoingInvitation>&
+absl::optional<mojo::OutgoingInvitation>&
 ChildProcessHostImpl::GetMojoInvitation() {
   return mojo_invitation_;
 }

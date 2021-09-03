@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -49,14 +49,14 @@ class CONTENT_EXPORT ConversionPolicy {
       uint64_t conversion_data) const;
 
   // Gets the sanitized impression data for an impression. Returns the decoded
-  // number as a hexadecimal string.
+  // number as a base 10 string.
   virtual std::string GetSanitizedImpressionData(
       uint64_t impression_data) const;
 
   // Returns the expiry time for an impression that is clamped to a maximum
   // value of 30 days from |impression_time|.
   virtual base::Time GetExpiryTimeForImpression(
-      const base::Optional<base::TimeDelta>& declared_expiry,
+      const absl::optional<base::TimeDelta>& declared_expiry,
       base::Time impression_time) const;
 
   // Delays reports that should have been sent while the browser was not open by

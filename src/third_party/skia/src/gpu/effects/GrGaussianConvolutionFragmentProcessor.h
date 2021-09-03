@@ -66,7 +66,7 @@ private:
     }
 #endif
 
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
 
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
 
@@ -74,11 +74,12 @@ private:
 
     GR_DECLARE_FRAGMENT_PROCESSOR_TEST
 
-    static constexpr int kMaxKernelWidth = 2*kMaxKernelRadius + 1;
+    static constexpr int kMaxKernelWidth = kMaxKernelRadius + 1;
 
     // The array size must be a multiple of 4 because we pass it as an array of float4 uniform
     // values.
     float                 fKernel[SkAlign4(kMaxKernelWidth)];
+    float                 fOffsets[SkAlign4(kMaxKernelWidth)];
     int                   fRadius;
     Direction             fDirection;
 

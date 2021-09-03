@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor_source.h"
 #include "content/common/content_export.h"
 
@@ -17,9 +18,9 @@
 #include <wtsapi32.h>
 #endif  // OS_WIN
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/session_manager/core/session_manager_observer.h"
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
 namespace base {
@@ -39,6 +40,18 @@ class CONTENT_EXPORT ScreenlockMonitorDeviceSource
   ScreenlockMonitorDeviceSource();
   ~ScreenlockMonitorDeviceSource() override;
 
+#if defined(OS_WIN)
+  // Fake session notification registration/unregistration APIs allow us to test
+  // receiving and handling messages that look as if they are sent by other
+  // sessions, without having to create a session host and a second session.
+  using WTSRegisterSessionNotificationFunction = bool (*)(HWND hwnd,
+                                                          DWORD flags);
+  using WTSUnRegisterSessionNotificationFunction = bool (*)(HWND hwnd);
+  static void SetFakeNotificationAPIsForTesting(
+      WTSRegisterSessionNotificationFunction register_function,
+      WTSUnRegisterSessionNotificationFunction unregister_function);
+#endif  // defined(OS_WIN)
+
  private:
 #if defined(OS_WIN)
   // Represents a message-only window for screenlock message handling on Win.
@@ -48,10 +61,18 @@ class CONTENT_EXPORT ScreenlockMonitorDeviceSource
     SessionMessageWindow();
     ~SessionMessageWindow();
 
+    static void SetFakeNotificationAPIsForTesting(
+        WTSRegisterSessionNotificationFunction register_function,
+        WTSUnRegisterSessionNotificationFunction unregister_function);
+
    private:
     bool OnWndProc(UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result);
     void ProcessWTSSessionLockMessage(WPARAM event_id);
 
+    static WTSRegisterSessionNotificationFunction
+        register_session_notification_function_;
+    static WTSUnRegisterSessionNotificationFunction
+        unregister_session_notification_function_;
     std::unique_ptr<base::win::MessageWindow> window_;
 
     DISALLOW_COPY_AND_ASSIGN(SessionMessageWindow);
@@ -65,7 +86,7 @@ class CONTENT_EXPORT ScreenlockMonitorDeviceSource
   void StopListeningForScreenlock();
 #endif  // OS_MAC
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   class ScreenLockListener : public session_manager::SessionManagerObserver {
    public:
     ScreenLockListener();
@@ -79,7 +100,7 @@ class CONTENT_EXPORT ScreenlockMonitorDeviceSource
   };
 
   ScreenLockListener screenlock_listener_;
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockMonitorDeviceSource);
 };

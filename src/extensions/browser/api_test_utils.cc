@@ -39,7 +39,7 @@ namespace api_test_utils {
 SendResponseHelper::SendResponseHelper(ExtensionFunction* function) {
   function->set_has_callback(true);
   function->set_response_callback(
-      base::Bind(&SendResponseHelper::OnResponse, base::Unretained(this)));
+      base::BindOnce(&SendResponseHelper::OnResponse, base::Unretained(this)));
 }
 
 SendResponseHelper::~SendResponseHelper() {}
@@ -50,10 +50,10 @@ bool SendResponseHelper::GetResponse() {
 }
 
 void SendResponseHelper::OnResponse(ExtensionFunction::ResponseType response,
-                                    const base::ListValue& results,
+                                    const base::Value& results,
                                     const std::string& error) {
   ASSERT_NE(ExtensionFunction::BAD_MESSAGE, response);
-  response_.reset(new bool(response == ExtensionFunction::SUCCEEDED));
+  response_ = std::make_unique<bool>(response == ExtensionFunction::SUCCEEDED);
   run_loop_.Quit();
 }
 
@@ -195,9 +195,8 @@ bool RunFunction(
   function->SetArgs(base::Value::FromUniquePtrValue(std::move(args)));
 
   CHECK(dispatcher);
-  function->set_dispatcher(dispatcher->AsWeakPtr());
+  function->SetDispatcher(dispatcher->AsWeakPtr());
 
-  function->set_browser_context(context);
   function->set_include_incognito_information(flags & INCLUDE_INCOGNITO);
   function->RunWithValidation()->Execute();
   response_helper.WaitForResponse();

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_ANDROID_OMNIBOX_AUTOCOMPLETE_CONTROLLER_ANDROID_H_
 
 #include <memory>
-#include <string>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
@@ -68,7 +67,6 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
       const base::android::JavaParamRef<jobject>& obj,
       jint selected_index,
       const jint j_window_open_disposition,
-      jint hash_code,
       const base::android::JavaParamRef<jstring>& j_current_url,
       jint j_page_classification,
       jlong elapsed_time_since_first_modified,
@@ -76,14 +74,12 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
       const base::android::JavaParamRef<jobject>& j_web_contents);
   void DeleteSuggestion(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
-                        jint selected_index,
-                        jint hash_code);
+                        jint selected_index);
   base::android::ScopedJavaLocalRef<jobject>
   UpdateMatchDestinationURLWithQueryFormulationTime(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint selected_index,
-      jint hash_code,
       jlong elapsed_time_since_input_change,
       const base::android::JavaParamRef<jstring>& jnew_query_text,
       const base::android::JavaParamRef<jobjectArray>& jnew_query_params);
@@ -92,15 +88,9 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_gurl);
 
-  // Perform group by search vs url operation on a range of suggestions.
-  // Grouping is performed in place.
-  // The range is half-open [first_index, last_index), meaning the last element
-  // is not included in grouping.
-  // TODO(crbug.com/1138587): delete this once java- and native
-  // AutocompleteResult class are reconciled.
-  void GroupSuggestionsBySearchVsURL(JNIEnv* env,
-                                     int first_index,
-                                     int last_index);
+  // Break the association between the AutocompleteController java and
+  // native instances.
+  void ReleaseJavaObject(JNIEnv* env);
 
   // KeyedService:
   void Shutdown() override;
@@ -128,6 +118,12 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
         content::BrowserContext* profile) const override;
   };
 
+  // Pass detected voice matches down to VoiceSuggestionsProvider.
+  void SetVoiceMatches(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobjectArray>& j_voice_matches,
+      const base::android::JavaParamRef<jfloatArray>& j_confidence_scores);
+
  private:
   ~AutocompleteControllerAndroid() override;
   void InitJNI(JNIEnv* env, jobject obj);
@@ -141,41 +137,13 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
   void NotifySuggestionsReceived(
       const AutocompleteResult& autocomplete_result);
 
-  base::android::ScopedJavaLocalRef<jobject> BuildOmniboxSuggestion(
-      JNIEnv* env, const AutocompleteMatch& match);
-
-  // Construct Java list of NavsuggestTile objects.
-  base::android::ScopedJavaLocalRef<jobject> BuildNavsuggestTilesList(
-      JNIEnv* env,
-      const std::vector<AutocompleteMatch::NavsuggestTile>& tiles);
-
-  // Construct Java GroupDetails map from supplied HeadersMap and expanded
-  // state.
-  void PopulateOmniboxGroupsDetails(
-      JNIEnv* env,
-      base::android::ScopedJavaLocalRef<jobject> j_autocomplete_result,
-      const SearchSuggestionParser::HeadersMap& header_map,
-      const std::set<int>& hidden_group_ids);
-
-  // A helper method for fetching the top synchronous autocomplete result.
-  // The |prevent_inline_autocomplete| flag is passed to the AutocompleteInput
-  // object, see documentation there for its description.
-  base::android::ScopedJavaLocalRef<jobject> GetTopSynchronousResult(
-      JNIEnv* env,
-      const base::android::JavaRef<jobject>& obj,
-      const base::android::JavaRef<jstring>& j_text,
-      bool prevent_inline_autocomplete,
-      bool focused_from_fakebox);
-
-  bool IsValidMatch(JNIEnv* env, jint selected_index, jint hash_code);
-
   std::unique_ptr<AutocompleteController> autocomplete_controller_;
 
   // Last input we sent to the autocomplete controller.
   AutocompleteInput input_;
 
   // Whether we're currently inside a call to Start() that's called
-  // from GetTopSynchronousResult().
+  // from Classify().
   bool inside_synchronous_start_;
 
   JavaObjectWeakGlobalRef weak_java_autocomplete_controller_android_;

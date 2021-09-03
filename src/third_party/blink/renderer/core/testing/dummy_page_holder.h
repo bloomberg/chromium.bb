@@ -71,7 +71,7 @@ class DummyPageHolder {
  public:
   DummyPageHolder(
       const IntSize& initial_view_size = IntSize(),
-      Page::PageClients* = nullptr,
+      ChromeClient* = nullptr,
       LocalFrameClient* = nullptr,
       base::OnceCallback<void(Settings&)> setting_overrider =
           base::NullCallback(),
@@ -99,6 +99,7 @@ class DummyPageHolder {
   CrossThreadPersistent<LocalFrame> frame_;
 
   Persistent<LocalFrameClient> local_frame_client_;
+  std::unique_ptr<scheduler::WebAgentGroupScheduler> agent_group_scheduler_;
   DISALLOW_COPY_AND_ASSIGN(DummyPageHolder);
 };
 

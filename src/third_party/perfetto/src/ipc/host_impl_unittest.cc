@@ -44,7 +44,7 @@ using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 
-constexpr char kSockName[] = TEST_SOCK_NAME("host_impl_unittest.sock");
+ipc::TestSocket kTestSocket{"host_impl_unittest"};
 
 // RequestProto and ReplyProto are defined in client_unittest_messages.proto.
 
@@ -90,8 +90,8 @@ class FakeClient : public base::UnixSocket::EventListener {
   MOCK_METHOD0(OnRequestError, void());
 
   explicit FakeClient(base::TaskRunner* task_runner) {
-    sock_ = base::UnixSocket::Connect(kSockName, this, task_runner,
-                                      base::SockFamily::kUnix,
+    sock_ = base::UnixSocket::Connect(kTestSocket.name(), this, task_runner,
+                                      kTestSocket.family(),
                                       base::SockType::kStream);
   }
 
@@ -168,9 +168,10 @@ class FakeClient : public base::UnixSocket::EventListener {
 class HostImplTest : public ::testing::Test {
  public:
   void SetUp() override {
-    DESTROY_TEST_SOCK(kSockName);
+    kTestSocket.Destroy();
     task_runner_.reset(new base::TestTaskRunner());
-    Host* host = Host::CreateInstance(kSockName, task_runner_.get()).release();
+    Host* host =
+        Host::CreateInstance(kTestSocket.name(), task_runner_.get()).release();
     ASSERT_NE(nullptr, host);
     host_.reset(static_cast<HostImpl*>(host));
     cli_.reset(new FakeClient(task_runner_.get()));
@@ -185,7 +186,7 @@ class HostImplTest : public ::testing::Test {
     host_.reset();
     task_runner_->RunUntilIdle();
     task_runner_.reset();
-    DESTROY_TEST_SOCK(kSockName);
+    kTestSocket.Destroy();
   }
 
   // ::testing::StrictMock<MockEventListener> proxy_events_;
@@ -320,6 +321,8 @@ TEST_F(HostImplTest, InvokeMethodDropReply) {
   task_runner_->RunUntilCheckpoint("on_reply_received");
 }
 
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+// File descriptor sending over IPC is not supported on Windows.
 TEST_F(HostImplTest, SendFileDescriptor) {
   FakeService* fake_service = new FakeService("FakeService");
   ASSERT_TRUE(host_->ExposeService(std::unique_ptr<Service>(fake_service)));
@@ -398,6 +401,7 @@ TEST_F(HostImplTest, ReceiveFileDescriptor) {
             PERFETTO_EINTR(read(*rx_fd, buf, sizeof(buf))));
   ASSERT_STREQ(kFileContent, buf);
 }
+#endif  // !OS_WIN
 
 // Invoke a method and immediately after disconnect the client.
 TEST_F(HostImplTest, OnClientDisconnect) {

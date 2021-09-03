@@ -103,7 +103,12 @@ EmeCodec ToVideoEmeCodec(VideoCodec codec, VideoCodecProfile profile) {
         return EME_CODEC_NONE;
       }
     case kCodecHEVC:
-      return EME_CODEC_HEVC;
+      // Only handle Main and Main10 profiles for HEVC.
+      if (profile == HEVCPROFILE_MAIN)
+        return EME_CODEC_HEVC_PROFILE_MAIN;
+      if (profile == HEVCPROFILE_MAIN10)
+        return EME_CODEC_HEVC_PROFILE_MAIN10;
+      return EME_CODEC_NONE;
     case kCodecDolbyVision:
       // Only profiles 0, 4, 5, 7, 8, 9 are valid. Profile 0 and 9 are encoded
       // based on AVC while profile 4, 5, 7 and 8 are based on HEVC.
@@ -157,17 +162,13 @@ class ClearKeyProperties : public KeySystemProperties {
 
   EmeConfigRule GetRobustnessConfigRule(
       EmeMediaType media_type,
-      const std::string& requested_robustness) const override {
+      const std::string& requested_robustness,
+      const bool* /*hw_secure_requirement*/) const override {
     return requested_robustness.empty() ? EmeConfigRule::SUPPORTED
                                         : EmeConfigRule::NOT_SUPPORTED;
   }
 
   EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
-    return EmeSessionTypeSupport::NOT_SUPPORTED;
-  }
-
-  EmeSessionTypeSupport GetPersistentUsageRecordSessionSupport()
-      const override {
     return EmeSessionTypeSupport::NOT_SUPPORTED;
   }
 
@@ -219,7 +220,7 @@ static bool IsPotentiallySupportedKeySystem(const std::string& key_system) {
 
   // Chromecast defines behaviors for Cast clients within its reverse domain.
   const char kChromecastRoot[] = "com.chromecast";
-  if (IsChildKeySystemOf(key_system, kChromecastRoot))
+  if (IsSubKeySystemOf(key_system, kChromecastRoot))
     return true;
 
   // Implementations that do not have a specification or appropriate glue code
@@ -264,12 +265,10 @@ class KeySystemsImpl : public KeySystems {
   EmeConfigRule GetRobustnessConfigRule(
       const std::string& key_system,
       EmeMediaType media_type,
-      const std::string& requested_robustness) const override;
+      const std::string& requested_robustness,
+      const bool* hw_secure_requirement) const override;
 
   EmeSessionTypeSupport GetPersistentLicenseSessionSupport(
-      const std::string& key_system) const override;
-
-  EmeSessionTypeSupport GetPersistentUsageRecordSessionSupport(
       const std::string& key_system) const override;
 
   EmeFeatureSupport GetPersistentStateSupport(
@@ -466,8 +465,6 @@ void KeySystemsImpl::AddSupportedKeySystems(
     DCHECK(!properties->GetKeySystemName().empty());
     DCHECK(properties->GetPersistentLicenseSessionSupport() !=
            EmeSessionTypeSupport::INVALID);
-    DCHECK(properties->GetPersistentUsageRecordSessionSupport() !=
-           EmeSessionTypeSupport::INVALID);
     DCHECK(properties->GetPersistentStateSupport() !=
            EmeFeatureSupport::INVALID);
     DCHECK(properties->GetDistinctiveIdentifierSupport() !=
@@ -486,8 +483,6 @@ void KeySystemsImpl::AddSupportedKeySystems(
         EmeFeatureSupport::NOT_SUPPORTED) {
       DCHECK(properties->GetPersistentLicenseSessionSupport() ==
              EmeSessionTypeSupport::NOT_SUPPORTED);
-      DCHECK(properties->GetPersistentUsageRecordSessionSupport() ==
-             EmeSessionTypeSupport::NOT_SUPPORTED);
     }
 
     // If distinctive identifiers are not supported, then no other features can
@@ -495,8 +490,6 @@ void KeySystemsImpl::AddSupportedKeySystems(
     if (properties->GetDistinctiveIdentifierSupport() ==
         EmeFeatureSupport::NOT_SUPPORTED) {
       DCHECK(properties->GetPersistentLicenseSessionSupport() !=
-             EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER);
-      DCHECK(properties->GetPersistentUsageRecordSessionSupport() !=
              EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER);
     }
 
@@ -674,7 +667,8 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
   // SupportedCodecs  | SupportedSecureCodecs  | Result
   //       yes        |         yes            | SUPPORTED
   //       yes        |         no             | HW_SECURE_CODECS_NOT_ALLOWED
-  //       no         |         any            | NOT_SUPPORTED
+  //       no         |         yes            | HW_SECURE_CODECS_REQUIRED
+  //       no         |         no             | NOT_SUPPORTED
   EmeConfigRule support = EmeConfigRule::SUPPORTED;
   for (size_t i = 0; i < codecs.size(); i++) {
     EmeCodec codec =
@@ -688,22 +682,29 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
     // codecs with multiple bits set, e.g. to cover multiple profiles, we check
     // (codec & mask) == codec instead of (codec & mask) != 0 to make sure all
     // bits are set. Same below.
-    if ((codec & key_system_codec_mask & mime_type_codec_mask) != codec) {
+    if ((codec & key_system_codec_mask & mime_type_codec_mask) != codec &&
+        (codec & key_system_hw_secure_codec_mask & mime_type_codec_mask) !=
+            codec) {
       DVLOG(2) << "Container/codec pair (" << container_mime_type << " / "
                << codecs[i] << ") not supported by " << key_system;
       return EmeConfigRule::NOT_SUPPORTED;
     }
 
-    // Check whether the codec supports a hardware-secure mode (any level). The
-    // goal is to prevent mixing of non-hardware-secure codecs with
-    // hardware-secure codecs, since the mode is fixed at CDM creation.
-    //
-    // Because the check for regular codec support is early-exit, we don't have
-    // to consider codecs that are only supported in hardware-secure mode. We
-    // could do so, and make use of HW_SECURE_CODECS_REQUIRED, if it turns out
-    // that hardware-secure-only codecs actually exist and are useful.
-    if ((codec & key_system_hw_secure_codec_mask) != codec)
+    // Check whether the codec supports a hardware-secure mode (any level).
+    if ((codec & key_system_hw_secure_codec_mask) != codec) {
+      DCHECK_EQ(codec & key_system_codec_mask, codec);
+      if (support == EmeConfigRule::HW_SECURE_CODECS_REQUIRED)
+        return EmeConfigRule::NOT_SUPPORTED;
       support = EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED;
+    }
+
+    // Check whether the codec requires a hardware-secure mode (any level).
+    if ((codec & key_system_codec_mask) != codec) {
+      DCHECK_EQ(codec & key_system_hw_secure_codec_mask, codec);
+      if (support == EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED)
+        return EmeConfigRule::NOT_SUPPORTED;
+      support = EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
+    }
   }
 
   return support;
@@ -712,7 +713,8 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
 EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
     const std::string& key_system,
     EmeMediaType media_type,
-    const std::string& requested_robustness) const {
+    const std::string& requested_robustness,
+    const bool* hw_secure_requirement) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto key_system_iter = key_system_properties_map_.find(key_system);
@@ -720,8 +722,8 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
     NOTREACHED();
     return EmeConfigRule::NOT_SUPPORTED;
   }
-  return key_system_iter->second->GetRobustnessConfigRule(media_type,
-                                                          requested_robustness);
+  return key_system_iter->second->GetRobustnessConfigRule(
+      media_type, requested_robustness, hw_secure_requirement);
 }
 
 EmeSessionTypeSupport KeySystemsImpl::GetPersistentLicenseSessionSupport(
@@ -734,18 +736,6 @@ EmeSessionTypeSupport KeySystemsImpl::GetPersistentLicenseSessionSupport(
     return EmeSessionTypeSupport::INVALID;
   }
   return key_system_iter->second->GetPersistentLicenseSessionSupport();
-}
-
-EmeSessionTypeSupport KeySystemsImpl::GetPersistentUsageRecordSessionSupport(
-    const std::string& key_system) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  auto key_system_iter = key_system_properties_map_.find(key_system);
-  if (key_system_iter == key_system_properties_map_.end()) {
-    NOTREACHED();
-    return EmeSessionTypeSupport::INVALID;
-  }
-  return key_system_iter->second->GetPersistentUsageRecordSessionSupport();
 }
 
 EmeFeatureSupport KeySystemsImpl::GetPersistentStateSupport(

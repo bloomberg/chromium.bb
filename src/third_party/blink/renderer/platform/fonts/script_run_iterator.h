@@ -43,7 +43,7 @@ class PLATFORM_EXPORT ScriptRunIterator {
   void OpenBracket(UChar32);
   void CloseBracket(UChar32);
   bool MergeSets();
-  void FixupStack(UScriptCode resolved_script);
+  void FixupStack(UScriptCode resolved_script, bool exclude_last);
   bool Fetch(wtf_size_t* pos, UChar32*);
 
   UScriptCode ResolveCurrentScript() const;
@@ -122,4 +122,4 @@ class PLATFORM_EXPORT ICUScriptData : public ScriptData {
 };
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SCRIPT_RUN_ITERATOR_H_

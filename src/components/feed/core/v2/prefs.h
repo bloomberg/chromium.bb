@@ -33,9 +33,11 @@ void SetLastRequestTime(base::Time request_time, PrefService& pref_service);
 DebugStreamData GetDebugStreamData(PrefService& pref_service);
 void SetDebugStreamData(const DebugStreamData& data, PrefService& pref_service);
 
-void SetRequestSchedule(const RequestSchedule& schedule,
+void SetRequestSchedule(RefreshTaskId task_id,
+                        const RequestSchedule& schedule,
                         PrefService& pref_service);
-RequestSchedule GetRequestSchedule(PrefService& pref_service);
+RequestSchedule GetRequestSchedule(RefreshTaskId task_id,
+                                   PrefService& pref_service);
 
 PersistentMetricsData GetPersistentMetricsData(PrefService& pref_service);
 void SetPersistentMetricsData(const PersistentMetricsData& data,
@@ -44,23 +46,8 @@ void SetPersistentMetricsData(const PersistentMetricsData& data,
 std::string GetClientInstanceId(PrefService& pref_service);
 void ClearClientInstanceId(PrefService& pref_service);
 
-void SetLastFetchHadNoticeCard(PrefService& pref_service, bool value);
-bool GetLastFetchHadNoticeCard(const PrefService& pref_service);
-
-void SetHasReachedClickAndViewActionsUploadConditions(PrefService& pref_service,
-                                                      bool value);
-bool GetHasReachedClickAndViewActionsUploadConditions(
-    const PrefService& pref_service);
-
-// Increment the stored notice card views count by 1.
-void IncrementNoticeCardViewsCount(PrefService& pref_service);
-
-int GetNoticeCardViewsCount(const PrefService& pref_service);
-
-// Increment the stored notice card clicks count by 1.
-void IncrementNoticeCardClicksCount(PrefService& pref_service);
-
-int GetNoticeCardClicksCount(const PrefService& pref_service);
+void SetExperiments(const Experiments& experiments, PrefService& pref_service);
+Experiments GetExperiments(PrefService& pref_service);
 
 }  // namespace prefs
 }  // namespace feed

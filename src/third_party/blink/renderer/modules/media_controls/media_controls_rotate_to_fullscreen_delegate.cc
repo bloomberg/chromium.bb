@@ -7,9 +7,10 @@
 #include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/widget/screen_orientation.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/public/platform/user_metrics_action.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element_controls_list.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -59,14 +60,6 @@ void MediaControlsRotateToFullscreenDelegate::Attach() {
   // to receive events for 180 deg rotations).
   dom_window->addEventListener(event_type_names::kOrientationchange, this,
                                false);
-
-  // TODO(795286): device orientation now requires a v8::Context in the stack so
-  // we are creating one so the event pump starts running.
-  LocalFrame* frame = video_element_->GetDocument().GetFrame();
-  if (!frame)
-    return;
-
-  ScriptState::Scope scope(ToScriptStateForMainWorld(frame));
   dom_window->addEventListener(event_type_names::kDeviceorientation, this,
                                false);
 }
@@ -174,7 +167,7 @@ void MediaControlsRotateToFullscreenDelegate::OnDeviceOrientationAvailable(
   // zero, even though that's a valid (albeit unlikely) device orientation.
   DeviceOrientationData* data = event->Orientation();
   device_orientation_supported_ =
-      base::make_optional(data->CanProvideBeta() && data->CanProvideGamma() &&
+      absl::make_optional(data->CanProvideBeta() && data->CanProvideGamma() &&
                           (data->Beta() != 0.0 || data->Gamma() != 0.0));
 }
 
@@ -275,7 +268,9 @@ MediaControlsRotateToFullscreenDelegate::ComputeScreenOrientation() const {
   if (!frame)
     return SimpleOrientation::kUnknown;
 
-  switch (frame->GetChromeClient().GetScreenInfo(*frame).orientation_type) {
+  ChromeClient& chrome_client = frame->GetChromeClient();
+  const ScreenInfo& screen_info = chrome_client.GetScreenInfo(*frame);
+  switch (screen_info.orientation_type) {
     case mojom::blink::ScreenOrientation::kPortraitPrimary:
     case mojom::blink::ScreenOrientation::kPortraitSecondary:
       return SimpleOrientation::kPortrait;

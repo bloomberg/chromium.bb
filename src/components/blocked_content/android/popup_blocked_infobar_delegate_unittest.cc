@@ -4,6 +4,7 @@
 
 #include "components/blocked_content/android/popup_blocked_infobar_delegate.h"
 
+#include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -21,26 +22,20 @@
 
 namespace blocked_content {
 namespace {
+
 constexpr char kPageUrl[] = "http://example_page.test";
 constexpr char kPopupUrl[] = "http://example_popup.test";
-
-class TestInfoBarManager : public infobars::ContentInfoBarManager {
- public:
-  explicit TestInfoBarManager(content::WebContents* web_contents)
-      : ContentInfoBarManager(web_contents) {}
-
-  // infobars::InfoBarManager:
-  std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate> delegate) override {
-    return std::make_unique<infobars::InfoBar>(std::move(delegate));
-  }
-};
 
 }  // namespace
 
 class PopupBlockedInfoBarDelegateTest
     : public content::RenderViewHostTestHarness {
  public:
+  PopupBlockedInfoBarDelegateTest() : content::RenderViewHostTestHarness() {
+    // Make sure the SafeBrowsingTriggeredPopupBlocker is not created.
+    feature_list_.InitAndDisableFeature(kAbusiveExperienceEnforce);
+  }
+
   ~PopupBlockedInfoBarDelegateTest() override {
     settings_map_->ShutdownOnUIThread();
   }
@@ -48,8 +43,6 @@ class PopupBlockedInfoBarDelegateTest
   // content::RenderViewHostTestHarness:
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
-    // Make sure the SafeBrowsingTriggeredPopupBlocker is not created.
-    feature_list_.InitAndDisableFeature(kAbusiveExperienceEnforce);
 
     HostContentSettingsMap::RegisterProfilePrefs(pref_service_.registry());
     settings_map_ = base::MakeRefCounted<HostContentSettingsMap>(
@@ -63,14 +56,17 @@ class PopupBlockedInfoBarDelegateTest
 
     PopupBlockerTabHelper::CreateForWebContents(web_contents());
     helper_ = PopupBlockerTabHelper::FromWebContents(web_contents());
-    infobar_manager_ = std::make_unique<TestInfoBarManager>(web_contents());
+    infobar_manager_ =
+        std::make_unique<infobars::ContentInfoBarManager>(web_contents());
 
     NavigateAndCommit(GURL(kPageUrl));
   }
 
   PopupBlockerTabHelper* helper() { return helper_; }
 
-  TestInfoBarManager* infobar_manager() { return infobar_manager_.get(); }
+  infobars::ContentInfoBarManager* infobar_manager() {
+    return infobar_manager_.get();
+  }
 
   HostContentSettingsMap* settings_map() { return settings_map_.get(); }
 
@@ -79,7 +75,7 @@ class PopupBlockedInfoBarDelegateTest
   PopupBlockerTabHelper* helper_ = nullptr;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   scoped_refptr<HostContentSettingsMap> settings_map_;
-  std::unique_ptr<TestInfoBarManager> infobar_manager_;
+  std::unique_ptr<infobars::ContentInfoBarManager> infobar_manager_;
 };
 
 TEST_F(PopupBlockedInfoBarDelegateTest, ReplacesInfobarOnSecondPopup) {
@@ -92,7 +88,7 @@ TEST_F(PopupBlockedInfoBarDelegateTest, ReplacesInfobarOnSecondPopup) {
                                   ->delegate()
                                   ->AsConfirmInfoBarDelegate()
                                   ->GetMessageText(),
-                              base::ASCIIToUTF16("2")));
+                              u"2"));
 
   EXPECT_FALSE(PopupBlockedInfoBarDelegate::Create(
       infobar_manager(), 2, settings_map(), base::NullCallback()));
@@ -103,7 +99,7 @@ TEST_F(PopupBlockedInfoBarDelegateTest, ReplacesInfobarOnSecondPopup) {
                                  ->delegate()
                                  ->AsConfirmInfoBarDelegate()
                                  ->GetMessageText(),
-                             base::ASCIIToUTF16("2")));
+                             u"2"));
 }
 
 TEST_F(PopupBlockedInfoBarDelegateTest, ShowsBlockedPopups) {

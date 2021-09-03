@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <string>
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_features.h"
 #include "components/country_codes/country_codes.h"
 #include "components/embedder_support/pref_names.h"
@@ -67,16 +69,16 @@ void RegisterProbesSettingBackupPref(PrefRegistrySimple* registry) {
 }
 
 void MigrateProbesSettingToOrFromBackup(PrefService* prefs) {
-  // If the privacy settings redesign is enabled and the user value of the
-  // preference hasn't been backed up yet, back it up, and clear it. That way,
-  // the preference will revert to using the hardcoded default value (unless
-  // it's managed by a policy or an extension). This is necessary, as the
-  // privacy settings redesign removed the user-facing toggle, and so the
-  // user value of the preference is no longer modifiable.
-  if (base::FeatureList::IsEnabled(features::kPrivacySettingsRedesign) &&
-      !prefs->HasPrefPath(kAlternateErrorPagesBackup)) {
-    // If the user never changed the value of the preference and still uses the
-    // hardcoded default value, we'll consider it to be the user value for
+// TODO(crbug.com/1177778): remove this code around M97 to make sure the vast
+// majority of the clients are migrated.
+#if defined(OS_ANDROID)
+  if (!prefs->HasPrefPath(kAlternateErrorPagesBackup) &&
+      base::FeatureList::IsEnabled(features::kLinkDoctorDeprecationAndroid)) {
+#else
+  if (!prefs->HasPrefPath(kAlternateErrorPagesBackup)) {
+#endif  // defined(OS_ANDROID)
+    // If the user never changed the value of the preference and still uses
+    // the hardcoded default value, we'll consider it to be the user value for
     // the purposes of this migration.
     const base::Value* user_value =
         prefs->FindPreference(embedder_support::kAlternateErrorPagesEnabled)
@@ -90,16 +92,19 @@ void MigrateProbesSettingToOrFromBackup(PrefService* prefs) {
     prefs->SetBoolean(kAlternateErrorPagesBackup, user_value->GetBool());
     prefs->ClearPref(embedder_support::kAlternateErrorPagesEnabled);
   }
-
-  // If the privacy settings redesign is rolled back and there is a backed up
+// The reverse migration should only occur on Android at the time of rollout.
+// TODO(crbug.com/1177778): remove this part once the rollout is complete.
+#if defined(OS_ANDROID)
+  // If the Link Doctor deprecation is rolled back and there is a backed up
   // value of the preference, restore it to the original preference, and clear
   // the backup.
-  if (!base::FeatureList::IsEnabled(features::kPrivacySettingsRedesign) &&
-      prefs->HasPrefPath(kAlternateErrorPagesBackup)) {
+  if (prefs->HasPrefPath(kAlternateErrorPagesBackup) &&
+      !base::FeatureList::IsEnabled(features::kLinkDoctorDeprecationAndroid)) {
     prefs->SetBoolean(embedder_support::kAlternateErrorPagesEnabled,
                       prefs->GetBoolean(kAlternateErrorPagesBackup));
     prefs->ClearPref(kAlternateErrorPagesBackup);
   }
+#endif  // defined(OS_ANDROID)
 }
 
 net::DohProviderEntry::List ProvidersForCountry(

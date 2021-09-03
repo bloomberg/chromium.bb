@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
 import argparse
 import csv
 import datetime
@@ -13,6 +14,7 @@ import multiprocessing
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
 import traceback
@@ -239,7 +241,8 @@ def ExtractFromOneTraceThrowing(args):
     │       │   └── json.1
     │       ├── trace2
     │       │   ├── json
-    │       │   └── json.1
+    │       │   ├── json.1
+    │       │   └── json.2
     ├── chromium@5707819
     │   │
     │   ...
@@ -266,37 +269,44 @@ def ExtractFromOneTraceThrowing(args):
   """
   (label, trace_index, html_trace, json_dir, compiled_regex) = args
   if not os.path.exists(json_dir):
-    print 'Converting trace to json: {}'.format(json_dir)
-    EnsureDirectoryExists(json_dir)
-    temp_json = os.path.join(json_dir, '.tmp.json')
-    output = subprocess.check_output([HTML2TRACE, html_trace, temp_json])
-    for json_file in output.splitlines():
-      os.rename(json_file, os.path.join(json_dir, LastAfterSlash(json_file)))
+    print('Converting trace to json: {}'.format(json_dir))
+    tmp_json_dir = json_dir + '.tmp'
+    if os.path.exists(tmp_json_dir) and os.path.isdir(tmp_json_dir):
+      shutil.rmtree(tmp_json_dir)
+    EnsureDirectoryExists(tmp_json_dir)
+    json_file = os.path.join(tmp_json_dir, 'json')
+    output = subprocess.check_output([HTML2TRACE, html_trace, json_file])
+    for line in output.splitlines():
+      assert LastAfterSlash(line).startswith('json')
+    # Rename atomically to make sure that the JSON cache is not consumed
+    # partially.
+    os.rename(tmp_json_dir, json_dir)
 
   # Since several json files are produced from the same trace, an event could
   # begin and end in different jsons.
   # Step 1: Merge events from all traces.
   merged_tids = None
-  print 'Taking trace: {}'.format(html_trace)
+  print('Taking trace: {}'.format(html_trace))
   for json_file in os.listdir(json_dir):
     if not json_file.startswith('json'):
+      print('{} not starting with json'.format(json_file))
       continue
     full_json_file = os.path.join(json_dir, json_file)
     tids = LoadJsonFile(full_json_file, compiled_regex)
     if not merged_tids:
       merged_tids = tids
     else:
-      for tid, ts_to_events in tids.iteritems():
+      for tid, ts_to_events in tids.items():
         merged_ts_to_events = merged_tids.setdefault(tid, {})
-        for ts, events in ts_to_events.iteritems():
+        for ts, events in ts_to_events.items():
           merged_event_list = merged_ts_to_events.setdefault(ts, [])
           merged_event_list.extend(events)
 
   # Step 2: Sort by ts and compute event durations.
   csv_events = []
-  for tid, ts_to_events in merged_tids.iteritems():
+  for tid, ts_to_events in merged_tids.items():
     begin_events = {}
-    for ts, events in sorted(ts_to_events.iteritems()):
+    for ts, events in sorted(ts_to_events.items()):
       for event in events:
         duration = 0
         thread_duration = 0
@@ -363,6 +373,11 @@ def ExtractEvents(regex, working_dir, csv_path):
   # Since multiprocessing accumulates all data in memory until the last task in
   # the pool has terminated, run it in batches to avoid swapping.
   batch_size = multiprocessing.cpu_count()
+  if sys.platform == 'win32':
+    # TODO(crbug.com/1190269) - we can't use more than 56
+    # cores on Windows or Python3 may hang.
+    batch_size = min(batch_size, 56)
+
   pool = multiprocessing.Pool(batch_size)
   with open(csv_path, 'w') as csv_file:
     writer = csv.writer(csv_file)
@@ -377,16 +392,16 @@ def ExtractEvents(regex, working_dir, csv_path):
 def main():
   args = ParseArgs()
   if args.command == 'fetch':
-    print 'Fetching job_results.csv'
+    print('Fetching job_results.csv')
     csv_file = FetchTraces(LastAfterSlash(args.job))
-    print 'See job results in {}'.format(csv_file)
+    print('See job results in {}'.format(csv_file))
   elif args.command == 'extract':
     top_dir = os.path.expanduser('~/.local/share/pinpoint_traces')
     working_dir = os.path.join(top_dir,
                                os.readlink(os.path.join(top_dir, 'latest')))
     assert os.path.exists(working_dir), 'Broken symlink'
     ExtractEvents(args.event, working_dir, args.output)
-    print 'Wrote output: {}'.format(args.output)
+    print('Wrote output: {}'.format(args.output))
   return 0
 
 

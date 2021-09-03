@@ -1,9 +1,1 @@
-# primary
-wanderview@chromium.org
-
-# secondary
-shimazu@chromium.org
-jbroman@chromium.org
-
-# TEAM: worker-dev@chromium.org
-# COMPONENT: Blink>ServiceWorker
+file://third_party/blink/renderer/modules/url_pattern/OWNERS

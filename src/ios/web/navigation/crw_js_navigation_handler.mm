@@ -39,7 +39,7 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 @interface CRWJSNavigationHandler () {
   // Subscription for JS message.
-  std::unique_ptr<web::WebState::ScriptCommandSubscription> _subscription;
+  base::CallbackListSubscription _subscription;
 }
 
 @property(nonatomic, weak) id<CRWJSNavigationHandlerDelegate> delegate;
@@ -266,8 +266,6 @@ GURL URLEscapedForHistory(const GURL& url) {
           /*is_renderer_initiated=*/true);
   context->SetIsSameDocument(true);
   self.webStateImpl->OnNavigationStarted(context.get());
-  self.navigationManagerImpl->AddPushStateItemIfNecessary(pageURL, stateObject,
-                                                          transition);
   context->SetHasCommitted(true);
   self.webStateImpl->OnNavigationFinished(context.get());
   self.userInteractionState->SetUserInteractionRegisteredSincePageLoaded(false);

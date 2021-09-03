@@ -10,22 +10,24 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
+#include "chrome/common/printing/printer_capabilities.h"
 #include "components/crash/core/common/crash_keys.h"
-#include "components/printing/browser/printer_capabilities.h"
 #include "content/public/browser/render_frame_host.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/page_range.h"
+#include "printing/print_job_constants.h"
 
 namespace printing {
 
@@ -56,12 +58,12 @@ void PrintersToValues(const PrinterList& printer_list,
     for (const auto& opt_it : printer.options)
       options->SetString(opt_it.first, opt_it.second);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     printer_info->SetBoolean(
         kCUPSEnterprisePrinter,
         base::Contains(printer.options, kCUPSEnterprisePrinter) &&
             printer.options.at(kCUPSEnterprisePrinter) == kValueTrue);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     printer_info->Set(kSettingPrinterOptions, std::move(options));
 
@@ -219,7 +221,7 @@ bool ParseSettings(const base::Value& settings,
     NOTREACHED();
     return false;
   }
-  base::Optional<base::Value> ticket_value =
+  absl::optional<base::Value> ticket_value =
       base::JSONReader::Read(*ticket_opt);
   if (!ticket_value)
     return false;

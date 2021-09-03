@@ -707,7 +707,7 @@ enum MediaListSource {
 
 std::unique_ptr<protocol::CSS::SourceRange>
 InspectorStyleSheetBase::BuildSourceRangeObject(const SourceRange& range) {
-  const LineEndings* line_endings = this->GetLineEndings();
+  const LineEndings* line_endings = GetLineEndings();
   if (!line_endings)
     return nullptr;
   TextPosition start =
@@ -791,9 +791,11 @@ void InspectorStyle::PopulateAllProperties(
     if (!source_property_names.insert(name.DeprecatedLower()).is_new_entry)
       continue;
 
-    String value = style_->getPropertyValue(name);
-    if (value.IsEmpty())
+    if (!IsValidCSSPropertyID(
+            CssPropertyID(style_->GetExecutionContext(), name)))
       continue;
+
+    String value = style_->getPropertyValue(name);
     bool important = !style_->getPropertyPriority(name).IsEmpty();
     if (important)
       value = value + " !important";
@@ -1520,7 +1522,7 @@ InspectorStyleSheet::BuildObjectForStyleSheetInfo() {
 
   Document* document = style_sheet->OwnerDocument();
   LocalFrame* frame = document ? document->GetFrame() : nullptr;
-  const LineEndings* line_endings = this->GetLineEndings();
+  const LineEndings* line_endings = GetLineEndings();
   TextPosition start = style_sheet->StartPositionInSource();
   TextPosition end = start;
   unsigned text_length = 0;
@@ -1565,7 +1567,8 @@ InspectorStyleSheet::BuildObjectForStyleSheetInfo() {
 std::unique_ptr<protocol::Array<protocol::CSS::Value>>
 InspectorStyleSheet::SelectorsFromSource(CSSRuleSourceData* source_data,
                                          const String& sheet_text) {
-  ScriptRegexp comment("/\\*[^]*?\\*/", kTextCaseSensitive, kMultilineEnabled);
+  auto* comment = MakeGarbageCollected<ScriptRegexp>(
+      "/\\*[^]*?\\*/", kTextCaseSensitive, kMultilineEnabled);
   auto result = std::make_unique<protocol::Array<protocol::CSS::Value>>();
   const Vector<SourceRange>& ranges = source_data->selector_ranges;
   for (wtf_size_t i = 0, size = ranges.size(); i < size; ++i) {
@@ -1576,7 +1579,7 @@ InspectorStyleSheet::SelectorsFromSource(CSSRuleSourceData* source_data,
     // meaningful parts.
     int match_length;
     int offset = 0;
-    while ((offset = comment.Match(selector, offset, &match_length)) >= 0)
+    while ((offset = comment->Match(selector, offset, &match_length)) >= 0)
       selector.replace(offset, match_length, "");
 
     std::unique_ptr<protocol::CSS::Value> simple_selector =
@@ -2082,7 +2085,7 @@ bool InspectorStyleSheetForInlineStyle::SetText(
 
   {
     InspectorCSSAgent::InlineStyleOverrideScope override_scope(
-        &element_->GetExecutionContext()->GetSecurityContext());
+        element_->GetExecutionContext());
     element_->setAttribute("style", AtomicString(text), exception_state);
   }
   if (!exception_state.HadException())

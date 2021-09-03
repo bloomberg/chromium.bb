@@ -9,6 +9,8 @@
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigation_request.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
@@ -79,23 +81,24 @@ bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
 }  // namespace
 
 CrossOriginOpenerPolicyStatus::CrossOriginOpenerPolicyStatus(
-    FrameTreeNode* frame_tree_node,
-    const base::Optional<url::Origin>& initiator_origin)
-    : frame_tree_node_(frame_tree_node),
-      virtual_browsing_context_group_(frame_tree_node->current_frame_host()
+    NavigationRequest* navigation_request)
+    : navigation_request_(navigation_request),
+      frame_tree_node_(navigation_request->frame_tree_node()),
+      virtual_browsing_context_group_(frame_tree_node_->current_frame_host()
                                           ->virtual_browsing_context_group()),
-      had_opener_(!!frame_tree_node->opener()),
       is_initial_navigation_(!frame_tree_node_->has_committed_real_load()),
       current_coop_(
-          frame_tree_node->current_frame_host()->cross_origin_opener_policy()),
+          frame_tree_node_->current_frame_host()->cross_origin_opener_policy()),
       current_origin_(
-          frame_tree_node->current_frame_host()->GetLastCommittedOrigin()),
+          frame_tree_node_->current_frame_host()->GetLastCommittedOrigin()),
       current_url_(
-          frame_tree_node->current_frame_host()->GetLastCommittedURL()),
-      is_navigation_source_(initiator_origin.has_value() &&
-                            initiator_origin->IsSameOriginWith(
-                                frame_tree_node->current_frame_host()
-                                    ->GetLastCommittedOrigin())) {
+          frame_tree_node_->current_frame_host()->GetLastCommittedURL()),
+      is_navigation_source_(
+          navigation_request->common_params().initiator_origin.has_value() &&
+          navigation_request->common_params()
+              .initiator_origin->IsSameOriginWith(
+                  frame_tree_node_->current_frame_host()
+                      ->GetLastCommittedOrigin())) {
   // Use the URL of the opener for reporting purposes when doing an initial
   // navigation in a popup.
   // Note: the origin check is there to avoid leaking the URL of an opener that
@@ -111,23 +114,33 @@ CrossOriginOpenerPolicyStatus::CrossOriginOpenerPolicyStatus(
 
 CrossOriginOpenerPolicyStatus::~CrossOriginOpenerPolicyStatus() = default;
 
-base::Optional<network::mojom::BlockedByResponseReason>
-CrossOriginOpenerPolicyStatus::EnforceCOOP(
+network::CrossOriginOpenerPolicy&
+CrossOriginOpenerPolicyStatus::RetrieveCOOPFromResponse(
     network::mojom::URLResponseHead* response_head,
-    const url::Origin& response_origin,
-    const GURL& response_url,
-    const GURL& response_referrer_url) {
+    const url::Origin& response_origin) {
+  const GURL& response_url = navigation_request_->common_params().url;
+
   SanitizeCoopHeaders(response_url, response_origin, response_head);
+
   network::mojom::ParsedHeaders* parsed_headers =
       response_head->parsed_headers.get();
 
-  // Return early if the situation prevents COOP from operating.
-  if (!frame_tree_node_->IsMainFrame() || response_url.IsAboutBlank()) {
-    return base::nullopt;
+  return parsed_headers->cross_origin_opener_policy;
+}
+
+absl::optional<network::mojom::BlockedByResponseReason>
+CrossOriginOpenerPolicyStatus::EnforceCOOP(
+    const network::CrossOriginOpenerPolicy& response_coop,
+    const url::Origin& response_origin,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  // COOP only applies to top level browsing contexts.
+  if (!frame_tree_node_->IsMainFrame()) {
+    return absl::nullopt;
   }
 
-  network::CrossOriginOpenerPolicy& response_coop =
-      parsed_headers->cross_origin_opener_policy;
+  const GURL& response_url = navigation_request_->common_params().url;
+  const GURL& response_referrer_url =
+      navigation_request_->common_params().referrer->url;
 
   // Popups with a sandboxing flag, inherited from their opener, are not
   // allowed to navigate to a document with a Cross-Origin-Opener-Policy that
@@ -138,6 +151,13 @@ CrossOriginOpenerPolicyStatus::EnforceCOOP(
           network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone &&
       (frame_tree_node_->pending_frame_policy().sandbox_flags !=
        network::mojom::WebSandboxFlags::kNone)) {
+    // Blob and Filesystem documents' cross-origin-opener-policy values are
+    // defaulted to the default unsafe-none.
+    // Data documents can only be loaded on main documents through browser
+    // initiated navigations. These never inherit sandbox flags.
+    DCHECK(!response_url.SchemeIsBlob());
+    DCHECK(!response_url.SchemeIsFileSystem());
+    DCHECK(!response_url.SchemeIs(url::kDataScheme));
     return network::mojom::BlockedByResponseReason::
         kCoopSandboxedIFrameCannotNavigateToCoopPage;
   }
@@ -146,7 +166,8 @@ CrossOriginOpenerPolicyStatus::EnforceCOOP(
                                             ->GetProcess()
                                             ->GetStoragePartition();
   auto response_reporter = std::make_unique<CrossOriginOpenerPolicyReporter>(
-      storage_partition, response_url, response_referrer_url, response_coop);
+      storage_partition, response_url, response_referrer_url, response_coop,
+      network_isolation_key);
   CrossOriginOpenerPolicyReporter* previous_reporter =
       use_current_document_coop_reporter_
           ? frame_tree_node_->current_frame_host()->coop_reporter()
@@ -176,17 +197,20 @@ CrossOriginOpenerPolicyStatus::EnforceCOOP(
           current_coop_.report_only_value, current_origin_,
           is_initial_navigation_, response_coop.value, response_origin);
 
+  bool has_other_window_in_browsing_context_group =
+      frame_tree_node_->current_frame_host()
+          ->delegate()
+          ->GetActiveTopLevelDocumentsInBrowsingContextGroup(
+              frame_tree_node_->current_frame_host())
+          .size() > 1;
+
   if (cross_origin_policy_swap) {
     require_browsing_instance_swap_ = true;
 
-    // If this response's COOP causes a BrowsingInstance swap that severs an
-    // opener, report this to the previous COOP reporter and/or the COOP
-    // reporter of the response if they exist.
-    // TODO(clamy): This is not correct. We should be sending a report if there
-    // is any other top-level browsing context in the browsing context group,
-    // and not only when the browsing context has an opener. Otherwise, we
-    // would not emit a report when the opener of a window has a bcg switch.
-    if (had_opener_) {
+    // If this response's COOP causes a BrowsingInstance swap that severs
+    // communication with another page, report this to the previous COOP
+    // reporter and/or the COOP reporter of the response if they exist.
+    if (has_other_window_in_browsing_context_group) {
       response_reporter->QueueNavigationToCOOPReport(
           current_url_, current_origin_.IsSameOriginWith(response_origin),
           false /* is_report_only */);
@@ -205,13 +229,10 @@ CrossOriginOpenerPolicyStatus::EnforceCOOP(
                                 navigating_from_report_only_coop_swap);
   if (virtual_browsing_instance_swap) {
     // If this response's report-only COOP would cause a BrowsingInstance swap
-    // that would sever an opener, report this to the previous COOP reporter
-    // and/or the COOP reporter of the response if they exist.
-    // TODO(clamy): This is not correct. We should be sending a report if there
-    // is any other top-level browsing context in the browsing context group,
-    // and not only when the browsing context has an opener. Otherwise, we
-    // would not emit a report when the opener of a window has a bcg switch.
-    if (had_opener_) {
+    // that would sever communication with another page, report this to the
+    // previous COOP reporter and/or the COOP reporter of the response if they
+    // exist.
+    if (has_other_window_in_browsing_context_group) {
       response_reporter->QueueNavigationToCOOPReport(
           current_url_, current_origin_.IsSameOriginWith(response_origin),
           true /* is_report_only */);
@@ -245,7 +266,7 @@ CrossOriginOpenerPolicyStatus::EnforceCOOP(
   // of the navigation to the subsequent response.
   is_navigation_source_ = true;
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 std::unique_ptr<CrossOriginOpenerPolicyReporter>
@@ -287,8 +308,18 @@ void CrossOriginOpenerPolicyStatus::SanitizeCoopHeaders(
       !frame_tree_node_->IsMainFrame()) {
     coop = network::CrossOriginOpenerPolicy();
 
-    if (!network::IsOriginPotentiallyTrustworthy(response_origin))
-      header_ignored_due_to_insecure_context_ = true;
+    if (!network::IsOriginPotentiallyTrustworthy(response_origin)) {
+      navigation_request_->AddDeferredConsoleMessage(
+          blink::mojom::ConsoleMessageLevel::kError,
+          "The Cross-Origin-Opener-Policy header has been ignored, because the "
+          "origin was untrustworthy. It was defined either in the final "
+          "response or a redirect. Please deliver the response using the HTTPS "
+          "protocol. You can also use the 'localhost' origin instead. See "
+          "https://www.w3.org/TR/powerful-features/"
+          "#potentially-trustworthy-origin and "
+          "https://html.spec.whatwg.org/"
+          "#the-cross-origin-opener-policy-header.");
+    }
     return;
   }
 
@@ -305,8 +336,8 @@ void CrossOriginOpenerPolicyStatus::SanitizeCoopHeaders(
           "CrossOriginOpenerPolicyReporting", base::Time::Now());
 
   if (!reporting_enabled) {
-    coop.reporting_endpoint = base::nullopt;
-    coop.report_only_reporting_endpoint = base::nullopt;
+    coop.reporting_endpoint = absl::nullopt;
+    coop.report_only_reporting_endpoint = absl::nullopt;
     coop.report_only_value =
         network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone;
   }

@@ -118,6 +118,12 @@ macro(libgav1_test_cxx_flag)
     if(cxx_flags)
       message("--- Testing flags from $cxx_flags: " "${cxx_flags}")
       foreach(cxx_flag ${cxx_flags})
+        # Between 3.17.0 and 3.18.2 check_cxx_compiler_flag() sets a normal
+        # variable at parent scope while check_cxx_source_compiles() continues
+        # to set an internal cache variable, so we unset both to avoid the
+        # failure / success state persisting between checks. See
+        # https://gitlab.kitware.com/cmake/cmake/-/issues/21207.
+        unset(cxx_flag_test_passed)
         unset(cxx_flag_test_passed CACHE)
         message("--- Testing flag: ${cxx_flag}")
         check_cxx_compiler_flag("${cxx_flag}" cxx_flag_test_passed)
@@ -199,7 +205,7 @@ macro(libgav1_test_exe_linker_flag)
 
   # Restore cached global exe linker flags.
   if(cached_CMAKE_EXE_LINKER_FLAGS)
-    set(CMAKE_EXE_LINKER_FLAGS cached_CMAKE_EXE_LINKER_FLAGS)
+    set(CMAKE_EXE_LINKER_FLAGS ${cached_CMAKE_EXE_LINKER_FLAGS})
   else()
     unset(CMAKE_EXE_LINKER_FLAGS)
   endif()
@@ -242,4 +248,16 @@ macro(libgav1_set_cxx_flags)
   endif()
 
   libgav1_test_cxx_flag(FLAG_LIST_VAR_NAMES ${cxx_flag_lists})
+endmacro()
+
+# Sets LIBGAV1_TEST_C_FLAGS and LIBGAV1_TEST_CXX_FLAGS.
+#
+# Note: libgav1_set_cxx_flags() must be called before this macro. Furthermore,
+# the call to this macro should be made after all additions to LIBGAV1_CXX_FLAGS
+# are complete.
+macro(libgav1_set_test_flags)
+  if(LIBGAV1_ENABLE_TESTS)
+    set(LIBGAV1_TEST_CXX_FLAGS ${LIBGAV1_CXX_FLAGS})
+    list(FILTER LIBGAV1_TEST_CXX_FLAGS EXCLUDE REGEX "-Wframe-larger-than")
+  endif()
 endmacro()

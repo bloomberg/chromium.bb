@@ -10,19 +10,19 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/testing/mock_peer_connection_interface.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/webrtc_util.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
-#include "third_party/webrtc/api/test/mock_peerconnectioninterface.h"
 #include "third_party/webrtc/media/base/fake_media_engine.h"
 
 using ::testing::Return;
@@ -221,12 +221,13 @@ class WebRtcSetDescriptionObserverHandlerTest
         surfacer_type_(std::get<1>(GetParam())) {}
 
   void SetUp() override {
-    pc_ = new webrtc::MockPeerConnectionInterface;
-    dependency_factory_.reset(new blink::MockPeerConnectionDependencyFactory());
+    pc_ = new MockPeerConnectionInterface;
+    dependency_factory_ =
+        MakeGarbageCollected<MockPeerConnectionDependencyFactory>();
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
     track_adapter_map_ =
         base::MakeRefCounted<blink::WebRtcMediaStreamTrackAdapterMap>(
-            dependency_factory_.get(), main_thread_);
+            dependency_factory_.Get(), main_thread_);
     observer_ = base::MakeRefCounted<WebRtcSetDescriptionObserverForTest>();
     observer_handler_ = std::make_unique<ObserverHandlerWrapper>(
         handler_type_, main_thread_,
@@ -280,8 +281,8 @@ class WebRtcSetDescriptionObserverHandlerTest
                 {remote_stream.get()})));
     rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver(
         new rtc::RefCountedObject<blink::FakeRtpTransceiver>(
-            cricket::MEDIA_TYPE_AUDIO, sender, receiver, base::nullopt, false,
-            webrtc::RtpTransceiverDirection::kSendRecv, base::nullopt));
+            cricket::MEDIA_TYPE_AUDIO, sender, receiver, absl::nullopt, false,
+            webrtc::RtpTransceiverDirection::kSendRecv, absl::nullopt));
     transceivers_.push_back(transceiver);
     EXPECT_CALL(*pc_, GetTransceivers()).WillRepeatedly(Return(transceivers_));
   }
@@ -360,9 +361,8 @@ class WebRtcSetDescriptionObserverHandlerTest
   }
 
  protected:
-  scoped_refptr<webrtc::MockPeerConnectionInterface> pc_;
-  std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
-      dependency_factory_;
+  scoped_refptr<MockPeerConnectionInterface> pc_;
+  Persistent<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
   scoped_refptr<WebRtcSetDescriptionObserverForTest> observer_;

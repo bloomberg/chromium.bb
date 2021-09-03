@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_connection_peer.h"
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/send_algorithm_interface.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_received_packet_manager.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_sent_packet_manager_peer.h"
+#include "quic/core/congestion_control/send_algorithm_interface.h"
+#include "quic/core/quic_packet_writer.h"
+#include "quic/core/quic_received_packet_manager.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/test_tools/quic_connection_id_manager_peer.h"
+#include "quic/test_tools/quic_framer_peer.h"
+#include "quic/test_tools/quic_sent_packet_manager_peer.h"
 
 namespace quic {
 namespace test {
@@ -64,13 +66,13 @@ void QuicConnectionPeer::SetPerspective(QuicConnection* connection,
 // static
 void QuicConnectionPeer::SetSelfAddress(QuicConnection* connection,
                                         const QuicSocketAddress& self_address) {
-  connection->self_address_ = self_address;
+  connection->default_path_.self_address = self_address;
 }
 
 // static
 void QuicConnectionPeer::SetPeerAddress(QuicConnection* connection,
                                         const QuicSocketAddress& peer_address) {
-  connection->peer_address_ = peer_address;
+  connection->UpdatePeerAddress(peer_address);
 }
 
 // static
@@ -84,7 +86,7 @@ void QuicConnectionPeer::SetDirectPeerAddress(
 void QuicConnectionPeer::SetEffectivePeerAddress(
     QuicConnection* connection,
     const QuicSocketAddress& effective_peer_address) {
-  connection->effective_peer_address_ = effective_peer_address;
+  connection->default_path_.peer_address = effective_peer_address;
 }
 
 // static
@@ -154,6 +156,31 @@ QuicAlarm* QuicConnectionPeer::GetProcessUndecryptablePacketsAlarm(
 QuicAlarm* QuicConnectionPeer::GetDiscardPreviousOneRttKeysAlarm(
     QuicConnection* connection) {
   return connection->discard_previous_one_rtt_keys_alarm_.get();
+}
+
+// static
+QuicAlarm* QuicConnectionPeer::GetDiscardZeroRttDecryptionKeysAlarm(
+    QuicConnection* connection) {
+  return connection->discard_zero_rtt_decryption_keys_alarm_.get();
+}
+
+// static
+QuicAlarm* QuicConnectionPeer::GetRetirePeerIssuedConnectionIdAlarm(
+    QuicConnection* connection) {
+  if (connection->peer_issued_cid_manager_ == nullptr) {
+    return nullptr;
+  }
+  return QuicConnectionIdManagerPeer::GetRetirePeerIssuedConnectionIdAlarm(
+      connection->peer_issued_cid_manager_.get());
+}
+// static
+QuicAlarm* QuicConnectionPeer::GetRetireSelfIssuedConnectionIdAlarm(
+    QuicConnection* connection) {
+  if (connection->self_issued_cid_manager_ == nullptr) {
+    return nullptr;
+  }
+  return QuicConnectionIdManagerPeer::GetRetireSelfIssuedConnectionIdAlarm(
+      connection->self_issued_cid_manager_.get());
 }
 
 // static
@@ -287,26 +314,23 @@ void QuicConnectionPeer::SetLastHeaderFormat(QuicConnection* connection,
 void QuicConnectionPeer::AddBytesReceived(QuicConnection* connection,
                                           size_t length) {
   if (connection->EnforceAntiAmplificationLimit()) {
-    connection->bytes_received_before_address_validation_ += length;
+    connection->default_path_.bytes_received_before_address_validation +=
+        length;
   }
 }
 
 // static
 void QuicConnectionPeer::SetAddressValidated(QuicConnection* connection) {
-  connection->address_validated_ = true;
+  connection->default_path_.validated = true;
 }
 
 // static
-void QuicConnectionPeer::SetEnableAeadLimits(QuicConnection* connection,
-                                             bool enabled) {
-  connection->enable_aead_limits_ = enabled;
-}
-
-// static
-void QuicConnectionPeer::SendConnectionClosePacket(QuicConnection* connection,
-                                                   QuicErrorCode error,
-                                                   const std::string& details) {
-  connection->SendConnectionClosePacket(error, details);
+void QuicConnectionPeer::SendConnectionClosePacket(
+    QuicConnection* connection,
+    QuicIetfTransportErrorCodes ietf_error,
+    QuicErrorCode error,
+    const std::string& details) {
+  connection->SendConnectionClosePacket(error, ietf_error, details);
 }
 
 // static
@@ -374,7 +398,11 @@ QuicIdleNetworkDetector& QuicConnectionPeer::GetIdleNetworkDetector(
 void QuicConnectionPeer::SetServerConnectionId(
     QuicConnection* connection,
     const QuicConnectionId& server_connection_id) {
-  connection->server_connection_id_ = server_connection_id;
+  if (connection->use_connection_id_on_default_path_) {
+    connection->default_path_.server_connection_id = server_connection_id;
+  } else {
+    connection->server_connection_id_ = server_connection_id;
+  }
   connection->InstallInitialCrypters(server_connection_id);
 }
 
@@ -384,10 +412,9 @@ size_t QuicConnectionPeer::NumUndecryptablePackets(QuicConnection* connection) {
 }
 
 // static
-const QuicCircularDeque<std::pair<QuicPathFrameBuffer, QuicSocketAddress>>&
-QuicConnectionPeer::pending_path_challenge_payloads(
+size_t QuicConnectionPeer::NumPendingPathChallengesToResponse(
     QuicConnection* connection) {
-  return connection->pending_path_challenge_payloads_;
+  return connection->pending_path_challenge_payloads_.size();
 }
 
 void QuicConnectionPeer::SetConnectionClose(QuicConnection* connection) {
@@ -397,6 +424,105 @@ void QuicConnectionPeer::SetConnectionClose(QuicConnection* connection) {
 // static
 void QuicConnectionPeer::SendPing(QuicConnection* connection) {
   connection->SendPingAtLevel(connection->encryption_level());
+}
+
+// static
+void QuicConnectionPeer::SetLastPacketDestinationAddress(
+    QuicConnection* connection,
+    const QuicSocketAddress& address) {
+  connection->last_packet_destination_address_ = address;
+}
+
+// static
+QuicPathValidator* QuicConnectionPeer::path_validator(
+    QuicConnection* connection) {
+  return &connection->path_validator_;
+}
+
+//  static
+QuicByteCount QuicConnectionPeer::BytesSentOnAlternativePath(
+    QuicConnection* connection) {
+  return connection->alternative_path_.bytes_sent_before_address_validation;
+}
+
+//  static
+QuicByteCount QuicConnectionPeer::BytesReceivedOnAlternativePath(
+    QuicConnection* connection) {
+  return connection->alternative_path_.bytes_received_before_address_validation;
+}
+
+// static
+QuicConnectionId QuicConnectionPeer::GetClientConnectionIdOnAlternativePath(
+    const QuicConnection* connection) {
+  return connection->alternative_path_.client_connection_id;
+}
+
+// static
+QuicConnectionId QuicConnectionPeer::GetServerConnectionIdOnAlternativePath(
+    const QuicConnection* connection) {
+  return connection->alternative_path_.server_connection_id;
+}
+
+// static
+bool QuicConnectionPeer::IsAlternativePathValidated(
+    QuicConnection* connection) {
+  return connection->alternative_path_.validated;
+}
+
+// static
+bool QuicConnectionPeer::IsAlternativePath(
+    QuicConnection* connection,
+    const QuicSocketAddress& self_address,
+    const QuicSocketAddress& peer_address) {
+  return connection->IsAlternativePath(self_address, peer_address);
+}
+
+// static
+QuicByteCount QuicConnectionPeer::BytesReceivedBeforeAddressValidation(
+    QuicConnection* connection) {
+  return connection->default_path_.bytes_received_before_address_validation;
+}
+
+// static
+void QuicConnectionPeer::EnableMultipleConnectionIdSupport(
+    QuicConnection* connection) {
+  connection->support_multiple_connection_ids_ = true;
+}
+
+// static
+void QuicConnectionPeer::ResetPeerIssuedConnectionIdManager(
+    QuicConnection* connection) {
+  connection->peer_issued_cid_manager_ = nullptr;
+}
+
+// static
+QuicConnection::PathState* QuicConnectionPeer::GetDefaultPath(
+    QuicConnection* connection) {
+  return &connection->default_path_;
+}
+
+// static
+QuicConnection::PathState* QuicConnectionPeer::GetAlternativePath(
+    QuicConnection* connection) {
+  return &connection->alternative_path_;
+}
+
+// static
+void QuicConnectionPeer::RetirePeerIssuedConnectionIdsNoLongerOnPath(
+    QuicConnection* connection) {
+  connection->RetirePeerIssuedConnectionIdsNoLongerOnPath();
+}
+
+// static
+bool QuicConnectionPeer::HasUnusedPeerIssuedConnectionId(
+    const QuicConnection* connection) {
+  return connection->peer_issued_cid_manager_->HasUnusedConnectionId();
+}
+
+// static
+bool QuicConnectionPeer::HasSelfIssuedConnectionIdToConsume(
+    const QuicConnection* connection) {
+  return connection->self_issued_cid_manager_->HasConnectionIdToConsume();
 }
 
 }  // namespace test

@@ -26,22 +26,24 @@ class NtpCustomBackgroundEnabledPolicyHandlerTest
     : public InProcessBrowserTest {
  public:
   void SetUp() override {
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    ON_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillByDefault(testing::Return(true));
+    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
+        .WillByDefault(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
     InProcessBrowserTest::SetUp();
   }
 
  protected:
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 };
 
 IN_PROC_BROWSER_TEST_F(NtpCustomBackgroundEnabledPolicyHandlerTest, Override) {
   PrefService* prefs = browser()->profile()->GetPrefs();
 
   // Check initial states.
-  EXPECT_FALSE(prefs->GetDictionary(prefs::kNtpCustomBackgroundDict)->empty());
+  EXPECT_FALSE(prefs->GetDictionary(prefs::kNtpCustomBackgroundDict)->DictEmpty());
   EXPECT_FALSE(prefs->IsManagedPreference(prefs::kNtpCustomBackgroundDict));
 
   // Check if updated policy is reflected.
@@ -51,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(NtpCustomBackgroundEnabledPolicyHandlerTest, Override) {
                policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   policy_provider_.UpdateChromePolicy(policies);
 
-  EXPECT_TRUE(prefs->GetDictionary(prefs::kNtpCustomBackgroundDict)->empty());
+  EXPECT_TRUE(prefs->GetDictionary(prefs::kNtpCustomBackgroundDict)->DictEmpty());
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kNtpCustomBackgroundDict));
 
   // Flip the value, and check again.
@@ -60,11 +62,11 @@ IN_PROC_BROWSER_TEST_F(NtpCustomBackgroundEnabledPolicyHandlerTest, Override) {
                policy::POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   policy_provider_.UpdateChromePolicy(policies);
 
-  EXPECT_FALSE(prefs->GetDictionary(prefs::kNtpCustomBackgroundDict)->empty());
+  EXPECT_FALSE(prefs->GetDictionary(prefs::kNtpCustomBackgroundDict)->DictEmpty());
   EXPECT_FALSE(prefs->IsManagedPreference(prefs::kNtpCustomBackgroundDict));
 
   policy_provider_.UpdateChromePolicy(policy::PolicyMap());
 
-  EXPECT_FALSE(prefs->GetDictionary(prefs::kNtpCustomBackgroundDict)->empty());
+  EXPECT_FALSE(prefs->GetDictionary(prefs::kNtpCustomBackgroundDict)->DictEmpty());
   EXPECT_FALSE(prefs->IsManagedPreference(prefs::kNtpCustomBackgroundDict));
 }

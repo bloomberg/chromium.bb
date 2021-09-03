@@ -9,7 +9,9 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
+#include "base/containers/flat_map.h"
+#include "base/logging.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -68,6 +70,13 @@ Type* FindObjectById(uint32_t id, std::vector<Type>& properties) {
   auto it = std::find_if(properties.begin(), properties.end(),
                          [id](const Type& p) { return p.id == id; });
   return it != properties.end() ? &(*it) : nullptr;
+}
+
+// TODO(dnicoara): Generate all IDs internal to MockDrmDevice.
+// For now generate something with a high enough ID to be unique in tests.
+uint32_t GetUniqueNumber() {
+  static uint32_t value_generator = 0xff000000;
+  return ++value_generator;
 }
 
 }  // namespace
@@ -173,6 +182,34 @@ void MockDrmDevice::UpdateState(
   connector_properties_ = connector_properties;
   plane_properties_ = plane_properties;
   property_names_ = property_names;
+
+  // Props IDs shouldn't change throughout a DRM state. Grab it once at
+  // UpdateState.
+  plane_crtc_id_prop_id_ = 0;
+  for (const PlaneProperties& plane_props : plane_properties) {
+    const std::vector<DrmDevice::Property>& props = plane_props.properties;
+    auto it = std::find_if(
+        props.begin(), props.end(),
+        [&names = property_names_](const DrmDevice::Property& prop) {
+          return names.at(prop.id) == "CRTC_ID";
+        });
+    if (it != props.end()) {
+      plane_crtc_id_prop_id_ = it->id;
+      // all planes should have the same prop ID for the name. Break right after
+      // the first one is found.
+      break;
+    }
+  }
+}
+
+void MockDrmDevice::SetModifiersOverhead(
+    base::flat_map<uint64_t /*modifier*/, int /*overhead*/>
+        modifiers_overhead) {
+  modifiers_overhead_ = modifiers_overhead;
+}
+
+void MockDrmDevice::SetSystemLimitOfModifiers(uint64_t limit) {
+  system_watermark_limitations_ = limit;
 }
 
 ScopedDrmResourcesPtr MockDrmDevice::GetResources() {
@@ -258,8 +295,9 @@ bool MockDrmDevice::AddFramebuffer2(uint32_t width,
                                     uint32_t* framebuffer,
                                     uint32_t flags) {
   add_framebuffer_call_count_++;
-  *framebuffer = add_framebuffer_call_count_;
+  *framebuffer = GetUniqueNumber();
   framebuffer_ids_.insert(*framebuffer);
+  fb_props_[*framebuffer] = {width, height, modifiers[0]};
   return add_framebuffer_expectation_;
 }
 
@@ -268,6 +306,11 @@ bool MockDrmDevice::RemoveFramebuffer(uint32_t framebuffer) {
     auto it = framebuffer_ids_.find(framebuffer);
     CHECK(it != framebuffer_ids_.end());
     framebuffer_ids_.erase(it);
+  }
+  {
+    auto it = fb_props_.find(framebuffer);
+    CHECK(it != fb_props_.end());
+    fb_props_.erase(it);
   }
   remove_framebuffer_call_count_++;
   std::vector<uint32_t> crtcs_to_clear;
@@ -330,7 +373,7 @@ bool MockDrmDevice::SetProperty(uint32_t connector_id,
 
 ScopedDrmPropertyBlob MockDrmDevice::CreatePropertyBlob(const void* blob,
                                                         size_t size) {
-  uint32_t id = ++property_id_generator_;
+  uint32_t id = GetUniqueNumber();
   allocated_property_blobs_.insert(id);
   return std::make_unique<DrmPropertyBlobMetadata>(this, id);
 }
@@ -427,25 +470,46 @@ bool MockDrmDevice::CloseBufferHandle(uint32_t handle) {
   return true;
 }
 
-bool MockDrmDevice::CommitProperties(
+bool MockDrmDevice::CommitPropertiesInternal(
     drmModeAtomicReq* request,
     uint32_t flags,
     uint32_t crtc_count,
     scoped_refptr<PageFlipRequest> page_flip_request) {
+  commit_count_++;
   if (flags == kTestModesetFlags)
     ++test_modeset_count_;
   else if (flags == kCommitModesetFlags)
     ++commit_modeset_count_;
 
-  commit_count_++;
-  if (!commit_expectation_)
+  if ((flags & kCommitModesetFlags && !set_crtc_expectation_) ||
+      (flags & DRM_MODE_ATOMIC_NONBLOCK && !commit_expectation_)) {
     return false;
+  }
+
+  uint64_t requested_resources = 0;
+  base::flat_map<uint64_t, int> crtc_planes_counter;
 
   for (uint32_t i = 0; i < request->cursor; ++i) {
-    bool res = ValidatePropertyValue(request->items[i].property_id,
-                                     request->items[i].value);
-    if (!res)
+    const drmModeAtomicReqItem& item = request->items[i];
+    if (!ValidatePropertyValue(item.property_id, item.value))
       return false;
+
+    if (fb_props_.find(item.value) != fb_props_.end()) {
+      const FramebufferProps& props = fb_props_[item.value];
+      requested_resources += modifiers_overhead_[props.modifier];
+    }
+
+    if (item.property_id == plane_crtc_id_prop_id_) {
+      if (++crtc_planes_counter[item.value] > 1 &&
+          !modeset_with_overlays_expectation_)
+        return false;
+    }
+  }
+
+  if (requested_resources > system_watermark_limitations_) {
+    LOG(ERROR) << "Requested display configuration exceeds system watermark "
+                  "limitations";
+    return false;
   }
 
   if (page_flip_request)
@@ -462,6 +526,12 @@ bool MockDrmDevice::CommitProperties(
     if (!res)
       return false;
   }
+
+  // Count all committed planes at the end just before returning true to reflect
+  // the number of planes that have successfully been committed.
+  last_planes_committed_count_ = 0;
+  for (const auto& planes_counter : crtc_planes_counter)
+    last_planes_committed_count_ += planes_counter.second;
 
   return true;
 }

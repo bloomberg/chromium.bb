@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
 import {createHistoryEntry, createHistoryInfo} from 'chrome://test/history/test_util.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('history-toolbar', function() {
@@ -19,7 +19,7 @@ suite('history-toolbar', function() {
   setup(function() {
     document.body.innerHTML = '';
     testService = new TestBrowserService();
-    BrowserService.instance_ = testService;
+    BrowserService.setInstance(testService);
 
     app = document.createElement('history-app');
     document.body.appendChild(app);
@@ -64,7 +64,9 @@ suite('history-toolbar', function() {
     testService.resetResolver('queryHistory');
     testService.setQueryResult(
         {info: createHistoryInfo('Test'), value: TEST_HISTORY_RESULTS});
-    toolbar.$$('cr-toolbar').fire('search-changed', 'Test');
+    toolbar.shadowRoot.querySelector('cr-toolbar')
+        .dispatchEvent(new CustomEvent(
+            'search-changed', {bubbles: true, composed: true, detail: 'Test'}));
     return testService.whenCalled('queryHistory').then(query => {
       assertEquals('Test', query);
     });
@@ -77,7 +79,10 @@ suite('history-toolbar', function() {
       info: createHistoryInfo('Test2'),
       value: TEST_HISTORY_RESULTS,
     });
-    toolbar.$$('cr-toolbar').fire('search-changed', 'Test2');
+    toolbar.shadowRoot.querySelector('cr-toolbar')
+        .dispatchEvent(new CustomEvent(
+            'search-changed',
+            {bubbles: true, composed: true, detail: 'Test2'}));
     return testService.whenCalled('queryHistory')
         .then(flushTasks)
         .then(() => {
@@ -89,5 +94,4 @@ suite('history-toolbar', function() {
           assertFalse(toolbar.spinnerActive);
         });
   });
-
 });

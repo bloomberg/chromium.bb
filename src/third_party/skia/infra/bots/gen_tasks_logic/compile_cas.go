@@ -7,6 +7,7 @@ package gen_tasks_logic
 import (
 	"log"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -62,9 +63,11 @@ var (
 )
 
 // getAllCheckedInPaths returns every path checked in to the repo.
-func getAllCheckedInPaths() []string {
+func getAllCheckedInPaths(cfg *Config) []string {
 	cmd := exec.Command("git", "ls-files")
-	cmd.Dir = CheckoutRoot()
+	// Use cfg.PathToSkia to get to the Skia checkout, in case this is used by
+	// another repo.
+	cmd.Dir = filepath.Join(CheckoutRoot(), cfg.PathToSkia)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(err)
@@ -80,9 +83,9 @@ func getAllCheckedInPaths() []string {
 }
 
 // getRelevantPaths returns all paths needed by compile tasks.
-func getRelevantPaths() []string {
+func getRelevantPaths(cfg *Config) []string {
 	rv := []string{}
-	for _, path := range getAllCheckedInPaths() {
+	for _, path := range getAllCheckedInPaths(cfg) {
 		for _, regex := range pathRegexes {
 			if regex.MatchString(path) {
 				rv = append(rv, path)
@@ -210,9 +213,9 @@ func (t *tree) entries() []string {
 }
 
 // generateCompileCAS creates the CasSpec used for tasks which build Skia.
-func generateCompileCAS(b *specs.TasksCfgBuilder) {
+func generateCompileCAS(b *specs.TasksCfgBuilder, cfg *Config) {
 	t := newTree()
-	for _, path := range getRelevantPaths() {
+	for _, path := range getRelevantPaths(cfg) {
 		t.add(path)
 	}
 	spec := &specs.CasSpec{

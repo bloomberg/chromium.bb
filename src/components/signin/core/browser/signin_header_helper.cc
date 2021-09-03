@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "components/google/core/common/google_util.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
@@ -24,6 +25,7 @@ namespace signin {
 
 const char kChromeConnectedHeader[] = "X-Chrome-Connected";
 const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
+const char kAutoLoginHeader[] = "X-Auto-Login";
 const char kDiceRequestHeader[] = "X-Chrome-ID-Consistency-Request";
 const char kDiceResponseHeader[] = "X-Chrome-ID-Consistency-Response";
 
@@ -148,9 +150,9 @@ SigninHeaderHelper::ParseAccountConsistencyResponseHeader(
       continue;
     }
     dictionary.insert(
-        {field.substr(0, delim).as_string(),
+        {std::string(field.substr(0, delim)),
          net::UnescapeURLComponent(
-             field.substr(delim + 1).as_string(),
+             field.substr(delim + 1),
              net::UnescapeRule::PATH_SEPARATORS |
                  net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS)});
   }
@@ -167,7 +169,7 @@ void AppendOrRemoveMirrorRequestHeader(
     RequestAdapter* request,
     const GURL& redirect_url,
     const std::string& gaia_id,
-    const base::Optional<bool>& is_child_account,
+    const absl::optional<bool>& is_child_account,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask,

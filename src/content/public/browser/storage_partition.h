@@ -11,9 +11,10 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "components/services/storage/public/mojom/cache_storage_control.mojom-forward.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom-forward.h"
+#include "components/services/storage/public/mojom/local_storage_control.mojom-forward.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
@@ -23,6 +24,7 @@
 class GURL;
 
 namespace base {
+class FilePath;
 class Time;
 }
 
@@ -56,16 +58,17 @@ namespace content {
 class AppCacheService;
 class BackgroundSyncContext;
 class BrowserContext;
-class CacheStorageContext;
 class ContentIndexContext;
 class DedicatedWorkerService;
 class DevToolsBackgroundServicesContext;
 class DOMStorageContext;
+class FontAccessContext;
 class GeneratedCodeCacheContext;
-class NativeFileSystemEntryFactory;
+class FileSystemAccessEntryFactory;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
 class SharedWorkerService;
+class NativeIOContext;
 
 #if !defined(OS_ANDROID)
 class HostZoomLevelContext;
@@ -82,6 +85,10 @@ class ZoomLevelDelegate;
 class CONTENT_EXPORT StoragePartition {
  public:
   virtual base::FilePath GetPath() = 0;
+
+  // Retrieves the base path of the file directory where StorageBuckets data is
+  // stored.
+  virtual base::FilePath GetBucketBasePath() = 0;
 
   // Returns a raw mojom::NetworkContext pointer. When network service crashes
   // or restarts, the raw pointer will not be valid or safe to use. Therefore,
@@ -116,22 +123,33 @@ class CONTENT_EXPORT StoragePartition {
       mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
       const url::Origin& top_frame_origin) = 0;
 
+  virtual mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
+  CreateURLLoaderNetworkObserverForFrame(int process_id,
+                                         int frame_routing_id) = 0;
+
+  virtual mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
+  CreateURLLoaderNetworkObserverForNavigationRequest(
+      int frame_tree_node_id) = 0;
+
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual AppCacheService* GetAppCacheService() = 0;
   virtual BackgroundSyncContext* GetBackgroundSyncContext() = 0;
   virtual storage::FileSystemContext* GetFileSystemContext() = 0;
+  virtual FontAccessContext* GetFontAccessContext() = 0;
   virtual storage::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
+  virtual storage::mojom::LocalStorageControl* GetLocalStorageControl() = 0;
   virtual storage::mojom::IndexedDBControl& GetIndexedDBControl() = 0;
-  virtual NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() = 0;
+  virtual FileSystemAccessEntryFactory* GetFileSystemAccessEntryFactory() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
   virtual DedicatedWorkerService* GetDedicatedWorkerService() = 0;
   virtual SharedWorkerService* GetSharedWorkerService() = 0;
-  virtual CacheStorageContext* GetCacheStorageContext() = 0;
+  virtual storage::mojom::CacheStorageControl* GetCacheStorageControl() = 0;
   virtual GeneratedCodeCacheContext* GetGeneratedCodeCacheContext() = 0;
   virtual DevToolsBackgroundServicesContext*
   GetDevToolsBackgroundServicesContext() = 0;
   virtual ContentIndexContext* GetContentIndexContext() = 0;
+  virtual NativeIOContext* GetNativeIOContext() = 0;
 #if !defined(OS_ANDROID)
   virtual HostZoomMap* GetHostZoomMap() = 0;
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;
@@ -159,6 +177,10 @@ class CONTENT_EXPORT StoragePartition {
     REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA = 1 << 9,
     REMOVE_DATA_MASK_BACKGROUND_FETCH = 1 << 10,
     REMOVE_DATA_MASK_CONVERSIONS = 1 << 11,
+    // Interest groups are stored as part of the Interest Group API experiment
+    // Public explainer here:
+    // https://github.com/WICG/turtledove/blob/main/FLEDGE.md
+    REMOVE_DATA_MASK_INTEREST_GROUPS = 1 << 12,
     REMOVE_DATA_MASK_ALL = 0xFFFFFFFF,
 
     // Corresponds to storage::kStorageTypeTemporary.
@@ -220,7 +242,7 @@ class CONTENT_EXPORT StoragePartition {
   // Similar to ClearData().
   // Deletes all data out for the StoragePartition.
   // * |origin_matcher| is present if special storage policy is to be handled,
-  //   otherwise the callback should be null (base::Callback::is_null()==true).
+  //   otherwise the callback should be null (!origin_matcher == true).
   //   The origin matcher does not apply to cookies, instead use:
   // * |cookie_deletion_filter| identifies the cookies to delete and will be
   //   used if |remove_mask| has the REMOVE_DATA_MASK_COOKIES bit set. Note:

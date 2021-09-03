@@ -24,8 +24,6 @@ String IgnoredReasonName(AXIgnoredReason reason) {
       return "activeModalDialog";
     case kAXAriaModalDialog:
       return "activeAriaModalDialog";
-    case kAXAncestorIsLeafNode:
-      return "ancestorIsLeafNode";
     case kAXAriaHiddenElement:
       return "ariaHiddenElement";
     case kAXAriaHiddenSubtree:
@@ -38,8 +36,6 @@ String IgnoredReasonName(AXIgnoredReason reason) {
       return "inertElement";
     case kAXInertSubtree:
       return "inertSubtree";
-    case kAXInheritsPresentation:
-      return "inheritsPresentation";
     case kAXLabelContainer:
       return "labelContainer";
     case kAXLabelFor:
@@ -52,8 +48,6 @@ String IgnoredReasonName(AXIgnoredReason reason) {
       return "presentationalRole";
     case kAXProbablyPresentational:
       return "probablyPresentational";
-    case kAXStaticTextUsedAsNameFor:
-      return "staticTextUsedAsNameFor";
     case kAXUninteresting:
       return "uninteresting";
   }
@@ -200,6 +194,8 @@ String NativeSourceType(AXTextFromNativeHTML native_source) {
       return SourceType::Labelfor;
     case kAXTextFromNativeHTMLLabelWrapped:
       return SourceType::Labelwrapped;
+    case kAXTextFromNativeHTMLRubyAnnotation:
+      return SourceType::Rubyannotation;
     case kAXTextFromNativeHTMLTableCaption:
       return SourceType::Tablecaption;
     case kAXTextFromNativeHTMLLegend:

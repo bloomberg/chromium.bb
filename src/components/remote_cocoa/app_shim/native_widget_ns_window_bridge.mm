@@ -7,7 +7,9 @@
 #import <objc/runtime.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <cmath>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -26,6 +28,7 @@
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_host_helper.h"
 #include "components/remote_cocoa/app_shim/select_file_dialog_bridge.h"
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
+#import "components/remote_cocoa/app_shim/window_controls_overlay_nsview.h"
 #import "components/remote_cocoa/app_shim/window_move_loop.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -226,6 +229,11 @@ std::map<uint64_t, NativeWidgetNSWindowBridge*>& GetIdToWidgetImplMap() {
   return *id_map;
 }
 
+std::map<NSWindow*, std::u16string>& GetPendingWindowTitleMap() {
+  static base::NoDestructor<std::map<NSWindow*, std::u16string>> map;
+  return *map;
+}
+
 }  // namespace
 
 // static
@@ -313,6 +321,7 @@ NativeWidgetNSWindowBridge::NativeWidgetNSWindowBridge(
 
 NativeWidgetNSWindowBridge::~NativeWidgetNSWindowBridge() {
   display::Screen::GetScreen()->RemoveObserver(this);
+  GetPendingWindowTitleMap().erase(window_.get());
   // The delegate should be cleared already. Note this enforces the precondition
   // that -[NSWindow close] is invoked on the hosted window before the
   // destructor is called.
@@ -645,6 +654,33 @@ void NativeWidgetNSWindowBridge::CloseWindowNow() {
 
 void NativeWidgetNSWindowBridge::SetVisibilityState(
     WindowVisibilityState new_state) {
+  // During session restore this method gets called from RestoreTabsToBrowser()
+  // with new_state = kShowAndActivateWindow. We consume restoration data on our
+  // first time through this method so we can use its existence as an
+  // indication that session restoration is underway. We'll use this later to
+  // decide whether or not to actually honor the WindowVisibilityState change
+  // request. This window may live in the dock, for example, in which case we
+  // don't really want to kShowAndActivateWindow. Even if the window is on the
+  // desktop we still won't want to kShowAndActivateWindow because doing so
+  // might trigger a transition to a different space (and we don't want to
+  // switch spaces on start-up). When session restore determines the Active
+  // window it will also call SetVisibilityState(), on that pass the window
+  // can/will be activated.
+  bool session_restore_in_progress = false;
+
+  // Restore Cocoa window state.
+  if (HasWindowRestorationData()) {
+    NSData* restore_ns_data =
+        [NSData dataWithBytes:pending_restoration_data_.data()
+                       length:pending_restoration_data_.size()];
+    base::scoped_nsobject<NSKeyedUnarchiver> decoder(
+        [[NSKeyedUnarchiver alloc] initForReadingWithData:restore_ns_data]);
+    [window_ restoreStateWithCoder:decoder];
+    pending_restoration_data_.clear();
+
+    session_restore_in_progress = true;
+  }
+
   // Ensure that:
   //  - A window with an invisible parent is not made visible.
   //  - A parent changing visibility updates child window visibility.
@@ -686,20 +722,11 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
       return;
   }
 
-  if (!pending_restoration_data_.empty()) {
-    NSData* restore_ns_data =
-        [NSData dataWithBytes:pending_restoration_data_.data()
-                       length:pending_restoration_data_.size()];
-    base::scoped_nsobject<NSKeyedUnarchiver> decoder(
-        [[NSKeyedUnarchiver alloc] initForReadingWithData:restore_ns_data]);
-    [window_ restoreStateWithCoder:decoder];
-    pending_restoration_data_.clear();
-
-    // When first showing a window with restoration data, don't activate it.
-    // This avoids switching spaces or un-miniaturizing it right away.
-    // Additional activations act normally.
-    if (new_state == WindowVisibilityState::kShowAndActivateWindow)
-      new_state = WindowVisibilityState::kShowInactive;
+  // Don't activate a window during session restore, to avoid switching spaces
+  // (or pulling it out of the dock) during startup.
+  if (session_restore_in_progress &&
+      new_state == WindowVisibilityState::kShowAndActivateWindow) {
+    new_state = WindowVisibilityState::kShowInactive;
   }
 
   if (IsWindowModalSheet()) {
@@ -751,7 +778,7 @@ void NativeWidgetNSWindowBridge::AcquireCapture() {
   if (!window_visible_)
     return;  // Capture on hidden windows is disallowed.
 
-  mouse_capture_.reset(new CocoaMouseCapture(this));
+  mouse_capture_ = std::make_unique<CocoaMouseCapture>(this);
   host_->OnMouseCaptureActiveChanged(true);
 
   // Initiating global event capture with addGlobalMonitorForEventsMatchingMask:
@@ -769,6 +796,10 @@ void NativeWidgetNSWindowBridge::ReleaseCapture() {
 
 bool NativeWidgetNSWindowBridge::HasCapture() {
   return mouse_capture_ && mouse_capture_->IsActive();
+}
+
+bool NativeWidgetNSWindowBridge::HasWindowRestorationData() {
+  return !pending_restoration_data_.empty();
 }
 
 bool NativeWidgetNSWindowBridge::RunMoveLoop(const gfx::Vector2d& drag_offset) {
@@ -789,8 +820,8 @@ bool NativeWidgetNSWindowBridge::RunMoveLoop(const gfx::Vector2d& drag_offset) {
   const gfx::Rect frame = gfx::ScreenRectFromNSRect([window_ frame]);
   const gfx::Point mouse_in_screen(frame.x() + drag_offset.x(),
                                    frame.y() + drag_offset.y());
-  window_move_loop_.reset(new CocoaWindowMoveLoop(
-      this, gfx::ScreenPointToNSPoint(mouse_in_screen)));
+  window_move_loop_ = std::make_unique<CocoaWindowMoveLoop>(
+      this, gfx::ScreenPointToNSPoint(mouse_in_screen));
 
   return window_move_loop_->Run();
 
@@ -1028,7 +1059,8 @@ void NativeWidgetNSWindowBridge::OnShowAnimationComplete() {
   show_animation_.reset();
 }
 
-void NativeWidgetNSWindowBridge::InitCompositorView() {
+void NativeWidgetNSWindowBridge::InitCompositorView(
+    InitCompositorViewCallback callback) {
   // Use the regular window background for window modal sheets. The layer will
   // still paint over most of it, but the native -[NSApp beginSheet:] animation
   // blocks the UI thread, so there's no way to invalidate the shadow to match
@@ -1053,6 +1085,9 @@ void NativeWidgetNSWindowBridge::InitCompositorView() {
   // will be forwarded.
   UpdateWindowDisplay();
   UpdateWindowGeometry();
+
+  // Inform the browser of the CGWindowID for this NSWindow.
+  std::move(callback).Run([window_ windowNumber]);
 }
 
 void NativeWidgetNSWindowBridge::SortSubviews(
@@ -1107,6 +1142,35 @@ bool NativeWidgetNSWindowBridge::ShouldRunCustomAnimationFor(
 
 bool NativeWidgetNSWindowBridge::RedispatchKeyEvent(NSEvent* event) {
   return [[window_ commandDispatcher] redispatchKeyEvent:event];
+}
+
+void NativeWidgetNSWindowBridge::CreateWindowControlsOverlayNSView(
+    const mojom::WindowControlsOverlayNSViewType overlay_type) {
+  switch (overlay_type) {
+    case mojom::WindowControlsOverlayNSViewType::kCaptionButtonContainer:
+      caption_buttons_overlay_nsview_.reset(
+          [[WindowControlsOverlayNSView alloc] initWithBridge:this]);
+      [bridged_view_ addSubview:caption_buttons_overlay_nsview_];
+      break;
+    case mojom::WindowControlsOverlayNSViewType::kWebAppFrameToolbar:
+      web_app_frame_toolbar_overlay_nsview_.reset(
+          [[WindowControlsOverlayNSView alloc] initWithBridge:this]);
+      [bridged_view_ addSubview:web_app_frame_toolbar_overlay_nsview_];
+      break;
+  }
+}
+
+void NativeWidgetNSWindowBridge::UpdateWindowControlsOverlayNSView(
+    const gfx::Rect& bounds,
+    const mojom::WindowControlsOverlayNSViewType overlay_type) {
+  switch (overlay_type) {
+    case mojom::WindowControlsOverlayNSViewType::kCaptionButtonContainer:
+      [caption_buttons_overlay_nsview_ updateBounds:bounds];
+      break;
+    case mojom::WindowControlsOverlayNSViewType::kWebAppFrameToolbar:
+      [web_app_frame_toolbar_overlay_nsview_ updateBounds:bounds];
+      break;
+  }
 }
 
 NSWindow* NativeWidgetNSWindowBridge::ns_window() {
@@ -1223,10 +1287,11 @@ void NativeWidgetNSWindowBridge::SetWindowLevel(int32_t level) {
   [window_ setCollectionBehavior:behavior];
 }
 
-void NativeWidgetNSWindowBridge::SetContentAspectRatio(
+void NativeWidgetNSWindowBridge::SetAspectRatio(
     const gfx::SizeF& aspect_ratio) {
-  [window_ setContentAspectRatio:NSMakeSize(aspect_ratio.width(),
-                                            aspect_ratio.height())];
+  DCHECK(!aspect_ratio.IsEmpty());
+  [window_delegate_
+      setAspectRatio:aspect_ratio.width() / aspect_ratio.height()];
 }
 
 void NativeWidgetNSWindowBridge::SetCALayerParams(
@@ -1262,9 +1327,30 @@ void NativeWidgetNSWindowBridge::MakeFirstResponder() {
   [window_ makeFirstResponder:bridged_view_];
 }
 
-void NativeWidgetNSWindowBridge::SetWindowTitle(const base::string16& title) {
-  NSString* new_title = base::SysUTF16ToNSString(title);
-  [window_ setTitle:new_title];
+void NativeWidgetNSWindowBridge::SetWindowTitle(const std::u16string& title) {
+  // Delay setting the window title until after any menu tracking is complete.
+  if (NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
+    // Install one run loop trigger to handle all the pending titles.
+    if (GetPendingWindowTitleMap().empty()) {
+      CFRunLoopPerformBlock(
+          [NSRunLoop.currentRunLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
+            for (const auto& pending_title : GetPendingWindowTitleMap()) {
+              pending_title.first.title =
+                  base::SysUTF16ToNSString(pending_title.second);
+            }
+
+            GetPendingWindowTitleMap().clear();
+          });
+    }
+
+    GetPendingWindowTitleMap()[window_.get()] = title;
+  } else {
+    window_.get().title = base::SysUTF16ToNSString(title);
+
+    // In case there is an unfired run loop trigger, erase any pending title so
+    // that the new title now being set doesn't get smashed.
+    GetPendingWindowTitleMap().erase(window_.get());
+  }
 }
 
 void NativeWidgetNSWindowBridge::ClearTouchBar() {

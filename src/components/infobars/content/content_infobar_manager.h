@@ -5,9 +5,6 @@
 #ifndef COMPONENTS_INFOBARS_CONTENT_CONTENT_INFOBAR_MANAGER_H_
 #define COMPONENTS_INFOBARS_CONTENT_CONTENT_INFOBAR_MANAGER_H_
 
-#include <memory>
-#include <vector>
-
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -27,15 +24,10 @@ class InfoBar;
 
 // Associates a WebContents to an InfoBarManager.
 // It manages the infobar notifications and responds to navigation events.
-// By default the creation of confirm infobars is not supported. If embedders
-// wish to add such support, they should create a custom subclass of
-// ContentInfoBarManager that overrides CreateConfirmInfoBar().
-// This class is not itself a WebContentsUserData in order to support such
-// subclassing; it is expected that embedders will either have an instance of
-// this class as a member of their "Tab" objects or create a custom subclass
-// that is a WCUD.
-class ContentInfoBarManager : public InfoBarManager,
-                              public content::WebContentsObserver {
+class ContentInfoBarManager
+    : public InfoBarManager,
+      public content::WebContentsObserver,
+      public content::WebContentsUserData<ContentInfoBarManager> {
  public:
   explicit ContentInfoBarManager(content::WebContents* web_contents);
   ~ContentInfoBarManager() override;
@@ -58,14 +50,13 @@ class ContentInfoBarManager : public InfoBarManager,
   void set_ignore_next_reload() { ignore_next_reload_ = true; }
 
   // InfoBarManager:
-  // NOTE: By default this method is NOTREACHED() and returns nullptr.
-  // TODO(sdefresne): Change clients to invoke this on InfoBarManager
-  // and turn the method override private.
-  std::unique_ptr<InfoBar> CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate> delegate) override;
   void OpenURL(const GURL& url, WindowOpenDisposition disposition) override;
 
  private:
+  friend class content::WebContentsUserData<ContentInfoBarManager>;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   // InfoBarManager:
   int GetActiveEntryID() override;
 

@@ -7,18 +7,17 @@
 
 #include <map>
 #include <memory>
-#include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/ui/web_applications/web_app_uninstall_dialog.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -28,6 +27,10 @@ class NativeWindowTracker;
 class Profile;
 class WebAppUninstallDialogViews;
 
+namespace webapps {
+enum class WebappUninstallSource;
+}
+
 namespace views {
 class Checkbox;
 }
@@ -35,11 +38,13 @@ class Checkbox;
 // The dialog's view, owned by the views framework.
 class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
  public:
+  METADATA_HEADER(WebAppUninstallDialogDelegateView);
   // Constructor for view component of dialog.
   WebAppUninstallDialogDelegateView(
       Profile* profile,
       WebAppUninstallDialogViews* dialog_view,
       web_app::AppId app_id,
+      webapps::WebappUninstallSource uninstall_source,
       std::map<SquareSizePx, SkBitmap> icon_bitmaps);
   WebAppUninstallDialogDelegateView(const WebAppUninstallDialogDelegateView&) =
       delete;
@@ -51,14 +56,10 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
 
  private:
   // views::DialogDelegateView:
-  gfx::Size CalculatePreferredSize() const override;
-
-  // views::WidgetDelegate:
-  ui::ModalType GetModalType() const override;
   gfx::ImageSkia GetWindowIcon() override;
 
-  // Uninstalls the web app. Returns true on success.
-  bool Uninstall();
+  // Uninstalls the web app.
+  void Uninstall();
   void ClearWebAppSiteData();
 
   void OnDialogAccepted();
@@ -75,6 +76,8 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
   GURL app_start_url_;
 
   Profile* const profile_;
+
+  webapps::WebappUninstallSource uninstall_source_;
 };
 
 // The implementation of the uninstall dialog for web apps.
@@ -93,18 +96,28 @@ class WebAppUninstallDialogViews : public web_app::WebAppUninstallDialog,
 
   // web_app::WebAppUninstallDialog:
   void ConfirmUninstall(const web_app::AppId& app_id,
+                        webapps::WebappUninstallSource uninstall_source,
                         OnWebAppUninstallDialogClosed closed_callback) override;
   void SetDialogShownCallbackForTesting(base::OnceClosure callback) override;
 
-  void UninstallStarted();
-  void CallCallback(bool uninstalled);
+  // The following methods are used by WebAppUninstallDialogDelegateView to
+  // report the uninstallation request status. After calling one of these
+  // methods, it is invalid to call any of them again.
+
+  // Called when the view is triggering an uninstallation with the
+  // WebAppProvider system. Returns a callback to be passed to this system.
+  base::OnceCallback<void(bool uninstalled)> UninstallStarted();
+
+  // Called to signify that the uninstall has been cancelled.
+  void UninstallCancelled();
 
  private:
   // web_app::AppRegistrarObserver:
-  void OnWebAppUninstalled(const web_app::AppId& app_id) override;
+  void OnWebAppWillBeUninstalled(const web_app::AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
 
-  void OnIconsRead(std::map<SquareSizePx, SkBitmap> icon_bitmaps);
+  void OnIconsRead(webapps::WebappUninstallSource uninstall_source,
+                   std::map<SquareSizePx, SkBitmap> icon_bitmaps);
 
   // The dialog's parent window.
   const gfx::NativeWindow parent_;
@@ -117,8 +130,8 @@ class WebAppUninstallDialogViews : public web_app::WebAppUninstallDialog,
   // Tracks whether |parent_| got destroyed.
   std::unique_ptr<NativeWindowTracker> parent_window_tracker_;
 
-  ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
-      registrar_observer_{this};
+  base::ScopedObservation<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+      registrar_observation_{this};
 
   WebAppUninstallDialogDelegateView* view_ = nullptr;
 

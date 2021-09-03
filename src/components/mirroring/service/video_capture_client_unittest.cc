@@ -24,7 +24,9 @@ namespace mirroring {
 
 namespace {
 
-const media::VideoFrameFeedback kFeedback(0.6, 30.0, 1000);
+const media::VideoCaptureFeedback kFeedback(0.6, 30.0, 1000);
+
+constexpr bool kNotPremapped = false;
 
 media::mojom::VideoFrameInfoPtr GetVideoFrameInfo(const gfx::Size& size) {
   media::VideoFrameMetadata metadata;
@@ -32,7 +34,7 @@ media::mojom::VideoFrameInfoPtr GetVideoFrameInfo(const gfx::Size& size) {
   metadata.reference_time = base::TimeTicks();
   return media::mojom::VideoFrameInfo::New(
       base::TimeDelta(), metadata, media::PIXEL_FORMAT_I420, size,
-      gfx::Rect(size), gfx::ColorSpace::CreateREC709(), nullptr);
+      gfx::Rect(size), kNotPremapped, gfx::ColorSpace::CreateREC709(), nullptr);
 }
 
 }  // namespace
@@ -103,7 +105,9 @@ class VideoCaptureClientTest : public ::testing::Test,
     // Expects to return the buffer after the frame is consumed.
     EXPECT_CALL(*host_impl_, ReleaseBuffer(_, 0, kFeedback))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-    client_->OnBufferReady(buffer_id, GetVideoFrameInfo(frame_size));
+    client_->OnBufferReady(media::mojom::ReadyBuffer::New(
+                               buffer_id, GetVideoFrameInfo(frame_size)),
+                           {});
     run_loop.Run();
     task_environment_.RunUntilIdle();
   }

@@ -13,6 +13,7 @@
 #include "include/core/SkSurface.h"
 #include "include/core/SkYUVAInfo.h"
 #include "include/core/SkYUVAPixmaps.h"
+#include "include/effects/SkGradientShader.h"
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrRecordingContext.h"
 #include "src/core/SkAutoPixmapStorage.h"
@@ -45,9 +46,9 @@ static sk_sp<SkImage> do_read_and_scale(Src* src,
                                         const SkIRect& srcRect,
                                         const SkImageInfo& ii,
                                         SkImage::RescaleGamma rescaleGamma,
-                                        SkFilterQuality quality) {
+                                        SkImage::RescaleMode rescaleMode) {
     auto* asyncContext = new AsyncContext();
-    src->asyncRescaleAndReadPixels(ii, srcRect, rescaleGamma, quality, async_callback,
+    src->asyncRescaleAndReadPixels(ii, srcRect, rescaleGamma, rescaleMode, async_callback,
                                    asyncContext);
     if (direct) {
         direct->submit();
@@ -72,7 +73,7 @@ static sk_sp<SkImage> do_read_and_scale_yuv(Src* src,
                                             const SkIRect& srcRect,
                                             SkISize size,
                                             SkImage::RescaleGamma rescaleGamma,
-                                            SkFilterQuality quality,
+                                            SkImage::RescaleMode rescaleMode,
                                             SkScopeExit* cleanup) {
     SkASSERT(!(size.width() & 0b1) && !(size.height() & 0b1));
 
@@ -82,7 +83,7 @@ static sk_sp<SkImage> do_read_and_scale_yuv(Src* src,
 
     AsyncContext asyncContext;
     src->asyncRescaleAndReadPixelsYUV420(yuvCS, SkColorSpace::MakeSRGB(), srcRect, size,
-                                         rescaleGamma, quality, async_callback, &asyncContext);
+                                         rescaleGamma, rescaleMode, async_callback, &asyncContext);
     if (direct) {
         direct->submit();
     }
@@ -135,12 +136,15 @@ static skiagm::DrawResult do_rescale_grid(SkCanvas* canvas,
     canvas->save();
     for (auto gamma : {SkImage::RescaleGamma::kSrc, SkImage::RescaleGamma::kLinear}) {
         canvas->save();
-        for (auto quality : {kNone_SkFilterQuality, kLow_SkFilterQuality, kHigh_SkFilterQuality}) {
+        for (auto mode : {
+                SkImage::RescaleMode::kNearest,
+                SkImage::RescaleMode::kRepeatedLinear,
+                SkImage::RescaleMode::kRepeatedCubic}) {
             SkScopeExit cleanup;
             sk_sp<SkImage> result;
             if (doYUV420) {
                 result = do_read_and_scale_yuv(src, direct, yuvColorSpace, srcRect, newSize, gamma,
-                                               quality, &cleanup);
+                                               mode, &cleanup);
                 if (!result) {
                     errorMsg->printf("YUV420 async call failed. Allowed for now.");
                     return skiagm::DrawResult::kSkip;
@@ -148,7 +152,7 @@ static skiagm::DrawResult do_rescale_grid(SkCanvas* canvas,
                 int nextCS = static_cast<int>(yuvColorSpace + 1) % (kLastEnum_SkYUVColorSpace + 1);
                 yuvColorSpace = static_cast<SkYUVColorSpace>(nextCS);
             } else {
-                result = do_read_and_scale(src, direct, srcRect, ii, gamma, quality);
+                result = do_read_and_scale(src, direct, srcRect, ii, gamma, mode);
                 if (!result) {
                     errorMsg->printf("async read call failed.");
                     return skiagm::DrawResult::kFail;
@@ -205,7 +209,7 @@ static skiagm::DrawResult do_rescale_image_grid(SkCanvas* canvas,
         }
         SkPaint paint;
         paint.setBlendMode(SkBlendMode::kSrc);
-        surface->getCanvas()->drawImage(image, 0, 0, &paint);
+        surface->getCanvas()->drawImage(image, 0, 0, SkSamplingOptions(), &paint);
         return do_rescale_grid(canvas, surface.get(), dContext, srcRect, newSize,
                                doYUV420, errorMsg);
     } else if (dContext) {
@@ -296,7 +300,7 @@ DEF_SIMPLE_GM_CAN_FAIL(async_yuv_no_scale, canvas, errorMsg, 400, 300) {
     SkScopeExit scopeExit;
     auto yuvImage = do_read_and_scale_yuv(
             surface, dContext, kRec601_SkYUVColorSpace, SkIRect::MakeWH(400, 300),
-            {400, 300}, SkImage::RescaleGamma::kSrc, kNone_SkFilterQuality, &scopeExit);
+            {400, 300}, SkImage::RescaleGamma::kSrc, SkImage::RescaleMode::kNearest, &scopeExit);
 
     canvas->clear(SK_ColorWHITE);
     canvas->drawImage(yuvImage.get(), 0, 0);
@@ -352,6 +356,100 @@ DEF_SIMPLE_GM_CAN_FAIL(async_rescale_and_read_no_bleed, canvas, errorMsg, 60, 60
                              kPad);
     if (result != skiagm::DrawResult::kOk) {
         return result;
+    }
+    return skiagm::DrawResult::kOk;
+}
+
+DEF_SIMPLE_GM_CAN_FAIL(async_rescale_and_read_alpha_type, canvas, errorMsg, 512, 512) {
+    auto dContext = GrAsDirectContext(canvas->recordingContext());
+    if (!dContext && canvas->recordingContext()) {
+        *errorMsg = "Not supported in DDL mode";
+        return skiagm::DrawResult::kSkip;
+    }
+    if (dContext && dContext->abandoned()) {
+        return skiagm::DrawResult::kSkip;
+    }
+
+    auto upmII = SkImageInfo::Make(200, 200, kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+
+    auto pmII = upmII.makeAlphaType(kPremul_SkAlphaType);
+
+    auto upmSurf = SkSurface::MakeRaster(upmII);
+    auto pmSurf  = SkSurface::MakeRaster( pmII);
+
+    SkColor4f colors[] = {
+            {.3f, .3f, .3f, .3f},
+            {1.f, .2f, .6f, .9f},
+            {0.f, .1f, 1.f, .1f},
+            {.7f, .8f, .2f, .7f},
+    };
+    auto shader = SkGradientShader::MakeRadial({100, 100},
+                                               230,
+                                               colors,
+                                               nullptr,
+                                               nullptr,
+                                               SK_ARRAY_COUNT(colors),
+                                               SkTileMode::kRepeat);
+    SkPaint paint;
+    paint.setShader(std::move(shader));
+
+    upmSurf->getCanvas()->drawPaint(paint);
+    pmSurf ->getCanvas()->drawPaint(paint);
+
+    auto pmImg  =  pmSurf->makeImageSnapshot();
+    auto upmImg = upmSurf->makeImageSnapshot();
+
+    if (dContext) {
+        pmImg  =  pmImg->makeTextureImage(dContext);
+        upmImg = upmImg->makeTextureImage(dContext);
+        if (!pmImg || !upmImg) {
+            *errorMsg = "could not make texture images";
+            return skiagm::DrawResult::kFail;
+        }
+    }
+    int size = 256;
+
+    ToolUtils::draw_checkerboard(canvas, SK_ColorWHITE, SK_ColorBLACK, 32);
+
+    for (const auto& img : {pmImg, upmImg}) {
+        canvas->save();
+        for (auto readAT : {kPremul_SkAlphaType, kUnpremul_SkAlphaType}) {
+            auto readInfo = img->imageInfo().makeAlphaType(readAT).makeWH(size, size);
+
+            auto* asyncContext = new AsyncContext();
+            img->asyncRescaleAndReadPixels(readInfo,
+                                           SkIRect::MakeSize(img->dimensions()),
+                                           SkImage::RescaleGamma::kSrc,
+                                           SkImage::RescaleMode::kRepeatedCubic,
+                                           async_callback,
+                                           asyncContext);
+            if (dContext) {
+                dContext->submit();
+            }
+            while (!asyncContext->fCalled) {
+                // Only GPU should actually be asynchronous.
+                SkASSERT(dContext);
+                dContext->checkAsyncWorkCompletion();
+            }
+            if (asyncContext->fResult) {
+                SkPixmap pixmap(readInfo,
+                                asyncContext->fResult->data(0),
+                                asyncContext->fResult->rowBytes(0));
+                auto releasePixels = [](const void*, void* c) {
+                    delete static_cast<AsyncContext*>(c);
+                };
+                auto result = SkImage::MakeFromRaster(pixmap, releasePixels, asyncContext);
+
+                canvas->drawImage(result, 0, 0);
+            } else {
+                delete asyncContext;
+                *errorMsg = "async readback failed";
+                return skiagm::DrawResult::kFail;
+            }
+            canvas->translate(size, 0);
+        }
+        canvas->restore();
+        canvas->translate(0, size);
     }
     return skiagm::DrawResult::kOk;
 }

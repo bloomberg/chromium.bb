@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -45,7 +46,7 @@ void PrepareBrowserCommandLineForTests(base::CommandLine* command_line) {
     command_line->AppendSwitchASCII(switches::kEnableLogging, "stderr");
 
   // Don't install default apps.
-  command_line->AppendSwitch(switches::kDisableDefaultApps);
+  command_line->AppendSwitch(switches::kDisablePreinstalledApps);
 
 #if defined(USE_AURA)
   // Disable window animations under Ash as the animations effect the
@@ -54,7 +55,7 @@ void PrepareBrowserCommandLineForTests(base::CommandLine* command_line) {
       wm::switches::kWindowAnimationsDisabled);
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Don't use the native password stores on Linux since they may
   // prompt for additional UI during tests and cause test failures or
   // timeouts.  Win, Mac and ChromeOS don't look at the kPasswordStore
