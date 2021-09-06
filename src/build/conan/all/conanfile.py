@@ -24,32 +24,27 @@ class BLPWTK2Conan(ConanFile):
         tools.download(self.conan_data["sources"][self.version]["url"],
                        "archive.7z",
                        sha256=self.conan_data["sources"][self.version]["sha256"])
-        self.run("7za.exe x -y -mmt -o\".\" \"archive.7z\"")
 
     def build(self):
-        chromium_version, bb_version = self.version.split("_")
-        bitness_path_suffix = "64" if "64" in str(self.settings.arch) else ""
-        os.rename("resources/CMakeLists.txt", "CMakeLists.txt")
-        cmake = CMake(self, generator="Ninja")
-        cmake.configure(defs={
-            "BLPWTK2_VERSION": self.version,
-            "BLPWTK2_CR_VERSION": chromium_version,
-            "BLPWTK2_BB_VERSION": bb_version,
-            "BITNESS_PATH_SUFFIX": bitness_path_suffix
-        })
-        cmake.build()
-        cmake.install()
+        self.run("7za.exe x -y -mmt -o\".\" \"archive.7z\"")
 
-    # def package(self):
-        # self.copy(pattern="*", src=os.path.join("3.16.1"), keep_path=True)
+    def package(self):
+        bitness_path_suffix = "64" if "64" in str(self.settings.arch) else ""
+        self.copy(f"{self.version}/lib{bitness_path_suffix}/*", dst="lib", keep_path=False)
+        self.copy(f"{self.version}/include/blpwtk2/*", dst="include/blpwtk2", keep_path=False)
+        self.copy(f"{self.version}/include/v8/*", dst="include/v8", keep_path=False)
 
     def package_info(self):
+        self.cpp_info.libs = [f"blpwtk2.{self.version}.dll.lib"]
         self.cpp_info.libdirs = ["lib"]
-        self.cpp_info.libs = [f"blpwtk2.{self.version}.dll.lib",]
-        self.output.info(f"Libs: [{', '.join(self.cpp_info.libs)}]")
+        self.cpp_info.defines = ["USING_BLPWTK2_SHARED", "USING_V8_SHARED", "USING_BLPWTK2V8"]
+        if "64" in str(self.settings.arch):
+            self.cpp_info.defines.append("V8_COMPRESS_POINTERS")
+
         self.cpp_info.includedirs = ["include/blpwtk2", "include/v8"]
-        self.output.info(f"Include Dirs: [{', '.join(self.cpp_info.includedirs)}]")
+        self.cpp_info.requires = [f"{x.split('/')[0]}::{x.split('/')[0]}" for x in self.requires]
+        self.cpp_info.builddirs = [os.path.join(self.package_folder, "lib", "cmake")]
+
         cmake_prefix = os.path.join(self.package_folder, "lib", "cmake")
         self.env_info.CMAKE_PREFIX_PATH.append(cmake_prefix)
         self.output.info(f"CMake Prefix Path: [{cmake_prefix}]")
-        self.cpp_info.defines = [f"BLPWTK2_VERSION={self.version}",]
