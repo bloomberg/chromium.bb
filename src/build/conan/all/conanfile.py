@@ -1,8 +1,6 @@
 import os
-from typing import Optional
-
-from conans import CMake, ConanFile, tools
-from conans.util.runners import check_output_runner
+import shutil
+from conans import ConanFile, tools
 from conans.errors import ConanInvalidConfiguration
 
 
@@ -14,7 +12,6 @@ class BLPWTK2Conan(ConanFile):
     url = "https://bbgithub.dev.bloomberg.com/buildbot/sotr-conan-index"
     settings = "os", "arch"
     build_requires = ("p7zip/19.00",)
-    exports_sources = ["resources/CMakeLists.txt"]
 
     def configure(self):
         if self.settings.os != "Windows":
@@ -27,12 +24,16 @@ class BLPWTK2Conan(ConanFile):
 
     def build(self):
         self.run("7za.exe x -y -mmt -o\".\" \"archive.7z\"")
+        file_names = os.listdir(self.version)
+
+        for file_name in file_names:
+            shutil.move(os.path.join(self.version, file_name), ".")
 
     def package(self):
         bitness_path_suffix = "64" if "64" in str(self.settings.arch) else ""
-        self.copy(f"{self.version}/lib{bitness_path_suffix}/*", dst="lib", keep_path=False)
-        self.copy(f"{self.version}/include/blpwtk2/*", dst="include/blpwtk2", keep_path=False)
-        self.copy(f"{self.version}/include/v8/*", dst="include/v8", keep_path=False)
+        self.copy(f"lib{bitness_path_suffix}/*", dst="lib", keep_path=False)
+        self.copy("include/blpwtk2/*", keep_path=True)
+        self.copy("include/v8/*", keep_path=True)
 
     def package_info(self):
         self.cpp_info.libs = [f"blpwtk2.{self.version}.dll.lib"]
