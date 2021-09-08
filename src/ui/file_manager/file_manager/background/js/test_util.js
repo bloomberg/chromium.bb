@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {background} from './background.m.js';
+// #import {test} from './test_util_base.m.js';
+// #import {launcher} from './launcher.m.js';
+// #import {util} from '../../common/js/util.m.js';
+// #import {ProgressCenterItem} from '../../common/js/progress_center_common.m.js';
+// clang-format on
+
 /**
  * Opens the main Files app's window and waits until it is ready.
  *
@@ -281,7 +289,7 @@ test.util.sync.getTreeItems = contentWindow => {
  * @return {!string} The URL of the last URL visited.
  */
 test.util.sync.getLastVisitedURL = contentWindow => {
-  return contentWindow.util.getLastVisitedURL();
+  return contentWindow.fileManager.getLastVisitedURL();
 };
 
 /**
@@ -349,41 +357,6 @@ test.util.sync.execCommand = (contentWindow, command) => {
 };
 
 /**
- * Override the installWebstoreItem method in private api for test.
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {string} expectedItemId Item ID to be called this method with.
- * @param {?string} intendedError Error message to be returned when the item id
- *     matches. 'null' represents no error.
- * @return {boolean} Always return true.
- */
-test.util.sync.overrideInstallWebstoreItemApi =
-    (contentWindow, expectedItemId, intendedError) => {
-      const setLastError = message => {
-        contentWindow.chrome.runtime.lastError =
-            message ? {message: message} : undefined;
-      };
-
-      const installWebstoreItem = (itemId, silentInstallation, callback) => {
-        setTimeout(() => {
-          if (itemId !== expectedItemId) {
-            setLastError('Invalid Chrome Web Store item ID');
-            callback();
-            return;
-          }
-
-          setLastError(intendedError);
-          callback();
-        }, 0);
-      };
-
-      test.util.executedTasks_ = [];
-      contentWindow.chrome.webstoreWidgetPrivate.installWebstoreItem =
-          installWebstoreItem;
-      return true;
-    };
-
-/**
  * Override the task-related methods in private api for test.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -449,26 +422,6 @@ test.util.sync.replyExecutedTask = (contentWindow, taskId, responseArgs) => {
 };
 
 /**
- * Runs the 'Move to profileId' menu.
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {string} profileId Destination profile's ID.
- * @return {boolean} True if the menu is found and run.
- */
-test.util.sync.runVisitDesktopMenu = (contentWindow, profileId) => {
-  const list = contentWindow.document.querySelectorAll('.visit-desktop');
-  for (let i = 0; i < list.length; ++i) {
-    if (list[i].label.indexOf(profileId) != -1) {
-      const activateEvent = contentWindow.document.createEvent('Event');
-      activateEvent.initEvent('activate', false, false);
-      list[i].dispatchEvent(activateEvent);
-      return true;
-    }
-  }
-  return false;
-};
-
-/**
  * Calls the unload handler for the window.
  * @param {Window} contentWindow Window to be tested.
  */
@@ -491,17 +444,11 @@ test.util.sync.getBreadcrumbPath = contentWindow => {
 
   let path = '';
 
-  if (util.isFilesNg()) {
-    const crumbs = breadcrumb.querySelector('bread-crumb');
-    if (crumbs) {
-      path = '/' + crumbs.path;
-    }
-  } else {
-    const paths = breadcrumb.querySelectorAll('.breadcrumb-path');
-    for (let i = 0; i < paths.length; i++) {
-      path += '/' + paths[i].textContent;
-    }
+  const crumbs = breadcrumb.querySelector('bread-crumb');
+  if (crumbs) {
+    path = '/' + crumbs.path;
   }
+
   return path;
 };
 

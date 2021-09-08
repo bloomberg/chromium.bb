@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// http://mentorembedded.github.io/cxx-abi/abi.html#rtti-layout
+// https://itanium-cxx-abi.github.io/cxx-abi/abi.html#rtti-layout
 
 // Two abi::__pbase_type_info objects can always be compared for equality
 // (i.e. of the types represented) or ordering by comparison of their name
@@ -13,16 +13,19 @@
 // incomplete flags set, equality can be tested by comparing the type_info
 // addresses.
 
-// UNSUPPORTED: libcxxabi-no-exceptions
+// UNSUPPORTED: no-exceptions
+// UNSUPPORTED: no-rtti
 
-// NOTE: Pass -lc++abi explicitly and before -lc++ so that -lc++ doesn't drag
-// in the system libc++abi installation on OS X. (DYLD_LIBRARY_PATH is ignored
-// for shell tests because of Apple security features).
+// The fix for PR25898 landed in the system dylibs in macOS 10.13
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.12
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.11
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.10
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.9
 
-// RUN: %cxx %flags %compile_flags -c %s -o %t.one.o
-// RUN: %cxx %flags %compile_flags -c %s -o %t.two.o -DTU_ONE
-// RUN: %cxx %flags %t.one.o %t.two.o -lc++abi %link_flags -o %t.exe
-// RUN: %t.exe
+// RUN: %{cxx} %{flags} %{compile_flags} -Wno-unreachable-code -c %s -o %t.one.o
+// RUN: %{cxx} %{flags} %{compile_flags} -Wno-unreachable-code -c %s -o %t.two.o -DTU_ONE
+// RUN: %{cxx} %{flags} %t.one.o %t.two.o %{link_flags} -o %t.exe
+// RUN: %{exec} %t.exe
 
 #include <stdio.h>
 #include <cstring>
@@ -82,7 +85,7 @@ void ThrowNullptr() { throw nullptr; }
 
 struct IncompleteAtThrow {};
 
-int main() {
+int main(int, char**) {
   AssertIncompleteTypeInfoEquals(ReturnTypeInfoNeverDefinedMP(), typeid(int NeverDefined::*));
   try {
     ThrowNeverDefinedMP();
@@ -204,7 +207,8 @@ int main() {
     assert(!p);
   }
   catch(...) { assert(!"FAIL: Didn't catch nullptr as NeverDefined::*" ); }
-
 #endif
+
+  return 0;
 }
 #endif

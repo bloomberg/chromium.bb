@@ -5,11 +5,16 @@
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 
 #include <stdlib.h>
+
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -250,7 +255,11 @@ void NaClBrowserTestBase::RunNaClIntegrationTest(
   }
   base::FilePath::StringType url_fragment_with_both = url_fragment_with_pnacl;
   bool ok = RunJavascriptTest(full_url
+#if defined(OS_WIN)
+                              ? GURL(base::WideToUTF16(url_fragment_with_both))
+#else
                               ? GURL(url_fragment_with_both)
+#endif
                               : TestURL(url_fragment_with_both),
                               &handler);
   ASSERT_TRUE(ok) << handler.error_message();
@@ -262,7 +271,7 @@ bool NaClBrowserTestBase::StartTestServer() {
   base::FilePath document_root;
   if (!GetDocumentRoot(&document_root))
     return false;
-  test_server_.reset(new net::EmbeddedTestServer);
+  test_server_ = std::make_unique<net::EmbeddedTestServer>();
   test_server_->ServeFilesFromSourceDirectory(document_root);
   return test_server_->Start();
 }

@@ -16,8 +16,8 @@
 
 using std::abs;
 
-struct Float4 {
-    Float4(float x, float y, float z, float w)
+struct SkSLFloat4 {
+    SkSLFloat4(float x, float y, float z, float w)
     : fX(x)
     , fY(y)
     , fZ(z)
@@ -37,16 +37,32 @@ private:
 // macros to make sk_Caps.<cap name> work from C++ code
 #define sk_Caps (*args.fShaderCaps)
 
-#define floatIs32Bits floatIs32Bits()
+#define fbFetchSupport                              fbFetchSupport()
+#define fbFetchNeedsCustomOutput                    fbFetchNeedsCustomOutput()
+#define flatInterpolationSupport                    flatInterpolationSupport()
+#define noperspectiveInterpolationSupport           noperspectiveInterpolationSupport()
+#define externalTextureSupport                      externalTextureSupport()
+#define mustEnableAdvBlendEqs                       mustEnableAdvBlendEqs()
+#define mustDeclareFragmentShaderOutput             mustDeclareFragmentShaderOutput()
+#define mustDoOpBetweenFloorAndAbs                  mustDoOpBetweenFloorAndAbs()
+#define mustGuardDivisionEvenAfterExplicitZeroCheck mustGuardDivisionEvenAfterExplicitZeroCheck()
+#define inBlendModesFailRandomlyForAllZeroVec       inBlendModesFailRandomlyForAllZeroVec()
+#define atan2ImplementedAsAtanYOverX                atan2ImplementedAsAtanYOverX()
+#define canUseAnyFunctionInShader                   canUseAnyFunctionInShader()
+#define floatIs32Bits                               floatIs32Bits()
+#define integerSupport                              integerSupport()
+#define builtinFMASupport                           builtinFMASupport()
+#define builtinDeterminantSupport                   builtinDeterminantSupport()
+#define rewriteMatrixVectorMultiply                 rewriteMatrixVectorMultiply()
 
 // functions to make GLSL constructors work from C++ code
 inline SkPoint float2(float xy) { return SkPoint::Make(xy, xy); }
 
 inline SkPoint float2(float x, float y) { return SkPoint::Make(x, y); }
 
-inline Float4 float4(float xyzw) { return Float4(xyzw, xyzw, xyzw, xyzw); }
+inline SkSLFloat4 float4(float xyzw) { return SkSLFloat4(xyzw, xyzw, xyzw, xyzw); }
 
-inline Float4 float4(float x, float y, float z, float w) { return Float4(x, y, z, w); }
+inline SkSLFloat4 float4(float x, float y, float z, float w) { return SkSLFloat4(x, y, z, w); }
 
 #define half2 float2
 

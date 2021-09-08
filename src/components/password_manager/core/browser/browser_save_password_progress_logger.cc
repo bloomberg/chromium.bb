@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -18,6 +19,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/password_manager/core/browser/generation/password_requirements_spec_printer.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -155,7 +157,7 @@ void BrowserSavePasswordProgressLogger::LogSuccessiveOrigins(
 std::string
 BrowserSavePasswordProgressLogger::FormStructurePasswordAttributesLogString(
     const FormStructure& form) {
-  const base::Optional<std::pair<PasswordAttribute, bool>> attribute_vote =
+  const absl::optional<std::pair<PasswordAttribute, bool>> attribute_vote =
       form.get_password_attributes_vote();
   if (!attribute_vote.has_value())
     return std::string();
@@ -264,6 +266,12 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
 
     if (field->generated_password_changed())
       field_info += ", generated password changed";
+
+    if (field->password_requirements()) {
+      std::ostringstream s;
+      s << *field->password_requirements();
+      base::StrAppend(&field_info, {", PASSWORD_REQUIREMENTS: ", s.str()});
+    }
 
     result += field_info + "\n";
   }

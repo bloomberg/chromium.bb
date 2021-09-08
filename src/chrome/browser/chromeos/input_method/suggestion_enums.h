@@ -19,7 +19,12 @@ enum class AssistiveType {
   kPersonalNumber = 7,  // Deprecated, combined with kPersonalPhoneNumber
   kPersonalFirstName = 8,
   kPersonalLastName = 9,
-  kMaxValue = kPersonalLastName,
+  kAutocorrectWindowShown = 10,
+  kAutocorrectUnderlined = 11,
+  kAutocorrectReverted = 12,
+  kMultiWordPrediction = 13,
+  kMultiWordCompletion = 14,
+  kMaxValue = kMultiWordCompletion,
 };
 
 enum class SuggestionStatus {

@@ -251,7 +251,7 @@ target(link_target_type, "ffmpeg_internal") {
   configs -= [ "//build/config/compiler:default_optimization" ]
   configs += [ "//build/config/compiler:optimize_max" ]
 
-  if (ffmpeg_use_atomics_fallback) {
+  if (ffmpeg_use_unsafe_atomics) {
     if (is_posix || is_fuchsia) {
       include_dirs += [ "compat/atomics/gcc" ]
     } else if (is_win) {

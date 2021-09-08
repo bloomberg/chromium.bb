@@ -6,9 +6,12 @@
 
 #include <map>
 
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "chrome/services/cups_proxy/fake_cups_proxy_service_delegate.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace cups_proxy {
 
@@ -18,13 +21,18 @@ constexpr int kHttpTooManyRequests = 429;
 
 class MyFakeCupsProxyServiceDelegate : public FakeCupsProxyServiceDelegate {
   bool IsPrinterAccessAllowed() const override { return false; }
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override {
+    return base::ThreadPool::CreateSingleThreadTaskRunner({});
+  }
 };
 
 class ProxyManagerTest : public testing::Test {
  public:
   ProxyManagerTest()
       : manager_(ProxyManager::Create(
-            {},
+            mojo::PendingReceiver<mojom::CupsProxier>(
+                mojo::OutgoingInvitation().AttachMessagePipe(
+                    ::printing::kBootstrapMojoConnectionChannelToken)),
             std::make_unique<MyFakeCupsProxyServiceDelegate>())) {}
 
   // Proxy a dummy request and add the response code to count_.

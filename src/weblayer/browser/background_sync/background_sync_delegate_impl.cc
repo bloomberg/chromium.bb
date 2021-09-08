@@ -21,9 +21,16 @@ BackgroundSyncDelegateImpl::BackgroundSyncDelegateImpl(
 
 BackgroundSyncDelegateImpl::~BackgroundSyncDelegateImpl() = default;
 
+#if !defined(OS_ANDROID)
+std::unique_ptr<content::BackgroundSyncController::BackgroundSyncEventKeepAlive>
+BackgroundSyncDelegateImpl::CreateBackgroundSyncEventKeepAlive() {
+  return nullptr;
+}
+#endif  // !defined(OS_ANDROID)
+
 void BackgroundSyncDelegateImpl::GetUkmSourceId(
     const url::Origin& origin,
-    base::OnceCallback<void(base::Optional<ukm::SourceId>)> callback) {
+    base::OnceCallback<void(absl::optional<ukm::SourceId>)> callback) {
   // The exact URL which registered the Background Sync event is not saved,
   // and the current main frame URL might not correspond to |origin|. Thus, we
   // associate a new source ID with the origin.

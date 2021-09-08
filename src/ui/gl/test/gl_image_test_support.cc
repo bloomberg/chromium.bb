@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/half_float.h"
 #include "ui/gl/init/gl_factory.h"
@@ -36,7 +36,7 @@ void rgb_to_yuv(uint8_t r, uint8_t g, uint8_t b, T* y, T* u, T* v) {
 
 // static
 void GLImageTestSupport::InitializeGL(
-    base::Optional<GLImplementation> prefered_impl) {
+    absl::optional<GLImplementationParts> prefered_impl) {
 #if defined(USE_OZONE)
   if (features::IsUsingOzonePlatform()) {
     ui::OzonePlatform::InitParams params;
@@ -49,8 +49,9 @@ void GLImageTestSupport::InitializeGL(
       init::GetAllowedGLImplementations();
   DCHECK(!allowed_impls.empty());
 
-  GLImplementation impl = prefered_impl ? *prefered_impl : allowed_impls[0];
-  DCHECK(base::Contains(allowed_impls, impl));
+  GLImplementationParts impl =
+      prefered_impl ? *prefered_impl : GLImplementationParts(allowed_impls[0]);
+  DCHECK(base::Contains(allowed_impls, impl.gl));
 
   GLSurfaceTestSupport::InitializeOneOffImplementation(impl, true);
 #if defined(USE_OZONE)

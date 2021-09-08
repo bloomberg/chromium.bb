@@ -18,7 +18,6 @@
 #include <memory>
 
 #include "proto/connections/offline_wire_formats.pb.h"
-#include "proto/connections/offline_wire_formats.pb.h"
 #include "platform/base/byte_array.h"
 #include "absl/strings/string_view.h"
 #include "webrtc/api/peer_connection_interface.h"
@@ -30,13 +29,16 @@ namespace api {
 class WebRtcSignalingMessenger {
  public:
   using OnSignalingMessageCallback = std::function<void(const ByteArray&)>;
+  using OnSignalingCompleteCallback = std::function<void(bool)>;
 
   virtual ~WebRtcSignalingMessenger() = default;
 
   virtual bool SendMessage(absl::string_view peer_id,
                            const ByteArray& message) = 0;
 
-  virtual bool StartReceivingMessages(OnSignalingMessageCallback listener) = 0;
+  virtual bool StartReceivingMessages(
+      OnSignalingMessageCallback on_message_callback,
+      OnSignalingCompleteCallback on_complete_callback) = 0;
   virtual void StopReceivingMessages() = 0;
 };
 

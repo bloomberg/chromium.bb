@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/enterprise/browser/reporting/browser_report_generator.h"
 #include "components/enterprise/browser/reporting/reporting_delegate_factory.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
@@ -46,7 +47,7 @@ void ReportGenerator::CreateBasicRequest(
     basic_request->add_partial_report_types(
         em::PartialReportType::EXTENSION_REQUEST);
   } else {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     delegate_->SetAndroidAppInfos(basic_request.get());
 #else
     basic_request->set_computer_name(this->GetMachineName());
@@ -55,7 +56,11 @@ void ReportGenerator::CreateBasicRequest(
     basic_request->set_allocated_os_report(GetOSReport().release());
     basic_request->set_allocated_browser_device_identifier(
         policy::GetBrowserDeviceIdentifier().release());
-#endif
+#if defined(OS_IOS)
+    basic_request->set_device_model(policy::GetDeviceModel());
+    basic_request->set_brand_name(policy::GetDeviceManufacturer());
+#endif  // defined(OS_IOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
   browser_report_generator_.Generate(
@@ -83,7 +88,7 @@ std::string ReportGenerator::GetOSUserName() {
 
 std::string ReportGenerator::GetSerialNumber() {
 #if defined(OS_WIN)
-  return base::UTF16ToUTF8(
+  return base::WideToUTF8(
       base::win::WmiComputerSystemInfo::Get().serial_number());
 #else
   return std::string();

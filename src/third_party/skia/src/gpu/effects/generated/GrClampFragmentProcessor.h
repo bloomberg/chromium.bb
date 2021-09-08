@@ -22,8 +22,10 @@ public:
         SkPMColor4f input = ConstantOutputForConstantInput(this->childProcessor(0), inColor);
         float clampedAlpha = SkTPin(input.fA, 0.f, 1.f);
         float clampVal = clampToPremul ? clampedAlpha : 1.f;
-        return {SkTPin(input.fR, 0.f, clampVal), SkTPin(input.fG, 0.f, clampVal),
-                SkTPin(input.fB, 0.f, clampVal), clampedAlpha};
+        return {SkTPin(input.fR, 0.f, clampVal),
+                SkTPin(input.fG, 0.f, clampVal),
+                SkTPin(input.fB, 0.f, clampVal),
+                clampedAlpha};
     }
     static std::unique_ptr<GrFragmentProcessor> Make(std::unique_ptr<GrFragmentProcessor> inputFP,
                                                      bool clampToPremul) {
@@ -33,20 +35,18 @@ public:
     GrClampFragmentProcessor(const GrClampFragmentProcessor& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "ClampFragmentProcessor"; }
-    bool usesExplicitReturn() const override;
     bool clampToPremul;
 
 private:
     GrClampFragmentProcessor(std::unique_ptr<GrFragmentProcessor> inputFP, bool clampToPremul)
             : INHERITED(kGrClampFragmentProcessor_ClassID,
-                        (OptimizationFlags)(inputFP ? ProcessorOptimizationFlags(inputFP.get())
-                                                    : kAll_OptimizationFlags) &
+                        (OptimizationFlags)ProcessorOptimizationFlags(inputFP.get()) &
                                 (kConstantOutputForConstantInput_OptimizationFlag |
                                  kPreservesOpaqueInput_OptimizationFlag))
             , clampToPremul(clampToPremul) {
         this->registerChild(std::move(inputFP), SkSL::SampleUsage::PassThrough());
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

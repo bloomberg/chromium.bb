@@ -10,6 +10,7 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
+#include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "url/gurl.h"
 
 // A single tuple of (protocol, url, last_modified) that indicates how URLs
@@ -18,12 +19,30 @@
 // of protocol handlers based on time ranges.
 class ProtocolHandler {
  public:
-  static ProtocolHandler CreateProtocolHandler(const std::string& protocol,
-                                               const GURL& url);
+  static ProtocolHandler CreateProtocolHandler(
+      const std::string& protocol,
+      const GURL& url,
+      blink::ProtocolHandlerSecurityLevel security_level =
+          blink::ProtocolHandlerSecurityLevel::kStrict);
 
   ProtocolHandler(const std::string& protocol,
                   const GURL& url,
-                  base::Time last_modified);
+                  base::Time last_modified,
+                  blink::ProtocolHandlerSecurityLevel security_level);
+
+  static ProtocolHandler CreateWebAppProtocolHandler(
+      const std::string& protocol,
+      const GURL& url,
+      const std::string& app_id);
+
+  ProtocolHandler(const std::string& protocol,
+                  const GURL& url,
+                  const std::string& app_id,
+                  base::Time last_modified,
+                  blink::ProtocolHandlerSecurityLevel security_level);
+
+  ProtocolHandler(const ProtocolHandler& other);
+  ~ProtocolHandler();
 
   // Creates a ProtocolHandler with fields from the dictionary. Returns an
   // empty ProtocolHandler if the input is invalid.
@@ -56,14 +75,15 @@ class ProtocolHandler {
 
   // Returns a friendly name for |protocol| if one is available, otherwise
   // this function returns |protocol|.
-  static base::string16 GetProtocolDisplayName(const std::string& protocol);
+  static std::u16string GetProtocolDisplayName(const std::string& protocol);
 
   // Returns a friendly name for |this.protocol_| if one is available, otherwise
   // this function returns |this.protocol_|.
-  base::string16 GetProtocolDisplayName() const;
+  std::u16string GetProtocolDisplayName() const;
 
   const std::string& protocol() const { return protocol_; }
   const GURL& url() const { return url_;}
+  const absl::optional<std::string>& web_app_id() const { return web_app_id_; }
   const base::Time& last_modified() const { return last_modified_; }
 
   bool IsEmpty() const {
@@ -84,7 +104,9 @@ class ProtocolHandler {
 
   std::string protocol_;
   GURL url_;
+  absl::optional<std::string> web_app_id_;
   base::Time last_modified_;
+  blink::ProtocolHandlerSecurityLevel security_level_;
 };
 
 #endif  // CHROME_COMMON_CUSTOM_HANDLERS_PROTOCOL_HANDLER_H_

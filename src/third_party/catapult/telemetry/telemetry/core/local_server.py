@@ -4,6 +4,8 @@
 
 # TODO(aiolos): this should be moved to catapult/base after the repo move.
 # It is used by tracing in tvcm/browser_controller.
+from __future__ import print_function
+from __future__ import absolute_import
 import collections
 import json
 import logging
@@ -12,6 +14,7 @@ import re
 import subprocess
 import sys
 import time
+import six
 
 from telemetry.core import util
 
@@ -102,7 +105,7 @@ class LocalServer(object):
     # TODO: This will hang if the subprocess doesn't print the correct output.
     while self._subprocess.poll() is None:
       line = self._subprocess.stdout.readline()
-      print line
+      print(line)
       m = named_ports_re.match(line)
       if m:
         named_ports_json = m.group('port')
@@ -186,13 +189,13 @@ class LocalServerController(object):
 
   @property
   def local_servers(self):
-    return self._local_servers_by_class.values()
+    return list(self._local_servers_by_class.values())
 
   def Close(self):
     # TODO(crbug.com/953365): This is a terrible infinite loop scenario
     # and we should fix it.
     while len(self._local_servers_by_class):
-      server = self._local_servers_by_class.itervalues().next()
+      server = next(six.itervalues(self._local_servers_by_class))
       try:
         server.Close()
       except Exception: # pylint: disable=broad-except
@@ -237,8 +240,8 @@ def _LocalServerBackendMain(args):
   # Note: This message is scraped by the parent process'
   # _GetNamedPortsFromBackend(). Do **not** change it.
   # pylint: disable=protected-access
-  print 'LocalServerBackend started: %s' % json.dumps([pair._asdict()
-                                                       for pair in named_ports])
+  print('LocalServerBackend started: %s' %
+        json.dumps([pair._asdict() for pair in named_ports]))
   sys.stdout.flush()
 
   return server.ServeForever()

@@ -8,12 +8,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace printing {
 
@@ -79,7 +80,7 @@ void ReportPrintSettingsStats(const base::Value& print_settings,
     }
   }
 
-  base::Optional<bool> landscape_opt =
+  absl::optional<bool> landscape_opt =
       preview_settings.FindBoolKey(kSettingLandscape);
   if (landscape_opt)
     ReportPrintSettingHistogram(landscape_opt.value()
@@ -95,21 +96,21 @@ void ReportPrintSettingsStats(const base::Value& print_settings,
   if (print_settings.FindBoolKey(kSettingCollate).value_or(false))
     ReportPrintSettingHistogram(PrintSettingsBuckets::kCollate);
 
-  base::Optional<int> duplex_mode_opt =
+  absl::optional<int> duplex_mode_opt =
       print_settings.FindIntKey(kSettingDuplexMode);
   if (duplex_mode_opt)
     ReportPrintSettingHistogram(duplex_mode_opt.value()
                                     ? PrintSettingsBuckets::kDuplex
                                     : PrintSettingsBuckets::kSimplex);
 
-  base::Optional<int> color_mode_opt = print_settings.FindIntKey(kSettingColor);
+  absl::optional<int> color_mode_opt = print_settings.FindIntKey(kSettingColor);
   if (color_mode_opt.has_value()) {
     mojom::ColorModel color_model =
         ColorModeToColorModel(color_mode_opt.value());
     bool unknown_color_model =
         color_model == mojom::ColorModel::kUnknownColorModel;
     if (!unknown_color_model) {
-      base::Optional<bool> is_color = IsColorModelSelected(color_model);
+      absl::optional<bool> is_color = IsColorModelSelected(color_model);
       ReportPrintSettingHistogram(is_color.value()
                                       ? PrintSettingsBuckets::kColor
                                       : PrintSettingsBuckets::kBlackAndWhite);
@@ -162,7 +163,7 @@ void ReportPrintSettingsStats(const base::Value& print_settings,
 
   if (print_settings.FindIntKey(kSettingDpiHorizontal).value_or(0) > 0 &&
       print_settings.FindIntKey(kSettingDpiVertical).value_or(0) > 0) {
-    base::Optional<bool> is_default_opt =
+    absl::optional<bool> is_default_opt =
         print_settings.FindBoolKey(kSettingDpiDefault);
     if (is_default_opt) {
       ReportPrintSettingHistogram(is_default_opt.value()
@@ -171,10 +172,10 @@ void ReportPrintSettingsStats(const base::Value& print_settings,
     }
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (print_settings.FindStringKey(kSettingPinValue))
     ReportPrintSettingHistogram(PrintSettingsBuckets::kPin);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void ReportRegeneratePreviewRequestCountBeforeCancel(size_t count) {

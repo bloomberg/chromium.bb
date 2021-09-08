@@ -11,11 +11,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -27,6 +27,7 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -67,7 +68,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   void StartScan(
       const std::string& device_name,
       const lorgnette::ScanSettings& settings,
-      VoidDBusMethodCallback completion_callback,
+      base::OnceCallback<void(lorgnette::ScanFailureMode)> completion_callback,
       base::RepeatingCallback<void(std::string, uint32_t)> page_callback,
       base::RepeatingCallback<void(uint32_t, uint32_t)> progress_callback)
       override {
@@ -81,7 +82,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode StartScanRequest protobuf";
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(completion_callback), false));
+          FROM_HERE, base::BindOnce(std::move(completion_callback),
+                                    lorgnette::SCAN_FAILURE_MODE_UNKNOWN));
       return;
     }
 
@@ -96,13 +98,13 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(state)));
   }
 
-  void CancelScan(VoidDBusMethodCallback completion_callback) override {
+  void CancelScan(VoidDBusMethodCallback cancel_callback) override {
     // Post the task to the proper sequence (since it requires access to
     // scan_job_state_).
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&LorgnetteManagerClientImpl::DoScanCancel,
                                   weak_ptr_factory_.GetWeakPtr(),
-                                  std::move(completion_callback)));
+                                  std::move(cancel_callback)));
   }
 
  protected:
@@ -127,7 +129,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     // In case of success, std::string holds the read data. Otherwise,
     // nullopt.
     using CompletionCallback =
-        base::OnceCallback<void(base::Optional<std::string> data)>;
+        base::OnceCallback<void(absl::optional<std::string> data)>;
 
     ScanDataReader() = default;
     ScanDataReader(const ScanDataReader&) = delete;
@@ -157,7 +159,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
 
    private:
     // Called when a |pipe_reader_| completes reading scan data to a string.
-    void OnDataRead(base::Optional<std::string> data) {
+    void OnDataRead(absl::optional<std::string> data) {
       DCHECK(!data_read_);
       data_read_ = true;
       data_ = std::move(data);
@@ -180,7 +182,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     bool data_read_ = false;
 
     // Available only when |data_read_| is true.
-    base::Optional<std::string> data_;
+    absl::optional<std::string> data_;
 
     CompletionCallback callback_;
 
@@ -188,13 +190,14 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   };
 
   // The state tracked for an in-progress scan job.
-  // Contains callbacks used to report progress and job completion or failure,
-  // as well as a ScanDataReader which is responsible for reading from the pipe
-  // of data into a string.
+  // Contains callbacks used to report job progress, completion, failure, or
+  // cancellation, as well as a ScanDataReader which is responsible for reading
+  // from the pipe of data into a string.
   struct ScanJobState {
-    VoidDBusMethodCallback completion_callback;
+    base::OnceCallback<void(lorgnette::ScanFailureMode)> completion_callback;
     base::RepeatingCallback<void(uint32_t, uint32_t)> progress_callback;
     base::RepeatingCallback<void(std::string, uint32_t)> page_callback;
+    VoidDBusMethodCallback cancel_callback;
     std::unique_ptr<ScanDataReader> scan_data_reader;
   };
 
@@ -214,8 +217,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode GetNextImageRequest protobuf";
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(state.completion_callback), false));
+          FROM_HERE, base::BindOnce(std::move(state.completion_callback),
+                                    lorgnette::SCAN_FAILURE_MODE_UNKNOWN));
       scan_job_state_.erase(uuid);
       return;
     }
@@ -235,12 +238,12 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   // Helper method to actually perform scan cancellation.
   // We use this method since the scan cancel logic requires that we are running
   // on the proper sequence.
-  void DoScanCancel(VoidDBusMethodCallback callback) {
+  void DoScanCancel(VoidDBusMethodCallback cancel_callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (scan_job_state_.size() == 0) {
       LOG(ERROR) << "No active scan job to cancel.";
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), false));
+          FROM_HERE, base::BindOnce(std::move(cancel_callback), false));
       return;
     }
 
@@ -249,7 +252,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     if (scan_job_state_.size() > 1) {
       LOG(ERROR) << "Multiple scan jobs running; not clear which to cancel.";
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), false));
+          FROM_HERE, base::BindOnce(std::move(cancel_callback), false));
       return;
     }
 
@@ -264,14 +267,17 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode CancelScanRequest protobuf";
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), false));
+          FROM_HERE, base::BindOnce(std::move(cancel_callback), false));
       return;
     }
+
+    ScanJobState& state = scan_job_state_.begin()->second;
+    state.cancel_callback = std::move(cancel_callback);
 
     lorgnette_daemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&LorgnetteManagerClientImpl::OnCancelScanResponse,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), uuid));
   }
 
   // Called when ListScanners completes.
@@ -280,7 +286,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
       dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to obtain ListScannersResponse";
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -288,7 +294,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
       LOG(ERROR) << "Failed to read ListScannersResponse";
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -301,7 +307,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
       dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to obtain ScannerCapabilities";
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -309,7 +315,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
       LOG(ERROR) << "Failed to read ScannerCapabilities";
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -320,7 +326,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   void OnScanDataCompleted(const std::string& uuid,
                            uint32_t page_number,
                            bool more_pages,
-                           base::Optional<std::string> data) {
+                           absl::optional<std::string> data) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (!base::Contains(scan_job_state_, uuid)) {
       LOG(ERROR) << "Received ScanDataCompleted for unrecognized scan job: "
@@ -331,7 +337,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     ScanJobState& state = scan_job_state_[uuid];
     if (!data.has_value()) {
       LOG(ERROR) << "Reading scan data failed";
-      std::move(state.completion_callback).Run(false);
+      std::move(state.completion_callback)
+          .Run(lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
       scan_job_state_.erase(uuid);
       return;
     }
@@ -341,7 +348,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     if (more_pages) {
       GetNextImage(uuid);
     } else {
-      std::move(state.completion_callback).Run(true);
+      std::move(state.completion_callback)
+          .Run(lorgnette::SCAN_FAILURE_MODE_NO_FAILURE);
       scan_job_state_.erase(uuid);
     }
   }
@@ -350,7 +358,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (!response) {
       LOG(ERROR) << "Failed to obtain StartScanResponse";
-      std::move(state.completion_callback).Run(false);
+      std::move(state.completion_callback)
+          .Run(lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
       return;
     }
 
@@ -358,13 +367,15 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
       LOG(ERROR) << "Failed to decode StartScanResponse proto";
-      std::move(state.completion_callback).Run(false);
+      std::move(state.completion_callback)
+          .Run(lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
       return;
     }
 
     if (response_proto.state() == lorgnette::SCAN_STATE_FAILED) {
       LOG(ERROR) << "Starting Scan failed: " << response_proto.failure_reason();
-      std::move(state.completion_callback).Run(false);
+      std::move(state.completion_callback)
+          .Run(response_proto.scan_failure_mode());
       return;
     }
 
@@ -372,12 +383,20 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     GetNextImage(response_proto.scan_uuid());
   }
 
-  void OnCancelScanResponse(VoidDBusMethodCallback callback,
+  void OnCancelScanResponse(const std::string& scan_uuid,
                             dbus::Response* response) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    // If the cancel completed and the scan job has been erased, there's no work
+    // to do.
+    auto it = scan_job_state_.find(scan_uuid);
+    if (it == scan_job_state_.end())
+      return;
+
+    ScanJobState& state = it->second;
+    DCHECK(!state.cancel_callback.is_null());
     if (!response) {
       LOG(ERROR) << "Failed to obtain CancelScanResponse";
-      std::move(callback).Run(false);
+      std::move(state.cancel_callback).Run(false);
       return;
     }
 
@@ -385,28 +404,35 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
       LOG(ERROR) << "Failed to decode CancelScanResponse proto";
-      std::move(callback).Run(false);
+      std::move(state.cancel_callback).Run(false);
       return;
     }
 
+    // If the cancel request failed, report the cancel as failed via the
+    // callback. Otherwise, wait for the cancel to complete.
     if (!response_proto.success()) {
       LOG(ERROR) << "Cancelling scan failed: "
                  << response_proto.failure_reason();
-      std::move(callback).Run(false);
+      std::move(state.cancel_callback).Run(false);
       return;
     }
-
-    std::move(callback).Run(true);
   }
 
   // Called when a response to a GetNextImage request is received from
   // lorgnette. Handles stopping the scan if the request failed.
   void OnGetNextImageResponse(std::string uuid, dbus::Response* response) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    ScanJobState& state = scan_job_state_[uuid];
+    // If the scan was canceled and the scan job has been erased, there's no
+    // need to check the next image response.
+    auto it = scan_job_state_.find(uuid);
+    if (it == scan_job_state_.end())
+      return;
+
+    ScanJobState& state = it->second;
     if (!response) {
       LOG(ERROR) << "Failed to obtain GetNextImage response";
-      std::move(state.completion_callback).Run(false);
+      std::move(state.completion_callback)
+          .Run(lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
       scan_job_state_.erase(uuid);
       return;
     }
@@ -415,7 +441,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
       LOG(ERROR) << "Failed to decode GetNextImageResponse proto";
-      std::move(state.completion_callback).Run(false);
+      std::move(state.completion_callback)
+          .Run(lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
       scan_job_state_.erase(uuid);
       return;
     }
@@ -423,7 +450,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     if (!response_proto.success()) {
       LOG(ERROR) << "Getting next image failed: "
                  << response_proto.failure_reason();
-      std::move(state.completion_callback).Run(false);
+      std::move(state.completion_callback)
+          .Run(response_proto.scan_failure_mode());
       scan_job_state_.erase(uuid);
       return;
     }
@@ -448,7 +476,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     if (signal_proto.state() == lorgnette::SCAN_STATE_FAILED) {
       LOG(ERROR) << "Scan job " << signal_proto.scan_uuid()
                  << " failed: " << signal_proto.failure_reason();
-      std::move(state.completion_callback).Run(false);
+      std::move(state.completion_callback)
+          .Run(signal_proto.scan_failure_mode());
       scan_job_state_.erase(signal_proto.scan_uuid());
     } else if (signal_proto.state() == lorgnette::SCAN_STATE_PAGE_COMPLETED) {
       VLOG(1) << "Scan job " << signal_proto.scan_uuid() << " page "
@@ -467,7 +496,9 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     } else if (signal_proto.state() == lorgnette::SCAN_STATE_CANCELLED) {
       VLOG(1) << "Scan job " << signal_proto.scan_uuid()
               << " has been cancelled.";
-      std::move(state.completion_callback).Run(false);
+      if (!state.cancel_callback.is_null())
+        std::move(state.cancel_callback).Run(true);
+
       scan_job_state_.erase(signal_proto.scan_uuid());
     }
   }

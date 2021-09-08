@@ -7,16 +7,19 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/audio/audio_node.h"
 #include "chromeos/dbus/audio/volume_state.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace dbus {
 class Bus;
@@ -62,6 +65,11 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
     virtual void BluetoothBatteryChanged(const std::string& address,
                                          uint32_t level);
 
+    // Called when the number of input streams with permission per client type
+    // changed.
+    virtual void NumberOfInputStreamsWithPermissionChanged(
+        const base::flat_map<std::string, uint32_t>& num_input_streams);
+
    protected:
     virtual ~Observer();
   };
@@ -96,12 +104,22 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
   // Gets any available group ID for the system AEC
   virtual void GetSystemAecGroupId(DBusMethodCallback<int32_t> callback) = 0;
 
+  // Gets if system NS is supported.
+  virtual void GetSystemNsSupported(DBusMethodCallback<bool> callback) = 0;
+
+  // Gets if system AGC is supported.
+  virtual void GetSystemAgcSupported(DBusMethodCallback<bool> callback) = 0;
+
   // Gets an array of audio input and output nodes.
   virtual void GetNodes(DBusMethodCallback<AudioNodeList> callback) = 0;
 
   // Gets the number of active output streams.
   virtual void GetNumberOfActiveOutputStreams(
       DBusMethodCallback<int> callback) = 0;
+
+  // Gets the number of input streams with permission per client type.
+  virtual void GetNumberOfInputStreamsWithPermission(
+      DBusMethodCallback<base::flat_map<std::string, uint32_t>>) = 0;
 
   // Gets the DeprioritzeBtWbsMic flag. On a few platforms CRAS may
   // report to deprioritize Bluetooth WBS mic's node priority because
@@ -121,6 +139,13 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
 
   // Sets input mute state to |mute_on| value.
   virtual void SetInputMute(bool mute_on) = 0;
+
+  // Sets input noise cancellation state to |noise_cancellation_on| value.
+  virtual void SetNoiseCancellationEnabled(bool noise_cancellation_on) = 0;
+
+  // Gets if Noise Cancellation is supported.
+  virtual void GetNoiseCancellationSupported(
+      DBusMethodCallback<bool> callback) = 0;
 
   // Sets the active output node to |node_id|.
   virtual void SetActiveOutputNode(uint64_t node_id) = 0;
@@ -166,6 +191,12 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
   // The dbus message will be dropped if this feature is not supported on the
   // |node_id|.
   virtual void SwapLeftRight(uint64_t node_id, bool swap) = 0;
+
+  // Sets the display |rotation| attribute of the primary active output device.
+  // The dbus message will be dropped if this feature is not supported on the
+  // |node_id|.
+  virtual void SetDisplayRotation(uint64_t node_id,
+                                  cras::DisplayRotation rotation) = 0;
 
   virtual void SetGlobalOutputChannelRemix(
       int32_t channels,

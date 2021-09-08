@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class TickClock;
@@ -36,12 +36,6 @@ class PopupOpenerTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<PopupOpenerTabHelper> {
  public:
-  // |tick_clock| overrides the internal time for testing. This doesn't take
-  // ownership of |tick_clock| or |settings_map|, and they both must outlive the
-  // PopupOpenerTabHelper instance.
-  static void CreateForWebContents(content::WebContents* contents,
-                                   const base::TickClock* tick_clock,
-                                   HostContentSettingsMap* settings_map);
   ~PopupOpenerTabHelper() override;
 
   void OnOpenedPopup(PopupTracker* popup_tracker);
@@ -58,6 +52,9 @@ class PopupOpenerTabHelper
  private:
   friend class content::WebContentsUserData<PopupOpenerTabHelper>;
 
+  // |tick_clock| overrides the internal time for testing. This doesn't take
+  // ownership of |tick_clock| or |settings_map|, and they both must outlive the
+  // PopupOpenerTabHelper instance.
   PopupOpenerTabHelper(content::WebContents* web_contents,
                        const base::TickClock* tick_clock,
                        HostContentSettingsMap* settings_map);
@@ -76,7 +73,7 @@ class PopupOpenerTabHelper
   // Visible time for this tab until a tab-under is detected. At which point it
   // gets the visible time from the |visibility_tracker_|. Will be unset until a
   // tab-under is detected.
-  base::Optional<base::TimeDelta> visible_time_before_tab_under_;
+  absl::optional<base::TimeDelta> visible_time_before_tab_under_;
 
   // The clock which is used by the visibility trackers.
   const base::TickClock* tick_clock_;

@@ -5,7 +5,7 @@
 #ifndef QUICHE_QUIC_PLATFORM_IMPL_BATCH_WRITER_QUIC_GSO_BATCH_WRITER_H_
 #define QUICHE_QUIC_PLATFORM_IMPL_BATCH_WRITER_QUIC_GSO_BATCH_WRITER_H_
 
-#include "net/third_party/quiche/src/quic/core/batch_writer/quic_batch_writer_base.h"
+#include "quic/core/batch_writer/quic_batch_writer_base.h"
 
 namespace quic {
 
@@ -61,8 +61,8 @@ class QUIC_EXPORT_PRIVATE QuicGsoBatchWriter : public QuicUdpBatchWriter {
 
   template <size_t CmsgSpace, typename CmsgBuilderT>
   FlushImplResult InternalFlushImpl(CmsgBuilderT cmsg_builder) {
-    DCHECK(!IsWriteBlocked());
-    DCHECK(!buffered_writes().empty());
+    QUICHE_DCHECK(!IsWriteBlocked());
+    QUICHE_DCHECK(!buffered_writes().empty());
 
     FlushImplResult result = {WriteResult(WRITE_STATUS_OK, 0),
                               /*num_packets_sent=*/0, /*bytes_written=*/0};
@@ -100,7 +100,7 @@ class QUIC_EXPORT_PRIVATE QuicGsoBatchWriter : public QuicUdpBatchWriter {
 
     batch_buffer().PopBufferedWrite(buffered_writes().size());
 
-    QUIC_BUG_IF(!buffered_writes().empty())
+    QUIC_BUG_IF(quic_bug_12544_1, !buffered_writes().empty())
         << "All packets should have been written on a successful return";
     return result;
   }

@@ -14,7 +14,9 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/default_style.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/color_utils.h"
@@ -25,7 +27,6 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
@@ -35,7 +36,7 @@
 #include "ui/base/win/shell.h"
 #endif
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include "ui/views/widget/widget_utils_mac.h"
 #else
 #include "ui/aura/window.h"
@@ -43,9 +44,6 @@
 #endif
 
 namespace views {
-
-// static
-bool BubbleDialogDelegate::devtools_dismiss_override_ = false;
 
 namespace {
 
@@ -73,6 +71,14 @@ class BubbleWidget : public Widget {
     if (!bubble_delegate || !bubble_delegate->anchor_widget())
       return Widget::GetThemeProvider();
     return bubble_delegate->anchor_widget()->GetThemeProvider();
+  }
+
+  Widget* GetPrimaryWindowWidget() override {
+    BubbleDialogDelegateView* const bubble_delegate =
+        static_cast<BubbleDialogDelegateView*>(widget_delegate());
+    if (!bubble_delegate || !bubble_delegate->anchor_widget())
+      return Widget::GetPrimaryWindowWidget();
+    return bubble_delegate->anchor_widget()->GetPrimaryWindowWidget();
   }
 
  private:
@@ -105,6 +111,7 @@ bool CustomShadowsSupported() {
 
 // Create a widget to host the bubble.
 Widget* CreateBubbleWidget(BubbleDialogDelegate* bubble) {
+  DCHECK(bubble->owned_by_widget());
   Widget* bubble_widget = new BubbleWidget();
   Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
@@ -116,28 +123,30 @@ Widget* CreateBubbleWidget(BubbleDialogDelegate* bubble) {
   bubble_params.layer_type = bubble->GetLayerType();
 
   // Use a window default shadow if the bubble doesn't provides its own.
-  if (bubble->GetShadow() == BubbleBorder::NO_ASSETS)
+  if (bubble->GetShadow() == BubbleBorder::NO_SHADOW)
     bubble_params.shadow_type = Widget::InitParams::ShadowType::kDefault;
   else if (CustomShadowsSupported())
     bubble_params.shadow_type = Widget::InitParams::ShadowType::kNone;
   else
     bubble_params.shadow_type = Widget::InitParams::ShadowType::kDrop;
-  if (bubble->parent_window()) {
-    bubble_params.parent = bubble->parent_window();
-  } else if (bubble->anchor_widget()) {
-    bubble_params.parent = bubble->anchor_widget()->GetNativeView();
+  if (bubble->has_parent()) {
+    if (bubble->parent_window()) {
+      bubble_params.parent = bubble->parent_window();
+    } else if (bubble->anchor_widget()) {
+      bubble_params.parent = bubble->anchor_widget()->GetNativeView();
+    }
   }
   bubble_params.activatable = bubble->CanActivate()
-                                  ? Widget::InitParams::ACTIVATABLE_YES
-                                  : Widget::InitParams::ACTIVATABLE_NO;
+                                  ? Widget::InitParams::Activatable::kYes
+                                  : Widget::InitParams::Activatable::kNo;
   bubble->OnBeforeBubbleWidgetInit(&bubble_params, bubble_widget);
-  DCHECK(bubble_params.parent);
+  DCHECK(bubble_params.parent || !bubble->has_parent());
   bubble_widget->Init(std::move(bubble_params));
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   // On Mac, having a parent window creates a permanent stacking order, so
   // there's no need to do this. Also, calling StackAbove() on Mac shows the
   // bubble implicitly, for which the bubble is currently not ready.
-  if (bubble_params.parent)
+  if (bubble->has_parent() && bubble_params.parent)
     bubble_widget->StackAbove(bubble_params.parent);
 #endif
   return bubble_widget;
@@ -185,7 +194,7 @@ class BubbleDialogDelegate::AnchorViewObserver : public ViewObserver {
 
 // This class is responsible for observing events on a BubbleDialogDelegate's
 // anchor widget and notifying the BubbleDialogDelegate of them.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver {
 #else
 class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
@@ -195,19 +204,21 @@ class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
  public:
   AnchorWidgetObserver(BubbleDialogDelegate* owner, Widget* widget)
       : owner_(owner) {
-    widget_observer_.Add(widget);
-#if !defined(OS_APPLE)
-    window_observer_.Add(widget->GetNativeWindow());
+    widget_observation_.Observe(widget);
+#if !defined(OS_MAC)
+    window_observation_.Observe(widget->GetNativeWindow());
 #endif
   }
   ~AnchorWidgetObserver() override = default;
 
   // WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override {
-#if !defined(OS_APPLE)
-    window_observer_.Remove(widget->GetNativeWindow());
+#if !defined(OS_MAC)
+    DCHECK(window_observation_.IsObservingSource(widget->GetNativeWindow()));
+    window_observation_.Reset();
 #endif
-    widget_observer_.Remove(widget);
+    DCHECK(widget_observation_.IsObservingSource(widget));
+    widget_observation_.Reset();
     owner_->OnAnchorWidgetDestroying();
     // |this| may be destroyed here!
   }
@@ -220,7 +231,7 @@ class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
     owner_->OnAnchorBoundsChanged();
   }
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   // aura::WindowObserver:
   void OnWindowTransformed(aura::Window* window,
                            ui::PropertyChangeReason reason) override {
@@ -238,9 +249,11 @@ class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
 
  private:
   BubbleDialogDelegate* owner_;
-  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
-#if !defined(OS_APPLE)
-  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
+  base::ScopedObservation<views::Widget, views::WidgetObserver>
+      widget_observation_{this};
+#if !defined(OS_MAC)
+  base::ScopedObservation<aura::Window, aura::WindowObserver>
+      window_observation_{this};
 #endif
 };
 
@@ -250,7 +263,7 @@ class BubbleDialogDelegate::BubbleWidgetObserver : public WidgetObserver {
  public:
   BubbleWidgetObserver(BubbleDialogDelegate* owner, Widget* widget)
       : owner_(owner) {
-    observer_.Add(widget);
+    observation_.Observe(widget);
   }
   ~BubbleWidgetObserver() override = default;
 
@@ -264,7 +277,8 @@ class BubbleDialogDelegate::BubbleWidgetObserver : public WidgetObserver {
   }
 
   void OnWidgetDestroyed(Widget* widget) override {
-    observer_.Remove(widget);
+    DCHECK(observation_.IsObservingSource(widget));
+    observation_.Reset();
     owner_->OnWidgetDestroyed(widget);
   }
 
@@ -295,19 +309,28 @@ class BubbleDialogDelegate::BubbleWidgetObserver : public WidgetObserver {
 
  private:
   BubbleDialogDelegate* owner_;
-  ScopedObserver<views::Widget, views::WidgetObserver> observer_{this};
+  base::ScopedObservation<views::Widget, views::WidgetObserver> observation_{
+      this};
 };
 
-BubbleDialogDelegate::BubbleDialogDelegate() = default;
 BubbleDialogDelegate::BubbleDialogDelegate(View* anchor_view,
                                            BubbleBorder::Arrow arrow,
                                            BubbleBorder::Shadow shadow)
-    : arrow_(arrow), shadow_(shadow) {}
-BubbleDialogDelegate::~BubbleDialogDelegate() = default;
+    : arrow_(arrow), shadow_(shadow) {
+  SetAnchorView(anchor_view);
+  SetOwnedByWidget(true);
+}
+
+BubbleDialogDelegate::~BubbleDialogDelegate() {
+  SetAnchorView(nullptr);
+}
 
 // static
 Widget* BubbleDialogDelegate::CreateBubble(
-    BubbleDialogDelegate* bubble_delegate) {
+    std::unique_ptr<BubbleDialogDelegate> bubble_delegate_unique) {
+  BubbleDialogDelegate* const bubble_delegate = bubble_delegate_unique.get();
+  DCHECK(bubble_delegate->owned_by_widget());
+
   // On Mac, MODAL_TYPE_WINDOW is implemented using sheets, which can't be
   // anchored at a specific point - they are always placed near the top center
   // of the window. To avoid unpleasant surprises, disallow setting an anchor
@@ -320,7 +343,8 @@ Widget* BubbleDialogDelegate::CreateBubble(
   bubble_delegate->Init();
   // Get the latest anchor widget from the anchor view at bubble creation time.
   bubble_delegate->SetAnchorView(bubble_delegate->GetAnchorView());
-  Widget* bubble_widget = CreateBubbleWidget(bubble_delegate);
+  Widget* const bubble_widget =
+      CreateBubbleWidget(bubble_delegate_unique.release());
 
   bubble_delegate->set_adjust_if_offscreen(
       PlatformStyle::kAdjustBubbleIfOffscreen);
@@ -337,10 +361,12 @@ Widget* BubbleDialogDelegate::CreateBubble(
 
 Widget* BubbleDialogDelegateView::CreateBubble(
     std::unique_ptr<BubbleDialogDelegateView> delegate) {
-  return CreateBubble(delegate.release());
+  DCHECK(delegate->owned_by_client());
+  return BubbleDialogDelegate::CreateBubble(std::move(delegate));
 }
+
 Widget* BubbleDialogDelegateView::CreateBubble(BubbleDialogDelegateView* view) {
-  return BubbleDialogDelegate::CreateBubble(view);
+  return CreateBubble(base::WrapUnique(view));
 }
 
 BubbleDialogDelegateView::BubbleDialogDelegateView()
@@ -351,23 +377,30 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
                                                    BubbleBorder::Shadow shadow)
     : BubbleDialogDelegate(anchor_view, arrow, shadow) {
   set_owned_by_client();
-  SetOwnedByWidget(true);
   WidgetDelegate::SetShowCloseButton(false);
 
   SetArrow(arrow);
   LayoutProvider* provider = LayoutProvider::Get();
   // An individual bubble should override these margins if its layout differs
   // from the typical title/text/buttons.
-  set_margins(provider->GetDialogInsetsForContentType(TEXT, TEXT));
+  set_margins(provider->GetDialogInsetsForContentType(
+      DialogContentType::kText, DialogContentType::kText));
   set_title_margins(provider->GetInsetsMetric(INSETS_DIALOG_TITLE));
-  if (anchor_view)
-    SetAnchorView(anchor_view);
-  UpdateColorsFromTheme();
   UMA_HISTOGRAM_BOOLEAN("Dialog.BubbleDialogDelegateView.Create", true);
 }
 
 BubbleDialogDelegateView::~BubbleDialogDelegateView() {
+  // TODO(pbos): Investigate if this is actually still needed, and if so
+  // document here why that's the case. If it's due to specific client layout
+  // managers, push this down to client destructors.
   SetLayoutManager(nullptr);
+  // TODO(pbos): See if we can resolve this better. This currently prevents a
+  // crash that shows up in BubbleFrameViewTest.WidthSnaps. This crash seems to
+  // happen at GetWidget()->IsVisible() inside SetAnchorView(nullptr) and seems
+  // to be as a result of WidgetDelegate's widget_ not getting updated during
+  // destruction when BubbleDialogDelegateView::DeleteDelegate() doesn't delete
+  // itself, as Widget drops a reference to widget_delegate_ and can't inform it
+  // of WidgetDeleting in ~Widget.
   SetAnchorView(nullptr);
 }
 
@@ -380,7 +413,7 @@ BubbleDialogDelegate::CreateNonClientFrameView(Widget* widget) {
   auto frame = std::make_unique<BubbleDialogFrameView>(title_margins_);
   LayoutProvider* provider = LayoutProvider::Get();
 
-  frame->set_footnote_margins(
+  frame->SetFootnoteMargins(
       provider->GetInsetsMetric(INSETS_DIALOG_SUBSECTION));
   frame->SetFootnoteView(DisownFootnoteView());
 
@@ -407,17 +440,6 @@ ClientView* BubbleDialogDelegate::CreateClientView(Widget* widget) {
   }
 
   return client_view_;
-}
-
-bool BubbleDialogDelegateView::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_DOWN ||
-      accelerator.key_code() == ui::VKEY_UP) {
-    // Move the focus up or down.
-    GetFocusManager()->AdvanceFocus(accelerator.key_code() != ui::VKEY_DOWN);
-    return true;
-  }
-  return View::AcceleratorPressed(accelerator);
 }
 
 Widget* BubbleDialogDelegateView::GetWidget() {
@@ -459,10 +481,7 @@ void BubbleDialogDelegate::OnAnchorWidgetDestroying() {
 }
 
 void BubbleDialogDelegate::OnBubbleWidgetActivationChanged(bool active) {
-  if (devtools_dismiss_override_)
-    return;
-
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Install |mac_bubble_closer_| the first time the widget becomes active.
   if (active && !mac_bubble_closer_) {
     mac_bubble_closer_ = std::make_unique<ui::BubbleCloser>(
@@ -504,9 +523,9 @@ void BubbleDialogDelegate::OnBubbleWidgetPaintAsActiveChanged() {
 }
 
 BubbleBorder::Shadow BubbleDialogDelegate::GetShadow() const {
-  if (CustomShadowsSupported() || shadow_ == BubbleBorder::NO_ASSETS)
+  if (CustomShadowsSupported() || shadow_ == BubbleBorder::NO_SHADOW)
     return shadow_;
-  return BubbleBorder::NO_SHADOW;
+  return BubbleBorder::NO_SHADOW_LEGACY;
 }
 
 View* BubbleDialogDelegate::GetAnchorView() const {
@@ -554,9 +573,8 @@ gfx::Rect BubbleDialogDelegate::GetAnchorRect() const {
     return anchor_rect_.value_or(gfx::Rect());
 
   anchor_rect_ = GetAnchorView()->GetAnchorBoundsInScreen();
-  anchor_rect_->Inset(anchor_view_insets_);
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   // GetAnchorBoundsInScreen returns values that take anchor widget's
   // translation into account, so undo that here. Without this, features which
   // apply transforms on windows such as ChromeOS overview mode will see bubbles
@@ -665,6 +683,9 @@ gfx::Rect BubbleDialogDelegate::GetBubbleBounds() {
 }
 
 ax::mojom::Role BubbleDialogDelegate::GetAccessibleWindowRole() {
+  if (WidgetDelegate::GetAccessibleWindowRole() == ax::mojom::Role::kNone)
+    return ax::mojom::Role::kNone;
+
   // If something in the dialog has initial focus, use the dialog role.
   // Screen readers understand what to announce when focus moves within one.
   if (GetInitiallyFocusedView())
@@ -764,7 +785,7 @@ void BubbleDialogDelegate::SetAnchorRect(const gfx::Rect& rect) {
 
 void BubbleDialogDelegate::SizeToContents() {
   gfx::Rect bubble_bounds = GetBubbleBounds();
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // GetBubbleBounds() doesn't take the Mac NativeWindow's style mask into
   // account, so we need to adjust the size.
   gfx::Size actual_size =

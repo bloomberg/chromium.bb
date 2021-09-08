@@ -38,7 +38,7 @@ class RawBitReader : public BitReader, public Allocable {
                         size_t* value);    // le(n) in the spec.
   bool ReadUnsignedLeb128(size_t* value);  // leb128() in the spec.
   // Reads a variable length unsigned number and stores it in |*value|. On a
-  // successful return, |*value| is in the range of 0 to UINT32_MAX − 1,
+  // successful return, |*value| is in the range of 0 to UINT32_MAX - 1,
   // inclusive.
   bool ReadUvlc(uint32_t* value);  // uvlc() in the spec.
   bool Finished() const;

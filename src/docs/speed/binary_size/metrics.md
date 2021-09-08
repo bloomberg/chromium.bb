@@ -39,7 +39,8 @@ For Googlers, more information available at [go/chrome-apk-size](https://goto.go
    * With all native code as the sum of section sizes (except .bss), uncompressed.
      * Why: Removes effects of ELF section alignment.
    * With all dex code as if it were stored uncompressed.
-     * Why: Dex is stored uncompressed on newer Android versions.
+     * Why: Best practice is to store dex uncompressed on Android P and above.
+     * On prior versions, or when stored compressed, dex is extracted upon installation.
    * With all zipalign padding removed.
      * Why: Removes effects of file alignment (esp. relevant because native libraries are 4k-aligned).
    * With size of apk signature block removed.
@@ -47,6 +48,7 @@ For Googlers, more information available at [go/chrome-apk-size](https://goto.go
    * With all translations as if they were not missing (estimates size of missing translations based on size of english strings).
      * Why: Without translation-normalization, translation dumps cause jumps.
      * Translation-normalization applies only to apks (not to Android App Bundles).
+ * For Android App Bundles, the normalized size is the sum of the normalized size of all splits that have onDemand="false" (those installed by default).
 
 ### Native Code Size Metrics
 

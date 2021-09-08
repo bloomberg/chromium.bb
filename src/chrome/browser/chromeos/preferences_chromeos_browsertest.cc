@@ -5,23 +5,22 @@
 #include <stddef.h>
 #include <sys/types.h>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/login/login_manager_test.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
+#include "chrome/browser/ash/login/ui/user_adding_screen.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/ash/system/fake_input_device_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "components/feedback/tracing_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_test.h"
@@ -62,13 +61,16 @@ class PreferencesTest : public LoginManagerTest {
     prefs->SetBoolean(ash::prefs::kNaturalScroll, variant);
     prefs->SetBoolean(prefs::kTapToClickEnabled, variant);
     prefs->SetBoolean(prefs::kPrimaryMouseButtonRight, !variant);
+    prefs->SetBoolean(prefs::kPrimaryPointingStickButtonRight, !variant);
     prefs->SetBoolean(prefs::kMouseAcceleration, variant);
     prefs->SetBoolean(prefs::kMouseScrollAcceleration, variant);
+    prefs->SetBoolean(prefs::kPointingStickAcceleration, variant);
     prefs->SetBoolean(prefs::kTouchpadAcceleration, variant);
     prefs->SetBoolean(prefs::kTouchpadScrollAcceleration, variant);
     prefs->SetBoolean(prefs::kEnableTouchpadThreeFingerClick, !variant);
     prefs->SetInteger(prefs::kMouseSensitivity, !variant);
     prefs->SetInteger(prefs::kMouseScrollSensitivity, variant ? 1 : 4);
+    prefs->SetInteger(prefs::kPointingStickSensitivity, !variant);
     prefs->SetInteger(prefs::kTouchpadSensitivity, variant);
     prefs->SetInteger(prefs::kTouchpadScrollSensitivity, variant ? 1 : 4);
     prefs->SetBoolean(ash::prefs::kXkbAutoRepeatEnabled, variant);
@@ -85,6 +87,9 @@ class PreferencesTest : public LoginManagerTest {
     EXPECT_EQ(prefs->GetBoolean(prefs::kPrimaryMouseButtonRight),
               input_settings_->current_mouse_settings()
                   .GetPrimaryButtonRight());
+    EXPECT_EQ(prefs->GetBoolean(prefs::kPrimaryPointingStickButtonRight),
+              input_settings_->current_pointing_stick_settings()
+                  .GetPrimaryButtonRight());
     EXPECT_EQ(prefs->GetBoolean(ash::prefs::kMouseReverseScroll),
               input_settings_->current_mouse_settings().GetReverseScroll());
     EXPECT_EQ(prefs->GetBoolean(prefs::kMouseAcceleration),
@@ -92,6 +97,9 @@ class PreferencesTest : public LoginManagerTest {
     EXPECT_EQ(
         prefs->GetBoolean(prefs::kMouseScrollAcceleration),
         input_settings_->current_mouse_settings().GetScrollAcceleration());
+    EXPECT_EQ(
+        prefs->GetBoolean(prefs::kPointingStickAcceleration),
+        input_settings_->current_pointing_stick_settings().GetAcceleration());
     EXPECT_EQ(prefs->GetBoolean(prefs::kTouchpadAcceleration),
               input_settings_->current_touchpad_settings().GetAcceleration());
     EXPECT_EQ(
@@ -104,6 +112,9 @@ class PreferencesTest : public LoginManagerTest {
               input_settings_->current_mouse_settings().GetSensitivity());
     EXPECT_EQ(prefs->GetInteger(prefs::kMouseScrollSensitivity),
               input_settings_->current_mouse_settings().GetScrollSensitivity());
+    EXPECT_EQ(
+        prefs->GetInteger(prefs::kPointingStickSensitivity),
+        input_settings_->current_pointing_stick_settings().GetSensitivity());
     EXPECT_EQ(prefs->GetInteger(prefs::kTouchpadSensitivity),
               input_settings_->current_touchpad_settings().GetSensitivity());
     EXPECT_EQ(
@@ -129,6 +140,9 @@ class PreferencesTest : public LoginManagerTest {
               prefs->GetBoolean(prefs::kTapToClickEnabled));
     EXPECT_EQ(local_state->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight),
               prefs->GetBoolean(prefs::kPrimaryMouseButtonRight));
+    EXPECT_EQ(
+        local_state->GetBoolean(prefs::kOwnerPrimaryPointingStickButtonRight),
+        prefs->GetBoolean(prefs::kPrimaryPointingStickButtonRight));
   }
 
   LoginManagerMixin login_mixin_{&mixin_host_};

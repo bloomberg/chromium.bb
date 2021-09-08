@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/dcheck_is_on.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
@@ -96,7 +97,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
 
   // Before OnCalculatedSize() is called: Returns nullopt.
   // After OnCalculatedSize() is called: Returns the size of the resource.
-  base::Optional<uint64_t> TotalBytes() const { return total_bytes_; }
+  absl::optional<uint64_t> TotalBytes() const { return total_bytes_; }
 
   FileErrorCode GetErrorCode() const { return error_code_; }
 
@@ -166,7 +167,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   // total_bytes_ is set to the total size of the blob being loaded as soon as
   // it is known, and  the buffer for receiving data of total_bytes_ is
   // allocated and never grow even when extra data is appended.
-  base::Optional<uint64_t> total_bytes_;
+  absl::optional<uint64_t> total_bytes_;
 
   int32_t net_error_ = 0;  // net::OK
   FileErrorCode error_code_ = FileErrorCode::kOK;

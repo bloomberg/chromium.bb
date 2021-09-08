@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 
+#include "chrome/browser/ash/login/screens/active_directory_password_change_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
@@ -21,10 +22,8 @@ constexpr StaticOobeScreenId ActiveDirectoryPasswordChangeView::kScreenId;
 
 ActiveDirectoryPasswordChangeScreenHandler::
     ActiveDirectoryPasswordChangeScreenHandler(
-        JSCallsContainer* js_calls_container,
-        CoreOobeView* core_oobe_view)
-    : BaseScreenHandler(kScreenId, js_calls_container),
-      core_oobe_view_(core_oobe_view) {
+        JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_user_acted_method_path(
       "login.ActiveDirectoryPasswordChangeScreen.userActed");
 }
@@ -67,8 +66,8 @@ void ActiveDirectoryPasswordChangeScreenHandler::Unbind() {
 
 void ActiveDirectoryPasswordChangeScreenHandler::ShowSignInError(
     const std::string& error_text) {
-  core_oobe_view_->ShowSignInError(0, error_text, std::string(),
-                                   HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+  CallJS("login.ActiveDirectoryPasswordChangeScreen.showErrorDialog",
+         error_text);
 }
 
 void ActiveDirectoryPasswordChangeScreenHandler::HandleComplete(

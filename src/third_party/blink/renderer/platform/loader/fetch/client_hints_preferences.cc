@@ -7,13 +7,14 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "services/network/public/cpp/client_hints.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "url/origin.h"
 
 namespace blink {
 
@@ -31,6 +32,18 @@ void ClientHintsPreferences::UpdateFrom(
     network::mojom::WebClientHintsType type =
         static_cast<network::mojom::WebClientHintsType>(i);
     enabled_hints_.SetIsEnabled(type, preferences.ShouldSend(type));
+  }
+}
+
+void ClientHintsPreferences::CombineWith(
+    const ClientHintsPreferences& preferences) {
+  for (size_t i = 0;
+       i < static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) + 1;
+       ++i) {
+    network::mojom::WebClientHintsType type =
+        static_cast<network::mojom::WebClientHintsType>(i);
+    if (preferences.ShouldSend(type))
+      SetShouldSend(type);
   }
 }
 
@@ -56,10 +69,12 @@ void ClientHintsPreferences::UpdateFromHttpEquivAcceptCH(
     return;
 
   // Note: .Ascii() would convert tab to ?, which is undesirable.
-  base::Optional<std::vector<network::mojom::WebClientHintsType>> parsed_ch =
-      FilterAcceptCH(network::ParseClientHintsHeader(header_value.Latin1()),
-                     RuntimeEnabledFeatures::LangClientHintHeaderEnabled(),
-                     UserAgentClientHintEnabled());
+  absl::optional<std::vector<network::mojom::WebClientHintsType>> parsed_ch =
+      FilterAcceptCH(
+          network::ParseClientHintsHeader(header_value.Latin1()),
+          RuntimeEnabledFeatures::LangClientHintHeaderEnabled(),
+          UserAgentClientHintEnabled(),
+          RuntimeEnabledFeatures::PrefersColorSchemeClientHintHeaderEnabled());
   if (!parsed_ch.has_value())
     return;
 
@@ -83,8 +98,7 @@ void ClientHintsPreferences::UpdateFromHttpEquivAcceptCH(
 // static
 bool ClientHintsPreferences::IsClientHintsAllowed(const KURL& url) {
   return (url.ProtocolIs("http") || url.ProtocolIs("https")) &&
-         (SecurityOrigin::IsSecure(url) ||
-          SecurityOrigin::Create(url)->IsLocalhost());
+         network::IsOriginPotentiallyTrustworthy(url::Origin::Create(url));
 }
 
 WebEnabledClientHints ClientHintsPreferences::GetWebEnabledClientHints() const {

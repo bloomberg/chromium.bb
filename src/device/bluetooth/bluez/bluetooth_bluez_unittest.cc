@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
 #include "base/test/bind.h"
@@ -36,10 +36,11 @@
 #include "device/bluetooth/dbus/fake_bluetooth_input_client.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "device/bluetooth/test/test_pairing_delegate.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/data_decoder/public/mojom/ble_scan_parser.mojom.h"
@@ -78,7 +79,7 @@ int GetDeviceIndexByAddress(const BluetoothAdapter::DeviceList& devices,
   return -1;
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class FakeBleScanParserImpl : public data_decoder::mojom::BleScanParser {
  public:
   FakeBleScanParserImpl() = default;
@@ -160,7 +161,7 @@ class BluetoothBlueZTest : public testing::Test {
     dbus_setter->SetBluetoothGattServiceClient(
         std::make_unique<bluez::FakeBluetoothGattServiceClient>());
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     device::BluetoothAdapterFactory::SetBleScanParserCallback(
         base::BindLambdaForTesting([&]() {
           mojo::PendingRemote<data_decoder::mojom::BleScanParser>
@@ -179,7 +180,7 @@ class BluetoothBlueZTest : public testing::Test {
   }
 
   void TearDown() override {
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     device::BluetoothAdapterFactory::SetBleScanParserCallback(
         base::NullCallback());
 #endif
@@ -388,7 +389,7 @@ TEST_F(BluetoothBlueZTest, AlreadyPresent) {
 }
 
 TEST_F(BluetoothBlueZTest, BecomePresent) {
-  fake_bluetooth_adapter_client_->SetVisible(false);
+  fake_bluetooth_adapter_client_->SetPresent(false);
   GetAdapter();
   ASSERT_FALSE(adapter_->IsPresent());
 
@@ -396,7 +397,7 @@ TEST_F(BluetoothBlueZTest, BecomePresent) {
   // with true, and IsPresent() to return true.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  fake_bluetooth_adapter_client_->SetVisible(true);
+  fake_bluetooth_adapter_client_->SetPresent(true);
 
   EXPECT_EQ(1, observer.present_changed_count());
   EXPECT_TRUE(observer.last_present());
@@ -423,7 +424,7 @@ TEST_F(BluetoothBlueZTest, BecomeNotPresent) {
   // with false, and IsPresent() to return false.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  fake_bluetooth_adapter_client_->SetVisible(false);
+  fake_bluetooth_adapter_client_->SetPresent(false);
 
   EXPECT_EQ(1, observer.present_changed_count());
   EXPECT_FALSE(observer.last_present());
@@ -457,7 +458,7 @@ TEST_F(BluetoothBlueZTest, SecondAdapter) {
   // we ignore the second adapter.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  fake_bluetooth_adapter_client_->SetSecondVisible(true);
+  fake_bluetooth_adapter_client_->SetSecondPresent(true);
 
   EXPECT_EQ(0, observer.present_changed_count());
 
@@ -467,7 +468,7 @@ TEST_F(BluetoothBlueZTest, SecondAdapter) {
 
   // Try removing the first adapter, we should now act as if the adapter
   // is no longer present rather than fall back to the second.
-  fake_bluetooth_adapter_client_->SetVisible(false);
+  fake_bluetooth_adapter_client_->SetPresent(false);
 
   EXPECT_EQ(1, observer.present_changed_count());
   EXPECT_FALSE(observer.last_present());
@@ -496,7 +497,7 @@ TEST_F(BluetoothBlueZTest, SecondAdapter) {
   observer.Reset();
 
   // Removing the second adapter shouldn't set anything either.
-  fake_bluetooth_adapter_client_->SetSecondVisible(false);
+  fake_bluetooth_adapter_client_->SetSecondPresent(false);
 
   EXPECT_EQ(0, observer.device_removed_count());
   EXPECT_EQ(0, observer.powered_changed_count());
@@ -552,7 +553,7 @@ TEST_F(BluetoothBlueZTest, SetPoweredWhenNotPresent) {
   // with false, and IsPresent() to return false.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  fake_bluetooth_adapter_client_->SetVisible(false);
+  fake_bluetooth_adapter_client_->SetPresent(false);
 
   EXPECT_EQ(1, observer.present_changed_count());
   EXPECT_FALSE(observer.last_present());
@@ -590,7 +591,7 @@ TEST_F(BluetoothBlueZTest, ChangeAdapterNameWhenNotPresent) {
   // with false, and IsPresent() to return false.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  fake_bluetooth_adapter_client_->SetVisible(false);
+  fake_bluetooth_adapter_client_->SetPresent(false);
 
   EXPECT_EQ(1, observer.present_changed_count());
   EXPECT_FALSE(observer.last_present());
@@ -675,7 +676,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoverableWhenNotPresent) {
   // with true, and IsDiscoverable() to return true.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  fake_bluetooth_adapter_client_->SetVisible(false);
+  fake_bluetooth_adapter_client_->SetPresent(false);
 
   EXPECT_EQ(1, observer.present_changed_count());
   EXPECT_FALSE(observer.last_present());
@@ -787,7 +788,7 @@ TEST_F(BluetoothBlueZTest, PoweredAndDiscovering) {
   ASSERT_TRUE(adapter_->IsPowered());
   ASSERT_TRUE(IsAdapterDiscovering());
 
-  fake_bluetooth_adapter_client_->SetVisible(false);
+  fake_bluetooth_adapter_client_->SetPresent(false);
   ASSERT_FALSE(adapter_->IsPresent());
   ASSERT_FALSE(discovery_sessions_[0]->IsActive());
 
@@ -797,7 +798,7 @@ TEST_F(BluetoothBlueZTest, PoweredAndDiscovering) {
   // all return true.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  fake_bluetooth_adapter_client_->SetVisible(true);
+  fake_bluetooth_adapter_client_->SetPresent(true);
 
   EXPECT_EQ(1, observer.present_changed_count());
   EXPECT_TRUE(observer.last_present());
@@ -815,7 +816,7 @@ TEST_F(BluetoothBlueZTest, PoweredAndDiscovering) {
 
   // Now mark the adapter not present again. Expect the methods to be called
   // again, to reset the properties back to false.
-  fake_bluetooth_adapter_client_->SetVisible(false);
+  fake_bluetooth_adapter_client_->SetPresent(false);
 
   EXPECT_EQ(1, observer.present_changed_count());
   EXPECT_FALSE(observer.last_present());
@@ -1088,7 +1089,7 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
   // Make the adapter disappear and appear. This will make it come back as
   // discovering. When this happens, the reference count should become and
   // remain 0 as no new request was made through the BluetoothAdapter.
-  fake_bluetooth_adapter_client_->SetVisible(false);
+  fake_bluetooth_adapter_client_->SetPresent(false);
   ASSERT_FALSE(adapter_->IsPresent());
   EXPECT_EQ(4, observer.discovering_changed_count());
   EXPECT_EQ(6, callback_count_);
@@ -1100,7 +1101,7 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
     EXPECT_FALSE(discovery_sessions_[i]->IsActive());
   discovery_sessions_.clear();
 
-  fake_bluetooth_adapter_client_->SetVisible(true);
+  fake_bluetooth_adapter_client_->SetPresent(true);
   ASSERT_TRUE(adapter_->IsPresent());
   EXPECT_EQ(5, observer.discovering_changed_count());
   EXPECT_EQ(6, callback_count_);
@@ -4478,6 +4479,79 @@ TEST_F(BluetoothBlueZTest, BatteryEvents) {
   fake_bluetooth_battery_client_->RemoveBattery(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   EXPECT_FALSE(device->battery_percentage().has_value());
+}
+
+TEST_F(BluetoothBlueZTest, DeviceUUIDsCombinedFromServiceAndAdvertisement) {
+  // Simulate addition and removal of service and advertisement UUIDs.
+  GetAdapter();
+
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+  ASSERT_TRUE(device);
+
+  BluetoothDeviceBlueZ* device_bluez =
+      static_cast<BluetoothDeviceBlueZ*>(device);
+
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+
+  // Have these 9 UUIDs divided into 3 groups:
+  // -UUIDs which is available from the start, but later is missing
+  // -UUIDs which is not available in the beginning, but later is added
+  // -UUIDs which is always available
+  // In each group, they are further divided into 3 groups:
+  // -advertisement UUIDs
+  // -service UUIDs (from SDP / GATT)
+  // -UUIDs which appear in both
+  BluetoothUUID uuidInitAdv = BluetoothUUID("1111");
+  BluetoothUUID uuidInitServ = BluetoothUUID("2222");
+  BluetoothUUID uuidInitBoth = BluetoothUUID("3333");
+  BluetoothUUID uuidLaterAdv = BluetoothUUID("4444");
+  BluetoothUUID uuidLaterServ = BluetoothUUID("5555");
+  BluetoothUUID uuidLaterBoth = BluetoothUUID("6666");
+  BluetoothUUID uuidAlwaysAdv = BluetoothUUID("7777");
+  BluetoothUUID uuidAlwaysServ = BluetoothUUID("8888");
+  BluetoothUUID uuidAlwaysBoth = BluetoothUUID("9999");
+
+  BluetoothAdapter::UUIDList uuidsInitAdv{uuidInitAdv, uuidInitBoth,
+                                          uuidAlwaysAdv, uuidAlwaysBoth};
+  BluetoothAdapter::UUIDList uuidsLaterAdv{uuidLaterAdv, uuidLaterBoth,
+                                           uuidAlwaysAdv, uuidAlwaysBoth};
+
+  std::vector<std::string> uuidsInitServ{
+      uuidInitServ.canonical_value(), uuidInitBoth.canonical_value(),
+      uuidAlwaysServ.canonical_value(), uuidAlwaysBoth.canonical_value()};
+  std::vector<std::string> uuidsLaterServ{
+      uuidLaterServ.canonical_value(), uuidLaterBoth.canonical_value(),
+      uuidAlwaysServ.canonical_value(), uuidAlwaysBoth.canonical_value()};
+
+  device_bluez->SetAdvertisedUUIDs(uuidsInitAdv);
+  properties->uuids.ReplaceValue(uuidsInitServ);
+
+  // The result should be the union of service and advertisement UUIDs
+  BluetoothDevice::UUIDSet dev_uuids = device->GetUUIDs();
+  EXPECT_THAT(dev_uuids, ::testing::ElementsAre(
+                             uuidInitAdv, uuidInitServ, uuidInitBoth,
+                             uuidAlwaysAdv, uuidAlwaysServ, uuidAlwaysBoth));
+
+  // advertisement UUIDs updated
+  device_bluez->SetAdvertisedUUIDs(uuidsLaterAdv);
+  dev_uuids = device->GetUUIDs();
+  EXPECT_THAT(dev_uuids,
+              ::testing::ElementsAre(uuidInitServ, uuidInitBoth, uuidLaterAdv,
+                                     uuidLaterBoth, uuidAlwaysAdv,
+                                     uuidAlwaysServ, uuidAlwaysBoth));
+
+  // service UUIDs updated
+  properties->uuids.ReplaceValue(uuidsLaterServ);
+  dev_uuids = device->GetUUIDs();
+  EXPECT_THAT(dev_uuids, ::testing::ElementsAre(
+                             uuidLaterAdv, uuidLaterServ, uuidLaterBoth,
+                             uuidAlwaysAdv, uuidAlwaysServ, uuidAlwaysBoth));
 }
 
 }  // namespace bluez

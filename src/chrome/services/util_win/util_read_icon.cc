@@ -6,10 +6,10 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include "base/files/file_path.h"
-#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/display/win/dpi.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image_skia.h"
@@ -46,6 +46,7 @@ UtilReadIcon::~UtilReadIcon() = default;
 // a downloaded file, such as an |.exe|.
 void UtilReadIcon::ReadIcon(const base::FilePath& filename,
                             IconSize icon_size,
+                            float scale,
                             ReadIconCallback callback) {
   int size = 0;
   // See IconLoader::IconSize.
@@ -63,6 +64,8 @@ void UtilReadIcon::ReadIcon(const base::FilePath& filename,
       NOTREACHED();
   }
 
+  size *= scale;
+
   gfx::ImageSkia image_ret;
 
   // Returns number of icons, or 0 on failure.
@@ -70,7 +73,7 @@ void UtilReadIcon::ReadIcon(const base::FilePath& filename,
                                      nullptr, 0, 0);
 
   if (nIcons == 0) {
-    std::move(callback).Run(std::move(image_ret), filename.value());
+    std::move(callback).Run(std::move(image_ret), filename.AsUTF16Unsafe());
     return;
   }
 
@@ -80,7 +83,7 @@ void UtilReadIcon::ReadIcon(const base::FilePath& filename,
                                   nIcons, 0);
 
   if (ret != nIcons) {
-    std::move(callback).Run(std::move(image_ret), filename.value());
+    std::move(callback).Run(std::move(image_ret), filename.AsUTF16Unsafe());
     return;
   }
 
@@ -96,11 +99,10 @@ void UtilReadIcon::ReadIcon(const base::FilePath& filename,
 
   const SkBitmap bitmap = IconUtil::CreateSkBitmapFromHICON(selected);
   if (!bitmap.isNull()) {
-    gfx::ImageSkia image_skia(
-        gfx::ImageSkiaRep(bitmap, display::win::GetDPIScale()));
+    gfx::ImageSkia image_skia(gfx::ImageSkiaRep(bitmap, scale));
     image_skia.MakeThreadSafe();
     image_ret = std::move(image_skia);
   }
 
-  std::move(callback).Run(std::move(image_ret), filename.value());
+  std::move(callback).Run(std::move(image_ret), filename.AsUTF16Unsafe());
 }

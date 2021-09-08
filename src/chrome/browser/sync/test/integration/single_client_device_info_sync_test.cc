@@ -5,18 +5,25 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/device_info_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chrome/browser/ui/browser.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/invalidations/switches.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/fake_server.h"
+#include "components/sync_device_info/device_info.h"
+#include "components/sync_device_info/device_info_sync_service.h"
+#include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_device_info/device_info_util.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,12 +32,25 @@
 
 namespace {
 
+using testing::Contains;
 using testing::ElementsAre;
 using testing::IsSupersetOf;
 using testing::UnorderedElementsAre;
 
 MATCHER_P(HasCacheGuid, expected_cache_guid, "") {
   return arg.specifics().device_info().cache_guid() == expected_cache_guid;
+}
+
+MATCHER(HasFullHardwareClass, "") {
+  return !arg.specifics().device_info().full_hardware_class().empty();
+}
+
+MATCHER(IsFullHardwareClassEmpty, "") {
+  return arg.specifics().device_info().full_hardware_class().empty();
+}
+
+MATCHER_P(ModelEntryHasCacheGuid, expected_cache_guid, "") {
+  return arg->guid() == expected_cache_guid;
 }
 
 std::string CacheGuidForSuffix(int suffix) {
@@ -73,14 +93,25 @@ class SingleClientDeviceInfoSyncTest : public SyncTest {
   ~SingleClientDeviceInfoSyncTest() override {}
 
   std::string GetLocalCacheGuid() {
-    syncer::SyncPrefs prefs(GetProfile(0)->GetPrefs());
+    syncer::SyncTransportDataPrefs prefs(GetProfile(0)->GetPrefs());
     return prefs.GetCacheGuid();
   }
 
-  // Injects a test DeviceInfo entity to the fake server.
+  syncer::DeviceInfoTracker* GetDeviceInfoTracker() {
+    return DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(0))
+        ->GetDeviceInfoTracker();
+  }
+
+  // Injects a test DeviceInfo entity to the fake server, given |suffix|.
   void InjectDeviceInfoEntityToServer(int suffix) {
+    InjectDeviceInfoSpecificsToServer(CreateSpecifics(suffix));
+  }
+
+  // Injects an arbitrary test DeviceInfo entity to the fake server.
+  void InjectDeviceInfoSpecificsToServer(
+      const sync_pb::DeviceInfoSpecifics& device_info_specifics) {
     sync_pb::EntitySpecifics specifics;
-    *specifics.mutable_device_info() = CreateSpecifics(suffix);
+    *specifics.mutable_device_info() = device_info_specifics;
     GetFakeServer()->InjectEntity(
         syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
             /*non_unique_name=*/"",
@@ -93,6 +124,47 @@ class SingleClientDeviceInfoSyncTest : public SyncTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientDeviceInfoSyncTest);
 };
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
+                       UmaEnabledSetFullHardwareClass) {
+  bool uma_enabled = true;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &uma_enabled);
+  ASSERT_TRUE(SetupSync());
+
+  EXPECT_THAT(fake_server_->GetSyncEntitiesByModelType(syncer::DEVICE_INFO),
+              Contains(HasFullHardwareClass()));
+
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
+                       UmaDisabledFullHardwareClassEmpty) {
+  bool uma_enabled = false;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &uma_enabled);
+  ASSERT_TRUE(SetupSync());
+
+  EXPECT_THAT(fake_server_->GetSyncEntitiesByModelType(syncer::DEVICE_INFO),
+              Contains(IsFullHardwareClassEmpty()));
+
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+#else
+IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
+                       UmaEnabledFullHardwareClassOnNonChromeOS) {
+  bool uma_enabled = true;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &uma_enabled);
+  ASSERT_TRUE(SetupSync());
+
+  EXPECT_THAT(fake_server_->GetSyncEntitiesByModelType(syncer::DEVICE_INFO),
+              Contains(IsFullHardwareClassEmpty()));
+
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest, CommitLocalDevice) {
   ASSERT_TRUE(SetupSync());
@@ -111,21 +183,65 @@ IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest, DownloadRemoteDevices) {
   ASSERT_TRUE(SetupSync());
 
   // The local device may or may not already be committed at this point.
-  EXPECT_THAT(fake_server_->GetSyncEntitiesByModelType(syncer::DEVICE_INFO),
+  ASSERT_THAT(fake_server_->GetSyncEntitiesByModelType(syncer::DEVICE_INFO),
               IsSupersetOf({HasCacheGuid(CacheGuidForSuffix(1)),
                             HasCacheGuid(CacheGuidForSuffix(2))}));
+
+  EXPECT_THAT(
+      GetDeviceInfoTracker()->GetAllDeviceInfo(),
+      UnorderedElementsAre(ModelEntryHasCacheGuid(GetLocalCacheGuid()),
+                           ModelEntryHasCacheGuid(CacheGuidForSuffix(1)),
+                           ModelEntryHasCacheGuid(CacheGuidForSuffix(2))));
 }
 
+IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
+                       DownloadRemoteDeviceWithoutChromeVersion) {
+  sync_pb::DeviceInfoSpecifics device_info_specifics =
+      CreateSpecifics(/*suffix=*/1);
+  device_info_specifics.clear_chrome_version();
+  InjectDeviceInfoSpecificsToServer(device_info_specifics);
+
+  ASSERT_TRUE(SetupSync());
+
+  // Devices without a chrome_version correspond to non-Chromium-based clients
+  // and should be excluded.
+  EXPECT_THAT(
+      GetDeviceInfoTracker()->GetAllDeviceInfo(),
+      UnorderedElementsAre(ModelEntryHasCacheGuid(GetLocalCacheGuid())));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
+                       DownloadRemoteDeviceWithNewVersionFieldOnly) {
+  sync_pb::DeviceInfoSpecifics device_info_specifics =
+      CreateSpecifics(/*suffix=*/1);
+  device_info_specifics.clear_chrome_version();
+  device_info_specifics.mutable_chrome_version_info()->set_version_number(
+      "someversion");
+  InjectDeviceInfoSpecificsToServer(device_info_specifics);
+
+  ASSERT_TRUE(SetupSync());
+
+  // Devices without a chrome_version correspond to non-Chromium-based clients
+  // and should be excluded.
+  EXPECT_THAT(
+      GetDeviceInfoTracker()->GetAllDeviceInfo(),
+      UnorderedElementsAre(ModelEntryHasCacheGuid(GetLocalCacheGuid()),
+                           ModelEntryHasCacheGuid(CacheGuidForSuffix(1))));
+}
+
+// CommitLocalDevice_TransportOnly and DownloadRemoteDevices_TransportOnly are
+// flaky on Android.
+#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
                        CommitLocalDevice_TransportOnly) {
   ASSERT_TRUE(SetupClients());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On ChromeOS, Sync-the-feature gets started automatically once a primary
   // account is signed in. To prevent that, explicitly set SyncRequested to
   // false.
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Setup a primary account, but don't actually enable Sync-the-feature (so
   // that Sync will start in transport mode).
@@ -149,12 +265,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
 
   ASSERT_TRUE(SetupClients());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On ChromeOS, Sync-the-feature gets started automatically once a primary
   // account is signed in. To prevent that, explicitly set SyncRequested to
   // false.
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Setup a primary account, but don't actually enable Sync-the-feature (so
   // that Sync will start in transport mode).
@@ -168,6 +284,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
               IsSupersetOf({HasCacheGuid(CacheGuidForSuffix(1)),
                             HasCacheGuid(CacheGuidForSuffix(2))}));
 }
+#endif  // !defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
                        ShouldSetTheOnlyClientFlag) {
@@ -199,5 +316,45 @@ IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
 
   EXPECT_FALSE(message.commit().config_params().single_client());
 }
+
+// PRE_* tests aren't supported on Android browser tests.
+#if !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
+                       PRE_ShouldNotSendDeviceInfoAfterBrowserRestart) {
+  ASSERT_TRUE(SetupSync());
+  EXPECT_TRUE(
+      ServerDeviceInfoMatchChecker(
+          GetFakeServer(), ElementsAre(HasCacheGuid(GetLocalCacheGuid())))
+          .Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
+                       ShouldNotSendDeviceInfoAfterBrowserRestart) {
+  const std::vector<sync_pb::SyncEntity> entities_before =
+      fake_server_->GetSyncEntitiesByModelType(syncer::DEVICE_INFO);
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
+
+  bool has_local_changes = false;
+  base::RunLoop run_loop;
+  GetSyncService(0)->HasUnsyncedItemsForTest(
+      base::BindLambdaForTesting([&has_local_changes, &run_loop](bool result) {
+        has_local_changes = result;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  const std::vector<sync_pb::SyncEntity> entities_after =
+      fake_server_->GetSyncEntitiesByModelType(syncer::DEVICE_INFO);
+  ASSERT_EQ(1U, entities_before.size());
+  ASSERT_EQ(1U, entities_after.size());
+
+  // Check that there are no local changes and nothing has been committed to the
+  // server.
+  EXPECT_FALSE(has_local_changes);
+  EXPECT_EQ(entities_before.front().mtime(), entities_after.front().mtime());
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace

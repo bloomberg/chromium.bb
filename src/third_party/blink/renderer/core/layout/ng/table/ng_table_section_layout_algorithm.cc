@@ -15,12 +15,6 @@ NGTableSectionLayoutAlgorithm::NGTableSectionLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
     : NGLayoutAlgorithm(params) {}
 
-MinMaxSizesResult NGTableSectionLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesInput&) const {
-  NOTREACHED();  // Table layout does not compute minmax for table row.
-  return MinMaxSizesResult();
-}
-
 // Generated fragment structure:
 // +-----section--------------+
 // |       vspacing           |
@@ -37,7 +31,7 @@ scoped_refptr<const NGLayoutResult> NGTableSectionLayoutAlgorithm::Layout() {
   const NGTableConstraintSpaceData& table_data = *ConstraintSpace().TableData();
   wtf_size_t section_index = ConstraintSpace().TableSectionIndex();
 
-  base::Optional<LayoutUnit> section_baseline;
+  absl::optional<LayoutUnit> section_baseline;
 
   LogicalOffset offset;
   bool is_first_row = true;
@@ -50,12 +44,12 @@ scoped_refptr<const NGLayoutResult> NGTableSectionLayoutAlgorithm::Layout() {
         table_data.table_writing_direction.GetWritingMode(),
         table_data.table_writing_direction,
         /* is_new_fc */ true);
-    row_space_builder.SetAvailableSize(
-        {container_builder_.InlineSize(), kIndefiniteSize});
+    row_space_builder.SetAvailableSize({container_builder_.InlineSize(),
+                                        table_data.rows[row_index].block_size});
     row_space_builder.SetIsFixedInlineSize(true);
+    row_space_builder.SetIsFixedBlockSize(true);
     row_space_builder.SetPercentageResolutionSize(
         {container_builder_.InlineSize(), kIndefiniteSize});
-    row_space_builder.SetNeedsBaseline(true);
     row_space_builder.SetTableRowData(&table_data, row_index);
     NGConstraintSpace row_space = row_space_builder.ToConstraintSpace();
     scoped_refptr<const NGLayoutResult> row_result = row.Layout(row_space);
@@ -72,7 +66,14 @@ scoped_refptr<const NGLayoutResult> NGTableSectionLayoutAlgorithm::Layout() {
     is_first_row = false;
     row_index++;
   }
-  container_builder_.SetFragmentBlockSize(offset.block_offset);
+  if (table_data.sections[section_index].rowspan == 0) {
+    // Sections without rows can get redistributed height from table.
+    DCHECK(ConstraintSpace().IsFixedBlockSize());
+    container_builder_.SetFragmentBlockSize(
+        ConstraintSpace().AvailableSize().block_size);
+  } else {
+    container_builder_.SetFragmentBlockSize(offset.block_offset);
+  }
   if (section_baseline)
     container_builder_.SetBaseline(*section_baseline);
   container_builder_.SetIsTableNGPart();

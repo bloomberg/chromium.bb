@@ -55,10 +55,6 @@ ModelTypeSet FakeSyncService::GetActiveDataTypes() const {
   return ModelTypeSet();
 }
 
-ModelTypeSet FakeSyncService::GetBackedOffDataTypes() const {
-  return ModelTypeSet();
-}
-
 void FakeSyncService::AddObserver(SyncServiceObserver* observer) {}
 
 void FakeSyncService::RemoveObserver(SyncServiceObserver* observer) {}
@@ -68,6 +64,8 @@ bool FakeSyncService::HasObserver(const SyncServiceObserver* observer) const {
 }
 
 void FakeSyncService::StopAndClear() {}
+
+void FakeSyncService::SetSyncAllowedByPlatform(bool allowed) {}
 
 void FakeSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
 
@@ -162,6 +160,7 @@ void FakeSyncService::AddTrustedVaultDecryptionKeysFromWeb(
 void FakeSyncService::AddTrustedVaultRecoveryMethodFromWeb(
     const std::string& gaia_id,
     const std::vector<uint8_t>& public_key,
+    int method_type_hint,
     base::OnceClosure callback) {}
 
 void FakeSyncService::Shutdown() {}

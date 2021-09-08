@@ -321,9 +321,8 @@ testcase.fileDisplayUsbPartitionSort = async () => {
   // Sort by type in ascending order.
   await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(4)']);
-  const iconSortedAsc = (await isFilesNg(appId)) ?
-      '.table-header-cell .sorted [iron-icon="files16:arrow_up_small"]' :
-      '.table-header-sort-image-asc';
+  const iconSortedAsc =
+      '.table-header-cell .sorted [iron-icon="files16:arrow_up_small"]';
   await remoteCall.waitForElement(appId, iconSortedAsc);
 
   // Check that partitions are sorted in ascending order based on the partition
@@ -338,9 +337,8 @@ testcase.fileDisplayUsbPartitionSort = async () => {
   // Sort by type in descending order.
   await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(4)']);
-  const iconSortedDesc = (await isFilesNg(appId)) ?
-      '.table-header-cell .sorted [iron-icon="files16:arrow_down_small"]' :
-      '.table-header-sort-image-desc';
+  const iconSortedDesc =
+      '.table-header-cell .sorted [iron-icon="files16:arrow_down_small"]';
   await remoteCall.waitForElement(appId, iconSortedDesc);
 
   // Check that partitions are sorted in descending order based on the partition
@@ -516,8 +514,13 @@ testcase.fileDisplayWithoutVolumesThenMountDownloads = async () => {
   await remoteCall.waitForElement(appId, '[volume-type-icon="downloads"]');
   const downloadsRow = ['Downloads', '--', 'Folder'];
   const crostiniRow = ['Linux files', '--', 'Folder'];
+  const trashRow = ['Trash', '--', 'Folder'];
+  const expectedRows = [downloadsRow, crostiniRow, trashRow];
+  if (await sendTestMessage({name: 'isTrashEnabled'}) !== 'true') {
+    expectedRows.pop();
+  }
   await remoteCall.waitForFiles(
-      appId, [downloadsRow, crostiniRow],
+      appId, expectedRows,
       {ignoreFileSize: true, ignoreLastModifiedTime: true});
 };
 
@@ -713,7 +716,11 @@ testcase.fileDisplayUnmountDriveWithSharedWithMeSelected = async () => {
     ['Play files', '--', 'Folder'],
     ['Downloads', '--', 'Folder'],
     ['Linux files', '--', 'Folder'],
+    ['Trash', '--', 'Folder'],
   ];
+  if (await sendTestMessage({name: 'isTrashEnabled'}) !== 'true') {
+    expectedRows.pop();
+  }
   await remoteCall.waitForFiles(
       appId, expectedRows, {ignoreLastModifiedTime: true});
 };
@@ -774,7 +781,11 @@ async function unmountRemovableVolume(removableDirectory) {
     ['Play files', '--', 'Folder'],
     ['Downloads', '--', 'Folder'],
     ['Linux files', '--', 'Folder'],
+    ['Trash', '--', 'Folder'],
   ];
+  if (await sendTestMessage({name: 'isTrashEnabled'}) !== 'true') {
+    expectedRows.pop();
+  }
   await remoteCall.waitForFiles(
       appId, expectedRows, {ignoreLastModifiedTime: true});
 }

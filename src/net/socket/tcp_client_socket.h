@@ -25,10 +25,9 @@
 #include "net/socket/transport_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
-// PowerMonitor exists on Android, but doesn't get suspend mode signals. It
-// doesn't exist in NaCl, so don't use it to watch for suspend events on those
-// platforms.
-#if !defined(OS_ANDROID) && !defined(OS_NACL)
+// PowerMonitor doesn't get suspend mode signals on Android, so don't use it to
+// watch for suspend events.
+#if !defined(OS_ANDROID)
 // Define SOCKETS_OBSERVE_SUSPEND if sockets should watch for suspend events so
 // they can fail pending socket operations on suspend. Otherwise, connections
 // hang for varying lengths of time when leaving suspend mode before failing
@@ -49,7 +48,7 @@ class NetworkQualityEstimator;
 
 // A client socket that uses TCP as the transport layer.
 class NET_EXPORT TCPClientSocket : public TransportClientSocket,
-                                   public base::PowerObserver {
+                                   public base::PowerSuspendObserver {
  public:
   // The IP address(es) and port number to connect to.  The TCP socket will try
   // each IP address in the list until it succeeds in establishing a
@@ -121,7 +120,7 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   // release ownership of the descriptor.
   SocketDescriptor SocketDescriptorForTesting() const;
 
-  // base::PowerObserver methods:
+  // base::PowerSuspendObserver methods:
   void OnSuspend() override;
 
  private:
@@ -225,7 +224,7 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   bool was_disconnected_on_suspend_;
 
   // The time when the latest connect attempt was started.
-  base::Optional<base::TimeTicks> start_connect_attempt_;
+  absl::optional<base::TimeTicks> start_connect_attempt_;
 
   // The NetworkQualityEstimator for the context this socket is associated with.
   // Can be nullptr.

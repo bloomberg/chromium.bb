@@ -8,27 +8,27 @@
 #include <stddef.h>
 #include <string>
 
-#include "base/optional.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 
 class GURL;
 
 namespace blink {
 
-class FeaturePolicy;
+class PermissionsPolicy;
 
 // Mapping from WebClientHintsType to the hint's outgoing header
 // (e.g. kLang => "sec-ch-lang"). The ordering matches the ordering of enums in
 // services/network/public/mojom/web_client_hints_types.mojom
 BLINK_COMMON_EXPORT extern const char* const kClientHintsHeaderMapping[];
 
-// Mapping from WebClientHintsType to the corresponding Feature-Policy (e.g.
+// Mapping from WebClientHintsType to the corresponding Permissions-Policy (e.g.
 // kDpr => kClientHintsDPR). The order matches the header mapping and the enum
 // order in services/network/public/mojom/web_client_hints_types.mojom
-BLINK_COMMON_EXPORT extern const mojom::FeaturePolicyFeature
-    kClientHintsFeaturePolicyMapping[];
+BLINK_COMMON_EXPORT extern const mojom::PermissionsPolicyFeature
+    kClientHintsPermissionsPolicyMapping[];
 
 // The size of the mapping arrays.
 BLINK_COMMON_EXPORT extern const size_t kClientHintsMappingsCount;
@@ -54,20 +54,22 @@ SerializeLangClientHint(const std::string& raw_language_list);
 // is currently conditional on experiments:
 // Language hints will only be kept if |permit_lang_hints| is true;
 // UA-related ones if |permit_ua_hints| is.
+// Prefers-color-scheme ones if |permit_prefers_color_scheme_hints| is.
 BLINK_COMMON_EXPORT
-base::Optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
-    base::Optional<std::vector<network::mojom::WebClientHintsType>> in,
+absl::optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
+    absl::optional<std::vector<network::mojom::WebClientHintsType>> in,
     bool permit_lang_hints,
-    bool permit_ua_hints);
+    bool permit_ua_hints,
+    bool permit_prefers_color_scheme_hints);
 
 // Indicates that a hint is sent by default, regardless of an opt-in.
 BLINK_COMMON_EXPORT
 bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type);
 
 // Add a list of Client Hints headers to be removed to the output vector, based
-// on FeaturePolicy and the url's origin.
+// on Permissions Policy and the url's origin.
 BLINK_COMMON_EXPORT void FindClientHintsToRemove(
-    const FeaturePolicy* feature_policy,
+    const PermissionsPolicy* permissions_policy,
     const GURL& url,
     std::vector<std::string>* removed_headers);
 

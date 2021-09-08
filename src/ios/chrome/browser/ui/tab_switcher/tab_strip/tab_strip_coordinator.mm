@@ -45,6 +45,8 @@
         self.browser->GetBrowserState()->IsOffTheRecord()
             ? UIUserInterfaceStyleDark
             : UIUserInterfaceStyleUnspecified;
+    self.tabStripViewController.isOffTheRecord =
+        self.browser->GetBrowserState()->IsOffTheRecord();
   }
 
   self.mediator =
@@ -52,6 +54,7 @@
   self.mediator.webStateList = self.browser->GetWebStateList();
 
   self.tabStripViewController.faviconDataSource = self.mediator;
+  self.tabStripViewController.delegate = self.mediator;
 }
 
 - (void)stop {

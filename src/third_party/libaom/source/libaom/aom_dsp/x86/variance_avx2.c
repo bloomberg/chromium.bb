@@ -186,19 +186,22 @@ static INLINE void variance128_avx2(const uint8_t *src, const int src_stride,
     return *sse - (uint32_t)(((int64_t)sum * sum) >> bits);                   \
   }
 
-AOM_VAR_NO_LOOP_AVX2(16, 4, 6, 512);
 AOM_VAR_NO_LOOP_AVX2(16, 8, 7, 512);
 AOM_VAR_NO_LOOP_AVX2(16, 16, 8, 512);
 AOM_VAR_NO_LOOP_AVX2(16, 32, 9, 512);
-AOM_VAR_NO_LOOP_AVX2(16, 64, 10, 1024);
 
-AOM_VAR_NO_LOOP_AVX2(32, 8, 8, 512);
 AOM_VAR_NO_LOOP_AVX2(32, 16, 9, 512);
 AOM_VAR_NO_LOOP_AVX2(32, 32, 10, 1024);
 AOM_VAR_NO_LOOP_AVX2(32, 64, 11, 2048);
 
-AOM_VAR_NO_LOOP_AVX2(64, 16, 10, 1024);
 AOM_VAR_NO_LOOP_AVX2(64, 32, 11, 2048);
+
+#if !CONFIG_REALTIME_ONLY
+AOM_VAR_NO_LOOP_AVX2(64, 16, 10, 1024);
+AOM_VAR_NO_LOOP_AVX2(32, 8, 8, 512);
+AOM_VAR_NO_LOOP_AVX2(16, 64, 10, 1024);
+AOM_VAR_NO_LOOP_AVX2(16, 4, 6, 512);
+#endif
 
 #define AOM_VAR_LOOP_AVX2(bw, bh, bits, uh)                                   \
   unsigned int aom_variance##bw##x##bh##_avx2(                                \
@@ -281,11 +284,13 @@ AOM_SUB_PIXEL_VAR_AVX2(64, 32, 32, 6, 5);
 AOM_SUB_PIXEL_VAR_AVX2(32, 64, 32, 5, 6);
 AOM_SUB_PIXEL_VAR_AVX2(32, 32, 32, 5, 5);
 AOM_SUB_PIXEL_VAR_AVX2(32, 16, 32, 5, 4);
-AOM_SUB_PIXEL_VAR_AVX2(16, 64, 16, 4, 6);
 AOM_SUB_PIXEL_VAR_AVX2(16, 32, 16, 4, 5);
 AOM_SUB_PIXEL_VAR_AVX2(16, 16, 16, 4, 4);
 AOM_SUB_PIXEL_VAR_AVX2(16, 8, 16, 4, 3);
+#if !CONFIG_REALTIME_ONLY
+AOM_SUB_PIXEL_VAR_AVX2(16, 64, 16, 4, 6);
 AOM_SUB_PIXEL_VAR_AVX2(16, 4, 16, 4, 2);
+#endif
 
 #define AOM_SUB_PIXEL_AVG_VAR_AVX2(w, h, wf, wlog2, hlog2)                \
   unsigned int aom_sub_pixel_avg_variance##w##x##h##_avx2(                \

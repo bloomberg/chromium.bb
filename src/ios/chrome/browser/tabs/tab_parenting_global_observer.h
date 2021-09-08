@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_TABS_TAB_PARENTING_GLOBAL_OBSERVER_H_
 #define IOS_CHROME_BROWSER_TABS_TAB_PARENTING_GLOBAL_OBSERVER_H_
 
-#include <memory>
 
 #include "base/callback_list.h"
 #include "base/macros.h"
@@ -26,8 +25,8 @@ class TabParentingGlobalObserver {
   static TabParentingGlobalObserver* GetInstance();
 
   // Registers |cb| to be invoked when a tab is parented.
-  std::unique_ptr<base::CallbackList<void(web::WebState*)>::Subscription>
-  RegisterCallback(const OnTabParentedCallback& cb);
+  base::CallbackListSubscription RegisterCallback(
+      const OnTabParentedCallback& cb);
 
   // Called to notify all registered callbacks that |web_state| was parented.
   void OnTabParented(web::WebState* web_state);
@@ -38,7 +37,8 @@ class TabParentingGlobalObserver {
   TabParentingGlobalObserver();
   ~TabParentingGlobalObserver();
 
-  base::CallbackList<void(web::WebState*)> on_tab_parented_callback_list_;
+  base::RepeatingCallbackList<void(web::WebState*)>
+      on_tab_parented_callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TabParentingGlobalObserver);
 };

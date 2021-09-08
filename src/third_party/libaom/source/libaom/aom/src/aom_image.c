@@ -38,6 +38,8 @@ static aom_image_t *img_alloc_helper(
   unsigned int h, w, s, xcs, ycs, bps, bit_depth;
   unsigned int stride_in_bytes;
 
+  if (img != NULL) memset(img, 0, sizeof(aom_image_t));
+
   /* Treat align==0 like align==1 */
   if (!buf_align) buf_align = 1;
 
@@ -111,8 +113,6 @@ static aom_image_t *img_alloc_helper(
     if (!img) goto fail;
 
     img->self_allocd = 1;
-  } else {
-    memset(img, 0, sizeof(aom_image_t));
   }
 
   img->img_data = img_data;

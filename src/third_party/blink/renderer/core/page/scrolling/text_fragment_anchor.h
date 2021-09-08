@@ -48,9 +48,8 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // In this case, we also avoid generating the token unless the new URL has a
   // text fragment in it (and thus it'll be consumed immediately).
   static bool GenerateNewTokenForSameDocument(
-      const String& fragment,
+      const DocumentLoader&,
       WebFrameLoadType load_type,
-      bool is_content_initiated,
       SameDocumentNavigationSource source);
 
   static TextFragmentAnchor* TryCreateFragmentDirective(
@@ -86,6 +85,14 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   void NoMatchFound() override {}
 
+  static bool ShouldDismissOnScrollOrClick();
+
+  const HeapVector<Member<TextFragmentFinder>>& TextFragmentFinders() const {
+    return text_fragment_finders_;
+  }
+
+  bool IsTextFragmentAnchor() override { return true; }
+
  private:
   // Called when the search is finished. Reports metrics and activates the
   // element fragment anchor if we didn't find a match.
@@ -97,7 +104,7 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   bool HasSearchEngineSource();
 
-  Vector<TextFragmentFinder> text_fragment_finders_;
+  HeapVector<Member<TextFragmentFinder>> text_fragment_finders_;
 
   Member<LocalFrame> frame_;
 

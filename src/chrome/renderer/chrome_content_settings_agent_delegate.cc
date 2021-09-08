@@ -4,13 +4,13 @@
 
 #include "chrome/renderer/chrome_content_settings_agent_delegate.h"
 
+#include "base/containers/contains.h"
 #include "chrome/common/ssl_insecure_content.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "base/metrics/histogram_functions.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -70,30 +70,21 @@ bool ChromeContentSettingsAgentDelegate::IsSchemeAllowlisted(
 #endif
 }
 
-base::Optional<bool>
+absl::optional<bool>
 ChromeContentSettingsAgentDelegate::AllowReadFromClipboard() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ScriptContext* current_context =
       extension_dispatcher_->script_context_set().GetCurrent();
-  if (current_context && current_context->HasAPIPermission(
-                             extensions::APIPermission::kClipboardRead)) {
-    if (current_context->context_type() ==
-        extensions::Feature::CONTENT_SCRIPT_CONTEXT) {
-      bool has_user_activation =
-          render_frame_->GetWebFrame()->HasTransientUserActivation();
-      // TODO(https://crbug.com/1051198): Evaluate and deprecate content script
-      // read without user activation after enough data is gathered.
-      base::UmaHistogramBoolean(
-          "Clipboard.ExtensionContentScriptReadHasUserActivation",
-          has_user_activation);
-    }
+  if (current_context &&
+      current_context->HasAPIPermission(
+          extensions::mojom::APIPermissionID::kClipboardRead)) {
     return true;
   }
 #endif
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<bool>
+absl::optional<bool>
 ChromeContentSettingsAgentDelegate::AllowWriteToClipboard() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // All blessed extension pages could historically write to the clipboard, so
@@ -107,18 +98,18 @@ ChromeContentSettingsAgentDelegate::AllowWriteToClipboard() {
       return true;
     }
     if (current_context->HasAPIPermission(
-            extensions::APIPermission::kClipboardWrite)) {
+            extensions::mojom::APIPermissionID::kClipboardWrite)) {
       return true;
     }
   }
 #endif
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<bool> ChromeContentSettingsAgentDelegate::AllowMutationEvents() {
+absl::optional<bool> ChromeContentSettingsAgentDelegate::AllowMutationEvents() {
   if (IsPlatformApp())
     return false;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void ChromeContentSettingsAgentDelegate::PassiveInsecureContentFound(

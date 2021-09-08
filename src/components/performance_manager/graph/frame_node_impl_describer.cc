@@ -10,7 +10,6 @@
 
 #include "base/values.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
-#include "components/performance_manager/public/execution_context_priority/execution_context_priority.h"
 #include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/public/graph/node_data_describer_util.h"
 
@@ -21,7 +20,7 @@ namespace {
 const char kDescriberName[] = "FrameNodeImpl";
 
 std::string ViewportIntersectionToString(
-    const base::Optional<gfx::Rect>& viewport_intersection) {
+    const absl::optional<gfx::Rect>& viewport_intersection) {
   if (!viewport_intersection.has_value())
     return "Nullopt";
 
@@ -67,9 +66,6 @@ base::Value FrameNodeImplDescriber::DescribeFrameNodeData(
                  impl->document_.has_nonempty_beforeunload);
   doc.SetBoolKey("network_almost_idle",
                  impl->document_.network_almost_idle.value());
-  doc.SetStringKey(
-      "origin_trial_freeze_policy",
-      MojoEnumToString(impl->document_.origin_trial_freeze_policy.value()));
   doc.SetBoolKey("had_form_interaction",
                  impl->document_.had_form_interaction.value());
   ret.SetKey("document", std::move(doc));

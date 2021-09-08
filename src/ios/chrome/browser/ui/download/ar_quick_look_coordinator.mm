@@ -4,12 +4,13 @@
 
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 
+#import <ARKit/ARKit.h>
 #import <QuickLook/QuickLook.h>
 
 #include <memory>
 
 #include "base/metrics/histogram_functions.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper_delegate.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -55,7 +56,7 @@ PresentQLPreviewController GetHistogramEnum(
                                       QLPreviewControllerDelegate> {
   // WebStateList observers.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserverBridge;
-  std::unique_ptr<ScopedObserver<WebStateList, WebStateListObserver>>
+  std::unique_ptr<base::ScopedObservation<WebStateList, WebStateListObserver>>
       _scopedWebStateListObserver;
   // Bridge to observe WebState from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
@@ -75,6 +76,8 @@ PresentQLPreviewController GetHistogramEnum(
 @property(nonatomic, weak) QLPreviewController* viewController;
 
 @property(nonatomic, assign) web::WebState* webState;
+
+@property(nonatomic, assign) BOOL allowsContentScaling;
 
 @end
 
@@ -131,10 +134,10 @@ PresentQLPreviewController GetHistogramEnum(
 - (void)addWebStateListObserver {
   _webStateListObserverBridge =
       std::make_unique<WebStateListObserverBridge>(self);
-  _scopedWebStateListObserver =
-      std::make_unique<ScopedObserver<WebStateList, WebStateListObserver>>(
-          _webStateListObserverBridge.get());
-  _scopedWebStateListObserver->Add(self.webStateList);
+  _scopedWebStateListObserver = std::make_unique<
+      base::ScopedObservation<WebStateList, WebStateListObserver>>(
+      _webStateListObserverBridge.get());
+  _scopedWebStateListObserver->Observe(self.webStateList);
 }
 
 // Removes observer for WebStateList.
@@ -194,8 +197,10 @@ PresentQLPreviewController GetHistogramEnum(
 #pragma mark - ARQuickLookTabHelperDelegate
 
 - (void)ARQuickLookTabHelper:(ARQuickLookTabHelper*)tabHelper
-    didFinishDowloadingFileWithURL:(NSURL*)fileURL {
+    didFinishDowloadingFileWithURL:(NSURL*)fileURL
+              allowsContentScaling:(BOOL)allowsScaling {
   self.fileURL = fileURL;
+  self.allowsContentScaling = allowsScaling;
 
   base::UmaHistogramEnumeration(
       kIOSPresentQLPreviewControllerHistogram,
@@ -230,6 +235,12 @@ PresentQLPreviewController GetHistogramEnum(
 
 - (id<QLPreviewItem>)previewController:(QLPreviewController*)controller
                     previewItemAtIndex:(NSInteger)index {
+  if (@available(iOS 13, *)) {
+    ARQuickLookPreviewItem* item =
+        [[ARQuickLookPreviewItem alloc] initWithFileAtURL:self.fileURL];
+    item.allowsContentScaling = self.allowsContentScaling;
+    return item;
+  }
   return self.fileURL;
 }
 

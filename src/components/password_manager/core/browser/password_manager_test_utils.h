@@ -54,11 +54,11 @@ struct PasswordFormData {
   const char* signon_realm;
   const char* origin;
   const char* action;
-  const wchar_t* submit_element;
-  const wchar_t* username_element;
-  const wchar_t* password_element;
-  const wchar_t* username_value;  // Set to NULL for a blacklist entry.
-  const wchar_t* password_value;
+  const char16_t* submit_element;
+  const char16_t* username_element;
+  const char16_t* password_element;
+  const char16_t* username_value;  // Set to NULL for a blocklist entry.
+  const char16_t* password_value;
   const double last_usage_time;
   const double creation_time;
 };
@@ -115,32 +115,32 @@ class MockPasswordReuseDetectorConsumer : public PasswordReuseDetectorConsumer {
   MOCK_METHOD5(OnReuseCheckDone,
                void(bool,
                     size_t,
-                    base::Optional<PasswordHashData>,
+                    absl::optional<PasswordHashData>,
                     const std::vector<MatchingReusedCredential>&,
                     int));
 };
 
 // Matcher class used to compare PasswordHashData in tests.
 class PasswordHashDataMatcher
-    : public ::testing::MatcherInterface<base::Optional<PasswordHashData>> {
+    : public ::testing::MatcherInterface<absl::optional<PasswordHashData>> {
  public:
-  explicit PasswordHashDataMatcher(base::Optional<PasswordHashData> expected);
-  virtual ~PasswordHashDataMatcher() {}
+  explicit PasswordHashDataMatcher(absl::optional<PasswordHashData> expected);
+  ~PasswordHashDataMatcher() override = default;
 
   // ::testing::MatcherInterface overrides
-  virtual bool MatchAndExplain(base::Optional<PasswordHashData> hash_data,
-                               ::testing::MatchResultListener* listener) const;
-  virtual void DescribeTo(::std::ostream* os) const;
-  virtual void DescribeNegationTo(::std::ostream* os) const;
+  bool MatchAndExplain(absl::optional<PasswordHashData> hash_data,
+                       ::testing::MatchResultListener* listener) const override;
+  void DescribeTo(::std::ostream* os) const override;
+  void DescribeNegationTo(::std::ostream* os) const override;
 
  private:
-  const base::Optional<PasswordHashData> expected_;
+  const absl::optional<PasswordHashData> expected_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordHashDataMatcher);
 };
 
-::testing::Matcher<base::Optional<PasswordHashData>> Matches(
-    base::Optional<PasswordHashData> expected);
+::testing::Matcher<absl::optional<PasswordHashData>> Matches(
+    absl::optional<PasswordHashData> expected);
 
 }  // namespace password_manager
 

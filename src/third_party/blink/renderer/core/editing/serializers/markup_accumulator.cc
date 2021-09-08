@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/xml_names.h"
@@ -550,7 +551,6 @@ std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
       element.GetExecutionContext()));
   AtomicString shadowroot_type;
   switch (shadow_root->GetType()) {
-    case ShadowRootType::V0:
     case ShadowRootType::kUserAgent:
       // Don't serialize user agent shadow roots, only explicit shadow roots.
       return std::pair<Node*, Element*>();

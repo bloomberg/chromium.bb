@@ -44,6 +44,7 @@
 #include "ios/chrome/browser/json_parser/in_process_json_parser.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -148,7 +149,11 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
 
   // This pref is also used for logging. If it is changed, change it in the
   // other places.
-  std::string pref_name = prefs::kArticlesForYouEnabled;
+  std::vector<std::string> prefs_vector = {prefs::kArticlesForYouEnabled};
+  if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI)) {
+    prefs_vector.push_back(prefs::kNTPContentSuggestionsEnabled);
+  }
+
   auto provider = std::make_unique<RemoteSuggestionsProviderImpl>(
       service, prefs, GetApplicationContext()->GetApplicationLocale(),
       service->category_ranker(), service->remote_suggestions_scheduler(),
@@ -157,7 +162,8 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
           CreateIOSImageDecoder(), browser_state->GetSharedURLLoaderFactory()),
       std::make_unique<RemoteSuggestionsDatabase>(db_provider, database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(
-          identity_manager->HasPrimaryAccount(), prefs, pref_name),
+          identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync),
+          prefs, prefs_vector),
       std::make_unique<base::OneShotTimer>());
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());

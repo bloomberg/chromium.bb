@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/clear_collection_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -240,9 +241,7 @@ const NGFragmentItem* NGFragmentItems::EndOfReusableItems(
     // partial. Remove the last fragment if it is the end of the
     // fragmentation to do so, but we should figure out how to setup the
     // states without doing this.
-    const NGBreakToken* break_token = line_box_fragment->BreakToken();
-    DCHECK(break_token);
-    if (break_token->IsFinished())
+    if (!line_box_fragment->BreakToken())
       return &item;
 
     last_line_start = &item;

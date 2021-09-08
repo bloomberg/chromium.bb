@@ -956,16 +956,12 @@ TEST_F(MachineOperatorReducerTest, ReduceToWord32RorWithParameters) {
   // (x << y) ^ (x >>> (32 - y)) => x ror (32 - y)
   Node* node3 = graph()->NewNode(machine()->Word32Xor(), shl_l, shr_l);
   Reduction reduction3 = Reduce(node3);
-  EXPECT_TRUE(reduction3.Changed());
-  EXPECT_EQ(reduction3.replacement(), node3);
-  EXPECT_THAT(reduction3.replacement(), IsWord32Ror(value, sub));
+  EXPECT_FALSE(reduction3.Changed());
 
   // (x >>> (32 - y)) ^ (x << y) => x ror (32 - y)
   Node* node4 = graph()->NewNode(machine()->Word32Xor(), shr_l, shl_l);
   Reduction reduction4 = Reduce(node4);
-  EXPECT_TRUE(reduction4.Changed());
-  EXPECT_EQ(reduction4.replacement(), node4);
-  EXPECT_THAT(reduction4.replacement(), IsWord32Ror(value, sub));
+  EXPECT_FALSE(reduction4.Changed());
 
   // Testing rotate right.
   Node* shl_r = graph()->NewNode(machine()->Word32Shl(), value, sub);
@@ -988,16 +984,12 @@ TEST_F(MachineOperatorReducerTest, ReduceToWord32RorWithParameters) {
   // (x << (32 - y)) ^ (x >>> y) => x ror y
   Node* node7 = graph()->NewNode(machine()->Word32Xor(), shl_r, shr_r);
   Reduction reduction7 = Reduce(node7);
-  EXPECT_TRUE(reduction7.Changed());
-  EXPECT_EQ(reduction7.replacement(), node7);
-  EXPECT_THAT(reduction7.replacement(), IsWord32Ror(value, shift));
+  EXPECT_FALSE(reduction7.Changed());
 
   // (x >>> y) ^ (x << (32 - y)) => x ror y
   Node* node8 = graph()->NewNode(machine()->Word32Xor(), shr_r, shl_r);
   Reduction reduction8 = Reduce(node8);
-  EXPECT_TRUE(reduction8.Changed());
-  EXPECT_EQ(reduction8.replacement(), node8);
-  EXPECT_THAT(reduction8.replacement(), IsWord32Ror(value, shift));
+  EXPECT_FALSE(reduction8.Changed());
 }
 
 TEST_F(MachineOperatorReducerTest, ReduceToWord32RorWithConstant) {
@@ -2427,18 +2419,19 @@ TEST_F(MachineOperatorReducerTest, Float64Atan2WithConstant) {
 
 TEST_F(MachineOperatorReducerTest, Float64Atan2WithNaN) {
   Node* const p0 = Parameter(0);
-  Node* const nan = Float64Constant(std::numeric_limits<double>::quiet_NaN());
+  const double nan = std::numeric_limits<double>::quiet_NaN();
+  Node* const nan_node = Float64Constant(nan);
   {
     Reduction const r =
-        Reduce(graph()->NewNode(machine()->Float64Atan2(), p0, nan));
+        Reduce(graph()->NewNode(machine()->Float64Atan2(), p0, nan_node));
     ASSERT_TRUE(r.Changed());
-    EXPECT_EQ(nan, r.replacement());
+    EXPECT_THAT(r.replacement(), IsFloat64Constant(NanSensitiveDoubleEq(nan)));
   }
   {
     Reduction const r =
-        Reduce(graph()->NewNode(machine()->Float64Atan2(), nan, p0));
+        Reduce(graph()->NewNode(machine()->Float64Atan2(), nan_node, p0));
     ASSERT_TRUE(r.Changed());
-    EXPECT_EQ(nan, r.replacement());
+    EXPECT_THAT(r.replacement(), IsFloat64Constant(NanSensitiveDoubleEq(nan)));
   }
 }
 

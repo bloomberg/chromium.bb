@@ -4,6 +4,9 @@
 
 import("//build/config/python.gni")
 import("//build/config/ui.gni")
+if (is_linux) {
+  import("//build/linux/strip_binary.gni")
+}
 import("//build/util/lastchange.gni")
 import("//testing/test.gni")
 import("//third_party/ffmpeg/ffmpeg_options.gni")
@@ -305,13 +308,20 @@ source_set("lib") {
   }
 }
 
-executable("chromedriver") {
+if (is_linux) {
+  chromedriver_output = "chromedriver.unstripped"
+} else {
+  chromedriver_output = "chromedriver"
+}
+
+executable("$chromedriver_output") {
   testonly = true
   sources = [ "server/chromedriver_server.cc" ]
 
   deps = [
     ":automation_client_lib",
     ":lib",
+    "//build:chromeos_buildflags",
     "//build/win:default_exe_manifest",
     "//mojo/core/embedder",
     "//net/server:http_server",
@@ -327,6 +337,16 @@ executable("chromedriver") {
   }
 }
 
+if (is_linux) {
+  strip_binary("chromedriver") {
+    testonly = true
+    binary_input = "$root_out_dir/$chromedriver_output"
+    symbol_output = "$root_out_dir/chromedriver.debug"
+    stripped_binary_output = "$root_out_dir/chromedriver"
+    deps = [ ":$chromedriver_output" ]
+  }
+}
+
 python_library("chromedriver_py_tests") {
   testonly = true
   deps = [
@@ -339,11 +359,12 @@ python_library("chromedriver_py_tests") {
     "//chrome/test/data/chromedriver/",
     "//chrome/test/chromedriver/js/",
     "//testing/scripts/run_chromedriver_tests.py",
-    "//testing/scripts/common.py",
-    "//testing/xvfb.py",
   ]
 
-  data_deps = [ "//chrome/test/chromedriver" ]
+  data_deps = [
+    "//chrome/test/chromedriver",
+    "//testing:test_scripts_shared",
+  ]
   if (is_component_build && is_mac) {
     data_deps += [ "//chrome:chrome_framework" ]
   }
@@ -357,6 +378,8 @@ python_library("chromedriver_py_tests") {
 python_library("chromedriver_replay_unittests") {
   testonly = true
   deps = [ ":chromedriver" ]
+
+  data_deps = [ "//testing:test_scripts_shared" ]
 
   pydeps_file = "log_replay/client_replay_unittest.pydeps"
 }
@@ -424,6 +447,7 @@ test("chromedriver_unittests") {
     ":lib",
     "//base",
     "//base/test:run_all_unittests",
+    "//build:chromeos_buildflags",
     "//chrome/common",
     "//mojo/core/embedder",
     "//net",

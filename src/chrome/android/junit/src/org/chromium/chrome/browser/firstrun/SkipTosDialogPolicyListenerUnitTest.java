@@ -18,18 +18,24 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
+import org.mockito.internal.util.reflection.FieldSetter;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.policy.EnterpriseInfo;
 import org.chromium.chrome.browser.policy.EnterpriseInfo.OwnedState;
+import org.chromium.components.policy.PolicyService;
 
 /**
  * Unit tests for {@link SkipTosDialogPolicyListener}.
@@ -41,6 +47,8 @@ import org.chromium.chrome.browser.policy.EnterpriseInfo.OwnedState;
 @Config(manifest = Config.NONE,
         shadows = {SkipTosDialogPolicyListenerUnitTest.ShadowFirstRunUtils.class,
                 ShadowRecordHistogram.class})
+//TODO(crbug.com/1210371): Rewrite using paused loop. See crbug for details.
+@LooperMode(LooperMode.Mode.LEGACY)
 public class SkipTosDialogPolicyListenerUnitTest {
     private static final String HIST_IS_DEVICE_OWNED_DETECTED =
             "histogramRecorded.OnIsDeviceOwnedDetected";
@@ -85,7 +93,7 @@ public class SkipTosDialogPolicyListenerUnitTest {
     @Spy
     public TestHistNameProvider mHistogramNameProvider;
     @Mock
-    public PolicyLoadListener mMockPolicyLoadListener;
+    public OneshotSupplier<Boolean> mMockPolicyLoadListener;
     @Mock
     public EnterpriseInfo mMockEnterpriseInfo;
 
@@ -208,7 +216,6 @@ public class SkipTosDialogPolicyListenerUnitTest {
     @Test
     public void testDestroy_PolicyNotFound() {
         mSkipTosDialogPolicyListener.destroy();
-        Mockito.verify(mMockPolicyLoadListener).destroy();
 
         // Policy signal should be ignored after destroy.
         mPolicyLoadListenerCallback.onResult(false);
@@ -219,7 +226,6 @@ public class SkipTosDialogPolicyListenerUnitTest {
     @Test
     public void testDestroy_DeviceNotOwned() {
         mSkipTosDialogPolicyListener.destroy();
-        Mockito.verify(mMockPolicyLoadListener).destroy();
 
         // Device owned signal should be ignored after destroy.
         setDeviceFullyManaged(false);
@@ -230,7 +236,6 @@ public class SkipTosDialogPolicyListenerUnitTest {
     @Test
     public void testDestroy_SkipTosDialog() {
         mSkipTosDialogPolicyListener.destroy();
-        Mockito.verify(mMockPolicyLoadListener).destroy();
 
         setDeviceFullyManaged(true);
         assertPolicyCheckNotComplete();
@@ -241,6 +246,27 @@ public class SkipTosDialogPolicyListenerUnitTest {
         // Signals should be ignore since #destroy happened.
         assertPolicyCheckNotComplete();
         assertHistogramsRecorded(false, false);
+    }
+
+    @Test
+    public void testDestroy_WithOutstandingOnAvailable() {
+        // Inspired by a crash in https://crbug.com/1200979.
+        CallbackHelper onAvailabileCallbackHelper = new CallbackHelper();
+        mSkipTosDialogPolicyListener.onAvailable((b) -> onAvailabileCallbackHelper.notifyCalled());
+
+        // While #onResult would normally result in the #onAvailable callback being run, the
+        // callback is actually posted to a Handler and run asynchronously. Robolectric typically
+        // runs all callbacks synchronously, so pause the ShadowLooper to stop this.
+        ShadowLooper.pauseMainLooper();
+        mPolicyLoadListenerCallback.onResult(false);
+        Assert.assertEquals(0, onAvailabileCallbackHelper.getCallCount());
+
+        // Now call #destroy() which means the #onAvailable should never be run, on which our
+        // callers assume/depend. #unPauseMainLooper() will cause anything posted to Handlers to be
+        // run synchronously, after which it is safe for us to check/assert.
+        mSkipTosDialogPolicyListener.destroy();
+        ShadowLooper.unPauseMainLooper();
+        Assert.assertEquals(0, onAvailabileCallbackHelper.getCallCount());
     }
 
     @Test
@@ -299,7 +325,7 @@ public class SkipTosDialogPolicyListenerUnitTest {
     }
 
     @Test
-    public void testUpdateHistogramNameProvider() {
+    public void testHistogramNameProvider_UpdateProvider() {
         // Update the names for mHistogramNameProvider and test if the old hists are not recorded.
         String newHistogramForEnterprise = "another.histogram.enterprise";
         String newHistogramForPolicy = "another.histogram.policy";
@@ -321,6 +347,44 @@ public class SkipTosDialogPolicyListenerUnitTest {
                         HIST_POLICY_LOAD_LISTENER_AVAILABLE));
         Assert.assertEquals("New Histogram for Policy should be recorded.", 1,
                 RecordHistogram.getHistogramTotalCountForTesting(newHistogramForPolicy));
+    }
+
+    @Test
+    public void testHistogramNameProvider_NoProvider() {
+        buildNewSkipTosDialogPolicyListenerWithHistogram(false);
+
+        setDeviceFullyManaged(true);
+        Assert.assertEquals("No histogram for EnterpriseInfo should not be recorded.", 0,
+                RecordHistogram.getHistogramTotalCountForTesting(HIST_IS_DEVICE_OWNED_DETECTED));
+
+        mPolicyLoadListenerCallback.onResult(true);
+        Assert.assertEquals("No histogram for Policy should not be recorded.", 0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        HIST_POLICY_LOAD_LISTENER_AVAILABLE));
+    }
+
+    @Test
+    public void testCreateAndOwnPolicyLoadListener() throws NoSuchFieldException {
+        FirstRunAppRestrictionInfo mockAppRestrictionInfo =
+                Mockito.mock(FirstRunAppRestrictionInfo.class);
+        OneshotSupplier<PolicyService> mockSupplier =
+                (OneshotSupplier<PolicyService>) Mockito.mock(OneshotSupplier.class);
+
+        SkipTosDialogPolicyListener targetListener = new SkipTosDialogPolicyListener(
+                mockAppRestrictionInfo, mockSupplier, mMockEnterpriseInfo, null);
+
+        Assert.assertNotNull(
+                "SkipTosDialogPolicyListener should create and own a PolicyLoadListener.",
+                targetListener.getPolicyLoadListenerForTesting());
+
+        PolicyLoadListener spyListener =
+                Mockito.spy(targetListener.getPolicyLoadListenerForTesting());
+        FieldSetter.setField(targetListener,
+                SkipTosDialogPolicyListener.class.getDeclaredField("mPolicyLoadListener"),
+                spyListener);
+
+        targetListener.destroy();
+        Mockito.verify(spyListener).destroy();
     }
 
     private void assertTosDialogEnabled() {
@@ -365,8 +429,12 @@ public class SkipTosDialogPolicyListenerUnitTest {
     }
 
     private void buildNewSkipTosDialogPolicyListener() {
-        mSkipTosDialogPolicyListener = new SkipTosDialogPolicyListener(
-                mMockPolicyLoadListener, mMockEnterpriseInfo, mHistogramNameProvider);
+        buildNewSkipTosDialogPolicyListenerWithHistogram(true);
+    }
+
+    private void buildNewSkipTosDialogPolicyListenerWithHistogram(boolean reportHistogram) {
+        mSkipTosDialogPolicyListener = new SkipTosDialogPolicyListener(mMockPolicyLoadListener,
+                mMockEnterpriseInfo, reportHistogram ? mHistogramNameProvider : null);
         mSkipTosDialogPolicyListener.onAvailable(mTosDialogCallback);
     }
 

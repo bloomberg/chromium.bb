@@ -7,13 +7,15 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/permissions/notification_permission_ui_selector.h"
 #include "components/permissions/permission_prompt.h"
+#include "components/permissions/permission_ui_selector.h"
 #include "components/permissions/permission_util.h"
+#include "components/permissions/request_type.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 class GURL;
@@ -34,7 +36,7 @@ class InfoBarManager;
 }  // namespace infobars
 
 namespace permissions {
-class ChooserContextBase;
+class ObjectPermissionContextBase;
 class PermissionDecisionAutoBlocker;
 class PermissionManager;
 class PermissionPromptAndroid;
@@ -76,9 +78,10 @@ class PermissionsClient {
   virtual PermissionManager* GetPermissionManager(
       content::BrowserContext* browser_context) = 0;
 
-  // Gets the ChooserContextBase for the given type and context, which must be a
+  // Gets the ObjectPermissionContextBase for the given type and context, which
+  // must be a
   // *_CHOOSER_DATA value. May return null if the context does not exist.
-  virtual ChooserContextBase* GetChooserContext(
+  virtual ObjectPermissionContextBase* GetChooserContext(
       content::BrowserContext* browser_context,
       ContentSettingsType type) = 0;
 
@@ -95,7 +98,7 @@ class PermissionsClient {
       content::BrowserContext* browser_context,
       std::vector<std::pair<url::Origin, bool>>* origins);
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
   // Returns whether cookie deletion is allowed for |browser_context| and
   // |origin|.
   // TODO(crbug.com/1081944): Remove this method and all code depending on it
@@ -110,7 +113,7 @@ class PermissionsClient {
   // with the result, and may be run synchronously if the result is available
   // immediately.
   using GetUkmSourceIdCallback =
-      base::OnceCallback<void(base::Optional<ukm::SourceId>)>;
+      base::OnceCallback<void(absl::optional<ukm::SourceId>)>;
   virtual void GetUkmSourceId(content::BrowserContext* browser_context,
                               const content::WebContents* web_contents,
                               const GURL& requesting_origin,
@@ -119,37 +122,36 @@ class PermissionsClient {
   // Returns the icon ID that should be used for permissions UI for |type|. If
   // the embedder returns an empty IconId, the default icon for |type| will be
   // used.
-  virtual PermissionRequest::IconId GetOverrideIconId(ContentSettingsType type);
+  virtual IconId GetOverrideIconId(RequestType request_type);
 
   // Allows the embedder to provide a list of selectors for choosing the UI to
-  // use for notification permission requests. If the embedder returns an empty
-  // list, the normal UI will be used always. Then for each request, if none of
-  // the returned selectors prescribe the quiet UI, the normal UI will be used.
+  // use for permission requests. If the embedder returns an empty list, the
+  // normal UI will be used always. Then for each request, if none of the
+  // returned selectors prescribe the quiet UI, the normal UI will be used.
   // Otherwise the quiet UI will be used. Selectors at lower indices have higher
   // priority when determining the quiet UI flavor.
-  virtual std::vector<std::unique_ptr<NotificationPermissionUiSelector>>
-  CreateNotificationPermissionUiSelectors(
-      content::BrowserContext* browser_context);
+  virtual std::vector<std::unique_ptr<PermissionUiSelector>>
+  CreatePermissionUiSelectors(content::BrowserContext* browser_context);
 
-  using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
+  using QuietUiReason = PermissionUiSelector::QuietUiReason;
   // Called for each request type when a permission prompt is resolved.
   virtual void OnPromptResolved(content::BrowserContext* browser_context,
-                                PermissionRequestType request_type,
+                                RequestType request_type,
                                 PermissionAction action,
                                 const GURL& origin,
-                                base::Optional<QuietUiReason> quiet_ui_reason);
+                                absl::optional<QuietUiReason> quiet_ui_reason);
 
   // Returns true if user has 3 consecutive notifications permission denies,
   // returns false otherwise.
-  // Returns base::nullopt if the user is not in the adoptive activation quiet
+  // Returns absl::nullopt if the user is not in the adoptive activation quiet
   // ui dry run experiment group.
-  virtual base::Optional<bool> HadThreeConsecutiveNotificationPermissionDenies(
+  virtual absl::optional<bool> HadThreeConsecutiveNotificationPermissionDenies(
       content::BrowserContext* browser_context);
 
   // Returns whether the |permission| has already been auto-revoked due to abuse
   // at least once for the given |origin|. Returns `nullopt` if permission
   // auto-revocation is not supported for a given permission type.
-  virtual base::Optional<bool> HasPreviouslyAutoRevokedPermission(
+  virtual absl::optional<bool> HasPreviouslyAutoRevokedPermission(
       content::BrowserContext* browser_context,
       const GURL& origin,
       ContentSettingsType permission);
@@ -157,7 +159,7 @@ class PermissionsClient {
   // If the embedder returns an origin here, any requests matching that origin
   // will be approved. Requests that do not match the returned origin will
   // immediately be finished without granting/denying the permission.
-  virtual base::Optional<url::Origin> GetAutoApprovalOrigin();
+  virtual absl::optional<url::Origin> GetAutoApprovalOrigin();
 
   // Allows the embedder to bypass checking the embedding origin when performing
   // permission availability checks. This is used for example when a permission
@@ -169,7 +171,7 @@ class PermissionsClient {
   // Allows embedder to override the canonical origin for a permission request.
   // This is the origin that will be used for requesting/storing/displaying
   // permissions.
-  virtual base::Optional<GURL> OverrideCanonicalOrigin(
+  virtual absl::optional<GURL> OverrideCanonicalOrigin(
       const GURL& requesting_origin,
       const GURL& embedding_origin);
 

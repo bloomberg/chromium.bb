@@ -35,6 +35,7 @@ class AwRenderProcess : public content::RenderProcessHostObserver,
   void ClearCache();
   void SetJsOnlineProperty(bool network_up);
   void SetCpuAffinityToLittleCores();
+  void EnableIdleThrottling();
 
  private:
   void Ready();
@@ -59,4 +60,4 @@ class AwRenderProcess : public content::RenderProcessHostObserver,
 
 }  // namespace android_webview
 
-#endif
+#endif  // ANDROID_WEBVIEW_BROWSER_AW_RENDER_PROCESS_H_

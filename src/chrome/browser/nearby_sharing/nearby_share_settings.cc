@@ -4,9 +4,11 @@
 
 #include "chrome/browser/nearby_sharing/nearby_share_settings.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
@@ -34,6 +36,11 @@ NearbyShareSettings::NearbyShareSettings(
                           base::Unretained(this)));
 
   local_device_data_manager_->AddObserver(this);
+
+  if (GetEnabled()) {
+    base::UmaHistogramEnumeration("Nearby.Share.VisibilityChoice",
+                                  GetVisibility());
+  }
 }
 
 NearbyShareSettings::~NearbyShareSettings() {
@@ -71,6 +78,16 @@ const std::vector<std::string> NearbyShareSettings::GetAllowedContacts() const {
   return allowed_contacts;
 }
 
+bool NearbyShareSettings::IsOnboardingComplete() const {
+  return pref_service_->GetBoolean(
+      prefs::kNearbySharingOnboardingCompletePrefName);
+}
+
+bool NearbyShareSettings::IsDisabledByPolicy() const {
+  return !GetEnabled() && pref_service_->IsManagedPreference(
+                              prefs::kNearbySharingEnabledPrefName);
+}
+
 void NearbyShareSettings::AddSettingsObserver(
     ::mojo::PendingRemote<nearby_share::mojom::NearbyShareSettingsObserver>
         observer) {
@@ -88,7 +105,18 @@ void NearbyShareSettings::SetEnabled(bool enabled) {
     // first time, that onboarding was run.
     pref_service_->SetBoolean(prefs::kNearbySharingOnboardingCompletePrefName,
                               true);
+
+    if (GetVisibility() == Visibility::kUnknown) {
+      NS_LOG(ERROR) << "Nearby Share enabled with visibility unset. Setting "
+                       "visibility to kNoOne.";
+      SetVisibility(Visibility::kNoOne);
+    }
   }
+}
+
+void NearbyShareSettings::IsOnboardingComplete(
+    base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(IsOnboardingComplete());
 }
 
 void NearbyShareSettings::GetDeviceName(
@@ -108,7 +136,7 @@ void NearbyShareSettings::SetDeviceName(
     const std::string& device_name,
     base::OnceCallback<void(nearby_share::mojom::DeviceNameValidationResult)>
         callback) {
-  return std::move(callback).Run(
+  std::move(callback).Run(
       local_device_data_manager_->SetDeviceName(device_name));
 }
 

@@ -10,10 +10,10 @@
 
 #include "include/core/SkMatrix.h"
 #include "include/core/SkRefCnt.h"
+#include "include/core/SkSpan.h"
 #include "include/core/SkStrokeRec.h"
 #include "include/core/SkTypes.h"
 #include "include/gpu/GrRecordingContext.h"
-#include "include/private/SkColorData.h"
 #include "include/private/SkTArray.h"
 #include "include/private/SkTDArray.h"
 #include "src/core/SkArenaAlloc.h"
@@ -21,8 +21,7 @@
 #include "src/core/SkStringUtils.h"
 #include "src/core/SkTLazy.h"
 #include "src/gpu/GrAppliedClip.h"
-#include "src/gpu/GrPathRendering.h"
-#include "src/gpu/GrPrimitiveProcessor.h"
+#include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrRenderTask.h"
 #include "src/gpu/ops/GrDrawOp.h"
 #include "src/gpu/ops/GrOp.h"
@@ -38,14 +37,14 @@ private:
     using DstProxyView = GrXferProcessor::DstProxyView;
 
 public:
-    // The Arenas must outlive the GrOpsTask, either by preserving the context that owns
-    // the pool, or by moving the pool to the DDL that takes over the GrOpsTask.
-    GrOpsTask(GrDrawingManager*, GrRecordingContext::Arenas, GrSurfaceProxyView, GrAuditTrail*);
+    // Manage the arenas life time by maintaining are reference to it.
+    GrOpsTask(GrDrawingManager*, GrSurfaceProxyView, GrAuditTrail*, sk_sp<GrArenas>);
     ~GrOpsTask() override;
 
     GrOpsTask* asOpsTask() override { return this; }
 
     bool isEmpty() const { return fOpChains.empty(); }
+    bool usesMSAASurface() const { return fUsesMSAASurface; }
 
     /**
      * Empties the draw buffer of any queued up draws.
@@ -55,7 +54,7 @@ public:
     void onPrePrepare(GrRecordingContext*) override;
     /**
      * Together these two functions flush all queued up draws to GrCommandBuffer. The return value
-     * of executeOps() indicates whether any commands were actually issued to the GPU.
+     * of onExecute() indicates whether any commands were actually issued to the GPU.
      */
     void onPrepare(GrOpFlushState* flushState) override;
     bool onExecute(GrOpFlushState* flushState) override;
@@ -70,54 +69,30 @@ public:
         fSampledProxies.push_back(proxy);
     }
 
-    void addOp(GrDrawingManager* drawingMgr, GrOp::Owner op,
-               GrTextureResolveManager textureResolveManager, const GrCaps& caps) {
-        auto addDependency = [ drawingMgr, textureResolveManager, &caps, this ] (
-                GrSurfaceProxy* p, GrMipmapped mipmapped) {
-            this->addDependency(drawingMgr, p, mipmapped, textureResolveManager, caps);
-        };
+    void addOp(GrDrawingManager*, GrOp::Owner, GrTextureResolveManager, const GrCaps&);
 
-        op->visitProxies(addDependency);
-
-        this->recordOp(std::move(op), GrProcessorSet::EmptySetAnalysis(), nullptr, nullptr, caps);
-    }
-
-    void addDrawOp(GrDrawingManager* drawingMgr, GrOp::Owner op,
-                   const GrProcessorSet::Analysis& processorAnalysis,
-                   GrAppliedClip&& clip, const DstProxyView& dstProxyView,
-                   GrTextureResolveManager textureResolveManager, const GrCaps& caps) {
-        auto addDependency = [ drawingMgr, textureResolveManager, &caps, this ] (
-                GrSurfaceProxy* p, GrMipmapped mipmapped) {
-            this->addSampledTexture(p);
-            this->addDependency(drawingMgr, p, mipmapped, textureResolveManager, caps);
-        };
-
-        op->visitProxies(addDependency);
-        clip.visitProxies(addDependency);
-        if (dstProxyView.proxy()) {
-            if (GrDstSampleTypeUsesTexture(dstProxyView.dstSampleType())) {
-                this->addSampledTexture(dstProxyView.proxy());
-            }
-            addDependency(dstProxyView.proxy(), GrMipmapped::kNo);
-            if (this->target(0).proxy() == dstProxyView.proxy()) {
-                // Since we are sampling and drawing to the same surface we will need to use
-                // texture barriers.
-                SkASSERT(GrDstSampleTypeDirectlySamplesDst(dstProxyView.dstSampleType()));
-                fRenderPassXferBarriers |= GrXferBarrierFlags::kTexture;
-            }
-            SkASSERT(dstProxyView.dstSampleType() != GrDstSampleType::kAsInputAttachment ||
-                     dstProxyView.offset().isZero());
-        }
-
-        if (processorAnalysis.usesNonCoherentHWBlending()) {
-            fRenderPassXferBarriers |= GrXferBarrierFlags::kBlend;
-        }
-
-        this->recordOp(std::move(op), processorAnalysis, clip.doesClip() ? &clip : nullptr,
-                       &dstProxyView, caps);
-    }
+    void addDrawOp(GrDrawingManager*, GrOp::Owner, GrDrawOp::FixedFunctionFlags,
+                   const GrProcessorSet::Analysis&, GrAppliedClip&&, const DstProxyView&,
+                   GrTextureResolveManager, const GrCaps&);
 
     void discard();
+
+    enum class CanDiscardPreviousOps : bool {
+        kYes = true,
+        kNo = false
+    };
+
+    // Perform book-keeping for a fullscreen clear, regardless of how the clear is implemented later
+    // (i.e. setColorLoadOp(), adding a ClearOp, or adding a GrFillRectOp that covers the device).
+    // Returns true if the clear can be converted into a load op (barring device caps).
+    bool resetForFullscreenClear(CanDiscardPreviousOps);
+
+    // Must only be called if native color buffer clearing is enabled.
+    void setColorLoadOp(GrLoadOp op, std::array<float, 4> color = {0, 0, 0, 0});
+
+    // Merge as many opsTasks as possible from the head of 'tasks'. They should all be
+    // renderPass compatible. Return the number of tasks merged into 'this'.
+    int mergeFrom(SkSpan<const sk_sp<GrRenderTask>> tasks);
 
 #ifdef SK_DEBUG
     int numClips() const override { return fNumClips; }
@@ -125,7 +100,10 @@ public:
 #endif
 
 #if GR_TEST_UTILS
-    void dump(bool printDependencies) const override;
+    void dump(const SkString& label,
+              SkString indent,
+              bool printDependencies,
+              bool close) const override;
     const char* name() const final { return "Ops"; }
     int numOpChains() const { return fOpChains.count(); }
     const GrOp* getChain(int index) const { return fOpChains[index].head(); }
@@ -163,27 +141,9 @@ private:
         fInitialStencilContent = initialContent;
     }
 
-    // If a renderTargetContext splits its opsTask, it uses this method to guarantee stencil values
+    // If a surfaceDrawContext splits its opsTask, it uses this method to guarantee stencil values
     // get preserved across its split tasks.
     void setMustPreserveStencil() { fMustPreserveStencil = true; }
-
-    // Must only be called if native color buffer clearing is enabled.
-    void setColorLoadOp(GrLoadOp op, const SkPMColor4f& color);
-    // Sets the clear color to transparent black
-    void setColorLoadOp(GrLoadOp op) {
-        static const SkPMColor4f kDefaultClearColor = {0.f, 0.f, 0.f, 0.f};
-        this->setColorLoadOp(op, kDefaultClearColor);
-    }
-
-    enum class CanDiscardPreviousOps : bool {
-        kYes = true,
-        kNo = false
-    };
-
-    // Perform book-keeping for a fullscreen clear, regardless of how the clear is implemented later
-    // (i.e. setColorLoadOp(), adding a ClearOp, or adding a GrFillRectOp that covers the device).
-    // Returns true if the clear can be converted into a load op (barring device caps).
-    bool resetForFullscreenClear(CanDiscardPreviousOps);
 
     class OpChain {
     public:
@@ -212,18 +172,17 @@ private:
         // Attempts to move the ops from the passed chain to this chain at the head. Also attempts
         // to merge ops between the chains. Upon success the passed chain is empty.
         // Fails when the chains aren't of the same op type, have different clips or dst proxies.
-        bool prependChain(OpChain*, const GrCaps&, GrRecordingContext::Arenas*, GrAuditTrail*);
+        bool prependChain(OpChain*, const GrCaps&, SkArenaAlloc* opsTaskArena, GrAuditTrail*);
 
         // Attempts to add 'op' to this chain either by merging or adding to the tail. Returns
         // 'op' to the caller upon failure, otherwise null. Fails when the op and chain aren't of
         // the same op type, have different clips or dst proxies.
-        GrOp::Owner appendOp(GrOp::Owner op, GrProcessorSet::Analysis,
-                             const DstProxyView*, const GrAppliedClip*, const GrCaps&,
-                             GrRecordingContext::Arenas*, GrAuditTrail*);
+        GrOp::Owner appendOp(GrOp::Owner op, GrProcessorSet::Analysis, const DstProxyView*,
+                             const GrAppliedClip*, const GrCaps&, SkArenaAlloc* opsTaskArena,
+                             GrAuditTrail*);
 
-        void setSkipExecuteFlag() { fSkipExecute = true; }
         bool shouldExecute() const {
-            return SkToBool(this->head()) && !fSkipExecute;
+            return SkToBool(this->head());
         }
 
     private:
@@ -253,52 +212,49 @@ private:
         void validate() const;
 
         bool tryConcat(List*, GrProcessorSet::Analysis, const DstProxyView&, const GrAppliedClip*,
-                       const SkRect& bounds, const GrCaps&, GrRecordingContext::Arenas*,
+                       const SkRect& bounds, const GrCaps&, SkArenaAlloc* opsTaskArena,
                        GrAuditTrail*);
-        static List DoConcat(List, List, const GrCaps&, GrRecordingContext::Arenas*, GrAuditTrail*);
+        static List DoConcat(List, List, const GrCaps&, SkArenaAlloc* opsTaskArena, GrAuditTrail*);
 
         List fList;
         GrProcessorSet::Analysis fProcessorAnalysis;
         DstProxyView fDstProxyView;
         GrAppliedClip* fAppliedClip;
         SkRect fBounds;
-
-        // We set this flag to true if any of the ops' proxies fail to instantiate so that we know
-        // not to try and draw the op.
-        bool fSkipExecute = false;
     };
 
+    void onMakeSkippable() override;
 
     bool onIsUsed(GrSurfaceProxy*) const override;
-
-    void handleInternalAllocationFailure() override;
 
     void gatherProxyIntervals(GrResourceAllocator*) const override;
 
     void recordOp(GrOp::Owner, GrProcessorSet::Analysis, GrAppliedClip*,
-                  const DstProxyView*, const GrCaps& caps);
+                  const DstProxyView*, const GrCaps&);
 
     void forwardCombine(const GrCaps&);
 
     ExpectedOutcome onMakeClosed(const GrCaps& caps, SkIRect* targetUpdateBounds) override;
 
+    // Remove all ops, proxies, etc. Used in the merging algorithm when tasks can be skipped.
+    void reset();
+
     friend class OpsTaskTestingAccess;
-    friend class GrRenderTargetContextPriv; // for stencil clip state. TODO: this is invasive
 
     // The RTC and OpsTask have to work together to handle buffer clears. In most cases, buffer
     // clearing can be done natively, in which case the op list's load ops are sufficient. In other
     // cases, draw ops must be used, which makes the RTC the best place for those decisions. This,
     // however, requires that the RTC be able to coordinate with the op list to achieve similar ends
-    friend class GrRenderTargetContext;
+    friend class GrSurfaceDrawContext;
 
-    // This is a backpointer to the Arenas that holds the memory for this GrOpsTask's ops. In the
-    // DDL case, the Arenas must have been detached from the original recording context and moved
-    // into the owning DDL.
-    GrRecordingContext::Arenas fArenas;
-    GrAuditTrail*              fAuditTrail;
+    GrAuditTrail* fAuditTrail;
+
+    bool fUsesMSAASurface;
+    GrSwizzle fTargetSwizzle;
+    GrSurfaceOrigin fTargetOrigin;
 
     GrLoadOp fColorLoadOp = GrLoadOp::kLoad;
-    SkPMColor4f fLoadClearColor = SK_PMColor4fTRANSPARENT;
+    std::array<float, 4> fLoadClearColor = {0, 0, 0, 0};
     StencilContent fInitialStencilContent = StencilContent::kDontCare;
     bool fMustPreserveStencil = false;
 
@@ -311,9 +267,7 @@ private:
     // For ops/opsTask we have mean: 5 stdDev: 28
     SkSTArray<25, OpChain> fOpChains;
 
-    // MDB TODO: 4096 for the first allocation of the clip space will be huge overkill.
-    // Gather statistics to determine the correct size.
-    SkArenaAllocWithReset fClipAllocator{4096};
+    sk_sp<GrArenas> fArenas;
     SkDEBUGCODE(int fNumClips;)
 
     // TODO: We could look into this being a set if we find we're adding a lot of duplicates that is

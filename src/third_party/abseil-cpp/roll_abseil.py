@@ -21,7 +21,7 @@ def _PullAbseil(abseil_dir):
 
 def _SyncChromium(chromium_dir):
   logging.info('Updating chromium...')
-  subprocess.check_call(['git', 'checkout', 'master'], cwd=chromium_dir)
+  subprocess.check_call(['git', 'checkout', 'main'], cwd=chromium_dir)
   subprocess.check_call(['git', 'pull', '--rebase'], cwd=chromium_dir)
   subprocess.check_call(['gclient', 'sync'], cwd=chromium_dir)
 
@@ -52,6 +52,7 @@ def _UpdateAbseilInChromium(abseil_dir, chromium_dir):
  logging.info('Syncing abseil in chromium/src/third_party...')
  exclude = [
    '*BUILD.gn',
+   'DIR_METADATA',
    'README.chromium',
    'OWNERS',
    '.gitignore',

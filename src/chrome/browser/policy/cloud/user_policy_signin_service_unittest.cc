@@ -51,6 +51,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/lacros/lacros_test_helper.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 #else
@@ -121,7 +125,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     UserPolicySigninServiceFactory::SetDeviceManagementServiceForTesting(
         &device_management_service_);
 
-    local_state_.reset(new TestingPrefServiceSimple);
+    local_state_ = std::make_unique<TestingPrefServiceSimple>();
     RegisterLocalState(local_state_->registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());
     TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
@@ -178,7 +182,8 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   virtual void AddProfile() {
     // For this test, the user should not be signed in yet.
-    DCHECK(!identity_test_env()->identity_manager()->HasPrimaryAccount());
+    DCHECK(!identity_test_env()->identity_manager()->HasPrimaryAccount(
+        signin::ConsentLevel::kSync));
 
     // Initializing UserPolicySigninService while the user is not signed in
     // should result in the store being cleared to remove any lingering policy.
@@ -296,6 +301,9 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
   network::TestURLLoaderFactory test_url_loader_factory_;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  chromeos::ScopedLacrosServiceTestHelper test_helper;
+#endif
 };
 
 class UserPolicySigninServiceSignedInTest : public UserPolicySigninServiceTest {
@@ -317,7 +325,8 @@ class UserPolicySigninServiceSignedInTest : public UserPolicySigninServiceTest {
 
 TEST_F(UserPolicySigninServiceTest, InitWhileSignedOut) {
   // Make sure user is not signed in.
-  ASSERT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount());
+  ASSERT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount(
+      signin::ConsentLevel::kSync));
 
   // UserCloudPolicyManager should not be initialized.
   ASSERT_FALSE(manager_->core()->service());
@@ -326,7 +335,8 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedOut) {
 #if !defined(OS_ANDROID)
 TEST_F(UserPolicySigninServiceTest, InitRefreshTokenAvailableBeforeSignin) {
   // Make sure user is not signed in.
-  ASSERT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount());
+  ASSERT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount(
+      signin::ConsentLevel::kSync));
 
   // No oauth access token yet, so client registration should be deferred.
   ASSERT_FALSE(IsRequestActive());
@@ -485,7 +495,7 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
   ASSERT_FALSE(manager_->IsClientRegistered());
   ASSERT_FALSE(IsRequestActive());
 
-  mock_store_->policy_.reset(new enterprise_management::PolicyData());
+  mock_store_->policy_ = std::make_unique<enterprise_management::PolicyData>();
   mock_store_->policy_->set_request_token("fake token");
   mock_store_->policy_->set_device_id("fake client id");
 

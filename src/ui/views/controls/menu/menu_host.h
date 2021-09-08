@@ -48,7 +48,8 @@ class MenuHost : public Widget, public WidgetObserver {
   void InitMenuHost(Widget* parent,
                     const gfx::Rect& bounds,
                     View* contents_view,
-                    bool do_capture);
+                    bool do_capture,
+                    gfx::NativeView native_view_for_gestures);
 
   // Returns true if the menu host is visible.
   bool IsMenuHostVisible();
@@ -79,12 +80,15 @@ class MenuHost : public Widget, public WidgetObserver {
   void OnOwnerClosing() override;
   void OnDragWillStart() override;
   void OnDragComplete() override;
+  Widget* GetPrimaryWindowWidget() override;
 
   // WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override;
 
   // Parent of the MenuHost widget.
   Widget* owner_ = nullptr;
+
+  gfx::NativeView native_view_for_gestures_ = nullptr;
 
   // The view we contain.
   SubmenuView* submenu_;
@@ -95,7 +99,7 @@ class MenuHost : public Widget, public WidgetObserver {
   // If true and capture is lost we don't notify the delegate.
   bool ignore_capture_lost_;
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   // Handles raw touch events at the moment.
   std::unique_ptr<internal::PreMenuEventDispatchHandler> pre_dispatch_handler_;
 #endif

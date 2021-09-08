@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
@@ -61,13 +60,15 @@ class BrowsingHistoryService : public HistoryServiceObserver,
 
     HistoryEntry(EntryType type,
                  const GURL& url,
-                 const base::string16& title,
+                 const std::u16string& title,
                  base::Time time,
                  const std::string& client_id,
                  bool is_search_result,
-                 const base::string16& snippet,
+                 const std::u16string& snippet,
                  bool blocked_visit,
-                 const GURL& remote_icon_url_for_uma);
+                 const GURL& remote_icon_url_for_uma,
+                 int visit_count,
+                 int typed_count);
     HistoryEntry();
     HistoryEntry(const HistoryEntry& other);
     virtual ~HistoryEntry();
@@ -81,10 +82,10 @@ class BrowsingHistoryService : public HistoryServiceObserver,
 
     GURL url;
 
-    base::string16 title;  // Title of the entry. May be empty.
+    std::u16string title;  // Title of the entry. May be empty.
 
     // The time of the entry. Usually this will be the time of the most recent
-    // visit to |url| on a particular day as defined in the local timezone.
+    // visit to `url` on a particular day as defined in the local timezone.
     base::Time time;
 
     // The sync ID of the client on which the most recent visit occurred.
@@ -98,13 +99,19 @@ class BrowsingHistoryService : public HistoryServiceObserver,
     bool is_search_result;
 
     // The entry's search snippet, if this entry is a search result.
-    base::string16 snippet;
+    std::u16string snippet;
 
     // Whether this entry was blocked when it was attempted.
     bool blocked_visit;
 
     // Optional parameter used to plumb footprints associated icon url.
     GURL remote_icon_url_for_uma;
+
+    // Total number of times this URL has been visited.
+    int visit_count = 0;
+
+    // Number of times this URL has been manually entered in the URL bar.
+    int typed_count = 0;
   };
 
   // Contains information about a completed history query.
@@ -112,7 +119,7 @@ class BrowsingHistoryService : public HistoryServiceObserver,
     ~QueryResultsInfo();
 
     // The query search text.
-    base::string16 search_text;
+    std::u16string search_text;
 
     // Whether this query reached the end of all results, or if there are more
     // history entries that can be fetched through paging.
@@ -134,10 +141,10 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   ~BrowsingHistoryService() override;
 
   // Start a new query with the given parameters.
-  void QueryHistory(const base::string16& search_text,
+  void QueryHistory(const std::u16string& search_text,
                     const QueryOptions& options);
 
-  // Removes |items| from history.
+  // Removes `items` from history.
   void RemoveVisits(const std::vector<HistoryEntry>& items);
 
   // SyncServiceObserver implementation.
@@ -157,12 +164,12 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   // Used to hold and track query state between asynchronous calls.
   struct QueryHistoryState;
 
-  // Moves results from |state| into |results|, merging both remote and local
+  // Moves results from `state` into `results`, merging both remote and local
   // results together and maintaining reverse chronological order. Any results
   // with the same URL will be merged together for each day. Often holds back
-  // some results in |state| from one of the two sources to ensure that they're
+  // some results in `state` from one of the two sources to ensure that they're
   // always returned to the driver in correct order. This function also updates
-  // the end times in |state| for both sources that the next query should be
+  // the end times in `state` for both sources that the next query should be
   // made against.
   static void MergeDuplicateResults(QueryHistoryState* state,
                                     std::vector<HistoryEntry>* results);
@@ -179,7 +186,7 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   // BrowsingHistoryDriver.
   void ReturnResultsToDriver(scoped_refptr<QueryHistoryState> state);
 
-  // Callback from |web_history_timer_| when a response from web history has
+  // Callback from `web_history_timer_` when a response from web history has
   // not been received in time.
   void WebHistoryTimeout(scoped_refptr<QueryHistoryState> state);
 

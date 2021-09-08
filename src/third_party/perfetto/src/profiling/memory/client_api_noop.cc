@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-#include "perfetto/profiling/memory/heap_profile.h"
+#include "perfetto/heap_profile.h"
+#include "src/profiling/memory/heap_profile_internal.h"
 
 #include <inttypes.h>
 
@@ -36,8 +37,10 @@ __attribute__((visibility("default"))) AHeapInfo* AHeapInfo_setEnabledCallback(
   return nullptr;
 }
 
-__attribute__((visibility("default"))) AHeapInfo*
-AHeapInfo_setDisabledCallback(AHeapInfo*, void (*)(void*), void*) {
+__attribute__((visibility("default"))) AHeapInfo* AHeapInfo_setDisabledCallback(
+    AHeapInfo*,
+    void (*)(void*, const AHeapProfileDisableCallbackInfo*),
+    void*) {
   return nullptr;
 }
 

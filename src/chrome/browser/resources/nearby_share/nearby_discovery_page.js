@@ -12,18 +12,19 @@ import 'chrome://resources/cr_elements/cr_lottie/cr_lottie.m.js';
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
-import './nearby_device.js';
-import './nearby_preview.js';
+import './shared/nearby_device.m.js';
 import './mojo/nearby_share_target_types.mojom-lite.js';
+import './mojo/nearby_share_share_type.mojom-lite.js';
 import './mojo/nearby_share.mojom-lite.js';
 import './shared/nearby_page_template.m.js';
+import './shared/nearby_preview.m.js';
 import './strings.m.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {getDiscoveryManager} from './discovery_manager.js';
+import {getDiscoveryManager, observeDiscoveryManager} from './discovery_manager.js';
 
 /**
  * Converts an unguessable token to a string.
@@ -53,9 +54,9 @@ Polymer({
   properties: {
     /**
      * Preview info for the file(s) to be shared.
-     * @type {?nearbyShare.mojom.SendPreview}
+     * @type {?nearbyShare.mojom.PayloadPreview}
      */
-    sendPreview: {
+    payloadPreview: {
       notify: true,
       type: Object,
       value: null,
@@ -99,6 +100,25 @@ Polymer({
       type: Array,
       value: [],
     },
+
+    /**
+     * Header text for error. The error section is not displayed if this is
+     * falsey.
+     * @private {?string}
+     */
+    errorTitle_: {
+      type: String,
+      value: null,
+    },
+
+    /**
+     * Description text for error, displayed under the error title.
+     * @private {?string}
+     */
+    errorDescription_: {
+      type: String,
+      value: null,
+    },
   },
 
   listeners: {
@@ -122,6 +142,9 @@ Polymer({
   /** @type {ResizeObserver} used to observer size changes to this element */
   resizeObserver_: null,
 
+  /** @private {?nearbyShare.mojom.DiscoveryObserverReceiver} */
+  discoveryObserver_: null,
+
   /** @override */
   attached() {
     this.shareTargetMap_ = new Map();
@@ -142,12 +165,39 @@ Polymer({
       }
     });
     this.resizeObserver_.observe(this);
+    this.discoveryObserver_ = observeDiscoveryManager(
+        /** @type {!nearbyShare.mojom.DiscoveryObserverInterface} */ (this));
   },
 
   /** @override */
   detached() {
     this.stopDiscovery_();
     this.resizeObserver_.disconnect();
+    if (this.discoveryObserver_) {
+      this.discoveryObserver_.$.close();
+    }
+  },
+
+  /**
+   * @return {!Array<!nearbyShare.mojom.ShareTarget>}
+   * @public
+   */
+  getShareTargetsForTesting() {
+    return this.shareTargets_;
+  },
+
+  /**
+   * @param {nearbyShare.mojom.ShareTarget} shareTarget
+   * @return {boolean} True if share target found
+   * @public
+   */
+  selectShareTargetForTesting(shareTarget) {
+    const token = tokenToString(shareTarget.id);
+    if (this.shareTargetMap_.has(token)) {
+      this.selectShareTarget_(this.shareTargetMap_.get(token));
+      return true;
+    }
+    return false;
   },
 
   /** @private */
@@ -178,17 +228,25 @@ Polymer({
           this.onShareTargetLost_.bind(this)),
     ];
 
-    getDiscoveryManager().getSendPreview().then(result => {
-      this.sendPreview = result.sendPreview;
-      // TODO (vecore): Setup icon and handle case of more than one attachment.
+    getDiscoveryManager().getPayloadPreview().then(result => {
+      this.payloadPreview = result.payloadPreview;
     });
 
     getDiscoveryManager()
         .startDiscovery(this.mojoEventTarget_.$.bindNewPipeAndPassRemote())
         .then(response => {
-          if (!response.success) {
-            // TODO(crbug.com/1123934): Show error.
-            return;
+          switch (response.result) {
+            case nearbyShare.mojom.StartDiscoveryResult.kErrorGeneric:
+              this.errorTitle_ = this.i18n('nearbyShareErrorCantShare');
+              this.errorDescription_ =
+                  this.i18n('nearbyShareErrorSomethingWrong');
+              return;
+            case nearbyShare.mojom.StartDiscoveryResult
+                .kErrorInProgressTransferring:
+              this.errorTitle_ = this.i18n('nearbyShareErrorCantShare');
+              this.errorDescription_ =
+                  this.i18n('nearbyShareErrorTransferInProgress');
+              return;
           }
         });
   },
@@ -206,13 +264,35 @@ Polymer({
     this.mojoEventTarget_ = null;
   },
 
+  /**
+   * Mojo callback when the Nearby utility process stops.
+   * @public
+   */
+  onNearbyProcessStopped() {
+    if (!this.errorTitle_) {
+      this.errorTitle_ = this.i18n('nearbyShareErrorCantShare');
+      this.errorDescription_ = this.i18n('nearbyShareErrorSomethingWrong');
+    }
+  },
+
+  /**
+   * Mojo callback when discovery is started.
+   * @param {boolean} success
+   * @public
+   */
+  onStartDiscoveryResult(success) {
+    if (!success && !this.errorTitle_) {
+      this.errorTitle_ = this.i18n('nearbyShareErrorCantShare');
+      this.errorDescription_ = this.i18n('nearbyShareErrorSomethingWrong');
+    }
+  },
+
   /** @private */
   clearShareTargets_() {
     if (this.shareTargetMap_) {
       this.shareTargetMap_.clear();
     }
     this.lastSelectedShareTarget_ = null;
-    this.selectedShareTarget = null;
     this.shareTargets_ = [];
   },
 
@@ -249,24 +329,29 @@ Polymer({
 
   /** @private */
   onNext_() {
-    if (!this.selectedShareTarget) {
-      return;
+    if (this.selectedShareTarget) {
+      this.selectShareTarget_(this.selectedShareTarget);
     }
+  },
 
-    getDiscoveryManager()
-        .selectShareTarget(this.selectedShareTarget.id)
-        .then(response => {
-          const {result, transferUpdateListener, confirmationManager} =
-              response;
-          if (result !== nearbyShare.mojom.SelectShareTargetResult.kOk) {
-            // TODO(crbug.com/crbug.com/1123934): Show error.
-            return;
-          }
+  /**
+   * Select the given share target and proceed to the confirmation page.
+   * @param {!nearbyShare.mojom.ShareTarget} shareTarget
+   * @private
+   */
+  selectShareTarget_(shareTarget) {
+    getDiscoveryManager().selectShareTarget(shareTarget.id).then(response => {
+      const {result, transferUpdateListener, confirmationManager} = response;
+      if (result !== nearbyShare.mojom.SelectShareTargetResult.kOk) {
+        this.errorTitle_ = this.i18n('nearbyShareErrorCantShare');
+        this.errorDescription_ = this.i18n('nearbyShareErrorSomethingWrong');
+        return;
+      }
 
-          this.confirmationManager = confirmationManager;
-          this.transferUpdateListener = transferUpdateListener;
-          this.fire('change-page', {page: 'confirmation'});
-        });
+      this.confirmationManager = confirmationManager;
+      this.transferUpdateListener = transferUpdateListener;
+      this.fire('change-page', {page: 'confirmation'});
+    });
   },
 
   /** @private */
@@ -326,16 +411,17 @@ Polymer({
 
   /**
    * Builds the html for the help text, applying the appropriate aria labels,
-   * and setting the href of the link to |linkUrl|. This function is largely
+   * and setting the href of the link. This function is largely
    * copied from getAriaLabelledContent_ in <settings-localized-link>, which
    * can't be used directly because this isn't part of settings.
-   * @param {string} linkUrl
+   * TODO(crbug.com/1170849): Extract this logic into a general method.
    * @return {string}
    * @private
    */
-  getAriaLabelledHelpText_(linkUrl) {
+  getAriaLabelledHelpText_() {
     const tempEl = document.createElement('div');
     const localizedString = this.i18nAdvanced('nearbyShareDiscoveryPageInfo');
+    const linkUrl = this.i18n('nearbyShareLearnMoreLink');
     tempEl.innerHTML = localizedString;
 
     const ariaLabelledByIds = [];
@@ -375,11 +461,8 @@ Polymer({
         'nearbyShareDiscoveryPageInfo should contain exactly one anchor tag');
     const anchorTag = anchorTags[0];
     anchorTag.setAttribute('aria-labelledby', ariaLabelledByIds.join(' '));
-
-    if (linkUrl != '') {
-      anchorTag.href = linkUrl;
-      anchorTag.target = '_blank';
-    }
+    anchorTag.href = linkUrl;
+    anchorTag.target = '_blank';
 
     return tempEl.innerHTML;
   },

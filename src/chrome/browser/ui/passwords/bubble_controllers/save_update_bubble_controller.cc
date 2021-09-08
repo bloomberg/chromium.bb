@@ -127,18 +127,19 @@ SaveUpdateBubbleController::SaveUpdateBubbleController(
     delegate_->OnPasswordsRevealed();
   }
   // The condition for the password reauth:
-  // If the bubble opened after reauth -> no more reauth necessary, otherwise
-  // If a password was autofilled -> require reauth to view it, otherwise
-  // Require reauth iff the user opened the bubble manually and it's not the
-  // manual saving state. The manual saving state as well as automatic prompt
-  // are temporary states, therefore, it's better for the sake of convenience
-  // for the user not to break the UX with the reauth prompt.
+  // If the bubble opened after reauth -> no more reauth necessary.
+  // If the bubble opened after successful submission -> no reauth because it's
+  // a temporary state and we should not complicate that UX flow.
+  // If a password was autofilled -> require reauth to view it.
+  // If the bubble opened manually and not a manual fallback -> require reauth.
+  // The manual fallback is a temporary state and it's better for the sake of
+  // convenience for the user not to break the UX with the reauth prompt.
   password_revealing_requires_reauth_ =
       !are_passwords_revealed_when_bubble_is_opened_ &&
+      display_reason ==
+          PasswordBubbleControllerBase::DisplayReason::kUserAction &&
       (pending_password_.form_has_autofilled_value ||
-       (!delegate_->BubbleIsManualFallbackForSaving() &&
-        display_reason ==
-            PasswordBubbleControllerBase::DisplayReason::kUserAction));
+       !delegate_->BubbleIsManualFallbackForSaving());
   enable_editing_ = delegate_->GetCredentialSource() !=
                     password_manager::metrics_util::CredentialSourceType::
                         kCredentialManagementAPI;
@@ -177,8 +178,8 @@ void SaveUpdateBubbleController::OnNeverForThisSiteClicked() {
 }
 
 void SaveUpdateBubbleController::OnCredentialEdited(
-    base::string16 new_username,
-    base::string16 new_password) {
+    std::u16string new_username,
+    std::u16string new_password) {
   DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
          state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
   pending_password_.username_value = std::move(new_username);
@@ -231,7 +232,7 @@ bool SaveUpdateBubbleController::RevealPasswords() {
   return reveal_immediately;
 }
 
-base::string16 SaveUpdateBubbleController::GetTitle() const {
+std::u16string SaveUpdateBubbleController::GetTitle() const {
   if (state_ == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE)
     return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SYNC_PROMO_TITLE);
 
@@ -274,8 +275,8 @@ void SaveUpdateBubbleController::ReportInteractions() {
   if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     metrics_util::LogUpdateUIDismissalReason(dismissal_reason_);
   } else if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
-    base::Optional<metrics_util::PasswordAccountStorageUserState> user_state =
-        base::nullopt;
+    absl::optional<metrics_util::PasswordAccountStorageUserState> user_state =
+        absl::nullopt;
     Profile* profile = GetProfile();
     if (profile) {
       user_state = password_manager::features_util::

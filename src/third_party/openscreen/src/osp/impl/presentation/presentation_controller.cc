@@ -11,10 +11,10 @@
 #include "absl/types/optional.h"
 #include "osp/impl/presentation/url_availability_requester.h"
 #include "osp/msgs/osp_messages.h"
-#include "osp/msgs/request_response_handler.h"
 #include "osp/public/message_demuxer.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/protocol_connection_client.h"
+#include "osp/public/request_response_handler.h"
 #include "util/osp_logging.h"
 
 namespace openscreen {
@@ -358,7 +358,8 @@ Controller::ReceiverWatch::ReceiverWatch(Controller* controller,
                                          ReceiverObserver* observer)
     : urls_(urls), observer_(observer), controller_(controller) {}
 
-Controller::ReceiverWatch::ReceiverWatch(Controller::ReceiverWatch&& other) {
+Controller::ReceiverWatch::ReceiverWatch(
+    Controller::ReceiverWatch&& other) noexcept {
   swap(*this, other);
 }
 
@@ -392,7 +393,7 @@ Controller::ConnectRequest::ConnectRequest(Controller* controller,
       request_id_(request_id),
       controller_(controller) {}
 
-Controller::ConnectRequest::ConnectRequest(ConnectRequest&& other) {
+Controller::ConnectRequest::ConnectRequest(ConnectRequest&& other) noexcept {
   swap(*this, other);
 }
 

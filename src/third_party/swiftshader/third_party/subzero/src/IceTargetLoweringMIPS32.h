@@ -777,7 +777,7 @@ protected:
   void lower64Icmp(const InstIcmp *Instr);
   void createArithInst(Intrinsics::AtomicRMWOperation Operation, Variable *Dest,
                        Variable *Src0, Variable *Src1);
-  void lowerIntrinsicCall(const InstIntrinsicCall *Instr) override;
+  void lowerIntrinsic(const InstIntrinsic *Instr) override;
   void lowerInsertElement(const InstInsertElement *Instr) override;
   void lowerLoad(const InstLoad *Instr) override;
   void lowerPhi(const InstPhi *Instr) override;
@@ -793,12 +793,6 @@ protected:
   void genTargetHelperCallFor(Inst *Instr) override;
   void doAddressOptLoad() override;
   void doAddressOptStore() override;
-  void randomlyInsertNop(float Probability,
-                         RandomNumberGenerator &RNG) override;
-  void
-  makeRandomRegisterPermutation(llvm::SmallVectorImpl<RegNumT> &Permutation,
-                                const SmallBitVector &ExcludeRegisters,
-                                uint64_t Salt) const override;
 
   OperandMIPS32Mem *formMemoryOperand(Operand *Ptr, Type Ty);
 

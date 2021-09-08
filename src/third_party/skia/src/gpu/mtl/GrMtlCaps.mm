@@ -10,6 +10,7 @@
 #include "include/core/SkRect.h"
 #include "include/gpu/GrBackendSurface.h"
 #include "src/core/SkCompressedDataUtils.h"
+#include "src/core/SkReadBuffer.h"
 #include "src/gpu/GrBackendUtils.h"
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrProgramDesc.h"
@@ -25,6 +26,8 @@
 #error This file must be compiled with Arc. Use -fobjc-arc flag
 #endif
 
+GR_NORETAIN_BEGIN
+
 GrMtlCaps::GrMtlCaps(const GrContextOptions& contextOptions, const id<MTLDevice> device,
                      MTLFeatureSet featureSet)
         : INHERITED(contextOptions) {
@@ -33,6 +36,10 @@ GrMtlCaps::GrMtlCaps(const GrContextOptions& contextOptions, const id<MTLDevice>
     this->initFeatureSet(featureSet);
     this->initGrCaps(device);
     this->initShaderCaps();
+    if (!contextOptions.fDisableDriverCorrectnessWorkarounds) {
+        this->applyDriverCorrectnessWorkarounds(contextOptions, device);
+    }
+
     this->initFormatTable();
     this->initStencilFormat(device);
 
@@ -258,7 +265,7 @@ bool GrMtlCaps::onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy
                                   dst == src);
 }
 
-void GrMtlCaps::initGrCaps(const id<MTLDevice> device) {
+void GrMtlCaps::initGrCaps(id<MTLDevice> device) {
     // Max vertex attribs is the same on all devices
     fMaxVertexAttributes = 31;
 
@@ -331,15 +338,10 @@ void GrMtlCaps::initGrCaps(const id<MTLDevice> device) {
     if (@available(macOS 10.11, iOS 9.0, *)) {
         if (this->isMac() || 3 == fFamilyGroup) {
             fDrawInstancedSupport = true;
+            fNativeDrawIndirectSupport = true;
         }
-        // https://developer.apple.com/documentation/metal/mtlrendercommandencoder/specifying_drawing_and_dispatch_arguments_indirectly
-        // Metal does not appear to have a call that issues multiple indirect draws. Furthermore,
-        // the indirect draw structs are ordered differently than GL and Vulkan. For now we leave it
-        // unsupported and rely on polyfills in GrOpsRenderPass.
-        SkASSERT(!fNativeDrawIndirectSupport);
     }
 
-    fMixedSamplesSupport = false;
     fGpuTracingSupport = false;
 
     fFenceSyncSupport = true;
@@ -470,6 +472,7 @@ void GrMtlCaps::initShaderCaps() {
     shaderCaps->fDstReadInShaderSupport = shaderCaps->fFBFetchSupport;
 
     shaderCaps->fIntegerSupport = true;
+    shaderCaps->fNonsquareMatrixSupport = true;
     shaderCaps->fVertexIDSupport = false;
 
     // Metal uses IEEE float and half floats so assuming those values here.
@@ -477,7 +480,21 @@ void GrMtlCaps::initShaderCaps() {
     shaderCaps->fHalfIs32Bits = false;
 
     shaderCaps->fMaxFragmentSamplers = 16;
+
+    shaderCaps->fCanUseFastMath = true;
 }
+
+void GrMtlCaps::applyDriverCorrectnessWorkarounds(const GrContextOptions&,
+                                                  const id<MTLDevice> device) {
+    // TODO: We may need to disable the fastmath option on Intel devices to avoid corruption
+//    if ([device.name rangeOfString:@"Intel"].location != NSNotFound) {
+//        fShaderCaps->fCanUseFastMath = false;
+//    }
+}
+
+// Define this so we can use it to initialize arrays and work around
+// the fact that MTLPixelFormatBGR10A2Unorm is not always available.
+#define kMTLPixelFormatBGR10A2Unorm MTLPixelFormat(94)
 
 // These are all the valid MTLPixelFormats that we support in Skia.  They are roughly ordered from
 // most frequently used to least to improve look up times in arrays.
@@ -494,8 +511,7 @@ static constexpr MTLPixelFormat kMtlFormats[] = {
     MTLPixelFormatRG8Unorm,
     MTLPixelFormatRGB10A2Unorm,
 #ifdef SK_BUILD_FOR_MAC
-    // BGR10_A2 wasn't added until iOS 11
-    MTLPixelFormatBGR10A2Unorm,
+    kMTLPixelFormatBGR10A2Unorm,
 #endif
 #ifdef SK_BUILD_FOR_IOS
     MTLPixelFormatABGR4Unorm,
@@ -558,6 +574,10 @@ size_t GrMtlCaps::GetFormatIndex(MTLPixelFormat pixelFormat) {
 void GrMtlCaps::initFormatTable() {
     FormatInfo* info;
 
+    if (@available(macos 10.13, ios 11.0, *)) {
+        SkASSERT(kMTLPixelFormatBGR10A2Unorm == MTLPixelFormatBGR10A2Unorm);
+    }
+
     // Format: R8Unorm
     {
         info = &fFormatTable[GetFormatIndex(MTLPixelFormatR8Unorm)];
@@ -570,8 +590,8 @@ void GrMtlCaps::initFormatTable() {
             auto& ctInfo = info->fColorTypeInfos[ctIdx++];
             ctInfo.fColorType = GrColorType::kAlpha_8;
             ctInfo.fFlags = ColorTypeInfo::kUploadData_Flag | ColorTypeInfo::kRenderable_Flag;
-            ctInfo.fReadSwizzle = GrSwizzle::RRRR();
-            ctInfo.fWriteSwizzle = GrSwizzle::AAAA();
+            ctInfo.fReadSwizzle = GrSwizzle("000r");
+            ctInfo.fWriteSwizzle = GrSwizzle("a000");
         }
         // Format: R8Unorm, Surface: kGray_8
         {
@@ -594,7 +614,6 @@ void GrMtlCaps::initFormatTable() {
             auto& ctInfo = info->fColorTypeInfos[ctIdx++];
             ctInfo.fColorType = GrColorType::kAlpha_8;
             ctInfo.fFlags = ColorTypeInfo::kUploadData_Flag | ColorTypeInfo::kRenderable_Flag;
-            ctInfo.fReadSwizzle = GrSwizzle::AAAA();
         }
     }
 
@@ -718,7 +737,7 @@ void GrMtlCaps::initFormatTable() {
 
 #ifdef SK_BUILD_FOR_MAC
     // Format: BGR10A2Unorm
-    {
+    if (@available(macos 10.13, ios 11.0, *)) {
         info = &fFormatTable[GetFormatIndex(MTLPixelFormatBGR10A2Unorm)];
         if (this->isMac() && fFamilyGroup == 1) {
             info->fFlags = FormatInfo::kTexturable_Flag;
@@ -749,8 +768,8 @@ void GrMtlCaps::initFormatTable() {
             auto& ctInfo = info->fColorTypeInfos[ctIdx++];
             ctInfo.fColorType = GrColorType::kAlpha_F16;
             ctInfo.fFlags = ColorTypeInfo::kUploadData_Flag | ColorTypeInfo::kRenderable_Flag;
-            ctInfo.fReadSwizzle = GrSwizzle::RRRR();
-            ctInfo.fWriteSwizzle = GrSwizzle::AAAA();
+            ctInfo.fReadSwizzle = GrSwizzle("000r");
+            ctInfo.fWriteSwizzle = GrSwizzle("a000");
         }
     }
 
@@ -791,8 +810,8 @@ void GrMtlCaps::initFormatTable() {
             auto& ctInfo = info->fColorTypeInfos[ctIdx++];
             ctInfo.fColorType = GrColorType::kAlpha_16;
             ctInfo.fFlags = ColorTypeInfo::kUploadData_Flag | ColorTypeInfo::kRenderable_Flag;
-            ctInfo.fReadSwizzle = GrSwizzle::RRRR();
-            ctInfo.fWriteSwizzle = GrSwizzle::AAAA();
+            ctInfo.fReadSwizzle = GrSwizzle("000r");
+            ctInfo.fWriteSwizzle = GrSwizzle("a000");
         }
     }
 
@@ -881,7 +900,9 @@ void GrMtlCaps::initFormatTable() {
     this->setColorType(GrColorType::kBGRA_8888,        { MTLPixelFormatBGRA8Unorm });
     this->setColorType(GrColorType::kRGBA_1010102,     { MTLPixelFormatRGB10A2Unorm });
 #ifdef SK_BUILD_FOR_MAC
-    this->setColorType(GrColorType::kBGRA_1010102,     { MTLPixelFormatBGR10A2Unorm });
+    if (@available(macos 10.13, ios 11.0, *)) {
+        this->setColorType(GrColorType::kBGRA_1010102, { MTLPixelFormatBGR10A2Unorm });
+    }
 #endif
     this->setColorType(GrColorType::kGray_8,           { MTLPixelFormatR8Unorm });
     this->setColorType(GrColorType::kAlpha_F16,        { MTLPixelFormatR16Float });
@@ -1072,18 +1093,19 @@ GrCaps::SupportedRead GrMtlCaps::onSupportedReadPixelsColorType(
  * pipeline. This includes blending information and primitive type. The pipeline is immutable
  * so any remaining dynamic state is set via the MtlRenderCmdEncoder.
  */
-GrProgramDesc GrMtlCaps::makeDesc(GrRenderTarget* rt, const GrProgramInfo& programInfo) const {
+GrProgramDesc GrMtlCaps::makeDesc(GrRenderTarget* rt,
+                                  const GrProgramInfo& programInfo,
+                                  ProgramDescOverrideFlags overrideFlags) const {
+    SkASSERT(overrideFlags == ProgramDescOverrideFlags::kNone);
     GrProgramDesc desc;
-    if (!GrProgramDesc::Build(&desc, rt, programInfo, *this)) {
-        SkASSERT(!desc.isValid());
-        return desc;
-    }
+    GrProgramDesc::Build(&desc, programInfo, *this);
 
-    GrProcessorKeyBuilder b(&desc.key());
+    GrProcessorKeyBuilder b(desc.key());
 
+    // If ordering here is changed, update getStencilPixelFormat() below
     b.add32(programInfo.backendFormat().asMtlFormat());
 
-    b.add32(programInfo.numRasterSamples());
+    b.add32(programInfo.numSamples());
 
 #ifdef SK_DEBUG
     if (rt && programInfo.isStencilEnabled()) {
@@ -1092,7 +1114,7 @@ GrProgramDesc GrMtlCaps::makeDesc(GrRenderTarget* rt, const GrProgramInfo& progr
 #endif
 
     b.add32(rt && rt->getStencilAttachment() ? this->preferredStencilFormat()
-                                             : MTLPixelFormatInvalid);
+                                              : MTLPixelFormatInvalid);
     b.add32((uint32_t)programInfo.isStencilEnabled());
     // Stencil samples don't seem to be tracked in the MTLRenderPipeline
 
@@ -1100,7 +1122,20 @@ GrProgramDesc GrMtlCaps::makeDesc(GrRenderTarget* rt, const GrProgramInfo& progr
 
     b.add32(programInfo.primitiveTypeKey());
 
+    b.flush();
     return desc;
+}
+
+MTLPixelFormat GrMtlCaps::getStencilPixelFormat(const GrProgramDesc& desc) {
+    // Set up read buffer to point to platform-dependent part of the key
+    SkReadBuffer readBuffer(desc.asKey() + desc.initialKeyLength()/sizeof(uint32_t),
+                            desc.keyLength() - desc.initialKeyLength());
+    // skip backend format
+    readBuffer.readUInt();
+    // skip raster samples
+    readBuffer.readUInt();
+
+    return (MTLPixelFormat) readBuffer.readUInt();
 }
 
 #if GR_TEST_UTILS
@@ -1124,7 +1159,7 @@ std::vector<GrCaps::TestFormatColorTypeCombination> GrMtlCaps::getTestingCombina
         { GrColorType::kBGRA_8888,        GrBackendFormat::MakeMtl(MTLPixelFormatBGRA8Unorm)      },
         { GrColorType::kRGBA_1010102,     GrBackendFormat::MakeMtl(MTLPixelFormatRGB10A2Unorm)    },
 #ifdef SK_BUILD_FOR_MAC
-        { GrColorType::kBGRA_1010102,     GrBackendFormat::MakeMtl(MTLPixelFormatBGR10A2Unorm)    },
+        { GrColorType::kBGRA_1010102,     GrBackendFormat::MakeMtl(kMTLPixelFormatBGR10A2Unorm)   },
 #endif
         { GrColorType::kGray_8,           GrBackendFormat::MakeMtl(MTLPixelFormatR8Unorm)         },
         { GrColorType::kAlpha_F16,        GrBackendFormat::MakeMtl(MTLPixelFormatR16Float)        },
@@ -1179,3 +1214,5 @@ void GrMtlCaps::onDumpJSON(SkJSONWriter* writer) const {
 #else
 void GrMtlCaps::onDumpJSON(SkJSONWriter* writer) const { }
 #endif
+
+GR_NORETAIN_END

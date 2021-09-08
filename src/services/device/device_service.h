@@ -24,7 +24,6 @@
 #include "services/device/public/mojom/geolocation_config.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geolocation_control.mojom.h"
-#include "services/device/public/mojom/nfc_provider.mojom.h"
 #include "services/device/public/mojom/power_monitor.mojom.h"
 #include "services/device/public/mojom/screen_orientation.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
@@ -42,11 +41,12 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
+#include "services/device/public/mojom/nfc_provider.mojom.h"
 #else
 #include "services/device/public/mojom/hid.mojom.h"
 #endif
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "services/device/media_transfer_protocol/mtp_device_manager.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 #endif
@@ -72,59 +72,43 @@ class SerialPortManagerImpl;
 #endif
 
 class DeviceService;
+class GeolocationManager;
 class PlatformSensorProvider;
 class PowerMonitorMessageBroadcaster;
 class PublicIpAddressLocationNotifier;
 class SensorProviderImpl;
 class TimeZoneMonitor;
 
-#if defined(OS_ANDROID)
 // NOTE: See the comments on the definitions of PublicIpAddressLocationNotifier,
 // |WakeLockContextCallback|, |CustomLocationProviderCallback| and
 // NFCDelegate.java to understand the semantics and usage of these parameters.
+struct DeviceServiceParams {
+  DeviceServiceParams();
+  ~DeviceServiceParams();
+
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+  network::NetworkConnectionTracker* network_connection_tracker = nullptr;
+  std::string geolocation_api_key;
+  CustomLocationProviderCallback custom_location_provider_callback;
+  bool use_gms_core_location_provider = false;
+  GeolocationManager* geolocation_manager = nullptr;
+  WakeLockContextCallback wake_lock_context_callback;
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate;
+#endif  // defined(OS_ANDROID)
+};
+
 std::unique_ptr<DeviceService> CreateDeviceService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    network::NetworkConnectionTracker* network_connection_tracker,
-    const std::string& geolocation_api_key,
-    bool use_gms_core_location_provider,
-    const WakeLockContextCallback& wake_lock_context_callback,
-    const CustomLocationProviderCallback& custom_location_provider_callback,
-    const base::android::JavaRef<jobject>& java_nfc_delegate,
+    std::unique_ptr<DeviceServiceParams> params,
     mojo::PendingReceiver<mojom::DeviceService> receiver);
-#else
-std::unique_ptr<DeviceService> CreateDeviceService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    network::NetworkConnectionTracker* network_connection_tracker,
-    const std::string& geolocation_api_key,
-    const CustomLocationProviderCallback& custom_location_provider_callback,
-    mojo::PendingReceiver<mojom::DeviceService> receiver);
-#endif
 
 class DeviceService : public mojom::DeviceService {
  public:
-#if defined(OS_ANDROID)
-  DeviceService(
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      network::NetworkConnectionTracker* network_connection_tracker,
-      const std::string& geolocation_api_key,
-      const WakeLockContextCallback& wake_lock_context_callback,
-      const base::android::JavaRef<jobject>& java_nfc_delegate,
-      mojo::PendingReceiver<mojom::DeviceService> receiver);
-#else
-  DeviceService(
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      network::NetworkConnectionTracker* network_connection_tracker,
-      const std::string& geolocation_api_key,
-      mojo::PendingReceiver<mojom::DeviceService> receiver);
-#endif
+  DeviceService(std::unique_ptr<DeviceServiceParams> params,
+                mojo::PendingReceiver<mojom::DeviceService> receiver);
   ~DeviceService() override;
 
   void AddReceiver(mojo::PendingReceiver<mojom::DeviceService> receiver);
@@ -156,8 +140,12 @@ class DeviceService : public mojom::DeviceService {
 
   void BindBatteryMonitor(
       mojo::PendingReceiver<mojom::BatteryMonitor> receiver) override;
+
+#if defined(OS_ANDROID)
   void BindNFCProvider(
       mojo::PendingReceiver<mojom::NFCProvider> receiver) override;
+#endif
+
   void BindVibrationManager(
       mojo::PendingReceiver<mojom::VibrationManager> receiver) override;
 
@@ -166,7 +154,7 @@ class DeviceService : public mojom::DeviceService {
       mojo::PendingReceiver<mojom::HidManager> receiver) override;
 #endif
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void BindBluetoothSystemFactory(
       mojo::PendingReceiver<mojom::BluetoothSystemFactory> receiver) override;
   void BindMtpManager(
@@ -229,7 +217,7 @@ class DeviceService : public mojom::DeviceService {
   service_manager::InterfaceProvider java_interface_provider_{
       base::ThreadTaskRunnerHandle::Get()};
 
-  bool java_interface_provider_initialized_;
+  bool java_interface_provider_initialized_ = false;
 
   base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate_;
 #else
@@ -245,7 +233,7 @@ class DeviceService : public mojom::DeviceService {
   scoped_refptr<base::SequencedTaskRunner> serial_port_manager_task_runner_;
 #endif
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<MtpDeviceManager> mtp_device_manager_;
 #endif
 

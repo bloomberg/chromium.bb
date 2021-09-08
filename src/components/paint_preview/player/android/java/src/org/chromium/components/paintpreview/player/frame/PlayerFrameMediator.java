@@ -72,10 +72,11 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
     private final PlayerFrameBitmapStateController mBitmapStateController;
 
     private PlayerGestureListener mGestureListener;
+    private Runnable mInitialViewportSizeAvailable;
 
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
             PlayerGestureListener gestureListener, UnguessableToken frameGuid, Size contentSize,
-            int initialScrollX, int initialScrollY) {
+            int initialScrollX, int initialScrollY, Runnable initialViewportSizeAvailable) {
         mBitmapScaleMatrix = new Matrix();
         mModel = model;
         mModel.set(PlayerFrameProperties.SCALE_MATRIX, mBitmapScaleMatrix);
@@ -93,6 +94,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
                 mGuid, mViewport, mContentSize, mCompositorDelegate, this, taskRunner);
         mViewport.offset(initialScrollX, initialScrollY);
         mViewport.setScale(0f);
+        mInitialViewportSizeAvailable = initialViewportSizeAvailable;
     }
 
     void destroy() {
@@ -164,16 +166,22 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
         final float scaleFactor = mViewport.getScale();
         updateViewportSize(
                 width, height, (scaleFactor == 0f) ? getInitialScaleFactor() : scaleFactor);
+
+        if (mInitialViewportSizeAvailable != null) {
+            mInitialViewportSizeAvailable.run();
+            mInitialViewportSizeAvailable = null;
+        }
     }
 
     @Override
-    public void onTap(int x, int y) {
+    public void onTap(int x, int y, boolean isAbsolute) {
         // x and y are in the View's coordinate system (scaled). This needs to be adjusted to the
         // absolute coordinate system for hit testing.
         final float scaleFactor = mViewport.getScale();
-        GURL url = mCompositorDelegate.onClick(mGuid,
-                Math.round((float) (mViewport.getTransX() + x) / scaleFactor),
-                Math.round((float) (mViewport.getTransY() + y) / scaleFactor));
+        float translationX = isAbsolute ? 0f : mViewport.getTransX();
+        float translationY = isAbsolute ? 0f : mViewport.getTransY();
+        GURL url = mCompositorDelegate.onClick(mGuid, Math.round((translationX + x) / scaleFactor),
+                Math.round((translationY + y) / scaleFactor));
         mGestureListener.onTap(url);
     }
 

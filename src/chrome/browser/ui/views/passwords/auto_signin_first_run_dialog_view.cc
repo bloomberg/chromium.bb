@@ -13,6 +13,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -26,6 +27,11 @@ AutoSigninFirstRunDialogView::AutoSigninFirstRunDialogView(
                  l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_OK));
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  l10n_util::GetStringUTF16(IDS_TURN_OFF));
+
+  SetModalType(ui::MODAL_TYPE_CHILD);
+  SetShowCloseButton(false);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   using ControllerCallbackFn = void (CredentialManagerDialogController::*)();
   auto call_controller = [](AutoSigninFirstRunDialogView* dialog,
@@ -59,23 +65,8 @@ void AutoSigninFirstRunDialogView::ControllerGone() {
   controller_ = nullptr;
 }
 
-ui::ModalType AutoSigninFirstRunDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
-}
-
-base::string16 AutoSigninFirstRunDialogView::GetWindowTitle() const {
+std::u16string AutoSigninFirstRunDialogView::GetWindowTitle() const {
   return controller_->GetAutoSigninPromoTitle();
-}
-
-bool AutoSigninFirstRunDialogView::ShouldShowCloseButton() const {
-  return false;
-}
-
-gfx::Size AutoSigninFirstRunDialogView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void AutoSigninFirstRunDialogView::WindowClosing() {
@@ -85,7 +76,7 @@ void AutoSigninFirstRunDialogView::WindowClosing() {
 
 void AutoSigninFirstRunDialogView::InitWindow() {
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
+      views::DialogContentType::kText, views::DialogContentType::kText));
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   auto label = std::make_unique<views::Label>(
@@ -95,6 +86,9 @@ void AutoSigninFirstRunDialogView::InitWindow() {
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label.release());
 }
+
+BEGIN_METADATA(AutoSigninFirstRunDialogView, views::DialogDelegateView)
+END_METADATA
 
 AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(
     CredentialManagerDialogController* controller,

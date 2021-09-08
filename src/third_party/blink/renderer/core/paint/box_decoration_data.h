@@ -124,9 +124,9 @@ class BoxDecorationData {
   const bool should_paint_border_;
   const bool should_paint_shadow_;
   // This is lazily initialized.
-  mutable base::Optional<BackgroundBleedAvoidance> bleed_avoidance_;
+  mutable absl::optional<BackgroundBleedAvoidance> bleed_avoidance_;
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_DECORATION_DATA_H_

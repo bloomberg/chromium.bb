@@ -10,6 +10,7 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
+#include "third_party/base/check.h"
 
 namespace {
 
@@ -46,7 +47,7 @@ bool HasIntent(const CPDF_Dictionary* pDict,
 
 CPDF_Dictionary* GetConfig(CPDF_Document* pDoc,
                            const CPDF_Dictionary* pOCGDict) {
-  ASSERT(pOCGDict);
+  DCHECK(pOCGDict);
   CPDF_Dictionary* pOCProperties = pDoc->GetRoot()->GetDictFor("OCProperties");
   if (!pOCProperties)
     return nullptr;
@@ -94,7 +95,7 @@ ByteString GetUsageTypeString(CPDF_OCContext::UsageType eType) {
 
 CPDF_OCContext::CPDF_OCContext(CPDF_Document* pDoc, UsageType eUsageType)
     : m_pDocument(pDoc), m_eUsageType(eUsageType) {
-  ASSERT(pDoc);
+  DCHECK(pDoc);
 }
 
 CPDF_OCContext::~CPDF_OCContext() = default;
@@ -182,8 +183,9 @@ bool CPDF_OCContext::GetOCGVisible(const CPDF_Dictionary* pOCGDict) const {
 }
 
 bool CPDF_OCContext::CheckObjectVisible(const CPDF_PageObject* pObj) const {
-  for (size_t i = 0; i < pObj->m_ContentMarks.CountItems(); ++i) {
-    const CPDF_ContentMarkItem* item = pObj->m_ContentMarks.GetItem(i);
+  const CPDF_ContentMarks* pMarks = pObj->GetContentMarks();
+  for (size_t i = 0; i < pMarks->CountItems(); ++i) {
+    const CPDF_ContentMarkItem* item = pMarks->GetItem(i);
     if (item->GetName() == "OC" &&
         item->GetParamType() == CPDF_ContentMarkItem::kPropertiesDict &&
         !CheckOCGVisible(item->GetParam())) {
@@ -214,7 +216,7 @@ bool CPDF_OCContext::GetOCGVE(const CPDF_Array* pExpression, int nLevel) const {
 
   bool bValue = false;
   for (size_t i = 1; i < pExpression->size(); i++) {
-    const CPDF_Object* pOCGObj = pExpression->GetDirectObjectAt(1);
+    const CPDF_Object* pOCGObj = pExpression->GetDirectObjectAt(i);
     if (!pOCGObj)
       continue;
 

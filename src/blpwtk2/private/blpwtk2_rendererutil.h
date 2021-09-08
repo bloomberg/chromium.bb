@@ -39,7 +39,7 @@ namespace blpwtk2 {
 
 struct RendererUtil
 {
-    static void handleInputEvents(content::RenderWidget     *rw,
+    static void handleInputEvents(blink::WebWidget          *widget,
                                   const WebView::InputEvent *events,
                                   size_t                     eventsCount);
 

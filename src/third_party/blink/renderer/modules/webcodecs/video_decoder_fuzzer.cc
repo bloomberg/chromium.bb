@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_output_callback.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_web_codecs_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_webcodecs_error_callback.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -70,36 +70,44 @@ DEFINE_TEXT_PROTO_FUZZER(
     Persistent<VideoDecoder> video_decoder = VideoDecoder::Create(
         script_state, video_decoder_init, IGNORE_EXCEPTION_FOR_TESTING);
 
-    for (auto& invocation : proto.invocations()) {
-      switch (invocation.Api_case()) {
-        case wc_fuzzer::VideoDecoderApiInvocation::kConfigure:
-          video_decoder->configure(
-              MakeVideoDecoderConfig(invocation.configure()),
-              IGNORE_EXCEPTION_FOR_TESTING);
-          break;
-        case wc_fuzzer::VideoDecoderApiInvocation::kDecode:
-          video_decoder->decode(
-              MakeEncodedVideoChunk(invocation.decode().chunk()),
-              IGNORE_EXCEPTION_FOR_TESTING);
-          break;
-        case wc_fuzzer::VideoDecoderApiInvocation::kFlush: {
-          // TODO(https://crbug.com/1119253): Fuzz whether to await resolution
-          // of the flush promise.
-          video_decoder->flush(IGNORE_EXCEPTION_FOR_TESTING);
-          break;
-        }
-        case wc_fuzzer::VideoDecoderApiInvocation::kReset:
-          video_decoder->reset(IGNORE_EXCEPTION_FOR_TESTING);
-          break;
-        case wc_fuzzer::VideoDecoderApiInvocation::kClose:
-          video_decoder->close(IGNORE_EXCEPTION_FOR_TESTING);
-          break;
-        case wc_fuzzer::VideoDecoderApiInvocation::API_NOT_SET:
-          break;
-      }
+    if (video_decoder) {
+      for (auto& invocation : proto.invocations()) {
+        switch (invocation.Api_case()) {
+          case wc_fuzzer::VideoDecoderApiInvocation::kConfigure: {
+            VideoDecoderConfig* config =
+                MakeVideoDecoderConfig(invocation.configure());
 
-      // Give other tasks a chance to run (e.g. calling our output callback).
-      base::RunLoop().RunUntilIdle();
+            // Use the same config to fuzz isConfigSupported().
+            VideoDecoder::isConfigSupported(script_state, config,
+                                            IGNORE_EXCEPTION_FOR_TESTING);
+
+            video_decoder->configure(config, IGNORE_EXCEPTION_FOR_TESTING);
+            break;
+          }
+          case wc_fuzzer::VideoDecoderApiInvocation::kDecode:
+            video_decoder->decode(
+                MakeEncodedVideoChunk(invocation.decode().chunk()),
+                IGNORE_EXCEPTION_FOR_TESTING);
+            break;
+          case wc_fuzzer::VideoDecoderApiInvocation::kFlush: {
+            // TODO(https://crbug.com/1119253): Fuzz whether to await resolution
+            // of the flush promise.
+            video_decoder->flush(IGNORE_EXCEPTION_FOR_TESTING);
+            break;
+          }
+          case wc_fuzzer::VideoDecoderApiInvocation::kReset:
+            video_decoder->reset(IGNORE_EXCEPTION_FOR_TESTING);
+            break;
+          case wc_fuzzer::VideoDecoderApiInvocation::kClose:
+            video_decoder->close(IGNORE_EXCEPTION_FOR_TESTING);
+            break;
+          case wc_fuzzer::VideoDecoderApiInvocation::API_NOT_SET:
+            break;
+        }
+
+        // Give other tasks a chance to run (e.g. calling our output callback).
+        base::RunLoop().RunUntilIdle();
+      }
     }
   }
 

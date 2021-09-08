@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -57,8 +58,10 @@ std::string BuildGetFamilyProfileResponse(
   std::unique_ptr<base::DictionaryValue> profile_dict =
       std::make_unique<base::DictionaryValue>();
   profile_dict->SetKey("name", base::Value(family.name));
-  family_dict->SetWithoutPathExpansion("profile", std::move(profile_dict));
-  dict.SetWithoutPathExpansion("family", std::move(family_dict));
+  family_dict->SetKey("profile",
+                      base::Value::FromUniquePtrValue(std::move(profile_dict)));
+  dict.SetKey("family",
+              base::Value::FromUniquePtrValue(std::move(family_dict)));
   std::string result;
   base::JSONWriter::Write(dict, &result);
   return result;
@@ -66,8 +69,7 @@ std::string BuildGetFamilyProfileResponse(
 
 std::string BuildEmptyGetFamilyProfileResponse() {
   base::DictionaryValue dict;
-  dict.SetWithoutPathExpansion("family",
-                               std::make_unique<base::DictionaryValue>());
+  dict.SetKey("family", base::DictionaryValue());
   std::string result;
   base::JSONWriter::Write(dict, &result);
   return result;
@@ -99,11 +101,12 @@ std::string BuildGetFamilyMembersResponse(
         profile_dict->SetKey("profileImageUrl",
                              base::Value(member.profile_image_url));
 
-      member_dict->SetWithoutPathExpansion("profile", std::move(profile_dict));
+      member_dict->SetKey(
+          "profile", base::Value::FromUniquePtrValue(std::move(profile_dict)));
     }
     list->Append(std::move(member_dict));
   }
-  dict.SetWithoutPathExpansion("members", std::move(list));
+  dict.SetKey("members", base::Value::FromUniquePtrValue(std::move(list)));
   std::string result;
   base::JSONWriter::Write(dict, &result);
   return result;
@@ -125,10 +128,10 @@ class FamilyInfoFetcherTest
  private:
   void EnsureFamilyInfoFetcher() {
     DCHECK(!fetcher_);
-    fetcher_.reset(new FamilyInfoFetcher(
+    fetcher_ = std::make_unique<FamilyInfoFetcher>(
         this, identity_test_env_.identity_manager(),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &test_url_loader_factory_)));
+            &test_url_loader_factory_));
   }
 
  protected:
@@ -143,7 +146,7 @@ class FamilyInfoFetcherTest
   }
 
   CoreAccountInfo SetPrimaryAccount() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     return identity_test_env_.SetUnconsentedPrimaryAccount(kAccountId);
 #elif defined(OS_ANDROID)
     // TODO(https://crbug.com/1046746): Change to SetUnconsentedPrimaryAccount()
@@ -156,7 +159,7 @@ class FamilyInfoFetcherTest
   }
 
   void IssueRefreshToken() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(kAccountId);
 #elif defined(OS_ANDROID)
     identity_test_env_.MakePrimaryAccountAvailable(kAccountId);
@@ -172,7 +175,7 @@ class FamilyInfoFetcherTest
   void WaitForAccessTokenRequestAndIssueToken() {
     identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
         identity_test_env_.identity_manager()->GetPrimaryAccountId(
-            signin::ConsentLevel::kNotRequired),
+            signin::ConsentLevel::kSignin),
         "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
   }
 
@@ -321,7 +324,7 @@ TEST_F(FamilyInfoFetcherTest, GetTokenFailure) {
   EXPECT_CALL(*this, OnFailure(FamilyInfoFetcher::ErrorCode::kTokenError));
   identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       identity_test_env_.identity_manager()->GetPrimaryAccountId(
-          signin::ConsentLevel::kNotRequired),
+          signin::ConsentLevel::kSignin),
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 }
 

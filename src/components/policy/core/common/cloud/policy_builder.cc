@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/signature_creator.h"
 
@@ -196,7 +197,7 @@ PolicyBuilder::~PolicyBuilder() {}
 
 std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetSigningKey() const {
   if (raw_signing_key_.empty())
-    return std::unique_ptr<crypto::RSAPrivateKey>();
+    return nullptr;
   return crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_signing_key_);
 }
 
@@ -214,7 +215,7 @@ void PolicyBuilder::UnsetSigningKey() {
 
 std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetNewSigningKey() const {
   if (raw_new_signing_key_.empty())
-    return std::unique_ptr<crypto::RSAPrivateKey>();
+    return nullptr;
   return std::unique_ptr<crypto::RSAPrivateKey>(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_new_signing_key_));
 }
@@ -388,7 +389,7 @@ TypedPolicyBuilder<em::ExternalPolicyData>::TypedPolicyBuilder() {
 template class TypedPolicyBuilder<em::ExternalPolicyData>;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 StringPolicyBuilder::StringPolicyBuilder() = default;
 
 void StringPolicyBuilder::Build() {

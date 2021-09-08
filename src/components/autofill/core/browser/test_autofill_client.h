@@ -28,6 +28,7 @@
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/mock_translate_driver.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/version_info/channel.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 
 #if !defined(OS_IOS)
@@ -43,9 +44,11 @@ class TestAutofillClient : public AutofillClient {
   ~TestAutofillClient() override;
 
   // AutofillClient:
+  version_info::Channel GetChannel() const override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   PrefService* GetPrefs() override;
+  const PrefService* GetPrefs() const override;
   syncer::SyncService* GetSyncService() override;
   signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
@@ -55,9 +58,10 @@ class TestAutofillClient : public AutofillClient {
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
   AutofillOfferManager* GetAutofillOfferManager() override;
-  const GURL& GetLastCommittedURL() override;
+  const GURL& GetLastCommittedURL() const override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   translate::LanguageState* GetLanguageState() override;
+  translate::TranslateDriver* GetTranslateDriver() override;
 #if !defined(OS_IOS)
   std::unique_ptr<InternalAuthenticator> CreateCreditCardInternalAuthenticator(
       content::RenderFrameHost* rfh) override;
@@ -82,7 +86,7 @@ class TestAutofillClient : public AutofillClient {
       LocalCardMigrationCallback start_migrating_cards_callback) override;
   void ShowLocalCardMigrationResults(
       const bool has_server_error,
-      const base::string16& tip_message,
+      const std::u16string& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
   void ShowWebauthnOfferDialog(
@@ -99,10 +103,10 @@ class TestAutofillClient : public AutofillClient {
       base::OnceCallback<void(const std::string&)> callback) override;
 #else  // defined(OS_ANDROID) || defined(OS_IOS)
   void ConfirmAccountNameFixFlow(
-      base::OnceCallback<void(const base::string16&)> callback) override;
+      base::OnceCallback<void(const std::u16string&)> callback) override;
   void ConfirmExpirationDateFixFlow(
       const CreditCard& card,
-      base::OnceCallback<void(const base::string16&, const base::string16&)>
+      base::OnceCallback<void(const std::u16string&, const std::u16string&)>
           callback) override;
 #endif
   void ConfirmSaveCreditCardLocally(
@@ -118,14 +122,19 @@ class TestAutofillClient : public AutofillClient {
   void CreditCardUploadCompleted(bool card_saved) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
+  void ConfirmSaveAddressProfile(
+      const AutofillProfile& profile,
+      const AutofillProfile* original_profile,
+      SaveAddressProfilePromptOptions options,
+      AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
   void ShowAutofillPopup(
       const AutofillClient::PopupOpenArgs& open_args,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
   void UpdateAutofillPopupDataListValues(
-      const std::vector<base::string16>& values,
-      const std::vector<base::string16>& labels) override;
+      const std::vector<std::u16string>& values,
+      const std::vector<std::u16string>& labels) override;
   base::span<const Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
   AutofillClient::PopupOpenArgs GetReopenPopupArgs() const override;
@@ -136,14 +145,14 @@ class TestAutofillClient : public AutofillClient {
   void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
       const std::vector<FormStructure*>& forms) override;
-  void DidFillOrPreviewField(const base::string16& autofilled_value,
-                             const base::string16& profile_full_name) override;
+  void DidFillOrPreviewField(const std::u16string& autofilled_value,
+                             const std::u16string& profile_full_name) override;
   // By default, TestAutofillClient will report that the context is
   // secure. This can be adjusted by calling set_form_origin() with an
   // http:// URL.
-  bool IsContextSecure() override;
+  bool IsContextSecure() const override;
   bool ShouldShowSigninPromo() override;
-  bool AreServerCardsSupported() override;
+  bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
 
   // RiskDataLoader:
@@ -230,6 +239,10 @@ class TestAutofillClient : public AutofillClient {
     autofill_offer_manager_ = std::move(autofill_offer_manager);
   }
 
+  void set_channel_for_testing(const version_info::Channel channel) {
+    channel_for_testing_ = channel;
+  }
+
   GURL form_origin() { return form_origin_; }
 
   ukm::TestUkmRecorder* GetTestUkmRecorder();
@@ -259,14 +272,16 @@ class TestAutofillClient : public AutofillClient {
   bool confirm_save_credit_card_locally_called_ = false;
 
   // Populated if save was offered. True if bubble was shown, false otherwise.
-  base::Optional<bool> offer_to_save_credit_card_bubble_was_shown_;
+  absl::optional<bool> offer_to_save_credit_card_bubble_was_shown_;
 
   // Populated if name fix flow was offered. True if bubble was shown, false
   // otherwise.
-  base::Optional<bool> credit_card_name_fix_flow_bubble_was_shown_;
+  absl::optional<bool> credit_card_name_fix_flow_bubble_was_shown_;
+
+  version_info::Channel channel_for_testing_ = version_info::Channel::UNKNOWN;
 
   // Populated if local save or upload was offered.
-  base::Optional<SaveCreditCardOptions> save_credit_card_options_;
+  absl::optional<SaveCreditCardOptions> save_credit_card_options_;
 
   std::vector<std::string> migration_card_selection_;
 

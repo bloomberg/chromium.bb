@@ -29,10 +29,6 @@ class RenderFrame;
 struct WebPluginInfo;
 }
 
-namespace guest_view {
-class GuestViewContainer;
-}
-
 namespace extensions {
 class Dispatcher;
 class ExtensionsGuestViewContainerDispatcher;
@@ -93,21 +89,13 @@ class ChromeExtensionsRendererClient
                        const blink::WebURL& url,
                        const net::SiteForCookies& site_for_cookies,
                        const url::Origin* initiator_origin,
-                       GURL* new_url,
-                       bool* force_ignore_site_for_cookies);
+                       GURL* new_url);
   v8::Local<v8::Object> GetScriptableObject(
       const blink::WebElement& plugin_element,
       v8::Isolate* isolate);
   void SetExtensionDispatcherForTest(
       std::unique_ptr<extensions::Dispatcher> extension_dispatcher);
   extensions::Dispatcher* GetExtensionDispatcherForTest();
-
-  // TODO(533069): Remove since BrowserPlugin has been removed.
-  static guest_view::GuestViewContainer* CreateBrowserPluginDelegate(
-      content::RenderFrame* render_frame,
-      const content::WebPluginInfo& info,
-      const std::string& mime_type,
-      const GURL& original_url);
 
   static void DidBlockMimeHandlerViewForDisallowedPlugin(
       const blink::WebElement& plugin_element);

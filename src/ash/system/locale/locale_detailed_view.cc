@@ -19,6 +19,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
@@ -36,14 +37,16 @@ namespace {
 // |checked| is true.
 class LocaleItem : public ActionableView {
  public:
+  METADATA_HEADER(LocaleItem);
+
   LocaleItem(tray::LocaleDetailedView* locale_detailed_view,
              const std::string& iso_code,
-             const base::string16& display_name,
+             const std::u16string& display_name,
              bool checked)
       : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
         locale_detailed_view_(locale_detailed_view),
         checked_(checked) {
-    SetInkDropMode(InkDropMode::ON);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
 
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);
@@ -81,7 +84,8 @@ class LocaleItem : public ActionableView {
     }
     SetAccessibleName(display_name_view->GetText());
   }
-
+  LocaleItem(const LocaleItem&) = delete;
+  LocaleItem& operator=(const LocaleItem&) = delete;
   ~LocaleItem() override = default;
 
   // ActionableView:
@@ -96,8 +100,6 @@ class LocaleItem : public ActionableView {
     ScrollViewToVisible();
   }
 
-  const char* GetClassName() const override { return "LocaleItem"; }
-
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     ActionableView::GetAccessibleNodeData(node_data);
     node_data->role = ax::mojom::Role::kCheckBox;
@@ -108,9 +110,10 @@ class LocaleItem : public ActionableView {
  private:
   tray::LocaleDetailedView* locale_detailed_view_;
   const bool checked_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocaleItem);
 };
+
+BEGIN_METADATA(LocaleItem, ActionableView)
+END_METADATA
 
 }  // namespace
 
@@ -155,9 +158,8 @@ void LocaleDetailedView::HandleViewClicked(views::View* view) {
   }
 }
 
-const char* LocaleDetailedView::GetClassName() const {
-  return "LocaleDetailedView";
-}
+BEGIN_METADATA(LocaleDetailedView, TrayDetailedView)
+END_METADATA
 
 }  // namespace tray
 }  // namespace ash

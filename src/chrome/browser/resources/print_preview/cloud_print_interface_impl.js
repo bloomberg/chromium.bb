@@ -7,10 +7,13 @@ import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 
 import {CloudPrintInterface, CloudPrintInterfaceErrorEventDetail, CloudPrintInterfaceEventType} from './cloud_print_interface.js';
-import {parseCloudDestination, parseInvitation} from './data/cloud_parsers.js';
+import {parseCloudDestination} from './data/cloud_parsers.js';
 import {CloudOrigins, DestinationOrigin} from './data/destination.js';
-import {Invitation} from './data/invitation.js';
-import {NativeLayer} from './native_layer.js';
+import {PrinterType} from './data/destination_match.js';
+import {Metrics, MetricsContext} from './metrics.js';
+// <if expr="chromeos or lacros">
+import {NativeLayerCrosImpl} from './native_layer_cros.js';
+// </if>
 
 
 /** @implements {CloudPrintInterface} */
@@ -21,12 +24,6 @@ export class CloudPrintInterfaceImpl {
      * @private {string}
      */
     this.baseUrl_ = '';
-
-    /**
-     * Used to get Auth2 tokens.
-     * @private {?NativeLayer}
-     */
-    this.nativeLayer_ = null;
 
     /**
      * Whether Print Preview is in App Kiosk mode; use only printers available
@@ -62,7 +59,7 @@ export class CloudPrintInterfaceImpl {
      */
     this.outstandingCloudSearchRequests_ = [];
 
-    // <if expr="chromeos">
+    // <if expr="chromeos or lacros">
     /**
      * Promise that will be resolved when the access token for
      * DestinationOrigin.DEVICE is available. Null if there is no request
@@ -77,9 +74,8 @@ export class CloudPrintInterfaceImpl {
   }
 
   /** @override */
-  configure(baseUrl, nativeLayer, isInAppKioskMode, uiLocale) {
+  configure(baseUrl, isInAppKioskMode, uiLocale) {
     this.baseUrl_ = baseUrl;
-    this.nativeLayer_ = nativeLayer;
     this.isInAppKioskMode_ = isInAppKioskMode;
     this.uiLocale_ = uiLocale;
   }
@@ -114,7 +110,12 @@ export class CloudPrintInterfaceImpl {
       });
     }
     this.abortSearchRequests_(origins);
-    this.search_(true, account, origins);
+    if (opt_account) {
+      // No need to send two search requests if we don't know the account. The
+      // server only sends back the XSRF token once so the other request will
+      // fail.
+      this.search_(true, account, origins);
+    }
     this.search_(false, account, origins);
   }
 
@@ -143,31 +144,10 @@ export class CloudPrintInterfaceImpl {
           this.onSearchDone_.bind(this, isRecent));
       this.outstandingCloudSearchRequests_.push(cpRequest);
       this.sendOrQueueRequest_(cpRequest);
+
+      MetricsContext.getPrinters(PrinterType.CLOUD_PRINTER)
+          .record(Metrics.PrintPreviewInitializationEvents.FUNCTION_INITIATED);
     }, this);
-  }
-
-  /** @override */
-  invites(account) {
-    const params = [
-      new HttpParam('client', 'chrome'),
-    ];
-    this.sendOrQueueRequest_(this.buildRequest_(
-        'GET', 'invites', params, DestinationOrigin.COOKIES, account,
-        this.onInvitesDone_.bind(this)));
-  }
-
-  /** @override */
-  processInvite(invitation, accept) {
-    const params = [
-      new HttpParam('printerid', invitation.destination.id),
-      new HttpParam('email', invitation.scopeId),
-      new HttpParam('accept', accept ? 'true' : 'false'),
-      new HttpParam('use_cdd', 'true'),
-    ];
-    this.sendOrQueueRequest_(this.buildRequest_(
-        'POST', 'processinvite', params, invitation.destination.origin,
-        invitation.destination.account,
-        this.onProcessInviteDone_.bind(this, invitation, accept)));
   }
 
   /** @override */
@@ -287,10 +267,11 @@ export class CloudPrintInterfaceImpl {
       return;
     }
 
-    // <if expr="chromeos">
+    // <if expr="chromeos or lacros">
     assert(request.origin === DestinationOrigin.DEVICE);
     if (this.accessTokenRequestPromise_ === null) {
-      this.accessTokenRequestPromise_ = this.nativeLayer_.getAccessToken();
+      this.accessTokenRequestPromise_ =
+          NativeLayerCrosImpl.getInstance().getAccessToken();
     }
 
     this.accessTokenRequestPromise_.then(
@@ -306,7 +287,15 @@ export class CloudPrintInterfaceImpl {
   sendRequest_(request) {
     request.xhr.onreadystatechange =
         this.onReadyStateChange_.bind(this, request);
-    request.xhr.send(request.body);
+    request.xhr.onerror = () => {
+      console.warn('Error with request to Cloud Print');
+    };
+    try {
+      request.xhr.send(request.body);
+    } catch (error) {
+      console.warn('Error with request to Cloud Print: ' + request.body);
+      // Do nothing because otherwise JS crash reporting system will go crazy.
+    }
   }
 
   /**
@@ -381,7 +370,7 @@ export class CloudPrintInterfaceImpl {
         });
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos or lacros">
   /**
    * Called when a native layer receives access token. Assumes that the
    * destination type for this token is DestinationOrigin.DEVICE.
@@ -456,7 +445,7 @@ export class CloudPrintInterfaceImpl {
           printerList.push(
               parseCloudDestination(printerJson, request.origin, activeUser));
         } catch (err) {
-          console.error('Unable to parse cloud print destination: ' + err);
+          console.warn('Unable to parse cloud print destination: ' + err);
         }
       });
       // Extract and store users.
@@ -474,6 +463,9 @@ export class CloudPrintInterfaceImpl {
               searchDone: lastRequestForThisOrigin,
             }
           }));
+
+      MetricsContext.getPrinters(PrinterType.CLOUD_PRINTER)
+          .record(Metrics.PrintPreviewInitializationEvents.FUNCTION_SUCCESSFUL);
     } else {
       const errorEventDetail = this.createErrorEventDetail_(request);
       errorEventDetail.user = activeUser;
@@ -481,74 +473,10 @@ export class CloudPrintInterfaceImpl {
       this.eventTarget_.dispatchEvent(new CustomEvent(
           CloudPrintInterfaceEventType.SEARCH_FAILED,
           {detail: errorEventDetail}));
-    }
-  }
 
-  /**
-   * Called when invitations search request completes.
-   * @param {!CloudPrintRequest} request Request that has been
-   *     completed.
-   * @private
-   */
-  onInvitesDone_(request) {
-    const activeUser = (request.result && request.result['request'] &&
-                        request.result['request']['user']) ||
-        '';
-    if (request.xhr.status === 200 && request.result['success']) {
-      // Extract invitations.
-      const invitationListJson = request.result['invites'] || [];
-      const invitationList = [];
-      invitationListJson.forEach(function(invitationJson) {
-        try {
-          invitationList.push(parseInvitation(invitationJson, activeUser));
-        } catch (e) {
-          console.error('Unable to parse invitation: ' + e);
-        }
-      });
-      // Dispatch INVITES_DONE event.
-      this.eventTarget_.dispatchEvent(
-          new CustomEvent(CloudPrintInterfaceEventType.INVITES_DONE, {
-            detail: {
-              invitations: invitationList,
-              user: activeUser,
-            }
-          }));
-    } else {
-      this.eventTarget_.dispatchEvent(new CustomEvent(
-          CloudPrintInterfaceEventType.INVITES_FAILED, {detail: activeUser}));
+      MetricsContext.getPrinters(PrinterType.CLOUD_PRINTER)
+          .record(Metrics.PrintPreviewInitializationEvents.FUNCTION_FAILED);
     }
-  }
-
-  /**
-   * Called when invitation processing request completes.
-   * @param {!Invitation} invitation Processed invitation.
-   * @param {boolean} accept Whether this invitation was accepted or rejected.
-   * @param {!CloudPrintRequest} request Request that has been
-   *     completed.
-   * @private
-   */
-  onProcessInviteDone_(invitation, accept, request) {
-    const activeUser = (request.result && request.result['request'] &&
-                        request.result['request']['user']) ||
-        '';
-    let printer = null;
-    if (request.xhr.status === 200 && request.result['success'] && accept) {
-      try {
-        printer = parseCloudDestination(
-            request.result['printer'], request.origin, activeUser);
-      } catch (e) {
-        console.error('Failed to parse cloud print destination: ' + e);
-      }
-    }
-    this.eventTarget_.dispatchEvent(
-        new CustomEvent(CloudPrintInterfaceEventType.PROCESS_INVITE_DONE, {
-          detail: {
-            printer: printer,
-            invitation: invitation,
-            accept: accept,
-            user: activeUser,
-          }
-        }));
   }
 
   /**
@@ -611,7 +539,7 @@ export class CloudPrintInterfaceImpl {
         printer =
             parseCloudDestination(printerJson, request.origin, activeUser);
       } catch (err) {
-        console.error(
+        console.warn(
             'Failed to parse cloud print destination: ' +
             JSON.stringify(printerJson));
         return;

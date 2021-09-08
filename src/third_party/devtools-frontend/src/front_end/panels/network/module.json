@@ -1,0 +1,34 @@
+{
+  "dependencies": [
+    "ui/legacy/components/utils",
+    "ui/legacy/components/cookie_table",
+    "ui/legacy/components/data_grid",
+    "panels/mobile_throttling",
+    "ui/legacy/components/object_ui",
+    "ui/legacy/components/perf_ui",
+    "models/persistence",
+    "panels/search",
+    "ui/legacy/components/source_frame",
+    "ui/legacy"
+  ],
+    "resources": [
+    "binaryResourceView.css",
+    "blockedURLsPane.css",
+    "eventSourceMessagesView.css",
+    "networkConfigView.css",
+    "networkLogView.css",
+    "networkManageCustomHeadersView.css",
+    "networkPanel.css",
+    "networkTimingTable.css",
+    "networkWaterfallColumn.css",
+    "requestCookiesView.css",
+    "requestHeadersTree.css",
+    "requestHeadersView.css",
+    "requestHTMLView.css",
+    "requestInitiatorView.css",
+    "requestInitiatorViewTree.css",
+    "signedExchangeInfoTree.css",
+    "signedExchangeInfoView.css",
+    "webSocketFrameView.css"
+  ]
+}

@@ -42,12 +42,6 @@ NSPoint ConvertRootPointToTarget(NSWindow* target,
   DCHECK(GetActiveGenerator());
   gfx::Point point = point_in_root;
 
-  if (GetActiveGenerator()->assume_window_at_origin()) {
-    // When assuming the window is at the origin, ignore the titlebar as well.
-    NSRect content_rect = [target contentRectForFrameRect:[target frame]];
-    return NSMakePoint(point.x(), NSHeight(content_rect) - point.y());
-  }
-
   point -= gfx::ScreenRectFromNSRect([target frame]).OffsetFromOrigin();
   return NSMakePoint(point.x(), NSHeight([target frame]) - point.y());
 }
@@ -317,13 +311,6 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
                               gfx::Point* point) const override {}
   void ConvertPointFromHost(const ui::EventTarget* hosted_target,
                             gfx::Point* point) const override {}
-  ui::EventDispatchDetails DispatchKeyEventToIME(EventTarget* target,
-                                                 ui::KeyEvent* event) override {
-    // InputMethodMac does not send native events nor do the necessary
-    // translation. Key events must be handled natively by an NSResponder which
-    // translates keyboard events into editing commands.
-    return ui::EventDispatchDetails();
-  }
 
  private:
   static EventGeneratorDelegateMac* instance_;

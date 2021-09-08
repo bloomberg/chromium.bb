@@ -17,12 +17,12 @@
 
 namespace autofill {
 
-constexpr base::char16 kLabelSeparator = ' ';
+constexpr char16_t kLabelSeparator = ' ';
 constexpr size_t kMaxBulletCount = 8;
 
 namespace {
-base::string16 CreateLabel(const Suggestion& suggestion) {
-  base::string16 password =
+std::u16string CreateLabel(const Suggestion& suggestion) {
+  std::u16string password =
       suggestion.additional_label.substr(0, kMaxBulletCount);
   // The label contains the signon_realm or is empty. The additional_label can
   // never be empty since it must contain a password.
@@ -52,15 +52,15 @@ void AutofillKeyboardAccessoryAdapter::Hide() {
 }
 
 void AutofillKeyboardAccessoryAdapter::OnSelectedRowChanged(
-    base::Optional<int> previous_row_selection,
-    base::Optional<int> current_row_selection) {}
+    absl::optional<int> previous_row_selection,
+    absl::optional<int> current_row_selection) {}
 
 void AutofillKeyboardAccessoryAdapter::OnSuggestionsChanged() {
   DCHECK(controller_) << "Call OnSuggestionsChanged only from its owner!";
   DCHECK(view_) << "OnSuggestionsChanged called before a View was set!";
 
   labels_.clear();
-  front_element_ = base::nullopt;
+  front_element_ = absl::nullopt;
   for (int i = 0; i < GetLineCount(); ++i) {
     const Suggestion& suggestion = controller_->GetSuggestionAt(i);
     if (suggestion.frontend_id != POPUP_ITEM_ID_CLEAR_FORM) {
@@ -68,7 +68,7 @@ void AutofillKeyboardAccessoryAdapter::OnSuggestionsChanged() {
       continue;
     }
     DCHECK(!front_element_.has_value()) << "Additional front item at: " << i;
-    front_element_ = base::Optional<int>(i);
+    front_element_ = absl::optional<int>(i);
     // If there is a special popup item, just reuse the previously used label.
     labels_.push_back(controller_->GetSuggestionLabelAt(i));
   }
@@ -76,9 +76,9 @@ void AutofillKeyboardAccessoryAdapter::OnSuggestionsChanged() {
   view_->Show();
 }
 
-base::Optional<int32_t> AutofillKeyboardAccessoryAdapter::GetAxUniqueId() {
+absl::optional<int32_t> AutofillKeyboardAccessoryAdapter::GetAxUniqueId() {
   NOTIMPLEMENTED() << "See https://crbug.com/985927";
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // AutofillPopupController implementation.
@@ -98,13 +98,13 @@ const autofill::Suggestion& AutofillKeyboardAccessoryAdapter::GetSuggestionAt(
   return controller_->GetSuggestionAt(OffsetIndexFor(row));
 }
 
-const base::string16& AutofillKeyboardAccessoryAdapter::GetSuggestionValueAt(
+const std::u16string& AutofillKeyboardAccessoryAdapter::GetSuggestionValueAt(
     int row) const {
   DCHECK(controller_) << "Call GetSuggestionValueAt only from its owner!";
   return controller_->GetSuggestionValueAt(OffsetIndexFor(row));
 }
 
-const base::string16& AutofillKeyboardAccessoryAdapter::GetSuggestionLabelAt(
+const std::u16string& AutofillKeyboardAccessoryAdapter::GetSuggestionLabelAt(
     int row) const {
   DCHECK(controller_) << "Call GetSuggestionLabelAt only from its owner!";
   DCHECK(static_cast<size_t>(row) < labels_.size());
@@ -118,15 +118,15 @@ PopupType AutofillKeyboardAccessoryAdapter::GetPopupType() const {
 
 bool AutofillKeyboardAccessoryAdapter::GetRemovalConfirmationText(
     int index,
-    base::string16* title,
-    base::string16* body) {
+    std::u16string* title,
+    std::u16string* body) {
   return controller_ && controller_->GetRemovalConfirmationText(
                             OffsetIndexFor(index), title, body);
 }
 
 bool AutofillKeyboardAccessoryAdapter::RemoveSuggestion(int index) {
   DCHECK(view_) << "RemoveSuggestion called before a View was set!";
-  base::string16 title, body;
+  std::u16string title, body;
   if (!GetRemovalConfirmationText(index, &title, &body))
     return false;
 
@@ -138,25 +138,25 @@ bool AutofillKeyboardAccessoryAdapter::RemoveSuggestion(int index) {
 }
 
 void AutofillKeyboardAccessoryAdapter::SetSelectedLine(
-    base::Optional<int> selected_line) {
+    absl::optional<int> selected_line) {
   if (!controller_)
     return;
   if (!selected_line.has_value()) {
-    controller_->SetSelectedLine(base::nullopt);
+    controller_->SetSelectedLine(absl::nullopt);
     return;
   }
   controller_->SetSelectedLine(OffsetIndexFor(selected_line.value()));
 }
 
-base::Optional<int> AutofillKeyboardAccessoryAdapter::selected_line() const {
+absl::optional<int> AutofillKeyboardAccessoryAdapter::selected_line() const {
   if (!controller_ || !controller_->selected_line().has_value())
-    return base::nullopt;
+    return absl::nullopt;
   for (int i = 0; i < GetLineCount(); ++i) {
     if (OffsetIndexFor(i) == controller_->selected_line().value()) {
       return i;
     }
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // AutofillPopupViewDelegate implementation

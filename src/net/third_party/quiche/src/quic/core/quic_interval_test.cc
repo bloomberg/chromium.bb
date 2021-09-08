@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_interval.h"
+#include "quic/core/quic_interval.h"
 
 #include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
+#include "quic/core/quic_time.h"
+#include "quic/platform/api/quic_test.h"
 
 namespace quic {
 namespace test {
@@ -373,6 +373,19 @@ TEST_F(QuicIntervalTest, CoveringOps) {
   EXPECT_TRUE(lo.Empty());
   EXPECT_TRUE(hi.Empty());
   EXPECT_TRUE(d.Difference(d8, &diff) && diff.empty());
+}
+
+TEST_F(QuicIntervalTest, Separated) {
+  using QI = QuicInterval<int>;
+  EXPECT_FALSE(QI(100, 200).Separated(QI(100, 200)));
+  EXPECT_FALSE(QI(100, 200).Separated(QI(200, 300)));
+  EXPECT_TRUE(QI(100, 200).Separated(QI(201, 300)));
+  EXPECT_FALSE(QI(100, 200).Separated(QI(0, 100)));
+  EXPECT_TRUE(QI(100, 200).Separated(QI(0, 99)));
+  EXPECT_FALSE(QI(100, 200).Separated(QI(150, 170)));
+  EXPECT_FALSE(QI(150, 170).Separated(QI(100, 200)));
+  EXPECT_FALSE(QI(100, 200).Separated(QI(150, 250)));
+  EXPECT_FALSE(QI(150, 250).Separated(QI(100, 200)));
 }
 
 TEST_F(QuicIntervalTest, Length) {

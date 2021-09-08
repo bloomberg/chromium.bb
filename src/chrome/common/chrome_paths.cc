@@ -15,11 +15,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "media/media_buildflags.h"
-#include "third_party/widevine/cdm/buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
@@ -37,15 +37,11 @@
 #include "base/win/registry.h"
 #endif
 
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && BUILDFLAG(ENABLE_WIDEVINE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
 #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
 #endif
 
 namespace {
-
-// The Pepper Flash plugins are in a directory with this name.
-const base::FilePath::CharType kPepperFlashBaseDirectory[] =
-    FILE_PATH_LITERAL("PepperFlash");
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // The path to the external extension <id>.json files.
@@ -57,28 +53,22 @@ const base::FilePath::CharType kFilepathSinglePrefExtensions[] =
     FILE_PATH_LITERAL("/usr/share/chromium/extensions");
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-// The path to the hint file that tells the pepper plugin loader
-// where it can find the latest component updated flash.
-const base::FilePath::CharType kComponentUpdatedFlashHint[] =
-    FILE_PATH_LITERAL("latest-component-updated-flash");
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
-    BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
+#if BUILDFLAG(ENABLE_WIDEVINE)
 // The name of the hint file that tells the latest component updated Widevine
 // CDM directory. This file name should not be changed as otherwise existing
 // Widevine CDMs might not be loaded.
 const base::FilePath::CharType kComponentUpdatedWidevineCdmHint[] =
     FILE_PATH_LITERAL("latest-component-updated-widevine-cdm");
-#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) &&
-        // BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::FilePath::CharType kChromeOSTPMFirmwareUpdateLocation[] =
     FILE_PATH_LITERAL("/run/tpm_firmware_update_location");
 const base::FilePath::CharType kChromeOSTPMFirmwareUpdateSRKVulnerableROCA[] =
     FILE_PATH_LITERAL("/run/tpm_firmware_update_srk_vulnerable_roca");
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 base::FilePath& GetInvalidSpecifiedUserDataDirInternal() {
   static base::NoDestructor<base::FilePath> s;
@@ -201,7 +191,7 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif
       break;
     case chrome::DIR_CRASH_DUMPS:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       // ChromeOS uses a separate directory. See http://crosbug.com/25089
       cur = base::FilePath("/var/log/chrome");
 #elif defined(OS_ANDROID)
@@ -274,16 +264,6 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!GetComponentDirectory(&cur))
         return false;
       break;
-    case chrome::DIR_PEPPER_FLASH_PLUGIN:
-      if (!GetInternalPluginsDirectory(&cur))
-        return false;
-      cur = cur.Append(kPepperFlashBaseDirectory);
-      break;
-    case chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN:
-      if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
-        return false;
-      cur = cur.Append(kPepperFlashBaseDirectory);
-      break;
     case chrome::FILE_LOCAL_STATE:
       if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
@@ -293,10 +273,6 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("script.log"));
-      break;
-    case chrome::FILE_PEPPER_FLASH_PLUGIN:
-      if (!base::PathService::Get(chrome::DIR_PEPPER_FLASH_PLUGIN, &cur))
-        return false;
       break;
     // PNaCl is currenly installable via the component updater or by being
     // simply built-in.  DIR_PNACL_BASE is used as the base directory for
@@ -335,26 +311,21 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("pnacl"));
       break;
 
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
-    BUILDFLAG(BUNDLE_WIDEVINE_CDM)
+#if BUILDFLAG(ENABLE_WIDEVINE)
     case chrome::DIR_BUNDLED_WIDEVINE_CDM:
       if (!GetComponentDirectory(&cur))
         return false;
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
       // TODO(crbug.com/971433): Move Widevine CDM to a separate folder on
-      // ChromeOS so that the manifest can be included.
+      // Chrome OS so that the manifest can be included.
       cur = cur.AppendASCII(kWidevineCdmBaseDirectory);
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
       break;
-#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) &&
-        // BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && \
-    BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
     case chrome::DIR_COMPONENT_UPDATED_WIDEVINE_CDM:
       if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
-      cur = cur.Append(kWidevineCdmBaseDirectory);
+      cur = cur.AppendASCII(kWidevineCdmBaseDirectory);
       break;
     case chrome::FILE_COMPONENT_WIDEVINE_CDM_HINT:
       if (!base::PathService::Get(chrome::DIR_COMPONENT_UPDATED_WIDEVINE_CDM,
@@ -362,8 +333,7 @@ bool PathProvider(int key, base::FilePath* result) {
         return false;
       cur = cur.Append(kComponentUpdatedWidevineCdmHint);
       break;
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS) &&
-        // BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
     case chrome::FILE_RESOURCES_PACK:  // Falls through.
     case chrome::FILE_DEV_UI_RESOURCES_PACK:
@@ -390,7 +360,7 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif
       break;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     case chrome::DIR_CHROMEOS_WALLPAPERS:
       if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
@@ -405,13 +375,6 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("custom_wallpapers"));
-      break;
-#endif
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    case chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS:
-      if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
-        return false;
-      cur = cur.Append(FILE_PATH_LITERAL("SupervisedUserInstalledWhitelists"));
       break;
 #endif
     // The following are only valid in the development environment, and
@@ -459,8 +422,12 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     }
 #endif
-#if defined(OS_CHROMEOS) || \
-    (defined(OS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING)) || defined(OS_MAC)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if BUILDFLAG(IS_CHROMEOS_ASH) ||                            \
+    ((defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+     BUILDFLAG(CHROMIUM_BRANDING)) ||                        \
+    defined(OS_MAC)
     case chrome::DIR_USER_EXTERNAL_EXTENSIONS: {
       if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
@@ -537,16 +504,7 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(kGCMStoreDirname);
       break;
 #endif  // !defined(OS_ANDROID)
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-    case chrome::FILE_COMPONENT_FLASH_HINT:
-      if (!base::PathService::Get(
-              chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN, &cur)) {
-        return false;
-      }
-      cur = cur.Append(kComponentUpdatedFlashHint);
-      break;
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     case chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION:
       cur = base::FilePath(kChromeOSTPMFirmwareUpdateLocation);
       create_dir = false;
@@ -555,7 +513,13 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = base::FilePath(kChromeOSTPMFirmwareUpdateSRKVulnerableROCA);
       create_dir = false;
       break;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+    case chrome::DIR_OPTIMIZATION_GUIDE_PREDICTION_MODELS:
+      if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("OptimizationGuidePredictionModels"));
+      create_dir = true;
+      break;
 
     default:
       return false;

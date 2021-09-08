@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2019 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -511,7 +511,6 @@ class AmalgamatedProject(object):
       f.write('\n'.join([preamble] + self.source_defines + [include_stmt] +
                         self.source + ['\n']))
     build_cmd = self.get_build_command(output_prefix)
-
     return """Amalgamated project written to %s and %s.
 
 Build settings:
@@ -534,7 +533,7 @@ Example build command:
       llvm_script = os.path.join(gn_utils.repo_root(), 'gn',
                                  'standalone', 'toolchain',
                                  'linux_find_llvm.py')
-      cxx = subprocess.check_output([llvm_script]).splitlines()[2]
+      cxx = subprocess.check_output([llvm_script]).splitlines()[2].decode()
     else:
       cxx = 'clang++'
 
@@ -580,6 +579,13 @@ def main():
       help='Targets to include in the output (e.g., "//:libperfetto")')
   args = parser.parse_args()
   targets = args.targets or default_targets
+
+  # The CHANGELOG mtime triggers the the perfetto_version.gen.h genrule. This is
+  # to avoid emitting a stale version information in the remote case of somebody
+  # running gen_amalgamated incrementally after having moved to another commit.
+  changelog_path = os.path.join(project_root, 'CHANGELOG')
+  assert(os.path.exists(changelog_path))
+  subprocess.check_call(['touch', '-c', changelog_path])
 
   output = args.output
   if args.check:

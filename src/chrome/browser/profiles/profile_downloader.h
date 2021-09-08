@@ -9,14 +9,12 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace signin {
@@ -54,15 +52,15 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   virtual void StartForAccount(const CoreAccountId& account_id);
 
   // On successful download this returns the hosted domain of the user.
-  virtual base::string16 GetProfileHostedDomain() const;
+  virtual std::u16string GetProfileHostedDomain() const;
 
   // On successful download this returns the full name of the user. For example
   // "Pat Smith".
-  virtual base::string16 GetProfileFullName() const;
+  virtual std::u16string GetProfileFullName() const;
 
   // On successful download this returns the given name of the user. For example
   // if the name is "Pat Smith", the given name is "Pat".
-  virtual base::string16 GetProfileGivenName() const;
+  virtual std::u16string GetProfileGivenName() const;
 
   // On successful download this returns G+ locale preference of the user.
   virtual std::string GetProfileLocale() const;
@@ -125,8 +123,9 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   SkBitmap profile_picture_;
   PictureStatus picture_status_ = PICTURE_FAILED;
   signin::IdentityManager* identity_manager_;
-  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
-      identity_manager_observer_;
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      identity_manager_observation_{this};
   bool waiting_for_account_info_ = false;
 };
 

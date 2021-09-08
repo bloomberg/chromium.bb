@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import glob
 import itertools
 import io
@@ -12,7 +14,6 @@ from PIL import Image
 import requests
 import shutil
 import subprocess
-import sys
 import tempfile
 
 from gold_inexact_matching import parameter_set
@@ -47,7 +48,9 @@ class BaseParameterOptimizer(object):
     self._goldctl_binary = None
     self._working_dir = None
     self._expectations = None
-    self._gold_url = 'https://%s-gold.skia.org' % args.gold_instance
+    # TODO(skbug.com/10610): Switch away from the public instance once
+    # authentication is fixed for the non-public instance.
+    self._gold_url = 'https://%s-public-gold.skia.org' % args.gold_instance
     self._pool = multiprocessing.Pool()
     # A map of strings, denoting a resolution or trace, to an iterable of
     # strings, denoting images that are that dimension or belong to that
@@ -79,10 +82,9 @@ class BaseParameterOptimizer(object):
         help='The name of a test to find parameter values for, as reported in '
         'the Skia Gold UI. Can be passed multiple times to run optimizations '
         'for multiple tests.')
-    common_group.add_argument(
-        '--gold-instance',
-        default='chrome-gpu',
-        help='The Skia Gold instance to interact with.')
+    common_group.add_argument('--gold-instance',
+                              default='chrome',
+                              help='The Skia Gold instance to interact with.')
     common_group.add_argument(
         '--corpus',
         default='chrome-gpu',
@@ -239,7 +241,7 @@ class BaseParameterOptimizer(object):
           '%s/json/debug/digestsbytestname/%s/%s' %
           (self._gold_url, self._args.corpus, self._test_name))
       self._DownloadImagesForTraceGrouping()
-    for grouping, digests in self._images.iteritems():
+    for grouping, digests in self._images.items():
       logging.info('Found %d images for group %s', len(digests), grouping)
       logging.debug('Digests: %r', digests)
 
@@ -281,7 +283,7 @@ class BaseParameterOptimizer(object):
     # The digests can be empty (which we don't care about) or duplicated, so
     # convert to a set and filter out the empty strings.
     filtered_traces = {}
-    for trace, digests in self._expectations.iteritems():
+    for trace, digests in self._expectations.items():
       filtered_digests = set(digests)
       filtered_digests.discard('')
       if not filtered_digests:
@@ -357,7 +359,7 @@ class BaseParameterOptimizer(object):
     max_num_pixels = -1
     max_max_delta = -1
 
-    for resolution, digest_list in self._images.iteritems():
+    for resolution, digest_list in self._images.items():
       logging.debug('Resolution/trace: %s, digests: %s', resolution,
                     digest_list)
       cmds = [
@@ -430,6 +432,8 @@ def RunCommandAndExtractData(cmd):
     per-channel delta sum in the comparison.
   """
   output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+  if not isinstance(output, str):
+    output = output.decode('utf-8')
   success = False
   num_pixels = 0
   max_delta = 0

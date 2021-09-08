@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -69,12 +68,10 @@ CORE_EXPORT InlineBoxPosition
 ComputeInlineBoxPosition(const PositionWithAffinity&);
 CORE_EXPORT InlineBoxPosition
 ComputeInlineBoxPosition(const PositionInFlatTreeWithAffinity&);
-CORE_EXPORT InlineBoxPosition ComputeInlineBoxPosition(const VisiblePosition&);
 
 PositionWithAffinity ComputeInlineAdjustedPosition(const PositionWithAffinity&);
 PositionInFlatTreeWithAffinity ComputeInlineAdjustedPosition(
     const PositionInFlatTreeWithAffinity&);
-PositionWithAffinity ComputeInlineAdjustedPosition(const VisiblePosition&);
 
 InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
     const PositionWithAffinity&);

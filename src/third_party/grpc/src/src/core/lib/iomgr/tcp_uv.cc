@@ -252,8 +252,8 @@ static void accept_new_connection(grpc_custom_socket* socket) {
   uv_socket->accept_error = GRPC_ERROR_NONE;
   uv_socket->pending_connections -= 1;
   if (uv_socket->accept_error != GRPC_ERROR_NONE) {
-    uv_stream_t dummy_handle;
-    uv_accept((uv_stream_t*)uv_socket->handle, &dummy_handle);
+    uv_stream_t phony_handle;
+    uv_accept((uv_stream_t*)uv_socket->handle, &phony_handle);
     uv_socket->accept_cb(socket, new_socket, error);
   } else {
     uv_socket_t* uv_new_socket = (uv_socket_t*)gpr_malloc(sizeof(uv_socket_t));
@@ -370,7 +370,7 @@ static void uv_resolve_callback(uv_getaddrinfo_t* req, int status,
                                tcp_error_create("getaddrinfo failed", status));
 }
 
-static grpc_error* uv_resolve(char* host, char* port,
+static grpc_error* uv_resolve(const char* host, const char* port,
                               grpc_resolved_addresses** result) {
   int status;
   uv_getaddrinfo_t req;
@@ -388,7 +388,8 @@ static grpc_error* uv_resolve(char* host, char* port,
   return tcp_error_create("getaddrinfo failed", status);
 }
 
-static void uv_resolve_async(grpc_custom_resolver* r, char* host, char* port) {
+static void uv_resolve_async(grpc_custom_resolver* r, const char* host,
+                             const char* port) {
   int status;
   uv_getaddrinfo_t* req =
       (uv_getaddrinfo_t*)gpr_malloc(sizeof(uv_getaddrinfo_t));
