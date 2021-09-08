@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """A wrapper around ssh for common operations on a CrOS-based device"""
+from __future__ import absolute_import
 import logging
 import os
 import posixpath
@@ -106,7 +107,12 @@ class CrOSInterface(object):
     self._device_host_clock_offset = None
     self._master_connection_open = False
     self._disable_strict_filenames = False
+
+    # Cached properties
+    self._arch_name = None
     self._board = None
+    self._device_type_name = None
+    self._is_running_on_vm = None
 
     if self.local:
       return
@@ -703,7 +709,7 @@ class CrOSInterface(object):
     self.RunCmdOnDevice(['mkdir', '-p', screenshot_dir])
     # Large number of screenshots can increase hardware lab bandwidth
     # dramatically, so keep this number low. crbug.com/524814.
-    for i in xrange(2):
+    for i in range(2):
       screenshot_file = ('%s%s-%d%s' %
                          (screenshot_dir, screenshot_prefix, i, screenshot_ext))
       if not self.FileExistsOnDevice(screenshot_file):
@@ -712,10 +718,15 @@ class CrOSInterface(object):
     return False
 
   def GetArchName(self):
-    return self.RunCmdOnDevice(['uname', '-m'])[0].rstrip()
+    if self._arch_name is None:
+      self._arch_name = self.RunCmdOnDevice(['uname', '-m'])[0].rstrip()
+    return self._arch_name
 
   def IsRunningOnVM(self):
-    return self.RunCmdOnDevice(['crossystem', 'inside_vm'])[0] != '0'
+    if self._is_running_on_vm is None:
+      self._is_running_on_vm = self.RunCmdOnDevice(
+          ['crossystem', 'inside_vm'])[0] != '0'
+    return self._is_running_on_vm
 
   def LsbReleaseValue(self, key, default):
     """/etc/lsb-release is a file with key=value pairs."""
@@ -728,7 +739,10 @@ class CrOSInterface(object):
 
   def GetDeviceTypeName(self):
     """DEVICETYPE in /etc/lsb-release is CHROMEBOOK, CHROMEBIT, etc."""
-    return self.LsbReleaseValue(key='DEVICETYPE', default='CHROMEBOOK')
+    if self._device_type_name is None:
+      self._device_type_name = self.LsbReleaseValue(
+          key='DEVICETYPE', default='CHROMEBOOK')
+    return self._device_type_name
 
   def GetBoard(self):
     """Gets the name of the board of the device, e.g. "kevin".

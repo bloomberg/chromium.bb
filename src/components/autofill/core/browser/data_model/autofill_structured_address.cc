@@ -21,24 +21,22 @@ namespace autofill {
 
 namespace structured_address {
 
-base::string16 AddressComponentWithRewriter::RewriteValue(
-    const base::string16& value) const {
+std::u16string AddressComponentWithRewriter::RewriteValue(
+    const std::u16string& value) const {
   // Retrieve the country name from the structured tree the node resides in.
-  base::string16 country = GetRootNode().GetValueForType(ADDRESS_HOME_COUNTRY);
+  std::u16string country = GetRootNode().GetValueForType(ADDRESS_HOME_COUNTRY);
   // If no country is available (this should not be the case for a valid
   // importable profile), use the US as a fallback country for the rewriter.
-  return RewriterCache::Rewrite(
-      !country.empty() ? country : base::ASCIIToUTF16("US"), value);
+  return RewriterCache::Rewrite(!country.empty() ? country : u"US", value);
 }
 
-base::string16 AddressComponentWithRewriter::ValueForComparison() const {
+std::u16string AddressComponentWithRewriter::ValueForComparison() const {
   return RewriteValue(NormalizedValue());
 }
 
 StreetName::StreetName(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_STREET_NAME,
                        parent,
-                       {},
                        MergeMode::kDefault) {}
 
 StreetName::~StreetName() = default;
@@ -46,7 +44,6 @@ StreetName::~StreetName() = default;
 DependentStreetName::DependentStreetName(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_DEPENDENT_STREET_NAME,
                        parent,
-                       {},
                        MergeMode::kDefault) {}
 
 DependentStreetName::~DependentStreetName() = default;
@@ -55,7 +52,6 @@ StreetAndDependentStreetName::StreetAndDependentStreetName(
     AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME,
                        parent,
-                       {&thoroughfare_name_, &dependent_thoroughfare_name_},
                        MergeMode::kDefault) {}
 
 StreetAndDependentStreetName::~StreetAndDependentStreetName() = default;
@@ -63,7 +59,6 @@ StreetAndDependentStreetName::~StreetAndDependentStreetName() = default;
 HouseNumber::HouseNumber(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_HOUSE_NUMBER,
                        parent,
-                       {},
                        MergeMode::kDefault) {}
 
 HouseNumber::~HouseNumber() = default;
@@ -71,25 +66,23 @@ HouseNumber::~HouseNumber() = default;
 Premise::Premise(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_PREMISE_NAME,
                        parent,
-                       {},
                        MergeMode::kDefault) {}
 
 Premise::~Premise() = default;
 
 Floor::Floor(AddressComponent* parent)
-    : AddressComponent(ADDRESS_HOME_FLOOR, parent, {}, MergeMode::kDefault) {}
+    : AddressComponent(ADDRESS_HOME_FLOOR, parent, MergeMode::kDefault) {}
 
 Floor::~Floor() = default;
 
 Apartment::Apartment(AddressComponent* parent)
-    : AddressComponent(ADDRESS_HOME_APT_NUM, parent, {}, MergeMode::kDefault) {}
+    : AddressComponent(ADDRESS_HOME_APT_NUM, parent, MergeMode::kDefault) {}
 
 Apartment::~Apartment() = default;
 
 SubPremise::SubPremise(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_SUBPREMISE,
                        parent,
-                       {&floor_, &apartment_},
                        MergeMode::kDefault) {}
 
 SubPremise::~SubPremise() = default;
@@ -101,7 +94,6 @@ StreetAddress::StreetAddress(AddressComponent* parent)
     : AddressComponentWithRewriter(
           ADDRESS_HOME_STREET_ADDRESS,
           parent,
-          {&streets_, &number_, &premise_, &sub_premise_},
           MergeMode::kReplaceEmpty | MergeMode::kReplaceSubset |
               MergeMode::kDefault) {}
 
@@ -114,7 +106,9 @@ StreetAddress::GetParseRegularExpressionsByRelevance() const {
   return {pattern_provider->GetRegEx(RegEx::kParseHouseNumberStreetName),
           pattern_provider->GetRegEx(RegEx::kParseStreetNameHouseNumber),
           pattern_provider->GetRegEx(
-              RegEx::kParseStreetNameHouseNumberSuffixedFloor)};
+              RegEx::kParseStreetNameHouseNumberSuffixedFloor),
+          pattern_provider->GetRegEx(
+              RegEx::kParseStreetNameHouseNumberSuffixedFloorAndAppartmentRe)};
 }
 
 void StreetAddress::ParseValueAndAssignSubcomponentsByFallbackMethod() {
@@ -142,8 +136,8 @@ bool StreetAddress::HasNewerValuePrecendenceInMerging(
   // If the verification statuses are the same, do not use the newer component
   // if the older one has new lines but the newer one doesn't.
   if (GetVerificationStatus() == newer_component.GetVerificationStatus()) {
-    if (GetValue().find('\n') != base::string16::npos &&
-        newer_component.GetValue().find('\n') == base::string16::npos) {
+    if (GetValue().find('\n') != std::u16string::npos &&
+        newer_component.GetValue().find('\n') == std::u16string::npos) {
       return false;
     }
     return true;
@@ -151,26 +145,32 @@ bool StreetAddress::HasNewerValuePrecendenceInMerging(
   return false;
 }
 
-base::string16 StreetAddress::GetBestFormatString() const {
+std::u16string StreetAddress::GetBestFormatString() const {
   std::string country_code =
       base::UTF16ToUTF8(GetRootNode().GetValueForType(ADDRESS_HOME_COUNTRY));
 
   if (country_code == "BR") {
-    return base::UTF8ToUTF16(
-        "${ADDRESS_HOME_STREET_NAME}${ADDRESS_HOME_HOUSE_NUMBER;, }"
-        "${ADDRESS_HOME_FLOOR;, ;º andar}${ADDRESS_HOME_APT_NUM;, apto ;}");
+    return u"${ADDRESS_HOME_STREET_NAME}${ADDRESS_HOME_HOUSE_NUMBER;, }"
+           u"${ADDRESS_HOME_FLOOR;, ;º andar}${ADDRESS_HOME_APT_NUM;, apto ;}";
   }
 
   if (country_code == "DE") {
-    return base::ASCIIToUTF16(
-        "${ADDRESS_HOME_STREET_NAME} ${ADDRESS_HOME_HOUSE_NUMBER}"
-        "${ADDRESS_HOME_FLOOR;, ;. Stock}${ADDRESS_HOME_APT_NUM;, ;. Wohnung}");
+    return u"${ADDRESS_HOME_STREET_NAME} ${ADDRESS_HOME_HOUSE_NUMBER}"
+           u"${ADDRESS_HOME_FLOOR;, ;. Stock}${ADDRESS_HOME_APT_NUM;, ;. "
+           u"Wohnung}";
   }
 
+  if (country_code == "MX") {
+    return u"${ADDRESS_HOME_STREET_NAME} ${ADDRESS_HOME_HOUSE_NUMBER}"
+           u"${ADDRESS_HOME_FLOOR; - Piso ;}${ADDRESS_HOME_APT_NUM; - ;}";
+  }
+  if (country_code == "ES") {
+    return u"${ADDRESS_HOME_STREET_NAME} ${ADDRESS_HOME_HOUSE_NUMBER}"
+           u"${ADDRESS_HOME_FLOOR;, ;º}${ADDRESS_HOME_APT_NUM;, ;ª}";
+  }
   // Use the format for US/UK as the default.
-  return base::ASCIIToUTF16(
-      "${ADDRESS_HOME_HOUSE_NUMBER} ${ADDRESS_HOME_STREET_NAME} "
-      "${ADDRESS_HOME_FLOOR;FL } ${ADDRESS_HOME_APT_NUM;APT }");
+  return u"${ADDRESS_HOME_HOUSE_NUMBER} ${ADDRESS_HOME_STREET_NAME} "
+         u"${ADDRESS_HOME_FLOOR;FL } ${ADDRESS_HOME_APT_NUM;APT }";
 }
 
 void StreetAddress::UnsetValue() {
@@ -178,24 +178,23 @@ void StreetAddress::UnsetValue() {
   address_lines_.clear();
 }
 
-void StreetAddress::SetValue(base::string16 value, VerificationStatus status) {
+void StreetAddress::SetValue(std::u16string value, VerificationStatus status) {
   AddressComponent::SetValue(value, status);
   CalculateAddressLines();
 }
 
 void StreetAddress::CalculateAddressLines() {
   // Recalculate |address_lines_| after changing the street address.
-  address_lines_ =
-      base::SplitString(GetValue(), base::ASCIIToUTF16("\n"),
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  address_lines_ = base::SplitString(GetValue(), u"\n", base::TRIM_WHITESPACE,
+                                     base::SPLIT_WANT_ALL);
 
   // If splitting of the address line results in more than 3 entries, join the
   // additional entries into the third line.
   if (address_lines_.size() > 3) {
     address_lines_[2] =
-        base::JoinString(std::vector<base::string16>(address_lines_.begin() + 2,
+        base::JoinString(std::vector<std::u16string>(address_lines_.begin() + 2,
                                                      address_lines_.end()),
-                         base::ASCIIToUTF16(" "));
+                         u" ");
     // Drop the addition address lines.
     while (address_lines_.size() > 3)
       address_lines_.pop_back();
@@ -203,30 +202,30 @@ void StreetAddress::CalculateAddressLines() {
 }
 
 bool StreetAddress::IsValueValid() const {
-  return !base::Contains(address_lines_, base::string16());
+  return !base::Contains(address_lines_, std::u16string());
 }
 
 bool StreetAddress::ConvertAndGetTheValueForAdditionalFieldTypeName(
     const std::string& type_name,
-    base::string16* value) const {
-  if (type_name == AutofillType(ADDRESS_HOME_LINE1).ToString()) {
+    std::u16string* value) const {
+  if (type_name == AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE1)) {
     if (value) {
       *value =
-          address_lines_.size() > 0 ? address_lines_.at(0) : base::string16();
+          address_lines_.size() > 0 ? address_lines_.at(0) : std::u16string();
     }
     return true;
   }
-  if (type_name == AutofillType(ADDRESS_HOME_LINE2).ToString()) {
+  if (type_name == AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE2)) {
     if (value) {
       *value =
-          address_lines_.size() > 1 ? address_lines_.at(1) : base::string16();
+          address_lines_.size() > 1 ? address_lines_.at(1) : std::u16string();
     }
     return true;
   }
-  if (type_name == AutofillType(ADDRESS_HOME_LINE3).ToString()) {
+  if (type_name == AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE3)) {
     if (value) {
       *value =
-          address_lines_.size() > 2 ? address_lines_.at(2) : base::string16();
+          address_lines_.size() > 2 ? address_lines_.at(2) : std::u16string();
     }
     return true;
   }
@@ -237,14 +236,16 @@ bool StreetAddress::ConvertAndGetTheValueForAdditionalFieldTypeName(
 // Implements support for setting the value of the individual address lines.
 bool StreetAddress::ConvertAndSetValueForAdditionalFieldTypeName(
     const std::string& type_name,
-    const base::string16& value,
+    const std::u16string& value,
     const VerificationStatus& status) {
   size_t index = 0;
-  if (type_name == AutofillType(ADDRESS_HOME_LINE1).ToString()) {
+  if (type_name == AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE1)) {
     index = 0;
-  } else if (type_name == AutofillType(ADDRESS_HOME_LINE2).ToString()) {
+  } else if (type_name ==
+             AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE2)) {
     index = 1;
-  } else if (type_name == AutofillType(ADDRESS_HOME_LINE3).ToString()) {
+  } else if (type_name ==
+             AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE3)) {
     index = 2;
   } else {
     return false;
@@ -252,7 +253,7 @@ bool StreetAddress::ConvertAndSetValueForAdditionalFieldTypeName(
 
   // Make sure that there are three address lines stored.
   if (index >= address_lines_.size())
-    address_lines_.resize(index + 1, base::string16());
+    address_lines_.resize(index + 1, std::u16string());
 
   bool change = address_lines_[index] != value;
   if (change)
@@ -264,8 +265,7 @@ bool StreetAddress::ConvertAndSetValueForAdditionalFieldTypeName(
   // By calling the base class implementation, the recreation of the address
   // lines from the street address is omitted.
   if (change) {
-    AddressComponent::SetValue(
-        base::JoinString(address_lines_, base::ASCIIToUTF16("\n")), status);
+    AddressComponent::SetValue(base::JoinString(address_lines_, u"\n"), status);
   }
 
   return true;
@@ -287,7 +287,6 @@ void StreetAddress::GetAdditionalSupportedFieldTypes(
 CountryCode::CountryCode(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_COUNTRY,
                        parent,
-                       {},
                        MergeMode::kReplaceEmpty |
                            MergeMode::kUseBetterOrNewerForSameValue) {}
 
@@ -298,7 +297,6 @@ CountryCode::~CountryCode() = default;
 DependentLocality::DependentLocality(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_DEPENDENT_LOCALITY,
                        parent,
-                       {},
                        MergeMode::kReplaceSubset | MergeMode::kReplaceEmpty) {}
 
 DependentLocality::~DependentLocality() = default;
@@ -308,7 +306,6 @@ DependentLocality::~DependentLocality() = default;
 City::City(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_CITY,
                        parent,
-                       {},
                        MergeMode::kReplaceSubset | MergeMode::kReplaceEmpty) {}
 
 City::~City() = default;
@@ -319,7 +316,6 @@ State::State(AddressComponent* parent)
     : AddressComponentWithRewriter(
           ADDRESS_HOME_STATE,
           parent,
-          {},
           MergeMode::kPickShorterIfOneContainsTheOther | kReplaceEmpty) {}
 
 State::~State() = default;
@@ -330,28 +326,40 @@ PostalCode::PostalCode(AddressComponent* parent)
     : AddressComponentWithRewriter(
           ADDRESS_HOME_ZIP,
           parent,
-          {},
           MergeMode::kUseMostRecentSubstring | kReplaceEmpty) {}
 
 PostalCode::~PostalCode() = default;
 
-base::string16 PostalCode::NormalizedValue() const {
+std::u16string PostalCode::NormalizedValue() const {
   return NormalizeValue(GetValue(), /*keep_white_space=*/false);
 }
 
 SortingCode::SortingCode(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_SORTING_CODE,
                        parent,
-                       {},
                        MergeMode::kReplaceEmpty | kUseMostRecentSubstring) {}
 
 SortingCode::~SortingCode() = default;
 
-Address::Address() : Address{nullptr} {}
+Address::Address() : Address(nullptr) {}
 
 Address::Address(const Address& other) : Address() {
-  *this = other;
+  CopyFrom(other);
 }
+
+Address& Address::operator=(const Address& other) {
+  CopyFrom(other);
+  return *this;
+}
+
+// Addresses are mergeable when all of their children are mergeable.
+// Reformat the address from the children after merge if it changed.
+Address::Address(AddressComponent* parent)
+    : AddressComponent(ADDRESS_HOME_ADDRESS,
+                       parent,
+                       MergeMode::kMergeChildrenAndReformatIfNeeded) {}
+
+Address::~Address() = default;
 
 bool Address::WipeInvalidStructure() {
   // For structured addresses, currently it is sufficient to wipe the structure
@@ -359,17 +367,6 @@ bool Address::WipeInvalidStructure() {
   // that has a substructure.
   return street_address_.WipeInvalidStructure();
 }
-
-// Addresses are mergeable when all of their children are mergeable.
-// Reformat the address from their children after merge.
-Address::Address(AddressComponent* parent)
-    : AddressComponent(ADDRESS_HOME_ADDRESS,
-                       parent,
-                       {&street_address_, &postal_code_, &sorting_code_,
-                        &dependent_locality_, &city_, &state_, &country_code_},
-                       MergeMode::kMergeChildrenAndReformat) {}
-
-Address::~Address() = default;
 
 void Address::MigrateLegacyStructure(bool is_verified_profile) {
   // If this component already has a verification status, no profile is regarded

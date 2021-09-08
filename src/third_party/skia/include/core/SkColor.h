@@ -12,6 +12,8 @@
 #include "include/core/SkScalar.h"
 #include "include/core/SkTypes.h"
 
+#include <array>
+
 /** \file SkColor.h
 
     Types, consts, functions, and macros for colors.
@@ -238,9 +240,10 @@ enum SkColorChannelFlag : uint32_t {
     kAlpha_SkColorChannelFlag  = 1 << static_cast<uint32_t>(SkColorChannel::kA),
     kGray_SkColorChannelFlag   = 0x10,
     // Convenience values
-    kRG_SkColorChannelFlags    = kRed_SkColorChannelFlag | kGreen_SkColorChannelFlag,
-    kRGB_SkColorChannelFlags   = kRG_SkColorChannelFlags | kBlue_SkColorChannelFlag,
-    kRGBA_SkColorChannelFlags  = kRGB_SkColorChannelFlags | kAlpha_SkColorChannelFlag,
+    kGrayAlpha_SkColorChannelFlags = kGray_SkColorChannelFlag | kAlpha_SkColorChannelFlag,
+    kRG_SkColorChannelFlags        = kRed_SkColorChannelFlag | kGreen_SkColorChannelFlag,
+    kRGB_SkColorChannelFlags       = kRG_SkColorChannelFlags | kBlue_SkColorChannelFlag,
+    kRGBA_SkColorChannelFlags      = kRGB_SkColorChannelFlags | kAlpha_SkColorChannelFlag,
 };
 static_assert(0 == (kGray_SkColorChannelFlag & kRGBA_SkColorChannelFlags), "bitfield conflict");
 
@@ -307,6 +310,9 @@ struct SkRGBA4f {
         @return       pointer to array [fR, fG, fB, fA]
     */
     float* vec() { return &fR; }
+
+    /** As a std::array<float, 4> */
+    std::array<float, 4> array() const { return {fR, fG, fB, fA}; }
 
     /** Returns one component. Asserts if index is out of range and SK_DEBUG is defined.
 

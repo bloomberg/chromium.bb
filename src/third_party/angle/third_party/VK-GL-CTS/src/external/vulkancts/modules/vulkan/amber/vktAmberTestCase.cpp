@@ -87,6 +87,8 @@ static bool isFeatureSupported(const vkt::Context& ctx, const std::string& featu
 		return ctx.getDeviceFeatures().tessellationShader;
 	if (feature == "Features.geometryShader")
 		return ctx.getDeviceFeatures().geometryShader;
+	if (feature == "Features.fragmentStoresAndAtomics")
+		return ctx.getDeviceFeatures().fragmentStoresAndAtomics;
 	if (feature == "Features.vertexPipelineStoresAndAtomics")
 		return ctx.getDeviceFeatures().vertexPipelineStoresAndAtomics;
 	if (feature == "Features.fillModeNonSolid")
@@ -97,6 +99,12 @@ static bool isFeatureSupported(const vkt::Context& ctx, const std::string& featu
 		return ctx.getVariablePointersFeatures().variablePointersStorageBuffer;
 	if (feature == "VariablePointerFeatures.variablePointers")
 		return ctx.getVariablePointersFeatures().variablePointers;
+	if (feature == "SubgroupProperties.supportedStages.fragment")
+		return (ctx.getSubgroupProperties().supportedStages & vk::VK_SHADER_STAGE_FRAGMENT_BIT) != 0;
+	if (feature == "SubgroupProperties.supportedOperations.vote")
+		return (ctx.getSubgroupProperties().supportedOperations & vk::VK_SUBGROUP_FEATURE_VOTE_BIT) != 0;
+	if (feature == "SubgroupProperties.supportedOperations.ballot")
+		return (ctx.getSubgroupProperties().supportedOperations & vk::VK_SUBGROUP_FEATURE_BALLOT_BIT) != 0;
 
 	std::string message = std::string("Unexpected feature name: ") + feature;
 	TCU_THROW(InternalError, message.c_str());
@@ -176,6 +184,13 @@ void AmberTestCase::checkSupport(Context& ctx) const
 		{
 			TCU_THROW(NotSupportedError, "Buffer format doesn't support required feature flags");
 		}
+	}
+
+	if (m_name == "triangle_fan" &&
+		ctx.isDeviceFunctionalitySupported("VK_KHR_portability_subset") &&
+		!ctx.getPortabilitySubsetFeatures().triangleFans)
+	{
+		TCU_THROW(NotSupportedError, "VK_KHR_portability_subset: Triangle fans are not supported by this implementation");
 	}
 }
 
@@ -286,6 +301,19 @@ void AmberTestCase::initPrograms (vk::SourceCollections& programCollection) cons
 	{
 		const amber::ShaderInfo& shader = shaders[i];
 
+		vk::SpirvVersion spirvVersion = vk::SPIRV_VERSION_1_0;
+		DE_STATIC_ASSERT(vk::SPIRV_VERSION_LAST == vk::SPIRV_VERSION_1_5 + 1);
+		if (shader.target_env == "spv1.5")
+			spirvVersion = vk::SPIRV_VERSION_1_5;
+		else if (shader.target_env == "spv1.4")
+			spirvVersion = vk::SPIRV_VERSION_1_4;
+		else if (shader.target_env == "spv1.3")
+			spirvVersion = vk::SPIRV_VERSION_1_3;
+		else if (shader.target_env == "spv1.2")
+			spirvVersion = vk::SPIRV_VERSION_1_2;
+		else if (shader.target_env == "spv1.1")
+			spirvVersion = vk::SPIRV_VERSION_1_1;
+
 		/* Hex encoded shaders do not need to be pre-compiled */
 		if (shader.format == amber::kShaderFormatSpirvHex)
 			continue;
@@ -301,32 +329,32 @@ void AmberTestCase::initPrograms (vk::SourceCollections& programCollection) cons
 				case amber::kShaderTypeCompute:
 					programCollection.glslSources.add(shader.shader_name)
 						<< glu::ComputeSource(shader.shader_source)
-						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_0, 0u);
+						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, spirvVersion, 0u);
 					break;
 				case amber::kShaderTypeGeometry:
 					programCollection.glslSources.add(shader.shader_name)
 						<< glu::GeometrySource(shader.shader_source)
-						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_0, 0u);
+						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, spirvVersion, 0u);
 					break;
 				case amber::kShaderTypeFragment:
 					programCollection.glslSources.add(shader.shader_name)
 						<< glu::FragmentSource(shader.shader_source)
-						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_0, 0u);
+						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, spirvVersion, 0u);
 					break;
 				case amber::kShaderTypeVertex:
 					programCollection.glslSources.add(shader.shader_name)
 						<< glu::VertexSource(shader.shader_source)
-						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_0, 0u);
+						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, spirvVersion, 0u);
 					break;
 				case amber::kShaderTypeTessellationControl:
 					programCollection.glslSources.add(shader.shader_name)
 						<< glu::TessellationControlSource(shader.shader_source)
-						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_0, 0u);
+						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, spirvVersion, 0u);
 					break;
 				case amber::kShaderTypeTessellationEvaluation:
 					programCollection.glslSources.add(shader.shader_name)
 						<< glu::TessellationEvaluationSource(shader.shader_source)
-						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_0, 0u);
+						<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, spirvVersion, 0u);
 					break;
 				case amber::kShaderTypeMulti:
 					DE_ASSERT(false && "Multi shaders not supported");

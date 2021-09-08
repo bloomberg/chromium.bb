@@ -74,3 +74,50 @@ CFX_PointF CPDF_IconFit::GetIconPosition() const {
   return {dwCount > 0 ? pA->GetNumberAt(0) : 0.0f,
           dwCount > 1 ? pA->GetNumberAt(1) : 0.0f};
 }
+
+CFX_VectorF CPDF_IconFit::GetScale(const CFX_SizeF& image_size,
+                                   const CFX_FloatRect& rcPlate) const {
+  float fHScale = 1.0f;
+  float fVScale = 1.0f;
+  const float fPlateWidth = rcPlate.Width();
+  const float fPlateHeight = rcPlate.Height();
+  const float fImageWidth = image_size.width;
+  const float fImageHeight = image_size.height;
+  switch (GetScaleMethod()) {
+    case CPDF_IconFit::ScaleMethod::kAlways:
+      fHScale = fPlateWidth / std::max(fImageWidth, 1.0f);
+      fVScale = fPlateHeight / std::max(fImageHeight, 1.0f);
+      break;
+    case CPDF_IconFit::ScaleMethod::kBigger:
+      if (fPlateWidth < fImageWidth)
+        fHScale = fPlateWidth / std::max(fImageWidth, 1.0f);
+      if (fPlateHeight < fImageHeight)
+        fVScale = fPlateHeight / std::max(fImageHeight, 1.0f);
+      break;
+    case CPDF_IconFit::ScaleMethod::kSmaller:
+      if (fPlateWidth > fImageWidth)
+        fHScale = fPlateWidth / std::max(fImageWidth, 1.0f);
+      if (fPlateHeight > fImageHeight)
+        fVScale = fPlateHeight / std::max(fImageHeight, 1.0f);
+      break;
+    case CPDF_IconFit::ScaleMethod::kNever:
+      break;
+  }
+
+  if (IsProportionalScale()) {
+    float min_scale = std::min(fHScale, fVScale);
+    fHScale = min_scale;
+    fVScale = min_scale;
+  }
+  return {fHScale, fVScale};
+}
+
+CFX_VectorF CPDF_IconFit::GetImageOffset(const CFX_SizeF& image_size,
+                                         const CFX_VectorF& scale,
+                                         const CFX_FloatRect& rcPlate) const {
+  const CFX_PointF icon_position = GetIconPosition();
+  const float fImageFactWidth = image_size.width * scale.x;
+  const float fImageFactHeight = image_size.height * scale.y;
+  return {(rcPlate.Width() - fImageFactWidth) * icon_position.x,
+          (rcPlate.Height() - fImageFactHeight) * icon_position.y};
+}

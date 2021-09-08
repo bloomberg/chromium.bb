@@ -50,7 +50,7 @@ ASH_EXPORT bool HasFocusInAnyChildView(views::View* view);
 // lines and we set its maximum width to the preferred width of
 // |view_defining_max_width|.
 views::Label* CreateBubbleLabel(
-    const base::string16& message,
+    const std::u16string& message,
     views::View* view_defining_max_width = nullptr,
     SkColor color = AshColorProvider::Get()->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kTextColorPrimary),
@@ -76,7 +76,7 @@ ASH_EXPORT gfx::Point CalculateBubblePositionBeforeAfterStrategy(
 // radius will be determined by the view's bounds.
 void ConfigureRectFocusRingCircleInkDrop(views::View* view,
                                          views::FocusRing* focus_ring,
-                                         base::Optional<int> radius);
+                                         absl::optional<int> radius);
 
 }  // namespace login_views_utils
 

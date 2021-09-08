@@ -4,6 +4,7 @@
 
 #include "components/exo/touch.h"
 
+#include "base/trace_event/trace_event.h"
 #include "components/exo/input_trace.h"
 #include "components/exo/seat.h"
 #include "components/exo/shell_surface_util.h"
@@ -12,6 +13,7 @@
 #include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_util.h"
@@ -41,11 +43,11 @@ Touch::Touch(TouchDelegate* delegate, Seat* seat)
 }
 
 Touch::~Touch() {
+  WMHelper::GetInstance()->RemovePreTargetHandler(this);
   delegate_->OnTouchDestroying(this);
   if (HasStylusDelegate())
     stylus_delegate_->OnTouchDestroying(this);
   CancelAllTouches();
-  WMHelper::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void Touch::SetStylusDelegate(TouchStylusDelegate* delegate) {
@@ -60,6 +62,9 @@ bool Touch::HasStylusDelegate() const {
 // ui::EventHandler overrides:
 
 void Touch::OnTouchEvent(ui::TouchEvent* event) {
+  if (seat_->was_shutdown())
+    return;
+
   seat_->SetLastPointerLocation(event->root_location_f());
 
   bool send_details = false;

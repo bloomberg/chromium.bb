@@ -16,8 +16,8 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/bindings/modules/v8/module_bindings_initializer.h"
+#include "third_party/blink/renderer/core/css/background_color_paint_image_generator.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
-#include "third_party/blink/renderer/core/css/native_paint_image_generator.h"
 #include "third_party/blink/renderer/core/dom/context_features_client_impl.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_backend_impl.h"
@@ -42,8 +42,8 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
 #include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_rendering_context.h"
 #include "third_party/blink/renderer/modules/canvas/offscreencanvas2d/offscreen_canvas_rendering_context_2d.h"
+#include "third_party/blink/renderer/modules/csspaint/background_color_paint_image_generator_impl.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_image_generator_impl.h"
-#include "third_party/blink/renderer/modules/csspaint/native_paint_image_generator_impl.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_absolute_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_controller.h"
@@ -76,6 +76,8 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_client.h"
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
+#include "third_party/blink/renderer/modules/screen_enumeration/screens.h"
+#include "third_party/blink/renderer/modules/screen_enumeration/window_screens.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller.h"
 #include "third_party/blink/renderer/modules/service_worker/navigator_service_worker.h"
 #include "third_party/blink/renderer/modules/storage/dom_window_storage_controller.h"
@@ -93,17 +95,67 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
 #include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #if defined(OS_ANDROID)
+#include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/remote_objects/remote_object_gateway_impl.h"
 #endif
 
 namespace blink {
+
+#if defined(OS_ANDROID)
+namespace {
+
+class SuspendCaptureObserver : public GarbageCollected<SuspendCaptureObserver>,
+                               public Supplement<Page>,
+                               public PageVisibilityObserver {
+ public:
+  static const char kSupplementName[];
+
+  explicit SuspendCaptureObserver(Page& page)
+      : Supplement<Page>(page), PageVisibilityObserver(&page) {}
+
+  // PageVisibilityObserver overrides:
+  void PageVisibilityChanged() override {
+    // TODO(crbug.com/487935): We don't yet suspend video capture devices for
+    // OOPIFs.
+    WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(
+        DynamicTo<LocalFrame>(GetPage()->MainFrame()));
+    if (!frame)
+      return;
+    WebMediaStreamDeviceObserver* media_stream_device_observer =
+        frame->Client()->MediaStreamDeviceObserver();
+    if (!media_stream_device_observer)
+      return;
+
+    bool suspend = !GetPage()->IsPageVisible();
+    MediaStreamDevices video_devices =
+        media_stream_device_observer->GetNonScreenCaptureDevices();
+    Platform::Current()->GetVideoCaptureImplManager()->SuspendDevices(
+        video_devices, suspend);
+  }
+
+  void Trace(Visitor* visitor) const override {
+    Supplement<Page>::Trace(visitor);
+    PageVisibilityObserver::Trace(visitor);
+  }
+};
+
+const char SuspendCaptureObserver::kSupplementName[] = "SuspendCaptureObserver";
+
+}  // namespace
+
+#endif  // OS_ANDROID
 
 void ModulesInitializer::Initialize() {
   // Strings must be initialized before calling CoreInitializer::init().
@@ -122,7 +174,8 @@ void ModulesInitializer::Initialize() {
   DraggedIsolatedFileSystem::Init(
       DraggedIsolatedFileSystemImpl::PrepareForDataObject);
   CSSPaintImageGenerator::Init(CSSPaintImageGeneratorImpl::Create);
-  NativePaintImageGenerator::Init(NativePaintImageGeneratorImpl::Create);
+  BackgroundColorPaintImageGenerator::Init(
+      BackgroundColorPaintImageGeneratorImpl::Create);
   WebDatabaseHost::GetInstance().Init();
   MediaSourceRegistryImpl::Init();
 
@@ -149,31 +202,37 @@ void ModulesInitializer::Initialize() {
       std::make_unique<WebGL2RenderingContext::Factory>());
   OffscreenCanvas::RegisterRenderingContextFactory(
       std::make_unique<ImageBitmapRenderingContext::Factory>());
+  OffscreenCanvas::RegisterRenderingContextFactory(
+      std::make_unique<GPUCanvasContext::Factory>());
 }
 
 void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
   if (frame.IsMainFrame()) {
     frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
-        &DocumentMetadataServer::BindMojoReceiver, WrapWeakPersistent(&frame)));
+        &DocumentMetadataServer::BindReceiver, WrapWeakPersistent(&frame)));
   }
   frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
-      &WebLaunchServiceImpl::Create, WrapWeakPersistent(&frame)));
+      &WebLaunchServiceImpl::BindReceiver, WrapWeakPersistent(&frame)));
   frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
-      &FileHandlingExpiryImpl::Create, WrapWeakPersistent(&frame)));
+      &FileHandlingExpiryImpl::BindReceiver, WrapWeakPersistent(&frame)));
 
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
-      &InstallationServiceImpl::Create, WrapWeakPersistent(&frame)));
+      &InstallationServiceImpl::BindReceiver, WrapWeakPersistent(&frame)));
   // TODO(dominickn): This interface should be document-scoped rather than
   // frame-scoped, as the resulting banner event is dispatched to
   // frame()->document().
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
-      &AppBannerController::BindMojoRequest, WrapWeakPersistent(&frame)));
+      &AppBannerController::BindReceiver, WrapWeakPersistent(&frame)));
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
-      &TextSuggestionBackendImpl::Create, WrapWeakPersistent(&frame)));
+      &TextSuggestionBackendImpl::Bind, WrapWeakPersistent(&frame)));
 #if defined(OS_ANDROID)
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
-      &RemoteObjectGatewayFactoryImpl::Create, WrapWeakPersistent(&frame)));
+      &RemoteObjectGatewayFactoryImpl::Bind, WrapWeakPersistent(&frame)));
 #endif  // OS_ANDROID
+
+  frame.GetInterfaceRegistry()->AddInterface(
+      WTF::BindRepeating(&PeerConnectionTracker::BindToFrame,
+                         WrapCrossThreadWeakPersistent(&frame)));
 }
 
 void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
@@ -259,9 +318,12 @@ std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
       HTMLMediaElementAudioOutputDevice::sinkId(html_media_element));
   MediaInspectorContextImpl* context_impl = MediaInspectorContextImpl::From(
       *To<LocalDOMWindow>(html_media_element.GetExecutionContext()));
+  FrameWidget* frame_widget =
+      html_media_element.GetDocument().GetFrame()->GetWidgetForLocalRoot();
   return base::WrapUnique(web_frame_client->CreateMediaPlayer(
       source, media_player_client, context_impl, &encrypted_media,
-      encrypted_media.ContentDecryptionModule(), sink_id));
+      encrypted_media.ContentDecryptionModule(), sink_id,
+      frame_widget->GetLayerTreeSettings()));
 }
 
 WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(
@@ -269,15 +331,19 @@ WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(
   return &RemotePlayback::From(html_media_element);
 }
 
-void ModulesInitializer::ProvideModulesToPage(Page& page,
-                                              WebViewClient* client) const {
+void ModulesInitializer::ProvideModulesToPage(
+    Page& page,
+    const SessionStorageNamespaceId& namespace_id) const {
   MediaKeysController::ProvideMediaKeysTo(page);
   ::blink::ProvideContextFeaturesTo(
       page, std::make_unique<ContextFeaturesClientImpl>());
   ::blink::ProvideDatabaseClientTo(page,
                                    MakeGarbageCollected<DatabaseClient>());
-  StorageNamespace::ProvideSessionStorageNamespaceTo(page, client);
+  StorageNamespace::ProvideSessionStorageNamespaceTo(page, namespace_id);
   AudioGraphTracer::ProvideAudioGraphTracerTo(page);
+#if defined(OS_ANDROID)
+  page.ProvideSupplement(MakeGarbageCollected<SuspendCaptureObserver>(page));
+#endif  // OS_ANDROID
 }
 
 void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {
@@ -306,16 +372,23 @@ void ModulesInitializer::NotifyOrientationChanged(LocalFrame& frame) {
       ->NotifyOrientationChanged();
 }
 
+void ModulesInitializer::DidUpdateScreens(LocalFrame& frame,
+                                          const ScreenInfos& screen_infos) {
+  auto* window = frame.DomWindow();
+  if (auto* supplement =
+          Supplement<LocalDOMWindow>::From<WindowScreens>(window)) {
+    // screens() may be null if permission has not been granted.
+    if (auto* screens = supplement->screens()) {
+      screens->UpdateScreenInfos(window, screen_infos);
+    }
+  }
+}
+
 void ModulesInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
   DCHECK(Platform::Current());
   binders.Add(ConvertToBaseRepeatingCallback(
-                  CrossThreadBindRepeating(&WebDatabaseImpl::Create)),
+                  CrossThreadBindRepeating(&WebDatabaseImpl::Bind)),
               Platform::Current()->GetIOTaskRunner());
-  binders.Add(
-      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-          &PeerConnectionTracker::Bind,
-          WTF::CrossThreadUnretained(PeerConnectionTracker::GetInstance()))),
-      Thread::MainThread()->GetTaskRunner());
 }
 
 }  // namespace blink

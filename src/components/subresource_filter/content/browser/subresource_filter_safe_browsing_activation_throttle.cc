@@ -10,13 +10,12 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "components/subresource_filter/content/browser/content_activation_list_utils.h"
+#include "components/subresource_filter/content/browser/devtools_interaction_tracker.h"
 #include "components/subresource_filter/content/browser/navigation_console_logger.h"
-#include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
@@ -26,6 +25,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -37,7 +37,7 @@ namespace {
 using CheckResults =
     std::vector<SubresourceFilterSafeBrowsingClient::CheckResult>;
 
-base::Optional<RedirectPosition> GetEnforcementRedirectPosition(
+absl::optional<RedirectPosition> GetEnforcementRedirectPosition(
     const CheckResults& results) {
   // Safe cast since we have strict limits on HTTP redirects.
   int num_results = static_cast<int>(results.size());
@@ -55,7 +55,7 @@ base::Optional<RedirectPosition> GetEnforcementRedirectPosition(
       return RedirectPosition::kMiddle;
     }
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace
@@ -63,7 +63,7 @@ base::Optional<RedirectPosition> GetEnforcementRedirectPosition(
 SubresourceFilterSafeBrowsingActivationThrottle::
     SubresourceFilterSafeBrowsingActivationThrottle(
         content::NavigationHandle* handle,
-        SubresourceFilterClient* client,
+        Delegate* delegate,
         scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
         scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
             database_manager)
@@ -75,7 +75,7 @@ SubresourceFilterSafeBrowsingActivationThrottle::
                            io_task_runner_,
                            base::ThreadTaskRunnerHandle::Get()),
                        base::OnTaskRunnerDeleter(io_task_runner_)),
-      client_(client) {
+      delegate_(delegate) {
   DCHECK(handle->IsInMainFrame());
 
   CheckCurrentUrl();
@@ -194,10 +194,21 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
     activation_level = mojom::ActivationLevel::kDisabled;
   }
 
-  // Let the embedder get the last word when it comes to activation level.
-  // TODO(csharrison): Move all ActivationDecision code to the embedder.
-  activation_level = client_->OnPageActivationComputed(
-      navigation_handle(), activation_level, &activation_decision);
+  auto* devtools_interaction_tracker =
+      DevtoolsInteractionTracker::FromWebContents(
+          navigation_handle()->GetWebContents());
+
+  if (devtools_interaction_tracker &&
+      devtools_interaction_tracker->activated_via_devtools()) {
+    activation_level = mojom::ActivationLevel::kEnabled;
+    activation_decision = ActivationDecision::FORCED_ACTIVATION;
+  }
+
+  // Let the delegate adjust the activation decision if present.
+  if (delegate_) {
+    activation_level = delegate_->OnPageActivationComputed(
+        navigation_handle(), activation_level, &activation_decision);
+  }
 
   LogMetricsOnChecksComplete(selection.matched_list, activation_decision,
                              activation_level);

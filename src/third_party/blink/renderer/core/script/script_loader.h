@@ -61,19 +61,23 @@ class CORE_EXPORT ScriptLoader final : public GarbageCollected<ScriptLoader>,
     kAllowLegacyTypeInTypeAttribute
   };
 
-  // |out_is_import_map| is set separately from |out_script_type| in order
-  // to avoid adding import maps as a mojom::blink::ScriptType enum, because
-  // import maps are processed quite differently from classic/module scripts.
-  //
-  // TODO(hiroshige, kouhei): Make the method signature simpler.
-  static bool IsValidScriptTypeAndLanguage(
+  // Script type at the time of #prepare-a-script. Import maps are included here
+  // but not in `mojom::blink::ScriptType` because import maps are handled
+  // differently from ordinal scripts after PrepareScript().
+  enum class ScriptTypeAtPrepare {
+    kClassic,
+    kModule,
+    kImportMap,
+    kSpeculationRules,
+    kInvalid
+  };
+
+  static ScriptTypeAtPrepare GetScriptTypeAtPrepare(
       const String& type_attribute_value,
       const String& language_attribute_value,
-      LegacyTypeSupport support_legacy_types,
-      mojom::blink::ScriptType* out_script_type = nullptr,
-      bool* out_is_import_map = nullptr);
+      LegacyTypeSupport support_legacy_types);
 
-  static bool BlockForNoModule(mojom::blink::ScriptType, bool nomodule);
+  static bool BlockForNoModule(ScriptTypeAtPrepare, bool nomodule);
 
   static network::mojom::CredentialsMode ModuleScriptCredentialsMode(
       CrossOriginAttributeValue);
@@ -93,11 +97,10 @@ class CORE_EXPORT ScriptLoader final : public GarbageCollected<ScriptLoader>,
   bool WillExecuteWhenDocumentFinishedParsing() const {
     return will_execute_when_document_finished_parsing_;
   }
-  bool IsForceDeferred() const { return force_deferred_; }
   bool IsParserInserted() const { return parser_inserted_; }
   bool AlreadyStarted() const { return already_started_; }
   bool IsNonBlocking() const { return non_blocking_; }
-  mojom::blink::ScriptType GetScriptType() const { return script_type_; }
+  ScriptTypeAtPrepare GetScriptType() const { return script_type_; }
 
   // Helper functions used by our parent classes.
   void DidNotifySubtreeInsertionsToDocument();
@@ -172,13 +175,17 @@ class CORE_EXPORT ScriptLoader final : public GarbageCollected<ScriptLoader>,
   // script elements must have this flag set. ...</spec>
   bool non_blocking_ = true;
 
+  // Non-specified flag. Indicating that the script is a dynamically injected
+  // one with an async attribute, and therefore not render blocking.
+  bool dynamic_async_ = false;
+
   // <spec href="https://html.spec.whatwg.org/C/#ready-to-be-parser-executed">
   // ... Initially, script elements must have this flag unset ...</spec>
   bool ready_to_be_parser_executed_ = false;
 
   // <spec href="https://html.spec.whatwg.org/C/#concept-script-type">... It is
   // determined when the script is prepared, ...</spec>
-  mojom::blink::ScriptType script_type_ = mojom::blink::ScriptType::kClassic;
+  ScriptTypeAtPrepare script_type_ = ScriptTypeAtPrepare::kInvalid;
 
   // <spec href="https://html.spec.whatwg.org/C/#concept-script-external">
   // ... It is determined when the script is prepared, ...</spec>
@@ -188,9 +195,6 @@ class CORE_EXPORT ScriptLoader final : public GarbageCollected<ScriptLoader>,
   bool will_be_parser_executed_;
 
   bool will_execute_when_document_finished_parsing_;
-
-  // The script will be force deferred (https://crbug.com/976061).
-  bool force_deferred_;
 
   // A PendingScript is first created in PrepareScript() and stored in
   // |prepared_pending_script_|.

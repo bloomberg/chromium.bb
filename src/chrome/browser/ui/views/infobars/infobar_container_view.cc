@@ -14,6 +14,9 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -22,6 +25,7 @@ namespace {
 
 class ContentShadow : public views::View {
  public:
+  METADATA_HEADER(ContentShadow);
   ContentShadow();
 
  protected:
@@ -46,13 +50,14 @@ void ContentShadow::OnPaint(gfx::Canvas* canvas) {
   container_bounds.Inset(-views::BubbleBorder::kShadowBlur, 0);
 
   views::BubbleBorder::DrawBorderAndShadow(gfx::RectFToSkRect(container_bounds),
-                                           &cc::PaintCanvas::drawRect, canvas);
+                                           &cc::PaintCanvas::drawRect, canvas,
+                                           GetNativeTheme());
 }
 
-}  // namespace
+BEGIN_METADATA(ContentShadow, views::View)
+END_METADATA
 
-// static
-const char InfoBarContainerView::kViewClassName[] = "InfoBarContainerView";
+}  // namespace
 
 InfoBarContainerView::InfoBarContainerView(Delegate* delegate)
     : infobars::InfoBarContainer(delegate),
@@ -81,10 +86,6 @@ void InfoBarContainerView::Layout() {
   // shadow is drawn outside the container bounds).
   content_shadow_->SetBounds(0, top, width(),
                              content_shadow_->GetPreferredSize().height());
-}
-
-const char* InfoBarContainerView::GetClassName() const {
-  return kViewClassName;
 }
 
 void InfoBarContainerView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -142,3 +143,6 @@ void InfoBarContainerView::PlatformSpecificInfoBarStateChanged(
     infobar->SchedulePaint();
   }
 }
+
+BEGIN_METADATA(InfoBarContainerView, views::AccessiblePaneView)
+END_METADATA

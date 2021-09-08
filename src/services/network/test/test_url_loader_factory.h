@@ -36,8 +36,10 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     PendingRequest& operator=(PendingRequest&& other);
 
     mojo::Remote<mojom::URLLoaderClient> client;
-    ResourceRequest request;
+    int32_t request_id;
     uint32_t options;
+    ResourceRequest request;
+    net::MutableNetworkTrafficAnnotationTag traffic_annotation;
   };
 
   // Bitfield that is used with |SimulateResponseForPendingRequest()| to
@@ -145,7 +147,6 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
 
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojo::PendingReceiver<mojom::URLLoader> receiver,
-                            int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const ResourceRequest& url_request,

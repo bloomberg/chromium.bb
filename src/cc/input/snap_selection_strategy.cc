@@ -98,9 +98,9 @@ bool EndPositionStrategy::ShouldPrioritizeSnapTargets() const {
   return snap_targets_prioritization_ == SnapTargetsPrioritization::kRequire;
 }
 
-const base::Optional<SnapSearchResult>& EndPositionStrategy::PickBestResult(
-    const base::Optional<SnapSearchResult>& closest,
-    const base::Optional<SnapSearchResult>& covering) const {
+const absl::optional<SnapSearchResult>& EndPositionStrategy::PickBestResult(
+    const absl::optional<SnapSearchResult>& closest,
+    const absl::optional<SnapSearchResult>& covering) const {
   return covering.has_value() ? covering : closest;
 }
 
@@ -124,18 +124,18 @@ bool DirectionStrategy::IsValidSnapPosition(SearchAxis axis,
                                             float position) const {
   // If not using fractional offsets then it is possible for the currently
   // snapped area's offset, which is fractional, to not be equal to the current
-  // scroll offset, which is not fractional. Therefore we round the offsets so
-  // that any position within 0.5 of the current position is ignored.
+  // scroll offset, which is not fractional. Therefore we truncate the offsets
+  // so that any position within 1 of the current position is ignored.
   if (axis == SearchAxis::kX) {
     float delta = position - current_position_.x();
     if (!use_fractional_offsets_)
-      delta = std::round(delta);
+      delta = delta > 0 ? std::floor(delta) : std::ceil(delta);
     return (step_.x() > 0 && delta > 0) ||  // "Right" arrow
            (step_.x() < 0 && delta < 0);    // "Left" arrow
   } else {
     float delta = position - current_position_.y();
     if (!use_fractional_offsets_)
-      delta = std::round(delta);
+      delta = delta > 0 ? std::floor(delta) : std::ceil(delta);
     return (step_.y() > 0 && delta > 0) ||  // "Down" arrow
            (step_.y() < 0 && delta < 0);    // "Up" arrow
   }
@@ -148,9 +148,9 @@ bool DirectionStrategy::IsValidSnapArea(SearchAxis axis,
           area.must_snap);
 }
 
-const base::Optional<SnapSearchResult>& DirectionStrategy::PickBestResult(
-    const base::Optional<SnapSearchResult>& closest,
-    const base::Optional<SnapSearchResult>& covering) const {
+const absl::optional<SnapSearchResult>& DirectionStrategy::PickBestResult(
+    const absl::optional<SnapSearchResult>& closest,
+    const absl::optional<SnapSearchResult>& covering) const {
   // We choose the |closest| result only if the default landing position (using
   // the default step) is not a valid snap position (not making a snap area
   // covering the snapport), or the |closest| is closer than the default landing
@@ -219,9 +219,9 @@ bool EndAndDirectionStrategy::ShouldRespectSnapStop() const {
   return true;
 }
 
-const base::Optional<SnapSearchResult>& EndAndDirectionStrategy::PickBestResult(
-    const base::Optional<SnapSearchResult>& closest,
-    const base::Optional<SnapSearchResult>& covering) const {
+const absl::optional<SnapSearchResult>& EndAndDirectionStrategy::PickBestResult(
+    const absl::optional<SnapSearchResult>& closest,
+    const absl::optional<SnapSearchResult>& covering) const {
   return covering.has_value() ? covering : closest;
 }
 

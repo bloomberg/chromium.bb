@@ -81,6 +81,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
     NOT_DESTROYED();
     return false;
   }
+  virtual bool DrawsBackgroundOntoContentLayer() const { return false; }
   virtual void PaintReplaced(const PaintInfo&,
                              const PhysicalOffset& paint_offset) const {
     NOT_DESTROYED();
@@ -192,4 +193,4 @@ struct DowncastTraits<LayoutReplaced> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_REPLACED_H_

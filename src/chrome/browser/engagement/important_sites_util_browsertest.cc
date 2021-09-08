@@ -17,6 +17,8 @@
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace site_engagement {
+
 class ImportantSitesUtilBrowserTest : public AndroidBrowserTest {
  public:
   ImportantSitesUtilBrowserTest() = default;
@@ -89,10 +91,13 @@ IN_PROC_BROWSER_TEST_F(ImportantSitesUtilBrowserTest,
   // It also used to produce wrong results, since notification permission
   // information got inherited incorrectly.
   // See crbug.com/993021, crbug.com/1052406
-  auto* incognito_profile = profile()->GetPrimaryOTRProfile();
+  auto* incognito_profile =
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   ASSERT_TRUE(incognito_profile);
   ASSERT_TRUE(incognito_profile->IsOffTheRecord());
 
   EXPECT_THAT(GetImportantDomains(profile()),
               ::testing::ElementsAre(kNonDSEOrigin.host()));
 }
+
+}  // namespace site_engagement

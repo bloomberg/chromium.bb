@@ -9,6 +9,7 @@
 #include "include/core/SkCanvas.h"
 #include "include/core/SkData.h"
 #include "include/core/SkPaint.h"
+#include "include/core/SkRRect.h"
 #include "include/core/SkSize.h"
 #include "include/core/SkString.h"
 #include "include/core/SkSurface.h"
@@ -29,7 +30,7 @@ public:
             : fName(name), fSize(size), fFlags(flags), fSkSL(sksl) {}
 
     void onOnceBeforeDraw() override {
-        auto [effect, error] = SkRuntimeEffect::Make(fSkSL);
+        auto [effect, error] = SkRuntimeEffect::MakeForShader(fSkSL);
         if (!effect) {
             SkDebugf("RuntimeShader error: %s\n", error.c_str());
         }
@@ -82,7 +83,7 @@ DEF_GM(return new SimpleRT;)
 static sk_sp<SkShader> make_shader(sk_sp<SkImage> img, SkISize size) {
     SkMatrix scale = SkMatrix::Scale(size.width()  / (float)img->width(),
                                      size.height() / (float)img->height());
-    return img->makeShader(SkTileMode::kClamp, SkTileMode::kClamp, &scale);
+    return img->makeShader(SkSamplingOptions(), scale);
 }
 
 static sk_sp<SkShader> make_threshold(SkISize size) {
@@ -114,7 +115,7 @@ static sk_sp<SkShader> make_threshold(SkISize size) {
 
     canvas->restore();  // apply the blur
 
-    return surf->makeImageSnapshot()->makeShader();
+    return surf->makeImageSnapshot()->makeShader(SkSamplingOptions());
 }
 
 class ThresholdRT : public RuntimeShaderGM {
@@ -133,10 +134,10 @@ public:
         }
 
         half4 main(float2 xy) {
-            half4 before = sample(before_map);
-            half4 after = sample(after_map);
+            half4 before = sample(before_map, xy);
+            half4 after = sample(after_map, xy);
 
-            float m = smooth_cutoff(sample(threshold_map).a);
+            float m = smooth_cutoff(sample(threshold_map, xy).a);
             return mix(before, after, m);
         }
     )", kAnimate_RTFlag | kBench_RTFlag) {}
@@ -215,6 +216,48 @@ public:
 };
 DEF_GM(return new SpiralRT;)
 
+// Test case for sampling with both unmodified input coordinates, and explicit coordinates.
+// The first version of skbug.com/11869 suffered a bug where all samples of a child were treated
+// as pass-through if *at least one* used the unmodified coordinates. This was detected & tracked
+// in b/181092919. This GM is similar, and demonstrates the bug before the fix was applied.
+class UnsharpRT : public RuntimeShaderGM {
+public:
+    UnsharpRT() : RuntimeShaderGM("unsharp_rt", {512, 256}, R"(
+        uniform shader input;
+        half4 main(float2 xy) {
+            half4 c = sample(input, xy) * 5;
+            c -= sample(input, xy + float2( 1,  0));
+            c -= sample(input, xy + float2(-1,  0));
+            c -= sample(input, xy + float2( 0,  1));
+            c -= sample(input, xy + float2( 0, -1));
+            return c;
+        }
+    )") {}
+
+    sk_sp<SkImage> fMandrill;
+
+    void onOnceBeforeDraw() override {
+        fMandrill      = GetResourceAsImage("images/mandrill_256.png");
+        this->RuntimeShaderGM::onOnceBeforeDraw();
+    }
+
+    void onDraw(SkCanvas* canvas) override {
+        // First we draw the unmodified image
+        canvas->drawImage(fMandrill,      0,   0);
+
+        // Now draw the image with our unsharp mask applied
+        SkRuntimeShaderBuilder builder(fEffect);
+        const SkSamplingOptions sampling(SkFilterMode::kNearest);
+        builder.child("input") = fMandrill->makeShader(sampling);
+
+        SkPaint paint;
+        paint.setShader(builder.makeShader(nullptr, true));
+        canvas->translate(256, 0);
+        canvas->drawRect({ 0, 0, 256, 256 }, paint);
+    }
+};
+DEF_GM(return new UnsharpRT;)
+
 class ColorCubeRT : public RuntimeShaderGM {
 public:
     ColorCubeRT() : RuntimeShaderGM("color_cube_rt", {512, 512}, R"(
@@ -227,7 +270,7 @@ public:
         uniform float inv_size;
 
         half4 main(float2 xy) {
-            float4 c = unpremul(sample(input));
+            float4 c = unpremul(sample(input, xy));
 
             // Map to cube coords:
             float3 cubeCoords = float3(c.rg * rg_scale + rg_bias, c.b * b_scale);
@@ -268,29 +311,28 @@ public:
         // LUT dimensions should be (kSize^2, kSize)
         constexpr float kSize = 16.0f;
 
+        const SkSamplingOptions sampling(SkFilterMode::kLinear);
+
         builder.uniform("rg_scale")     = (kSize - 1) / kSize;
         builder.uniform("rg_bias")      = 0.5f / kSize;
         builder.uniform("b_scale")      = kSize - 1;
         builder.uniform("inv_size")     = 1.0f / kSize;
 
-        builder.child("input")        = fMandrill->makeShader();
+        builder.child("input")        = fMandrill->makeShader(sampling);
 
-        // TODO: Move filter quality to the shader itself. We need to enforce at least kLow here
-        // so that we bilerp the color cube image.
         SkPaint paint;
-        paint.setFilterQuality(kLow_SkFilterQuality);
 
         // TODO: Should we add SkImage::makeNormalizedShader() to handle this automatically?
         SkMatrix normalize = SkMatrix::Scale(1.0f / (kSize * kSize), 1.0f / kSize);
 
         // Now draw the image with an identity color cube - it should look like the original
-        builder.child("color_cube") = fIdentityCube->makeShader(normalize);
+        builder.child("color_cube") = fIdentityCube->makeShader(sampling, normalize);
         paint.setShader(builder.makeShader(nullptr, true));
         canvas->translate(256, 0);
         canvas->drawRect({ 0, 0, 256, 256 }, paint);
 
         // ... and with a sepia-tone color cube. This should match the sepia-toned image.
-        builder.child("color_cube") = fSepiaCube->makeShader(normalize);
+        builder.child("color_cube") = fSepiaCube->makeShader(sampling, normalize);
         paint.setShader(builder.makeShader(nullptr, true));
         canvas->translate(0, 256);
         canvas->drawRect({ 0, 0, 256, 256 }, paint);
@@ -300,12 +342,10 @@ DEF_GM(return new ColorCubeRT;)
 
 class DefaultColorRT : public RuntimeShaderGM {
 public:
-    // This test also *explicitly* doesn't include coords in main's parameter list, to test that
-    // runtime shaders work without them being declared (when they're not used).
     DefaultColorRT() : RuntimeShaderGM("default_color_rt", {512, 256}, R"(
         uniform shader input;
-        half4 main() {
-            return sample(input);
+        half4 main(float2 xy) {
+            return sample(input, xy);
         }
     )") {}
 
@@ -326,7 +366,7 @@ public:
         canvas->drawRect({ 0, 0, 256, 256 }, paint);
 
         // Now we bind an image shader as the child. This (by convention) scales by the paint alpha
-        builder.child("input") = fMandrill->makeShader();
+        builder.child("input") = fMandrill->makeShader(SkSamplingOptions());
         paint.setColor4f({ 1.0f, 1.0f, 1.0f, 0.5f });
         paint.setShader(builder.makeShader(nullptr, false));
         canvas->translate(256, 0);
@@ -335,3 +375,187 @@ public:
     }
 };
 DEF_GM(return new DefaultColorRT;)
+
+// Emits coverage for a rounded rectangle whose corners are superellipses defined by the boundary:
+//
+//   x^n + y^n == 1
+//
+// Where x and y are normalized, clamped coordinates ranging from 0..1 inside the nearest corner's
+// bounding box.
+//
+// See: https://en.wikipedia.org/wiki/Superellipse
+class ClipSuperRRect : public RuntimeShaderGM {
+public:
+    ClipSuperRRect(const char* name, float power) : RuntimeShaderGM(name, {500, 500}, R"(
+        uniform float power_minus1;
+        uniform float2 stretch_factor;
+        uniform float2x2 derivatives;
+        half4 main(float2 xy) {
+            xy = max(abs(xy) + stretch_factor, 0);
+            float2 exp_minus1 = pow(xy, power_minus1.xx);  // If power == 3.5: xy * xy * sqrt(xy)
+            float f = dot(exp_minus1, xy) - 1;  // f = x^n + y^n - 1
+            float2 grad = exp_minus1 * derivatives;
+            float fwidth = abs(grad.x) + abs(grad.y) + 1e-12;  // 1e-12 to avoid a divide by zero.
+            return half4(saturate(.5 - f/fwidth)); // Approx coverage by riding the gradient to f=0.
+        }
+    )"), fPower(power) {}
+
+    void drawSuperRRect(SkCanvas* canvas, const SkRect& superRRect, float radX, float radY,
+                        SkColor color) {
+        SkPaint paint;
+        paint.setColor(color);
+
+        if (fPower == 2) {
+            // Draw a normal round rect for the sake of testing.
+            SkRRect rrect = SkRRect::MakeRectXY(superRRect, radX, radY);
+            paint.setAntiAlias(true);
+            canvas->drawRRect(rrect, paint);
+            return;
+        }
+
+        SkRuntimeShaderBuilder builder(fEffect);
+        builder.uniform("power_minus1") = fPower - 1;
+
+        // Size the corners such that the "apex" of our "super" rounded corner is in the same
+        // location that the apex of a circular rounded corner would be with the given radii. We
+        // define the apex as the point on the rounded corner that is 45 degrees between the
+        // horizontal and vertical edges.
+        float scale = (1 - SK_ScalarRoot2Over2) / (1 - exp2f(-1/fPower));
+        float cornerWidth = radX * scale;
+        float cornerHeight = radY * scale;
+        cornerWidth = std::min(cornerWidth, superRRect.width() * .5f);
+        cornerHeight = std::min(cornerHeight, superRRect.height() * .5f);
+        // The stretch factor controls how long the flat edge should be between rounded corners.
+        builder.uniform("stretch_factor") = SkV2{1 - superRRect.width()*.5f / cornerWidth,
+                                                 1 - superRRect.height()*.5f / cornerHeight};
+
+        // Calculate a 2x2 "derivatives" matrix that the shader will use to find the gradient.
+        //
+        //     f = s^n + t^n - 1   [s,t are "super" rounded corner coords in normalized 0..1 space]
+        //
+        //     gradient = [df/dx  df/dy] = [ns^(n-1)  nt^(n-1)] * |ds/dx  ds/dy|
+        //                                                        |dt/dx  dt/dy|
+        //
+        //              = [s^(n-1)  t^(n-1)] * |n  0| * |ds/dx  ds/dy|
+        //                                     |0  n|   |dt/dx  dt/dy|
+        //
+        //              = [s^(n-1)  t^(n-1)] * |2n/cornerWidth   0| * mat2x2(canvasMatrix)^-1
+        //                                     |0  2n/cornerHeight|
+        //
+        //              = [s^(n-1)  t^(n-1)] * "derivatives"
+        //
+        const SkMatrix& M = canvas->getTotalMatrix();
+        float a=M.getScaleX(), b=M.getSkewX(), c=M.getSkewY(), d=M.getScaleY();
+        float determinant = a*d - b*c;
+        float dx = fPower / (cornerWidth * determinant);
+        float dy = fPower / (cornerHeight * determinant);
+        builder.uniform("derivatives") = SkV4{d*dx, -c*dy, -b*dx, a*dy};
+
+        // This matrix will be inverted by the effect system, giving a matrix that converts local
+        // coordinates to (almost) coner coordinates. To get the rest of the way to the nearest
+        // corner's space, the shader will have to take the absolute value, add the stretch_factor,
+        // then clamp above zero.
+        SkMatrix cornerToLocal;
+        cornerToLocal.setScaleTranslate(cornerWidth, cornerHeight, superRRect.centerX(),
+                                        superRRect.centerY());
+        canvas->clipShader(builder.makeShader(&cornerToLocal, false));
+
+        // Bloat the outer edges of the rect we will draw so it contains all the antialiased pixels.
+        // Bloat by a full pixel instead of half in case Skia is in a mode that draws this rect with
+        // unexpected AA of its own.
+        float inverseDet = 1 / fabsf(determinant);
+        float bloatX = (fabsf(d) + fabsf(c)) * inverseDet;
+        float bloatY = (fabsf(b) + fabsf(a)) * inverseDet;
+        canvas->drawRect(superRRect.makeOutset(bloatX, bloatY), paint);
+    }
+
+    void onDraw(SkCanvas* canvas) override {
+        SkRandom rand(2);
+
+        canvas->save();
+        canvas->translate(canvas->imageInfo().width() / 2.f, canvas->imageInfo().height() / 2.f);
+
+        canvas->save();
+        canvas->rotate(21);
+        this->drawSuperRRect(canvas, SkRect::MakeXYWH(-5, 25, 175, 100), 50, 30,
+                             rand.nextU() | 0xff808080);
+        canvas->restore();
+
+        canvas->save();
+        canvas->rotate(94);
+        this->drawSuperRRect(canvas, SkRect::MakeXYWH(95, 75, 125, 100), 30, 30,
+                             rand.nextU() | 0xff808080);
+        canvas->restore();
+
+        canvas->save();
+        canvas->rotate(132);
+        this->drawSuperRRect(canvas, SkRect::MakeXYWH(0, 75, 150, 100), 40, 30,
+                             rand.nextU() | 0xff808080);
+        canvas->restore();
+
+        canvas->save();
+        canvas->rotate(282);
+        this->drawSuperRRect(canvas, SkRect::MakeXYWH(15, -20, 100, 100), 20, 20,
+                             rand.nextU() | 0xff808080);
+        canvas->restore();
+
+        canvas->save();
+        canvas->rotate(0);
+        this->drawSuperRRect(canvas, SkRect::MakeXYWH(140, -50, 90, 110), 25, 25,
+                             rand.nextU() | 0xff808080);
+        canvas->restore();
+
+        canvas->save();
+        canvas->rotate(-35);
+        this->drawSuperRRect(canvas, SkRect::MakeXYWH(160, -60, 60, 90), 18, 18,
+                             rand.nextU() | 0xff808080);
+        canvas->restore();
+
+        canvas->save();
+        canvas->rotate(65);
+        this->drawSuperRRect(canvas, SkRect::MakeXYWH(220, -120, 60, 90), 18, 18,
+                             rand.nextU() | 0xff808080);
+        canvas->restore();
+
+        canvas->save();
+        canvas->rotate(265);
+        this->drawSuperRRect(canvas, SkRect::MakeXYWH(150, -129, 80, 160), 24, 39,
+                             rand.nextU() | 0xff808080);
+        canvas->restore();
+
+        canvas->restore();
+    }
+
+private:
+    const float fPower;
+};
+DEF_GM(return new ClipSuperRRect("clip_super_rrect_pow2", 2);)
+// DEF_GM(return new ClipSuperRRect("clip_super_rrect_pow3", 3);)
+DEF_GM(return new ClipSuperRRect("clip_super_rrect_pow3.5", 3.5);)
+// DEF_GM(return new ClipSuperRRect("clip_super_rrect_pow4", 4);)
+// DEF_GM(return new ClipSuperRRect("clip_super_rrect_pow4.5", 4.5);)
+// DEF_GM(return new ClipSuperRRect("clip_super_rrect_pow5", 5);)
+
+DEF_SIMPLE_GM(child_sampling_rt, canvas, 256,256) {
+    static constexpr char scale[] =
+        "uniform shader child;"
+        "half4 main(float2 xy) {"
+        "    return sample(child, xy*0.1);"
+        "}";
+
+    SkPaint p;
+    p.setColor(SK_ColorRED);
+    p.setAntiAlias(true);
+    p.setStyle(SkPaint::kStroke_Style);
+    p.setStrokeWidth(1);
+
+    auto surf = SkSurface::MakeRasterN32Premul(100,100);
+    surf->getCanvas()->drawLine(0, 0, 100, 100, p);
+    auto shader = surf->makeImageSnapshot()->makeShader(SkSamplingOptions(SkFilterMode::kLinear));
+
+    SkRuntimeShaderBuilder builder(SkRuntimeEffect::MakeForShader(SkString(scale)).effect);
+    builder.child("child") = shader;
+    p.setShader(builder.makeShader(nullptr, false));
+
+    canvas->drawPaint(p);
+}

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -43,27 +44,25 @@ class AwRenderFrameExt : public content::RenderFrameObserver,
       mojo::ScopedInterfaceEndpointHandle* handle) override;
   void DidCommitProvisionalLoad(ui::PageTransition transition) override;
 
-  bool OnMessageReceived(const IPC::Message& message) override;
   void FocusedElementChanged(const blink::WebElement& element) override;
   void OnDestruct() override;
 
-  void OnDocumentHasImagesRequest(uint32_t id);
-  void OnDoHitTest(const gfx::PointF& touch_center,
-                   const gfx::SizeF& touch_area);
-
-  void OnSetTextZoomFactor(float zoom_factor);
-
-  void OnResetScrollAndScaleState();
-
-  void OnSetInitialPageScale(double page_scale_factor);
-
-  void OnSmoothScroll(int target_x, int target_y, base::TimeDelta duration);
-
   // mojom::LocalMainFrame overrides:
   void SetBackgroundColor(SkColor c) override;
+  void SetInitialPageScale(double page_scale_factor) override;
+  void SetTextZoomFactor(float zoom_factor) override;
+  void HitTest(const gfx::PointF& touch_center,
+               const gfx::SizeF& touch_area) override;
+  void DocumentHasImage(DocumentHasImageCallback callback) override;
+  void ResetScrollAndScaleState() override;
+  void SmoothScroll(int32_t target_x,
+                    int32_t target_y,
+                    base::TimeDelta duration) override;
 
   void BindLocalMainFrame(
       mojo::PendingAssociatedReceiver<mojom::LocalMainFrame> pending_receiver);
+
+  const mojo::AssociatedRemote<mojom::FrameHost>& GetFrameHost();
 
   blink::WebView* GetWebView();
   blink::WebFrameWidget* GetWebFrameWidget();
@@ -73,6 +72,8 @@ class AwRenderFrameExt : public content::RenderFrameObserver,
   blink::AssociatedInterfaceRegistry registry_;
   mojo::AssociatedReceiver<mojom::LocalMainFrame> local_main_frame_receiver_{
       this};
+
+  mojo::AssociatedRemote<mojom::FrameHost> frame_host_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderFrameExt);
 };

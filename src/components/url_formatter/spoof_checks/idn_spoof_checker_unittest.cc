@@ -9,7 +9,6 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/url_formatter/spoof_checks/idn_spoof_checker.h"
@@ -442,6 +441,10 @@ const IDNTestCase kIdnCases[] = {
 
     // сю.com is Cyrillic with Latin lookalikes.
     {"xn--q1a0a.com", L"\x0441\x044e.com", kUnsafe},
+
+    // Regression test for lowercase letters in whole script confusable
+    // lookalike character lists.
+    {"xn--80a8a6a.com", L"аьс.com", kUnsafe},
 
     // googlе.한국 where е is Cyrillic. This tests the generic case when one
     // label is not allowed but  other labels in the domain name are still
@@ -1280,7 +1283,7 @@ namespace test {
 #include "components/url_formatter/spoof_checks/top_domains/test_domains-trie-inc.cc"
 }
 
-bool IsPunycode(const base::string16& s) {
+bool IsPunycode(const std::u16string& s) {
   return s.size() > 4 && s[0] == L'x' && s[1] == L'n' && s[2] == L'-' &&
          s[3] == L'-';
 }
@@ -1333,8 +1336,8 @@ TEST_F(IDNSpoofCheckerTest, IDNToUnicode) {
       ASSERT_EQ(unsafe_result.result, ASCIIToUTF16(kIdnCases[i].input));
     }
 
-    const base::string16 output(IDNToUnicode(kIdnCases[i].input));
-    const base::string16 expected(kIdnCases[i].expected_result == kSafe
+    const std::u16string output(IDNToUnicode(kIdnCases[i].input));
+    const std::u16string expected(kIdnCases[i].expected_result == kSafe
                                       ? WideToUTF16(kIdnCases[i].unicode_output)
                                       : ASCIIToUTF16(kIdnCases[i].input));
     EXPECT_EQ(expected, output)

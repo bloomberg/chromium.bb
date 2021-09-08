@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/proto/delay_async_script_execution_metadata.pb.h"
 #include "components/optimization_guide/proto/delay_competing_low_priority_requests_metadata.pb.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -295,7 +295,7 @@ IN_PROC_BROWSER_TEST_P(BlinkOptimizationGuideBrowserTest, NoMetadata) {
   // Set up a fake optimization hints without metadata for simple.html.
   OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
       ->AddHintForTesting(GetURLWithMockHost("/simple.html"),
-                          GetOptimizationType(), base::nullopt);
+                          GetOptimizationType(), absl::nullopt);
 
   // Navigation to the URL shouldn't see the hints.
   ui_test_utils::NavigateToURL(browser(), GetURLWithMockHost("/simple.html"));

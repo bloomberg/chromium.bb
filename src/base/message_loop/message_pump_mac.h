@@ -79,6 +79,12 @@ typedef NSAutoreleasePool AutoreleasePoolType;
 
 class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
  public:
+  enum class LudicrousSlackSetting : uint8_t {
+    kLudicrousSlackUninitialized,
+    kLudicrousSlackOff,
+    kLudicrousSlackOn,
+  };
+
   // MessagePump:
   void Run(Delegate* delegate) override;
   void Quit() override;
@@ -94,6 +100,11 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   virtual void Attach(Delegate* delegate);
   virtual void Detach();
 #endif  // OS_IOS
+
+  // Exposed for testing.
+  LudicrousSlackSetting ludicrous_slack_setting() const {
+    return ludicrous_slack_setting_;
+  }
 
  protected:
   // Needs access to CreateAutoreleasePool.
@@ -181,6 +192,9 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   static void RunNestingDeferredWorkSource(void* info);
   void RunNestingDeferredWork();
 
+  // Called before the run loop goes to sleep to notify delegate.
+  void BeforeWait();
+
   // Schedules possible nesting-deferred work to be processed before the run
   // loop goes to sleep, exits, or begins processing sources at the top of its
   // loop.  If this function detects that a nested loop had run since the
@@ -229,6 +243,10 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   Delegate* delegate_;
 
   base::TimerSlack timer_slack_;
+
+  // Cache the ludicrous slack setting.
+  LudicrousSlackSetting ludicrous_slack_setting_ =
+      LudicrousSlackSetting::kLudicrousSlackUninitialized;
 
   // The recursion depth of the currently-executing CFRunLoopRun loop on the
   // run loop's thread.  0 if no run loops are running inside of whatever scope

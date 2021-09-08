@@ -26,11 +26,11 @@ function parseAriaSelector(selector) {
     const normalize = (value) => value.replace(/ +/g, ' ').trim();
     const knownAttributes = new Set(['name', 'role']);
     const queryOptions = {};
-    const attributeRegexp = /\[\s*(?<attribute>\w+)\s*=\s*"(?<value>\\.|[^"\\]*)"\s*\]/;
+    const attributeRegexp = /\[\s*(?<attribute>\w+)\s*=\s*"(?<value>\\.|[^"\\]*)"\s*\]/g;
     const defaultName = selector.replace(attributeRegexp, (_, attribute, value) => {
         attribute = attribute.trim();
         if (!knownAttributes.has(attribute))
-            throw new Error('Unkown aria attribute "${groups.attribute}" in selector');
+            throw new Error(`Unknown aria attribute "${attribute}" in selector`);
         queryOptions[attribute] = normalize(value);
         return '';
     });
@@ -48,8 +48,15 @@ const queryOne = async (element, selector) => {
     return exeCtx._adoptBackendNodeId(res[0].backendDOMNodeId);
 };
 const waitFor = async (domWorld, selector, options) => {
-    await addHandlerToWorld(domWorld);
-    return domWorld.waitForSelectorInPage((_, selector) => globalThis.ariaQuerySelector(selector), selector, options);
+    const binding = {
+        name: 'ariaQuerySelector',
+        pptrFunction: async (selector) => {
+            const document = await domWorld._document();
+            const element = await queryOne(document, selector);
+            return element;
+        },
+    };
+    return domWorld.waitForSelectorInPage((_, selector) => globalThis.ariaQuerySelector(selector), selector, options, binding);
 };
 const queryAll = async (element, selector) => {
     const exeCtx = element.executionContext();
@@ -63,13 +70,6 @@ const queryAllArray = async (element, selector) => {
     const jsHandle = exeCtx.evaluateHandle((...elements) => elements, ...elementHandles);
     return jsHandle;
 };
-async function addHandlerToWorld(domWorld) {
-    await domWorld.addBinding('ariaQuerySelector', async (selector) => {
-        const document = await domWorld._document();
-        const element = await queryOne(document, selector);
-        return element;
-    });
-}
 /**
  * @internal
  */
@@ -79,3 +79,4 @@ export const ariaHandler = {
     queryAll,
     queryAllArray,
 };
+//# sourceMappingURL=AriaQueryHandler.js.map

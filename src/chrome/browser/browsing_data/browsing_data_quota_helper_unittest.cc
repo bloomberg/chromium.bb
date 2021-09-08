@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/containers/span.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
@@ -16,6 +17,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -39,6 +42,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     quota_manager_ = base::MakeRefCounted<storage::QuotaManager>(
         /*is_incognito=*/false, temp_dir_.GetPath(),
         content::GetIOThreadTaskRunner({}).get(),
+        /*quota_change_callback=*/base::DoNothing(),
         /*special_storage_policy=*/nullptr, storage::GetQuotaSettingsFunc());
     helper_ = base::WrapRefCounted(
         new BrowsingDataQuotaHelperImpl(quota_manager_.get()));
@@ -68,15 +72,20 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   }
 
   void RegisterClient(base::span<const storage::MockOriginData> origin_data) {
-    auto client = base::MakeRefCounted<storage::MockQuotaClient>(
+    auto mock_quota_client = std::make_unique<storage::MockQuotaClient>(
         quota_manager_->proxy(), origin_data,
         storage::QuotaClientType::kFileSystem);
+    storage::MockQuotaClient* mock_quota_client_ptr = mock_quota_client.get();
+
+    mojo::PendingRemote<storage::mojom::QuotaClient> quota_client;
+    mojo::MakeSelfOwnedReceiver(std::move(mock_quota_client),
+                                quota_client.InitWithNewPipeAndPassReceiver());
     quota_manager_->proxy()->RegisterClient(
-        client, storage::QuotaClientType::kFileSystem,
+        std::move(quota_client), storage::QuotaClientType::kFileSystem,
         {blink::mojom::StorageType::kTemporary,
          blink::mojom::StorageType::kPersistent,
          blink::mojom::StorageType::kSyncable});
-    client->TouchAllOriginsAndNotify();
+    mock_quota_client_ptr->TouchAllOriginsAndNotify();
   }
 
   void SetPersistentHostQuota(const std::string& host, int64_t quota) {

@@ -352,9 +352,29 @@ VkResult InstanceDriver::createHeadlessSurfaceEXT (VkInstance instance, const Vk
 	return m_vk.createHeadlessSurfaceEXT(instance, pCreateInfo, pAllocator, pSurface);
 }
 
+VkResult InstanceDriver::acquireWinrtDisplayNV (VkPhysicalDevice physicalDevice, VkDisplayKHR display) const
+{
+	return m_vk.acquireWinrtDisplayNV(physicalDevice, display);
+}
+
+VkResult InstanceDriver::getWinrtDisplayNV (VkPhysicalDevice physicalDevice, deUint32 deviceRelativeId, VkDisplayKHR* pDisplay) const
+{
+	return m_vk.getWinrtDisplayNV(physicalDevice, deviceRelativeId, pDisplay);
+}
+
 VkResult InstanceDriver::createAndroidSurfaceKHR (VkInstance instance, const VkAndroidSurfaceCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface) const
 {
 	return m_vk.createAndroidSurfaceKHR(instance, pCreateInfo, pAllocator, pSurface);
+}
+
+VkResult InstanceDriver::getPhysicalDeviceVideoCapabilitiesKHR (VkPhysicalDevice physicalDevice, const VkVideoProfileKHR* pVideoProfile, VkVideoCapabilitiesKHR* pCapabilities) const
+{
+	return m_vk.getPhysicalDeviceVideoCapabilitiesKHR(physicalDevice, pVideoProfile, pCapabilities);
+}
+
+VkResult InstanceDriver::getPhysicalDeviceVideoFormatPropertiesKHR (VkPhysicalDevice physicalDevice, const VkPhysicalDeviceVideoFormatInfoKHR* pVideoFormatInfo, deUint32* pVideoFormatPropertyCount, VkVideoFormatPropertiesKHR* pVideoFormatProperties) const
+{
+	return m_vk.getPhysicalDeviceVideoFormatPropertiesKHR(physicalDevice, pVideoFormatInfo, pVideoFormatPropertyCount, pVideoFormatProperties);
 }
 
 VkResult InstanceDriver::createImagePipeSurfaceFUCHSIA (VkInstance instance, const VkImagePipeSurfaceCreateInfoFUCHSIA* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface) const

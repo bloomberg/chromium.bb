@@ -127,24 +127,30 @@ const char kCalculatorAppId[] = "joodangkbfjnajiiifokapkpmhfnpleo";
 const char kCalendarDemoAppId[] = "fpgfohogebplgnamlafljlcidjedbdeb";
 const char kGMailAppId[] = "pjkljhegncpnkpknbcohdijeoejaedia";
 const char kGoogleDocsDemoAppId[] = "chdaoodbokekbiiphekbfjdmiodccljl";
+const char kGoogleDocsPwaAppId[] = "cepkndkdlbllfhpfhledabdcdbidehkd";
 const char kGoogleDriveAppId[] = "apdfllckaahabafndbhieahigkjlhalf";
+const char kGoogleMeetPwaAppId[] = "dkainijpcknoofiakgccliajhbmlbhji";
 const char kGoogleSheetsDemoAppId[] = "nifkmgcdokhkjghdlgflonppnefddien";
+const char kGoogleSheetsPwaAppId[] = "hcgjdbbnhkmopplfiibmdgghhdhbiidh";
 const char kGoogleSlidesDemoAppId[] = "hdmobeajeoanbanmdlabnbnlopepchip";
 const char kGoogleKeepAppId[] = "hmjkmjkepdijhoojdojkdfohbdgmmhki";
 const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
+const char kYoutubePwaAppId[] = "agimnkijcaahngcdmfeangaknmldooml";
+const char kSpotifyAppId[] = "pjibgclleladliembfgfagdaldikeohf";
+const char kBeFunkyAppId[] = "fjoomcalbeohjbnlcneddljemclcekeg";
+const char kClipchampAppId[] = "pfepfhbcedkbjdkanpimmmdjfgoddhkg";
+const char kGeForceNowAppId[] = "egmafekfmcnknbdlbfbhafbllplmjlhn";
+const char kZoomAppId[] = "jldpdkiafafcejhceeincjmlkmibemgj";
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // TODO(michaelpg): Deprecate old app IDs before adding new ones to avoid bloat.
 const char kHighlightsAppId[] = "lpmakjfjcconjeehbidjclhdlpjmfjjj";
-const char kHighlightsEveAppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
-const char kHighlightsNocturneAppId[] = "elhbopodaklenjkeihkdhhfaghalllba";
 const char kHighlightsAtlasAppId[] = "gjeelkjnolfmhphfhhjokaijbicopfln";
 const char kScreensaverAppId[] = "mnoijifedipmbjaoekhadjcijipaijjc";
-const char kScreensaverEveAppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
-const char kScreensaverNocturneAppId[] = "lminefdanffajachfahfpmphfkhahcnj";
 const char kScreensaverAtlasAppId[] = "bnabjkecnachpogjlfilfcnlpcmacglh";
-const char kScreensaverKukuiAppId[] = "fafhbhdboeiciklpkminlncemohljlkj";
+const char kScreensaverKraneZdksAppId[] = "fafhbhdboeiciklpkminlncemohljlkj";
 const char kSigninProfileTestExtensionId[] = "mecfefiddjlmabpeilblgegnbioikfmp";
+const char kGuestModeTestExtensionId[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";
 
 bool IsSystemUIApp(base::StringPiece extension_id) {
   static const char* const kApps[] = {
@@ -153,12 +159,8 @@ bool IsSystemUIApp(base::StringPiece extension_id) {
       kChromeVoxExtensionId,
       kFeedbackExtensionId,
       kFilesManagerAppId,
-      kHighlightsEveAppId,
-      kHighlightsNocturneAppId,
       kHighlightsAtlasAppId,
       kHighlightsAppId,
-      kScreensaverEveAppId,
-      kScreensaverNocturneAppId,
       kScreensaverAtlasAppId,
       kScreensaverAppId,
       // clang-format on
@@ -187,8 +189,6 @@ const char kPolicyBlockedScripting[] =
     "This page cannot be scripted due to an ExtensionsSettings policy.";
 
 const int kContentVerificationDefaultBlockSize = 4096;
-
-const logging::LogSeverity kMinimumSeverityToReportError = logging::LOG_WARNING;
 
 const char kCastExtensionIdRelease[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
 const char kCastExtensionIdDev[] = "enhhojjnijigcajfphajepfemndkmdlo";

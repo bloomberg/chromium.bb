@@ -16,9 +16,9 @@
 #include "components/invalidation/public/invalidation_export.h"
 #include "components/invalidation/public/invalidation_util.h"
 
-namespace syncer {
+namespace invalidation {
 
-class SingleObjectInvalidationSet;
+class SingleTopicInvalidationSet;
 class TopicInvalidationMap;
 class AckHandle;
 class UnackedInvalidationSet;
@@ -43,7 +43,7 @@ class INVALIDATION_EXPORT UnackedInvalidationSet {
   void Add(const Invalidation& invalidation);
 
   // Adds many new invalidations to the set awaiting acknowledgement.
-  void AddSet(const SingleObjectInvalidationSet& invalidations);
+  void AddSet(const SingleTopicInvalidationSet& invalidations);
 
   // Exports the set of invalidations awaiting acknowledgement as an
   // TopicInvalidationMap. Each of these invalidations will be associated
@@ -103,6 +103,6 @@ class INVALIDATION_EXPORT UnackedInvalidationSet {
   InvalidationsSet invalidations_;
 };
 
-}  // namespace syncer
+}  // namespace invalidation
 
 #endif  // COMPONENTS_INVALIDATION_IMPL_UNACKED_INVALIDATION_SET_H_

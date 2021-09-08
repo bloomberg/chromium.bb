@@ -14,8 +14,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -41,7 +41,7 @@ class ASH_EXPORT LockScreenMediaControlsView
     : public views::View,
       public media_session::mojom::MediaControllerObserver,
       public media_session::mojom::MediaControllerImageObserver,
-      public base::PowerObserver,
+      public base::PowerSuspendObserver,
       public ui::ImplicitAnimationObserver {
  public:
   METADATA_HEADER(LockScreenMediaControlsView);
@@ -106,19 +106,20 @@ class ASH_EXPORT LockScreenMediaControlsView
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnThemeChanged() override;
 
   // media_session::mojom::MediaControllerObserver:
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
-      const base::Optional<media_session::MediaMetadata>& metadata) override;
+      const absl::optional<media_session::MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
       const std::vector<media_session::mojom::MediaSessionAction>& actions)
       override;
   void MediaSessionChanged(
-      const base::Optional<base::UnguessableToken>& request_id) override;
+      const absl::optional<base::UnguessableToken>& request_id) override;
   void MediaSessionPositionChanged(
-      const base::Optional<media_session::MediaPosition>& position) override;
+      const absl::optional<media_session::MediaPosition>& position) override;
 
   // media_session::mojom::MediaControllerImageObserver:
   void MediaControllerImageChanged(
@@ -131,7 +132,7 @@ class ASH_EXPORT LockScreenMediaControlsView
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // base::PowerObserver:
+  // base::PowerSuspendObserver:
   void OnSuspend() override;
 
   void ButtonPressed(media_session::mojom::MediaSessionAction action);
@@ -167,7 +168,7 @@ class ASH_EXPORT LockScreenMediaControlsView
 
   // Sets the media artwork to |img|. If |img| is nullopt, the default artwork
   // is set instead.
-  void SetArtwork(base::Optional<gfx::ImageSkia> img);
+  void SetArtwork(absl::optional<gfx::ImageSkia> img);
 
   // Returns the rounded rectangle clip path for the current artwork.
   SkPath GetArtworkClipPath() const;
@@ -197,6 +198,8 @@ class ASH_EXPORT LockScreenMediaControlsView
   // Animates |contents_view_| to its original position.
   void RunResetControlsAnimation();
 
+  void UpdateColors();
+
   // Used to control the active session.
   mojo::Remote<media_session::mojom::MediaController> media_controller_remote_;
 
@@ -214,10 +217,10 @@ class ASH_EXPORT LockScreenMediaControlsView
 
   // The id of the current media session. It will be null if there is not
   // a current session.
-  base::Optional<base::UnguessableToken> media_session_id_;
+  absl::optional<base::UnguessableToken> media_session_id_;
 
   // The MediaPosition associated with the current media session.
-  base::Optional<media_session::MediaPosition> position_;
+  absl::optional<media_session::MediaPosition> position_;
 
   // Automatically hides the controls a few seconds if no media playing.
   std::unique_ptr<base::OneShotTimer> hide_controls_timer_ =
@@ -230,7 +233,7 @@ class ASH_EXPORT LockScreenMediaControlsView
 
   // Caches the text to be read by screen readers describing the media controls
   // view.
-  base::string16 accessible_name_;
+  std::u16string accessible_name_;
 
   // Set of enabled actions.
   base::flat_set<media_session::mojom::MediaSessionAction> enabled_actions_;
@@ -239,10 +242,10 @@ class ASH_EXPORT LockScreenMediaControlsView
   views::View* contents_view_ = nullptr;
 
   // The reason we hid the media controls.
-  base::Optional<HideReason> hide_reason_;
+  absl::optional<HideReason> hide_reason_;
 
   // Whether the controls were shown or not and the reason why.
-  base::Optional<Shown> shown_;
+  absl::optional<Shown> shown_;
 
   // Container views attached to |contents_view_|.
   MediaControlsHeaderView* header_row_ = nullptr;

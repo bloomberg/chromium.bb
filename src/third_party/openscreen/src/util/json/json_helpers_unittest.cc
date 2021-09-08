@@ -42,6 +42,7 @@ TEST(ParsingHelpersTest, ParseAndValidateDouble) {
   const Json::Value kNotDouble = "coffee beans";
   const Json::Value kNegativeDouble = -4.2;
   const Json::Value kZeroDouble = 0.0;
+  const Json::Value kNanDouble = std::nan("");
 
   double out;
   EXPECT_TRUE(ParseAndValidateDouble(kValid, &out));
@@ -51,6 +52,7 @@ TEST(ParsingHelpersTest, ParseAndValidateDouble) {
   EXPECT_FALSE(ParseAndValidateDouble(kNotDouble, &out));
   EXPECT_FALSE(ParseAndValidateDouble(kNegativeDouble, &out));
   EXPECT_FALSE(ParseAndValidateDouble(kNone, &out));
+  EXPECT_FALSE(ParseAndValidateDouble(kNanDouble, &out));
 }
 
 TEST(ParsingHelpersTest, ParseAndValidateInt) {
@@ -105,18 +107,23 @@ TEST(ParsingHelpersTest, ParseAndValidateSimpleFraction) {
   const Json::Value kNegative = "10/-2";
   const Json::Value kInvalidNumber = "-1";
   const Json::Value kNotSimpleFraction = "latte";
+  const Json::Value kInteger = 123;
+  const Json::Value kNegativeInteger = -5000;
 
   SimpleFraction out;
   EXPECT_TRUE(ParseAndValidateSimpleFraction(kValid, &out));
   EXPECT_EQ((SimpleFraction{42, 30}), out);
   EXPECT_TRUE(ParseAndValidateSimpleFraction(kValidNumber, &out));
   EXPECT_EQ((SimpleFraction{42, 1}), out);
+  EXPECT_TRUE(ParseAndValidateSimpleFraction(kInteger, &out));
+  EXPECT_EQ((SimpleFraction{123, 1}), out);
   EXPECT_FALSE(ParseAndValidateSimpleFraction(kUndefined, &out));
   EXPECT_FALSE(ParseAndValidateSimpleFraction(kNegative, &out));
   EXPECT_FALSE(ParseAndValidateSimpleFraction(kInvalidNumber, &out));
   EXPECT_FALSE(ParseAndValidateSimpleFraction(kNotSimpleFraction, &out));
   EXPECT_FALSE(ParseAndValidateSimpleFraction(kNone, &out));
   EXPECT_FALSE(ParseAndValidateSimpleFraction(kEmptyString, &out));
+  EXPECT_FALSE(ParseAndValidateSimpleFraction(kNegativeInteger, &out));
 }
 
 TEST(ParsingHelpersTest, ParseAndValidateMilliseconds) {

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -75,10 +76,13 @@ class CC_EXPORT Tile {
   TileDrawInfo& draw_info() { return draw_info_; }
 
 #ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
-  float contents_scale_key() const { return raster_transform_.scale().width(); }
+  float contents_scale_key() const {
+    const gfx::Vector2dF& scale = raster_transform_.scale();
+    return std::max(scale.x(), scale.y());
+  }
 #endif
 
-  const gfx::SizeF& contents_scale_key2() const { return raster_transform_.scale(); }
+  const gfx::Vector2dF& contents_scale_key2() const { return raster_transform_.scale(); }
 
   const gfx::AxisTransform2d& raster_transform() const {
     return raster_transform_;

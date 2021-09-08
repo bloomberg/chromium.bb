@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -71,15 +71,15 @@ class OutOfMemoryReporter
 
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::Optional<ukm::SourceId> last_committed_source_id_;
+  absl::optional<ukm::SourceId> last_committed_source_id_;
   base::TimeTicks last_navigation_timestamp_;
   std::unique_ptr<const base::TickClock> tick_clock_;
   int crashed_render_process_id_ = content::ChildProcessHost::kInvalidUniqueID;
 
 #if defined(OS_ANDROID)
-  ScopedObserver<crash_reporter::CrashMetricsReporter,
-                 crash_reporter::CrashMetricsReporter::Observer>
-      scoped_observer_;
+  base::ScopedObservation<crash_reporter::CrashMetricsReporter,
+                          crash_reporter::CrashMetricsReporter::Observer>
+      scoped_observation_{this};
 #endif
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

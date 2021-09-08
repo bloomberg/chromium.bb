@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "components/profile_metrics/browser_profile_type.h"
 #include "components/profile_metrics/counts.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_thread.h"
@@ -80,7 +80,7 @@ profile_metrics::ProfileColorsUniqueness GetProfileColorsUniqueness(
   size_t default_colors_count = 0;
   std::set<ProfileThemeColors> used_colors;
   for (ProfileAttributesEntry* entry : entries) {
-    base::Optional<ProfileThemeColors> profile_colors =
+    absl::optional<ProfileThemeColors> profile_colors =
         entry->GetProfileThemeColorsIfSet();
     if (!profile_colors) {
       default_colors_count++;
@@ -192,41 +192,13 @@ void ProfileMetrics::CountProfileInformation(ProfileAttributesStorage* storage,
       counts->unused++;
     } else {
       counts->active++;
-      if (!entry->IsUsingDefaultName())
-        counts->named++;
       if (entry->IsSupervised())
         counts->supervised++;
-      if (entry->IsAuthenticated()) {
+      if (entry->IsAuthenticated())
         counts->signedin++;
-        if (entry->IsUsingGAIAPicture())
-          counts->gaia_icon++;
-        if (entry->IsAuthError())
-          counts->auth_errors++;
-      }
     }
   }
   counts->colors_uniqueness = GetProfileColorsUniqueness(storage);
-}
-
-profile_metrics::BrowserProfileType ProfileMetrics::GetBrowserProfileType(
-    Profile* profile) {
-  if (profile->IsSystemProfile())
-    return profile_metrics::BrowserProfileType::kSystem;
-  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile())
-    return profile_metrics::BrowserProfileType::kGuest;
-  // A regular profile can be in a guest session or a system profile. Hence it
-  // should be checked after them.
-  if (profile->IsRegularProfile())
-    return profile_metrics::BrowserProfileType::kRegular;
-
-  if (profile->IsIncognitoProfile())
-    return profile_metrics::BrowserProfileType::kIncognito;
-
-  if (profile->IsOffTheRecord() && !profile->IsPrimaryOTRProfile())
-    return profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile;
-
-  NOTREACHED();
-  return profile_metrics::BrowserProfileType::kMaxValue;
 }
 
 void ProfileMetrics::LogNumberOfProfiles(ProfileAttributesStorage* storage) {
@@ -239,6 +211,12 @@ void ProfileMetrics::LogProfileAddNewUser(ProfileAdd metric) {
   base::UmaHistogramEnumeration("Profile.AddNewUser", metric);
   base::UmaHistogramEnumeration("Profile.NetUserCount",
                                 ProfileNetUserCounts::ADD_NEW_USER);
+}
+
+// static
+void ProfileMetrics::LogProfileAddSignInFlowOutcome(
+    ProfileAddSignInFlowOutcome outcome) {
+  base::UmaHistogramEnumeration("Profile.AddSignInFlowOutcome", outcome);
 }
 
 void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {

@@ -4,6 +4,7 @@
 
 #include "content/web_test/browser/web_test_shell_platform_delegate.h"
 
+#include "base/containers/contains.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/shell.h"
@@ -110,15 +111,15 @@ void WebTestShellPlatformDelegate::SetAddressBarURL(Shell* shell,
 }
 
 void WebTestShellPlatformDelegate::SetTitle(Shell* shell,
-                                            const base::string16& title) {
+                                            const std::u16string& title) {
   if (!IsHeadless())
     ShellPlatformDelegate::SetTitle(shell, title);
   // Nothing in headless mode.
 }
 
-void WebTestShellPlatformDelegate::RenderViewReady(Shell* shell) {
+void WebTestShellPlatformDelegate::MainFrameCreated(Shell* shell) {
   // No difference in headless mode.
-  ShellPlatformDelegate::RenderViewReady(shell);
+  ShellPlatformDelegate::MainFrameCreated(shell);
 }
 
 bool WebTestShellPlatformDelegate::DestroyShell(Shell* shell) {

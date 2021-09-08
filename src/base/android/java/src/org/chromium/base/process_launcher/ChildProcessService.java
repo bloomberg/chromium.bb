@@ -23,6 +23,7 @@ import android.util.SparseArray;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.EarlyTraceEvent;
 import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureLevel;
 import org.chromium.base.ThreadUtils;
@@ -67,6 +68,9 @@ public class ChildProcessService {
 
     // Only for a check that create is only called once.
     private static boolean sCreateCalled;
+
+    private static int sZygotePid;
+    private static long sZygoteStartupTimeMillis;
 
     private final ChildProcessServiceDelegate mDelegate;
     private final Service mService;
@@ -149,6 +153,9 @@ public class ChildProcessService {
             }
 
             parentProcess.sendPid(Process.myPid());
+            if (sZygotePid != 0) {
+                parentProcess.sendZygoteInfo(sZygotePid, sZygoteStartupTimeMillis);
+            }
             mParentProcess = parentProcess;
             processConnectionBundle(args, callbacks);
         }
@@ -215,7 +222,13 @@ public class ChildProcessService {
 
         mDelegate.onServiceCreated();
 
-        mMainThread = new Thread(new Runnable() {
+        // Unlike desktop Linux, on Android we leave the main looper thread to handle Android
+        // lifecycle events, and create a separate thread to serve as the main renderer. This
+        // affects the thread stack size: instead of getting the kernel default we get the Java
+        // default, which can be much smaller. So, explicitly set up a larger stack here.
+        long stackSize = ContextUtils.isProcess64Bit() ? 8 * 1024 * 1024 : 4 * 1024 * 1024;
+
+        mMainThread = new Thread(/*threadGroup=*/null, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -233,6 +246,7 @@ public class ChildProcessService {
                         android.os.Debug.waitForDebugger();
                     }
 
+                    EarlyTraceEvent.onCommandLineAvailableInChildProcess();
                     mDelegate.loadNativeLibrary(getApplicationContext());
 
                     synchronized (mLibraryInitializedLock) {
@@ -283,10 +297,12 @@ public class ChildProcessService {
                     // Record process startup time histograms.
                     long startTime =
                             SystemClock.uptimeMillis() - ApiHelperForN.getStartUptimeMillis();
-                    String baseHistogramName = "Android.ChildProcessStartTime";
+                    String baseHistogramName = "Android.ChildProcessStartTimeV2";
                     String suffix = ContextUtils.isIsolatedProcess() ? ".Isolated" : ".NotIsolated";
-                    RecordHistogram.recordTimesHistogram(baseHistogramName + ".All", startTime);
-                    RecordHistogram.recordTimesHistogram(baseHistogramName + suffix, startTime);
+                    RecordHistogram.recordMediumTimesHistogram(
+                            baseHistogramName + ".All", startTime);
+                    RecordHistogram.recordMediumTimesHistogram(
+                            baseHistogramName + suffix, startTime);
                 }
 
                 mDelegate.runMain();
@@ -297,7 +313,7 @@ public class ChildProcessService {
                 }
                 ChildProcessServiceJni.get().exitChildProcess();
             }
-        }, MAIN_THREAD_NAME);
+        }, MAIN_THREAD_NAME, stackSize);
         mMainThread.start();
     }
 
@@ -328,10 +344,23 @@ public class ChildProcessService {
                 intent.getBooleanExtra(ChildProcessConstants.EXTRA_BIND_TO_CALLER, false);
         mServiceBound = true;
         mDelegate.onServiceBound(intent);
+
+        String packageName =
+                intent.getStringExtra(ChildProcessConstants.EXTRA_BROWSER_PACKAGE_NAME);
+        if (packageName == null) {
+            packageName = getApplicationContext().getApplicationInfo().packageName;
+        }
         // Don't block bind() with any extra work, post it to the application thread instead.
+        final String preloadPackageName = packageName;
         new Handler(Looper.getMainLooper())
-                .post(() -> mDelegate.preloadNativeLibrary(getApplicationContext()));
+                .post(() -> mDelegate.preloadNativeLibrary(preloadPackageName));
         return mBinder;
+    }
+
+    /** This will be called from the zygote on startup. */
+    public static void setZygoteInfo(int zygotePid, long zygoteStartupTimeMillis) {
+        sZygotePid = zygotePid;
+        sZygoteStartupTimeMillis = zygoteStartupTimeMillis;
     }
 
     private void processConnectionBundle(Bundle bundle, List<IBinder> clientInterfaces) {

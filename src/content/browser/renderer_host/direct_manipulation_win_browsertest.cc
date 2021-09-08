@@ -18,6 +18,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/win/window_event_target.h"
+#include "ui/compositor/compositor.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/event_source.h"
 #include "url/gurl.h"
@@ -128,7 +129,7 @@ class EventLogger : public ui::EventRewriter {
     return SendEvent(continuation, &event);
   }
 
-  std::unique_ptr<ui::Event> last_event_ = nullptr;
+  std::unique_ptr<ui::Event> last_event_;
 
   DISALLOW_COPY_AND_ASSIGN(EventLogger);
 };

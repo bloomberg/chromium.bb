@@ -31,12 +31,14 @@ public:
     bool isFormatTexturable(const GrBackendFormat&) const override;
     bool isFormatTexturable(DXGI_FORMAT) const;
 
-    bool isFormatCopyable(const GrBackendFormat&) const override { return false; }
+    bool isFormatCopyable(const GrBackendFormat&) const override { return true; }
 
     bool isFormatAsColorTypeRenderable(GrColorType ct, const GrBackendFormat& format,
                                        int sampleCount = 1) const override;
     bool isFormatRenderable(const GrBackendFormat& format, int sampleCount) const override;
     bool isFormatRenderable(DXGI_FORMAT, int sampleCount) const;
+
+    bool isFormatUnorderedAccessible(DXGI_FORMAT) const;
 
     int getRenderTargetSampleCount(int requestedCount, const GrBackendFormat&) const override;
     int getRenderTargetSampleCount(int requestedCount, DXGI_FORMAT) const;
@@ -97,7 +99,9 @@ public:
                             GrSamplerState,
                             const GrBackendFormat&) const override;
 
-    GrProgramDesc makeDesc(GrRenderTarget*, const GrProgramInfo&) const override;
+    GrProgramDesc makeDesc(GrRenderTarget*,
+                           const GrProgramInfo&,
+                           ProgramDescOverrideFlags) const override;
 
 #if GR_TEST_UTILS
     std::vector<TestFormatColorTypeCombination> getTestingCombinations() const override;
@@ -173,6 +177,7 @@ private:
             kRenderable_Flag = 0x2, // Rendertarget and blendable
             kMSAA_Flag = 0x4,
             kResolve_Flag = 0x8,
+            kUnorderedAccess_Flag = 0x10,
         };
 
         uint16_t fFlags = 0;

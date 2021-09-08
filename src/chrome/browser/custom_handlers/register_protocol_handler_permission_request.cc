@@ -9,15 +9,15 @@
 #include "build/build_config.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/vector_icons/vector_icons.h"
+#include "components/permissions/request_type.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 RegisterProtocolHandlerPermissionRequest::
     RegisterProtocolHandlerPermissionRequest(
         ProtocolHandlerRegistry* registry,
         const ProtocolHandler& handler,
         GURL url,
-        bool user_gesture,
         base::ScopedClosureRunner fullscreen_block)
     : registry_(registry),
       handler_(handler),
@@ -27,12 +27,26 @@ RegisterProtocolHandlerPermissionRequest::
 RegisterProtocolHandlerPermissionRequest::
     ~RegisterProtocolHandlerPermissionRequest() = default;
 
-permissions::PermissionRequest::IconId
-RegisterProtocolHandlerPermissionRequest::GetIconId() const {
-  return vector_icons::kProtocolHandlerIcon;
+permissions::RequestType
+RegisterProtocolHandlerPermissionRequest::GetRequestType() const {
+  return permissions::RequestType::kRegisterProtocolHandler;
 }
 
-base::string16
+bool RegisterProtocolHandlerPermissionRequest::IsDuplicateOf(
+    permissions::PermissionRequest* other_request) const {
+  // The downcast here is safe because PermissionRequest::IsDuplicateOf ensures
+  // that both requests are of type kRegisterProtocolHandler.
+  // TODO(crbug.com/1110905): `PermissionRequest::IsDuplicateOf` ensures that
+  // `origin_` matches for both instances, but that's not clear from reading the
+  // code. Move `origin_` into `PermissionRequest` to clean this up.
+  return permissions::PermissionRequest::IsDuplicateOf(other_request) &&
+         handler_.protocol() ==
+             static_cast<RegisterProtocolHandlerPermissionRequest*>(
+                 other_request)
+                 ->handler_.protocol();
+}
+
+std::u16string
 RegisterProtocolHandlerPermissionRequest::GetMessageTextFragment() const {
   ProtocolHandler old_handler = registry_->GetHandlerFor(handler_.protocol());
   return old_handler.IsEmpty()
@@ -71,9 +85,4 @@ void RegisterProtocolHandlerPermissionRequest::Cancelled() {
 
 void RegisterProtocolHandlerPermissionRequest::RequestFinished() {
   delete this;
-}
-
-permissions::PermissionRequestType
-RegisterProtocolHandlerPermissionRequest::GetPermissionRequestType() const {
-  return permissions::PermissionRequestType::REGISTER_PROTOCOL_HANDLER;
 }

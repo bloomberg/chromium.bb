@@ -31,7 +31,7 @@ namespace blink {
 
 class InlineBox;
 
-struct BidiRun : BidiCharacterRun {
+struct BidiRun final : BidiCharacterRun {
   BidiRun(bool override,
           unsigned char level,
           int start,

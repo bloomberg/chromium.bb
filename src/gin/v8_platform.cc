@@ -20,8 +20,10 @@
 #include "base/task/post_job.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/trace_event/trace_event.h"
+#include "base/tracing_buildflags.h"
 #include "build/build_config.h"
 #include "gin/per_isolate_data.h"
 
@@ -51,6 +53,10 @@ class ConvertableToTraceFormatWrapper final
   explicit ConvertableToTraceFormatWrapper(
       std::unique_ptr<v8::ConvertableToTraceFormat> inner)
       : inner_(std::move(inner)) {}
+  ConvertableToTraceFormatWrapper(const ConvertableToTraceFormatWrapper&) =
+      delete;
+  ConvertableToTraceFormatWrapper& operator=(
+      const ConvertableToTraceFormatWrapper&) = delete;
   ~ConvertableToTraceFormatWrapper() override = default;
   void AppendAsTraceFormat(std::string* out) const final {
     inner_->AppendAsTraceFormat(out);
@@ -58,8 +64,6 @@ class ConvertableToTraceFormatWrapper final
 
  private:
   std::unique_ptr<v8::ConvertableToTraceFormat> inner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConvertableToTraceFormatWrapper);
 };
 
 class EnabledStateObserverImpl final
@@ -68,6 +72,10 @@ class EnabledStateObserverImpl final
   EnabledStateObserverImpl() {
     base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
   }
+
+  EnabledStateObserverImpl(const EnabledStateObserverImpl&) = delete;
+
+  EnabledStateObserverImpl& operator=(const EnabledStateObserverImpl&) = delete;
 
   ~EnabledStateObserverImpl() override {
     base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(
@@ -109,8 +117,6 @@ class EnabledStateObserverImpl final
  private:
   base::Lock mutex_;
   std::unordered_set<v8::TracingController::TraceStateObserver*> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(EnabledStateObserverImpl);
 };
 
 base::LazyInstance<EnabledStateObserverImpl>::Leaky g_trace_state_dispatcher =
@@ -128,6 +134,8 @@ class TimeClamper {
 #endif
 
   TimeClamper() : secret_(base::RandUint64()) {}
+  TimeClamper(const TimeClamper&) = delete;
+  TimeClamper& operator=(const TimeClamper&) = delete;
 
   double ClampTimeResolution(double time_seconds) const {
     bool was_negative = false;
@@ -173,7 +181,6 @@ class TimeClamper {
   }
 
   const uint64_t secret_;
-  DISALLOW_COPY_AND_ASSIGN(TimeClamper);
 };
 
 base::LazyInstance<TimeClamper>::Leaky g_time_clamper =
@@ -245,7 +252,8 @@ class PageAllocator : public v8::PageAllocator {
     // On Windows, we can only de-commit the trailing pages. FreePages() will
     // still free all pages in the region including the released tail, so it's
     // safe to just decommit the tail.
-    base::DecommitSystemPages(release_base, release_size);
+    base::DecommitSystemPages(release_base, release_size,
+                              base::PageUpdatePermissions);
 #else
 #error Unsupported platform
 #endif
@@ -257,7 +265,12 @@ class PageAllocator : public v8::PageAllocator {
                       Permission permissions) override {
     // If V8 sets permissions to none, we can discard the memory.
     if (permissions == v8::PageAllocator::Permission::kNoAccess) {
-      base::DecommitSystemPages(address, length);
+      // Use PageKeepPermissionsIfPossible as an optimization, to avoid perf
+      // regression (see crrev.com/c/2563038 for details). This may cause the
+      // memory region to still be accessible on certain platforms, but at least
+      // the physical pages will be discarded.
+      base::DecommitSystemPages(address, length,
+                                base::PageKeepPermissionsIfPossible);
       return true;
     } else {
       return base::TrySetSystemPagesAccess(address, length,
@@ -298,8 +311,7 @@ class JobDelegateImpl : public v8::JobDelegate {
 
 class JobHandleImpl : public v8::JobHandle {
  public:
-  JobHandleImpl(base::JobHandle handle, std::unique_ptr<v8::JobTask> job_task)
-      : handle_(std::move(handle)), job_task_(std::move(job_task)) {}
+  explicit JobHandleImpl(base::JobHandle handle) : handle_(std::move(handle)) {}
   ~JobHandleImpl() override = default;
 
   JobHandleImpl(const JobHandleImpl&) = delete;
@@ -316,8 +328,8 @@ class JobHandleImpl : public v8::JobHandle {
   void Join() override { handle_.Join(); }
   void Cancel() override { handle_.Cancel(); }
   void CancelAndDetach() override { handle_.CancelAndDetach(); }
-  bool IsCompleted() override { return handle_.IsCompleted(); }
-  bool IsRunning() override { return !!handle_; }
+  bool IsActive() override { return handle_.IsActive(); }
+  bool IsValid() override { return !!handle_; }
 
  private:
   static base::TaskPriority ToBaseTaskPriority(v8::TaskPriority priority) {
@@ -332,7 +344,6 @@ class JobHandleImpl : public v8::JobHandle {
   }
 
   base::JobHandle handle_;
-  std::unique_ptr<v8::JobTask> job_task_;
 };
 
 }  // namespace
@@ -360,9 +371,12 @@ namespace gin {
 class V8Platform::TracingControllerImpl : public v8::TracingController {
  public:
   TracingControllerImpl() = default;
+  TracingControllerImpl(const TracingControllerImpl&) = delete;
+  TracingControllerImpl& operator=(const TracingControllerImpl&) = delete;
   ~TracingControllerImpl() override = default;
 
   // TracingController implementation.
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   const uint8_t* GetCategoryGroupEnabled(const char* name) override {
     return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(name);
   }
@@ -430,15 +444,13 @@ class V8Platform::TracingControllerImpl : public v8::TracingController {
     TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(category_enabled_flag, name,
                                                 traceEventHandle);
   }
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   void AddTraceStateObserver(TraceStateObserver* observer) override {
     g_trace_state_dispatcher.Get().AddObserver(observer);
   }
   void RemoveTraceStateObserver(TraceStateObserver* observer) override {
     g_trace_state_dispatcher.Get().RemoveObserver(observer);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TracingControllerImpl);
 };
 
 // static
@@ -522,22 +534,25 @@ std::unique_ptr<v8::JobHandle> V8Platform::PostJob(
       task_traits = kBlockingTaskTraits;
       break;
   }
+  // Ownership of |job_task| is assumed by |worker_task|, while
+  // |max_concurrency_callback| uses an unretained pointer.
+  auto* job_task_ptr = job_task.get();
   auto handle =
       base::PostJob(FROM_HERE, task_traits,
                     base::BindRepeating(
-                        [](v8::JobTask* job_task, base::JobDelegate* delegate) {
+                        [](const std::unique_ptr<v8::JobTask>& job_task,
+                           base::JobDelegate* delegate) {
                           JobDelegateImpl delegate_impl(delegate);
                           job_task->Run(&delegate_impl);
                         },
-                        base::Unretained(job_task.get())),
+                        std::move(job_task)),
                     base::BindRepeating(
                         [](v8::JobTask* job_task, size_t worker_count) {
                           return job_task->GetMaxConcurrency(worker_count);
                         },
-                        base::Unretained(job_task.get())));
+                        base::Unretained(job_task_ptr)));
 
-  return std::make_unique<JobHandleImpl>(std::move(handle),
-                                         std::move(job_task));
+  return std::make_unique<JobHandleImpl>(std::move(handle));
 }
 
 bool V8Platform::IdleTasksEnabled(v8::Isolate* isolate) {

@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_SAVE_UPDATE_WITH_ACCOUNT_STORE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_SAVE_UPDATE_WITH_ACCOUNT_STORE_VIEW_H_
 
-#include "base/optional.h"
+#include "base/scoped_observation.h"
 #include "base/token.h"
 #include "chrome/browser/ui/passwords/bubble_controllers/save_update_with_account_store_bubble_controller.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/view.h"
 
@@ -115,7 +116,7 @@ class PasswordSaveUpdateWithAccountStoreView
 
   // When showing kReauthFailure IPH, |promo_controller_| gives back an
   // ID. This is used to close the bubble later.
-  base::Optional<base::Token> failed_reauth_promo_id_;
+  absl::optional<base::Token> failed_reauth_promo_id_;
 
   // Hidden view that will contain status text for immediate output by
   // screen readers when the bubble changes state between Save and Update.
@@ -124,15 +125,16 @@ class PasswordSaveUpdateWithAccountStoreView
   // Used to add |username_dropdown_| as an observer to the
   // AnimatingLayoutManager. This is needed such that the |username_dropdown_|
   // keeps the dropdown menu closed while the layout is animating.
-  std::unique_ptr<ScopedObserver<views::AnimatingLayoutManager,
-                                 views::AnimatingLayoutManager::Observer>>
-      observed_animating_layout_for_username_dropdown_;
+  std::unique_ptr<
+      base::ScopedObservation<views::AnimatingLayoutManager,
+                              views::AnimatingLayoutManager::Observer>>
+      animating_layout_for_username_dropdown_observation_;
 
   // Used to observe the bubble animation when transitions between Save/Update
   // states. If appropriate, IPH bubble is is shown st end of the animation.
-  ScopedObserver<views::AnimatingLayoutManager,
-                 views::AnimatingLayoutManager::Observer>
-      observed_animating_layout_for_iph_{this};
+  base::ScopedObservation<views::AnimatingLayoutManager,
+                          views::AnimatingLayoutManager::Observer>
+      animating_layout_for_iph_observation_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_SAVE_UPDATE_WITH_ACCOUNT_STORE_VIEW_H_

@@ -6,9 +6,19 @@ import {assert} from 'chai';
 
 import {click, getBrowserAndPages, step, waitFor, waitForAria, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {navigateToNetworkTab, waitForSomeRequestsToAppear} from '../helpers/network-helpers.js';
+import {navigateToNetworkTab, setCacheDisabled, waitForSomeRequestsToAppear} from '../helpers/network-helpers.js';
 
-describe('The Network Tab', async () => {
+describe('The Network Tab', async function() {
+  if (this.timeout() !== 0.0) {
+    // These tests take some time on slow windows machines.
+    this.timeout(10000);
+  }
+
+  beforeEach(async () => {
+    await navigateToNetworkTab('empty.html');
+    await setCacheDisabled(true);
+  });
+
   it('can click on checkbox label to toggle checkbox', async () => {
     await navigateToNetworkTab('resources-from-cache.html');
 
@@ -18,7 +28,7 @@ describe('The Network Tab', async () => {
     const checkbox = await waitFor('[aria-label="Disable cache"]');
     const checked = await checkbox.evaluate(box => (box as HTMLInputElement).checked);
 
-    assert.strictEqual(checked, true, 'The disable cache checkbox should be checked');
+    assert.strictEqual(checked, false, 'The disable cache checkbox should be unchecked');
   });
 
   it('shows Last-Modified', async () => {
@@ -58,7 +68,7 @@ describe('The Network Tab', async () => {
     });
   });
 
-  it('shows the HTML response including cyrillic characters with utf-8 encoding', async () => {
+  it('the HTML response including cyrillic characters with utf-8 encoding', async () => {
     const {target} = getBrowserAndPages();
     await navigateToNetworkTab('utf-8.rawresponse');
 
@@ -85,13 +95,13 @@ describe('The Network Tab', async () => {
         '1<html><body>The following word is written using cyrillic letters and should look like "SUCCESS": SU\u0421\u0421\u0415SS.</body></html>');
   });
 
-  it('shows the correct MIME type when resources came from HTTP cache', async () => {
+  it('the correct MIME type when resources came from HTTP cache', async () => {
     const {target, frontend} = getBrowserAndPages();
 
     await navigateToNetworkTab('resources-from-cache.html');
 
     // Reload the page without a cache, to force a fresh load of the network resources
-    await click('[aria-label="Disable cache"]');
+    await setCacheDisabled(true);
     await target.reload({waitUntil: 'networkidle0'});
 
     // Wait for the column to show up and populate its values
@@ -109,7 +119,7 @@ describe('The Network Tab', async () => {
     };
 
     assert.deepEqual(await getNetworkRequestSize(), [
-      `${formatByteSize(338)}${formatByteSize(219)}`,
+      `${formatByteSize(361)}${formatByteSize(219)}`,
       `${formatByteSize(362)}${formatByteSize(28)}`,
     ]);
     assert.deepEqual(await getNetworkRequestMimeTypes(), [
@@ -118,13 +128,13 @@ describe('The Network Tab', async () => {
     ]);
 
     // Allow resources from the cache again and reload the page to load from cache
-    await click('[aria-label="Disable cache"]');
+    await setCacheDisabled(false);
     await target.reload({waitUntil: 'networkidle0'});
     // Wait for the column to show up and populate its values
     await waitForSomeRequestsToAppear(2);
 
     assert.deepEqual(await getNetworkRequestSize(), [
-      `${formatByteSize(338)}${formatByteSize(219)}`,
+      `${formatByteSize(361)}${formatByteSize(219)}`,
       `(memory cache)${formatByteSize(28)}`,
     ]);
 
@@ -132,5 +142,67 @@ describe('The Network Tab', async () => {
       'document',
       'script',
     ]);
+  });
+
+  it('shows the correct initiator address space', async () => {
+    const {target, frontend} = getBrowserAndPages();
+
+    await navigateToNetworkTab('fetch.html');
+
+    // Reload to populate network request table
+    await target.reload({waitUntil: 'networkidle0'});
+
+    await waitForSomeRequestsToAppear(2);
+
+    await step('Open the contextmenu for all network column', async () => {
+      await click('.name-column', {clickOptions: {button: 'right'}});
+    });
+
+    await step('Enable the Initiator Address Space column in the network datagrid', async () => {
+      const initiatorAddressSpace = await waitForAria('Initiator Address Space, unchecked');
+      await click(initiatorAddressSpace);
+    });
+
+    await step('Wait for the Initiator Address Space column to have the expected values', async () => {
+      const expectedValues = JSON.stringify(['Initiator Address Space', '', 'Local']);
+      await waitForFunction(async () => {
+        const initiatorAddressSpaceValues = await frontend.$$eval(
+            'pierce/.initiator-address-space-column',
+            cells => cells.map(element => element.textContent),
+        );
+        return JSON.stringify(initiatorAddressSpaceValues) === expectedValues;
+      });
+    });
+  });
+
+  it('shows the correct remote address space', async () => {
+    const {target, frontend} = getBrowserAndPages();
+
+    await navigateToNetworkTab('fetch.html');
+
+    // Reload to populate network request table
+    await target.reload({waitUntil: 'networkidle0'});
+
+    await waitForSomeRequestsToAppear(2);
+
+    await step('Open the contextmenu for all network column', async () => {
+      await click('.name-column', {clickOptions: {button: 'right'}});
+    });
+
+    await step('Enable the Remote Address Space column in the network datagrid', async () => {
+      const remoteAddressSpace = await waitForAria('Remote Address Space, unchecked');
+      await click(remoteAddressSpace);
+    });
+
+    await step('Wait for the Remote Address Space column to have the expected values', async () => {
+      const expectedValues = JSON.stringify(['Remote Address Space', 'Local', 'Local']);
+      await waitForFunction(async () => {
+        const remoteAddressSpaceValues = await frontend.$$eval(
+            'pierce/.remoteaddress-space-column',
+            cells => cells.map(element => element.textContent),
+        );
+        return JSON.stringify(remoteAddressSpaceValues) === expectedValues;
+      });
+    });
   });
 });

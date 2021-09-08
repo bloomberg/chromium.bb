@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/net/network_diagnostics/gateway_can_be_pinged_routine.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -17,6 +16,7 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
+#include "chromeos/network/system_token_cert_db_storage.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "components/onc/onc_constants.h"
 #include "components/onc/onc_pref_names.h"
@@ -82,7 +82,7 @@ class FakeDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
   void TestICMP(const std::string& ip_address,
                 TestICMPCallback callback) override {
     // Invoke the test callback with fake output.
-    std::move(callback).Run(base::Optional<std::string>{icmp_output_});
+    std::move(callback).Run(absl::optional<std::string>{icmp_output_});
   }
 
  private:
@@ -95,6 +95,7 @@ class GatewayCanBePingedRoutineTest : public ::testing::Test {
  public:
   GatewayCanBePingedRoutineTest() {
     LoginState::Initialize();
+    SystemTokenCertDbStorage::Initialize();
     NetworkCertLoader::Initialize();
     InitializeManagedNetworkConfigurationHandler();
     // Note that |cros_network_config_test_helper_| must be initialized before
@@ -116,6 +117,7 @@ class GatewayCanBePingedRoutineTest : public ::testing::Test {
 
   ~GatewayCanBePingedRoutineTest() override {
     NetworkCertLoader::Shutdown();
+    SystemTokenCertDbStorage::Shutdown();
     LoginState::Shutdown();
     managed_network_configuration_handler_.reset();
     ui_proxy_config_service_.reset();

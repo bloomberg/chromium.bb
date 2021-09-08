@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_NAVIGATION_SERIALIZED_NAVIGATION_MANAGER_BUILDER_H_
-#define IOS_WEB_NAVIGATION_SERIALIZED_NAVIGATION_MANAGER_BUILDER_H_
+#ifndef IOS_WEB_NAVIGATION_SESSION_STORAGE_BUILDER_H_
+#define IOS_WEB_NAVIGATION_SESSION_STORAGE_BUILDER_H_
 
 @class CRWSessionStorage;
 
 namespace web {
 
 class WebStateImpl;
+
+// Allow navigation items up to ~63k (like components/sessions/core)
+const int kMaxNavigationItemSize = 63 * 1024;
 
 // Class that can serialize and deserialize session information.
 class SessionStorageBuilder {
@@ -24,4 +27,4 @@ class SessionStorageBuilder {
 
 }  // namespace web
 
-#endif  // IOS_WEB_NAVIGATION_SERIALIZED_NAVIGATION_MANAGER_BUILDER_H_
+#endif  // IOS_WEB_NAVIGATION_SESSION_STORAGE_BUILDER_H_

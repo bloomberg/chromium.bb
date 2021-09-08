@@ -143,8 +143,14 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalFindInPage";
     case TaskType::kInternalHighPriorityLocalFrame:
       return "InternalHighPriorityLocalFrame";
+    case TaskType::kInternalInputBlocking:
+      return "InternalInputBlocking";
     case TaskType::kMainThreadTaskQueueIPCTracking:
       return "MainThreadTaskQueueIPCTracking";
+    case TaskType::kWakeLock:
+      return "WakeLock";
+    case TaskType::kWebGPU:
+      return "WebGPU";
     case TaskType::kCount:
       return "Count";
   }

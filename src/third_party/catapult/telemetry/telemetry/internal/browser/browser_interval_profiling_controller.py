@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import contextlib
 import logging
 import os
 import shutil
 import tempfile
 import textwrap
-import urllib
+import six.moves.urllib.parse # pylint: disable=import-error
 
 from telemetry.internal.util import binary_manager
 from telemetry.util import statistics
@@ -345,8 +346,10 @@ class _ChromeOSController(_PlatformController):
       # Benchmark and story names are delimited by "@@" and ends with "@@".
       # These can derived from the .perf.data filename.
       file_safe_name = (
-          urllib.quote(results.benchmark_name, safe='')
-          + "@@" + urllib.quote(results.current_story.name, safe='') + "@@")
+          six.moves.urllib.parse.quote(results.benchmark_name, '')
+          + "@@"
+          + six.moves.urllib.parse.quote(results.current_story.name, '')
+          + "@@")
       self._CreateArtifacts(file_safe_name, results)
 
     self._platform_backend.RunCommand(

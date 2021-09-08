@@ -7,6 +7,8 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 
 namespace blink {
+class HTMLUListElement;
+class HTMLOListElement;
 
 LayoutNGOutsideListMarker::LayoutNGOutsideListMarker(Element* element)
     : LayoutNGBlockFlowMixin<LayoutBlockFlow>(element) {}
@@ -18,6 +20,13 @@ bool LayoutNGOutsideListMarker::IsOfType(LayoutObjectType type) const {
 
 void LayoutNGOutsideListMarker::WillCollectInlines() {
   list_marker_.UpdateMarkerTextIfNeeded(*this);
+}
+
+LayoutBox::PaginationBreakability
+LayoutNGOutsideListMarker::GetPaginationBreakability(
+    FragmentationEngine engine) const {
+  // Outside list markers are always monolithic.
+  return kForbidBreaks;
 }
 
 bool LayoutNGOutsideListMarker::NeedsOccupyWholeLine() const {
@@ -35,7 +44,9 @@ bool LayoutNGOutsideListMarker::NeedsOccupyWholeLine() const {
 
 PositionWithAffinity LayoutNGOutsideListMarker::PositionForPoint(
     const PhysicalOffset&) const {
-  return CreatePositionWithAffinity(0);
+  DCHECK_GE(GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kPrePaintClean);
+  return PositionBeforeThis();
 }
 
 }  // namespace blink

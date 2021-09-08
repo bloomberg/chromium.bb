@@ -83,7 +83,11 @@ message LoginOptionList {
   repeated LoginOptionProto values = 1;
 }
 
-// Next: 25
+// Can be used to indicate the presence of a field, without the ambiguity that
+// a boolean field would have.
+message Empty {}
+
+// Next: 29
 enum ProcessedActionStatusProto {
   UNKNOWN_ACTION_STATUS = 0;
 
@@ -194,10 +198,6 @@ enum ProcessedActionStatusProto {
   // ProcessedActionStatusProto.AutofillErrorInfoProto contains more details.
   AUTOFILL_INCOMPLETE = 24;
 
-  // Evaluating a selector required considering too many candidates. Please
-  // generate more specific selectors. See SelectorProto::ProximityFilter.
-  TOO_MANY_CANDIDATES = 25;
-
   // Evaluating the element did report an unexpected mismatch in either value
   // or text.
   ELEMENT_MISMATCH = 26;
@@ -205,7 +205,23 @@ enum ProcessedActionStatusProto {
   // Another element covered the targeted element, when trying to click.
   ELEMENT_NOT_ON_TOP = 27;
 
-  reserved 15, 23;
+  // The client_id could not be found in the client's ElementStore. This means
+  // the element was either not successfully found or a wrong client_id was
+  // used.
+  CLIENT_ID_RESOLUTION_FAILED = 28;
+
+  // The target element's frame was not in the same domain or subdomain as the
+  // password's origin.
+  PASSWORD_ORIGIN_MISMATCH = 29;
+
+  // Selecting an option failed because more than one option matched.
+  TOO_MANY_OPTION_VALUES_FOUND = 30;
+
+  // The action's target did not fit the action. E.g. a |SelectOption| being
+  // called on any element other than <select>.
+  INVALID_TARGET = 31;
+
+  reserved 15, 23, 25;
 }
 
 // A message to describe a chip.
@@ -224,6 +240,14 @@ message ChipProto {
   // sheet is minimized, the first sticky action will be displayed instead of
   // the profile icon.
   optional bool sticky = 4;
+
+  // The content description for this chip. There are three possible states:
+  // - unset: the content description will be inferred from the chip text and/or
+  // the chip icon.
+  // - set to empty string: this chip is not important for a11y.
+  // - set to non-empty string: the chip will have the specified content
+  // description.
+  optional string content_description = 5;
 }
 
 enum ChipType {
@@ -341,8 +365,13 @@ message DateTimeProto {
 }
 
 message AutofillCreditCardProto {
-  // The GUID of the card.
-  optional string guid = 1;
+  oneof identifier {
+    // The GUID of the card.
+    string guid = 1;
+    // The currently selected credit card. Only works if a card was selected in
+    // a previous |CollectUserData| action.
+    Empty selected_credit_card = 2;
+  }
 }
 
 message CreditCardResponseProto {
@@ -350,8 +379,13 @@ message CreditCardResponseProto {
 }
 
 message AutofillProfileProto {
-  // The GUID of the profile.
-  optional string guid = 1;
+  oneof identifier {
+    // The GUID of the profile.
+    string guid = 1;
+    // The selected profile for the given profile name. Only works if a profile
+    // was selected in a previous |CollectUserData| action.
+    string selected_profile_name = 2;
+  }
 }
 
 message LoginOptionProto {

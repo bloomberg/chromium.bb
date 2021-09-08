@@ -104,13 +104,11 @@ FWL_WidgetHit CFWL_ComboBox::HitTest(const CFX_PointF& point) {
 void CFWL_ComboBox::DrawWidget(CFGAS_GEGraphics* pGraphics,
                                const CFX_Matrix& matrix) {
   pGraphics->SaveGraphState();
-  pGraphics->ConcatMatrix(&matrix);
+  pGraphics->ConcatMatrix(matrix);
   if (!m_BtnRect.IsEmpty(0.1f)) {
-    CFWL_ThemeBackground param;
-    param.m_pWidget = this;
+    CFWL_ThemeBackground param(this, pGraphics);
     param.m_iPart = CFWL_Part::DropDownButton;
     param.m_dwStates = m_iBtnState;
-    param.m_pGraphics = pGraphics;
     param.m_PartRect = m_BtnRect;
     GetThemeProvider()->DrawBackground(param);
   }
@@ -282,8 +280,7 @@ void CFWL_ComboBox::Layout() {
                   fBtn - borderWidth, m_ClientRect.height - 2 * borderWidth);
   }
 
-  CFWL_ThemePart part;
-  part.m_pWidget = this;
+  CFWL_ThemePart part(this);
   CFX_RectF pUIMargin = theme->GetUIMargin(part);
   m_ContentRect.Deflate(pUIMargin.left, pUIMargin.top, pUIMargin.width,
                         pUIMargin.height);
@@ -364,18 +361,16 @@ void CFWL_ComboBox::ProcessSelChanged(bool bLButtonUp) {
     RepaintRect(m_ClientRect);
     return;
   }
-
   CFWL_ListBox::Item* hItem = m_pListBox->GetItem(this, m_iCurSel);
   if (!hItem)
     return;
+
   if (m_pEdit) {
     m_pEdit->SetText(hItem->GetText());
     m_pEdit->Update();
     m_pEdit->SetSelected();
   }
-
-  CFWL_EventSelectChanged ev(this);
-  ev.bLButtonUp = bLButtonUp;
+  CFWL_EventSelectChanged ev(this, bLButtonUp);
   DispatchEvent(&ev);
 }
 
@@ -438,9 +433,8 @@ void CFWL_ComboBox::OnProcessEvent(CFWL_Event* pEvent) {
   CFWL_Event::Type type = pEvent->GetType();
   if (type == CFWL_Event::Type::Scroll) {
     CFWL_EventScroll* pScrollEvent = static_cast<CFWL_EventScroll*>(pEvent);
-    CFWL_EventScroll pScrollEv(this);
-    pScrollEv.m_iScrollCode = pScrollEvent->m_iScrollCode;
-    pScrollEv.m_fPos = pScrollEvent->m_fPos;
+    CFWL_EventScroll pScrollEv(this, pScrollEvent->GetScrollCode(),
+                               pScrollEvent->GetPos());
     DispatchEvent(&pScrollEv);
   } else if (type == CFWL_Event::Type::TextWillChange) {
     CFWL_Event pTemp(CFWL_Event::Type::EditChanged, this);

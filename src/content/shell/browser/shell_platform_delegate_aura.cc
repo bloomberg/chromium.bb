@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/shell_platform_delegate.h"
 
+#include "base/containers/contains.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/shell.h"
@@ -80,9 +81,9 @@ void ShellPlatformDelegate::SetAddressBarURL(Shell* shell, const GURL& url) {}
 void ShellPlatformDelegate::SetIsLoading(Shell* shell, bool loading) {}
 
 void ShellPlatformDelegate::SetTitle(Shell* shell,
-                                     const base::string16& title) {}
+                                     const std::u16string& title) {}
 
-void ShellPlatformDelegate::RenderViewReady(Shell* shell) {}
+void ShellPlatformDelegate::MainFrameCreated(Shell* shell) {}
 
 bool ShellPlatformDelegate::DestroyShell(Shell* shell) {
   return false;  // Shell destroys itself.

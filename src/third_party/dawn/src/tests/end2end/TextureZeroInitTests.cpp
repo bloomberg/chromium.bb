@@ -31,7 +31,6 @@
         }                                                                                     \
     } while (0)
 
-// TODO(natlee@microsoft.com): test compressed textures are cleared
 class TextureZeroInitTest : public DawnTest {
   protected:
     void SetUp() override {
@@ -46,17 +45,19 @@ class TextureZeroInitTest : public DawnTest {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = kSize;
         descriptor.size.height = kSize;
-        descriptor.size.depth = arrayLayerCount;
+        descriptor.size.depthOrArrayLayers = arrayLayerCount;
         descriptor.sampleCount = 1;
         descriptor.format = format;
         descriptor.mipLevelCount = mipLevelCount;
         descriptor.usage = usage;
         return descriptor;
     }
-    wgpu::TextureViewDescriptor CreateTextureViewDescriptor(uint32_t baseMipLevel,
-                                                            uint32_t baseArrayLayer) {
+    wgpu::TextureViewDescriptor CreateTextureViewDescriptor(
+        uint32_t baseMipLevel,
+        uint32_t baseArrayLayer,
+        wgpu::TextureFormat format = kColorFormat) {
         wgpu::TextureViewDescriptor descriptor;
-        descriptor.format = kColorFormat;
+        descriptor.format = format;
         descriptor.baseArrayLayer = baseArrayLayer;
         descriptor.arrayLayerCount = 1;
         descriptor.baseMipLevel = baseMipLevel;
@@ -65,53 +66,58 @@ class TextureZeroInitTest : public DawnTest {
         return descriptor;
     }
     wgpu::RenderPipeline CreatePipelineForTest(float depth = 0.f) {
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-        pipelineDescriptor.vertexStage.module = CreateBasicVertexShaderForTest(depth);
-        const char* fs =
-            R"(#version 450
-            layout(location = 0) out vec4 fragColor;
-            void main() {
-               fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-            })";
-        pipelineDescriptor.cFragmentStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fs);
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        pipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest(depth);
+        const char* fs = R"(
+            ;
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+               return vec4<f32>(1.0, 0.0, 0.0, 1.0);
+            }
+        )";
+        pipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, fs);
+        wgpu::DepthStencilState* depthStencil = pipelineDescriptor.EnableDepthStencil();
+        depthStencil->depthCompare = wgpu::CompareFunction::Equal;
+        depthStencil->stencilFront.compare = wgpu::CompareFunction::Equal;
 
-        pipelineDescriptor.cDepthStencilState.depthCompare = wgpu::CompareFunction::Equal;
-        pipelineDescriptor.cDepthStencilState.stencilFront.compare = wgpu::CompareFunction::Equal;
-        pipelineDescriptor.depthStencilState = &pipelineDescriptor.cDepthStencilState;
-
-        return device.CreateRenderPipeline(&pipelineDescriptor);
+        return device.CreateRenderPipeline2(&pipelineDescriptor);
     }
     wgpu::ShaderModule CreateBasicVertexShaderForTest(float depth = 0.f) {
-        std::string source = R"(#version 450
-            const vec2 pos[6] = vec2[6](vec2(-1.0f, -1.0f),
-                                    vec2(-1.0f,  1.0f),
-                                    vec2( 1.0f, -1.0f),
-                                    vec2( 1.0f,  1.0f),
-                                    vec2(-1.0f,  1.0f),
-                                    vec2( 1.0f, -1.0f)
-                                    );
+        std::string source = R"(
+            let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                vec2<f32>(-1.0, -1.0),
+                vec2<f32>(-1.0,  1.0),
+                vec2<f32>( 1.0, -1.0),
+                vec2<f32>( 1.0,  1.0),
+                vec2<f32>(-1.0,  1.0),
+                vec2<f32>( 1.0, -1.0)
+            );
 
-            void main() {
-                gl_Position = vec4(pos[gl_VertexIndex], )" +
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                return vec4<f32>(pos[VertexIndex], )" +
                              std::to_string(depth) + R"(, 1.0);
             })";
-        return utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, source.c_str());
+        return utils::CreateShaderModule(device, source.c_str());
     }
     wgpu::ShaderModule CreateSampledTextureFragmentShaderForTest() {
-        return utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment,
-                                         R"(#version 450
-            layout(set = 0, binding = 0) uniform sampler sampler0;
-            layout(set = 0, binding = 1) uniform texture2D texture0;
-            layout(location = 0) out vec4 fragColor;
-            void main() {
-                fragColor = texelFetch(sampler2D(texture0, sampler0), ivec2(gl_FragCoord), 0);
-            })");
+        return utils::CreateShaderModule(device, R"(
+            [[group(0), binding(0)]] var texture0 : texture_2d<f32>;
+            struct FragmentOut {
+                [[location(0)]] color : vec4<f32>;
+            };
+            [[stage(fragment)]]
+            fn main([[builtin(position)]] FragCoord : vec4<f32>) -> FragmentOut {
+                var output : FragmentOut;
+                output.color = textureLoad(texture0, vec2<i32>(FragCoord.xy), 0);
+                return output;
+            }
+        )");
     }
+
     constexpr static uint32_t kSize = 128;
     constexpr static uint32_t kUnalignedSize = 127;
-    // All three texture formats used (RGBA8Unorm, Depth24PlusStencil8, and RGBA8Snorm) have the
-    // same byte size of 4.
+    // All texture formats used (RGBA8Unorm, Depth24PlusStencil8, and RGBA8Snorm, BC formats)
+    // have the same block byte size of 4.
     constexpr static uint32_t kFormatBlockByteSize = 4;
     constexpr static wgpu::TextureFormat kColorFormat = wgpu::TextureFormat::RGBA8Unorm;
     constexpr static wgpu::TextureFormat kDepthStencilFormat =
@@ -152,14 +158,14 @@ TEST_P(TextureZeroInitTest, CopyMultipleTextureArrayLayersToBufferSource) {
                                                        {kSize, kSize, kArrayLayers}, kColorFormat);
     wgpu::Buffer buffer = device.CreateBuffer(&bufferDescriptor);
 
-    const wgpu::BufferCopyView bufferCopyView =
-        utils::CreateBufferCopyView(buffer, 0, bytesPerRow, kSize);
-    const wgpu::TextureCopyView textureCopyView =
-        utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+    const wgpu::ImageCopyBuffer imageCopyBuffer =
+        utils::CreateImageCopyBuffer(buffer, 0, bytesPerRow, kSize);
+    const wgpu::ImageCopyTexture imageCopyTexture =
+        utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
     const wgpu::Extent3D copySize = {kSize, kSize, kArrayLayers};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &copySize);
+    encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &copySize);
     wgpu::CommandBuffer commandBuffer = encoder.Finish();
 
     // Expect texture to be lazy initialized.
@@ -170,7 +176,7 @@ TEST_P(TextureZeroInitTest, CopyMultipleTextureArrayLayersToBufferSource) {
 
     const std::vector<RGBA8> kExpectedAllZero(kSize * kSize, {0, 0, 0, 0});
     for (uint32_t layer = 0; layer < kArrayLayers; ++layer) {
-        EXPECT_TEXTURE_RGBA8_EQ(kExpectedAllZero.data(), texture, 0, 0, kSize, kSize, 0, layer);
+        EXPECT_TEXTURE_EQ(kExpectedAllZero.data(), texture, {0, 0, layer}, {kSize, kSize});
     }
 }
 
@@ -197,7 +203,7 @@ TEST_P(TextureZeroInitTest, RenderingMipMapClearsToZero) {
     renderPass.renderPassInfo.cColorAttachments[0].loadOp = wgpu::LoadOp::Load;
     // Specify non-zero clear color. It should still be cleared to zero.
     renderPass.renderPassInfo.cColorAttachments[0].clearColor = {0.5f, 0.5f, 0.5f, 0.5f};
-    renderPass.renderPassInfo.cColorAttachments[0].attachment = view;
+    renderPass.renderPassInfo.cColorAttachments[0].view = view;
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     {
@@ -211,8 +217,8 @@ TEST_P(TextureZeroInitTest, RenderingMipMapClearsToZero) {
     uint32_t mipSize = kSize >> 2;
     std::vector<RGBA8> expected(mipSize * mipSize, {0, 0, 0, 0});
 
-    EXPECT_TEXTURE_RGBA8_EQ(expected.data(), renderPass.color, 0, 0, mipSize, mipSize, baseMipLevel,
-                            baseArrayLayer);
+    EXPECT_TEXTURE_EQ(expected.data(), renderPass.color, {0, 0, baseArrayLayer}, {mipSize, mipSize},
+                      baseMipLevel);
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(
@@ -242,7 +248,7 @@ TEST_P(TextureZeroInitTest, RenderingArrayLayerClearsToZero) {
     renderPass.renderPassInfo.cColorAttachments[0].loadOp = wgpu::LoadOp::Load;
     // Specify non-zero clear color. It should still be cleared to zero.
     renderPass.renderPassInfo.cColorAttachments[0].clearColor = {0.5f, 0.5f, 0.5f, 0.5f};
-    renderPass.renderPassInfo.cColorAttachments[0].attachment = view;
+    renderPass.renderPassInfo.cColorAttachments[0].view = view;
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     {
@@ -254,8 +260,8 @@ TEST_P(TextureZeroInitTest, RenderingArrayLayerClearsToZero) {
 
     std::vector<RGBA8> expected(kSize * kSize, {0, 0, 0, 0});
 
-    EXPECT_TEXTURE_RGBA8_EQ(expected.data(), renderPass.color, 0, 0, kSize, kSize, baseMipLevel,
-                            baseArrayLayer);
+    EXPECT_TEXTURE_EQ(expected.data(), renderPass.color, {0, 0, baseArrayLayer}, {kSize, kSize},
+                      baseMipLevel);
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(
@@ -274,19 +280,19 @@ TEST_P(TextureZeroInitTest, CopyBufferToTexture) {
     wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
         device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
 
-    wgpu::BufferCopyView bufferCopyView =
-        utils::CreateBufferCopyView(stagingBuffer, 0, kSize * sizeof(uint32_t));
-    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+    wgpu::ImageCopyBuffer imageCopyBuffer =
+        utils::CreateImageCopyBuffer(stagingBuffer, 0, kSize * sizeof(uint32_t));
+    wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
     wgpu::Extent3D copySize = {kSize, kSize, 1};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+    encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
     wgpu::CommandBuffer commands = encoder.Finish();
     EXPECT_LAZY_CLEAR(0u, queue.Submit(1, &commands));
 
     std::vector<RGBA8> expected(kSize * kSize, {100, 100, 100, 100});
 
-    EXPECT_TEXTURE_RGBA8_EQ(expected.data(), texture, 0, 0, kSize, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expected.data(), texture, {0, 0}, {kSize, kSize});
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(texture.Get(), 0, 1, 0, 1));
@@ -305,22 +311,22 @@ TEST_P(TextureZeroInitTest, CopyBufferToTextureHalf) {
     wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
         device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
 
-    wgpu::BufferCopyView bufferCopyView =
-        utils::CreateBufferCopyView(stagingBuffer, 0, kSize * sizeof(uint16_t));
-    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+    wgpu::ImageCopyBuffer imageCopyBuffer =
+        utils::CreateImageCopyBuffer(stagingBuffer, 0, kSize * sizeof(uint16_t));
+    wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
     wgpu::Extent3D copySize = {kSize / 2, kSize, 1};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+    encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
     wgpu::CommandBuffer commands = encoder.Finish();
     EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commands));
 
     std::vector<RGBA8> expected100((kSize / 2) * kSize, {100, 100, 100, 100});
     std::vector<RGBA8> expectedZeros((kSize / 2) * kSize, {0, 0, 0, 0});
     // first half filled with 100, by the buffer data
-    EXPECT_TEXTURE_RGBA8_EQ(expected100.data(), texture, 0, 0, kSize / 2, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expected100.data(), texture, {0, 0}, {kSize / 2, kSize});
     // second half should be cleared
-    EXPECT_TEXTURE_RGBA8_EQ(expectedZeros.data(), texture, kSize / 2, 0, kSize / 2, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expectedZeros.data(), texture, {kSize / 2, 0}, {kSize / 2, kSize});
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(texture.Get(), 0, 1, 0, 1));
@@ -339,14 +345,14 @@ TEST_P(TextureZeroInitTest, CopyBufferToTextureMultipleArrayLayers) {
     wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
         device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
 
-    const wgpu::BufferCopyView bufferCopyView =
-        utils::CreateBufferCopyView(stagingBuffer, 0, kSize * kFormatBlockByteSize, kSize);
-    const wgpu::TextureCopyView textureCopyView =
-        utils::CreateTextureCopyView(texture, 0, {0, 0, kBaseArrayLayer});
+    const wgpu::ImageCopyBuffer imageCopyBuffer =
+        utils::CreateImageCopyBuffer(stagingBuffer, 0, kSize * kFormatBlockByteSize, kSize);
+    const wgpu::ImageCopyTexture imageCopyTexture =
+        utils::CreateImageCopyTexture(texture, 0, {0, 0, kBaseArrayLayer});
     const wgpu::Extent3D copySize = {kSize, kSize, kCopyLayerCount};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+    encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
     wgpu::CommandBuffer commands = encoder.Finish();
 
     // The copy overwrites the whole subresources so we don't need to do lazy initialization on
@@ -359,7 +365,7 @@ TEST_P(TextureZeroInitTest, CopyBufferToTextureMultipleArrayLayers) {
 
     const std::vector<RGBA8> expected100(kSize * kSize, {100, 100, 100, 100});
     for (uint32_t layer = kBaseArrayLayer; layer < kBaseArrayLayer + kCopyLayerCount; ++layer) {
-        EXPECT_TEXTURE_RGBA8_EQ(expected100.data(), texture, 0, 0, kSize, kSize, 0, layer);
+        EXPECT_TEXTURE_EQ(expected100.data(), texture, {0, 0, layer}, {kSize, kSize});
     }
 }
 
@@ -369,8 +375,8 @@ TEST_P(TextureZeroInitTest, CopyTextureToTexture) {
         1, 1, wgpu::TextureUsage::Sampled | wgpu::TextureUsage::CopySrc, kColorFormat);
     wgpu::Texture srcTexture = device.CreateTexture(&srcDescriptor);
 
-    wgpu::TextureCopyView srcTextureCopyView =
-        utils::CreateTextureCopyView(srcTexture, 0, {0, 0, 0});
+    wgpu::ImageCopyTexture srcImageCopyTexture =
+        utils::CreateImageCopyTexture(srcTexture, 0, {0, 0, 0});
 
     wgpu::TextureDescriptor dstDescriptor =
         CreateTextureDescriptor(1, 1,
@@ -379,20 +385,20 @@ TEST_P(TextureZeroInitTest, CopyTextureToTexture) {
                                 kColorFormat);
     wgpu::Texture dstTexture = device.CreateTexture(&dstDescriptor);
 
-    wgpu::TextureCopyView dstTextureCopyView =
-        utils::CreateTextureCopyView(dstTexture, 0, {0, 0, 0});
+    wgpu::ImageCopyTexture dstImageCopyTexture =
+        utils::CreateImageCopyTexture(dstTexture, 0, {0, 0, 0});
 
     wgpu::Extent3D copySize = {kSize, kSize, 1};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyTextureToTexture(&srcTextureCopyView, &dstTextureCopyView, &copySize);
+    encoder.CopyTextureToTexture(&srcImageCopyTexture, &dstImageCopyTexture, &copySize);
     wgpu::CommandBuffer commands = encoder.Finish();
     EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commands));
 
     std::vector<RGBA8> expected(kSize * kSize, {0, 0, 0, 0});
 
-    EXPECT_TEXTURE_RGBA8_EQ(expected.data(), srcTexture, 0, 0, kSize, kSize, 0, 0);
-    EXPECT_TEXTURE_RGBA8_EQ(expected.data(), dstTexture, 0, 0, kSize, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expected.data(), srcTexture, {0, 0}, {kSize, kSize});
+    EXPECT_TEXTURE_EQ(expected.data(), dstTexture, {0, 0}, {kSize, kSize});
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(srcTexture.Get(), 0, 1, 0, 1));
@@ -413,19 +419,19 @@ TEST_P(TextureZeroInitTest, CopyTextureToTextureHalf) {
         std::vector<uint8_t> data(kFormatBlockByteSize * kSize * kSize, 100);
         wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
             device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
-        wgpu::BufferCopyView bufferCopyView =
-            utils::CreateBufferCopyView(stagingBuffer, 0, kSize * kFormatBlockByteSize);
-        wgpu::TextureCopyView textureCopyView =
-            utils::CreateTextureCopyView(srcTexture, 0, {0, 0, 0});
+        wgpu::ImageCopyBuffer imageCopyBuffer =
+            utils::CreateImageCopyBuffer(stagingBuffer, 0, kSize * kFormatBlockByteSize);
+        wgpu::ImageCopyTexture imageCopyTexture =
+            utils::CreateImageCopyTexture(srcTexture, 0, {0, 0, 0});
         wgpu::Extent3D copySize = {kSize, kSize, 1};
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+        encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
         wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
     }
 
-    wgpu::TextureCopyView srcTextureCopyView =
-        utils::CreateTextureCopyView(srcTexture, 0, {0, 0, 0});
+    wgpu::ImageCopyTexture srcImageCopyTexture =
+        utils::CreateImageCopyTexture(srcTexture, 0, {0, 0, 0});
 
     wgpu::TextureDescriptor dstDescriptor =
         CreateTextureDescriptor(1, 1,
@@ -434,22 +440,21 @@ TEST_P(TextureZeroInitTest, CopyTextureToTextureHalf) {
                                 kColorFormat);
     wgpu::Texture dstTexture = device.CreateTexture(&dstDescriptor);
 
-    wgpu::TextureCopyView dstTextureCopyView =
-        utils::CreateTextureCopyView(dstTexture, 0, {0, 0, 0});
+    wgpu::ImageCopyTexture dstImageCopyTexture =
+        utils::CreateImageCopyTexture(dstTexture, 0, {0, 0, 0});
     wgpu::Extent3D copySize = {kSize / 2, kSize, 1};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyTextureToTexture(&srcTextureCopyView, &dstTextureCopyView, &copySize);
+    encoder.CopyTextureToTexture(&srcImageCopyTexture, &dstImageCopyTexture, &copySize);
     wgpu::CommandBuffer commands = encoder.Finish();
     EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commands));
 
     std::vector<RGBA8> expectedWithZeros((kSize / 2) * kSize, {0, 0, 0, 0});
     std::vector<RGBA8> expectedWith100(kSize * kSize, {100, 100, 100, 100});
 
-    EXPECT_TEXTURE_RGBA8_EQ(expectedWith100.data(), srcTexture, 0, 0, kSize, kSize, 0, 0);
-    EXPECT_TEXTURE_RGBA8_EQ(expectedWith100.data(), dstTexture, 0, 0, kSize / 2, kSize, 0, 0);
-    EXPECT_TEXTURE_RGBA8_EQ(expectedWithZeros.data(), dstTexture, kSize / 2, 0, kSize / 2, kSize, 0,
-                            0);
+    EXPECT_TEXTURE_EQ(expectedWith100.data(), srcTexture, {0, 0}, {kSize, kSize});
+    EXPECT_TEXTURE_EQ(expectedWith100.data(), dstTexture, {0, 0}, {kSize / 2, kSize});
+    EXPECT_TEXTURE_EQ(expectedWithZeros.data(), dstTexture, {kSize / 2, 0}, {kSize / 2, kSize});
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(srcTexture.Get(), 0, 1, 0, 1));
@@ -492,7 +497,7 @@ TEST_P(TextureZeroInitTest, RenderingLoadingDepth) {
 
     // Expect the texture to be red because depth test passed.
     std::vector<RGBA8> expected(kSize * kSize, {255, 0, 0, 255});
-    EXPECT_TEXTURE_RGBA8_EQ(expected.data(), srcTexture, 0, 0, kSize, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expected.data(), srcTexture, {0, 0}, {kSize, kSize});
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(srcTexture.Get(), 0, 1, 0, 1));
@@ -534,7 +539,7 @@ TEST_P(TextureZeroInitTest, RenderingLoadingStencil) {
 
     // Expect the texture to be red because stencil test passed.
     std::vector<RGBA8> expected(kSize * kSize, {255, 0, 0, 255});
-    EXPECT_TEXTURE_RGBA8_EQ(expected.data(), srcTexture, 0, 0, kSize, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expected.data(), srcTexture, {0, 0}, {kSize, kSize});
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(srcTexture.Get(), 0, 1, 0, 1));
@@ -573,7 +578,7 @@ TEST_P(TextureZeroInitTest, RenderingLoadingDepthStencil) {
 
     // Expect the texture to be red because both depth and stencil tests passed.
     std::vector<RGBA8> expected(kSize * kSize, {255, 0, 0, 255});
-    EXPECT_TEXTURE_RGBA8_EQ(expected.data(), srcTexture, 0, 0, kSize, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expected.data(), srcTexture, {0, 0}, {kSize, kSize});
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(srcTexture.Get(), 0, 1, 0, 1));
@@ -642,7 +647,7 @@ TEST_P(TextureZeroInitTest, IndependentDepthStencilLoadAfterDiscard) {
             // Expect the texture to be red because the depth and stencil tests passed. Depth was 0
             // and stencil was 2.
             std::vector<RGBA8> expected(kSize * kSize, {255, 0, 0, 255});
-            EXPECT_TEXTURE_RGBA8_EQ(expected.data(), colorTexture, 0, 0, kSize, kSize, 0, 0);
+            EXPECT_TEXTURE_EQ(expected.data(), colorTexture, {0, 0}, {kSize, kSize});
         }
 
         // Everything is initialized now
@@ -658,7 +663,7 @@ TEST_P(TextureZeroInitTest, IndependentDepthStencilLoadAfterDiscard) {
             // Check by copy that the stencil data is 2.
             std::vector<uint8_t> expected(kSize * kSize, 2);
             EXPECT_LAZY_CLEAR(
-                0u, EXPECT_TEXTURE_EQ(expected.data(), depthStencilTexture, 0, 0, kSize, kSize, 0,
+                0u, EXPECT_TEXTURE_EQ(expected.data(), depthStencilTexture, {0, 0}, {kSize, kSize},
                                       0, wgpu::TextureAspect::StencilOnly));
         }
     }
@@ -715,7 +720,7 @@ TEST_P(TextureZeroInitTest, IndependentDepthStencilLoadAfterDiscard) {
             // Expect the texture to be red because both the depth a stencil tests passed.
             // Depth was 0.7 and stencil was 0
             std::vector<RGBA8> expected(kSize * kSize, {255, 0, 0, 255});
-            EXPECT_TEXTURE_RGBA8_EQ(expected.data(), colorTexture, 0, 0, kSize, kSize, 0, 0);
+            EXPECT_TEXTURE_EQ(expected.data(), colorTexture, {0, 0}, {kSize, kSize});
         }
 
         // Everything is initialized now
@@ -731,7 +736,7 @@ TEST_P(TextureZeroInitTest, IndependentDepthStencilLoadAfterDiscard) {
             // Check by copy that the stencil data is 0.
             std::vector<uint8_t> expected(kSize * kSize, 0);
             EXPECT_LAZY_CLEAR(
-                0u, EXPECT_TEXTURE_EQ(expected.data(), depthStencilTexture, 0, 0, kSize, kSize, 0,
+                0u, EXPECT_TEXTURE_EQ(expected.data(), depthStencilTexture, {0, 0}, {kSize, kSize},
                                       0, wgpu::TextureAspect::StencilOnly));
         }
     }
@@ -775,8 +780,8 @@ TEST_P(TextureZeroInitTest, IndependentDepthStencilCopyAfterDiscard) {
 
     // Check by copy that the stencil data is lazily cleared to 0.
     std::vector<uint8_t> expected(kSize * kSize, 0);
-    EXPECT_LAZY_CLEAR(1u, EXPECT_TEXTURE_EQ(expected.data(), depthStencilTexture, 0, 0, kSize,
-                                            kSize, 0, 0, wgpu::TextureAspect::StencilOnly));
+    EXPECT_LAZY_CLEAR(1u, EXPECT_TEXTURE_EQ(expected.data(), depthStencilTexture, {0, 0},
+                                            {kSize, kSize}, 0, wgpu::TextureAspect::StencilOnly));
 
     // Everything is initialized now
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(depthStencilTexture.Get(), 0, 1, 0,
@@ -813,7 +818,7 @@ TEST_P(TextureZeroInitTest, IndependentDepthStencilCopyAfterDiscard) {
         // Expect the texture to be red because both the depth a stencil tests passed.
         // Depth was 0.3 and stencil was 0
         std::vector<RGBA8> expected(kSize * kSize, {255, 0, 0, 255});
-        EXPECT_TEXTURE_RGBA8_EQ(expected.data(), colorTexture, 0, 0, kSize, kSize, 0, 0);
+        EXPECT_TEXTURE_EQ(expected.data(), colorTexture, {0, 0}, {kSize, kSize});
     }
 }
 
@@ -833,7 +838,7 @@ TEST_P(TextureZeroInitTest, ColorAttachmentsClear) {
     EXPECT_LAZY_CLEAR(0u, queue.Submit(1, &commands));
 
     std::vector<RGBA8> expected(kSize * kSize, {0, 0, 0, 0});
-    EXPECT_TEXTURE_RGBA8_EQ(expected.data(), renderPass.color, 0, 0, kSize, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expected.data(), renderPass.color, {0, 0}, {kSize, kSize});
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true,
@@ -851,19 +856,16 @@ TEST_P(TextureZeroInitTest, RenderPassSampledTextureClear) {
         1, 1, wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::RenderAttachment, kColorFormat);
     wgpu::Texture renderTexture = device.CreateTexture(&renderTextureDescriptor);
 
-    wgpu::SamplerDescriptor samplerDesc = utils::GetDefaultSamplerDescriptor();
-    wgpu::Sampler sampler = device.CreateSampler(&samplerDesc);
-
     // Create render pipeline
-    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor(device);
-    renderPipelineDescriptor.cColorStates[0].format = kColorFormat;
-    renderPipelineDescriptor.vertexStage.module = CreateBasicVertexShaderForTest();
-    renderPipelineDescriptor.cFragmentStage.module = CreateSampledTextureFragmentShaderForTest();
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
+    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    renderPipelineDescriptor.cTargets[0].format = kColorFormat;
+    renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
+    renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
 
     // Create bindgroup
     wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, renderPipeline.GetBindGroupLayout(0),
-                                                     {{0, sampler}, {1, texture.CreateView()}});
+                                                     {{0, texture.CreateView()}});
 
     // Encode pass and submit
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -881,10 +883,70 @@ TEST_P(TextureZeroInitTest, RenderPassSampledTextureClear) {
 
     // Expect the rendered texture to be cleared
     std::vector<RGBA8> expectedWithZeros(kSize * kSize, {0, 0, 0, 0});
-    EXPECT_TEXTURE_RGBA8_EQ(expectedWithZeros.data(), renderTexture, 0, 0, kSize, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expectedWithZeros.data(), renderTexture, {0, 0}, {kSize, kSize});
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(renderTexture.Get(), 0, 1, 0, 1));
+}
+
+// This is a regression test for a bug where a texture wouldn't get clear for a pass if at least
+// one of its subresources was used as an attachment. It tests that if a texture is used as both
+// sampled and attachment (with LoadOp::Clear so the lazy clear can be skipped) then the sampled
+// subresource is correctly cleared.
+TEST_P(TextureZeroInitTest, TextureBothSampledAndAttachmentClear) {
+    // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
+
+    // Create a 2D array texture, layer 0 will be used as attachment, layer 1 as sampled.
+    wgpu::TextureDescriptor texDesc;
+    texDesc.usage = wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment |
+                    wgpu::TextureUsage::CopySrc;
+    texDesc.size = {1, 1, 2};
+    texDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+    wgpu::Texture texture = device.CreateTexture(&texDesc);
+
+    wgpu::TextureViewDescriptor viewDesc;
+    viewDesc.dimension = wgpu::TextureViewDimension::e2D;
+    viewDesc.arrayLayerCount = 1;
+
+    viewDesc.baseArrayLayer = 0;
+    wgpu::TextureView attachmentView = texture.CreateView(&viewDesc);
+
+    viewDesc.baseArrayLayer = 1;
+    wgpu::TextureView sampleView = texture.CreateView(&viewDesc);
+
+    // Create render pipeline
+    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    renderPipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
+    renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
+    renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+
+    wgpu::BindGroup bindGroup =
+        utils::MakeBindGroup(device, renderPipeline.GetBindGroupLayout(0), {{0, sampleView}});
+
+    // Encode pass and submit
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    utils::ComboRenderPassDescriptor renderPassDesc({attachmentView});
+    renderPassDesc.cColorAttachments[0].clearColor = {1.0, 1.0, 1.0, 1.0};
+    renderPassDesc.cColorAttachments[0].loadOp = wgpu::LoadOp::Clear;
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
+    pass.SetPipeline(renderPipeline);
+    pass.SetBindGroup(0, bindGroup);
+    pass.Draw(6);
+    pass.EndPass();
+    wgpu::CommandBuffer commands = encoder.Finish();
+
+    // Expect the lazy clear for the sampled subresource.
+    EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commands));
+
+    // Expect both subresources to be zero: the sampled one with lazy-clearing and the attachment
+    // because it sampled the lazy-cleared sampled subresource.
+    EXPECT_TEXTURE_EQ(&RGBA8::kZero, texture, {0, 0, 0}, {1, 1});
+    EXPECT_TEXTURE_EQ(&RGBA8::kZero, texture, {0, 0, 1}, {1, 1});
+
+    // The whole texture is now initialized.
+    EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(texture.Get(), 0, 1, 0, 2));
 }
 
 // This tests the clearing of sampled textures during compute pass
@@ -906,33 +968,30 @@ TEST_P(TextureZeroInitTest, ComputePassSampledTextureClear) {
     uint32_t data = 100;
     queue.WriteBuffer(bufferTex, 0, &data, sizeof(data));
 
-    wgpu::SamplerDescriptor samplerDesc = utils::GetDefaultSamplerDescriptor();
-    wgpu::Sampler sampler = device.CreateSampler(&samplerDesc);
+    wgpu::Sampler sampler = device.CreateSampler();
 
     // Create compute pipeline
     wgpu::ComputePipelineDescriptor computePipelineDescriptor;
     wgpu::ProgrammableStageDescriptor computeStage;
-    const char* cs =
-        R"(#version 450
-        layout(binding = 0) uniform texture2D sampleTex;
-        layout(std430, binding = 1) buffer BufferTex {
-           vec4 result;
-        } bufferTex;
-        layout(binding = 2) uniform sampler sampler0;
-        void main() {
-           bufferTex.result =
-                 texelFetch(sampler2D(sampleTex, sampler0), ivec2(0,0), 0);
-        })";
-    computePipelineDescriptor.computeStage.module =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, cs);
+    const char* cs = R"(
+        [[group(0), binding(0)]] var tex : texture_2d<f32>;
+        [[block]] struct Result {
+            value : vec4<f32>;
+        };
+        [[group(0), binding(1)]] var<storage> result : [[access(read_write)]] Result;
+        [[stage(compute)]] fn main() {
+           result.value = textureLoad(tex, vec2<i32>(0,0), 0);
+        }
+    )";
+    computePipelineDescriptor.computeStage.module = utils::CreateShaderModule(device, cs);
     computePipelineDescriptor.computeStage.entryPoint = "main";
     wgpu::ComputePipeline computePipeline =
         device.CreateComputePipeline(&computePipelineDescriptor);
 
     // Create bindgroup
-    wgpu::BindGroup bindGroup = utils::MakeBindGroup(
-        device, computePipeline.GetBindGroupLayout(0),
-        {{0, texture.CreateView()}, {1, bufferTex, 0, bufferSize}, {2, sampler}});
+    wgpu::BindGroup bindGroup =
+        utils::MakeBindGroup(device, computePipeline.GetBindGroupLayout(0),
+                             {{0, texture.CreateView()}, {1, bufferTex, 0, bufferSize}});
 
     // Encode the pass and submit
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -954,6 +1013,10 @@ TEST_P(TextureZeroInitTest, ComputePassSampledTextureClear) {
 
 // This tests that the code path of CopyTextureToBuffer clears correctly for non-renderable textures
 TEST_P(TextureZeroInitTest, NonRenderableTextureClear) {
+    // TODO(crbug.com/dawn/667): Work around the fact that some platforms do not support reading
+    // from Snorm textures.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_snorm_read"));
+
     wgpu::TextureDescriptor descriptor =
         CreateTextureDescriptor(1, 1, wgpu::TextureUsage::CopySrc, kNonrenderableColorFormat);
     wgpu::Texture texture = device.CreateTexture(&descriptor);
@@ -965,12 +1028,12 @@ TEST_P(TextureZeroInitTest, NonRenderableTextureClear) {
     wgpu::Buffer bufferDst = utils::CreateBufferFromData(
         device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
 
-    wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(bufferDst, 0, bytesPerRow);
-    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+    wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(bufferDst, 0, bytesPerRow);
+    wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
     wgpu::Extent3D copySize = {kSize, kSize, 1};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &copySize);
+    encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &copySize);
     wgpu::CommandBuffer commands = encoder.Finish();
     EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commands));
 
@@ -983,6 +1046,10 @@ TEST_P(TextureZeroInitTest, NonRenderableTextureClear) {
 
 // This tests that the code path of CopyTextureToBuffer clears correctly for non-renderable textures
 TEST_P(TextureZeroInitTest, NonRenderableTextureClearUnalignedSize) {
+    // TODO(crbug.com/dawn/667): Work around the fact that some platforms do not support reading
+    // from Snorm textures.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_snorm_read"));
+
     wgpu::TextureDescriptor descriptor =
         CreateTextureDescriptor(1, 1, wgpu::TextureUsage::CopySrc, kNonrenderableColorFormat);
     descriptor.size.width = kUnalignedSize;
@@ -996,12 +1063,12 @@ TEST_P(TextureZeroInitTest, NonRenderableTextureClearUnalignedSize) {
     std::vector<uint8_t> data(bufferSize, 100);
     wgpu::Buffer bufferDst = utils::CreateBufferFromData(
         device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
-    wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(bufferDst, 0, bytesPerRow);
-    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+    wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(bufferDst, 0, bytesPerRow);
+    wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
     wgpu::Extent3D copySize = {kUnalignedSize, kUnalignedSize, 1};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &copySize);
+    encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &copySize);
     wgpu::CommandBuffer commands = encoder.Finish();
     EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commands));
 
@@ -1015,6 +1082,10 @@ TEST_P(TextureZeroInitTest, NonRenderableTextureClearUnalignedSize) {
 // This tests that the code path of CopyTextureToBuffer clears correctly for non-renderable textures
 // with more than 1 array layers
 TEST_P(TextureZeroInitTest, NonRenderableTextureClearWithMultiArrayLayers) {
+    // TODO(crbug.com/dawn/667): Work around the fact that some platforms do not support reading
+    // from Snorm textures.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_snorm_read"));
+
     wgpu::TextureDescriptor descriptor =
         CreateTextureDescriptor(1, 2, wgpu::TextureUsage::CopySrc, kNonrenderableColorFormat);
     wgpu::Texture texture = device.CreateTexture(&descriptor);
@@ -1025,13 +1096,13 @@ TEST_P(TextureZeroInitTest, NonRenderableTextureClearWithMultiArrayLayers) {
     wgpu::Buffer bufferDst = utils::CreateBufferFromData(
         device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
 
-    wgpu::BufferCopyView bufferCopyView =
-        utils::CreateBufferCopyView(bufferDst, 0, kSize * kFormatBlockByteSize);
-    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 1});
+    wgpu::ImageCopyBuffer imageCopyBuffer =
+        utils::CreateImageCopyBuffer(bufferDst, 0, kSize * kFormatBlockByteSize);
+    wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(texture, 0, {0, 0, 1});
     wgpu::Extent3D copySize = {kSize, kSize, 1};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &copySize);
+    encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &copySize);
     wgpu::CommandBuffer commands = encoder.Finish();
     EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commands));
 
@@ -1045,7 +1116,7 @@ TEST_P(TextureZeroInitTest, NonRenderableTextureClearWithMultiArrayLayers) {
 // This tests that storeOp clear resets resource state to uninitialized.
 // Start with a sample texture that is initialized with data.
 // Then expect the render texture to not store the data from sample texture
-// because it will be lazy cleared by the EXPECT_TEXTURE_RGBA8_EQ call.
+// because it will be lazy cleared by the EXPECT_TEXTURE_EQ call.
 TEST_P(TextureZeroInitTest, RenderPassStoreOpClear) {
     // Create needed resources
     wgpu::TextureDescriptor descriptor = CreateTextureDescriptor(
@@ -1056,33 +1127,30 @@ TEST_P(TextureZeroInitTest, RenderPassStoreOpClear) {
         1, 1, wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::RenderAttachment, kColorFormat);
     wgpu::Texture renderTexture = device.CreateTexture(&renderTextureDescriptor);
 
-    wgpu::SamplerDescriptor samplerDesc = utils::GetDefaultSamplerDescriptor();
-    wgpu::Sampler sampler = device.CreateSampler(&samplerDesc);
-
     // Fill the sample texture with data
     std::vector<uint8_t> data(kFormatBlockByteSize * kSize * kSize, 1);
     wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
         device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
-    wgpu::BufferCopyView bufferCopyView =
-        utils::CreateBufferCopyView(stagingBuffer, 0, kSize * kFormatBlockByteSize);
-    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+    wgpu::ImageCopyBuffer imageCopyBuffer =
+        utils::CreateImageCopyBuffer(stagingBuffer, 0, kSize * kFormatBlockByteSize);
+    wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
     wgpu::Extent3D copySize = {kSize, kSize, 1};
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+    encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
     wgpu::CommandBuffer commands = encoder.Finish();
     // Expect 0 lazy clears because the texture will be completely copied to
     EXPECT_LAZY_CLEAR(0u, queue.Submit(1, &commands));
 
     // Create render pipeline
-    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor(device);
-    renderPipelineDescriptor.vertexStage.module = CreateBasicVertexShaderForTest();
-    renderPipelineDescriptor.cFragmentStage.module = CreateSampledTextureFragmentShaderForTest();
-    renderPipelineDescriptor.cColorStates[0].format = kColorFormat;
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
+    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
+    renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
+    renderPipelineDescriptor.cTargets[0].format = kColorFormat;
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
 
     // Create bindgroup
     wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, renderPipeline.GetBindGroupLayout(0),
-                                                     {{0, sampler}, {1, texture.CreateView()}});
+                                                     {{0, texture.CreateView()}});
 
     // Encode pass and submit
     encoder = device.CreateCommandEncoder();
@@ -1102,8 +1170,8 @@ TEST_P(TextureZeroInitTest, RenderPassStoreOpClear) {
 
     // Expect the rendered texture to be cleared
     std::vector<RGBA8> expectedWithZeros(kSize * kSize, {0, 0, 0, 0});
-    EXPECT_LAZY_CLEAR(1u, EXPECT_TEXTURE_RGBA8_EQ(expectedWithZeros.data(), renderTexture, 0, 0,
-                                                  kSize, kSize, 0, 0));
+    EXPECT_LAZY_CLEAR(
+        1u, EXPECT_TEXTURE_EQ(expectedWithZeros.data(), renderTexture, {0, 0}, {kSize, kSize}));
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(texture.Get(), 0, 1, 0, 1));
@@ -1156,7 +1224,7 @@ TEST_P(TextureZeroInitTest, RenderingLoadingDepthStencilStoreOpClear) {
         // The depth stencil test should fail and not draw because the depth stencil texture is
         // cleared to 1's by using loadOp clear and set values from descriptor.
         std::vector<RGBA8> expectedBlack(kSize * kSize, {0, 0, 0, 0});
-        EXPECT_TEXTURE_RGBA8_EQ(expectedBlack.data(), srcTexture, 0, 0, kSize, kSize, 0, 0);
+        EXPECT_TEXTURE_EQ(expectedBlack.data(), srcTexture, {0, 0}, {kSize, kSize});
 
         // Expect texture subresource initialized to be false since storeop is clear, sets
         // subresource as uninitialized
@@ -1181,7 +1249,7 @@ TEST_P(TextureZeroInitTest, RenderingLoadingDepthStencilStoreOpClear) {
         // Now the depth stencil test should pass since depth stencil texture is cleared to 0's by
         // loadop load and uninitialized subresource, so we should have a red square
         std::vector<RGBA8> expectedRed(kSize * kSize, {255, 0, 0, 255});
-        EXPECT_TEXTURE_RGBA8_EQ(expectedRed.data(), srcTexture, 0, 0, kSize, kSize, 0, 0);
+        EXPECT_TEXTURE_EQ(expectedRed.data(), srcTexture, {0, 0}, {kSize, kSize});
 
         // Expect texture subresource initialized to be false since storeop is clear, sets
         // subresource as uninitialized
@@ -1199,9 +1267,6 @@ TEST_P(TextureZeroInitTest, PreservesInitializedMip) {
         kColorFormat);
     wgpu::Texture sampleTexture = device.CreateTexture(&sampleTextureDescriptor);
 
-    wgpu::SamplerDescriptor samplerDesc = utils::GetDefaultSamplerDescriptor();
-    wgpu::Sampler sampler = device.CreateSampler(&samplerDesc);
-
     wgpu::TextureDescriptor renderTextureDescriptor = CreateTextureDescriptor(
         1, 1, wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::RenderAttachment, kColorFormat);
     wgpu::Texture renderTexture = device.CreateTexture(&renderTextureDescriptor);
@@ -1211,28 +1276,27 @@ TEST_P(TextureZeroInitTest, PreservesInitializedMip) {
     std::vector<uint8_t> data(kFormatBlockByteSize * mipSize * mipSize, 2);
     wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
         device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
-    wgpu::BufferCopyView bufferCopyView =
-        utils::CreateBufferCopyView(stagingBuffer, 0, mipSize * kFormatBlockByteSize);
-    wgpu::TextureCopyView textureCopyView =
-        utils::CreateTextureCopyView(sampleTexture, 1, {0, 0, 0});
+    wgpu::ImageCopyBuffer imageCopyBuffer =
+        utils::CreateImageCopyBuffer(stagingBuffer, 0, mipSize * kFormatBlockByteSize);
+    wgpu::ImageCopyTexture imageCopyTexture =
+        utils::CreateImageCopyTexture(sampleTexture, 1, {0, 0, 0});
     wgpu::Extent3D copySize = {mipSize, mipSize, 1};
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+    encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
     wgpu::CommandBuffer commands = encoder.Finish();
     // Expect 0 lazy clears because the texture subresource will be completely copied to
     EXPECT_LAZY_CLEAR(0u, queue.Submit(1, &commands));
 
     // Create render pipeline
-    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor(device);
-    renderPipelineDescriptor.vertexStage.module = CreateBasicVertexShaderForTest();
-    renderPipelineDescriptor.cFragmentStage.module = CreateSampledTextureFragmentShaderForTest();
-    renderPipelineDescriptor.cColorStates[0].format = kColorFormat;
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
+    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
+    renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
+    renderPipelineDescriptor.cTargets[0].format = kColorFormat;
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
 
     // Create bindgroup
-    wgpu::BindGroup bindGroup =
-        utils::MakeBindGroup(device, renderPipeline.GetBindGroupLayout(0),
-                             {{0, sampler}, {1, sampleTexture.CreateView()}});
+    wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, renderPipeline.GetBindGroupLayout(0),
+                                                     {{0, sampleTexture.CreateView()}});
 
     // Encode pass and submit
     encoder = device.CreateCommandEncoder();
@@ -1253,17 +1317,17 @@ TEST_P(TextureZeroInitTest, PreservesInitializedMip) {
     // Expect the rendered texture to be cleared since we copied from the uninitialized first
     // mip.
     std::vector<RGBA8> expectedWithZeros(kSize * kSize, {0, 0, 0, 0});
-    EXPECT_LAZY_CLEAR(1u, EXPECT_TEXTURE_RGBA8_EQ(expectedWithZeros.data(), renderTexture, 0, 0,
-                                                  kSize, kSize, 0, 0));
+    EXPECT_LAZY_CLEAR(
+        1u, EXPECT_TEXTURE_EQ(expectedWithZeros.data(), renderTexture, {0, 0}, {kSize, kSize}, 0));
 
     // Expect the first mip to have been lazy cleared to 0.
-    EXPECT_LAZY_CLEAR(0u, EXPECT_TEXTURE_RGBA8_EQ(expectedWithZeros.data(), sampleTexture, 0, 0,
-                                                  kSize, kSize, 0, 0));
+    EXPECT_LAZY_CLEAR(
+        0u, EXPECT_TEXTURE_EQ(expectedWithZeros.data(), sampleTexture, {0, 0}, {kSize, kSize}, 0));
 
     // Expect the second mip to still be filled with 2.
     std::vector<RGBA8> expectedWithTwos(mipSize * mipSize, {2, 2, 2, 2});
-    EXPECT_LAZY_CLEAR(0u, EXPECT_TEXTURE_RGBA8_EQ(expectedWithTwos.data(), sampleTexture, 0, 0,
-                                                  mipSize, mipSize, 1, 0));
+    EXPECT_LAZY_CLEAR(0u, EXPECT_TEXTURE_EQ(expectedWithTwos.data(), sampleTexture, {0, 0},
+                                            {mipSize, mipSize}, 1));
 
     // Expect the whole texture to be initialized
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(sampleTexture.Get(), 0, 2, 0, 1));
@@ -1272,14 +1336,14 @@ TEST_P(TextureZeroInitTest, PreservesInitializedMip) {
 // Test that if one layer of a texture is initialized and another is uninitialized, lazy clearing
 // the uninitialized layer does not clear the initialized layer.
 TEST_P(TextureZeroInitTest, PreservesInitializedArrayLayer) {
+    // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
+
     wgpu::TextureDescriptor sampleTextureDescriptor = CreateTextureDescriptor(
         1, 2,
         wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled,
         kColorFormat);
     wgpu::Texture sampleTexture = device.CreateTexture(&sampleTextureDescriptor);
-
-    wgpu::SamplerDescriptor samplerDesc = utils::GetDefaultSamplerDescriptor();
-    wgpu::Sampler sampler = device.CreateSampler(&samplerDesc);
 
     wgpu::TextureDescriptor renderTextureDescriptor = CreateTextureDescriptor(
         1, 1, wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::RenderAttachment, kColorFormat);
@@ -1289,23 +1353,23 @@ TEST_P(TextureZeroInitTest, PreservesInitializedArrayLayer) {
     std::vector<uint8_t> data(kFormatBlockByteSize * kSize * kSize, 2);
     wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
         device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
-    wgpu::BufferCopyView bufferCopyView =
-        utils::CreateBufferCopyView(stagingBuffer, 0, kSize * kFormatBlockByteSize);
-    wgpu::TextureCopyView textureCopyView =
-        utils::CreateTextureCopyView(sampleTexture, 0, {0, 0, 1});
+    wgpu::ImageCopyBuffer imageCopyBuffer =
+        utils::CreateImageCopyBuffer(stagingBuffer, 0, kSize * kFormatBlockByteSize);
+    wgpu::ImageCopyTexture imageCopyTexture =
+        utils::CreateImageCopyTexture(sampleTexture, 0, {0, 0, 1});
     wgpu::Extent3D copySize = {kSize, kSize, 1};
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+    encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
     wgpu::CommandBuffer commands = encoder.Finish();
     // Expect 0 lazy clears because the texture subresource will be completely copied to
     EXPECT_LAZY_CLEAR(0u, queue.Submit(1, &commands));
 
     // Create render pipeline
-    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor(device);
-    renderPipelineDescriptor.vertexStage.module = CreateBasicVertexShaderForTest();
-    renderPipelineDescriptor.cFragmentStage.module = CreateSampledTextureFragmentShaderForTest();
-    renderPipelineDescriptor.cColorStates[0].format = kColorFormat;
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
+    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
+    renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
+    renderPipelineDescriptor.cTargets[0].format = kColorFormat;
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
 
     // Only sample from the uninitialized first layer.
     wgpu::TextureViewDescriptor textureViewDescriptor;
@@ -1315,7 +1379,7 @@ TEST_P(TextureZeroInitTest, PreservesInitializedArrayLayer) {
     // Create bindgroup
     wgpu::BindGroup bindGroup =
         utils::MakeBindGroup(device, renderPipeline.GetBindGroupLayout(0),
-                             {{0, sampler}, {1, sampleTexture.CreateView(&textureViewDescriptor)}});
+                             {{0, sampleTexture.CreateView(&textureViewDescriptor)}});
 
     // Encode pass and submit
     encoder = device.CreateCommandEncoder();
@@ -1336,17 +1400,17 @@ TEST_P(TextureZeroInitTest, PreservesInitializedArrayLayer) {
     // Expect the rendered texture to be cleared since we copied from the uninitialized first
     // array layer.
     std::vector<RGBA8> expectedWithZeros(kSize * kSize, {0, 0, 0, 0});
-    EXPECT_LAZY_CLEAR(1u, EXPECT_TEXTURE_RGBA8_EQ(expectedWithZeros.data(), renderTexture, 0, 0,
-                                                  kSize, kSize, 0, 0));
+    EXPECT_LAZY_CLEAR(
+        1u, EXPECT_TEXTURE_EQ(expectedWithZeros.data(), renderTexture, {0, 0, 0}, {kSize, kSize}));
 
     // Expect the first array layer to have been lazy cleared to 0.
-    EXPECT_LAZY_CLEAR(0u, EXPECT_TEXTURE_RGBA8_EQ(expectedWithZeros.data(), sampleTexture, 0, 0,
-                                                  kSize, kSize, 0, 0));
+    EXPECT_LAZY_CLEAR(
+        0u, EXPECT_TEXTURE_EQ(expectedWithZeros.data(), sampleTexture, {0, 0, 0}, {kSize, kSize}));
 
     // Expect the second array layer to still be filled with 2.
     std::vector<RGBA8> expectedWithTwos(kSize * kSize, {2, 2, 2, 2});
-    EXPECT_LAZY_CLEAR(0u, EXPECT_TEXTURE_RGBA8_EQ(expectedWithTwos.data(), sampleTexture, 0, 0,
-                                                  kSize, kSize, 0, 1));
+    EXPECT_LAZY_CLEAR(
+        0u, EXPECT_TEXTURE_EQ(expectedWithTwos.data(), sampleTexture, {0, 0, 1}, {kSize, kSize}));
 
     // Expect the whole texture to be initialized
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(sampleTexture.Get(), 0, 1, 0, 2));
@@ -1355,10 +1419,14 @@ TEST_P(TextureZeroInitTest, PreservesInitializedArrayLayer) {
 // This is a regression test for crbug.com/dawn/451 where the lazy texture
 // init path on D3D12 had a divide-by-zero exception in the copy split logic.
 TEST_P(TextureZeroInitTest, CopyTextureToBufferNonRenderableUnaligned) {
+    // TODO(crbug.com/dawn/667): Work around the fact that some platforms do not support reading
+    // from Snorm textures.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_snorm_read"));
+
     wgpu::TextureDescriptor descriptor;
     descriptor.size.width = kUnalignedSize;
     descriptor.size.height = kUnalignedSize;
-    descriptor.size.depth = 1;
+    descriptor.size.depthOrArrayLayers = 1;
     descriptor.format = wgpu::TextureFormat::R8Snorm;
     descriptor.usage = wgpu::TextureUsage::CopySrc;
     wgpu::Texture texture = device.CreateTexture(&descriptor);
@@ -1373,12 +1441,14 @@ TEST_P(TextureZeroInitTest, CopyTextureToBufferNonRenderableUnaligned) {
         wgpu::Buffer buffer = utils::CreateBufferFromData(device, initialBufferData.data(),
                                                           bufferSize, wgpu::BufferUsage::CopyDst);
 
-        wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
-        wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(buffer, 0, bytesPerRow);
+        wgpu::ImageCopyTexture imageCopyTexture =
+            utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
+        wgpu::ImageCopyBuffer imageCopyBuffer =
+            utils::CreateImageCopyBuffer(buffer, 0, bytesPerRow);
         wgpu::Extent3D copySize = {kUnalignedSize, kUnalignedSize, 1};
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &copySize);
+        encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &copySize);
 
         wgpu::CommandBuffer commands = encoder.Finish();
         EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commands));
@@ -1390,14 +1460,11 @@ TEST_P(TextureZeroInitTest, CopyTextureToBufferNonRenderableUnaligned) {
 
 // In this test WriteTexture fully overwrites a texture
 TEST_P(TextureZeroInitTest, WriteWholeTexture) {
-    // TODO(dawn:483): Remove this condition after implementing WriteTexture in those backends.
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-
     wgpu::TextureDescriptor descriptor = CreateTextureDescriptor(
         1, 1, wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc, kColorFormat);
     wgpu::Texture texture = device.CreateTexture(&descriptor);
 
-    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+    wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
     wgpu::Extent3D copySize = {kSize, kSize, 1};
 
     wgpu::TextureDataLayout textureDataLayout;
@@ -1412,29 +1479,26 @@ TEST_P(TextureZeroInitTest, WriteWholeTexture) {
         {100, 100, 100, 100});
 
     // The write overwrites the whole texture so we don't need to do lazy initialization.
-    EXPECT_LAZY_CLEAR(0u,
-                      queue.WriteTexture(&textureCopyView, data.data(), data.size() * sizeof(RGBA8),
-                                         &textureDataLayout, &copySize));
+    EXPECT_LAZY_CLEAR(
+        0u, queue.WriteTexture(&imageCopyTexture, data.data(), data.size() * sizeof(RGBA8),
+                               &textureDataLayout, &copySize));
 
     // Expect texture initialized to be true
     EXPECT_TRUE(dawn_native::IsTextureSubresourceInitialized(texture.Get(), 0, 1, 0, 1));
 
-    EXPECT_TEXTURE_RGBA8_EQ(data.data(), texture, 0, 0, kSize, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(data.data(), texture, {0, 0}, {kSize, kSize});
 }
 
 // Test WriteTexture to a subset of the texture, lazy init is necessary to clear the other
 // half.
 TEST_P(TextureZeroInitTest, WriteTextureHalf) {
-    // TODO(dawn:483): Remove this condition after implementing WriteTexture in those backends.
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-
     wgpu::TextureDescriptor descriptor = CreateTextureDescriptor(
         4, 1,
         wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled | wgpu::TextureUsage::CopySrc,
         kColorFormat);
     wgpu::Texture texture = device.CreateTexture(&descriptor);
 
-    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+    wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
     wgpu::Extent3D copySize = {kSize / 2, kSize, 1};
 
     wgpu::TextureDataLayout textureDataLayout;
@@ -1448,26 +1512,23 @@ TEST_P(TextureZeroInitTest, WriteTextureHalf) {
             sizeof(RGBA8),
         {100, 100, 100, 100});
 
-    EXPECT_LAZY_CLEAR(1u,
-                      queue.WriteTexture(&textureCopyView, data.data(), data.size() * sizeof(RGBA8),
-                                         &textureDataLayout, &copySize));
+    EXPECT_LAZY_CLEAR(
+        1u, queue.WriteTexture(&imageCopyTexture, data.data(), data.size() * sizeof(RGBA8),
+                               &textureDataLayout, &copySize));
 
     // Expect texture initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(texture.Get(), 0, 1, 0, 1));
 
     std::vector<RGBA8> expectedZeros((kSize / 2) * kSize, {0, 0, 0, 0});
     // first half filled with 100, by the data
-    EXPECT_TEXTURE_RGBA8_EQ(data.data(), texture, 0, 0, kSize / 2, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(data.data(), texture, {0, 0}, {kSize / 2, kSize});
     // second half should be cleared
-    EXPECT_TEXTURE_RGBA8_EQ(expectedZeros.data(), texture, kSize / 2, 0, kSize / 2, kSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expectedZeros.data(), texture, {kSize / 2, 0}, {kSize / 2, kSize});
 }
 
 // In this test WriteTexture fully overwrites a range of subresources, so lazy initialization
 // is needed for neither the subresources involved in the write nor the other subresources.
 TEST_P(TextureZeroInitTest, WriteWholeTextureArray) {
-    // TODO(dawn:483): Remove this condition after implementing WriteTexture in those backends.
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-
     wgpu::TextureDescriptor descriptor = CreateTextureDescriptor(
         1, 6, wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc, kColorFormat);
     wgpu::Texture texture = device.CreateTexture(&descriptor);
@@ -1475,8 +1536,8 @@ TEST_P(TextureZeroInitTest, WriteWholeTextureArray) {
     constexpr uint32_t kBaseArrayLayer = 2u;
     constexpr uint32_t kCopyLayerCount = 3u;
 
-    wgpu::TextureCopyView textureCopyView =
-        utils::CreateTextureCopyView(texture, 0, {0, 0, kBaseArrayLayer});
+    wgpu::ImageCopyTexture imageCopyTexture =
+        utils::CreateImageCopyTexture(texture, 0, {0, 0, kBaseArrayLayer});
     wgpu::Extent3D copySize = {kSize, kSize, kCopyLayerCount};
 
     wgpu::TextureDataLayout textureDataLayout;
@@ -1492,25 +1553,22 @@ TEST_P(TextureZeroInitTest, WriteWholeTextureArray) {
 
     // The write overwrites the whole subresources so we don't need to do lazy initialization on
     // them.
-    EXPECT_LAZY_CLEAR(0u,
-                      queue.WriteTexture(&textureCopyView, data.data(), data.size() * sizeof(RGBA8),
-                                         &textureDataLayout, &copySize));
+    EXPECT_LAZY_CLEAR(
+        0u, queue.WriteTexture(&imageCopyTexture, data.data(), data.size() * sizeof(RGBA8),
+                               &textureDataLayout, &copySize));
 
     // Expect texture subresource initialized to be true
     EXPECT_TRUE(dawn_native::IsTextureSubresourceInitialized(texture.Get(), 0, 1, kBaseArrayLayer,
                                                              kCopyLayerCount));
 
     for (uint32_t layer = kBaseArrayLayer; layer < kBaseArrayLayer + kCopyLayerCount; ++layer) {
-        EXPECT_TEXTURE_RGBA8_EQ(data.data(), texture, 0, 0, kSize, kSize, 0, layer);
+        EXPECT_TEXTURE_EQ(data.data(), texture, {0, 0, layer}, {kSize, kSize});
     }
 }
 
 // Test WriteTexture to a subset of the subresource, lazy init is necessary to clear the other
 // half.
 TEST_P(TextureZeroInitTest, WriteTextureArrayHalf) {
-    // TODO(dawn:483): Remove this condition after implementing WriteTexture in those backends.
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-
     wgpu::TextureDescriptor descriptor = CreateTextureDescriptor(
         4, 6,
         wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled | wgpu::TextureUsage::CopySrc,
@@ -1520,8 +1578,8 @@ TEST_P(TextureZeroInitTest, WriteTextureArrayHalf) {
     constexpr uint32_t kBaseArrayLayer = 2u;
     constexpr uint32_t kCopyLayerCount = 3u;
 
-    wgpu::TextureCopyView textureCopyView =
-        utils::CreateTextureCopyView(texture, 0, {0, 0, kBaseArrayLayer});
+    wgpu::ImageCopyTexture imageCopyTexture =
+        utils::CreateImageCopyTexture(texture, 0, {0, 0, kBaseArrayLayer});
     wgpu::Extent3D copySize = {kSize / 2, kSize, kCopyLayerCount};
 
     wgpu::TextureDataLayout textureDataLayout;
@@ -1535,9 +1593,9 @@ TEST_P(TextureZeroInitTest, WriteTextureArrayHalf) {
             sizeof(RGBA8),
         {100, 100, 100, 100});
 
-    EXPECT_LAZY_CLEAR(1u,
-                      queue.WriteTexture(&textureCopyView, data.data(), data.size() * sizeof(RGBA8),
-                                         &textureDataLayout, &copySize));
+    EXPECT_LAZY_CLEAR(
+        1u, queue.WriteTexture(&imageCopyTexture, data.data(), data.size() * sizeof(RGBA8),
+                               &textureDataLayout, &copySize));
 
     // Expect texture subresource initialized to be true
     EXPECT_EQ(true, dawn_native::IsTextureSubresourceInitialized(texture.Get(), 0, 1,
@@ -1546,18 +1604,14 @@ TEST_P(TextureZeroInitTest, WriteTextureArrayHalf) {
     std::vector<RGBA8> expectedZeros((kSize / 2) * kSize, {0, 0, 0, 0});
     for (uint32_t layer = kBaseArrayLayer; layer < kBaseArrayLayer + kCopyLayerCount; ++layer) {
         // first half filled with 100, by the data
-        EXPECT_TEXTURE_RGBA8_EQ(data.data(), texture, 0, 0, kSize / 2, kSize, 0, layer);
+        EXPECT_TEXTURE_EQ(data.data(), texture, {0, 0, layer}, {kSize / 2, kSize});
         // second half should be cleared
-        EXPECT_TEXTURE_RGBA8_EQ(expectedZeros.data(), texture, kSize / 2, 0, kSize / 2, kSize, 0,
-                                layer);
+        EXPECT_TEXTURE_EQ(expectedZeros.data(), texture, {kSize / 2, 0, layer}, {kSize / 2, kSize});
     }
 }
 
 // In this test WriteTexture fully overwrites a texture at mip level.
 TEST_P(TextureZeroInitTest, WriteWholeTextureAtMipLevel) {
-    // TODO(dawn:483): Remove this condition after implementing WriteTexture in those backends.
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-
     wgpu::TextureDescriptor descriptor = CreateTextureDescriptor(
         4, 1, wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc, kColorFormat);
     wgpu::Texture texture = device.CreateTexture(&descriptor);
@@ -1565,8 +1619,8 @@ TEST_P(TextureZeroInitTest, WriteWholeTextureAtMipLevel) {
     constexpr uint32_t kMipLevel = 2;
     constexpr uint32_t kMipSize = kSize >> kMipLevel;
 
-    wgpu::TextureCopyView textureCopyView =
-        utils::CreateTextureCopyView(texture, kMipLevel, {0, 0, 0});
+    wgpu::ImageCopyTexture imageCopyTexture =
+        utils::CreateImageCopyTexture(texture, kMipLevel, {0, 0, 0});
     wgpu::Extent3D copySize = {kMipSize, kMipSize, 1};
 
     wgpu::TextureDataLayout textureDataLayout;
@@ -1581,22 +1635,19 @@ TEST_P(TextureZeroInitTest, WriteWholeTextureAtMipLevel) {
         {100, 100, 100, 100});
 
     // The write overwrites the whole texture so we don't need to do lazy initialization.
-    EXPECT_LAZY_CLEAR(0u,
-                      queue.WriteTexture(&textureCopyView, data.data(), data.size() * sizeof(RGBA8),
-                                         &textureDataLayout, &copySize));
+    EXPECT_LAZY_CLEAR(
+        0u, queue.WriteTexture(&imageCopyTexture, data.data(), data.size() * sizeof(RGBA8),
+                               &textureDataLayout, &copySize));
 
     // Expect texture initialized to be true
     EXPECT_TRUE(dawn_native::IsTextureSubresourceInitialized(texture.Get(), kMipLevel, 1, 0, 1));
 
-    EXPECT_TEXTURE_RGBA8_EQ(data.data(), texture, 0, 0, kMipSize, kMipSize, kMipLevel, 0);
+    EXPECT_TEXTURE_EQ(data.data(), texture, {0, 0}, {kMipSize, kMipSize}, kMipLevel);
 }
 
 // Test WriteTexture to a subset of the texture at mip level, lazy init is necessary to clear the
 // other half.
 TEST_P(TextureZeroInitTest, WriteTextureHalfAtMipLevel) {
-    // TODO(dawn:483): Remove this condition after implementing WriteTexture in those backends.
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-
     wgpu::TextureDescriptor descriptor = CreateTextureDescriptor(
         4, 1,
         wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled | wgpu::TextureUsage::CopySrc,
@@ -1606,8 +1657,8 @@ TEST_P(TextureZeroInitTest, WriteTextureHalfAtMipLevel) {
     constexpr uint32_t kMipLevel = 2;
     constexpr uint32_t kMipSize = kSize >> kMipLevel;
 
-    wgpu::TextureCopyView textureCopyView =
-        utils::CreateTextureCopyView(texture, kMipLevel, {0, 0, 0});
+    wgpu::ImageCopyTexture imageCopyTexture =
+        utils::CreateImageCopyTexture(texture, kMipLevel, {0, 0, 0});
     wgpu::Extent3D copySize = {kMipSize / 2, kMipSize, 1};
 
     wgpu::TextureDataLayout textureDataLayout;
@@ -1621,9 +1672,9 @@ TEST_P(TextureZeroInitTest, WriteTextureHalfAtMipLevel) {
             sizeof(RGBA8),
         {100, 100, 100, 100});
 
-    EXPECT_LAZY_CLEAR(1u,
-                      queue.WriteTexture(&textureCopyView, data.data(), data.size() * sizeof(RGBA8),
-                                         &textureDataLayout, &copySize));
+    EXPECT_LAZY_CLEAR(
+        1u, queue.WriteTexture(&imageCopyTexture, data.data(), data.size() * sizeof(RGBA8),
+                               &textureDataLayout, &copySize));
 
     // Expect texture initialized to be true
     EXPECT_EQ(true,
@@ -1631,10 +1682,10 @@ TEST_P(TextureZeroInitTest, WriteTextureHalfAtMipLevel) {
 
     std::vector<RGBA8> expectedZeros((kMipSize / 2) * kMipSize, {0, 0, 0, 0});
     // first half filled with 100, by the data
-    EXPECT_TEXTURE_RGBA8_EQ(data.data(), texture, 0, 0, kMipSize / 2, kMipSize, kMipLevel, 0);
+    EXPECT_TEXTURE_EQ(data.data(), texture, {0, 0}, {kMipSize / 2, kMipSize}, kMipLevel);
     // second half should be cleared
-    EXPECT_TEXTURE_RGBA8_EQ(expectedZeros.data(), texture, kMipSize / 2, 0, kMipSize / 2, kMipSize,
-                            kMipLevel, 0);
+    EXPECT_TEXTURE_EQ(expectedZeros.data(), texture, {kMipSize / 2, 0}, {kMipSize / 2, kMipSize},
+                      kMipLevel);
 }
 
 DAWN_INSTANTIATE_TEST(TextureZeroInitTest,
@@ -1642,5 +1693,363 @@ DAWN_INSTANTIATE_TEST(TextureZeroInitTest,
                       D3D12Backend({"nonzero_clear_resources_on_creation_for_testing"},
                                    {"use_d3d12_render_pass"}),
                       OpenGLBackend({"nonzero_clear_resources_on_creation_for_testing"}),
+                      OpenGLESBackend({"nonzero_clear_resources_on_creation_for_testing"}),
                       MetalBackend({"nonzero_clear_resources_on_creation_for_testing"}),
+                      VulkanBackend({"nonzero_clear_resources_on_creation_for_testing"}));
+
+class CompressedTextureZeroInitTest : public TextureZeroInitTest {
+  protected:
+    void SetUp() override {
+        DawnTest::SetUp();
+
+        DAWN_SKIP_TEST_IF(UsesWire());
+        DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
+    }
+
+    std::vector<const char*> GetRequiredExtensions() override {
+        mIsBCFormatSupported = SupportsExtensions({"texture_compression_bc"});
+        if (!mIsBCFormatSupported) {
+            return {};
+        }
+
+        return {"texture_compression_bc"};
+    }
+
+    bool IsBCFormatSupported() const {
+        return mIsBCFormatSupported;
+    }
+
+    // Copy the compressed texture data into the destination texture.
+    void InitializeDataInCompressedTextureAndExpectLazyClear(
+        wgpu::Texture bcCompressedTexture,
+        wgpu::TextureDescriptor textureDescriptor,
+        wgpu::Extent3D copyExtent3D,
+        uint32_t viewMipmapLevel,
+        uint32_t baseArrayLayer,
+        size_t lazyClearCount) {
+        uint32_t copyWidthInBlock = copyExtent3D.width / kFormatBlockByteSize;
+        uint32_t copyHeightInBlock = copyExtent3D.height / kFormatBlockByteSize;
+        uint32_t copyBytesPerRow =
+            Align(copyWidthInBlock * utils::GetTexelBlockSizeInBytes(textureDescriptor.format),
+                  kTextureBytesPerRowAlignment);
+
+        std::vector<uint8_t> data(
+            utils::RequiredBytesInCopy(copyBytesPerRow, copyHeightInBlock, copyExtent3D,
+                                       textureDescriptor.format),
+            1);
+
+        // Copy texture data from a staging buffer to the destination texture.
+        wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(device, data.data(), data.size(),
+                                                                 wgpu::BufferUsage::CopySrc);
+        wgpu::ImageCopyBuffer imageCopyBuffer =
+            utils::CreateImageCopyBuffer(stagingBuffer, 0, copyBytesPerRow, copyHeightInBlock);
+
+        wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(
+            bcCompressedTexture, viewMipmapLevel, {0, 0, baseArrayLayer});
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copyExtent3D);
+        wgpu::CommandBuffer copy = encoder.Finish();
+        EXPECT_LAZY_CLEAR(lazyClearCount, queue.Submit(1, &copy));
+    }
+
+    // Run the tests that copies pre-prepared BC format data into a BC texture and verifies if we
+    // can render correctly with the pixel values sampled from the BC texture.
+    // Expect that the texture subresource is initialized
+    void TestCopyRegionIntoBCFormatTexturesAndCheckSubresourceIsInitialized(
+        wgpu::TextureDescriptor textureDescriptor,
+        wgpu::Extent3D copyExtent3D,
+        wgpu::Extent3D nonPaddedCopyExtent,
+        uint32_t viewMipmapLevel,
+        uint32_t baseArrayLayer,
+        size_t lazyClearCount,
+        bool halfCopyTest = false) {
+        wgpu::Texture bcTexture = device.CreateTexture(&textureDescriptor);
+        InitializeDataInCompressedTextureAndExpectLazyClear(bcTexture, textureDescriptor,
+                                                            copyExtent3D, viewMipmapLevel,
+                                                            baseArrayLayer, lazyClearCount);
+
+        SampleCompressedTextureAndVerifyColor(bcTexture, textureDescriptor, copyExtent3D,
+                                              nonPaddedCopyExtent, viewMipmapLevel, baseArrayLayer,
+                                              halfCopyTest);
+    }
+
+    void SampleCompressedTextureAndVerifyColor(wgpu::Texture bcTexture,
+                                               wgpu::TextureDescriptor textureDescriptor,
+                                               wgpu::Extent3D copyExtent3D,
+                                               wgpu::Extent3D nonPaddedCopyExtent,
+                                               uint32_t viewMipmapLevel,
+                                               uint32_t baseArrayLayer,
+                                               bool halfCopyTest = false) {
+        // Sample the compressed texture and verify the texture colors in the render target
+        utils::BasicRenderPass renderPass =
+            utils::CreateBasicRenderPass(device, textureDescriptor.size.width >> viewMipmapLevel,
+                                         textureDescriptor.size.height >> viewMipmapLevel);
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        {
+            wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+            utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+            renderPipelineDescriptor.cTargets[0].format = kColorFormat;
+            renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
+            renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
+            wgpu::RenderPipeline renderPipeline =
+                device.CreateRenderPipeline2(&renderPipelineDescriptor);
+            pass.SetPipeline(renderPipeline);
+
+            wgpu::TextureViewDescriptor textureViewDescriptor = CreateTextureViewDescriptor(
+                viewMipmapLevel, baseArrayLayer, textureDescriptor.format);
+            wgpu::BindGroup bindGroup =
+                utils::MakeBindGroup(device, renderPipeline.GetBindGroupLayout(0),
+                                     {{0, bcTexture.CreateView(&textureViewDescriptor)}});
+            pass.SetBindGroup(0, bindGroup);
+            pass.Draw(6);
+            pass.EndPass();
+        }
+
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
+
+        std::vector<RGBA8> expected(nonPaddedCopyExtent.width * nonPaddedCopyExtent.height,
+                                    {0x00, 0x20, 0x08, 0xFF});
+        EXPECT_TEXTURE_EQ(expected.data(), renderPass.color, {0, 0},
+                          {nonPaddedCopyExtent.width, nonPaddedCopyExtent.height});
+        EXPECT_TRUE(dawn_native::IsTextureSubresourceInitialized(bcTexture.Get(), viewMipmapLevel,
+                                                                 1, baseArrayLayer, 1));
+
+        // If we only copied to half the texture, check the other half is initialized to black
+        if (halfCopyTest) {
+            std::vector<RGBA8> expectBlack(nonPaddedCopyExtent.width * nonPaddedCopyExtent.height,
+                                           {0x00, 0x00, 0x00, 0xFF});
+            EXPECT_TEXTURE_EQ(expectBlack.data(), renderPass.color, {copyExtent3D.width, 0},
+                              {nonPaddedCopyExtent.width, nonPaddedCopyExtent.height});
+        }
+    }
+
+    bool mIsBCFormatSupported = false;
+};
+
+//  Test that the clearing is skipped when we use a full mip copy (with the physical size different
+//  than the virtual mip size)
+TEST_P(CompressedTextureZeroInitTest, FullMipCopy) {
+    wgpu::TextureDescriptor textureDescriptor;
+    textureDescriptor.usage =
+        wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
+    textureDescriptor.size = {60, 60, 1};
+    textureDescriptor.mipLevelCount = 1;
+    textureDescriptor.format = utils::kBCFormats[0];
+
+    TestCopyRegionIntoBCFormatTexturesAndCheckSubresourceIsInitialized(
+        textureDescriptor, textureDescriptor.size, textureDescriptor.size, 0, 0, 0u);
+}
+
+// Test that 1 lazy clear count happens when we copy to half the texture
+TEST_P(CompressedTextureZeroInitTest, HalfCopyBufferToTexture) {
+    // TODO(crbug.com/dawn/643): diagnose and fix this failure on OpenGL.
+    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+
+    wgpu::TextureDescriptor textureDescriptor;
+    textureDescriptor.usage =
+        wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
+    constexpr static uint32_t kSize = 16;
+    textureDescriptor.size = {kSize, kSize, 1};
+    textureDescriptor.mipLevelCount = 1;
+    textureDescriptor.format = utils::kBCFormats[0];
+
+    wgpu::Extent3D copyExtent3D = {kSize / 2, kSize, 1};
+
+    TestCopyRegionIntoBCFormatTexturesAndCheckSubresourceIsInitialized(
+        textureDescriptor, copyExtent3D, copyExtent3D, 0, 0, 1u, true);
+}
+
+// Test that 0 lazy clear count happens when we copy buffer to texture to a nonzero mip level
+// (with physical size different from the virtual mip size)
+TEST_P(CompressedTextureZeroInitTest, FullCopyToNonZeroMipLevel) {
+    // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
+
+    wgpu::TextureDescriptor textureDescriptor;
+    textureDescriptor.usage =
+        wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
+    constexpr static uint32_t kSize = 60;
+    textureDescriptor.size = {kSize, kSize, 1};
+    textureDescriptor.mipLevelCount = 3;
+    textureDescriptor.format = utils::kBCFormats[0];
+    const uint32_t kViewMipLevel = 2;
+    const uint32_t kActualSizeAtLevel = kSize >> kViewMipLevel;
+
+    const uint32_t kCopySizeAtLevel = Align(kActualSizeAtLevel, kFormatBlockByteSize);
+
+    wgpu::Extent3D copyExtent3D = {kCopySizeAtLevel, kCopySizeAtLevel, 1};
+
+    TestCopyRegionIntoBCFormatTexturesAndCheckSubresourceIsInitialized(
+        textureDescriptor, copyExtent3D, {kActualSizeAtLevel, kActualSizeAtLevel, 1}, kViewMipLevel,
+        0, 0u);
+}
+
+// Test that 1 lazy clear count happens when we copy buffer to half texture to a nonzero mip level
+// (with physical size different from the virtual mip size)
+TEST_P(CompressedTextureZeroInitTest, HalfCopyToNonZeroMipLevel) {
+    // TODO(crbug.com/dawn/643): diagnose and fix this failure on OpenGL.
+    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+
+    wgpu::TextureDescriptor textureDescriptor;
+    textureDescriptor.usage =
+        wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
+    constexpr static uint32_t kSize = 60;
+    textureDescriptor.size = {kSize, kSize, 1};
+    textureDescriptor.mipLevelCount = 3;
+    textureDescriptor.format = utils::kBCFormats[0];
+    const uint32_t kViewMipLevel = 2;
+    const uint32_t kActualSizeAtLevel = kSize >> kViewMipLevel;
+
+    const uint32_t kCopySizeAtLevel = Align(kActualSizeAtLevel, kFormatBlockByteSize);
+
+    wgpu::Extent3D copyExtent3D = {kCopySizeAtLevel / 2, kCopySizeAtLevel, 1};
+
+    TestCopyRegionIntoBCFormatTexturesAndCheckSubresourceIsInitialized(
+        textureDescriptor, copyExtent3D, {kActualSizeAtLevel / 2, kActualSizeAtLevel, 1},
+        kViewMipLevel, 0, 1u, true);
+}
+
+// Test that 0 lazy clear count happens when we copy buffer to nonzero array layer
+TEST_P(CompressedTextureZeroInitTest, FullCopyToNonZeroArrayLayer) {
+    // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
+
+    wgpu::TextureDescriptor textureDescriptor;
+    textureDescriptor.usage =
+        wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
+    constexpr static uint32_t kSize = 16;
+    constexpr static uint32_t kArrayLayers = 4;
+    textureDescriptor.size = {kSize, kSize, kArrayLayers};
+    textureDescriptor.mipLevelCount = 1;
+    textureDescriptor.format = utils::kBCFormats[0];
+
+    wgpu::Extent3D copyExtent3D = {kSize, kSize, 1};
+
+    TestCopyRegionIntoBCFormatTexturesAndCheckSubresourceIsInitialized(
+        textureDescriptor, copyExtent3D, copyExtent3D, 0, kArrayLayers - 2, 0u);
+}
+
+// Test that 1 lazy clear count happens when we copy buffer to half texture to a nonzero array layer
+TEST_P(CompressedTextureZeroInitTest, HalfCopyToNonZeroArrayLayer) {
+    // TODO(crbug.com/dawn/643): diagnose and fix this failure on OpenGL.
+    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+
+    wgpu::TextureDescriptor textureDescriptor;
+    textureDescriptor.usage =
+        wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
+    constexpr static uint32_t kSize = 16;
+    constexpr static uint32_t kArrayLayers = 4;
+    textureDescriptor.size = {kSize, kSize, kArrayLayers};
+    textureDescriptor.mipLevelCount = 3;
+    textureDescriptor.format = utils::kBCFormats[0];
+
+    wgpu::Extent3D copyExtent3D = {kSize / 2, kSize, 1};
+
+    TestCopyRegionIntoBCFormatTexturesAndCheckSubresourceIsInitialized(
+        textureDescriptor, copyExtent3D, copyExtent3D, 0, kArrayLayers - 2, 1u, true);
+}
+
+// full copy texture to texture, 0 lazy clears are needed
+TEST_P(CompressedTextureZeroInitTest, FullCopyTextureToTextureMipLevel) {
+    // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
+
+    // create srcTexture and fill it with data
+    wgpu::TextureDescriptor srcDescriptor = CreateTextureDescriptor(
+        3, 1,
+        wgpu::TextureUsage::Sampled | wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst,
+        utils::kBCFormats[0]);
+    wgpu::Texture srcTexture = device.CreateTexture(&srcDescriptor);
+
+    const uint32_t kViewMipLevel = 2;
+    const uint32_t kActualSizeAtLevel = kSize >> kViewMipLevel;
+
+    const uint32_t kCopySizeAtLevel = Align(kActualSizeAtLevel, kFormatBlockByteSize);
+
+    wgpu::Extent3D copyExtent3D = {kCopySizeAtLevel, kCopySizeAtLevel, 1};
+
+    // fill srcTexture with data
+    InitializeDataInCompressedTextureAndExpectLazyClear(srcTexture, srcDescriptor, copyExtent3D,
+                                                        kViewMipLevel, 0, 0u);
+
+    wgpu::ImageCopyTexture srcImageCopyTexture =
+        utils::CreateImageCopyTexture(srcTexture, kViewMipLevel, {0, 0, 0});
+
+    // create dstTexture that we will copy to
+    wgpu::TextureDescriptor dstDescriptor = CreateTextureDescriptor(
+        3, 1,
+        wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::Sampled,
+        utils::kBCFormats[0]);
+    wgpu::Texture dstTexture = device.CreateTexture(&dstDescriptor);
+
+    wgpu::ImageCopyTexture dstImageCopyTexture =
+        utils::CreateImageCopyTexture(dstTexture, kViewMipLevel, {0, 0, 0});
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.CopyTextureToTexture(&srcImageCopyTexture, &dstImageCopyTexture, &copyExtent3D);
+    wgpu::CommandBuffer commands = encoder.Finish();
+    // the dstTexture does not need to be lazy cleared since it's fully copied to
+    EXPECT_LAZY_CLEAR(0u, queue.Submit(1, &commands));
+
+    SampleCompressedTextureAndVerifyColor(dstTexture, dstDescriptor, copyExtent3D,
+                                          {kActualSizeAtLevel, kActualSizeAtLevel, 1},
+                                          kViewMipLevel, 0);
+}
+
+// half copy texture to texture, lazy clears are needed for noncopied half
+TEST_P(CompressedTextureZeroInitTest, HalfCopyTextureToTextureMipLevel) {
+    // TODO(crbug.com/dawn/643): diagnose and fix this failure on OpenGL.
+    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+
+    // create srcTexture with data
+    wgpu::TextureDescriptor srcDescriptor = CreateTextureDescriptor(
+        3, 1,
+        wgpu::TextureUsage::Sampled | wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst,
+        utils::kBCFormats[0]);
+    wgpu::Texture srcTexture = device.CreateTexture(&srcDescriptor);
+
+    const uint32_t kViewMipLevel = 2;
+    const uint32_t kActualSizeAtLevel = kSize >> kViewMipLevel;
+
+    const uint32_t kCopySizeAtLevel = Align(kActualSizeAtLevel, kFormatBlockByteSize);
+
+    wgpu::Extent3D copyExtent3D = {kCopySizeAtLevel / 2, kCopySizeAtLevel, 1};
+
+    // fill srcTexture with data
+    InitializeDataInCompressedTextureAndExpectLazyClear(srcTexture, srcDescriptor, copyExtent3D,
+                                                        kViewMipLevel, 0, 1u);
+
+    wgpu::ImageCopyTexture srcImageCopyTexture =
+        utils::CreateImageCopyTexture(srcTexture, kViewMipLevel, {0, 0, 0});
+
+    // create dstTexture that we will copy to
+    wgpu::TextureDescriptor dstDescriptor = CreateTextureDescriptor(
+        3, 1,
+        wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::Sampled,
+        utils::kBCFormats[0]);
+    wgpu::Texture dstTexture = device.CreateTexture(&dstDescriptor);
+
+    wgpu::ImageCopyTexture dstImageCopyTexture =
+        utils::CreateImageCopyTexture(dstTexture, kViewMipLevel, {0, 0, 0});
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.CopyTextureToTexture(&srcImageCopyTexture, &dstImageCopyTexture, &copyExtent3D);
+    wgpu::CommandBuffer commands = encoder.Finish();
+    // expect 1 lazy clear count since the dstTexture needs to be lazy cleared when we only copy to
+    // half texture
+    EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commands));
+
+    SampleCompressedTextureAndVerifyColor(dstTexture, dstDescriptor, copyExtent3D,
+                                          {kActualSizeAtLevel / 2, kActualSizeAtLevel, 1},
+                                          kViewMipLevel, 0, true);
+}
+
+DAWN_INSTANTIATE_TEST(CompressedTextureZeroInitTest,
+                      D3D12Backend({"nonzero_clear_resources_on_creation_for_testing"}),
+                      MetalBackend({"nonzero_clear_resources_on_creation_for_testing"}),
+                      OpenGLBackend({"nonzero_clear_resources_on_creation_for_testing"}),
+                      OpenGLESBackend({"nonzero_clear_resources_on_creation_for_testing"}),
                       VulkanBackend({"nonzero_clear_resources_on_creation_for_testing"}));

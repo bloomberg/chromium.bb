@@ -21,10 +21,9 @@ class MODULES_EXPORT AXVirtualObject : public AXObject {
 
   // AXObject overrides.
   void Detach() override;
-  AXObject* ComputeParent() const override { return parent_; }
   bool IsVirtualObject() const override { return true; }
   void AddChildren() override;
-  void ChildrenChanged() override;
+  void ChildrenChangedWithCleanLayout() override;
   const AtomicString& GetAOMPropertyOrARIAAttribute(
       AOMStringProperty) const override;
   bool HasAOMPropertyOrARIAAttribute(AOMBooleanProperty,
@@ -36,11 +35,17 @@ class MODULES_EXPORT AXVirtualObject : public AXObject {
                          ax::mojom::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
+  Document* GetDocument() const override;
+  ax::mojom::blink::Role DetermineAccessibilityRole() override;
+  ax::mojom::blink::Role NativeRoleIgnoringAria() const override;
+  ax::mojom::blink::Role AriaRoleAttribute() const override;
 
  private:
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
   Member<AccessibleNode> accessible_node_;
+
+  ax::mojom::blink::Role aria_role_;
 };
 
 }  // namespace blink

@@ -34,12 +34,11 @@ class TestCertificateSelector : public chrome::CertificateSelector {
 
   ~TestCertificateSelector() override {
     if (!on_destroy_.is_null())
-      on_destroy_.Run();
+      std::move(on_destroy_).Run();
   }
 
   void Init() {
-    InitWithText(std::make_unique<views::Label>(
-        base::ASCIIToUTF16("some arbitrary text")));
+    InitWithText(std::make_unique<views::Label>(u"some arbitrary text"));
   }
 
   void AcceptCertificate(
@@ -61,12 +60,14 @@ class TestCertificateSelector : public chrome::CertificateSelector {
 
   using chrome::CertificateSelector::table_model_for_testing;
 
-  void set_on_destroy(base::Closure on_destroy) { on_destroy_ = on_destroy; }
+  void set_on_destroy(base::OnceClosure on_destroy) {
+    on_destroy_ = std::move(on_destroy);
+  }
 
  private:
   bool* accepted_ = nullptr;
   bool* canceled_ = nullptr;
-  base::Closure on_destroy_;
+  base::OnceClosure on_destroy_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCertificateSelector);
 };
@@ -108,23 +109,19 @@ class CertificateSelectorTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(CertificateSelectorTest, GetRowText) {
   ui::TableModel* model = selector_->table_model_for_testing();
-  EXPECT_EQ(base::UTF8ToUTF16("Client Cert A"),
+  EXPECT_EQ(u"Client Cert A",
             model->GetText(0, IDS_CERT_SELECTOR_SUBJECT_COLUMN));
-  EXPECT_EQ(base::UTF8ToUTF16("B CA"),
-            model->GetText(0, IDS_CERT_SELECTOR_ISSUER_COLUMN));
-  EXPECT_EQ(base::string16(),
+  EXPECT_EQ(u"B CA", model->GetText(0, IDS_CERT_SELECTOR_ISSUER_COLUMN));
+  EXPECT_EQ(std::u16string(),
             model->GetText(0, IDS_CERT_SELECTOR_PROVIDER_COLUMN));
-  EXPECT_EQ(base::UTF8ToUTF16("1000"),
-            model->GetText(0, IDS_CERT_SELECTOR_SERIAL_COLUMN));
+  EXPECT_EQ(u"1000", model->GetText(0, IDS_CERT_SELECTOR_SERIAL_COLUMN));
 
-  EXPECT_EQ(base::UTF8ToUTF16("Client Cert D"),
+  EXPECT_EQ(u"Client Cert D",
             model->GetText(1, IDS_CERT_SELECTOR_SUBJECT_COLUMN));
-  EXPECT_EQ(base::UTF8ToUTF16("E CA"),
-            model->GetText(1, IDS_CERT_SELECTOR_ISSUER_COLUMN));
-  EXPECT_EQ(base::string16(),
+  EXPECT_EQ(u"E CA", model->GetText(1, IDS_CERT_SELECTOR_ISSUER_COLUMN));
+  EXPECT_EQ(std::u16string(),
             model->GetText(1, IDS_CERT_SELECTOR_PROVIDER_COLUMN));
-  EXPECT_EQ(base::UTF8ToUTF16("1002"),
-            model->GetText(1, IDS_CERT_SELECTOR_SERIAL_COLUMN));
+  EXPECT_EQ(u"1002", model->GetText(1, IDS_CERT_SELECTOR_SERIAL_COLUMN));
 }
 
 IN_PROC_BROWSER_TEST_F(CertificateSelectorTest, GetSelectedCert) {

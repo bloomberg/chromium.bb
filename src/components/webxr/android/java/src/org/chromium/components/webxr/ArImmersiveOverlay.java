@@ -6,20 +6,16 @@ package org.chromium.components.webxr;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Build;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
@@ -29,7 +25,6 @@ import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.display.DisplayAndroidManager;
-import org.chromium.ui.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,14 +37,19 @@ public class ArImmersiveOverlay
     private static final String TAG = "ArImmersiveOverlay";
     private static final boolean DEBUG_LOGS = false;
 
+    // See class comment for ArSurfaceViewImpl below.
+    private static final boolean DEFER_SURFACE_VIEW_DESTRUCTION =
+            (Build.VERSION.SDK_INT < Build.VERSION_CODES.O);
+
     private ArCoreJavaUtils mArCoreJavaUtils;
     private ArCompositorDelegate mArCompositorDelegate;
     private Activity mActivity;
     private boolean mSurfaceReportedReady;
     private Integer mRestoreOrientation;
     private boolean mCleanupInProgress;
-    private SurfaceUiWrapper mSurfaceUi;
+    private ArSurfaceView mArSurfaceView;
     private WebContents mWebContents;
+    private boolean mUseOverlay;
 
     // Set containing all currently touching pointers.
     private HashMap<Integer, PointerData> mPointerIdToData;
@@ -57,7 +57,8 @@ public class ArImmersiveOverlay
     private Integer mPrimaryPointerId;
 
     public void show(@NonNull ArCompositorDelegate compositorDelegate,
-            @NonNull WebContents webContents, @NonNull ArCoreJavaUtils caller, boolean useOverlay) {
+            @NonNull WebContents webContents, @NonNull ArCoreJavaUtils caller, boolean useOverlay,
+            boolean canRenderDomContent) {
         if (DEBUG_LOGS) Log.i(TAG, "constructor");
         mArCoreJavaUtils = caller;
 
@@ -69,85 +70,11 @@ public class ArImmersiveOverlay
         mPointerIdToData = new HashMap<Integer, PointerData>();
         mPrimaryPointerId = null;
 
+        mUseOverlay = useOverlay;
+
         // Choose a concrete implementation to create a drawable Surface and make it fullscreen.
         // It forwards SurfaceHolder callbacks and touch events to this ArImmersiveOverlay object.
-        if (useOverlay) {
-            mSurfaceUi = new SurfaceUiCompositor();
-        } else {
-            mSurfaceUi = new SurfaceUiDialog();
-        }
-    }
-
-    private interface SurfaceUiWrapper {
-        public void onSurfaceVisible();
-        public void forwardMotionEvent(MotionEvent ev);
-        public void destroy();
-    }
-
-    private class SurfaceUiDialog implements SurfaceUiWrapper, DialogInterface.OnCancelListener {
-        private Toast mNotificationToast;
-        private Dialog mDialog;
-        // Android supports multiple variants of fullscreen applications. Use fully-immersive
-        // "sticky" mode without navigation or status bars, and show a toast with a "pull from top
-        // and press back button to exit" prompt.
-        private static final int VISIBILITY_FLAGS_IMMERSIVE = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-
-        public SurfaceUiDialog() {
-            // Create a fullscreen dialog and use its backing Surface for drawing.
-            mDialog = new Dialog(mActivity, android.R.style.Theme_NoTitleBar_Fullscreen);
-            mDialog.getWindow().setBackgroundDrawable(null);
-            mDialog.getWindow().takeSurface(ArImmersiveOverlay.this);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                // Use maximum fullscreen, ignoring a notch if present. This code path is used
-                // for non-DOM-Overlay mode where the browser compositor view isn't visible.
-                // In DOM Overlay mode (SurfaceUiCompositor), Blink configures this separately
-                // via ViewportData::SetExpandIntoDisplayCutout.
-                mDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-                mDialog.getWindow().getAttributes().layoutInDisplayCutoutMode =
-                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-            }
-            View view = mDialog.getWindow().getDecorView();
-            view.setSystemUiVisibility(VISIBILITY_FLAGS_IMMERSIVE);
-            view.setOnTouchListener(ArImmersiveOverlay.this);
-            view.setKeepScreenOn(true);
-            mDialog.setOnCancelListener(this);
-            mDialog.getWindow().setLayout(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            mDialog.show();
-        }
-
-        @Override // SurfaceUiWrapper
-        public void onSurfaceVisible() {
-            if (mNotificationToast != null) {
-                mNotificationToast.cancel();
-            }
-            int resId = R.string.immersive_fullscreen_api_notification;
-            mNotificationToast = Toast.makeText(mActivity, resId, Toast.LENGTH_LONG);
-            mNotificationToast.setGravity(Gravity.TOP | Gravity.CENTER, 0, 0);
-            mNotificationToast.show();
-        }
-
-        @Override // SurfaceUiWrapper
-        public void forwardMotionEvent(MotionEvent ev) {}
-
-        @Override // SurfaceUiWrapper
-        public void destroy() {
-            if (mNotificationToast != null) {
-                mNotificationToast.cancel();
-                mNotificationToast = null;
-            }
-            mDialog.dismiss();
-        }
-
-        @Override // DialogInterface.OnCancelListener
-        public void onCancel(DialogInterface dialog) {
-            if (DEBUG_LOGS) Log.i(TAG, "onCancel");
-            cleanupAndExit();
-        }
+        mArSurfaceView = new ArSurfaceView(canRenderDomContent);
     }
 
     private class PointerData {
@@ -162,44 +89,95 @@ public class ArImmersiveOverlay
         }
     }
 
-    private class SurfaceUiCompositor implements SurfaceUiWrapper {
+    private class ArSurfaceView {
         private SurfaceView mSurfaceView;
         private WebContentsObserver mWebContentsObserver;
+        private boolean mDomSurfaceNeedsConfiguring;
+        private boolean mSurfaceViewNeedsDestruction;
+        private boolean mDestructionFromVisibilityChanged;
+
+        // On some versions of Android (primarily N), the onWindowVisibilityChanged event is
+        // responsible for firing the surfaceDestroyed event which ultimately removes the
+        // SurfaceView from the window hierarchy. However in these cases, the synchronous
+        // call to surfaceDestroyed appears to not expect or account for the View in question
+        // potentially being detached from the window and causes a null reference exception.
+        // This class works around that by setting and checking flags to ensure that on the
+        // OS's where this is necessary, the SurfaceView is only *actually* detached from the
+        // window after the parent onWindowVisibilityChanged event has finished processing
+        // (assuming that the onWindowVisibilityChanged event would have caused the destruction).
+        private class ArSurfaceViewImpl extends SurfaceView {
+            public ArSurfaceViewImpl(Activity activity) {
+                super(activity);
+            }
+
+            @Override
+            protected void onWindowVisibilityChanged(int visibility) {
+                if (mCleanupInProgress) return;
+                mDestructionFromVisibilityChanged = true;
+                super.onWindowVisibilityChanged(visibility);
+                mDestructionFromVisibilityChanged = false;
+
+                if (DEFER_SURFACE_VIEW_DESTRUCTION && mSurfaceViewNeedsDestruction) {
+                    removeAndDestroySurfaceView();
+                    mSurfaceViewNeedsDestruction = false;
+                }
+            }
+        }
 
         @SuppressLint("ClickableViewAccessibility")
-        public SurfaceUiCompositor() {
-            mSurfaceView = new SurfaceView(mActivity);
-            // Keep the camera layer at "default" Z order. Chrome's compositor SurfaceView is in
-            // OverlayVideoMode, putting it in front of that, but behind other non-SurfaceView UI.
+        public ArSurfaceView(boolean canRenderDomContent) {
+            // If we need to show the dom content, but can't render it on top of the camera/gl
+            // layers manually, then we need to configure the DOM content's surface view to
+            // overlay ours. We need to track this so that we ensure we teardown everything
+            // we need to teardown as well.
+            mDomSurfaceNeedsConfiguring = mUseOverlay && !canRenderDomContent;
+
+            // Enable alpha channel for the compositor and make the background transparent.
+            // Note that this needs to happen before we create and parent our SurfaceView, so that
+            // it ends up on top if the Dom Surface did not need configuring.
+            if (DEBUG_LOGS) {
+                Log.i(TAG, "calling mArCompositorDelegate.setOverlayImmersiveArMode(true)");
+            }
+
+            // While it's fine to omit if the page does not use DOMOverlay, once the page does
+            // use DOMOverlay, something appears to have changed such that it becomes required,
+            // otherwies the DOM SurfaceView will be in front of the XR content.
+            mArCompositorDelegate.setOverlayImmersiveArMode(true, mDomSurfaceNeedsConfiguring);
+
+            mSurfaceView = new ArSurfaceViewImpl(mActivity);
             mSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
             mSurfaceView.getHolder().addCallback(ArImmersiveOverlay.this);
             mSurfaceView.setKeepScreenOn(true);
+
+            // Exactly one surface view needs to call setZOrderMediaOverlay(true) otherwise the
+            // resulting z-order is undefined. The DOM content's surface will set it to true if
+            // |mDomSurfaceNeedsConfiguring| is set so we need to do the opposite here.
+            mSurfaceView.setZOrderMediaOverlay(!mDomSurfaceNeedsConfiguring);
 
             // Process touch input events for XR input. This consumes them, they'll be resent to
             // the compositor view via forwardMotionEvent.
             mSurfaceView.setOnTouchListener(ArImmersiveOverlay.this);
 
-            View content = mActivity.getWindow().findViewById(android.R.id.content);
-            ViewGroup group = (ViewGroup) content.getParent();
-            group.addView(mSurfaceView);
+            ViewGroup parent = mArCompositorDelegate.getArSurfaceParent();
 
-            // Enable alpha channel for the compositor and make the background
-            // transparent. (A variant of CompositorView::SetOverlayVideoMode.)
-            if (DEBUG_LOGS) {
-                Log.i(TAG, "calling mArCompositorDelegate.setOverlayImmersiveArMode(true)");
+            // If we need to toggle the parent's visibility, do it before we add the surfaceView.
+            if (mArCompositorDelegate.shouldToggleArSurfaceParentVisibility()) {
+                parent.setVisibility(View.VISIBLE);
             }
-            mArCompositorDelegate.setOverlayImmersiveArMode(true);
+
+            parent.addView(mSurfaceView);
 
             mWebContentsObserver = new WebContentsObserver() {
                 @Override
-                public void hasEffectivelyFullscreenVideoChange(boolean isFullscreen) {
+                public void didToggleFullscreenModeForTab(
+                        boolean enteredFullscreen, boolean willCauseResize) {
                     if (DEBUG_LOGS) {
                         Log.i(TAG,
-                                "hasEffectivelyFullscreenVideoChange(), isFullscreen="
-                                        + isFullscreen);
+                                "didToggleFullscreenModeForTab(), enteredFullscreen="
+                                        + enteredFullscreen);
                     }
 
-                    if (!isFullscreen) {
+                    if (!enteredFullscreen) {
                         cleanupAndExit();
                     }
                 }
@@ -209,22 +187,33 @@ public class ArImmersiveOverlay
             mWebContents.addObserver(mWebContentsObserver);
         }
 
-        @Override // SurfaceUiWrapper
-        public void onSurfaceVisible() {}
-
-        @Override // SurfaceUiWrapper
-        public void forwardMotionEvent(MotionEvent ev) {
-            mArCompositorDelegate.dispatchTouchEvent(ev);
-        }
-
-        @Override // SurfaceUiWrapper
         public void destroy() {
             mWebContents.removeObserver(mWebContentsObserver);
-            View content = mActivity.getWindow().findViewById(android.R.id.content);
-            ViewGroup group = (ViewGroup) content.getParent();
-            group.removeView(mSurfaceView);
+
+            if (!(DEFER_SURFACE_VIEW_DESTRUCTION && mDestructionFromVisibilityChanged)) {
+                removeAndDestroySurfaceView();
+            } else {
+                mSurfaceViewNeedsDestruction = true;
+            }
+
+            mArCompositorDelegate.setOverlayImmersiveArMode(false, mDomSurfaceNeedsConfiguring);
+        }
+
+        private void removeAndDestroySurfaceView() {
+            if (mSurfaceView == null) return;
+            ViewGroup parent = (ViewGroup) mSurfaceView.getParent();
+
+            if (parent != null) {
+                // Remove the surfaceView before changing the parent's visibility, so that we
+                // don't trigger any duplicate destruction events.
+                parent.removeView(mSurfaceView);
+
+                if (mArCompositorDelegate.shouldToggleArSurfaceParentVisibility()) {
+                    parent.setVisibility(View.GONE);
+                }
+            }
+
             mSurfaceView = null;
-            mArCompositorDelegate.setOverlayImmersiveArMode(false);
         }
     }
 
@@ -383,7 +372,9 @@ public class ArImmersiveOverlay
         // We need to consume the touch (returning true) to ensure that we get
         // followup events such as MOVE and UP. DOM Overlay mode needs to forward
         // the touch to the content view so that its UI elements keep working.
-        mSurfaceUi.forwardMotionEvent(ev);
+        if (mUseOverlay) {
+            mArCompositorDelegate.dispatchTouchEvent(ev);
+        }
         return true;
     }
 
@@ -463,7 +454,7 @@ public class ArImmersiveOverlay
         //
         // While it would be preferable to wait until the surface is at the desired fullscreen
         // resolution, i.e. via mActivity.getFullscreenManager().getPersistentFullscreenMode(), that
-        // causes a chicken-and-egg problem for SurfaceUiCompositor mode as used for DOM overlay.
+        // causes a chicken-and-egg problem for ArSurfaceView mode as used for DOM overlay.
         // Chrome's fullscreen mode is triggered by the Blink side setting an element fullscreen
         // after the session starts, but the session doesn't start until we report the drawing
         // surface being ready (including a configured size), so we use this reported size assuming
@@ -485,12 +476,9 @@ public class ArImmersiveOverlay
         if (DEBUG_LOGS) {
             Log.i(TAG, "surfaceChanged size=" + width + "x" + height + " rotation=" + rotation);
         }
-        mArCoreJavaUtils.onDrawingSurfaceReady(holder.getSurface(), rotation, width, height);
+        mArCoreJavaUtils.onDrawingSurfaceReady(holder.getSurface(),
+                mWebContents.getTopLevelNativeWindow(), rotation, width, height);
         mSurfaceReportedReady = true;
-
-        // Show the toast with instructions how to exit fullscreen mode now if necessary.
-        // Not needed in DOM overlay mode which uses FullscreenHtmlApiHandler to do so.
-        mSurfaceUi.onSurfaceVisible();
     }
 
     @Override // SurfaceHolder.Callback2
@@ -507,7 +495,15 @@ public class ArImmersiveOverlay
         if (mCleanupInProgress) return;
         mCleanupInProgress = true;
 
-        mSurfaceUi.destroy();
+        // The surface is destroyed when exiting via "back" button, but also in other lifecycle
+        // situations such as switching apps or toggling the phone's power button. Treat each of
+        // these as exiting the immersive session. At this point, the surface isn't destroyed yet.
+        // but will be soon. We need to give the native code a chance to cleanup any state before
+        // we start any other logic to ensure that the surface is destroyed. We also need to run
+        // the destroy callbacks to ensure consistent state after non-exiting lifecycle events.
+        mArCoreJavaUtils.onDrawingSurfaceDestroyed();
+
+        mArSurfaceView.destroy();
 
         // The JS app may have put an element into fullscreen mode during the immersive session,
         // even if this wasn't visible to the user. Ensure that we fully exit out of any active
@@ -520,11 +516,5 @@ public class ArImmersiveOverlay
         ScreenOrientationProvider.getInstance().setOrientationDelegate(null);
         if (mRestoreOrientation != null) mActivity.setRequestedOrientation(mRestoreOrientation);
         mRestoreOrientation = null;
-
-        // The surface is destroyed when exiting via "back" button, but also in other lifecycle
-        // situations such as switching apps or toggling the phone's power button. Treat each of
-        // these as exiting the immersive session. We need to run the destroy callbacks to ensure
-        // consistent state after non-exiting lifecycle events.
-        mArCoreJavaUtils.onDrawingSurfaceDestroyed();
     }
 }

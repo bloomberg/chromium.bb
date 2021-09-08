@@ -22,9 +22,12 @@ import {copyToClipboard} from './clipboard';
 import {globals} from './globals';
 import {assertExists} from '../base/logging';
 
-
 declare type Setter<T> = (draft: Draft<RecordConfig>, val: T) => void;
 declare type Getter<T> = (cfg: RecordConfig) => T;
+
+function defaultSort(a: string, b: string) {
+  return a.localeCompare(b);
+}
 
 // +---------------------------------------------------------------------------+
 // | Docs link with 'i' in circle icon.                                        |
@@ -51,7 +54,7 @@ class DocsChip implements m.ClassComponent<DocsChipAttrs> {
 export interface ProbeAttrs {
   title: string;
   img: string|null;
-  descr: string;
+  descr: m.Children;
   isEnabled: Getter<boolean>;
   setEnabled: Setter<boolean>;
 }
@@ -70,7 +73,7 @@ export class Probe implements m.ClassComponent<ProbeAttrs> {
     return m(
         `.probe${enabled ? '.enabled' : ''}`,
         attrs.img && m('img', {
-          src: `assets/${attrs.img}`,
+          src: `${globals.root}assets/${attrs.img}`,
           onclick: () => onToggle(!enabled),
         }),
         m('label',
@@ -82,6 +85,43 @@ export class Probe implements m.ClassComponent<ProbeAttrs> {
           }),
           m('span', attrs.title)),
         m('div', m('div', attrs.descr), m('.probe-config', children)));
+  }
+}
+
+// +-------------------------------------------------------------+
+// | Toggle: an on/off switch.
+// +-------------------------------------------------------------+
+
+export interface ToggleAttrs {
+  title: string;
+  descr: string;
+  cssClass?: string;
+  isEnabled: Getter<boolean>;
+  setEnabled: Setter<boolean>;
+}
+
+export class Toggle implements m.ClassComponent<ToggleAttrs> {
+  view({attrs}: m.CVnode<ToggleAttrs>) {
+    const onToggle = (enabled: boolean) => {
+      const traceCfg = produce(globals.state.recordConfig, draft => {
+        attrs.setEnabled(draft, enabled);
+      });
+      globals.dispatch(Actions.setRecordConfig({config: traceCfg}));
+    };
+
+    const enabled = attrs.isEnabled(globals.state.recordConfig);
+
+    return m(
+        `.toggle${enabled ? '.enabled' : ''}${attrs.cssClass || ''}`,
+        m('label',
+          m(`input[type=checkbox]`, {
+            checked: enabled,
+            oninput: (e: InputEvent) => {
+              onToggle((e.target as HTMLInputElement).checked);
+            },
+          }),
+          m('span', attrs.title)),
+        m('.descr', attrs.descr));
   }
 }
 
@@ -183,13 +223,14 @@ export interface DropdownAttrs {
   title: string;
   cssClass?: string;
   options: Map<string, string>;
+  sort?: (a: string, b: string) => number;
   get: Getter<string[]>;
   set: Setter<string[]>;
 }
 
 export class Dropdown implements m.ClassComponent<DropdownAttrs> {
   resetScroll(dom: HTMLSelectElement) {
-    // Chrome seems to override the scroll offset on creation without this,
+    // Chrome seems to override the scroll offset on creationa, b without this,
     // even though we call it after having marked the options as selected.
     setTimeout(() => {
       // Don't reset the scroll position if the element is still focused.
@@ -214,7 +255,10 @@ export class Dropdown implements m.ClassComponent<DropdownAttrs> {
     const options: m.Children = [];
     const selItems = attrs.get(globals.state.recordConfig);
     let numSelected = 0;
-    for (const [key, label] of attrs.options) {
+    const entries = [...attrs.options.entries()];
+    const f = attrs.sort === undefined ? defaultSort : attrs.sort;
+    entries.sort((a, b) => f(a[1], b[1]));
+    for (const [key, label] of entries) {
       const opts = {value: key, selected: false};
       if (selItems.includes(key)) {
         opts.selected = true;

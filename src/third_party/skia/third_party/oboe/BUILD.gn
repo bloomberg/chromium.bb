@@ -5,10 +5,18 @@
 
 import("../third_party.gni")
 
+config("oboe_lib") {
+  # Oboe does not include this explicitly
+  cflags = [ "--includeassert.h" ]
+}
+
 third_party("oboe") {
+  configs = [ ":oboe_lib" ]
+
   public_include_dirs = [
     "../externals/oboe/include",
     "../externals/oboe/samples/parselib/src/main/cpp",
+    "../externals/oboe/src/flowgraph",
   ]
   include_dirs = [ "../externals/oboe/src" ]
 
@@ -43,10 +51,12 @@ third_party("oboe") {
     "../externals/oboe/src/fifo/FifoController.cpp",
     "../externals/oboe/src/fifo/FifoControllerBase.cpp",
     "../externals/oboe/src/fifo/FifoControllerIndirect.cpp",
+    "../externals/oboe/src/flowgraph/ChannelCountConverter.cpp",
     "../externals/oboe/src/flowgraph/ClipToRange.cpp",
     "../externals/oboe/src/flowgraph/FlowGraphNode.cpp",
     "../externals/oboe/src/flowgraph/ManyToMultiConverter.cpp",
     "../externals/oboe/src/flowgraph/MonoToMultiConverter.cpp",
+    "../externals/oboe/src/flowgraph/MultiToMonoConverter.cpp",
     "../externals/oboe/src/flowgraph/RampLinear.cpp",
     "../externals/oboe/src/flowgraph/SampleRateConverter.cpp",
     "../externals/oboe/src/flowgraph/SinkFloat.cpp",

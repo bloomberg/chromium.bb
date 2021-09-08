@@ -68,7 +68,8 @@ PictureLayerTiling::PictureLayerTiling(
 
 #if DCHECK_IS_ON()
   gfx::SizeF scaled_source_size(gfx::ScaleSize(
-      gfx::SizeF(raster_source_->GetSize()), raster_transform.scale().width()));
+      gfx::SizeF(raster_source_->GetSize()), raster_transform.scale().x(),
+      raster_transform.scale().y()));
   gfx::Size floored_size = gfx::ToFlooredSize(scaled_source_size);
   bool is_width_empty =
       !floored_size.width() &&
@@ -99,7 +100,7 @@ Tile* PictureLayerTiling::CreateTile(const Tile::CreateInfo& info) {
   TileMapKey key(i, j);
   DCHECK(tiles_.find(key) == tiles_.end());
 
-  if (!raster_source_->CoversRect(info.enclosing_layer_rect, *client_))
+  if (!raster_source_->IntersectsRect(info.enclosing_layer_rect, *client_))
     return nullptr;
 
   all_tiles_done_ = false;
@@ -371,8 +372,8 @@ bool PictureLayerTiling::ShouldCreateTileAt(
 
   // If the active tree can't create a tile, because of its raster source, then
   // the pending tree should create one.
-  if (!active_twin->raster_source()->CoversRect(info.enclosing_layer_rect,
-                                                *active_twin->client()))
+  if (!active_twin->raster_source()->IntersectsRect(info.enclosing_layer_rect,
+                                                    *active_twin->client()))
     return true;
 
   const Region* layer_invalidation = client_->GetPendingInvalidation();
@@ -412,16 +413,16 @@ PictureLayerTiling::CoverageIterator::CoverageIterator(
     float coverage_scale,
     const gfx::Rect& coverage_rect)
     : tiling_(tiling), coverage_rect_(coverage_rect),
-      coverage_to_content_(tiling->raster_transform().scale().width()  / coverage_scale,
-                           tiling->raster_transform().scale().height() /
+      coverage_to_content_(tiling->raster_transform().scale().x()  / coverage_scale,
+                           tiling->raster_transform().scale().y() /
                            (coverage_scale * tiling->raster_transform().scale_ratio()),
                            gfx::Vector2dF(0.f, 0.f)) {
   DCHECK(tiling_);
   // In order to avoid artifacts in geometry_rect scaling and clamping to ints,
   // the |coverage_scale| should always be at least as big as the tiling's
   // raster scales.
-  DCHECK_GE(coverage_scale, tiling_->raster_transform_.scale().width());
-  DCHECK_GE(coverage_scale * tiling->raster_transform().scale_ratio(), tiling_->raster_transform_.scale().height());
+  DCHECK_GE(coverage_scale, tiling_->raster_transform_.scale().x());
+  DCHECK_GE(coverage_scale * tiling->raster_transform().scale_ratio(), tiling_->raster_transform_.scale().y());
 
   // Clamp |coverage_rect| to the bounds of this tiling's raster source.
   coverage_rect_max_bounds_ =
@@ -626,8 +627,8 @@ void PictureLayerTiling::ComputeTilePriorityRects(
   }
 
   gfx::SizeF content_to_screen_scale(
-      ideal_contents_scale / raster_transform_.scale().width(),
-      (ideal_contents_scale * raster_transform_.scale_ratio()) / raster_transform_.scale().height());
+      ideal_contents_scale / raster_transform_.scale().x(),
+      (ideal_contents_scale * raster_transform_.scale_ratio()) / raster_transform_.scale().y());
 
   const gfx::Rect* input_rects[] = {
       &visible_rect_in_layer_space, &skewport_in_layer_space,
@@ -902,7 +903,8 @@ PrioritizedTile PictureLayerTiling::MakePrioritizedTile(
     Tile* tile,
     PriorityRectType priority_rect_type) const {
   DCHECK(tile);
-  DCHECK(raster_source()->CoversRect(tile->enclosing_layer_rect(), *client_))
+  DCHECK(
+      raster_source()->IntersectsRect(tile->enclosing_layer_rect(), *client_))
       << "Recording rect: "
       << EnclosingLayerRectFromContentsRect(tile->content_rect()).ToString();
 
@@ -920,6 +922,14 @@ PrioritizedTile PictureLayerTiling::MakePrioritizedTile(
       (tile_priority.distance_to_visible > max_preraster_distance_ ||
        tile_priority.distance_to_visible >
            0.5f * max_skewport_extent_in_screen_space_);
+
+  // If the tile is within max_skewport_extent and a scroll interaction
+  // experiencing checkerboarding is currently taking place, then
+  // continue to rasterize the tile right now rather than for images only.
+  if (tile_priority.distance_to_visible <
+          max_skewport_extent_in_screen_space_ &&
+      client_->ScrollInteractionInProgress() && client_->DidCheckerboardQuad())
+    process_for_images_only = false;
   return PrioritizedTile(tile, this, tile_priority, IsTileOccluded(tile),
                          process_for_images_only,
                          ShouldDecodeCheckeredImagesForTile(tile));
@@ -1005,14 +1015,18 @@ void PictureLayerTiling::GetAllPrioritizedTilesForTracing(
 void PictureLayerTiling::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetInteger("num_tiles", base::saturated_cast<int>(tiles_.size()));
-  state->SetDouble("content_scale", contents_scale_key());
+  state->SetDouble("content_scale", std::max(contents_scale_key2().x(), contents_scale_key2().y()));
 
-  state->BeginArray("raster_transform");
+  state->BeginDictionary("raster_transform");
+  state->BeginArray("scale");
+  state->AppendDouble(raster_transform_.scale().x());
+  state->AppendDouble(raster_transform_.scale().y());
+  state->EndArray();
+  state->BeginArray("translation");
   state->AppendDouble(raster_transform_.translation().x());
   state->AppendDouble(raster_transform_.translation().y());
-  state->AppendDouble(raster_transform_.scale().width());
-  state->AppendDouble(raster_transform_.scale().height());
   state->EndArray();
+  state->EndDictionary();
 
   MathUtil::AddToTracedValue("visible_rect", current_visible_rect_, state);
   MathUtil::AddToTracedValue("skewport_rect", current_skewport_rect_, state);

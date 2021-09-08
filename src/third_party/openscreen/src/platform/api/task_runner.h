@@ -22,7 +22,7 @@ namespace openscreen {
 //     B runs (even if A and B run on different threads).
 class TaskRunner {
  public:
-  using Task = std::packaged_task<void() noexcept>;
+  using Task = std::packaged_task<void()>;
 
   virtual ~TaskRunner() = default;
 

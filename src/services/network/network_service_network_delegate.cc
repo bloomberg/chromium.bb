@@ -88,13 +88,12 @@ int NetworkServiceNetworkDelegate::OnBeforeURLRequest(
 
   MaybeTruncateReferrer(request, *effective_url);
 
-  NetworkService* network_service = network_context_->network_service();
-  if (network_service)
-    network_service->OnBeforeURLRequest();
-
   if (!loader)
     return net::OK;
 
+  loader->OnBeforeURLRequest();
+
+  NetworkService* network_service = network_context_->network_service();
   if (network_service) {
     loader->SetAllowReportingRawHeaders(network_service->HasRawHeadersAccess(
         loader->GetProcessId(), *effective_url));
@@ -125,7 +124,7 @@ int NetworkServiceNetworkDelegate::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     const net::IPEndPoint& endpoint,
-    base::Optional<GURL>* preserve_fragment_on_redirect_url) {
+    absl::optional<GURL>* preserve_fragment_on_redirect_url) {
   auto chain = base::MakeRefCounted<PendingCallbackChain>(std::move(callback));
   URLLoader* url_loader = URLLoader::ForRequest(*request);
   if (url_loader) {
@@ -178,7 +177,7 @@ void NetworkServiceNetworkDelegate::OnCompleted(net::URLRequest* request,
 
 void NetworkServiceNetworkDelegate::OnPACScriptError(
     int line_number,
-    const base::string16& error) {
+    const std::u16string& error) {
   if (!proxy_error_client_)
     return;
 
@@ -238,7 +237,7 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
 bool NetworkServiceNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin) const {
+    const absl::optional<url::Origin>& top_frame_origin) const {
   return !network_context_->cookie_manager()
               ->cookie_settings()
               .IsCookieAccessAllowed(url, site_for_cookies.RepresentativeUrl(),
@@ -321,11 +320,16 @@ int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(
     net::CompletionOnceCallback callback,
     const net::HttpResponseHeaders* original_response_headers) {
   DCHECK(request);
-  if (!original_response_headers || !network_context_->client())
+  if (!original_response_headers)
     return net::OK;
 
   URLLoader* url_loader = URLLoader::ForRequest(*request);
   if (!url_loader)
+    return net::OK;
+
+  auto* url_loader_network_observer =
+      url_loader->GetURLLoaderNetworkServiceObserver();
+  if (!url_loader_network_observer)
     return net::OK;
 
   std::string header_value;
@@ -334,8 +338,7 @@ int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(
     return net::OK;
   }
 
-  network_context_->client()->OnClearSiteData(
-      url_loader->GetProcessId(), url_loader->GetRenderFrameId(),
+  url_loader_network_observer->OnClearSiteData(
       request->url(), header_value, request->load_flags(),
       base::BindOnce(&NetworkServiceNetworkDelegate::FinishedClearSiteData,
                      weak_ptr_factory_.GetWeakPtr(), request->GetWeakPtr(),

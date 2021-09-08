@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/pickle.h"
 #include "components/sessions/core/command_storage_backend.h"
 #include "components/sessions/core/session_types.h"
@@ -52,8 +54,7 @@ std::unique_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
   static const size_t max_state_size =
       std::numeric_limits<SessionCommand::size_type>::max() - 1024;
   navigation.WriteToPickle(max_state_size, &pickle);
-  return std::unique_ptr<SessionCommand>(
-      new SessionCommand(command_id, pickle));
+  return std::make_unique<SessionCommand>(command_id, pickle);
 }
 
 std::unique_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
@@ -72,8 +73,7 @@ std::unique_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
 
   WriteStringToPickle(pickle, &bytes_written, max_id_size, extension_id);
 
-  return std::unique_ptr<SessionCommand>(
-      new SessionCommand(command_id, pickle));
+  return std::make_unique<SessionCommand>(command_id, pickle);
 }
 
 std::unique_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
@@ -106,8 +106,7 @@ std::unique_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
         user_agent_override.opaque_ua_metadata_override.value());
   }
 
-  return std::unique_ptr<SessionCommand>(
-      new SessionCommand(command_id, pickle));
+  return std::make_unique<SessionCommand>(command_id, pickle);
 }
 
 std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
@@ -126,8 +125,7 @@ std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
 
   WriteStringToPickle(pickle, &bytes_written, max_id_size, app_name);
 
-  return std::unique_ptr<SessionCommand>(
-      new SessionCommand(command_id, pickle));
+  return std::make_unique<SessionCommand>(command_id, pickle);
 }
 
 std::unique_ptr<SessionCommand> CreateSetWindowUserTitleCommand(
@@ -189,7 +187,7 @@ bool RestoreSetTabUserAgentOverrideCommand2(
     const SessionCommand& command,
     SessionID* tab_id,
     std::string* user_agent_override,
-    base::Optional<std::string>* opaque_ua_metadata_override) {
+    absl::optional<std::string>* opaque_ua_metadata_override) {
   std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle)
     return false;
@@ -204,7 +202,7 @@ bool RestoreSetTabUserAgentOverrideCommand2(
   if (!iterator.ReadBool(&has_ua_metadata_override))
     return false;
   if (!has_ua_metadata_override) {
-    *opaque_ua_metadata_override = base::nullopt;
+    *opaque_ua_metadata_override = absl::nullopt;
     return true;
   }
 

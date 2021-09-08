@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/online_login_helper.h"
 
+#include "chrome/browser/ash/login/signin_partition_manager.h"
+#include "chrome/browser/ash/login/ui/login_display_host_webui.h"
+#include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/signin_partition_manager.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -15,6 +16,7 @@
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/auth/challenge_response/cert_utils.h"
 #include "chromeos/login/auth/cryptohome_key_constants.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -73,7 +75,9 @@ void SetCookieForPartition(
   const GURL& gaia_url = GaiaUrls::GetInstance()->gaia_url();
   std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
       gaia_url, gaps_cookie_value, base::Time::Now(),
-      base::nullopt /* server_time */));
+      absl::nullopt /* server_time */));
+  if (!cc)
+    return;
 
   const net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   partition->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
@@ -107,10 +111,11 @@ bool BuildUserContextForGaiaSignIn(
     bool using_saml_api,
     const std::string& password,
     const SamlPasswordAttributes& password_attributes,
+    const absl::optional<SyncTrustedVaultKeys>& sync_trusted_vault_keys,
     const LoginClientCertUsageObserver&
         extension_provided_client_cert_usage_observer,
     UserContext* user_context,
-    std::string* error_message) {
+    SigninError* error) {
   *user_context = UserContext(user_type, account_id);
   if (using_saml &&
       extension_provided_client_cert_usage_observer.ClientCertsWereUsed()) {
@@ -119,15 +124,15 @@ bool BuildUserContextForGaiaSignIn(
     std::string extension_id;
     if (!extension_provided_client_cert_usage_observer.GetOnlyUsedClientCert(
             &saml_client_cert, &signature_algorithms, &extension_id)) {
-      *error_message = l10n_util::GetStringUTF8(
-          IDS_CHALLENGE_RESPONSE_AUTH_MULTIPLE_CLIENT_CERTS_ERROR);
+      if (error)
+        *error = SigninError::kChallengeResponseAuthMultipleClientCerts;
       return false;
     }
     ChallengeResponseKey challenge_response_key;
     if (!ExtractChallengeResponseKeyFromCert(
             *saml_client_cert, signature_algorithms, &challenge_response_key)) {
-      *error_message = l10n_util::GetStringUTF8(
-          IDS_CHALLENGE_RESPONSE_AUTH_INVALID_CLIENT_CERT_ERROR);
+      if (error)
+        *error = SigninError::kChallengeResponseAuthInvalidClientCert;
       return false;
     }
     challenge_response_key.set_extension_id(extension_id);
@@ -148,6 +153,11 @@ bool BuildUserContextForGaiaSignIn(
       user_context->SetSamlPasswordAttributes(password_attributes);
     }
   }
+
+  if (sync_trusted_vault_keys.has_value()) {
+    user_context->SetSyncTrustedVaultKeys(*sync_trusted_vault_keys);
+  }
+
   return true;
 }
 

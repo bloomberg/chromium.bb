@@ -40,6 +40,7 @@
 #define LOG_ERROR(FORMAT, ...)                                             \
   __android_log_print(ANDROID_LOG_ERROR, TAG, "%s: " FORMAT, __FUNCTION__, \
                       ##__VA_ARGS__)
+#define PLOG_ERROR(MESSAGE) LOG_ERROR(MESSAGE ": %s", strerror(errno))
 
 #define UNUSED __attribute__((unused))
 
@@ -93,7 +94,7 @@ class String {
 
 // Return true iff |address| is a valid address for the target CPU.
 inline bool IsValidAddress(jlong address) {
-  return static_cast<jlong>(static_cast<size_t>(address)) == address;
+  return static_cast<jlong>(static_cast<uintptr_t>(address)) == address;
 }
 
 // Find the jclass JNI reference corresponding to a given |class_name|.
@@ -123,11 +124,6 @@ extern bool InitStaticFieldId(JNIEnv* env,
                               const char* field_sig,
                               jfieldID* field_id);
 
-// Use Android ASLR to create a random library load address.
-// |env| is the current JNI environment handle, and |clazz| a class.
-// Returns the address selected by ASLR.
-extern jlong GetRandomBaseLoadAddress(JNIEnv* env, jclass clazz);
-
 // A class used to model the field IDs of the org.chromium.base.Linker
 // LibInfo inner class, used to communicate data with the Java side
 // of the linker.
@@ -155,7 +151,7 @@ struct LibInfo_class {
 
   void SetLoadInfo(JNIEnv* env,
                    jobject library_info_obj,
-                   size_t load_address,
+                   uintptr_t load_address,
                    size_t load_size) {
     env->SetLongField(library_info_obj, load_address_id, load_address);
     env->SetLongField(library_info_obj, load_size_id, load_size);
@@ -163,7 +159,7 @@ struct LibInfo_class {
 
   void SetRelroInfo(JNIEnv* env,
                     jobject library_info_obj,
-                    size_t relro_start,
+                    uintptr_t relro_start,
                     size_t relro_size,
                     int relro_fd) {
     env->SetLongField(library_info_obj, relro_start_id, relro_start);
@@ -171,15 +167,30 @@ struct LibInfo_class {
     env->SetIntField(library_info_obj, relro_fd_id, relro_fd);
   }
 
-  // Use this instance to convert a RelroInfo reference into
-  // a crazy_library_info_t.
+  bool GetLoadInfo(JNIEnv* env,
+                   jobject library_info_obj,
+                   uintptr_t* load_address,
+                   size_t* load_size) {
+    if (load_address) {
+      jlong java_address = env->GetLongField(library_info_obj, load_address_id);
+      if (!IsValidAddress(java_address))
+        return false;
+      *load_address = static_cast<uintptr_t>(java_address);
+    }
+    if (load_size) {
+      *load_size = static_cast<uintptr_t>(
+          env->GetLongField(library_info_obj, load_size_id));
+    }
+    return true;
+  }
+
   void GetRelroInfo(JNIEnv* env,
                     jobject library_info_obj,
-                    size_t* relro_start,
+                    uintptr_t* relro_start,
                     size_t* relro_size,
                     int* relro_fd) {
     if (relro_start) {
-      *relro_start = static_cast<size_t>(
+      *relro_start = static_cast<uintptr_t>(
           env->GetLongField(library_info_obj, relro_start_id));
     }
 
@@ -194,8 +205,10 @@ struct LibInfo_class {
   }
 };
 
-// Variable containing LibInfo for the loaded library.
+// Variable containing LibInfo accessors for the loaded library.
 extern LibInfo_class s_lib_info_fields;
+
+extern jint JNI_OnLoad(JavaVM* vm, void* reserved);
 
 }  // namespace chromium_android_linker
 

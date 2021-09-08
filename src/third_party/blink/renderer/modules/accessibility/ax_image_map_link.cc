@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
@@ -50,30 +51,33 @@ HTMLMapElement* AXImageMapLink::MapElement() const {
   return Traversal<HTMLMapElement>::FirstAncestor(*area);
 }
 
-AXObject* AXImageMapLink::ComputeParent() const {
-  DCHECK(!IsDetached());
-  if (parent_)
-    return parent_;
+// static
+AXObject* AXImageMapLink::GetAXObjectForImageMap(AXObjectCacheImpl& cache,
+                                                 Node* area) {
+  DCHECK(area);
+  DCHECK(IsA<HTMLAreaElement>(area));
 
-  if (!MapElement())
+  HTMLMapElement* map = Traversal<HTMLMapElement>::FirstAncestor(*area);
+  if (!map)
     return nullptr;
 
-  return AXObjectCache().GetOrCreate(MapElement()->GetLayoutObject());
+  return cache.GetOrCreate(static_cast<Node*>(map->ImageElement()));
 }
 
-ax::mojom::Role AXImageMapLink::RoleValue() const {
-  const AtomicString& aria_role =
-      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
-  if (!aria_role.IsEmpty())
-    return AXObject::AriaRoleToWebCoreRole(aria_role);
-
+ax::mojom::blink::Role AXImageMapLink::NativeRoleIgnoringAria() const {
   // https://www.w3.org/TR/html-aam-1.0/#html-element-role-mappings
   // <area> tags without an href should be treated as static text.
+  // If the area has child nodes, those will be rendered naturally, and the
+  // role needs to be a generic container role that allows children.
   KURL url = Url();
-  if (url.IsNull() || url.IsEmpty())
-    return ax::mojom::Role::kStaticText;
+  bool has_url = !url.IsNull() && !url.IsEmpty();
+  if (has_url)
+    return ax::mojom::blink::Role::kLink;
 
-  return ax::mojom::Role::kLink;
+  if (!GetElement()->hasChildren())
+    return ax::mojom::blink::Role::kStaticText;
+
+  return ax::mojom::blink::Role::kGenericContainer;
 }
 
 bool AXImageMapLink::ComputeAccessibilityIsIgnored(

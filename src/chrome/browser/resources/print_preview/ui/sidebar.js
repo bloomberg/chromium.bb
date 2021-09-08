@@ -20,13 +20,13 @@ import './more_settings.js';
 import './other_options_settings.js';
 import './pages_per_sheet_settings.js';
 import './pages_settings.js';
-// <if expr="chromeos">
+// <if expr="chromeos or lacros">
 import './pin_settings.js';
 // </if>
 import './print_preview_vars_css.js';
 import './scaling_settings.js';
 import '../strings.m.js';
-// <if expr="not chromeos">
+// <if expr="not chromeos and not lacros">
 import './link_container.js';
 // </if>
 
@@ -145,15 +145,13 @@ Polymer({
    * @param {string} defaultPrinter The system default printer ID.
    * @param {string} serializedDestinationSelectionRulesStr String with rules
    *     for selecting the default destination.
-   * @param {?Array<string>} userAccounts The signed in user accounts.
-   * @param {boolean} syncAvailable
    * @param {boolean} pdfPrinterDisabled Whether the PDF printer is disabled.
    * @param {boolean} isDriveMounted Whether Google Drive is mounted. Only used
         on Chrome OS.
    */
   init(
       appKioskMode, defaultPrinter, serializedDestinationSelectionRulesStr,
-      userAccounts, syncAvailable, pdfPrinterDisabled, isDriveMounted) {
+      pdfPrinterDisabled, isDriveMounted) {
     this.isInAppKioskMode_ = appKioskMode;
     pdfPrinterDisabled = this.isInAppKioskMode_ || pdfPrinterDisabled;
     // If PDF printing is disabled, then Save to Drive also needs to be disabled
@@ -161,7 +159,7 @@ Polymer({
     isDriveMounted = !pdfPrinterDisabled && isDriveMounted;
     this.$.destinationSettings.init(
         defaultPrinter, pdfPrinterDisabled, isDriveMounted,
-        serializedDestinationSelectionRulesStr, userAccounts, syncAvailable);
+        serializedDestinationSelectionRulesStr);
   },
 
   /**

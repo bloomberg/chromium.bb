@@ -44,7 +44,8 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
 
     @Override
     public boolean isOpenInNewWindowEnabled() {
-        return MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(mActivity);
+        return MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(mActivity)
+                || MultiWindowUtils.getInstance().canEnterMultiWindowMode(mActivity);
     }
 
     @Override
@@ -77,6 +78,12 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
         }
 
         return loadingTab;
+    }
+
+    @Override
+    public Tab openUrlInGroup(int windowOpenDisposition, LoadUrlParams loadUrlParams) {
+        return mTabModelSelector.openNewTab(loadUrlParams,
+                TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP, mTab, /* incognito = */ false);
     }
 
     private void openUrlInNewWindow(LoadUrlParams loadUrlParams) {

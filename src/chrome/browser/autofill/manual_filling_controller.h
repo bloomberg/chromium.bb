@@ -5,14 +5,11 @@
 #ifndef CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_CONTROLLER_H_
 #define CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_CONTROLLER_H_
 
-#include <memory>
-#include <string>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 // Controller interface for the view that includes the keyboard accessory and
@@ -46,7 +43,6 @@ class ManualFillingController {
     PASSWORD_FALLBACKS,
     CREDIT_CARD_FALLBACKS,
     ADDRESS_FALLBACKS,
-    TOUCH_TO_FILL,
   };
 
   ManualFillingController() = default;
@@ -71,16 +67,23 @@ class ManualFillingController {
   // Depending on the type of the given |accessory_sheet_data|, this updates a
   // accessory sheet. Controllers to handle touch events are determined by the
   // type of the sheet.
+  // TODO(crbug.com/1169167): Deprecated by querying data on demand and use
+  // AccessoryController::RegisterFillingSourceObserver to get this signal
+  // timely.
   virtual void RefreshSuggestions(
       const autofill::AccessorySheetData& accessory_sheet_data) = 0;
 
   // Notifies that the focused field changed which allows the controller to
   // update the UI visibility.
   virtual void NotifyFocusedInputChanged(
+      autofill::FieldRendererId focused_field_id,
       autofill::mojom::FocusedFieldType focused_field_type) = 0;
 
   // Reports for a source whether it provides suggestions or just default
   // options. The controller then updates the UI visibility accordingly.
+  // TODO(crbug.com/1169167): Use
+  // AccessoryController::RegisterFillingSourceObserver to get this signal from
+  // sheet controllers.
   virtual void UpdateSourceAvailability(FillingSource source,
                                         bool has_suggestions) = 0;
 
@@ -115,6 +118,12 @@ class ManualFillingController {
   // such as "Save passwords for this site".
   virtual void OnToggleChanged(autofill::AccessoryAction toggled_action,
                                bool enabled) const = 0;
+
+  // Called by the UI to explicitly request a new sheet of the given type.
+  virtual void RequestAccessorySheet(
+      autofill::AccessoryTabType tab_type,
+      base::OnceCallback<void(const autofill::AccessorySheetData&)>
+          callback) = 0;
 
   // -----------------
   // Member accessors:

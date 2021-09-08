@@ -14,14 +14,16 @@ const base::FilePath::CharType kSafeBrowsingBaseFilename[] =
 
 const base::FilePath::CharType kCookiesFile[] = FILE_PATH_LITERAL(" Cookies");
 
-// The URL for the Safe Browsing page.
-const char kSafeBrowsingUrl[] = "https://safebrowsing.google.com/";
-
 const char kCustomCancelReasonForURLLoader[] = "SafeBrowsing";
 
 const int kNetErrorCodeForSafeBrowsing = net::ERR_BLOCKED_BY_CLIENT;
 
 const char kSafeBrowsingEnabledHistogramName[] = "SafeBrowsing.Pref.General";
+
+const char kArtificialCachedPhishGuardVerdictFlag[] =
+    "mark_as_phish_guard_phishing";
+
+const char kAuthHeaderBearer[] = "Bearer ";
 
 const std::vector<std::string> GetExcludedCountries() {
   // Safe Browsing endpoint doesn't exist.

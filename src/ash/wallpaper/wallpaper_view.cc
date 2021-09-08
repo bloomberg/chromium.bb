@@ -14,6 +14,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "cc/paint/render_surface_filters.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -138,7 +139,7 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
     small_canvas.DrawImageInt(wallpaper, src.x(), src.y(), src.width(),
                               src.height(), 0, 0, quality_adjusted_rect.width(),
                               quality_adjusted_rect.height(), true);
-    small_image_ = base::make_optional(
+    small_image_ = absl::make_optional(
         gfx::ImageSkia::CreateFrom1xBitmap(small_canvas.GetBitmap()));
   }
 
@@ -155,8 +156,8 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
 
   // Create the blur and brightness filter to apply to the downsampled image.
   cc::FilterOperations operations;
-  operations.Append(cc::FilterOperation::CreateBlurFilter(
-      blur, SkBlurImageFilter::kClamp_TileMode));
+  operations.Append(
+      cc::FilterOperation::CreateBlurFilter(blur, SkTileMode::kClamp));
   sk_sp<cc::PaintFilter> filter = cc::RenderSurfaceFilters::BuildImageFilter(
       operations, gfx::SizeF(dst.size()), gfx::Vector2dF());
 

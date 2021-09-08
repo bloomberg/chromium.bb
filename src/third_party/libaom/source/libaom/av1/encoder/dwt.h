@@ -17,9 +17,8 @@
 
 #define DWT_MAX_LENGTH 64
 
-void av1_fdwt8x8(tran_low_t *input, tran_low_t *output, int stride);
-void av1_fdwt8x8_uint8_input_c(uint8_t *input, tran_low_t *output, int stride,
-                               int hbd);
-int av1_haar_ac_sad_8x8_uint8_input(uint8_t *input, int stride, int hbd);
+void av1_fdwt8x8_uint8_input_c(const uint8_t *input, tran_low_t *output,
+                               int stride, int hbd);
+int av1_haar_ac_sad_8x8_uint8_input(const uint8_t *input, int stride, int hbd);
 
 #endif  // AOM_AV1_ENCODER_DWT_H_

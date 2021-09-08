@@ -13,11 +13,12 @@
 #include "net/base/filename_util.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/base/clipboard/file_info.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
-#include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/xproto_util.h"
 
 // Note: the GetBlah() methods are used immediately by the
 // web_contents_view_aura.cc:PrepareDropData(), while the omnibox is a
@@ -43,14 +44,14 @@ XOSExchangeDataProvider::XOSExchangeDataProvider(
       own_window_(false),
       x_window_(x_window),
       format_map_(selection),
-      selection_owner_(connection_, x_window_, gfx::GetAtom(kDndSelection)) {}
+      selection_owner_(connection_, x_window_, x11::GetAtom(kDndSelection)) {}
 
 XOSExchangeDataProvider::XOSExchangeDataProvider()
     : connection_(x11::Connection::Get()),
       x_root_window_(ui::GetX11RootWindow()),
       own_window_(true),
-      x_window_(CreateDummyWindow("Chromium Drag & Drop Window")),
-      selection_owner_(connection_, x_window_, gfx::GetAtom(kDndSelection)) {}
+      x_window_(x11::CreateDummyWindow("Chromium Drag & Drop Window")),
+      selection_owner_(connection_, x_window_, x11::GetAtom(kDndSelection)) {}
 
 XOSExchangeDataProvider::~XOSExchangeDataProvider() {
   if (own_window_)
@@ -80,16 +81,16 @@ std::unique_ptr<OSExchangeDataProvider> XOSExchangeDataProvider::Clone() const {
 
 void XOSExchangeDataProvider::MarkOriginatedFromRenderer() {
   std::string empty;
-  format_map_.Insert(gfx::GetAtom(kRendererTaint),
+  format_map_.Insert(x11::GetAtom(kRendererTaint),
                      scoped_refptr<base::RefCountedMemory>(
                          base::RefCountedString::TakeString(&empty)));
 }
 
 bool XOSExchangeDataProvider::DidOriginateFromRenderer() const {
-  return format_map_.find(gfx::GetAtom(kRendererTaint)) != format_map_.end();
+  return format_map_.find(x11::GetAtom(kRendererTaint)) != format_map_.end();
 }
 
-void XOSExchangeDataProvider::SetString(const base::string16& text_data) {
+void XOSExchangeDataProvider::SetString(const std::u16string& text_data) {
   if (HasString())
     return;
 
@@ -97,28 +98,28 @@ void XOSExchangeDataProvider::SetString(const base::string16& text_data) {
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedString::TakeString(&utf8));
 
-  format_map_.Insert(gfx::GetAtom(kMimeTypeText), mem);
-  format_map_.Insert(gfx::GetAtom(kMimeTypeLinuxText), mem);
-  format_map_.Insert(gfx::GetAtom(kMimeTypeLinuxString), mem);
-  format_map_.Insert(gfx::GetAtom(kMimeTypeLinuxUtf8String), mem);
+  format_map_.Insert(x11::GetAtom(kMimeTypeText), mem);
+  format_map_.Insert(x11::GetAtom(kMimeTypeLinuxText), mem);
+  format_map_.Insert(x11::GetAtom(kMimeTypeLinuxString), mem);
+  format_map_.Insert(x11::GetAtom(kMimeTypeLinuxUtf8String), mem);
 }
 
 void XOSExchangeDataProvider::SetURL(const GURL& url,
-                                     const base::string16& title) {
+                                     const std::u16string& title) {
   // TODO(dcheng): The original GTK code tries very hard to avoid writing out an
   // empty title. Is this necessary?
   if (url.is_valid()) {
     // Mozilla's URL format: (UTF16: URL, newline, title)
-    base::string16 spec = base::UTF8ToUTF16(url.spec());
+    std::u16string spec = base::UTF8ToUTF16(url.spec());
 
     std::vector<unsigned char> data;
     ui::AddString16ToVector(spec, &data);
-    ui::AddString16ToVector(base::ASCIIToUTF16("\n"), &data);
+    ui::AddString16ToVector(u"\n", &data);
     ui::AddString16ToVector(title, &data);
     scoped_refptr<base::RefCountedMemory> mem(
         base::RefCountedBytes::TakeVector(&data));
 
-    format_map_.Insert(gfx::GetAtom(kMimeTypeMozillaURL), mem);
+    format_map_.Insert(x11::GetAtom(kMimeTypeMozillaURL), mem);
 
     // Set a string fallback as well.
     SetString(spec);
@@ -138,7 +139,7 @@ void XOSExchangeDataProvider::SetURL(const GURL& url,
     std::string netscape_url = url.spec();
     netscape_url += "\n";
     netscape_url += base::UTF16ToUTF8(title);
-    format_map_.Insert(gfx::GetAtom(kNetscapeURL),
+    format_map_.Insert(x11::GetAtom(kNetscapeURL),
                        scoped_refptr<base::RefCountedMemory>(
                            base::RefCountedString::TakeString(&netscape_url)));
   }
@@ -162,7 +163,7 @@ void XOSExchangeDataProvider::SetFilenames(
   std::string joined_data = base::JoinString(paths, "\n");
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedString::TakeString(&joined_data));
-  format_map_.Insert(gfx::GetAtom(kMimeTypeURIList), mem);
+  format_map_.Insert(x11::GetAtom(kMimeTypeURIList), mem);
 }
 
 void XOSExchangeDataProvider::SetPickledData(const ClipboardFormatType& format,
@@ -175,10 +176,10 @@ void XOSExchangeDataProvider::SetPickledData(const ClipboardFormatType& format,
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&bytes));
 
-  format_map_.Insert(gfx::GetAtom(format.GetName().c_str()), mem);
+  format_map_.Insert(x11::GetAtom(format.GetName().c_str()), mem);
 }
 
-bool XOSExchangeDataProvider::GetString(base::string16* result) const {
+bool XOSExchangeDataProvider::GetString(std::u16string* result) const {
   if (HasFile()) {
     // Various Linux file managers both pass a list of file:// URIs and set the
     // string representation to the URI. We explicitly don't want to return use
@@ -202,7 +203,7 @@ bool XOSExchangeDataProvider::GetString(base::string16* result) const {
 
 bool XOSExchangeDataProvider::GetURLAndTitle(FilenameToURLPolicy policy,
                                              GURL* url,
-                                             base::string16* title) const {
+                                             std::u16string* title) const {
   std::vector<x11::Atom> url_atoms = ui::GetURLAtomsFrom();
   std::vector<x11::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
@@ -213,31 +214,30 @@ bool XOSExchangeDataProvider::GetURLAndTitle(FilenameToURLPolicy policy,
     // but that doesn't match the assumptions of the rest of the system which
     // expect single types.
 
-    if (data.GetType() == gfx::GetAtom(kMimeTypeMozillaURL)) {
+    if (data.GetType() == x11::GetAtom(kMimeTypeMozillaURL)) {
       // Mozilla URLs are (UTF16: URL, newline, title).
-      base::string16 unparsed;
+      std::u16string unparsed;
       data.AssignTo(&unparsed);
 
-      std::vector<base::string16> tokens =
-          base::SplitString(unparsed, base::ASCIIToUTF16("\n"),
-                            base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      std::vector<std::u16string> tokens = base::SplitString(
+          unparsed, u"\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
       if (tokens.size() > 0) {
         if (tokens.size() > 1)
           *title = tokens[1];
         else
-          *title = base::string16();
+          *title = std::u16string();
 
         *url = GURL(tokens[0]);
         return true;
       }
-    } else if (data.GetType() == gfx::GetAtom(kMimeTypeURIList)) {
+    } else if (data.GetType() == x11::GetAtom(kMimeTypeURIList)) {
       std::vector<std::string> tokens = ui::ParseURIList(data);
       for (const std::string& token : tokens) {
         GURL test_url(token);
         if (!test_url.SchemeIsFile() ||
             policy == FilenameToURLPolicy::CONVERT_FILENAMES) {
           *url = test_url;
-          *title = base::string16();
+          *title = std::u16string();
           return true;
         }
       }
@@ -282,7 +282,7 @@ bool XOSExchangeDataProvider::GetFilenames(
 bool XOSExchangeDataProvider::GetPickledData(const ClipboardFormatType& format,
                                              base::Pickle* pickle) const {
   std::vector<x11::Atom> requested_types;
-  requested_types.push_back(gfx::GetAtom(format.GetName().c_str()));
+  requested_types.push_back(x11::GetAtom(format.GetName().c_str()));
 
   ui::SelectionData data(format_map_.GetFirstOf(requested_types));
   if (data.IsValid()) {
@@ -315,10 +315,10 @@ bool XOSExchangeDataProvider::HasURL(FilenameToURLPolicy policy) const {
   // Windows does and stuffs all the data into one mime type.
   ui::SelectionData data(format_map_.GetFirstOf(requested_types));
   if (data.IsValid()) {
-    if (data.GetType() == gfx::GetAtom(kMimeTypeMozillaURL)) {
+    if (data.GetType() == x11::GetAtom(kMimeTypeMozillaURL)) {
       // File managers shouldn't be using this type, so this is a URL.
       return true;
-    } else if (data.GetType() == gfx::GetAtom(ui::kMimeTypeURIList)) {
+    } else if (data.GetType() == x11::GetAtom(ui::kMimeTypeURIList)) {
       std::vector<std::string> tokens = ui::ParseURIList(data);
       for (const std::string& token : tokens) {
         if (!GURL(token).SchemeIsFile() ||
@@ -361,7 +361,7 @@ bool XOSExchangeDataProvider::HasFile() const {
 bool XOSExchangeDataProvider::HasCustomFormat(
     const ClipboardFormatType& format) const {
   std::vector<x11::Atom> url_atoms;
-  url_atoms.push_back(gfx::GetAtom(format.GetName().c_str()));
+  url_atoms.push_back(x11::GetAtom(format.GetName().c_str()));
   std::vector<x11::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
@@ -372,7 +372,7 @@ void XOSExchangeDataProvider::SetFileContents(
     const base::FilePath& filename,
     const std::string& file_contents) {
   DCHECK(!filename.empty());
-  DCHECK(!base::Contains(format_map(), gfx::GetAtom(kMimeTypeMozillaURL)));
+  DCHECK(!base::Contains(format_map(), x11::GetAtom(kMimeTypeMozillaURL)));
   set_file_contents_name(filename);
   // Direct save handling is a complicated juggling affair between this class,
   // SelectionFormat, and XDragDropClient. The general idea behind
@@ -390,16 +390,28 @@ void XOSExchangeDataProvider::SetFileContents(
   //   things simpler for Chrome, we always 'fail' and let the destination do
   //   the work.
   std::string failure("F");
-  InsertData(gfx::GetAtom("XdndDirectSave0"),
+  InsertData(x11::GetAtom("XdndDirectSave0"),
              scoped_refptr<base::RefCountedMemory>(
                  base::RefCountedString::TakeString(&failure)));
   std::string file_contents_copy = file_contents;
-  InsertData(gfx::GetAtom("application/octet-stream"),
+  InsertData(x11::GetAtom("application/octet-stream"),
              scoped_refptr<base::RefCountedMemory>(
                  base::RefCountedString::TakeString(&file_contents_copy)));
 }
 
-void XOSExchangeDataProvider::SetHtml(const base::string16& html,
+bool XOSExchangeDataProvider::GetFileContents(
+    base::FilePath* filename,
+    std::string* file_contents) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool XOSExchangeDataProvider::HasFileContents() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void XOSExchangeDataProvider::SetHtml(const std::u16string& html,
                                       const GURL& base_url) {
   std::vector<unsigned char> bytes;
   // Manually jam a UTF16 BOM into bytes because otherwise, other programs will
@@ -410,13 +422,13 @@ void XOSExchangeDataProvider::SetHtml(const base::string16& html,
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&bytes));
 
-  format_map_.Insert(gfx::GetAtom(kMimeTypeHTML), mem);
+  format_map_.Insert(x11::GetAtom(kMimeTypeHTML), mem);
 }
 
-bool XOSExchangeDataProvider::GetHtml(base::string16* html,
+bool XOSExchangeDataProvider::GetHtml(std::u16string* html,
                                       GURL* base_url) const {
   std::vector<x11::Atom> url_atoms;
-  url_atoms.push_back(gfx::GetAtom(kMimeTypeHTML));
+  url_atoms.push_back(x11::GetAtom(kMimeTypeHTML));
   std::vector<x11::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
@@ -432,7 +444,7 @@ bool XOSExchangeDataProvider::GetHtml(base::string16* html,
 
 bool XOSExchangeDataProvider::HasHtml() const {
   std::vector<x11::Atom> url_atoms;
-  url_atoms.push_back(gfx::GetAtom(kMimeTypeHTML));
+  url_atoms.push_back(x11::GetAtom(kMimeTypeHTML));
   std::vector<x11::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
@@ -454,7 +466,7 @@ gfx::Vector2d XOSExchangeDataProvider::GetDragImageOffset() const {
 }
 
 bool XOSExchangeDataProvider::GetPlainTextURL(GURL* url) const {
-  base::string16 text;
+  std::u16string text;
   if (GetString(&text)) {
     GURL test_url(text);
     if (test_url.is_valid()) {

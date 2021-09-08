@@ -17,6 +17,7 @@
 
 namespace weblayer {
 namespace {
+constexpr base::TimeDelta kCookieFlushDelay = base::TimeDelta::FromSeconds(1);
 
 void GetCookieComplete(CookieManager::GetCookieCallback callback,
                        const net::CookieAccessResultList& cookies,
@@ -72,16 +73,16 @@ void CookieManagerImpl::SetCookie(const GURL& url,
 }
 
 void CookieManagerImpl::GetCookie(const GURL& url, GetCookieCallback callback) {
-  content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+  browser_context_->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess()
       ->GetCookieList(url, net::CookieOptions::MakeAllInclusive(),
                       base::BindOnce(&GetCookieComplete, std::move(callback)));
 }
 
-std::unique_ptr<CookieManager::CookieChangedSubscription>
-CookieManagerImpl::AddCookieChangedCallback(const GURL& url,
-                                            const std::string* name,
-                                            CookieChangedCallback callback) {
+base::CallbackListSubscription CookieManagerImpl::AddCookieChangedCallback(
+    const GURL& url,
+    const std::string* name,
+    CookieChangedCallback callback) {
   auto callback_list = std::make_unique<CookieChangedCallbackList>();
   auto* callback_list_ptr = callback_list.get();
   int id = AddCookieChangedCallbackInternal(
@@ -136,20 +137,33 @@ void CookieManagerImpl::RemoveCookieChangedCallback(JNIEnv* env, int id) {
 }
 #endif
 
+bool CookieManagerImpl::FireFlushTimerForTesting() {
+  if (!flush_timer_)
+    return false;
+
+  flush_run_loop_for_testing_ = std::make_unique<base::RunLoop>();
+  flush_timer_->FireNow();
+  flush_run_loop_for_testing_->Run();
+  flush_run_loop_for_testing_ = nullptr;
+  return true;
+}
+
 bool CookieManagerImpl::SetCookieInternal(const GURL& url,
                                           const std::string& value,
                                           SetCookieCallback callback) {
   auto cc = net::CanonicalCookie::Create(url, value, base::Time::Now(),
-                                         base::nullopt);
+                                         absl::nullopt);
   if (!cc) {
     return false;
   }
 
-  content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+  browser_context_->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess()
       ->SetCanonicalCookie(
           *cc, url, net::CookieOptions::MakeAllInclusive(),
-          net::cookie_util::AdaptCookieAccessResultToBool(std::move(callback)));
+          net::cookie_util::AdaptCookieAccessResultToBool(
+              base::BindOnce(&CookieManagerImpl::OnCookieSet,
+                             weak_factory_.GetWeakPtr(), std::move(callback))));
   return true;
 }
 
@@ -159,10 +173,10 @@ int CookieManagerImpl::AddCookieChangedCallbackInternal(
     CookieChangedCallback callback) {
   mojo::PendingRemote<network::mojom::CookieChangeListener> listener_remote;
   auto receiver = listener_remote.InitWithNewPipeAndPassReceiver();
-  content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+  browser_context_->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess()
       ->AddCookieChangeListener(
-          url, name ? base::make_optional(*name) : base::nullopt,
+          url, name ? absl::make_optional(*name) : absl::nullopt,
           std::move(listener_remote));
 
   auto listener =
@@ -174,6 +188,25 @@ int CookieManagerImpl::AddCookieChangedCallbackInternal(
 
 void CookieManagerImpl::RemoveCookieChangedCallbackInternal(int id) {
   cookie_change_receivers_.Remove(id);
+}
+
+void CookieManagerImpl::OnCookieSet(SetCookieCallback callback, bool success) {
+  std::move(callback).Run(success);
+  if (!flush_timer_) {
+    flush_timer_ = std::make_unique<base::OneShotTimer>();
+    flush_timer_->Start(FROM_HERE, kCookieFlushDelay,
+                        base::BindOnce(&CookieManagerImpl::OnFlushTimerFired,
+                                       weak_factory_.GetWeakPtr()));
+  }
+}
+
+void CookieManagerImpl::OnFlushTimerFired() {
+  browser_context_->GetDefaultStoragePartition()
+      ->GetCookieManagerForBrowserProcess()
+      ->FlushCookieStore(flush_run_loop_for_testing_
+                             ? flush_run_loop_for_testing_->QuitClosure()
+                             : base::DoNothing());
+  flush_timer_ = nullptr;
 }
 
 }  // namespace weblayer

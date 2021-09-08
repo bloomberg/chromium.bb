@@ -33,7 +33,7 @@
  */
 #ifdef _XOPEN_SOURCE
     /* Use the predefined value. */
-#else
+#elif !defined(ICU_IS_IN_FUCHSIA) || !defined(__APPLE__)
     /*
      * Version 6.0:
      * The Open Group Base Specifications Issue 6 (IEEE Std 1003.1, 2004 Edition)

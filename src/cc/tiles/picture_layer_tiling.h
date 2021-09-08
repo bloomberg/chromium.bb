@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <unordered_map>
@@ -51,6 +52,8 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual bool RequiresHighResToDraw() const = 0;
   virtual const PaintWorkletRecordMap& GetPaintWorkletRecords() const = 0;
   virtual bool IsDirectlyCompositedImage() const = 0;
+  virtual bool ScrollInteractionInProgress() const = 0;
+  virtual bool DidCheckerboardQuad() const = 0;
 
  protected:
   virtual ~PictureLayerTilingClient() {}
@@ -144,12 +147,18 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Size tiling_size() const { return tiling_data_.tiling_size(); }
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
   gfx::Size tile_size() const { return tiling_data_.max_texture_size(); }
-  const gfx::SizeF& contents_scale_key2() const { return raster_transform_.scale(); }
+  const gfx::Vector2dF& contents_scale_key2() const { return raster_transform_.scale(); }
 
 #ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
-  float contents_scale_key() const { return raster_transform_.scale().width(); }
+  // PictureLayerTilingSet uses the scale component of the raster transform
+  // as the key for indexing and sorting. In theory we can have multiple
+  // tilings with the same scale but different translation, but currently
+  // we only allow tilings with unique scale for the sake of simplicity.
+  float contents_scale_key() const {
+    const gfx::Vector2dF& scale = raster_transform_.scale();
+    return std::max(scale.x(), scale.y());
+  }
 #endif
-
   const gfx::AxisTransform2d& raster_transform() const {
     return raster_transform_;
   }

@@ -76,6 +76,7 @@ public class ManualFillingTestHelper {
     private static final String PASSWORD_NODE_ID = "password_field";
     private static final String USERNAME_NODE_ID = "username_field";
     private static final String SUBMIT_NODE_ID = "input_submit_button";
+    private static final String NO_COMPLETION_FIELD_ID = "field_without_completion";
 
     private final ChromeTabbedActivityTestRule mActivityTestRule;
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
@@ -132,7 +133,7 @@ public class ManualFillingTestHelper {
             mInputMethodManagerWrapper = TestInputMethodManagerWrapper.create(imeAdapter);
             imeAdapter.setInputMethodManagerWrapper(mInputMethodManagerWrapper);
             getManualFillingCoordinator().registerSheetDataProvider(
-                    AccessoryTabType.PASSWORDS, mSheetSuggestionsProvider);
+                    mWebContentsRef.get(), AccessoryTabType.PASSWORDS, mSheetSuggestionsProvider);
         });
     }
 
@@ -194,21 +195,28 @@ public class ManualFillingTestHelper {
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
 
-    public void clickNodeAndShowKeyboard(String node) throws TimeoutException {
-        clickNodeAndShowKeyboard(node, FILLABLE_NON_SEARCH_FIELD);
+    public void clickFieldWithoutCompletion() throws TimeoutException {
+        DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
+        DOMUtils.focusNode(mWebContentsRef.get(), NO_COMPLETION_FIELD_ID);
+        DOMUtils.clickNode(mWebContentsRef.get(), NO_COMPLETION_FIELD_ID);
     }
 
-    public void clickNodeAndShowKeyboard(String node, int focusedFieldType)
+    public void clickNodeAndShowKeyboard(String node, long focusedFieldId) throws TimeoutException {
+        clickNodeAndShowKeyboard(node, focusedFieldId, FILLABLE_NON_SEARCH_FIELD);
+    }
+
+    public void clickNodeAndShowKeyboard(String node, long focusedFieldId, int focusedFieldType)
             throws TimeoutException {
-        clickNode(node, focusedFieldType);
+        clickNode(node, focusedFieldId, focusedFieldType);
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
 
-    public void clickNode(String node, int focusedFieldType) throws TimeoutException {
+    public void clickNode(String node, long focusedFieldId, int focusedFieldType)
+            throws TimeoutException {
         DOMUtils.clickNode(mWebContentsRef.get(), node);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManualFillingComponentBridge.notifyFocusedFieldType(
-                    mActivityTestRule.getWebContents(), focusedFieldType);
+                    mActivityTestRule.getWebContents(), focusedFieldId, focusedFieldType);
         });
     }
 
@@ -298,19 +306,19 @@ public class ManualFillingTestHelper {
     public PasswordAccessorySheetCoordinator getOrCreatePasswordAccessorySheet() {
         return (PasswordAccessorySheetCoordinator) getManualFillingCoordinator()
                 .getMediatorForTesting()
-                .getOrCreateSheet(AccessoryTabType.PASSWORDS);
+                .getOrCreateSheet(mWebContentsRef.get(), AccessoryTabType.PASSWORDS);
     }
 
     public AddressAccessorySheetCoordinator getOrCreateAddressAccessorySheet() {
         return (AddressAccessorySheetCoordinator) getManualFillingCoordinator()
                 .getMediatorForTesting()
-                .getOrCreateSheet(AccessoryTabType.ADDRESSES);
+                .getOrCreateSheet(mWebContentsRef.get(), AccessoryTabType.ADDRESSES);
     }
 
     public CreditCardAccessorySheetCoordinator getOrCreateCreditCardAccessorySheet() {
         return (CreditCardAccessorySheetCoordinator) getManualFillingCoordinator()
                 .getMediatorForTesting()
-                .getOrCreateSheet(AccessoryTabType.CREDIT_CARDS);
+                .getOrCreateSheet(mWebContentsRef.get(), AccessoryTabType.CREDIT_CARDS);
     }
 
     // ----------------------------------
@@ -340,14 +348,13 @@ public class ManualFillingTestHelper {
      * controller. The controller will only refresh this cache on page load.
      * @param usernames {@link String}s to be used as display text for username chips.
      * @param passwords {@link String}s to be used as display text for password chips.
-     * @param originBlacklisted boolean indicating whether password saving is disabled for the
+     * @param originDenylisted boolean indicating whether password saving is disabled for the
      *                          origin.
      */
-    public void cacheCredentials(
-            String[] usernames, String[] passwords, boolean originBlacklisted) {
+    public void cacheCredentials(String[] usernames, String[] passwords, boolean originDenylisted) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManualFillingComponentBridge.cachePasswordSheetData(
-                    mActivityTestRule.getWebContents(), usernames, passwords, originBlacklisted);
+                    mActivityTestRule.getWebContents(), usernames, passwords, originDenylisted);
         });
     }
 
@@ -493,7 +500,8 @@ public class ManualFillingTestHelper {
     public void addGenerationButton() {
         PropertyProvider<KeyboardAccessoryData.Action[]> generationActionProvider =
                 new PropertyProvider<>(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
-        getManualFillingCoordinator().registerActionProvider(generationActionProvider);
+        getManualFillingCoordinator().registerActionProvider(
+                mWebContentsRef.get(), generationActionProvider);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             generationActionProvider.notifyObservers(new KeyboardAccessoryData.Action[] {
                     new KeyboardAccessoryData.Action("Generate Password",

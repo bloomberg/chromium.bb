@@ -50,7 +50,7 @@ WebDOMMessageEvent::WebDOMMessageEvent(
     const WebFrame* source_frame,
     const WebDocument& target_document,
     WebVector<MessagePortChannel> channels)
-    : WebDOMMessageEvent(MessageEvent::Create(), base::nullopt) {
+    : WebDOMMessageEvent(MessageEvent::Create(), absl::nullopt) {
   DOMWindow* window = nullptr;
   if (source_frame)
     window = WebFrame::ToCoreFrame(*source_frame)->DomWindow();
@@ -64,7 +64,7 @@ WebDOMMessageEvent::WebDOMMessageEvent(
   // right?
   Unwrap<MessageEvent>()->initMessageEvent(
       "message", false, false, message_data, origin, "" /*lastEventId*/, window,
-      ports, nullptr /*user_activation*/);
+      ports, nullptr /*user_activation*/, false);
 }
 
 WebString WebDOMMessageEvent::Origin() const {

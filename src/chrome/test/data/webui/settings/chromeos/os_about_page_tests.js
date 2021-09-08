@@ -4,7 +4,9 @@
 
 // clang-format off
 // #import {TestAboutPageBrowserProxyChromeOS} from './test_about_page_browser_proxy_chromeos.m.js';
-// #import {BrowserChannel,UpdateStatus,AboutPageBrowserProxyImpl,LifetimeBrowserProxyImpl,Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {TestDeviceNameBrowserProxy} from './test_device_name_browser_proxy.m.js';
+// #import {BrowserChannel,UpdateStatus,Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {AboutPageBrowserProxyImpl,DeviceNameBrowserProxyImpl,LifetimeBrowserProxyImpl} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {TestLifetimeBrowserProxy} from './test_os_lifetime_browser_proxy.m.js';
@@ -112,11 +114,11 @@ cr.define('settings_about_page', function() {
       fireStatusChanged(UpdateStatus.DISABLED_BY_ADMIN);
       assertEquals(null, icon.src);
       assertEquals('cr20:domain', icon.icon);
-      assertEquals(0, statusMessageEl.textContent.trim().length);
+      assertNotEquals(previousMessageText, statusMessageEl.textContent);
 
       fireStatusChanged(UpdateStatus.FAILED);
       assertEquals(null, icon.src);
-      assertEquals('cr:error', icon.icon);
+      assertEquals('cr:error-outline', icon.icon);
       assertEquals(0, statusMessageEl.textContent.trim().length);
 
       fireStatusChanged(UpdateStatus.DISABLED);
@@ -218,7 +220,8 @@ cr.define('settings_about_page', function() {
       assertAllHidden();
 
       fireStatusChanged(UpdateStatus.DISABLED_BY_ADMIN);
-      assertAllHidden();
+      assertFalse(checkForUpdates.hidden);
+      assertTrue(relaunch.hidden);
     });
 
     /**
@@ -453,7 +456,32 @@ cr.define('settings_about_page', function() {
       await checkHasEndOfLife(false);
     });
 
+    test('managed detailed build info page', async () => {
+      loadTimeData.overrideValues({
+        isManaged: true,
+      });
+
+      // Despite there being a valid end of life, the information is not
+      // shown if the user is managed.
+      aboutBrowserProxy.setEndOfLifeInfo({
+        hasEndOfLife: true,
+        aboutPageEndOfLifeMessage: 'message',
+      });
+      await initNewPage();
+      page.scroller = page.offsetParent;
+      assertTrue(!!page.$['detailed-build-info-trigger']);
+      page.$['detailed-build-info-trigger'].click();
+      const buildInfoPage = page.$$('settings-detailed-build-info');
+      assertTrue(!!buildInfoPage);
+      assertTrue(!!buildInfoPage.$['endOfLifeSectionContainer']);
+      assertTrue(buildInfoPage.$['endOfLifeSectionContainer'].hidden);
+    });
+
     test('detailed build info page', async () => {
+      loadTimeData.overrideValues({
+        isManaged: false,
+      });
+
       async function checkEndOfLifeSection() {
         await aboutBrowserProxy.whenCalled('getEndOfLifeInfo');
         const buildInfoPage = page.$$('settings-detailed-build-info');
@@ -490,15 +518,64 @@ cr.define('settings_about_page', function() {
       page.$.help.click();
       return aboutBrowserProxy.whenCalled('openOsHelpPage');
     });
+
+    test('LaunchDiagnostics', async function() {
+      loadTimeData.overrideValues({
+        isDeepLinkingEnabled: true,
+        diagnosticsAppEnabled: true,
+      });
+
+      await initNewPage();
+      Polymer.dom.flush();
+
+      assertTrue(!!page.$.diagnostics);
+      page.$.diagnostics.click();
+      await aboutBrowserProxy.whenCalled('openDiagnostics');
+    });
+
+    test('Deep link to diagnostics', async () => {
+      loadTimeData.overrideValues({
+        isDeepLinkingEnabled: true,
+        diagnosticsAppEnabled: true,
+      });
+
+      await initNewPage();
+      Polymer.dom.flush();
+
+      const params = new URLSearchParams;
+      params.append('settingId', '1707');  // Setting::kDiagnostics
+      settings.Router.getInstance().navigateTo(
+          settings.routes.ABOUT_ABOUT, params);
+
+      Polymer.dom.flush();
+
+      const deepLinkElement = page.$$('#diagnostics').$$('cr-icon-button');
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Diagnostics should be focused for settingId=1707.');
+    });
+
+    // Regression test for crbug.com/1220294
+    test('Update button shown initially', async () => {
+      aboutBrowserProxy.blockRefreshUpdateStatus();
+      await initNewPage();
+
+      const {checkForUpdates} = page.$;
+      assertFalse(checkForUpdates.hidden);
+    });
   });
 
   suite('DetailedBuildInfoTest', function() {
     let page = null;
     let browserProxy = null;
+    let deviceNameBrowserProxy = null;
 
     setup(function() {
       browserProxy = new TestAboutPageBrowserProxyChromeOS();
+      deviceNameBrowserProxy = new TestDeviceNameBrowserProxy();
       settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
+      DeviceNameBrowserProxyImpl.instance_ = deviceNameBrowserProxy;
       PolymerTest.clearBody();
     });
 
@@ -624,6 +701,20 @@ cr.define('settings_about_page', function() {
 
     test('CheckCopyBuildDetails', function() {
       checkCopyBuildDetailsButton();
+    });
+
+    test('DeviceName', async () => {
+      loadTimeData.overrideValues({
+        isHostnameSettingEnabled: true,
+      });
+
+      deviceNameBrowserProxy.setDeviceName('TestDeviceName');
+
+      page = document.createElement('settings-detailed-build-info');
+      document.body.appendChild(page);
+      await deviceNameBrowserProxy.whenCalled('getDeviceNameMetadata');
+
+      assertEquals(page.$$('#deviceName').innerText, 'TestDeviceName');
     });
   });
 

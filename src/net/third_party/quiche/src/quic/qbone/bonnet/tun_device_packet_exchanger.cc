@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/bonnet/tun_device_packet_exchanger.h"
+#include "quic/qbone/bonnet/tun_device_packet_exchanger.h"
 
 #include <utility>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
 
 namespace quic {
 
 TunDevicePacketExchanger::TunDevicePacketExchanger(
-    int fd,
     size_t mtu,
     KernelInterface* kernel,
     QbonePacketExchanger::Visitor* visitor,
     size_t max_pending_packets,
     StatsInterface* stats)
     : QbonePacketExchanger(visitor, max_pending_packets),
-      fd_(fd),
       mtu_(mtu),
       kernel_(kernel),
       stats_(stats) {}
@@ -29,8 +27,7 @@ bool TunDevicePacketExchanger::WritePacket(const char* packet,
                                            std::string* error) {
   *blocked = false;
   if (fd_ < 0) {
-    *error = quiche::QuicheStrCat("Invalid file descriptor of the TUN device: ",
-                                  fd_);
+    *error = absl::StrCat("Invalid file descriptor of the TUN device: ", fd_);
     stats_->OnWriteError(error);
     return false;
   }
@@ -41,8 +38,7 @@ bool TunDevicePacketExchanger::WritePacket(const char* packet,
       // The tunnel is blocked. Note that this does not mean the receive buffer
       // of a TCP connection is filled. This simply means the TUN device itself
       // is blocked on handing packets to the rest part of the kernel.
-      *error =
-          quiche::QuicheStrCat("Write to the TUN device was blocked: ", errno);
+      *error = absl::StrCat("Write to the TUN device was blocked: ", errno);
       *blocked = true;
       stats_->OnWriteError(error);
     }
@@ -58,8 +54,7 @@ std::unique_ptr<QuicData> TunDevicePacketExchanger::ReadPacket(
     std::string* error) {
   *blocked = false;
   if (fd_ < 0) {
-    *error = quiche::QuicheStrCat("Invalid file descriptor of the TUN device: ",
-                                  fd_);
+    *error = absl::StrCat("Invalid file descriptor of the TUN device: ", fd_);
     stats_->OnReadError(error);
     return nullptr;
   }
@@ -71,8 +66,7 @@ std::unique_ptr<QuicData> TunDevicePacketExchanger::ReadPacket(
   // is no end of file. Therefore 0 also indicates error.
   if (result <= 0) {
     if (errno == EAGAIN || errno == EWOULDBLOCK) {
-      *error =
-          quiche::QuicheStrCat("Read from the TUN device was blocked: ", errno);
+      *error = absl::StrCat("Read from the TUN device was blocked: ", errno);
       *blocked = true;
       stats_->OnReadError(error);
     }
@@ -82,8 +76,8 @@ std::unique_ptr<QuicData> TunDevicePacketExchanger::ReadPacket(
   return std::make_unique<QuicData>(read_buffer.release(), result, true);
 }
 
-int TunDevicePacketExchanger::file_descriptor() const {
-  return fd_;
+void TunDevicePacketExchanger::set_file_descriptor(int fd) {
+  fd_ = fd;
 }
 
 const TunDevicePacketExchanger::StatsInterface*

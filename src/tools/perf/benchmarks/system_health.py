@@ -1,6 +1,7 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import logging
 
 from benchmarks import loading_metrics_category
 
@@ -19,8 +20,8 @@ SYSTEM_HEALTH_BENCHMARK_UMA = [
     'Event.Latency.ScrollBegin.TimeToScrollUpdateSwapBegin2',
     'Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin2',
     'Graphics.Smoothness.PercentDroppedFrames.AllSequences',
-    'Memory.GPU.PeakMemoryUsage.Scroll',
-    'Memory.GPU.PeakMemoryUsage.PageLoad',
+    'Memory.GPU.PeakMemoryUsage2.Scroll',
+    'Memory.GPU.PeakMemoryUsage2.PageLoad',
 ]
 
 
@@ -36,6 +37,16 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
   https://goo.gl/Jek2NL.
   """
+
+  @classmethod
+  def AddBenchmarkCommandLineArgs(cls, parser):
+    parser.add_option('--allow-software-compositing', action='store_true',
+                      help='If set, allows the benchmark to run with software '
+                           'compositing.')
+
+  @classmethod
+  def ProcessCommandLineArgs(cls, parser, args):
+    cls.allow_software_compositing = args.allow_software_compositing
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
@@ -71,8 +82,12 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
   def SetExtraBrowserOptions(self, options):
     # Using the software fallback can skew the rendering related metrics. So
-    # disable that.
-    options.AppendExtraBrowserArgs('--disable-software-compositing-fallback')
+    # disable that (unless explicitly run with --allow-software-compositing).
+    if self.allow_software_compositing:
+      logging.warning('Allowing software compositing. Some of the reported '
+                      'metrics will have unreliable values.')
+    else:
+      options.AppendExtraBrowserArgs('--disable-software-compositing-fallback')
 
   def CreateStorySet(self, options):
     return page_sets.SystemHealthStorySet(platform=self.PLATFORM)
@@ -249,12 +264,13 @@ class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 @benchmark.Info(emails=['cduvall@chromium.org', 'weblayer-team@chromium.org'],
                 component='Internals>WebLayer',
                 documentation_url='https://bit.ly/36XBtpn')
-class WebLayerStartupSystemHealthBenchmark(WebviewStartupSystemHealthBenchmark):
+class WebLayerStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   """WebLayer startup time benchmark
 
   Benchmark that measures how long WebLayer takes to start up
   and load a blank page.
   """
+  options = {'pageset_repeat': 20}
   # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
   # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
   # from expectations.config in SUPPORTED_PLATFORM_TAGS.
@@ -262,12 +278,46 @@ class WebLayerStartupSystemHealthBenchmark(WebviewStartupSystemHealthBenchmark):
   SUPPORTED_PLATFORM_TAGS = [platforms.MOBILE]
   SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
 
+  def CreateStorySet(self, options):
+    return page_sets.SystemHealthBlankStorySet()
+
   def CreateCoreTimelineBasedMeasurementOptions(self):
-    options = super(WebLayerStartupSystemHealthBenchmark,
-                    self).CreateCoreTimelineBasedMeasurementOptions()
+    options = timeline_based_measurement.Options()
+    options.SetTimelineBasedMetrics(['weblayerStartupMetric'])
+    options.config.enable_atrace_trace = True
+    # TODO(crbug.com/1028882): Recording a Chrome trace at the same time as
+    # atrace causes events to stack incorrectly. Fix this by recording a
+    # system+Chrome trace via system perfetto on the device instead.
+    options.config.enable_chrome_trace = False
     options.config.atrace_config.app_name = 'org.chromium.weblayer.shell'
     return options
 
   @classmethod
   def Name(cls):
     return 'system_health.weblayer_startup'
+
+
+@benchmark.Info(emails=['tmrts@chromium.org', 'mlippautz@chromium.org'],
+                component='Blink',
+                documentation_url='https://bit.ly/36XBtpn')
+class PCScanSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
+  """PCScan feature benchmark
+
+  Benchmark that enables PCScan feature.
+  """
+  options = {'pageset_repeat': 20}
+  SUPPORTED_PLATFORM_TAGS = [platforms.DESKTOP, platforms.MOBILE]
+  SUPPORTED_PLATFORMS = [
+      story.expectations.ALL_DESKTOP, story.expectations.ALL_MOBILE
+  ]
+
+  def CreateStorySet(self, options):
+    return page_sets.SystemHealthPCScanStorySet()
+
+  @classmethod
+  def Name(cls):
+    return 'system_health.pcscan'
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(
+        '--enable-features=PartitionAllocPCScanBrowserOnly')

@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "media/base/video_codecs.h"
 #include "media/gpu/test/video_test_environment.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace gpu {
 class GpuMemoryBufferFactory;
@@ -41,12 +42,15 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
       const std::string& codec,
       size_t num_temporal_layers,
       bool output_bitstream,
+      absl::optional<uint32_t> output_bitrate,
       const FrameOutputConfig& frame_output_config = FrameOutputConfig());
 
   ~VideoEncoderTestEnvironment() override;
 
   // Get the video the tests will be ran on.
   media::test::Video* Video() const;
+  // Generate the nv12 video from |video_| the test will be ran on.
+  media::test::Video* GenerateNV12Video();
   // Whether bitstream validation is enabled.
   bool IsBitstreamValidatorEnabled() const;
   // Get the output folder.
@@ -59,7 +63,7 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   uint32_t Bitrate() const;
   // Whether the encoded bitstream is saved to disk.
   bool SaveOutputBitstream() const;
-  base::Optional<base::FilePath> OutputBitstreamFilePath() const;
+  absl::optional<base::FilePath> OutputBitstreamFilePath() const;
   // Gets the frame output configuration.
   const FrameOutputConfig& ImageOutputConfig() const;
 
@@ -68,6 +72,9 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   // why it's in here as there are threads that won't immediately die when an
   // individual test is completed.
   gpu::GpuMemoryBufferFactory* GetGpuMemoryBufferFactory() const;
+
+  // Returns whether kepler will be used in the test.
+  bool IsKeplerUsed() const;
 
  private:
   VideoEncoderTestEnvironment(std::unique_ptr<media::test::Video> video,
@@ -81,6 +88,8 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
 
   // Video file to be used for testing.
   const std::unique_ptr<media::test::Video> video_;
+  // NV12 video file to be used for testing.
+  std::unique_ptr<media::test::Video> nv12_video_;
   // Whether bitstream validation should be enabled while testing.
   const bool enable_bitstream_validator_;
   // Output folder to be used to store test artifacts (e.g. perf metrics).

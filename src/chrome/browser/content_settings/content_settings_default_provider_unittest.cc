@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -169,52 +170,61 @@ TEST_F(ContentSettingsDefaultProviderTest, DiscardObsoletePreferences) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, prefs->GetInteger(kGeolocationPrefPath));
 }
 
-#if !defined(OS_ANDROID)
-// Tests that file system content settings are migrated.
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
+// Tests that the protected media identifier setting is migrated.
 TEST_F(ContentSettingsDefaultProviderTest,
-       MigrateDeprecatedFileSystemPreferences) {
-  static const char kDeprecatedNativeFileSystemReadGuardDefaultPref[] =
-      "profile.default_content_setting_values.native_file_system_read_guard";
-  static const char kDeprecatedNativeFileSystemWriteGuardDefaultPref[] =
-      "profile.default_content_setting_values.native_file_system_write_guard";
+       MigrateProtectedMediaIdentifierPreferenceBlock) {
+  static const char kDeprecatedEnableDRM[] = "settings.privacy.drm_enabled";
 
   PrefService* prefs = profile_.GetPrefs();
   // Set some pref data.
-  prefs->SetInteger(kDeprecatedNativeFileSystemReadGuardDefaultPref,
-                    CONTENT_SETTING_BLOCK);
-  prefs->SetInteger(kDeprecatedNativeFileSystemWriteGuardDefaultPref,
-                    CONTENT_SETTING_BLOCK);
+  prefs->SetBoolean(kDeprecatedEnableDRM, false);
 
   // Instantiate a new DefaultProvider; can't use |provider_| because we want to
   // test the constructor's behavior after setting the above.
   DefaultProvider provider(prefs, false);
 
-  // Check that settings have been migrated.
-  EXPECT_FALSE(
-      prefs->HasPrefPath(kDeprecatedNativeFileSystemReadGuardDefaultPref));
-  EXPECT_FALSE(
-      prefs->HasPrefPath(kDeprecatedNativeFileSystemWriteGuardDefaultPref));
+  // Check that the setting has been migrated.
+  EXPECT_FALSE(prefs->HasPrefPath(kDeprecatedEnableDRM));
 
   WebsiteSettingsRegistry* website_settings =
       WebsiteSettingsRegistry::GetInstance();
   EXPECT_TRUE(prefs->HasPrefPath(
-      website_settings->Get(ContentSettingsType::FILE_SYSTEM_READ_GUARD)
+      website_settings->Get(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER)
           ->default_value_pref_name()));
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
       prefs->GetInteger(
-          website_settings->Get(ContentSettingsType::FILE_SYSTEM_READ_GUARD)
-              ->default_value_pref_name()));
-  EXPECT_TRUE(prefs->HasPrefPath(
-      website_settings->Get(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD)
-          ->default_value_pref_name()));
-  EXPECT_EQ(
-      CONTENT_SETTING_BLOCK,
-      prefs->GetInteger(
-          website_settings->Get(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD)
+          website_settings->Get(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER)
               ->default_value_pref_name()));
 }
-#endif  // !defined(OS_ANDROID)
+TEST_F(ContentSettingsDefaultProviderTest,
+       MigrateProtectedMediaIdentifierPreferenceAllow) {
+  static const char kDeprecatedEnableDRM[] = "settings.privacy.drm_enabled";
+
+  PrefService* prefs = profile_.GetPrefs();
+  // Set some pref data.
+  prefs->SetBoolean(kDeprecatedEnableDRM, true);
+
+  // Instantiate a new DefaultProvider; can't use |provider_| because we want to
+  // test the constructor's behavior after setting the above.
+  DefaultProvider provider(prefs, false);
+
+  // Check that the setting has been migrated.
+  EXPECT_FALSE(prefs->HasPrefPath(kDeprecatedEnableDRM));
+
+  WebsiteSettingsRegistry* website_settings =
+      WebsiteSettingsRegistry::GetInstance();
+  EXPECT_TRUE(prefs->HasPrefPath(
+      website_settings->Get(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER)
+          ->default_value_pref_name()));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      prefs->GetInteger(
+          website_settings->Get(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER)
+              ->default_value_pref_name()));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
 
 TEST_F(ContentSettingsDefaultProviderTest, OffTheRecord) {
   DefaultProvider otr_provider(profile_.GetPrefs(), true /* incognito */);

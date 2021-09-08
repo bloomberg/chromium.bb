@@ -10,7 +10,6 @@ namespace openscreen {
 // NOTE: This is only for linking purposes in Chromium builds.
 std::string GetExePath() {
   OSP_NOTREACHED();
-  return {};
 }
 
 }  // namespace openscreen

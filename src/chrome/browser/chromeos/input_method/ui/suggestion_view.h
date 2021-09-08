@@ -7,10 +7,12 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -42,13 +44,16 @@ constexpr SkColor kButtonHighlightColor =
 // SuggestionView renders a suggestion.
 class UI_CHROMEOS_EXPORT SuggestionView : public views::Button {
  public:
+  METADATA_HEADER(SuggestionView);
   explicit SuggestionView(PressedCallback callback);
+  SuggestionView(const SuggestionView&) = delete;
+  SuggestionView& operator=(const SuggestionView&) = delete;
   ~SuggestionView() override;
 
   void SetView(const SuggestionDetails& details);
 
-  void SetViewWithIndex(const base::string16& index,
-                        const base::string16& text);
+  void SetViewWithIndex(const std::u16string& index,
+                        const std::u16string& text);
 
   void SetHighlighted(bool highlighted);
   void SetMinWidth(int width);
@@ -57,8 +62,6 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::Button {
   friend class SuggestionWindowViewTest;
   FRIEND_TEST_ALL_PREFIXES(SuggestionWindowViewTest, ShortcutSettingTest);
 
-  // Overridden from View:
-  const char* GetClassName() const override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
   void OnThemeChanged() override;
@@ -68,7 +71,7 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::Button {
   // Views created in the class will be part of tree of |this|, so these
   // child views will be deleted when |this| is deleted.
 
-  void SetSuggestionText(const base::string16& text,
+  void SetSuggestionText(const std::u16string& text,
                          const size_t confirmed_length);
 
   views::Label* index_label_ = nullptr;
@@ -83,11 +86,17 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::Button {
   int index_width_ = 0;
   int min_width_ = 0;
   bool highlighted_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SuggestionView);
 };
+
+BEGIN_VIEW_BUILDER(UI_CHROMEOS_EXPORT, SuggestionView, views::Button)
+VIEW_BUILDER_PROPERTY(const SuggestionDetails&, View)
+VIEW_BUILDER_PROPERTY(bool, Highlighted)
+VIEW_BUILDER_PROPERTY(int, MinWidth)
+END_VIEW_BUILDER
 
 }  // namespace ime
 }  // namespace ui
+
+DEFINE_VIEW_BUILDER(UI_CHROMEOS_EXPORT, ui::ime::SuggestionView)
 
 #endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_UI_SUGGESTION_VIEW_H_

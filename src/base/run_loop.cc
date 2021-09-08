@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
+#include "base/check.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -18,7 +20,7 @@ namespace base {
 namespace {
 
 ThreadLocalPointer<RunLoop::Delegate>& GetTlsDelegate() {
-  static base::NoDestructor<ThreadLocalPointer<RunLoop::Delegate>> instance;
+  static NoDestructor<ThreadLocalPointer<RunLoop::Delegate>> instance;
   return *instance;
 }
 
@@ -38,9 +40,11 @@ ThreadLocalPointer<const RunLoop::RunLoopTimeout>& RunLoopTimeoutTLS() {
   return *tls;
 }
 
-void OnRunLoopTimeout(RunLoop* run_loop, OnceClosure on_timeout) {
+void OnRunLoopTimeout(RunLoop* run_loop,
+                      const Location& location,
+                      OnceCallback<void(const Location&)> on_timeout) {
   run_loop->Quit();
-  std::move(on_timeout).Run();
+  std::move(on_timeout).Run(location);
 }
 
 }  // namespace
@@ -64,7 +68,13 @@ RunLoop::Delegate::~Delegate() {
 }
 
 bool RunLoop::Delegate::ShouldQuitWhenIdle() {
-  return active_run_loops_.top()->quit_when_idle_received_;
+  const auto* top_loop = active_run_loops_.top();
+  if (top_loop->quit_when_idle_) {
+    TRACE_EVENT_WITH_FLOW0("toplevel.flow", "RunLoop_ExitedOnIdle",
+                           TRACE_ID_LOCAL(top_loop), TRACE_EVENT_FLAG_FLOW_IN);
+    return true;
+  }
+  return false;
 }
 
 // static
@@ -99,7 +109,7 @@ RunLoop::~RunLoop() {
   DCHECK(!running_);
 }
 
-void RunLoop::Run() {
+void RunLoop::Run(const Location& location) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!BeforeRun())
@@ -111,8 +121,8 @@ void RunLoop::Run() {
   CancelableOnceClosure cancelable_timeout;
   const RunLoopTimeout* run_timeout = GetTimeoutForCurrentThread();
   if (run_timeout) {
-    cancelable_timeout.Reset(
-        BindOnce(&OnRunLoopTimeout, Unretained(this), run_timeout->on_timeout));
+    cancelable_timeout.Reset(BindOnce(&OnRunLoopTimeout, Unretained(this),
+                                      location, run_timeout->on_timeout));
     origin_task_runner_->PostDelayedTask(
         FROM_HERE, cancelable_timeout.callback(), run_timeout->timeout);
   }
@@ -129,8 +139,15 @@ void RunLoop::Run() {
 void RunLoop::RunUntilIdle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  quit_when_idle_received_ = true;
+  quit_when_idle_ = true;
   Run();
+
+  if (!AnyQuitCalled()) {
+    quit_when_idle_ = false;
+#if DCHECK_IS_ON()
+    run_allowed_ = true;
+#endif
+  }
 }
 
 void RunLoop::Quit() {
@@ -144,6 +161,12 @@ void RunLoop::Quit() {
                                   BindOnce(&RunLoop::Quit, Unretained(this)));
     return;
   }
+
+  // While Quit() is an "OUT" call to reach one of the quit-states ("IN"),
+  // OUT|IN is used to visually link multiple Quit*() together which can help
+  // when debugging flaky tests.
+  TRACE_EVENT_WITH_FLOW0("toplevel.flow", "RunLoop::Quit", TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN);
 
   quit_called_ = true;
   if (running_ && delegate_->active_run_loops_.top() == this) {
@@ -164,7 +187,13 @@ void RunLoop::QuitWhenIdle() {
     return;
   }
 
-  quit_when_idle_received_ = true;
+  // OUT|IN as in Quit() to link all Quit*() together should there be multiple.
+  TRACE_EVENT_WITH_FLOW0("toplevel.flow", "RunLoop::QuitWhenIdle",
+                         TRACE_ID_LOCAL(this),
+                         TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN);
+
+  quit_when_idle_ = true;
+  quit_when_idle_called_ = true;
 }
 
 RepeatingClosure RunLoop::QuitClosure() {
@@ -189,6 +218,10 @@ RepeatingClosure RunLoop::QuitWhenIdleClosure() {
   return BindRepeating(
       &ProxyToTaskRunner, origin_task_runner_,
       BindRepeating(&RunLoop::QuitWhenIdle, weak_factory_.GetWeakPtr()));
+}
+
+bool RunLoop::AnyQuitCalled() {
+  return quit_called_ || quit_when_idle_called_;
 }
 
 // static
@@ -247,7 +280,7 @@ RepeatingClosure RunLoop::QuitCurrentWhenIdleClosureDeprecated() {
 }
 
 #if DCHECK_IS_ON()
-RunLoop::ScopedDisallowRunningForTesting::ScopedDisallowRunningForTesting()
+RunLoop::ScopedDisallowRunning::ScopedDisallowRunning()
     : current_delegate_(GetTlsDelegate().Get()),
       previous_run_allowance_(
           current_delegate_ ? current_delegate_->allow_running_for_testing_
@@ -256,7 +289,7 @@ RunLoop::ScopedDisallowRunningForTesting::ScopedDisallowRunningForTesting()
     current_delegate_->allow_running_for_testing_ = false;
 }
 
-RunLoop::ScopedDisallowRunningForTesting::~ScopedDisallowRunningForTesting() {
+RunLoop::ScopedDisallowRunning::~ScopedDisallowRunning() {
   DCHECK_EQ(current_delegate_, GetTlsDelegate().Get());
   if (current_delegate_)
     current_delegate_->allow_running_for_testing_ = previous_run_allowance_;
@@ -265,10 +298,8 @@ RunLoop::ScopedDisallowRunningForTesting::~ScopedDisallowRunningForTesting() {
 // Defined out of line so that the compiler doesn't inline these and realize
 // the scope has no effect and then throws an "unused variable" warning in
 // non-dcheck builds.
-RunLoop::ScopedDisallowRunningForTesting::ScopedDisallowRunningForTesting() =
-    default;
-RunLoop::ScopedDisallowRunningForTesting::~ScopedDisallowRunningForTesting() =
-    default;
+RunLoop::ScopedDisallowRunning::ScopedDisallowRunning() = default;
+RunLoop::ScopedDisallowRunning::~ScopedDisallowRunning() = default;
 #endif  // DCHECK_IS_ON()
 
 RunLoop::RunLoopTimeout::RunLoopTimeout() = default;
@@ -291,16 +322,19 @@ bool RunLoop::BeforeRun() {
 #if DCHECK_IS_ON()
   DCHECK(delegate_->allow_running_for_testing_)
       << "RunLoop::Run() isn't allowed in the scope of a "
-         "ScopedDisallowRunningForTesting. Hint: if mixing "
+         "ScopedDisallowRunning. Hint: if mixing "
          "TestMockTimeTaskRunners on same thread, use TestMockTimeTaskRunner's "
          "API instead of RunLoop to drive individual task runners.";
-  DCHECK(!run_called_);
-  run_called_ = true;
+  DCHECK(run_allowed_);
+  run_allowed_ = false;
 #endif  // DCHECK_IS_ON()
 
   // Allow Quit to be called before Run.
-  if (quit_called_)
+  if (quit_called_) {
+    TRACE_EVENT_WITH_FLOW0("toplevel.flow", "RunLoop_ExitedEarly",
+                           TRACE_ID_LOCAL(this), TRACE_EVENT_FLAG_FLOW_IN);
     return false;
+  }
 
   auto& active_run_loops = delegate_->active_run_loops_;
   active_run_loops.push(this);
@@ -322,6 +356,9 @@ void RunLoop::AfterRun() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   running_ = false;
+
+  TRACE_EVENT_WITH_FLOW0("toplevel.flow", "RunLoop_Exited",
+                         TRACE_ID_LOCAL(this), TRACE_EVENT_FLAG_FLOW_IN);
 
   auto& active_run_loops = delegate_->active_run_loops_;
   DCHECK_EQ(active_run_loops.top(), this);

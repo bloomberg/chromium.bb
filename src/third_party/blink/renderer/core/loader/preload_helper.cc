@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/loader/link_load_parameters.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/font_resource.h"
@@ -221,7 +222,7 @@ void PreloadHelper::PreconnectIfNeeded(
 // served from the cache correctly. Until
 // https://github.com/w3c/preload/issues/97 is resolved and implemented we need
 // to disable these preloads.
-base::Optional<ResourceType> PreloadHelper::GetResourceTypeFromAsAttribute(
+absl::optional<ResourceType> PreloadHelper::GetResourceTypeFromAsAttribute(
     const String& as) {
   DCHECK_EQ(as.DeprecatedLower(), as);
   if (as == "image")
@@ -236,7 +237,7 @@ base::Optional<ResourceType> PreloadHelper::GetResourceTypeFromAsAttribute(
     return ResourceType::kFont;
   if (as == "fetch")
     return ResourceType::kRaw;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // |base_url| is used in Link HTTP Header based preloads to resolve relative
@@ -253,7 +254,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
   if (!document.Loader() || !params.rel.IsLinkPreload())
     return nullptr;
 
-  base::Optional<ResourceType> resource_type =
+  absl::optional<ResourceType> resource_type =
       PreloadHelper::GetResourceTypeFromAsAttribute(params.as);
 
   MediaValues* media_values = nullptr;
@@ -287,7 +288,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
 
   if (caller == kLinkCalledFromHeader)
     UseCounter::Count(document, WebFeature::kLinkHeaderPreload);
-  if (resource_type == base::nullopt) {
+  if (resource_type == absl::nullopt) {
     String message;
     if (IsValidButUnsupportedAsAttribute(params.as)) {
       message = String("<link rel=preload> uses an unsupported `as` value");
@@ -324,6 +325,8 @@ Resource* PreloadHelper::PreloadIfNeeded(
   options.parser_disposition = parser_disposition;
   FetchParameters link_fetch_params(std::move(resource_request), options);
   link_fetch_params.SetCharset(document.Encoding());
+  link_fetch_params.SetRenderBlockingBehavior(
+      RenderBlockingBehavior::kNonBlocking);
 
   if (params.cross_origin != kCrossOriginAttributeNotSet) {
     link_fetch_params.SetCrossOriginAccessControl(
@@ -486,11 +489,12 @@ void PreloadHelper::ModulePreloadIfNeeded(
   // metadata is "not-parser-inserted", credentials mode is credentials mode,
   // and referrer policy is referrer policy." [spec text]
   ModuleScriptFetchRequest request(
-      params.href, context_type, destination,
+      params.href, ModuleType::kJavaScript, context_type, destination,
       ScriptFetchOptions(params.nonce, integrity_metadata, params.integrity,
                          kNotParserInserted, credentials_mode,
                          params.referrer_policy,
-                         mojom::FetchImportanceMode::kImportanceAuto),
+                         mojom::blink::FetchImportanceMode::kImportanceAuto,
+                         RenderBlockingBehavior::kNonBlocking),
       Referrer::NoReferrer(), TextPosition::MinimumPosition());
 
   // Step 11. "Fetch a single module script given url, settings object,
@@ -609,7 +613,7 @@ void PreloadHelper::LoadLinksFromHeader(
       DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
           document->GetExecutionContext()));
       KURL url = params.href;
-      base::Optional<ResourceType> resource_type =
+      absl::optional<ResourceType> resource_type =
           PreloadHelper::GetResourceTypeFromAsAttribute(params.as);
       if (resource_type == ResourceType::kImage &&
           !params.image_srcset.IsEmpty()) {
@@ -695,7 +699,7 @@ Resource* PreloadHelper::StartPreload(ResourceType type,
     case ResourceType::kFont:
       resource = FontResource::Fetch(params, resource_fetcher, nullptr);
       document.GetFontPreloadManager().FontPreloadingStarted(
-          ToFontResource(resource));
+          To<FontResource>(resource));
       break;
     case ResourceType::kAudio:
     case ResourceType::kVideo:
@@ -707,11 +711,6 @@ Resource* PreloadHelper::StartPreload(ResourceType type,
       params.MutableResourceRequest().SetUseStreamOnResponse(true);
       params.MutableOptions().data_buffering_policy = kDoNotBufferData;
       resource = RawResource::FetchTextTrack(params, resource_fetcher, nullptr);
-      break;
-    case ResourceType::kImportResource:
-      params.MutableResourceRequest().SetUseStreamOnResponse(true);
-      params.MutableOptions().data_buffering_policy = kDoNotBufferData;
-      resource = RawResource::FetchImport(params, resource_fetcher, nullptr);
       break;
     case ResourceType::kRaw:
       params.MutableResourceRequest().SetUseStreamOnResponse(true);

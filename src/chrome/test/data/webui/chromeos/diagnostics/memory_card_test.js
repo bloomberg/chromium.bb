@@ -5,12 +5,14 @@
 import 'chrome://diagnostics/memory_card.js';
 
 import {MemoryUsage} from 'chrome://diagnostics/diagnostics_types.js';
+import {convertKibToGibDecimalString} from 'chrome://diagnostics/diagnostics_utils.js';
 import {fakeMemoryUsage} from 'chrome://diagnostics/fake_data.js';
 import {FakeSystemDataProvider} from 'chrome://diagnostics/fake_system_data_provider.js';
 import {setSystemDataProviderForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.m.js';
+import {flushTasks, isChildVisible} from '../../test_util.m.js';
 
 import * as dx_utils from './diagnostics_test_utils.js';
 
@@ -88,20 +90,26 @@ export function memoryCardTestSuite() {
 
   test('MemoryCardPopulated', () => {
     return initializeMemoryCard(fakeMemoryUsage).then(() => {
-      const dataPoints = dx_utils.getDataPointElements(memoryElement);
-      assertEquals(fakeMemoryUsage[0].totalMemoryKib, dataPoints[0].value);
-      assertEquals(fakeMemoryUsage[0].availableMemoryKib, dataPoints[1].value);
-
       const barChart = dx_utils.getPercentBarChartElement(memoryElement);
       const memInUse = fakeMemoryUsage[0].totalMemoryKib -
           fakeMemoryUsage[0].availableMemoryKib;
+      const expectedChartHeader = loadTimeData.getStringF(
+          'memoryAvailable',
+          convertKibToGibDecimalString(
+              fakeMemoryUsage[0].availableMemoryKib, 2),
+          convertKibToGibDecimalString(fakeMemoryUsage[0].totalMemoryKib, 2));
       assertEquals(fakeMemoryUsage[0].totalMemoryKib, barChart.max);
       assertEquals(memInUse, barChart.value);
+      dx_utils.assertTextContains(barChart.header, expectedChartHeader);
 
       // Verify the routine section is in the card.
       assertTrue(!!getRoutineSection());
       assertTrue(!!getRunTestsButton());
       assertFalse(isRunTestsButtonDisabled());
+
+      // Verify that the data points container is not visible.
+      const diagnosticsCard = dx_utils.getDiagnosticsCard(memoryElement);
+      assertFalse(isChildVisible(diagnosticsCard, '.data-points'));
     });
   });
 }

@@ -60,8 +60,8 @@ void ChangeListPref(int index,
                     const base::ListValue& new_value) {
   ListPrefUpdate update(GetPrefs(index), pref_name);
   base::ListValue* list = update.Get();
-  for (const auto& it : new_value) {
-    list->Append(it.CreateDeepCopy());
+  for (const auto& it : new_value.GetList()) {
+    list->Append(it.Clone());
   }
 }
 
@@ -130,13 +130,26 @@ bool ClearedPrefMatches(const char* pref_name) {
 bool ListPrefMatches(const char* pref_name) {
   const base::ListValue* reference_value = GetPrefs(0)->GetList(pref_name);
   for (int i = 1; i < test()->num_clients(); ++i) {
-    if (!reference_value->Equals(GetPrefs(i)->GetList(pref_name))) {
+    if (*reference_value != *GetPrefs(i)->GetList(pref_name)) {
       DVLOG(1) << "List preference " << pref_name << " mismatched in"
                << " profile " << i << ".";
       return false;
     }
   }
   return true;
+}
+
+absl::optional<sync_pb::PreferenceSpecifics> GetPreferenceInFakeServer(
+    const std::string& pref_name,
+    fake_server::FakeServer* fake_server) {
+  for (const sync_pb::SyncEntity& entity :
+       fake_server->GetSyncEntitiesByModelType(syncer::PREFERENCES)) {
+    if (entity.specifics().preference().name() == pref_name) {
+      return entity.specifics().preference();
+    }
+  }
+
+  return absl::nullopt;
 }
 
 }  // namespace preferences_helper
@@ -200,4 +213,23 @@ ClearedPrefMatchChecker::ClearedPrefMatchChecker(const char* path)
 bool ClearedPrefMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
   *os << "Waiting for pref '" << GetPath() << "' to match";
   return preferences_helper::ClearedPrefMatches(GetPath());
+}
+
+FakeServerPrefMatchesValueChecker::FakeServerPrefMatchesValueChecker(
+    const std::string& pref_name,
+    const std::string& expected_value)
+    : pref_name_(pref_name), expected_value_(expected_value) {}
+
+bool FakeServerPrefMatchesValueChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  const absl::optional<sync_pb::PreferenceSpecifics> actual_specifics =
+      preferences_helper::GetPreferenceInFakeServer(pref_name_, fake_server());
+  if (!actual_specifics.has_value()) {
+    *os << "No sync entity in FakeServer for pref " << pref_name_;
+    return false;
+  }
+
+  *os << "Waiting until FakeServer value for pref " << pref_name_ << " becomes "
+      << expected_value_ << " but actual is " << actual_specifics->value();
+  return actual_specifics->value() == expected_value_;
 }

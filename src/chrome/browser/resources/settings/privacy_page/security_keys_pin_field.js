@@ -9,7 +9,7 @@
 
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import '../settings_shared_css.m.js';
+import '../settings_shared_css.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
@@ -36,6 +36,11 @@ Polymer({
   ],
 
   properties: {
+    minPinLength: {
+      value: 4,
+      type: Number,
+    },
+
     /* @private */
     error_: {
       type: String,
@@ -90,7 +95,7 @@ Polymer({
       return Promise.reject();
     }
     return submitFunc(this.value_).then(retries => {
-      if (retries != null) {
+      if (retries !== null) {
         this.showIncorrectPINError_(retries);
         this.focus();
         return Promise.reject();
@@ -173,10 +178,10 @@ Polymer({
    * @private
    */
   isValidPIN_(pin) {
-    // The UTF-8 encoding of the PIN must be between 4
+    // The UTF-8 encoding of the PIN must be between minPinLength
     // and 63 bytes, and the final byte cannot be zero.
     const utf8Encoded = new TextEncoder().encode(pin);
-    if (utf8Encoded.length < 4) {
+    if (utf8Encoded.length < this.minPinLength) {
       return this.i18n('securityKeysPINTooShort');
     }
     if (utf8Encoded.length > 63 ||
@@ -188,17 +193,17 @@ Polymer({
       return this.i18n('securityKeysPINTooLong');
     }
 
-    // A PIN must contain at least four code-points. Javascript strings are
-    // UCS-2 and the |length| property counts UCS-2 elements, not code-points.
-    // (For example, '\u{1f6b4}'.length === 2, but it's a single code-point.)
-    // Therefore, iterate over the string (which does yield codepoints) and
-    // check that four or more were seen.
+    // A PIN must contain at least minPinLength code-points. Javascript strings
+    // are UCS-2 and the |length| property counts UCS-2 elements, not
+    // code-points. (For example, '\u{1f6b4}'.length === 2, but it's a single
+    // code-point.) Therefore, iterate over the string (which does yield
+    // codepoints) and check that four or more were seen.
     let length = 0;
     for (const codepoint of pin) {
       length++;
     }
 
-    if (length < 4) {
+    if (length < this.minPinLength) {
       return this.i18n('securityKeysPINTooShort');
     }
 

@@ -27,6 +27,7 @@ import org.chromium.base.ApplicationStatus.WindowFocusChangedListener;
 import org.chromium.base.ObserverList;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.cc.input.BrowserControlsState;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
@@ -45,7 +46,6 @@ import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -337,7 +337,7 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
      * @param options Options to choose mode of fullscreen.
      */
     private void enterPersistentFullscreenMode(FullscreenOptions options) {
-        if (!getPersistentFullscreenMode() || ObjectsCompat.equals(mFullscreenOptions, options)) {
+        if (!getPersistentFullscreenMode() || !ObjectsCompat.equals(mFullscreenOptions, options)) {
             mPersistentModeSupplier.set(true);
             if (mAreControlsHidden.get()) {
                 // The browser controls are currently hidden.
