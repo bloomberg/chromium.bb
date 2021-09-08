@@ -21,7 +21,6 @@
 #include "base/scoped_observation.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/personalization_app/mojom/personalization_app.mojom.h"
-#include "components/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -126,6 +125,18 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
                                 const SkBitmap* bitmap,
                                 base::File::Error error);
 
+  // Called after attempting selecting an online wallpaper. Will be dropped if
+  // new requests come in.
+  void OnOnlineWallpaperSelected(bool success);
+
+  // Called after attempting selecting a local image. Will be dropped if new
+  // requests come in.
+  void OnLocalImageSelected(bool success);
+
+  // Called after attempting updating a daily refresh wallpaper. Will be dropped
+  // if new requests come in.
+  void OnDailyRefreshWallpaperUpdated(bool success);
+
   void FindAttribution(
       const ash::WallpaperInfo& info,
       const GURL& wallpaper_data_url,
@@ -155,6 +166,13 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
 
   std::unique_ptr<backdrop_wallpaper_handlers::ImageInfoFetcher>
       wallpaper_attribution_info_fetcher_;
+
+  SelectWallpaperCallback pending_select_wallpaper_callback_;
+
+  SelectLocalImageCallback pending_select_local_image_callback_;
+
+  UpdateDailyRefreshWallpaperCallback
+      pending_update_daily_refresh_wallpaper_callback_;
 
   std::unique_ptr<ash::ThumbnailLoader> thumbnail_loader_;
 

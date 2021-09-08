@@ -47145,6 +47145,7 @@ from previous Chrome versions.
   <int value="-1836412886" label="UseChimeAndroidSdk:disabled"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1835905702" label="FilesZipNoNaCl:enabled"/>
+  <int value="-1835844760" label="ArcVmBalloonPolicy:disabled"/>
   <int value="-1835608319" label="EnableHeuristicPalmDetectionFilter:disabled"/>
   <int value="-1834841895" label="CrostiniWebUIUpgrader:enabled"/>
   <int value="-1834151268" label="OmniboxDynamicMaxAutocomplete:disabled"/>
@@ -48201,6 +48202,7 @@ from previous Chrome versions.
   <int value="-1010588306" label="SlideTopChromeWithPageScrolls:disabled"/>
   <int value="-1008511612" label="EnableCustomMacPaperSizes:disabled"/>
   <int value="-1007961880" label="PrivacySandboxSettings:enabled"/>
+  <int value="-1005937042" label="ArcVmBalloonPolicy:enabled"/>
   <int value="-1005164075" label="ContextualSearchTranslations:enabled"/>
   <int value="-1002537430" label="HudDisplayForPerformanceMetrics:disabled"/>
   <int value="-1001837588" label="EnableAppReinstallZeroState:enabled"/>
@@ -48906,6 +48908,7 @@ from previous Chrome versions.
   <int value="-417633330" label="MessagesForAndroidInfrastructure:enabled"/>
   <int value="-416660617" label="EnforceTLS13Downgrade:disabled"/>
   <int value="-415186532" label="AndroidSiteSettingsUIRefresh:enabled"/>
+  <int value="-414900505" label="ScrollCapture:enabled"/>
   <int value="-413562235" label="MessagesForAndroidUpdatePassword:disabled"/>
   <int value="-412736561" label="EnableZeroStateMixedTypesRanker:enabled"/>
   <int value="-412645531" label="AutofillTokenPrefixMatching:enabled"/>
@@ -49354,6 +49357,7 @@ from previous Chrome versions.
   <int value="-43980455" label="MobileIdentityConsistencyFRE:enabled"/>
   <int value="-43650386" label="WindowsFollowCursor:enabled"/>
   <int value="-43428597" label="ClickToCallDetectionV2:enabled"/>
+  <int value="-42175674" label="ShareUsageRankingFixedMore:disabled"/>
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
   <int value="-37966026" label="PermissionPredictions:enabled"/>
   <int value="-36503306" label="HomepageLocationPolicy:enabled"/>
@@ -50425,6 +50429,7 @@ from previous Chrome versions.
   <int value="811374216" label="disable-new-bookmark-apps"/>
   <int value="811726957" label="SlideTopChromeWithPageScrolls:enabled"/>
   <int value="812710781" label="SyncUSSBookmarks:disabled"/>
+  <int value="813211869" label="ScrollCapture:disabled"/>
   <int value="813302293" label="RemoveStatusBarInWebApps:disabled"/>
   <int value="813999334" label="HistoryManipulationIntervention:enabled"/>
   <int value="816369907" label="SharingHubDesktopAppMenu:disabled"/>
@@ -51685,6 +51690,7 @@ from previous Chrome versions.
   <int value="1834968807" label="OmniboxAutocompleteTitles:enabled"/>
   <int value="1835075399" label="PostQuantumCECPQ2:disabled"/>
   <int value="1835523483" label="OmniboxUIExperimentSwapTitleAndUrl:enabled"/>
+  <int value="1835931933" label="ShareUsageRankingFixedMore:enabled"/>
   <int value="1837330563" label="WebPaymentsMinimalUI:disabled"/>
   <int value="1837847580" label="MutingCompromisedCredentials:disabled"/>
   <int value="1838990777" label="V8Future:enabled"/>
@@ -73094,6 +73100,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Has user gesture"/>
   <int value="2" label="Has referrer visit"/>
   <int value="3" label="Has both user gesture and referrer visit"/>
+  <int value="4" label="Has bypassed download warnings before"/>
 </enum>
 
 <enum name="SBClientMalwareSentReports">

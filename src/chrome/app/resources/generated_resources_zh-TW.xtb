@@ -1545,7 +1545,6 @@
 <translation id="2606454609872547359">否，不啟動 ChromeVox 並繼續操作</translation>
 <translation id="2606568927909309675">自動建立英文音訊和視訊的字幕。音訊和字幕絕不會外洩。</translation>
 <translation id="2607101320794533334">主體公開金鑰資訊</translation>
-<translation id="2607602101932365444">按住文字或在文字上按一下滑鼠右鍵後，就能取得定義、翻譯或單位轉換結果。如要自訂翻譯，請前往<ph name="LINK_BEGIN" />網路內容語言<ph name="LINK_END" />設定你偏好的語言。</translation>
 <translation id="2609896558069604090">建立捷徑...</translation>
 <translation id="2609980095400624569">無法建立連線</translation>
 <translation id="2610157865375787051">休眠</translation>
@@ -4606,7 +4605,7 @@
 <translation id="5949544233750246342">無法剖析檔案</translation>
 <translation id="5950819593680344519">Chrome 並未在電腦上發現任何有害軟體 • 上次檢查時間：昨天</translation>
 <translation id="5951303645598168883"><ph name="ORIGIN" /> 要求使用本機字型</translation>
-<translation id="5951624318208955736">顯示器</translation>
+<translation id="5951624318208955736">螢幕</translation>
 <translation id="5955282598396714173">你的密碼已過期。如要變更密碼，請先登出然後重新登入。</translation>
 <translation id="5955304353782037793">應用程式</translation>
 <translation id="5955721306465922729">有個網站想要開啟這個應用程式。</translation>
@@ -6808,6 +6807,7 @@
 <translation id="826905130698769948">用戶端憑證無效</translation>
 <translation id="8270242299912238708">PDF 文件</translation>
 <translation id="827097179112817503">顯示 [首頁] 按鈕</translation>
+<translation id="8271268254812352141">按住文字或在文字上按一下滑鼠右鍵後，就能取得定義、翻譯或單位轉換結果。你也可以前往<ph name="LINK_BEGIN" />網站語言<ph name="LINK_END" />頁面自訂翻譯語言。</translation>
 <translation id="8271379370373330993">後續幾個步驟須由家長完成。你可以在完成帳戶設定後將 <ph name="DEVICE_TYPE" /> 交還給孩子。</translation>
 <translation id="8272443605911821513">如要管理擴充功能，只需按一下 [其他工具] 選單裡的 [擴充功能] 即可。</translation>
 <translation id="8274332263553132018">投放檔案</translation>
@@ -7214,7 +7214,7 @@
 <translation id="8737914367566358838">請選擇網頁的譯文語言</translation>
 <translation id="8737916108453753541">系統會將網址提供給 Google，藉此瞭解瀏覽行為</translation>
 <translation id="8740247629089392745">你可以將這部 Chromebook 交給「<ph name="SUPERVISED_USER_NAME" />」。設定即將完成，完成後即可開始探索。</translation>
-<translation id="8741944563400125534">開關功能設定導覽</translation>
+<translation id="8741944563400125534">開關功能設定指南</translation>
 <translation id="8742998548129056176">這個頁面會顯示裝置和裝置使用情況的一般資訊 (例如電池電量、系統和應用程式活動，以及錯誤資訊)。這些資料將用於改善 Android，且部分匯總資訊還能協助 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提高應用程式和產品的服務品質。</translation>
 <translation id="8746654918629346731">你已要求安裝「<ph name="EXTENSION_NAME" />」</translation>
 <translation id="874689135111202667">{0,plural, =1{要將 1 個檔案上傳到這個網站嗎？}other{要將 # 個檔案上傳到這個網站嗎？}}</translation>

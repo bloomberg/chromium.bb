@@ -846,6 +846,11 @@ const base::Feature kSchedulerConfiguration{"SchedulerConfiguration",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if defined(OS_ANDROID)
+const base::Feature kScrollCapture{"ScrollCapture",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Controls whether SCT audit reports are queued and the rate at which they
 // should be sampled.
 const base::Feature kSCTAuditing{"SCTAuditing",
@@ -871,6 +876,8 @@ const base::Feature kChromeOSSharingHub{"ChromeOSSharingHub",
 #if defined(OS_ANDROID)
 const base::Feature kShareUsageRanking{"ShareUsageRanking",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kShareUsageRankingFixedMore{
+    "ShareUsageRankingFixedMore", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_MAC)

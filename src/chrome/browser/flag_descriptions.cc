@@ -3348,6 +3348,12 @@ const char kShareUsageRankingName[] =
 const char kShareUsageRankingDescription[] =
     "Incorporate the history of which apps were shared to when producing the "
     "ordered list of 3P share targets in the share hub.";
+const char kShareUsageRankingFixedMoreName[] =
+    "Fix the position of the 'More' item in the Android share hub.";
+const char kShareUsageRankingFixedMoreDescription[] =
+    "When enabled with #share-usage-ranking, forces the 'More' option to "
+    "occupy the right-most slot on the screen instead of moving depending on "
+    "the length of the target list.";
 
 const char kRequestDesktopSiteForTabletsName[] =
     "Request desktop site for tablets on Android";
@@ -3380,6 +3386,10 @@ const char kSafeBrowsingUseLocalBlacklistsV2Description[] =
     "If enabled, maintain a copy of Safe Browsing blacklists in the browser "
     "process to check the Safe Browsing reputation of URLs without calling "
     "into GmsCore for every URL.";
+
+const char kScrollCaptureName[] = "Scroll Capture";
+const char kScrollCaptureDescription[] =
+    "Enables scrolling screenshot capture for web contents.";
 
 const char kSetMarketUrlForTestingName[] = "Set market URL for testing";
 const char kSetMarketUrlForTestingDescription[] =
@@ -3941,6 +3951,12 @@ const char kArcUseHighMemoryDalvikProfileName[] =
 const char kArcUseHighMemoryDalvikProfileDesc[] =
     "Allow Android to use high-memory dalvik profile when applicable for "
     "high-memory devices.";
+
+const char kArcVmBalloonPolicyName[] =
+    "Enable ARCVM limit cache balloon policy";
+const char kArcVmBalloonPolicyDesc[] =
+    "Trigger reclaim in ARCVM to reduce memory use when ChromeOS is running "
+    "low on memory.";
 
 const char kArcWebAppShareName[] = "Enable sharing to Web Apps from ARC";
 const char kArcWebAppShareDescription[] =

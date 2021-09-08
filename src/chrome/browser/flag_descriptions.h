@@ -1912,6 +1912,8 @@ extern const char kRelatedSearchesUiDescription[];
 
 extern const char kShareUsageRankingName[];
 extern const char kShareUsageRankingDescription[];
+extern const char kShareUsageRankingFixedMoreName[];
+extern const char kShareUsageRankingFixedMoreDescription[];
 
 extern const char kSingleTouchSelectName[];
 extern const char kSingleTouchSelectDescription[];
@@ -1932,6 +1934,9 @@ extern const char kEnhancedProtectionPromoAndroidDescription[];
 
 extern const char kSafeBrowsingUseLocalBlacklistsV2Name[];
 extern const char kSafeBrowsingUseLocalBlacklistsV2Description[];
+
+extern const char kScrollCaptureName[];
+extern const char kScrollCaptureDescription[];
 
 extern const char kSetMarketUrlForTestingName[];
 extern const char kSetMarketUrlForTestingDescription[];
@@ -2254,6 +2259,9 @@ extern const char kArcRtVcpuQuadCoreDesc[];
 
 extern const char kArcUseHighMemoryDalvikProfileName[];
 extern const char kArcUseHighMemoryDalvikProfileDesc[];
+
+extern const char kArcVmBalloonPolicyName[];
+extern const char kArcVmBalloonPolicyDesc[];
 
 extern const char kArcWebAppShareName[];
 extern const char kArcWebAppShareDescription[];

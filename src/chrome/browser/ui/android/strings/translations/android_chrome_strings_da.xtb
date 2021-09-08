@@ -448,7 +448,7 @@ Privacy Sandbox er stadig under udvikling og kan anvendes i udvalgte områder. I
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{1 fane}one{# fane}other{# faner}}</translation>
 <translation id="3803784507854318295">Administrer autoplay</translation>
 <translation id="3810838688059735925">Video</translation>
-<translation id="3810973564298564668">Valgmuligheder</translation>
+<translation id="3810973564298564668">Administrer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads blev slettet</translation>
 <translation id="3845098929839618392">Åbn i inkognitofane</translation>
 <translation id="3856096718352044181">Bekræft, at dette er en gyldig udbyder, eller prøv igen senere</translation>
@@ -630,7 +630,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="4943872375798546930">Ingen resultater</translation>
 <translation id="4957722034734105353">Flere oplysninger...</translation>
 <translation id="4961107849584082341">Oversæt denne side til et hvilket som helst sprog</translation>
-<translation id="4970824347203572753">Ikke tilgængelig på din placering</translation>
+<translation id="4970824347203572753">Ikke tilgængelig på din lokation</translation>
 <translation id="4971735654804503942">Hurtigere proaktiv beskyttelse mod skadelige websites, downloads og udvidelser. Advarer dig om læk af adgangskoder. Kræver, at browserdata sendes til Google.</translation>
 <translation id="497421865427891073">Gå fremad</translation>
 <translation id="4988210275050210843">Downloader fil (<ph name="MEGABYTES" />).</translation>
@@ -712,7 +712,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5483197086164197190">Find rundt i Chrome</translation>
 <translation id="5487521232677179737">Ryd data</translation>
 <translation id="549025011754480756">Sådan søger du med stemmen</translation>
-<translation id="5500777121964041360">Funktionen er muligvis ikke tilgængelig på din placering</translation>
+<translation id="5500777121964041360">Funktionen er muligvis ikke tilgængelig på din lokation</translation>
 <translation id="5512137114520586844">Denne konto administreres af <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Deaktiveret af administratoren af denne enhed</translation>
 <translation id="5515439363601853141">Lås op for at se din adgangskode</translation>

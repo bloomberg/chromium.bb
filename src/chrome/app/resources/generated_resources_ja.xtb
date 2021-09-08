@@ -1544,7 +1544,6 @@
 <translation id="2606454609872547359">いいえ（ChromeVox なしで続行する）</translation>
 <translation id="2606568927909309675">英語の音声と動画の字幕を自動生成します。音声と字幕はデバイス上でローカルに処理されます。</translation>
 <translation id="2607101320794533334">サブジェクトの公開鍵情報</translation>
-<translation id="2607602101932365444">テキストを右クリックまたは長押しすると、定義、翻訳、単位変換を確認できます。翻訳をカスタマイズするには、[<ph name="LINK_BEGIN" />ウェブ コンテンツの言語<ph name="LINK_END" />] で使用する言語を設定します。</translation>
 <translation id="2609896558069604090">ショートカットの作成...</translation>
 <translation id="2609980095400624569">接続を確立できませんでした</translation>
 <translation id="2610157865375787051">スリープモードにする</translation>
@@ -6807,6 +6806,7 @@
 <translation id="826905130698769948">クライアント証明書が無効です</translation>
 <translation id="8270242299912238708">PDF ドキュメント</translation>
 <translation id="827097179112817503">ホームボタンを表示する</translation>
+<translation id="8271268254812352141">テキストを右クリックまたは長押しすると、定義、翻訳、単位変換を確認できます。<ph name="LINK_BEGIN" />ウェブサイトの言語<ph name="LINK_END" />で翻訳言語をカスタマイズできます。</translation>
 <translation id="8271379370373330993">この後、保護者の方用の手順がいくつか続きます。お子様に <ph name="DEVICE_TYPE" /> を渡す前に、アカウント設定を終えてください。</translation>
 <translation id="8272443605911821513">拡張機能を管理するには、[その他のツール] メニューの [拡張機能] をクリックします。</translation>
 <translation id="8274332263553132018">ファイルをキャスト</translation>

@@ -668,6 +668,8 @@ const char kLacrosPrimaryInternalName[] = "lacros-primary";
 const char kLacrosSupportInternalName[] = "lacros-support";
 const char kLacrosStabilityInternalName[] = "lacros-stability";
 const char kWebAppsCrosapiInternalName[] = "web-apps-crosapi";
+const char kArcVmBalloonPolicyInternalName[] =
+    "arc-use-limit-cache-balloon-policy";
 
 const FeatureEntry::Choice kLacrosStabilityChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1802,6 +1804,7 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceFinale[] = {
     {"start_surface_variation", "single"},
     {"omnibox_focused_on_new_tab", "true"},
     {"home_button_on_grid_tab_switcher", "true"},
+    {"tab_count_button_on_start_surface", "true"},
     {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
     {"hide_switch_when_no_incognito_tabs", "true"},
     {"show_tabs_in_mru_order", "true"},
@@ -1813,6 +1816,7 @@ const FeatureEntry::FeatureParam
         {"omnibox_focused_on_new_tab", "true"},
         {"show_ntp_tiles_on_omnibox", "true"},
         {"home_button_on_grid_tab_switcher", "true"},
+        {"tab_count_button_on_start_surface", "true"},
         {"new_home_surface_from_home_button", "hide_mv_tiles_and_tab_switcher"},
         {"hide_switch_when_no_incognito_tabs", "true"},
         {"show_tabs_in_mru_order", "true"},
@@ -1821,7 +1825,6 @@ const FeatureEntry::FeatureParam
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
     {"start_surface_variation", "single"},
     {"show_last_active_tab_only", "true"},
-    {"exclude_mv_tiles", "true"},
     {"open_ntp_instead_of_start", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2Finale[] =
@@ -1829,7 +1832,9 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2Finale[] =
      {"show_last_active_tab_only", "true"},
      {"omnibox_focused_on_new_tab", "true"},
      {"home_button_on_grid_tab_switcher", "true"},
+     {"tab_count_button_on_start_surface", "true"},
      {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
+     {"hide_switch_when_no_incognito_tabs", "true"},
      {"enable_tab_groups_continuation", "true"}};
 
 const FeatureEntry::FeatureParam
@@ -1839,6 +1844,8 @@ const FeatureEntry::FeatureParam
         {"omnibox_focused_on_new_tab", "true"},
         {"show_ntp_tiles_on_omnibox", "true"},
         {"home_button_on_grid_tab_switcher", "true"},
+        {"tab_count_button_on_start_surface", "true"},
+        {"hide_switch_when_no_incognito_tabs", "true"},
         {"new_home_surface_from_home_button", "hide_mv_tiles_and_tab_switcher"},
         {"enable_tab_groups_continuation", "true"}};
 
@@ -1847,7 +1854,24 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceSingleTab[] =
      {"show_last_active_tab_only", "true"},
      {"hide_switch_when_no_incognito_tabs", "true"}};
 
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateA[] = {
+    {"start_surface_variation", "single"},
+    {"show_last_active_tab_only", "true"},
+    {"hide_switch_when_no_incognito_tabs", "true"},
+    {"tab_count_button_on_start_surface", "true"}};
+
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateB[] = {
+    {"start_surface_variation", "single"},
+    {"show_last_active_tab_only", "true"},
+    {"hide_switch_when_no_incognito_tabs", "true"},
+    {"tab_count_button_on_start_surface", "true"},
+    {"open_ntp_instead_of_start", "true"}};
+
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
+    {"Canidate A", kStartSurfaceAndroid_CandidateA,
+     base::size(kStartSurfaceAndroid_CandidateA), nullptr},
+    {"Canidate B", kStartSurfaceAndroid_CandidateB,
+     base::size(kStartSurfaceAndroid_CandidateB), nullptr},
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
      base::size(kStartSurfaceAndroid_SingleSurface), nullptr},
     {"Single Surface Finale", kStartSurfaceAndroid_SingleSurfaceFinale,
@@ -4101,6 +4125,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcUseHighMemoryDalvikProfileName,
      flag_descriptions::kArcUseHighMemoryDalvikProfileDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kUseHighMemoryDalvikProfile)},
+    {kArcVmBalloonPolicyInternalName,
+     flag_descriptions::kArcVmBalloonPolicyName,
+     flag_descriptions::kArcVmBalloonPolicyDesc, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kVmBalloonPolicy)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-generic-sensor-extra-classes",
      flag_descriptions::kEnableGenericSensorExtraClassesName,
@@ -6951,6 +6979,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalAccessibilityLabelsName,
      flag_descriptions::kExperimentalAccessibilityLabelsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityLabels)},
+
+    {"scroll-capture", flag_descriptions::kScrollCaptureName,
+     flag_descriptions::kScrollCaptureDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kScrollCapture)},
 #endif  // defined(OS_ANDROID)
 
     {"chrome-labs", flag_descriptions::kChromeLabsName,
@@ -7468,6 +7500,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"share-usage-ranking", flag_descriptions::kShareUsageRankingName,
      flag_descriptions::kShareUsageRankingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kShareUsageRanking)},
+    {"share-usage-ranking-fixed-more",
+     flag_descriptions::kShareUsageRankingFixedMoreName,
+     flag_descriptions::kShareUsageRankingFixedMoreDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kShareUsageRankingFixedMore)},
 #endif
 
     {"enable-safe-browsing-per-profile-network-contexts",
@@ -7576,6 +7612,10 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   // Leave the feature only for ARCVM.
   if (!strcmp(kArcUseHighMemoryDalvikProfileInternalName,
               entry.internal_name)) {
+    return !arc::IsArcVmEnabled();
+  }
+
+  if (!strcmp(kArcVmBalloonPolicyInternalName, entry.internal_name)) {
     return !arc::IsArcVmEnabled();
   }
 

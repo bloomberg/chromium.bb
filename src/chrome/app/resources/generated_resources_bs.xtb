@@ -1559,7 +1559,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2606454609872547359">Ne, nastavi bez ChromeVoxa</translation>
 <translation id="2606568927909309675">Automatski kreira titlove za audio i videozapise na engleskom jeziku. Zvuk i titlovi nikada ne napuštaju uređaj.</translation>
 <translation id="2607101320794533334">Informacije o javnom ključu subjekta</translation>
-<translation id="2607602101932365444">Primite definicije, prijevode ili pretvaranje jedinica kada kliknete desnim klikom na tekst ili ga dodirnete i zadržite. Prilagodite prijevod postavljanjem preferiranih jezika u <ph name="LINK_BEGIN" />Jezicima web sadržaja<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Kreiraj prečice...</translation>
 <translation id="2609980095400624569">Uspostavljanje veze nije uspjelo</translation>
 <translation id="2610157865375787051">Stanje mirovanja</translation>
@@ -6823,6 +6822,7 @@ Pritisnite dodijeljeni prekidač da uklonite dodjeljivanje</translation>
 <translation id="826905130698769948">Nevažeća potvrda klijenta</translation>
 <translation id="8270242299912238708">PDF dokumenti</translation>
 <translation id="827097179112817503">Prikaži dugme za početni ekran</translation>
+<translation id="8271268254812352141">Primite definicije, prijevode ili pretvaranje jedinica kada kliknete desnim klikom na tekst ili ga dodirnete i zadržite. Prilagodite jezike prijevoda u <ph name="LINK_BEGIN" />Jezicima web lokacije<ph name="LINK_END" />.</translation>
 <translation id="8271379370373330993">Roditelji, sljedećih nekoliko koraka je za vas. Uređaj <ph name="DEVICE_TYPE" /> možete vratiti djetetu nakon što postavite račun.</translation>
 <translation id="8272443605911821513">Upravljajte svojim ekstenzijama klikom na Ekstenzije u meniju "Više alata".</translation>
 <translation id="8274332263553132018">Emitiraj fajl</translation>

@@ -1546,7 +1546,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2606454609872547359">No, continuar sin ChromeVox</translation>
 <translation id="2606568927909309675">Crea subtítulos de forma automática para contenido de audio y vídeo en inglés. El audio y los subtítulos no saldrán de tu dispositivo en ningún momento.</translation>
 <translation id="2607101320794533334">Información de clave pública de la entidad receptora</translation>
-<translation id="2607602101932365444">Consulta definiciones, traducciones o conversiones de unidades haciendo clic con el botón derecho en un texto o manteniéndolo pulsado. Personaliza la traducción estableciendo tus idiomas preferidos en <ph name="LINK_BEGIN" />Idiomas del contenido web<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Crear accesos directos...</translation>
 <translation id="2609980095400624569">No se ha podido establecer conexión</translation>
 <translation id="2610157865375787051">Suspensión</translation>
@@ -6808,6 +6807,7 @@ Pulsa un interruptor asignado para quitar la asignación.</translation>
 <translation id="826905130698769948">Certificado de cliente no válido</translation>
 <translation id="8270242299912238708">Documentos PDF</translation>
 <translation id="827097179112817503">Mostrar el botón de página principal</translation>
+<translation id="8271268254812352141">Consulta definiciones, traducciones o conversiones de unidades haciendo clic con el botón derecho en un texto o manteniéndolo pulsado. Personaliza los idiomas de traducción en <ph name="LINK_BEGIN" />Idiomas de sitios web<ph name="LINK_END" />.</translation>
 <translation id="8271379370373330993">Los pasos siguientes son para los padres. Puedes devolverle el <ph name="DEVICE_TYPE" /> al niño/a después de configurar la cuenta.</translation>
 <translation id="8272443605911821513">Para gestionar tus extensiones, haz clic en la opción Extensiones del menú Más herramientas.</translation>
 <translation id="8274332263553132018">Enviar archivo</translation>
@@ -7530,7 +7530,7 @@ Pulsa un interruptor asignado para quitar la asignación.</translation>
 <translation id="9053893665344928494">Recordar mi selección</translation>
 <translation id="9055636786322918818">Fuerza el cifrado RC4. Esta opción aumenta el riesgo, ya que los algoritmos de cifrado de RC4 no son seguros.</translation>
 <translation id="9056810968620647706">No se ha encontrado ningún resultado coincidente.</translation>
-<translation id="9057354806206861646">Actualizar calendario</translation>
+<translation id="9057354806206861646">Ciclo de vida de actualizaciones</translation>
 <translation id="9057599413476594385">Seleccionar la parte de una imagen para buscar con Google Lens</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Error de la línea <ph name="ERROR_LINE_START" /> a la <ph name="ERROR_LINE_END" /></translation>

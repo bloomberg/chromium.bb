@@ -1543,7 +1543,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2606454609872547359">Nie, kontynuuj bez ChromeVoksa</translation>
 <translation id="2606568927909309675">Automatycznie tworzy napisy dla dźwięku i wideo w języku angielskim. Dźwięk ani napisy nie są wysyłane poza urządzenie.</translation>
 <translation id="2607101320794533334">Informacje o kluczu publicznym podmiotu</translation>
-<translation id="2607602101932365444">Kliknij tekst prawym przyciskiem lub naciśnij go i przytrzymaj, aby zobaczyć definicję, tłumaczenie lub konwersję jednostek. Dostosuj tłumaczenie, ustawiając swoje preferowane języki w sekcji <ph name="LINK_BEGIN" />Języki treści internetowych<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Utwórz skróty...</translation>
 <translation id="2609980095400624569">Nie udało się nawiązać połączenia</translation>
 <translation id="2610157865375787051">Uśpienie</translation>
@@ -6806,6 +6805,7 @@ Naciśnij przypisany przełącznik, aby usunąć przypisanie</translation>
 <translation id="826905130698769948">Nieprawidłowy certyfikat klienta</translation>
 <translation id="8270242299912238708">Dokumenty PDF</translation>
 <translation id="827097179112817503">Pokaż przycisk strony głównej</translation>
+<translation id="8271268254812352141">Kliknij tekst prawym przyciskiem lub naciśnij go i przytrzymaj, aby zobaczyć definicję, tłumaczenie lub konwersję jednostek. Dostosuj języki tłumaczenia w sekcji <ph name="LINK_BEGIN" />Języki wyświetlania stron internetowych<ph name="LINK_END" />.</translation>
 <translation id="8271379370373330993">Rodzice, kilka kolejnych kroków jest przeznaczonych dla Was. Po skonfigurowaniu konta <ph name="DEVICE_TYPE" /> może wrócić w ręce dziecka.</translation>
 <translation id="8272443605911821513">Aby zarządzać zainstalowanymi rozszerzeniami, kliknij Rozszerzenia w menu Więcej narzędzi.</translation>
 <translation id="8274332263553132018">Prześlij plik</translation>

@@ -14,6 +14,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/switchable_windows.h"
+#include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/check_op.h"
@@ -38,6 +39,9 @@ constexpr char kSplitViewEntryPointDeviceUIModeHistogram[] =
 // Histogram of the device orientation when entering split view.
 constexpr char kSplitViewEntryPointDeviceOrientationHistogram[] =
     "Ash.SplitView.EntryPoint.DeviceOrientation";
+// Histogram of the device orientation when using split view.
+constexpr char kSplitViewDeviceOrientationPrefix[] =
+    "Ash.SplitView.DeviceOrientation";
 // Histogram of the device orientation changes when using split view.
 constexpr char kOrientationInSplitViewHistogram[] =
     "Ash.SplitView.OrientationInSplitView";
@@ -131,6 +135,20 @@ bool TopTwoVisibleWindowsBothSnapped(
   return false;
 }
 
+// Appends the proper suffix to |prefix| based on whether the device is in
+// tablet mode or not.
+std::string GetHistogramNameWithDeviceUIMode(std::string prefix) {
+  return prefix.append(Shell::Get()->IsInTabletMode() ? ".TabletMode"
+                                                      : ".ClamshellMode");
+}
+
+SplitViewMetricsController::DeviceOrientation GetDeviceOrientation(
+    const display::Display& display) {
+  return IsDisplayLayoutHorizontal(display)
+             ? SplitViewMetricsController::DeviceOrientation::kLandscape
+             : SplitViewMetricsController::DeviceOrientation::kPortrait;
+}
+
 }  // namespace
 
 // static
@@ -161,9 +179,10 @@ SplitViewMetricsController::SplitViewMetricsController(
 
   aura::Env::GetInstance()->AddObserver(this);
 
-  orientation_ = SplitViewController::IsLayoutHorizontal()
-                     ? DeviceOrientation::kLandscape
-                     : DeviceOrientation::kPortrait;
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          split_view_controller->root_window());
+  orientation_ = GetDeviceOrientation(display);
   ResetTimeAndCounter();
 }
 
@@ -246,32 +265,27 @@ void SplitViewMetricsController::OnSplitViewWindowSwapped() {
 void SplitViewMetricsController::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
-  // Checks if the device is in split view.
-  if (!in_split_view_recording_)
+  if (!(changed_metrics &
+        display::DisplayObserver::DisplayMetric::DISPLAY_METRIC_ROTATION)) {
     return;
+  }
 
-  // Checks if the root window of |split_view_controller_| is in the changed
-  // display.
+  // Do nothing if the split view does not belongs to the modified display.
   if (GetRootWindowSettings(split_view_controller_->root_window())
           ->display_id != display.id()) {
     return;
   }
 
-  // Checks if the display is rotated.
-  if (changed_metrics !=
-      display::DisplayObserver::DisplayMetric::DISPLAY_METRIC_ROTATION) {
+  const DeviceOrientation orientation = GetDeviceOrientation(display);
+  if (orientation_ == orientation)
     return;
-  }
+  orientation_ = orientation;
 
   // Reports change of the display orientation.
-  DeviceOrientation orientation = SplitViewController::IsLayoutHorizontal()
-                                      ? DeviceOrientation::kLandscape
-                                      : DeviceOrientation::kPortrait;
-
-  if (orientation_ != orientation) {
-    orientation_ = orientation;
+  if (in_split_view_recording_) {
     base::UmaHistogramEnumeration(kOrientationInSplitViewHistogram,
                                   orientation_);
+    ReportDeviceUIModeAndOrientationHistogram();
   }
 }
 
@@ -628,6 +642,7 @@ bool SplitViewMetricsController::IsRecordingTabletMetrics() const {
 
 void SplitViewMetricsController::StartRecordClamshellSplitView() {
   clamshell_split_view_start_time_ = base::TimeTicks::Now();
+  ReportDeviceUIModeAndOrientationHistogram();
 }
 
 void SplitViewMetricsController::StopRecordClamshellSplitView() {
@@ -654,6 +669,7 @@ void SplitViewMetricsController::StopRecordClamshellSplitView() {
 
 void SplitViewMetricsController::StartRecordTabletSplitView() {
   tablet_split_view_start_time_ = base::TimeTicks::Now();
+  ReportDeviceUIModeAndOrientationHistogram();
 }
 
 void SplitViewMetricsController::StopRecordTabletSplitView() {
@@ -671,6 +687,7 @@ void SplitViewMetricsController::StopRecordTabletSplitView() {
 
 void SplitViewMetricsController::StartRecordClamshellMultiDisplaySplitView() {
   g_clamshell_multi_display_split_view_start_time = base::TimeTicks::Now();
+  ReportDeviceUIModeAndOrientationHistogram();
 }
 
 void SplitViewMetricsController::StopRecordClamshellMultiDisplaySplitView() {
@@ -695,6 +712,7 @@ void SplitViewMetricsController::StopRecordClamshellMultiDisplaySplitView() {
 
 void SplitViewMetricsController::StartRecordTabletMultiDisplaySplitView() {
   g_tablet_multi_display_split_view_start_time = base::TimeTicks::Now();
+  ReportDeviceUIModeAndOrientationHistogram();
 }
 
 void SplitViewMetricsController::StopRecordTabletMultiDisplaySplitView() {
@@ -704,6 +722,12 @@ void SplitViewMetricsController::StopRecordTabletMultiDisplaySplitView() {
       kTimeInMultiDisplaySplitScreenTabletHistogram,
       base::TimeTicks::Now() - g_tablet_multi_display_split_view_start_time);
   g_tablet_multi_display_split_view_start_time = kInvalidTime;
+}
+
+void SplitViewMetricsController::ReportDeviceUIModeAndOrientationHistogram() {
+  base::UmaHistogramEnumeration(
+      GetHistogramNameWithDeviceUIMode(kSplitViewDeviceOrientationPrefix),
+      orientation_);
 }
 
 }  // namespace ash

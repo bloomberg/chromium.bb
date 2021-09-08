@@ -243,6 +243,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "arc-use-limit-cache-balloon-policy",
+    "owners": [ "cwd" ],
+    "expiry_milestone": 97
+  },
+  {
     "name": "arc-web-app-share",
     "owners": [ "tsergeant", "chromeos-apps-foundation-team@google.com" ],
     "expiry_milestone": 95
@@ -2589,7 +2594,7 @@
   {
     "name": "enable-system-notifications",
     "owners": [ "peter", "finnur", "knollr" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 98
   },
   {
     "name": "enable-system-proxy-for-system-services",
@@ -4441,7 +4446,7 @@
   {
     "name": "photo-picker-video-support",
     "owners": [ "finnur" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 105
   },
   {
     "name": "playback-speed-button",
@@ -4867,6 +4872,11 @@
     "expiry_milestone": 94
   },
   {
+    "name": "scroll-capture",
+    "owners": [ "ckitagawa", "fredmello", "yashard" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "scroll-unification",
     "owners": [ "skobes@chromium.org", "input-dev@chromium.org" ],
     "expiry_milestone": 100
@@ -4971,7 +4981,12 @@
   {
     "name": "share-usage-ranking",
     "owners": [ "ellyjones", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 96
+  },
+  {
+    "name": "share-usage-ranking-fixed-more",
+    "owners": [ "ellyjones", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 96
   },
   {
     "name": "shared-clipboard-ui",

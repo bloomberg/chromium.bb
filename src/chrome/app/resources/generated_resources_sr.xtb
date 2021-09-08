@@ -1544,7 +1544,6 @@
 <translation id="2606454609872547359">Не, настави без ChromeVox-а</translation>
 <translation id="2606568927909309675">Аутоматски прави титл за аудио и видео на енглеском. Аудио фајл и титл увек остају на уређају.</translation>
 <translation id="2607101320794533334">Информације о јавном кључу субјекта</translation>
-<translation id="2607602101932365444">Добијајте дефиниције, преводе или конверзије јединица када кликнете десним тастером на текст или га додирнете и задржите. Прилагодите превод подешавањем жељених језика у <ph name="LINK_BEGIN" />Језицима за веб-садржај<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Направи пречице...</translation>
 <translation id="2609980095400624569">Успостављање везе није успело</translation>
 <translation id="2610157865375787051">Спавање</translation>
@@ -2682,7 +2681,7 @@
 <translation id="3809280248639369696">Месечев зрак</translation>
 <translation id="3810593934879994994"><ph name="ORIGIN" /> може да прегледа датотеке у директоријумима у наставку</translation>
 <translation id="3810914450553844415">Администратор не дозвољава додатне Google налоге.</translation>
-<translation id="3810973564298564668">Промени</translation>
+<translation id="3810973564298564668">Управљај</translation>
 <translation id="381202950560906753">Додај други</translation>
 <translation id="3812525830114410218">Неисправан сертификат</translation>
 <translation id="3813296892522778813">Идите на <ph name="BEGIN_LINK_CHROMIUM" />страницу помоћи за Google Chrome<ph name="END_LINK_CHROMIUM" /> ако не можете да пронађете оно што тражите</translation>
@@ -5047,7 +5046,7 @@
 <translation id="6429384232893414837">Грешка при ажурирању</translation>
 <translation id="6430814529589430811">ASCII датотека шифрована методом „Base64“, један сертификат</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> ће подесити аутоматска ажурирања за све кориснике овог рачунара.</translation>
-<translation id="6434104957329207050">Брзина прелажења садржаја по тачкама</translation>
+<translation id="6434104957329207050">Брзина скенирања садржаја по тачкама</translation>
 <translation id="6434309073475700221">Одбаци</translation>
 <translation id="6434325376267409267">Да бисте користили апликацију <ph name="APP_NAME" />, морате да ажурирате уређај.</translation>
 <translation id="6436164536244065364">Прикажи у Веб продавници</translation>
@@ -6808,6 +6807,7 @@
 <translation id="826905130698769948">Неважећи сертификат клијента</translation>
 <translation id="8270242299912238708">PDF документи</translation>
 <translation id="827097179112817503">Прикажи дугме за почетну страницу</translation>
+<translation id="8271268254812352141">Добијајте дефиниције, преводе или конверзије јединица када кликнете десним тастером на текст или га додирнете и задржите. Прилагодите језике за превод у <ph name="LINK_BEGIN" />Језицима за веб-сајтове<ph name="LINK_END" />.</translation>
 <translation id="8271379370373330993">Родитељи, следећих неколико корака су за вас. Можете да вратите <ph name="DEVICE_TYPE" /> детету после отварања налога.</translation>
 <translation id="8272443605911821513">Управљајте додацима кликом на Додаци у менију „Још алатки“.</translation>
 <translation id="8274332263553132018">Пребаците датотеку</translation>

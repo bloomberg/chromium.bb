@@ -1553,7 +1553,6 @@
 <translation id="2606454609872547359">ಇಲ್ಲ, ChromeVox ಇಲ್ಲದೆಯೇ ಮುಂದುವರಿಸಿ</translation>
 <translation id="2606568927909309675">ಇಂಗ್ಲಿಷ್ ಆಡಿಯೊ ಮತ್ತು ವೀಡಿಯೊಗಾಗಿ ಶೀರ್ಷಿಕೆಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ರಚಿಸುತ್ತದೆ. ಆಡಿಯೊ ಮತ್ತು ಶೀರ್ಷಿಕೆಗಳು ಯಾವಾಗಲೂ ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿಯೇ ಉಳಿಯುತ್ತವೆ.</translation>
 <translation id="2607101320794533334">ವಿಷಯ ಸಾರ್ವಜನಿಕ ಕೀಲಿ ಮಾಹಿತಿ</translation>
-<translation id="2607602101932365444">ನೀವು ಬಲ-ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ಅಥವಾ ಪಠ್ಯವನ್ನು ಸ್ಪರ್ಶಿಸಿ ಮತ್ತು ಹೋಲ್ಡ್‌ ಮಾಡಿದಾಗ ವಿವರಣೆಗಳು, ಅನುವಾದಗಳು ಅಥವಾ ಯೂನಿಟ್ ಪರಿವರ್ತನೆಗಳನ್ನು ಪಡೆಯಿರಿ. <ph name="LINK_BEGIN" />ವೆಬ್ ವಿಷಯ ಭಾಷೆಗಳಲ್ಲಿ<ph name="LINK_END" /> ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಗಳನ್ನು ಸೆಟಪ್ ಮಾಡುವ ಅನುವಾದವನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ.</translation>
 <translation id="2609896558069604090">ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ರಚಿಸಿ...</translation>
 <translation id="2609980095400624569">ಕನೆಕ್ಷನ್ ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="2610157865375787051">ನಿದ್ರಾವಸ್ಥೆ</translation>
@@ -2523,7 +2522,7 @@
 <translation id="3637203148990213388">ಹೆಚ್ಚುವರಿ ಖಾತೆಗಳು</translation>
 <translation id="3639220004740062347">ರೀಡರ್ ಮೋಡ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="3640214691812501263"><ph name="USER_NAME" /> ಬಳಕೆದಾರರಿಗೆ "<ph name="EXTENSION_NAME" />" ವಿಸ್ತರಣೆಯನ್ನು ಸೇರಿಸುವುದೇ?</translation>
-<translation id="3640613767643722554">ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್‌ಗೆ ನಿಮ್ಮ ಧ್ವನಿಯನ್ನು ಗುರುತಿಸಲು ಕಲಿಸಿ</translation>
+<translation id="3640613767643722554">ನಿಮ್ಮ Assistant ಗೆ ನಿಮ್ಮ ಧ್ವನಿಯನ್ನು ಗುರುತಿಸಲು ಕಲಿಸಿ</translation>
 <translation id="3641456520301071208">ಸೈಟ್‌ಗಳು ನಿಮ್ಮ ಸ್ಥಳದ ಮಾಹಿತಿಯನ್ನು ಕೇಳಬಹುದು</translation>
 <translation id="3645372836428131288">ಫಿಂಗರ್‌‌ಪ್ರಿಂಟ್‌‌ನ ಬೇರೊಂದು ಭಾಗವನ್ನು ಸೆರೆಹಿಡಿಯಲು ಬೆರಳನ್ನು ನಿಧಾನವಾಗಿ ಸರಿಸಿ.</translation>
 <translation id="3647998456578545569">{COUNT,plural, =1{<ph name="ATTACHMENTS" /> ಗಳನ್ನು <ph name="DEVICE_NAME" /> ನಿಂದ ಸ್ವೀಕರಿಸಲಾಗಿದೆ}one{<ph name="ATTACHMENTS" /> ಗಳನ್ನು <ph name="DEVICE_NAME" /> ನಿಂದ ಸ್ವೀಕರಿಸಲಾಗಿದೆ}other{<ph name="ATTACHMENTS" /> ಗಳನ್ನು <ph name="DEVICE_NAME" /> ನಿಂದ ಸ್ವೀಕರಿಸಲಾಗಿದೆ}}</translation>
@@ -2691,7 +2690,7 @@
 <translation id="3809280248639369696">ಮೂನ್‌ಬೀಮ್</translation>
 <translation id="3810593934879994994"><ph name="ORIGIN" />, ಕೆಳಗಿನ ಫೋಲ್ಡರ್‌ಗಳಲ್ಲಿರುವ ಫೈಲ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಬಹುದು</translation>
 <translation id="3810914450553844415">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಹೆಚ್ಚುವರಿ Google ಖಾತೆಗಳನ್ನು ಅನುಮತಿಸುವುದಿಲ್ಲ.</translation>
-<translation id="3810973564298564668">ನಿರ್ವಹಿಸು</translation>
+<translation id="3810973564298564668">ನಿರ್ವಹಿಸಿ</translation>
 <translation id="381202950560906753">ಇನ್ನೊಂದನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="3812525830114410218">ತಪ್ಪು ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="3813296892522778813">ನೀವು ಹುಡುಕುತ್ತಿರುವುದು ದೊರೆಯದೇ ಇದ್ದರೆ <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome ಸಹಾಯ<ph name="END_LINK_CHROMIUM" />ಕ್ಕೆ ಹೋಗಿ</translation>
@@ -6816,6 +6815,7 @@
 <translation id="826905130698769948">ಅಮಾನ್ಯ ಕ್ಲೈಂಟ್ ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="8270242299912238708">PDF ಡಾಕ್ಯುಮೆಂಟ್‌‌ಗಳು</translation>
 <translation id="827097179112817503">ಹೋಮ್ ಬಟನ್‌ ತೋರಿಸು</translation>
+<translation id="8271268254812352141">ನೀವು ಬಲ-ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ಅಥವಾ ಪಠ್ಯವನ್ನು ಸ್ಪರ್ಶಿಸಿ ಮತ್ತು ಹೋಲ್ಡ್‌ ಮಾಡಿದಾಗ ವಿವರಣೆಗಳು, ಅನುವಾದಗಳು ಅಥವಾ ಯೂನಿಟ್ ಪರಿವರ್ತನೆಗಳನ್ನು ಪಡೆಯಿರಿ. <ph name="LINK_BEGIN" />ವೆಬ್‌ಸೈಟ್ ಭಾಷೆಗಳಲ್ಲಿ<ph name="LINK_END" /> ಅನುವಾದದ ಭಾಷೆಗಳನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ.</translation>
 <translation id="8271379370373330993">ಪೋಷಕರೇ, ನಿಮಗಾಗಿ ಮುಂದಿನ ಕೆಲವು ಹಂತಗಳು ಇಲ್ಲಿವೆ. ಖಾತೆ ಸೆಟಪ್ ಮಾಡಿದ ನಂತರ ನೀವು ಮಗುವಿಗೆ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಹಿಂತಿರುಗಿಸಬಹುದು.</translation>
 <translation id="8272443605911821513">"ಹೆಚ್ಚಿನ ಪರಿಕರಗಳು" ಮೆನುನಲ್ಲಿರುವ ‘ವಿಸ್ತರಣೆಗಳು’ಕ್ಲಿಕ್ ಮಾಡುವ ಮೂಲಕ ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ.</translation>
 <translation id="8274332263553132018">ಫೈಲ್‌ ಅನ್ನು ಬಿತ್ತರಿಸಿ</translation>

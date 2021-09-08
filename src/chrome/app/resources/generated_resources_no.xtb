@@ -1554,7 +1554,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2606454609872547359">Nei, fortsett uten ChromeVox</translation>
 <translation id="2606568927909309675">Lager automatisk teksting for engelsk lyd og video. Lyden og tekstingen forlater aldri enheten.</translation>
 <translation id="2607101320794533334">Informasjon om enhetens offentlige nøkkel</translation>
-<translation id="2607602101932365444">Få definisjoner, oversettelser eller enhetskonverteringer når du høyreklikker eller trykker og holder på tekst. Tilpass oversettingen ved å angi språkene du foretrekker, i <ph name="LINK_BEGIN" />Språk for nettinnhold<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Opprett snarveier</translation>
 <translation id="2609980095400624569">Kunne ikke koble til</translation>
 <translation id="2610157865375787051">Hvilemodus</translation>
@@ -1878,7 +1877,7 @@ og Ctrl + Alt + lysstyrke ned for å zoome ut.</translation>
 <translation id="2932085390869194046">Foreslå passord</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Konto for barn)</translation>
 <translation id="2932483646085333864">Logg av og på igjen for å starte synkroniseringen</translation>
-<translation id="2932883381142163287">Rapportér misbruk</translation>
+<translation id="2932883381142163287">Rapportér uriktig bruk</translation>
 <translation id="2933632078076743449">Siste oppdatering</translation>
 <translation id="2934999512438267372">Full kontroll over MIDI-enheter tillates</translation>
 <translation id="2935225303485967257">Administrer profiler</translation>
@@ -4391,7 +4390,7 @@ og Ctrl + Alt + lysstyrke ned for å zoome ut.</translation>
 <translation id="5691772641933328258">Gjenkjenner ikke fingeravtrykket</translation>
 <translation id="5692183275898619210">Utskriften er fullført</translation>
 <translation id="5695184138696833495">Android-app-ADB for Linux</translation>
-<translation id="5696143504434933566">Rapportér misbruk fra «<ph name="EXTENSION_NAME" />»</translation>
+<translation id="5696143504434933566">Rapportér uriktig bruk fra «<ph name="EXTENSION_NAME" />»</translation>
 <translation id="5696177755977520104">Synkronisering av Chrome OS-innstillinger</translation>
 <translation id="5696679855467848181">Gjeldende PPD-fil i bruk: <ph name="PPD_NAME" /></translation>
 <translation id="5697832193891326782">Emojivelger</translation>
@@ -6815,6 +6814,7 @@ Trykk på en tilordnet bryter for å fjerne tilordningen</translation>
 <translation id="826905130698769948">Ugyldig klientsertifikat</translation>
 <translation id="8270242299912238708">PDF-dokumenter</translation>
 <translation id="827097179112817503">Vis startsideknapp</translation>
+<translation id="8271268254812352141">Få definisjoner, oversettelser eller enhetskonverteringer når du høyreklikker eller trykker og holder på tekst. Tilpass språk for oversettelse i <ph name="LINK_BEGIN" />Nettstedsspråk<ph name="LINK_END" />.</translation>
 <translation id="8271379370373330993">Foreldre, dere må utføre de neste trinnene. Dere kan gi <ph name="DEVICE_TYPE" /> tilbake til barnet etter kontokonfigureringen.</translation>
 <translation id="8272443605911821513">Administrer utvidelsene dine ved å klikke på Utvidelser i Flere verktøy-menyen.</translation>
 <translation id="8274332263553132018">Cast en fil</translation>

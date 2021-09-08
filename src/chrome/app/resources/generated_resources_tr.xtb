@@ -1544,7 +1544,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2606454609872547359">Hayır, ChromeVox olmadan devam et</translation>
 <translation id="2606568927909309675">İngilizce ses ve videolar için otomatik olarak altyazı oluşturur. Ses ve altyazılar cihazınızdan hiçbir zaman dışarı çıkmaz.</translation>
 <translation id="2607101320794533334">Konunun Ortak Anahtar Bilgileri</translation>
-<translation id="2607602101932365444">Metni sağ tıkladığınızda veya dokunup basılı tuttuğunuzda tanımını veya çevirisini görün ya da birim dönüştürmesi alın. <ph name="LINK_BEGIN" />Web içeriği dilleri<ph name="LINK_END" />'nde tercih edilen dilleri ayarlayarak çeviriyi özelleştirebilirsiniz.</translation>
 <translation id="2609896558069604090">Kısayol Oluştur...</translation>
 <translation id="2609980095400624569">Bağlantı kurulamadı</translation>
 <translation id="2610157865375787051">Uyku</translation>
@@ -6806,6 +6805,7 @@ Atamayı kaldırmak için atanmış bir anahtara basın</translation>
 <translation id="826905130698769948">Geçersiz istemci sertifikası</translation>
 <translation id="8270242299912238708">PDF dokümanları</translation>
 <translation id="827097179112817503">Ana Sayfa düğmesini göster</translation>
+<translation id="8271268254812352141">Metni sağ tıkladığınızda veya dokunup basılı tuttuğunuzda tanımını veya çevirisini görün ya da birim dönüştürmesi alın. Çeviri dillerini <ph name="LINK_BEGIN" />Web sitesi dilleri<ph name="LINK_END" /> bölümünden özelleştirin.</translation>
 <translation id="8271379370373330993">Ebeveynler, sonraki birkaç adım sizin için. Hesap kurulumundan sonra <ph name="DEVICE_TYPE" /> cihazını çocuğa geri verebilirsiniz.</translation>
 <translation id="8272443605911821513">"Diğer araçlar" menüsündeki Uzantılar'ı tıklayarak uzantılarınızı yönetin.</translation>
 <translation id="8274332263553132018">Dosya yayınlayın</translation>

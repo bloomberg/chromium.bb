@@ -1563,7 +1563,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2606454609872547359">Ne, nadaljuj brez ChromeVoxa</translation>
 <translation id="2606568927909309675">Samodejno ustvari podnapise za zvok in video v angleščini. Zvok in podnapisi nikoli ne zapustijo naprave.</translation>
 <translation id="2607101320794533334">Informacije o javnem ključu subjekta</translation>
-<translation id="2607602101932365444">Zagotovite si definicije, prevode ali pretvorbe enot, ko besedilo kliknete z desnim gumbom ali se ga dotaknete in pridržite. Prevod lahko prilagodite tako, da v razdelku <ph name="LINK_BEGIN" />Jeziki za spletno vsebino<ph name="LINK_END" /> nastavite prednostne jezike.</translation>
 <translation id="2609896558069604090">Ustvarjanje bližnjic ...</translation>
 <translation id="2609980095400624569">Ni bilo mogoče vzpostaviti povezave</translation>
 <translation id="2610157865375787051">Stanje pripravljenosti</translation>
@@ -2701,7 +2700,7 @@ Domena <ph name="DOMAIN" /> zahteva, da je pametna kartica vstavljena.</translat
 <translation id="3809280248639369696">Vesoljec</translation>
 <translation id="3810593934879994994">Spletno mesto <ph name="ORIGIN" /> si lahko ogleda datoteke v naslednjih mapah</translation>
 <translation id="3810914450553844415">Skrbnik ne dovoljuje dodatnih računov Google.</translation>
-<translation id="3810973564298564668">Upravljanje</translation>
+<translation id="3810973564298564668">Upravljaj</translation>
 <translation id="381202950560906753">Dodaj še enega</translation>
 <translation id="3812525830114410218">Poškodovano potrdilo</translation>
 <translation id="3813296892522778813">Odprite <ph name="BEGIN_LINK_CHROMIUM" />pomoč za Google Chrome<ph name="END_LINK_CHROMIUM" />, če ne najdete tega, kar iščete</translation>
@@ -6830,6 +6829,7 @@ Pritisnite dodeljeno stikalo, če želite odstraniti dodelitev.</translation>
 <translation id="826905130698769948">Neveljavno potrdilo odjemalca</translation>
 <translation id="8270242299912238708">Dokumenti PDF</translation>
 <translation id="827097179112817503">Pokaži gumb za domačo stran</translation>
+<translation id="8271268254812352141">Zagotovite si definicije, prevode ali pretvorbe enot, ko besedilo kliknete z desnim gumbom ali se ga dotaknete in pridržite. Prilagodite jezike za prevajanje v razdelku z <ph name="LINK_BEGIN" />jeziki spletnih mest<ph name="LINK_END" />.</translation>
 <translation id="8271379370373330993">Starši, naslednji koraki so za vas. Po nastavitvi računa lahko napravo <ph name="DEVICE_TYPE" /> vrnete otroku.</translation>
 <translation id="8272443605911821513">Razširitve lahko upravljate tako, da v meniju »Več orodij« kliknete »Razširitve«.</translation>
 <translation id="8274332263553132018">Predvajanje datoteke</translation>

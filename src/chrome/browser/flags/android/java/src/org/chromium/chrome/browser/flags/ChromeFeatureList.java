@@ -396,6 +396,8 @@ public abstract class ChromeFeatureList {
     public static final String MESSAGES_FOR_ANDROID_INFRASTRUCTURE =
             "MessagesForAndroidInfrastructure";
     public static final String MESSAGES_FOR_ANDROID_READER_MODE = "MessagesForAndroidReaderMode";
+    public static final String MESSAGES_FOR_ANDROID_REDUCE_LAYOUT_CHANGES =
+            "MessagesForAndroidReduceLayoutChanges";
     public static final String MOBILE_IDENTITY_CONSISTENCY_M2 = "MobileIdentityConsistencyFRE";
     public static final String MOBILE_IDENTITY_CONSISTENCY_PROMOS =
             "MobileIdentityConsistencyPromos";
@@ -473,6 +475,7 @@ public abstract class ChromeFeatureList {
     public static final String REQUEST_DESKTOP_SITE_FOR_TABLETS = "RequestDesktopSiteForTablets";
     public static final String REVERT_DSE_AUTOMATIC_PERMISSIONS = "RevertDSEAutomaticPermissions";
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";
+    public static final String SCROLL_CAPTURE = "ScrollCapture";
     public static final String SEARCH_ENGINE_PROMO_EXISTING_DEVICE =
             "SearchEnginePromo.ExistingDevice";
     public static final String SEARCH_ENGINE_PROMO_NEW_DEVICE = "SearchEnginePromo.NewDevice";
@@ -484,6 +487,7 @@ public abstract class ChromeFeatureList {
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";
     public static final String SHARE_BUTTON_IN_TOP_TOOLBAR = "ShareButtonInTopToolbar";
     public static final String SHARE_USAGE_RANKING = "ShareUsageRanking";
+    public static final String SHARE_USAGE_RANKING_FIXED_MORE = "ShareUsageRankingFixedMore";
     public static final String SHARED_CLIPBOARD_UI = "SharedClipboardUI";
     public static final String SHARED_HIGHLIGHTING_V2 = "SharedHighlightingV2";
     public static final String SHARED_HIGHLIGHTING_AMP = "SharedHighlightingAmp";

@@ -1543,7 +1543,6 @@ Për ndihmë lidhur me zgjidhjen e problemeve të transmetimit, drejtohu te <ph 
 <translation id="2606454609872547359">Jo, vazhdo me ChromeVox</translation>
 <translation id="2606568927909309675">Krijon automatikisht titra për audion dhe videon në anglisht. Audioja dhe titrat nuk largohen asnjëherë nga pajisja.</translation>
 <translation id="2607101320794533334">Informacion i çelësit publik të subjektit</translation>
-<translation id="2607602101932365444">Merr përkufizime, përkthime ose konvertime të njësive kur klikon me të djathtin ose prek dhe mban shtypur tekstin. Personalizo përkthimin duke caktuar gjuhët e tua të preferuara te <ph name="LINK_BEGIN" />Gjuhët e përmbajtjes së uebit<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Krijo shkurtore...</translation>
 <translation id="2609980095400624569">Nuk mund të krijohej lidhje</translation>
 <translation id="2610157865375787051">Gjumë</translation>
@@ -3232,7 +3231,7 @@ Për ndihmë lidhur me zgjidhjen e problemeve të transmetimit, drejtohu te <ph 
 <translation id="4421932782753506458">Mace</translation>
 <translation id="4423376891418188461">Restauro cilësimet</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, administratori të kërkon që të ndryshosh fjalëkalimin.</translation>
-<translation id="4426464032773610160">Për të filluar, sigurohu që çelësi USB ose Bluetooth të jetë i lidhur me Chromebook. Mund të përdorësh edhe tastet e tastierës.</translation>
+<translation id="4426464032773610160">Për të filluar, sigurohu që çelësi me USB ose me Bluetooth të jetë i lidhur me Chromebook. Mund të përdorësh edhe tastet e tastierës.</translation>
 <translation id="4427365070557649936">Po verifikon kodin e konfirmimit...</translation>
 <translation id="4429163740524851942">Struktura e tastierës fizike</translation>
 <translation id="4430019312045809116">Volumi</translation>
@@ -6803,6 +6802,7 @@ Shtyp një çelës të caktuar për të hequr caktimin</translation>
 <translation id="826905130698769948">Certifikatë e pavlefshme e klientit</translation>
 <translation id="8270242299912238708">Dokumentet PDF</translation>
 <translation id="827097179112817503">Shfaq butonin "kreu"</translation>
+<translation id="8271268254812352141">Merr përkufizime, përkthime ose konvertime të njësive kur klikon me të djathtin ose troket dhe mban shtypur tekstin. Personalizo gjuhët e përkthimit te <ph name="LINK_BEGIN" />Gjuhët e sajteve të uebit<ph name="LINK_END" />.</translation>
 <translation id="8271379370373330993">Prindër, këto hapa në vijim janë për ju. Mund t'ia jepni pajisjen <ph name="DEVICE_TYPE" /> përsëri fëmijës pas konfigurimit të llogarisë.</translation>
 <translation id="8272443605911821513">Menaxho shtesat duke klikuar "Shtesat" në menynë "Më shumë vegla".</translation>
 <translation id="8274332263553132018">Transmeto skedarin</translation>

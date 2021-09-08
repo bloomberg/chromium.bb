@@ -703,7 +703,7 @@
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />Za uklanjanje aplikacija idite na Postavke &gt; Trgovina Play &gt; Upravljanje postavkama Androida &gt; Aplikacije ili Upravitelj aplikacija. Zatim dodirnite aplikaciju koju želite deinstalirati (možda ćete morati prijeći prstom udesno ili ulijevo kako biste pronašli aplikaciju). Zatim dodirnite Deinstaliraj ili Onemogući.<ph name="END_PARAGRAPH1" /></translation>
 <translation id="1731911755844941020">Slanje zahtjeva u tijeku...</translation>
 <translation id="1733064249834771892">fontovi</translation>
-<translation id="1733383495376208985">Kriptirajte sinkronizirane podatke vlastitom <ph name="BEGIN_LINK" />šifrom za sinkronizaciju<ph name="END_LINK" />. To ne uključuje načine plaćanja i adrese s Google Paya.</translation>
+<translation id="1733383495376208985">Šifriraj sinkronizirane podatke vlastitom <ph name="BEGIN_LINK" />šifrom za sinkronizaciju<ph name="END_LINK" />. To ne uključuje načine plaćanja i adrese s Google Paya.</translation>
 <translation id="1734212868489994726">Svijetloplava</translation>
 <translation id="1734230530703461088">Učitavanje proširenja u vremenski ograničenom roku nije uspjelo. Obratite se administratoru.</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> možda se neće moći sam ažurirati</translation>
@@ -1548,7 +1548,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2606454609872547359">Ne, nastavi bez ChromeVoxa</translation>
 <translation id="2606568927909309675">Automatski izrađuje titlove za zvuk i videozapise na engleskom jeziku. Audiozapisi i titlovi nikad se ne šalju s uređaja.</translation>
 <translation id="2607101320794533334">Informacije predmeta javnog ključa</translation>
-<translation id="2607602101932365444">Pronađite definicije, prijevode ili pretvorbe jedinica kada tekst kliknete desnom tipkom ili ga dodirnete i držite. Prilagodite prijevod tako da postavite preferirane jezike u odjeljku <ph name="LINK_BEGIN" />Jezici web-sadržaja<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Stvaranje prečaca...</translation>
 <translation id="2609980095400624569">Nije bilo moguće uspostaviti vezu</translation>
 <translation id="2610157865375787051">Mirovanje</translation>
@@ -2686,7 +2685,7 @@ i Ctrl + Alt + Smanjivanje svjetline da biste smanjili prikaz.</translation>
 <translation id="3809280248639369696">Mjesečeva zraka</translation>
 <translation id="3810593934879994994">Web-lokacija <ph name="ORIGIN" /> može pregledavati datoteke u sljedećim mapama</translation>
 <translation id="3810914450553844415">Vaš administrator ne dopušta dodatne Google račune.</translation>
-<translation id="3810973564298564668">Upravljaj</translation>
+<translation id="3810973564298564668">Upravljanje</translation>
 <translation id="381202950560906753">Dodaj još jedan</translation>
 <translation id="3812525830114410218">Neispravan certifikat</translation>
 <translation id="3813296892522778813">Ako ne možete pronaći ono što tražite, otvorite <ph name="BEGIN_LINK_CHROMIUM" />pomoć za Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
@@ -6811,6 +6810,7 @@ Pritisnite dodijeljeni prekidač da biste uklonili dodjelu</translation>
 <translation id="826905130698769948">Nevažeći certifikat klijenta</translation>
 <translation id="8270242299912238708">PDF dokumenti</translation>
 <translation id="827097179112817503">Prikaži gumb početne stranice</translation>
+<translation id="8271268254812352141">Da biste pronašli definicije, prijevode ili pretvorbe jedinica, kliknite tekst desnom tipkom ili ga dodirnete i držite. Jezike za prijevod prilagodite u odjeljku <ph name="LINK_BEGIN" />Jezici web-lokacija<ph name="LINK_END" />.</translation>
 <translation id="8271379370373330993">Roditelji, sljedećih je nekoliko koraka za vas. Možete vratiti uređaj <ph name="DEVICE_TYPE" /> djetetu nakon izrade računa.</translation>
 <translation id="8272443605911821513">Upravljajte proširenjima klikom na Proširenja u izborniku "Više alata".</translation>
 <translation id="8274332263553132018">Emitiraj datoteku</translation>

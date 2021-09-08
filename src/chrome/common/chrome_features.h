@@ -557,6 +557,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSchedulerConfiguration;
 #endif
 
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kScrollCapture;
+#endif  // defined(OS_ANDROID)
+
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSCTAuditing;
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -582,6 +587,8 @@ extern const base::Feature kChromeOSSharingHub;
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kShareUsageRanking;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kShareUsageRankingFixedMore;
 #endif
 
 #if defined(OS_MAC)

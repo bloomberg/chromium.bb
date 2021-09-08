@@ -1559,7 +1559,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2606454609872547359">En, jatka ilman ChromeVoxia</translation>
 <translation id="2606568927909309675">Tekstittää englanninkielistä audiota ja videota automaattisesti. Audio ja tekstitykset eivät koskaan poistu laitteelta.</translation>
 <translation id="2607101320794533334">Kohteen julkisen avaimen tiedot</translation>
-<translation id="2607602101932365444">Voit nähdä määritelmiä, käännöksiä tai yksikkömuunnoksia klikkaamalla tekstiä kakkospainikkeella tai koskettamalla sitä pitkään. Voit yksilöidä käännöksiä valitsemalla ensisijaiset kielesi kohdasta <ph name="LINK_BEGIN" />Verkkosisällön kielet<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Luo pikakuvakkeita...</translation>
 <translation id="2609980095400624569">Yhteyttä ei voitu luoda</translation>
 <translation id="2610157865375787051">Siirry virransäästöön</translation>
@@ -6820,6 +6819,7 @@ Paina määritettyä kytkintä poistaaksesi määrityksen</translation>
 <translation id="826905130698769948">Virheellinen käyttöoikeusvarmenne</translation>
 <translation id="8270242299912238708">PDF-dokumentit</translation>
 <translation id="827097179112817503">Näytä Etusivu-painike</translation>
+<translation id="8271268254812352141">Voit nähdä määritelmiä, käännöksiä tai yksikkömuunnoksia klikkaamalla tekstiä kakkospainikkeella tai koskettamalla sitä pitkään. Muokkaa käännöskieliä kohdassa <ph name="LINK_BEGIN" />Verkkosivustojen kielet<ph name="LINK_END" />.</translation>
 <translation id="8271379370373330993">Seuraavat vaiheet on tarkoitettu vanhemmille. <ph name="DEVICE_TYPE" /> voidaan antaa lapselle tilin määrityksen jälkeen.</translation>
 <translation id="8272443605911821513">Hallinnoi laajennuksiasi valitsemalla Lisätyökalut-valikossa Laajennukset.</translation>
 <translation id="8274332263553132018">Suoratoista tiedosto</translation>
@@ -7226,7 +7226,7 @@ Paina määritettyä kytkintä poistaaksesi määrityksen</translation>
 <translation id="8737914367566358838">Valitse kieli, jolle sivu käännetään</translation>
 <translation id="8737916108453753541">URL-osoitteet jaetaan Googlen kanssa ja ne auttavat ymmärtämään selaustoimintaa</translation>
 <translation id="8740247629089392745"><ph name="SUPERVISED_USER_NAME" /> voi nyt saada tämän Chromebookin. Käyttöönotto on melkein valmis, pian on aika tutkia.</translation>
-<translation id="8741944563400125534">Switch Access ‑asennusopas</translation>
+<translation id="8741944563400125534">Switch Access ‑käyttöönotto-ohjeet</translation>
 <translation id="8742998548129056176">Nämä ovat yleisiä tietoja laitteestasi ja sen käytöstä (esim. akun varaustasosta, järjestelmän ja sovellusten toiminnasta sekä virheistä). Datan avulla Androidia parannetaan, ja koottua dataa käytetään Google-sovellusten, Android-kehittäjien tai muiden kumppanien sovellusten ja tuotteiden parantamiseen.</translation>
 <translation id="8746654918629346731">Pyysit jo tätä: <ph name="EXTENSION_NAME" /></translation>
 <translation id="874689135111202667">{0,plural, =1{Ladataanko sivustoon yksi tiedosto?}other{Ladataanko sivustoon # tiedostoa?}}</translation>

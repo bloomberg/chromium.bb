@@ -1545,7 +1545,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2606454609872547359">Não, continuar com o ChromeVox</translation>
 <translation id="2606568927909309675">Cria automaticamente legendas para áudio e vídeo em inglês. O áudio e as legendas nunca saem do seu dispositivo.</translation>
 <translation id="2607101320794533334">Informações de chave pública do requerente</translation>
-<translation id="2607602101932365444">Obtenha definições, traduções ou conversões de unidades quando clicar com o botão direito do rato ou tocar sem soltar no texto. Personalize a tradução ao definir os seus idiomas preferidos em <ph name="LINK_BEGIN" />Idiomas de conteúdo Web<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Criar Atalhos...</translation>
 <translation id="2609980095400624569">Não foi possível ligar</translation>
 <translation id="2610157865375787051">Suspensão</translation>
@@ -2684,7 +2683,7 @@ Pretende pará-lo?</translation>
 <translation id="3809280248639369696">Raio lunar</translation>
 <translation id="3810593934879994994"><ph name="ORIGIN" /> pode ver ficheiros nas seguintes pastas</translation>
 <translation id="3810914450553844415">O seu administrador não permite Contas Google adicionais.</translation>
-<translation id="3810973564298564668">Gerir</translation>
+<translation id="3810973564298564668">Administrar</translation>
 <translation id="381202950560906753">Adicionar outra</translation>
 <translation id="3812525830114410218">Certificado incorreto</translation>
 <translation id="3813296892522778813">Aceda à <ph name="BEGIN_LINK_CHROMIUM" />ajuda do Google Chrome<ph name="END_LINK_CHROMIUM" /> se não conseguir encontrar aquilo que procura.</translation>
@@ -6811,6 +6810,7 @@ Prima um comutador atribuído para remover a atribuição</translation>
 <translation id="826905130698769948">Certificado de cliente inválido.</translation>
 <translation id="8270242299912238708">Docs PDF</translation>
 <translation id="827097179112817503">Mostrar botão Página inicial</translation>
+<translation id="8271268254812352141">Obtenha definições, traduções ou conversões de unidades quando clicar com o botão direito do rato ou tocar sem soltar no texto. Personalize os idiomas de tradução em <ph name="LINK_BEGIN" />Idiomas de Websites<ph name="LINK_END" />.</translation>
 <translation id="8271379370373330993">Os passos seguintes são para os pais. Pode devolver o <ph name="DEVICE_TYPE" /> à criança após a configuração da conta.</translation>
 <translation id="8272443605911821513">Faça a gestão das suas extensões clicando em Extensões no menu "Mais ferramentas".</translation>
 <translation id="8274332263553132018">Transmitir ficheiro</translation>

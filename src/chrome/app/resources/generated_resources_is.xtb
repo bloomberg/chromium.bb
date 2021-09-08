@@ -1561,7 +1561,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2606454609872547359">Nei, halda áfram án ChromeVox</translation>
 <translation id="2606568927909309675">Býr sjálfkrafa til skjátexta fyrir hljóð- og myndefni á ensku. Hljóð og skjátextar fara aldrei úr tækinu.</translation>
 <translation id="2607101320794533334">Upplýsingar opinbers lykils viðfangs</translation>
-<translation id="2607602101932365444">Fáðu skilgreiningar, þýðingar eða umreikninga mæligilda þegar þú hægrismellir eða heldur texta inni. Sérsníddu þýðingar með því að stilla kjörtungumál í <ph name="LINK_BEGIN" />Tungumál vefefnis<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Búa til flýtileiðir...</translation>
 <translation id="2609980095400624569">Tenging mistókst</translation>
 <translation id="2610157865375787051">Hvíld</translation>
@@ -6824,6 +6823,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="826905130698769948">Ógilt biðlaravottorð</translation>
 <translation id="8270242299912238708">PDF-skjöl</translation>
 <translation id="827097179112817503">Sýna heimahnapp</translation>
+<translation id="8271268254812352141">Fáðu skilgreiningar, þýðingar eða umreikninga mæligilda þegar þú hægrismellir eða heldur texta inni. Sérstilltu þýðingartungumál í <ph name="LINK_BEGIN" />„Tungumál vefsvæða“<ph name="LINK_END" />.</translation>
 <translation id="8271379370373330993">Foreldrar, það sem kemur næst er ætlað ykkur. Þið getið rétt barninu <ph name="DEVICE_TYPE" /> aftur þegar uppsetningu reikningsins er lokið.</translation>
 <translation id="8272443605911821513">Stjórnaðu viðbótunum þínum með því að smella á Viðbætur í valmyndinni „Fleiri verkfæri“.</translation>
 <translation id="8274332263553132018">Senda út skrá</translation>

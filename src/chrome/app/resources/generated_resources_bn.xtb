@@ -1561,7 +1561,6 @@
 <translation id="2606454609872547359">না, ChromeVox ছাড়াই চালিয়ে যান</translation>
 <translation id="2606568927909309675">'লাইভ ক্যাপশন' ফিচারের মাধ্যমে ইংরেজিতে অডিও এবং ভিডিওর ক্যাপশন অটোমেটিক তৈরি হয়। অডিও এবং ক্যাপশন আপনার ডিভাইসেই থাকে।</translation>
 <translation id="2607101320794533334">বিষয় সর্বজনীন কী তথ্য</translation>
-<translation id="2607602101932365444">আপনি ডানদিকের বোতামে ক্লিক করলে বা টেক্সট প্রেস করে ধরে থাকলে, সংজ্ঞা, অনুবাদ বা ইউনিট কনভার্সন পান। <ph name="LINK_BEGIN" />ওয়েব কন্টেন্টের ভাষা<ph name="LINK_END" /> পছন্দের ভাষাতে সেট করে অনুবাদ কাস্টমাইজ করুন।</translation>
 <translation id="2609896558069604090">শর্টকাটগুলি তৈরি করুন...</translation>
 <translation id="2609980095400624569">কানেক্ট করা যায়নি</translation>
 <translation id="2610157865375787051">স্লীপ মোড</translation>
@@ -2698,7 +2697,7 @@
 <translation id="3809280248639369696">চন্দ্রপ্রভা</translation>
 <translation id="3810593934879994994"><ph name="ORIGIN" /> নিচে উল্লেখ করা ফোল্ডারের ফাইলগুলি দেখতে পাবে</translation>
 <translation id="3810914450553844415">আপনার অ্যাডমিনিস্ট্রেটর আর কোনও Google অ্যাকাউন্ট ব্যবহার করার অনুমতি দেয় না।</translation>
-<translation id="3810973564298564668">পরিচালনা</translation>
+<translation id="3810973564298564668">পরিচালনা করুন</translation>
 <translation id="381202950560906753">আরেকটি জুড়ুন</translation>
 <translation id="3812525830114410218">খারাপ সার্টিফিকেট</translation>
 <translation id="3813296892522778813">আপনি যা খুঁজছেন তা খুঁজে না পেলে <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome সহায়তা<ph name="END_LINK_CHROMIUM" />য় যান</translation>
@@ -6824,6 +6823,7 @@
 <translation id="826905130698769948">ক্লায়েন্ট সার্টিফিকেটটি সঠিক নয়</translation>
 <translation id="8270242299912238708">পিডিএফ দস্তাবেজগুলি</translation>
 <translation id="827097179112817503">হোম বোতাম দেখান</translation>
+<translation id="8271268254812352141">আপনি ডানদিকের বোতামে ক্লিক করলে বা টেক্সট প্রেস করে ধরে থাকলে, সংজ্ঞা, অনুবাদ বা ইউনিট কনভার্সন পান। <ph name="LINK_BEGIN" />ওয়েবসাইট ভাষাতে<ph name="LINK_END" /> অনুবাদের ভাষা কাস্টমাইজ করুন।</translation>
 <translation id="8271379370373330993">অভিভাবক, পরের ধাপগুলি আপনাকে সম্পূর্ণ করতে হবে। অ্যাকাউন্ট সেট-আপ করা হয়ে গেলে আপনি সন্তানকে <ph name="DEVICE_TYPE" /> ডিভাইস ফেরত দিতে পারেন।</translation>
 <translation id="8272443605911821513">"আরও টুলগুলির মেনুতে" এক্সটেনশনগুলি ক্লিক করে আপনার এক্সটেনশনগুলি পরিচালনা করুন৷</translation>
 <translation id="8274332263553132018">ফাইল কাস্ট করুন</translation>
