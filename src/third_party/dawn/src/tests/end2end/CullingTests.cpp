@@ -20,42 +20,41 @@
 class CullingTest : public DawnTest {
   protected:
     wgpu::RenderPipeline CreatePipelineForTest(wgpu::FrontFace frontFace, wgpu::CullMode cullMode) {
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
 
         // Draw two triangles with different winding orders:
         // 1. The top-left one is counterclockwise (CCW)
         // 2. The bottom-right one is clockwise (CW)
-        const char* vs =
-            R"(#version 450
-            const vec2 pos[6] = vec2[6](vec2(-1.0f,  1.0f),
-                                        vec2(-1.0f,  0.0f),
-                                        vec2( 0.0f,  1.0f),
-                                        vec2( 0.0f, -1.0f),
-                                        vec2( 1.0f,  0.0f),
-                                        vec2( 1.0f, -1.0f));
-            void main() {
-                gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
-            })";
-        pipelineDescriptor.vertexStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vs);
+        pipelineDescriptor.vertex.module = utils::CreateShaderModule(device, R"(
+            let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                vec2<f32>(-1.0,  1.0),
+                vec2<f32>(-1.0,  0.0),
+                vec2<f32>( 0.0,  1.0),
+                vec2<f32>( 0.0, -1.0),
+                vec2<f32>( 1.0,  0.0),
+                vec2<f32>( 1.0, -1.0));
 
-        // gl_FragCoord of pixel(x, y) in framebuffer coordinate is (x + 0.5, y + 0.5). And we use
-        // RGBA8 format for the back buffer. So (gl_FragCoord.xy - vec2(0.5)) / 255 in shader code
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+            })");
+
+        // FragCoord of pixel(x, y) in framebuffer coordinate is (x + 0.5, y + 0.5). And we use
+        // RGBA8 format for the back buffer. So (FragCoord.xy - vec2(0.5)) / 255 in shader code
         // will make the pixel's R and G channels exactly equal to the pixel's x and y coordinates.
-        const char* fs =
-            R"(#version 450
-            layout(location = 0) out vec4 fragColor;
-            void main() {
-               fragColor = vec4((gl_FragCoord.xy - vec2(0.5)) / 255, 0.0, 1.0);
-            })";
-        pipelineDescriptor.cFragmentStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fs);
+        pipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
+            [[stage(fragment)]]
+            fn main([[builtin(position)]] FragCoord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+                return vec4<f32>(
+                    (FragCoord.xy - vec2<f32>(0.5, 0.5)) / vec2<f32>(255.0, 255.0),
+                    0.0, 1.0);
+            })");
 
         // Set culling mode and front face according to the parameters
-        pipelineDescriptor.cRasterizationState.frontFace = frontFace;
-        pipelineDescriptor.cRasterizationState.cullMode = cullMode;
+        pipelineDescriptor.primitive.frontFace = frontFace;
+        pipelineDescriptor.primitive.cullMode = cullMode;
 
-        return device.CreateRenderPipeline(&pipelineDescriptor);
+        return device.CreateRenderPipeline2(&pipelineDescriptor);
     }
 
     wgpu::Texture Create2DTextureForTest(wgpu::TextureFormat format) {
@@ -131,4 +130,5 @@ DAWN_INSTANTIATE_TEST(CullingTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

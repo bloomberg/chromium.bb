@@ -9,14 +9,15 @@
 #include "base/bind.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #import "ios/net/protocol_handler_util.h"
 #include "ios/web/common/features.h"
+#import "ios/web/common/uikit_ui_util.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -24,8 +25,8 @@
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/test/error_test_util.h"
-#import "ios/web/public/test/fakes/test_web_client.h"
-#import "ios/web/public/test/fakes/test_web_state_delegate.h"
+#import "ios/web/public/test/fakes/fake_web_client.h"
+#import "ios/web/public/test/fakes/fake_web_state_delegate.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/web_client.h"
@@ -65,7 +66,7 @@ NSError* CreateUnsupportedURLError() {
 using wk_navigation_util::IsWKInternalUrl;
 
 // Test fixture for web::WebTest class.
-class WebStateTest : public TestWebClient, public WebTestWithWebState {
+class WebStateTest : public FakeWebClient, public WebTestWithWebState {
  protected:
   base::HistogramTester histogram_tester_;
 };
@@ -75,12 +76,12 @@ TEST_F(WebStateTest, ScriptExecution) {
   ASSERT_TRUE(LoadHtml("<html></html>"));
 
   // Execute script without callback.
-  web_state()->ExecuteJavaScript(base::UTF8ToUTF16("window.foo = 'bar'"));
+  web_state()->ExecuteJavaScript(u"window.foo = 'bar'");
 
   // Execute script with callback.
   __block std::unique_ptr<base::Value> execution_result;
   __block bool execution_complete = false;
-  web_state()->ExecuteJavaScript(base::UTF8ToUTF16("window.foo"),
+  web_state()->ExecuteJavaScript(u"window.foo",
                                  base::BindOnce(^(const base::Value* value) {
                                    execution_result = value->CreateDeepCopy();
                                    execution_complete = true;
@@ -97,14 +98,14 @@ TEST_F(WebStateTest, ScriptExecution) {
 
 // Tests that executing user JavaScript registers user interaction.
 TEST_F(WebStateTest, UserScriptExecution) {
-  web::TestWebStateDelegate delegate;
+  web::FakeWebStateDelegate delegate;
   web_state()->SetDelegate(&delegate);
   ASSERT_TRUE(delegate.child_windows().empty());
 
   ASSERT_TRUE(LoadHtml("<html></html>"));
   web_state()->ExecuteUserJavaScript(@"window.open('', target='_blank');");
 
-  web::TestWebStateDelegate* delegate_ptr = &delegate;
+  web::FakeWebStateDelegate* delegate_ptr = &delegate;
   bool suceess = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     // Child window can only be open if the user interaction was registered.
     return delegate_ptr->child_windows().size() == 1;
@@ -152,14 +153,12 @@ TEST_F(WebStateTest, OverridingWebKitObject) {
 // manager is empty.
 TEST_F(WebStateTest, ReloadWithNormalTypeWithEmptyNavigationManager) {
   NavigationManager* navigation_manager = web_state()->GetNavigationManager();
-  ASSERT_FALSE(navigation_manager->GetTransientItem());
   ASSERT_FALSE(navigation_manager->GetPendingItem());
   ASSERT_FALSE(navigation_manager->GetLastCommittedItem());
 
   navigation_manager->Reload(web::ReloadType::NORMAL,
                              false /* check_for_repost */);
 
-  ASSERT_FALSE(navigation_manager->GetTransientItem());
   ASSERT_FALSE(navigation_manager->GetPendingItem());
   ASSERT_FALSE(navigation_manager->GetLastCommittedItem());
 }
@@ -168,14 +167,12 @@ TEST_F(WebStateTest, ReloadWithNormalTypeWithEmptyNavigationManager) {
 // navigation manager is empty.
 TEST_F(WebStateTest, ReloadWithOriginalTypeWithEmptyNavigationManager) {
   NavigationManager* navigation_manager = web_state()->GetNavigationManager();
-  ASSERT_FALSE(navigation_manager->GetTransientItem());
   ASSERT_FALSE(navigation_manager->GetPendingItem());
   ASSERT_FALSE(navigation_manager->GetLastCommittedItem());
 
   navigation_manager->Reload(web::ReloadType::ORIGINAL_REQUEST_URL,
                              false /* check_for_repost */);
 
-  ASSERT_FALSE(navigation_manager->GetTransientItem());
   ASSERT_FALSE(navigation_manager->GetPendingItem());
   ASSERT_FALSE(navigation_manager->GetLastCommittedItem());
 }
@@ -186,8 +183,7 @@ TEST_F(WebStateTest, Snapshot) {
       LoadHtml("<html><div style='background-color:#FF0000; width:50%; "
                "height:100%;'></div></html>"));
   __block bool snapshot_complete = false;
-  [[[UIApplication sharedApplication] keyWindow]
-      addSubview:web_state()->GetView()];
+  [GetAnyKeyWindow() addSubview:web_state()->GetView()];
   // The subview is added but not immediately painted, so a small delay is
   // necessary.
   CGRect rect = [web_state()->GetView() bounds];
@@ -216,10 +212,67 @@ TEST_F(WebStateTest, Snapshot) {
   });
 }
 
-// Tests that the create PDF method retuns an PDF of a rendered html page.
-TEST_F(WebStateTest, CreateFullPagePdf_ValidURL) {
-  [[[UIApplication sharedApplication] keyWindow]
-      addSubview:web_state()->GetView()];
+// Tests that the create PDF method returns a PDF of a rendered html page when
+// running a supported iOS version.
+TEST_F(WebStateTest, CreateFullPagePdf_ValidURL_iOS14) {
+  // PDF generation is supported on iOS 14+.
+  if (@available(iOS 14, *)) {
+    [GetAnyKeyWindow() addSubview:web_state()->GetView()];
+
+    // Load a URL and some HTML in the WebState.
+    GURL url("https://www.chromium.org");
+    NavigationManager::WebLoadParams load_params(url);
+    web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
+    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+      return web_state()->GetLastCommittedURL() == url &&
+             !web_state()->IsLoading();
+    }));
+
+    NSString* data_html =
+        @"<html><div style='background-color:#FF0000; width:50%; "
+         "height:100%;'></div></html>";
+    web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
+                          @"text/html", url);
+
+    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+      return !web_state()->IsLoading();
+    }));
+
+    // Create a PDF for this page and validate the data.
+    __block NSData* callback_data = nil;
+    web_state()->CreateFullPagePdf(base::BindOnce(^(NSData* pdf_document_data) {
+      callback_data = [pdf_document_data copy];
+    }));
+
+    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+      return callback_data;
+    }));
+
+    CGPDFDocumentRef pdf = CGPDFDocumentCreateWithProvider(
+        CGDataProviderCreateWithCFData((CFDataRef)callback_data));
+    CGSize pdf_size =
+        CGPDFPageGetBoxRect(CGPDFDocumentGetPage(pdf, 1), kCGPDFMediaBox).size;
+
+    CGFloat kSaveAreaTopInset = GetAnyKeyWindow().safeAreaInsets.top;
+    EXPECT_GE(pdf_size.height,
+              UIScreen.mainScreen.bounds.size.height - kSaveAreaTopInset);
+    EXPECT_GE(pdf_size.width, [[UIScreen mainScreen] bounds].size.width);
+
+    CGPDFDocumentRelease(pdf);
+  }
+
+  // If not an earlier version, then no PDF should be created.
+}
+
+// Tests that the create PDF method returns nil when running an unsupported iOS
+// version.
+TEST_F(WebStateTest, CreateFullPagePdf_ValidURL_NotSupported) {
+  if (@available(iOS 14, *)) {
+    // Return early when running on a support iOS version.
+    return;
+  }
+
+  [GetAnyKeyWindow() addSubview:web_state()->GetView()];
 
   // Load a URL and some HTML in the WebState.
   GURL url("https://www.chromium.org");
@@ -240,28 +293,14 @@ TEST_F(WebStateTest, CreateFullPagePdf_ValidURL) {
     return !web_state()->IsLoading();
   }));
 
-  // Create a PDF for this page and validate the data.
-  __block NSData* callback_data = nil;
+  // Attempt to create a PDF for this page and validate that it return nil.
+  __block BOOL callback_called = NO;
   web_state()->CreateFullPagePdf(base::BindOnce(^(NSData* pdf_document_data) {
-    callback_data = [pdf_document_data copy];
+    EXPECT_EQ(nil, pdf_document_data);
+    callback_called = YES;
   }));
 
-  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
-    return callback_data;
-  }));
-
-  CGPDFDocumentRef pdf = CGPDFDocumentCreateWithProvider(
-      CGDataProviderCreateWithCFData((CFDataRef)callback_data));
-  CGSize pdf_size =
-      CGPDFPageGetBoxRect(CGPDFDocumentGetPage(pdf, 1), kCGPDFMediaBox).size;
-
-  CGFloat kSaveAreaTopInset =
-      UIApplication.sharedApplication.keyWindow.safeAreaInsets.top;
-  EXPECT_GE(pdf_size.height,
-            UIScreen.mainScreen.bounds.size.height - kSaveAreaTopInset);
-  EXPECT_GE(pdf_size.width, [[UIScreen mainScreen] bounds].size.width);
-
-  CGPDFDocumentRelease(pdf);
+  EXPECT_TRUE(callback_called);
 }
 
 // Tests that CreateFullPagePdf invokes completion callback nil when an invalid
@@ -497,7 +536,6 @@ TEST_F(WebStateTest, RestoreLargeSession) {
     EXPECT_TRUE(visible_item);
     EXPECT_TRUE(visible_item && visible_item->GetURL() == "http://www.0.com/");
     EXPECT_FALSE(navigation_manager->CanGoBack());
-    EXPECT_FALSE(navigation_manager->GetTransientItem());
     EXPECT_FALSE(IsWKInternalUrl(web_state_ptr->GetVisibleURL()));
 
     return restored;

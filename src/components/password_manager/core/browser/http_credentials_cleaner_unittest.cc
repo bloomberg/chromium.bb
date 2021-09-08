@@ -4,9 +4,9 @@
 
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
 
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -133,11 +133,9 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   static const std::string signon_realm[2] = {"https://example.org/realm/",
                                               "https://example.org/"};
 
-  static const base::string16 username[2] = {base::ASCIIToUTF16("user0"),
-                                             base::ASCIIToUTF16("user1")};
+  static const std::u16string username[2] = {u"user0", u"user1"};
 
-  static const base::string16 password[2] = {base::ASCIIToUTF16("pass0"),
-                                             base::ASCIIToUTF16("pass1")};
+  static const std::u16string password[2] = {u"pass0", u"pass1"};
 
   base::test::TaskEnvironment task_environment;
   ASSERT_TRUE(store_->Init(nullptr));

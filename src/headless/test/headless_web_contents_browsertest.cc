@@ -10,10 +10,8 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/test/pixel_test_utils.h"
@@ -39,6 +37,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -260,16 +259,19 @@ class HeadlessWebContentsScreenshotWindowPositionTest
   }
 };
 
-HEADLESS_ASYNC_DEVTOOLED_TEST_P(
-    HeadlessWebContentsScreenshotWindowPositionTest);
-
-// Instantiate test case for both software and gpu compositing modes.
 #if defined(OS_MAC) && defined(ADDRESS_SANITIZER)
 // TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_P(
+    HeadlessWebContentsScreenshotWindowPositionTest);
+#else
+HEADLESS_ASYNC_DEVTOOLED_TEST_P(
+    HeadlessWebContentsScreenshotWindowPositionTest);
+#endif
+
+// Instantiate test case for both software and gpu compositing modes.
 INSTANTIATE_TEST_SUITE_P(HeadlessWebContentsScreenshotWindowPositionTests,
                          HeadlessWebContentsScreenshotWindowPositionTest,
                          ::testing::Bool());
-#endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
 class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
@@ -326,7 +328,7 @@ class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
         .render_device_type = chrome_pdf::RenderDeviceType::kPrinter,
     };
     for (int i = 0; i < num_pages; i++) {
-      base::Optional<gfx::SizeF> size_in_points =
+      absl::optional<gfx::SizeF> size_in_points =
           chrome_pdf::GetPDFPageSizeByIndex(pdf_span, i);
       ASSERT_TRUE(size_in_points.has_value());
       EXPECT_EQ(static_cast<int>(size_in_points.value().width()),
@@ -421,7 +423,7 @@ class HeadlessWebContentsPDFStreamTest
     EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
     EXPECT_EQ(std::ceil(kDocHeight / kPaperHeight), num_pages);
 
-    base::Optional<bool> tagged = chrome_pdf::IsPDFDocTagged(pdf_span);
+    absl::optional<bool> tagged = chrome_pdf::IsPDFDocTagged(pdf_span);
     ASSERT_TRUE(tagged.has_value());
     EXPECT_FALSE(tagged.value());
 
@@ -613,7 +615,7 @@ class HeadlessWebContentsTaggedPDFTest
     EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
     EXPECT_EQ(1, num_pages);
 
-    base::Optional<bool> tagged = chrome_pdf::IsPDFDocTagged(pdf_span);
+    absl::optional<bool> tagged = chrome_pdf::IsPDFDocTagged(pdf_span);
     ASSERT_TRUE(tagged.has_value());
     EXPECT_TRUE(tagged.value());
 

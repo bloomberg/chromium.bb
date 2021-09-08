@@ -31,8 +31,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanDeviceQueue {
     PRESENTATION_SUPPORT_QUEUE_FLAG = 0x02,
   };
 
-  VulkanDeviceQueue(VkInstance vk_instance,
-                    bool enforce_protected_memory = false);
+  explicit VulkanDeviceQueue(VkInstance vk_instance);
   ~VulkanDeviceQueue();
 
   using GetPresentationSupportCallback =
@@ -71,6 +70,11 @@ class COMPONENT_EXPORT(VULKAN) VulkanDeviceQueue {
     return vk_physical_device_properties_;
   }
 
+  const VkPhysicalDeviceDriverProperties& vk_physical_device_driver_properties()
+      const {
+    return vk_physical_device_driver_properties_;
+  }
+
   VkDevice GetVulkanDevice() const {
     DCHECK_NE(static_cast<VkDevice>(VK_NULL_HANDLE), vk_device_);
     return vk_device_;
@@ -105,6 +109,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanDeviceQueue {
   gfx::ExtensionSet enabled_extensions_;
   VkPhysicalDevice vk_physical_device_ = VK_NULL_HANDLE;
   VkPhysicalDeviceProperties vk_physical_device_properties_;
+  VkPhysicalDeviceDriverProperties vk_physical_device_driver_properties_;
   VkDevice owned_vk_device_ = VK_NULL_HANDLE;
   VkDevice vk_device_ = VK_NULL_HANDLE;
   VkQueue vk_queue_ = VK_NULL_HANDLE;
@@ -114,7 +119,6 @@ class COMPONENT_EXPORT(VULKAN) VulkanDeviceQueue {
   std::unique_ptr<VulkanFenceHelper> cleanup_helper_;
   VkPhysicalDeviceFeatures2 enabled_device_features_2_;
 
-  const bool enforce_protected_memory_;
   bool allow_protected_memory_ = false;
 
 #if defined(OS_ANDROID) || defined(OS_FUCHSIA)

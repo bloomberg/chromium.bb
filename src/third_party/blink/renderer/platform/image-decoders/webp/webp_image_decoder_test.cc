@@ -35,7 +35,6 @@
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -397,12 +396,6 @@ TEST(AnimatedWebPTests, randomDecodeAfterClearFrameBufferCache) {
       &CreateWEBPDecoder, "/images/resources/webp-animated-icc-xmp.webp");
 }
 
-TEST(AnimatedWebPTests,
-     resumePartialDecodeAfterClearFrameBufferCache) {
-  TestResumePartialDecodeAfterClearFrameBufferCache(
-      &CreateWEBPDecoder, "/images/resources/webp-animated-large.webp");
-}
-
 TEST(AnimatedWebPTests, decodeAfterReallocatingData) {
   TestDecodeAfterReallocatingData(&CreateWEBPDecoder,
                                   "/images/resources/webp-animated.webp");
@@ -521,6 +514,9 @@ TEST(StaticWebPTests, incrementalDecode) {
   TestByteByByteDecode(&CreateWEBPDecoder,
                        "/images/resources/crbug.364830.webp", 1u,
                        kAnimationNone);
+  TestByteByByteDecode(&CreateWEBPDecoder,
+                       "/images/resources/size-failure.b186640109.webp", 1u,
+                       kAnimationNone);
 }
 
 TEST(StaticWebPTests, isSizeAvailable) {
@@ -529,6 +525,9 @@ TEST(StaticWebPTests, isSizeAvailable) {
                               520u, true, kAnimationNone);
   TestByteByByteSizeAvailable(&CreateWEBPDecoder, "/images/resources/test.webp",
                               30u, false, kAnimationNone);
+  TestByteByByteSizeAvailable(&CreateWEBPDecoder,
+                              "/images/resources/size-failure.b186640109.webp",
+                              25u, false, kAnimationNone);
 }
 
 TEST(StaticWebPTests, notAnimated) {

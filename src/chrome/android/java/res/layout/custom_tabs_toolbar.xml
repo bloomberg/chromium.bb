@@ -14,15 +14,16 @@
         style="@style/ToolbarButton"
         android:layout_gravity="start|center_vertical"
         android:contentDescription="@string/close_tab" />
-    <org.chromium.ui.widget.ChromeImageButton
-        android:id="@+id/incognito_cct_logo_button"
+    <org.chromium.ui.widget.ChromeImageView
+        android:id="@+id/incognito_cct_logo_image_view"
         style="@style/LocationBarButton"
         android:layout_width="@dimen/location_bar_icon_width"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:scaleType="center"
         app:srcCompat="@drawable/ic_incognito_cct_24dp"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:contentDescription="@string/accessibility_incognito_badge"/>
     <FrameLayout
         android:id="@+id/location_bar_frame_layout"
         android:layout_width="match_parent"
@@ -61,29 +62,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom" >
-                <TextView
-                    android:id="@+id/url_bar_lite_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:background="@null"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text="@string/location_bar_preview_lite_page_status"
-                    style="@style/TextAppearance.TextSmall.Primary"
-                    android:visibility="gone" />
-
-                <!-- This separator is in line with text and is used in lieu
-                     of a | character. Therefore, use the text size for its
-                     height and not a dp value. -->
-                <View
-                    android:id="@+id/url_bar_lite_status_separator"
-                    android:layout_height="@dimen/custom_tabs_url_text_size"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginStart="@dimen/custom_tabs_url_lite_separator_margin"
-                    android:layout_marginEnd="@dimen/custom_tabs_url_lite_separator_margin"
-                    style="@style/VerticalDivider"
-                    android:visibility="gone" />
 
                 <org.chromium.chrome.browser.omnibox.UrlBarApi26
                     android:id="@+id/url_bar"

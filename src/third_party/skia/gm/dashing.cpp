@@ -134,8 +134,7 @@ static SkPath make_path_oval(const SkRect& bounds) {
 
 static SkPath make_path_star(const SkRect& bounds) {
     SkPath path = make_unit_star(5);
-    SkMatrix matrix;
-    matrix.setRectToRect(path.getBounds(), bounds, SkMatrix::kCenter_ScaleToFit);
+    SkMatrix matrix = SkMatrix::RectToRect(path.getBounds(), bounds, SkMatrix::kCenter_ScaleToFit);
     return path.makeTransform(matrix);
 }
 
@@ -332,7 +331,9 @@ class Dashing4GM : public skiagm::GM {
         for (int width = 0; width <= 2; ++width) {
             for (const Intervals& data : {Intervals{1, 1},
                                           Intervals{4, 2},
-                                          Intervals{0, 4}}) { // test for zero length on interval
+                                          Intervals{0, 4}}) { // test for zero length on interval.
+                                                              // zero length intervals should draw
+                                                              // a line of squares or circles
                 for (bool aa : {false, true}) {
                     for (auto cap : {SkPaint::kRound_Cap, SkPaint::kSquare_Cap}) {
                         int w = width * width * width;
@@ -507,6 +508,45 @@ DEF_SIMPLE_GM(longlinedash, canvas, 512, 512) {
     const SkScalar intervals[] = { 2, 2 };
     p.setPathEffect(SkDashPathEffect::Make(intervals, SK_ARRAY_COUNT(intervals), 0));
     canvas->drawRect(SkRect::MakeXYWH(-10000, 100, 20000, 20), p);
+}
+
+DEF_SIMPLE_GM(dashbigrects, canvas, 256, 256) {
+    SkRandom rand;
+
+    constexpr int kHalfStrokeWidth = 8;
+    constexpr int kOnOffInterval = 2*kHalfStrokeWidth;
+
+    canvas->clear(SkColors::kBlack);
+
+    SkPaint p;
+    p.setAntiAlias(true);
+    p.setStroke(true);
+    p.setStrokeWidth(2*kHalfStrokeWidth);
+    p.setStrokeCap(SkPaint::kButt_Cap);
+
+    constexpr SkScalar intervals[] = { kOnOffInterval, kOnOffInterval };
+    p.setPathEffect(SkDashPathEffect::Make(intervals, SK_ARRAY_COUNT(intervals), 0));
+
+    constexpr float gWidthHeights[] = {
+        1000000000.0f * kOnOffInterval + kOnOffInterval/2.0f,
+        1000000.0f * kOnOffInterval + kOnOffInterval/2.0f,
+        1000.0f * kOnOffInterval + kOnOffInterval/2.0f,
+        100.0f * kOnOffInterval + kOnOffInterval/2.0f,
+        10.0f * kOnOffInterval + kOnOffInterval/2.0f,
+        9.0f * kOnOffInterval + kOnOffInterval/2.0f,
+        8.0f * kOnOffInterval + kOnOffInterval/2.0f,
+        7.0f * kOnOffInterval + kOnOffInterval/2.0f,
+        6.0f * kOnOffInterval + kOnOffInterval/2.0f,
+        5.0f * kOnOffInterval + kOnOffInterval/2.0f,
+        4.0f * kOnOffInterval + kOnOffInterval/2.0f,
+    };
+
+    for (size_t i = 0; i < SK_ARRAY_COUNT(gWidthHeights); ++i) {
+        p.setColor(ToolUtils::color_to_565(rand.nextU() | (0xFF << 24)));
+
+        int offset = 2 * i * kHalfStrokeWidth + kHalfStrokeWidth;
+        canvas->drawRect(SkRect::MakeXYWH(offset, offset, gWidthHeights[i], gWidthHeights[i]), p);
+    }
 }
 
 DEF_SIMPLE_GM(longwavyline, canvas, 512, 512) {

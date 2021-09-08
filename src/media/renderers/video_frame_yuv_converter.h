@@ -7,6 +7,7 @@
 
 #include <array>
 
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/color_space.h"
@@ -19,6 +20,7 @@ class RasterContextProvider;
 namespace media {
 
 class VideoFrame;
+class VideoFrameYUVMailboxesHolder;
 
 // Converts YUV video frames to RGB format and stores the results in the
 // provided mailbox. The caller of functions in this class maintains ownership
@@ -32,7 +34,9 @@ class VideoFrame;
 // images.
 class MEDIA_EXPORT VideoFrameYUVConverter {
  public:
-  static void ConvertYUVVideoFrameNoCaching(
+  static bool IsVideoFrameFormatSupported(const VideoFrame& video_frame);
+
+  static bool ConvertYUVVideoFrameNoCaching(
       const VideoFrame* video_frame,
       viz::RasterContextProvider* raster_context_provider,
       const gpu::MailboxHolder& dest_mailbox_holder);
@@ -40,43 +44,50 @@ class MEDIA_EXPORT VideoFrameYUVConverter {
   // TODO(crbug.com/1108154): Will merge this uploading path
   // with ConvertYUVVideoFrameYUVWithGrContext after solving
   // issue 1120911, 1120912
-  static bool ConvertYUVVideoFrameWithSkSurfaceNoCaching(
+  static bool ConvertYUVVideoFrameToDstTextureNoCaching(
       const VideoFrame* video_frame,
       viz::RasterContextProvider* raster_context_provider,
       const gpu::MailboxHolder& dest_mailbox_holder,
       unsigned int internal_format,
       unsigned int type,
       bool flip_y,
-      bool use_visible_rect);
+      bool use_visible_rect,
+      bool use_sk_pixmap = false);
 
   VideoFrameYUVConverter();
   ~VideoFrameYUVConverter();
 
-  void ConvertYUVVideoFrame(const VideoFrame* video_frame,
+  bool ConvertYUVVideoFrame(const VideoFrame* video_frame,
                             viz::RasterContextProvider* raster_context_provider,
-                            const gpu::MailboxHolder& dest_mailbox_holder);
+                            const gpu::MailboxHolder& dest_mailbox_holder,
+                            unsigned int internal_format = GL_RGBA,
+                            unsigned int type = GL_UNSIGNED_BYTE,
+                            bool flip_y = false,
+                            bool use_visible_rect = false,
+                            bool use_sk_pixmap = false);
   void ReleaseCachedData();
 
  private:
-  void ConvertFromVideoFrameYUVWithGrContext(
-      const VideoFrame* video_frame,
-      viz::RasterContextProvider* raster_context_provider,
-      const gpu::MailboxHolder& dest_mailbox_holder);
-  void ConvertFromVideoFrameYUVSkia(
-      const VideoFrame* video_frame,
-      viz::RasterContextProvider* raster_context_provider,
-      unsigned int texture_target,
-      unsigned int texture_id);
-  bool ConvertYUVVideoFrameWithSkSurface(
+  bool ConvertFromVideoFrameYUVWithGrContext(
       const VideoFrame* video_frame,
       viz::RasterContextProvider* raster_context_provider,
       const gpu::MailboxHolder& dest_mailbox_holder,
       unsigned int internal_format,
       unsigned int type,
       bool flip_y,
-      bool use_visible_rect);
+      bool use_visible_rect,
+      bool use_sk_pixmap = false);
+  bool ConvertFromVideoFrameYUVSkia(
+      const VideoFrame* video_frame,
+      viz::RasterContextProvider* raster_context_provider,
+      unsigned int texture_target,
+      unsigned int texture_id,
+      unsigned int internal_format,
+      unsigned int type,
+      bool flip_y,
+      bool use_visible_rect,
+      bool use_sk_pixmap);
 
-  class VideoFrameYUVMailboxesHolder;
   std::unique_ptr<VideoFrameYUVMailboxesHolder> holder_;
 };
 }  // namespace media

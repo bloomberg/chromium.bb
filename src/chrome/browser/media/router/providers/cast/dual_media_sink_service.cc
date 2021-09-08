@@ -44,8 +44,7 @@ MediaSinkServiceBase* DualMediaSinkService::GetCastMediaSinkServiceImpl() {
   return cast_media_sink_service_->impl();
 }
 
-DualMediaSinkService::Subscription
-DualMediaSinkService::AddSinksDiscoveredCallback(
+base::CallbackListSubscription DualMediaSinkService::AddSinksDiscoveredCallback(
     const OnSinksDiscoveredProviderCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sinks_discovered_callbacks_.Add(callback);
@@ -63,6 +62,13 @@ void DualMediaSinkService::StartMdnsDiscovery() {
 
   if (cast_media_sink_service_)
     cast_media_sink_service_->StartMdnsDiscovery();
+}
+
+bool DualMediaSinkService::MdnsDiscoveryStarted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return cast_media_sink_service_
+             ? cast_media_sink_service_->MdnsDiscoveryStarted()
+             : false;
 }
 
 DualMediaSinkService::DualMediaSinkService() {
@@ -111,9 +117,7 @@ void DualMediaSinkService::BindLogger(LoggerImpl* logger_impl) {
   if (logger_is_bound_)
     return;
   logger_is_bound_ = true;
-  mojo::PendingRemote<mojom::Logger> cast_pending_remote;
-  logger_impl->Bind(cast_pending_remote.InitWithNewPipeAndPassReceiver());
-  cast_media_sink_service_->BindLogger(std::move(cast_pending_remote));
+  cast_media_sink_service_->BindLogger(logger_impl);
 
   mojo::PendingRemote<mojom::Logger> dial_pending_remote;
   logger_impl->Bind(dial_pending_remote.InitWithNewPipeAndPassReceiver());

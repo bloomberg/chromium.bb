@@ -39,41 +39,49 @@ void SyncData::ImmutableSyncEntityTraits::Swap(sync_pb::SyncEntity* t1,
   t1->Swap(t2);
 }
 
-SyncData::SyncData() : is_local_(false), is_valid_(false) {}
+SyncData::SyncData() : is_valid_(false) {}
 
-SyncData::SyncData(bool is_local, sync_pb::SyncEntity* entity)
-    : immutable_entity_(entity), is_local_(is_local), is_valid_(true) {}
+SyncData::SyncData(sync_pb::SyncEntity* entity)
+    : immutable_entity_(entity), is_valid_(true) {}
 
 SyncData::SyncData(const SyncData& other) = default;
 
-SyncData::~SyncData() {}
+SyncData::~SyncData() = default;
 
 // Static.
-SyncData SyncData::CreateLocalDelete(const std::string& sync_tag,
+SyncData SyncData::CreateLocalDelete(const std::string& client_tag_unhashed,
                                      ModelType datatype) {
   sync_pb::EntitySpecifics specifics;
   AddDefaultFieldValue(datatype, &specifics);
-  return CreateLocalData(sync_tag, std::string(), specifics);
+  return CreateLocalData(client_tag_unhashed, std::string(), specifics);
 }
 
 // Static.
-SyncData SyncData::CreateLocalData(const std::string& sync_tag,
+SyncData SyncData::CreateLocalData(const std::string& client_tag_unhashed,
                                    const std::string& non_unique_title,
                                    const sync_pb::EntitySpecifics& specifics) {
+  const ModelType model_type = GetModelTypeFromSpecifics(specifics);
+  DCHECK(IsRealDataType(model_type));
+
+  DCHECK(!client_tag_unhashed.empty());
+  const ClientTagHash client_tag_hash =
+      ClientTagHash::FromUnhashed(model_type, client_tag_unhashed);
+
   sync_pb::SyncEntity entity;
-  entity.set_client_defined_unique_tag(sync_tag);
+  entity.set_client_defined_unique_tag(client_tag_hash.value());
   entity.set_non_unique_name(non_unique_title);
   entity.mutable_specifics()->CopyFrom(specifics);
-  return SyncData(/*is_local=*/true, &entity);
+
+  return SyncData(&entity);
 }
 
 // Static.
 SyncData SyncData::CreateRemoteData(sync_pb::EntitySpecifics specifics,
-                                    std::string client_tag_hash) {
+                                    const ClientTagHash& client_tag_hash) {
   sync_pb::SyncEntity entity;
   *entity.mutable_specifics() = std::move(specifics);
-  entity.set_client_defined_unique_tag(std::move(client_tag_hash));
-  return SyncData(/*is_local=*/false, &entity);
+  entity.set_client_defined_unique_tag(client_tag_hash.value());
+  return SyncData(&entity);
 }
 
 bool SyncData::IsValid() const {
@@ -88,14 +96,13 @@ ModelType SyncData::GetDataType() const {
   return GetModelTypeFromSpecifics(GetSpecifics());
 }
 
-const std::string& SyncData::GetTitle() const {
-  // TODO(zea): set this for data coming from the syncer too.
-  DCHECK(immutable_entity_.Get().has_non_unique_name());
-  return immutable_entity_.Get().non_unique_name();
+ClientTagHash SyncData::GetClientTagHash() const {
+  return ClientTagHash::FromHashed(
+      immutable_entity_.Get().client_defined_unique_tag());
 }
 
-bool SyncData::IsLocal() const {
-  return is_local_;
+const std::string& SyncData::GetTitle() const {
+  return immutable_entity_.Get().non_unique_name();
 }
 
 std::string SyncData::ToString() const {
@@ -108,48 +115,12 @@ std::string SyncData::ToString() const {
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &specifics);
 
-  if (IsLocal()) {
-    SyncDataLocal sync_data_local(*this);
-    return "{ isLocal: true, type: " + type + ", tag: " +
-           sync_data_local.GetTag() + ", title: " + GetTitle() +
-           ", specifics: " + specifics + "}";
-  }
-
-  SyncDataRemote sync_data_remote(*this);
-  return "{ isLocal: false, type: " + type + ", specifics: " + specifics + "}";
+  return "{ type: " + type + ", tagHash: " + GetClientTagHash().value() +
+         ", title: " + GetTitle() + ", specifics: " + specifics + "}";
 }
 
 void PrintTo(const SyncData& sync_data, std::ostream* os) {
   *os << sync_data.ToString();
-}
-
-SyncDataLocal::SyncDataLocal(const SyncData& sync_data) : SyncData(sync_data) {
-  DCHECK(sync_data.IsLocal());
-}
-
-SyncDataLocal::~SyncDataLocal() {}
-
-const std::string& SyncDataLocal::GetTag() const {
-  return immutable_entity_.Get().client_defined_unique_tag();
-}
-
-SyncDataRemote::SyncDataRemote(const SyncData& sync_data)
-    : SyncData(sync_data) {
-  DCHECK(!sync_data.IsLocal());
-}
-
-SyncDataRemote::~SyncDataRemote() {}
-
-ClientTagHash SyncDataRemote::GetClientTagHash() const {
-  // It seems that client_defined_unique_tag has a bit of an overloaded use,
-  // holding onto the un-hashed tag while local, and then the hashed value when
-  // communicating with the server. This usage is copying the latter of these
-  // cases, where this is the hashed tag value. The original tag is not sent to
-  // the server so we wouldn't be able to set this value anyways. The only way
-  // to recreate an un-hashed tag is for the service to do so with a specifics.
-  DCHECK(!immutable_entity_.Get().client_defined_unique_tag().empty());
-  return ClientTagHash::FromHashed(
-      immutable_entity_.Get().client_defined_unique_tag());
 }
 
 }  // namespace syncer

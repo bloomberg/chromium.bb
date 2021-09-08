@@ -15,11 +15,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
+#include "chrome/browser/themes/theme_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -29,6 +29,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
 #include "url/gurl.h"
@@ -63,7 +64,8 @@ class InstantService : public KeyedService,
                        public NtpBackgroundServiceObserver,
                        public content::NotificationObserver,
                        public ntp_tiles::MostVisitedSites::Observer,
-                       public ui::NativeThemeObserver {
+                       public ui::NativeThemeObserver,
+                       public ThemeServiceObserver {
  public:
   explicit InstantService(Profile* profile);
   ~InstantService() override;
@@ -95,6 +97,9 @@ class InstantService : public KeyedService,
   // Invoked whenever an NTP is opened. Causes an async refresh of Most Visited
   // items.
   void OnNewTabPageOpened();
+
+  // ThemeServiceObserver implementation.
+  void OnThemeChanged() override;
 
   // Most visited item APIs.
   //
@@ -274,7 +279,7 @@ class InstantService : public KeyedService,
   bool IsCustomBackgroundPrefValid(GURL& custom_background_url);
 
   // Update the background pref to point to
-  // chrome-search://local-ntp/background.jpg
+  // chrome://new-tab-page/background.jpg.
   void SetBackgroundToLocalResource();
 
   // Updates custom background prefs with color if the background hasn't changed
@@ -323,11 +328,11 @@ class InstantService : public KeyedService,
 
   PrefService* pref_service_;
 
-  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> theme_observer_{
-      this};
+  base::ScopedObservation<ui::NativeTheme, ui::NativeThemeObserver>
+      theme_observation_{this};
 
-  ScopedObserver<NtpBackgroundService, NtpBackgroundServiceObserver>
-      background_service_observer_{this};
+  base::ScopedObservation<NtpBackgroundService, NtpBackgroundServiceObserver>
+      background_service_observation_{this};
 
   ui::NativeTheme* native_theme_;
 

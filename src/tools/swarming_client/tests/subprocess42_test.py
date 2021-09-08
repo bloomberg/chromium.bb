@@ -13,6 +13,7 @@ import platform
 import signal
 import sys
 import tempfile
+import textwrap
 import time
 import unittest
 
@@ -369,6 +370,7 @@ time.sleep(60)
     self.assertEqual(None, err)
     return out
 
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_lower_priority(self):
     out = self._test_lower_priority(True)
     if sys.platform == 'win32':
@@ -958,6 +960,54 @@ time.sleep(60)
             ('stderr', b'incomplete last stderr'),
             ('stdout', b'incomplete last stdout'),
         ])
+
+  def test_wait_can_be_interrupted(self):
+    cmd = [
+        sys.executable,
+        '-c',
+        textwrap.dedent(r"""
+            import signal
+            import sys
+            import textwrap
+            import time
+
+            from utils import subprocess42
+
+            class ExitError(Exception):
+              pass
+            def handler(signum, _frame):
+              raise ExitError
+
+            sleep_script = textwrap.dedent('''
+                import time
+                for _ in range(50):
+                  time.sleep(0.2)
+            ''')
+            proc = subprocess42.Popen([sys.executable, '-c', sleep_script],
+                                      detached=True)
+            sig = signal.SIGBREAK if sys.platform =='win32' else signal.SIGTERM
+            with subprocess42.set_signal_handler([sig], handler):
+              try:
+                sys.stdout.write('hi\n')
+                sys.stdout.flush()
+                proc.wait(5)
+              except ExitError:
+                sys.stdout.write('wait is interrupted')
+                sys.stdout.flush()
+                proc.kill()
+        """)
+    ]
+    # Set cwd to CLIENT_DIR so that the script can import subprocess42.
+    proc = subprocess42.Popen(cmd, stdout=subprocess42.PIPE,
+                              cwd=test_env.CLIENT_DIR, detached=True)
+    self._wait_for_hi(proc, False)
+    time.sleep(0.5)
+    proc.terminate()
+    # proc is waiting for 5s and SIGTERM/SIGBREAK is sent at 0.5s mark.
+    # Expect proc to write to stdout and exit almost immediately (decided
+    # by the poll interval of wait method). We wait for 2 second to give
+    # some buffer here.
+    self.assertEqual(proc.recv_out(timeout=2), b'wait is interrupted')
 
 
 if __name__ == '__main__':

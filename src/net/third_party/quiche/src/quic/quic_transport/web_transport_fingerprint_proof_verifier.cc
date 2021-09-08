@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/quic_transport/web_transport_fingerprint_proof_verifier.h"
+#include "quic/quic_transport/web_transport_fingerprint_proof_verifier.h"
 
 #include <cstdint>
 #include <memory>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
-#include "net/third_party/quiche/src/quic/core/crypto/certificate_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/crypto/certificate_view.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "common/quiche_text_utils.h"
 
 namespace quic {
 namespace {
@@ -125,7 +125,7 @@ QuicAsyncStatus WebTransportFingerprintProofVerifier::VerifyProof(
   *error_details =
       "QUIC crypto certificate verification is not supported in "
       "WebTransportFingerprintProofVerifier";
-  QUIC_BUG << *error_details;
+  QUIC_BUG(quic_bug_10879_1) << *error_details;
   *details = std::make_unique<Details>(Status::kInternalError);
   return QUIC_FAILURE;
 }
@@ -163,9 +163,9 @@ QuicAsyncStatus WebTransportFingerprintProofVerifier::VerifyCertChain(
 
   if (!HasValidExpiry(*view)) {
     *details = std::make_unique<Details>(Status::kExpiryTooLong);
-    *error_details = quiche::QuicheStrCat(
-        "Certificate expiry exceeds the configured limit of ",
-        max_validity_days_, " days");
+    *error_details =
+        absl::StrCat("Certificate expiry exceeds the configured limit of ",
+                     max_validity_days_, " days");
     return QUIC_FAILURE;
   }
 
@@ -191,7 +191,7 @@ bool WebTransportFingerprintProofVerifier::HasKnownFingerprint(
   const std::string fingerprint = ComputeSha256Fingerprint(der_certificate);
   for (const CertificateFingerprint& reference : fingerprints_) {
     if (reference.algorithm != CertificateFingerprint::kSha256) {
-      QUIC_BUG << "Unexpected non-SHA-256 hash";
+      QUIC_BUG(quic_bug_10879_2) << "Unexpected non-SHA-256 hash";
       continue;
     }
     if (fingerprint == reference.fingerprint) {

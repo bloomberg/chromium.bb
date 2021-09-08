@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
+// #import 'chrome://nearby/strings.m.js';
 // #import 'chrome://nearby/shared/nearby_contact_visibility.m.js';
 // #import {setContactManagerForTesting} from 'chrome://nearby/shared/nearby_contact_manager.m.js';
 // #import {setNearbyShareSettingsForTesting} from 'chrome://nearby/shared/nearby_share_settings.m.js';
@@ -31,6 +32,7 @@ suite('nearby-contact-visibility', () => {
       deviceName: 'deviceName',
       dataUsage: nearbyShare.mojom.DataUsage.kOnline,
       visibility: nearbyShare.mojom.Visibility.kUnknown,
+      isOnboardingComplete: false,
       allowedContacts: [],
     };
 
@@ -93,6 +95,14 @@ suite('nearby-contact-visibility', () => {
   }
 
   /**
+   * @return {boolean} true when the unreachable contacts message is visibile
+   */
+  function isUnreachableMessageVisible() {
+    return test_util.isChildVisible(
+        visibilityElement, '#unreachableMessage', false);
+  }
+
+  /**
    * Checks the state of the contacts toggle button group
    * @param {boolean} all is allContacts checked?
    * @param {boolean} some is someContacts checked?
@@ -132,8 +142,9 @@ suite('nearby-contact-visibility', () => {
     assertFalse(isDownloadContactsFailedVisible());
     assertFalse(isDownloadContactsPendingVisible());
     assertTrue(areContactCheckBoxesVisible());
-    const list = visibilityElement.$$('#contactList');
-    assertEquals(fakeContactManager.contactRecords.length, list.items.length);
+    const items =
+        visibilityElement.$$('#contactList').querySelectorAll('.contact-item');
+    assertEquals(fakeContactManager.contactRecords.length, items.length);
   });
 
   test('Radio group disabled until successful download', async function() {
@@ -227,5 +238,89 @@ suite('nearby-contact-visibility', () => {
         assertFalse(isZeroStateVisible());
         assertFalse(areContactCheckBoxesVisible());
         assertTrue(isNoContactsSectionVisible());
+      });
+
+  test(
+      'Unreachable message appears for 1 unreachable contact',
+      async function() {
+        fakeContactManager.setupContactRecords();
+        fakeContactManager.setNumUnreachable(1);
+        fakeContactManager.completeDownload();
+        visibilityElement.set(
+            'settings.visibility', nearbyShare.mojom.Visibility.kAllContacts);
+
+        // need to wait for the next render to see results
+        await test_util.waitAfterNextRender(visibilityElement);
+
+        assertTrue(isUnreachableMessageVisible());
+      });
+
+  test(
+      'Unreachable message appears for more than 1 unreachable contact',
+      async function() {
+        fakeContactManager.setupContactRecords();
+        fakeContactManager.setNumUnreachable(3);
+        fakeContactManager.completeDownload();
+        visibilityElement.set(
+            'settings.visibility', nearbyShare.mojom.Visibility.kAllContacts);
+
+        // need to wait for the next render to see results
+        await test_util.waitAfterNextRender(visibilityElement);
+
+        assertTrue(isUnreachableMessageVisible());
+      });
+
+  test(
+      'Unreachable message hidden for 0 unreachable contacts',
+      async function() {
+        fakeContactManager.setupContactRecords();
+        fakeContactManager.setNumUnreachable(0);
+        fakeContactManager.completeDownload();
+        visibilityElement.set(
+            'settings.visibility', nearbyShare.mojom.Visibility.kAllContacts);
+
+        // need to wait for the next render to see results
+        await test_util.waitAfterNextRender(visibilityElement);
+
+        assertFalse(isUnreachableMessageVisible());
+      });
+
+  test(
+      'Save persists visibility setting and allowed contacts',
+      async function() {
+        fakeContactManager.setupContactRecords();
+        fakeContactManager.setNumUnreachable(0);
+        fakeContactManager.completeDownload();
+        visibilityElement.set(
+            'settings.visibility', nearbyShare.mojom.Visibility.kAllContacts);
+        await test_util.waitAfterNextRender(visibilityElement);
+
+        // visibility setting is not immediately updated
+        visibilityElement.$$('#someContacts').click();
+        await test_util.waitAfterNextRender(visibilityElement);
+        assertTrue(areContactCheckBoxesVisible());
+        assertEquals(
+            visibilityElement.get('settings.visibility'),
+            nearbyShare.mojom.Visibility.kAllContacts);
+
+        // allow only contact 2, check that allowed contacts are not yet pushed
+        // to the contact manager
+        fakeContactManager.setAllowedContacts(['1']);
+        for (let i = 0; i < visibilityElement.contacts.length; ++i) {
+          visibilityElement.set(
+              ['contacts', i, 'checked'],
+              visibilityElement.contacts[i].id === '2');
+        }
+        await test_util.waitAfterNextRender(visibilityElement);
+        assertEquals(fakeContactManager.allowedContacts.length, 1);
+        assertEquals(fakeContactManager.allowedContacts[0], '1');
+
+        // after save, ui state is persisted
+        visibilityElement.saveVisibilityAndAllowedContacts();
+        assertEquals(
+            visibilityElement.get('settings.visibility'),
+            nearbyShare.mojom.Visibility.kSelectedContacts);
+        assertEquals(fakeContactManager.allowedContacts.length, 1);
+        assertEquals(fakeContactManager.allowedContacts[0], '2');
       });
 });

@@ -8,18 +8,17 @@
 
 #include <string>
 
+#include "ash/constants/ash_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/install_attributes.h"
@@ -90,8 +89,8 @@ void LocalStateValueWaiter::QuitLoopIfExpectedValueFound() {
 void LocalStateValueWaiter::Wait() {
   pref_change_registrar_.Add(
       pref_.c_str(),
-      base::Bind(&LocalStateValueWaiter::QuitLoopIfExpectedValueFound,
-                 base::Unretained(this)));
+      base::BindRepeating(&LocalStateValueWaiter::QuitLoopIfExpectedValueFound,
+                          base::Unretained(this)));
   // Necessary if the pref value changes before the run loop is run. It is
   // safe to call RunLoop::Quit before RunLoop::Run (in which case the call
   // to Run will do nothing).
@@ -147,6 +146,7 @@ void DevicePolicyCrosTestHelper::OverridePaths() {
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   base::ScopedAllowBlockingForTesting allow_io;
   chromeos::RegisterStubPathOverrides(user_data_dir);
+  chromeos::dbus_paths::RegisterStubPathOverrides(user_data_dir);
 }
 
 const std::string DevicePolicyCrosTestHelper::device_policy_blob() {
@@ -167,11 +167,10 @@ void DevicePolicyCrosTestHelper::RefreshPolicyAndWaitUntilDeviceSettingsUpdated(
   base::RunLoop run_loop;
 
   // For calls from SetPolicy().
-  std::vector<std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>>
-      observers = {};
+  std::vector<base::CallbackListSubscription> subscriptions = {};
   for (auto setting_it = settings.cbegin(); setting_it != settings.cend();
        setting_it++) {
-    observers.push_back(chromeos::CrosSettings::Get()->AddSettingsObserver(
+    subscriptions.push_back(ash::CrosSettings::Get()->AddSettingsObserver(
         *setting_it, run_loop.QuitClosure()));
   }
   RefreshDevicePolicy();

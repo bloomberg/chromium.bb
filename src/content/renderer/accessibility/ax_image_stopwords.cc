@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -518,7 +518,7 @@ AXImageStopwords::AXImageStopwords() {
 AXImageStopwords::~AXImageStopwords() = default;
 
 bool AXImageStopwords::IsImageStopword(const char* word_utf8) const {
-  base::string16 word_utf16 = base::UTF8ToUTF16(word_utf8);
+  std::u16string word_utf16 = base::UTF8ToUTF16(word_utf8);
 
   // It's not really meaningful, but since short words are stopwords, for
   // simplicity we define the empty string to be a stopword too.

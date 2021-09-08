@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
@@ -31,6 +30,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 class PrefetchProxyPageLoadMetricsObserver;
@@ -57,11 +57,11 @@ class PrefetchProxyTabHelper
  public:
   ~PrefetchProxyTabHelper() override;
 
-  // A key to identify prefetching likely events to PLM.
-  static const void* PrefetchingLikelyEventKey();
-
   class Observer {
    public:
+    // Called when a decoy prefetch is completed with either success or failire.
+    virtual void OnDecoyPrefetchCompleted(const GURL& url) {}
+
     // Called when a prefetch for |url| is completed successfully.
     virtual void OnPrefetchCompletedSuccessfully(const GURL& url) {}
 
@@ -117,7 +117,7 @@ class PrefetchProxyTabHelper
     size_t prefetch_total_redirect_count_ = 0;
 
     // The duration between navigation start and the start of prefetching.
-    base::Optional<base::TimeDelta> navigation_to_prefetch_start_;
+    absl::optional<base::TimeDelta> navigation_to_prefetch_start_;
 
    private:
     friend class base::RefCounted<PrefetchMetrics>;
@@ -140,14 +140,14 @@ class PrefetchProxyTabHelper
 
     // The position of the link on the SRP that was navigated to. Not set if the
     // navigated page wasn't in the SRP.
-    base::Optional<size_t> clicked_link_srp_position_;
+    absl::optional<size_t> clicked_link_srp_position_;
 
     // The status of a prefetch done on the SRP that may have been used here.
-    base::Optional<PrefetchProxyPrefetchStatus> prefetch_status_;
+    absl::optional<PrefetchProxyPrefetchStatus> prefetch_status_;
 
     // The amount of time it took the probe to complete. Set only when a
     // prefetch is used and a probe was required.
-    base::Optional<base::TimeDelta> probe_latency_;
+    absl::optional<base::TimeDelta> probe_latency_;
   };
 
   // Checks if a |service_worker_context_for_test_| is available, and if not,
@@ -162,7 +162,7 @@ class PrefetchProxyTabHelper
   using OnEligibilityResultCallback = base::OnceCallback<void(
       const GURL& url,
       bool eligible,
-      base::Optional<PrefetchProxyPrefetchStatus> status)>;
+      absl::optional<PrefetchProxyPrefetchStatus> status)>;
   static void CheckEligibilityOfURL(
       Profile* profile,
       const GURL& url,
@@ -172,8 +172,16 @@ class PrefetchProxyTabHelper
 
   // Returns nullopt unless the previous page load was a Google SRP where |this|
   // got parsed SRP links from NavigationPredictor.
-  base::Optional<PrefetchProxyTabHelper::AfterSRPMetrics> after_srp_metrics()
+  absl::optional<PrefetchProxyTabHelper::AfterSRPMetrics> after_srp_metrics()
       const;
+
+  // Fetches |private_prefetches| (up to a limit) and upon completion of each
+  // prefetch, fetches subresources if the prefetch URL is in
+  // |private_prefetches_with_subresources| (up to a limit).
+  void PrefetchSpeculationCandidates(
+      const std::vector<GURL>& private_prefetches_with_subresources,
+      const std::vector<GURL>& private_prefetches,
+      const GURL& source_document_url);
 
   // content::WebContentsObserver implementation.
   void DidStartNavigation(
@@ -253,6 +261,9 @@ class PrefetchProxyTabHelper
     // The start time of the current navigation.
     const base::TimeTicks navigation_start_;
 
+    // Number of requests started that are decoy requests.
+    size_t decoy_requests_attempted_ = 0;
+
     // The metrics pertaining to prefetching actions on a Google SRP page.
     scoped_refptr<PrefetchMetrics> srp_metrics_;
 
@@ -282,9 +293,17 @@ class PrefetchProxyTabHelper
     // An ordered list of the URLs to prefetch.
     std::vector<GURL> urls_to_prefetch_;
 
+    // Subset of |urls_to_prefetch_| that is allowed to have subresources
+    // fetched. These are still subject to an overall limit restricting how many
+    // prefetches can fetch subresources.
+    std::set<GURL> allowed_to_prefetch_subresources_;
+
+    // A set of all urls that were decoy requests.
+    std::set<GURL> decoy_urls_;
+
     // The amount of time that the probe took to complete. Kept in this class
     // until commit in order to be plumbed into |AfterSRPMetrics|.
-    base::Optional<base::TimeDelta> probe_latency_;
+    absl::optional<base::TimeDelta> probe_latency_;
 
     // All prefetched responses by URL. This is cleared every time a mainframe
     // navigation commits.
@@ -338,11 +357,17 @@ class PrefetchProxyTabHelper
   static bool IsProfileEligible(Profile* profile);
   bool IsProfileEligible() const;
 
+  // Returns whether the |url| is eligible, possibly with a status, without
+  // considering any user data like service workers or cookies. Used to
+  // determine eligibility and whether to send decoy requests.
+  static std::pair<bool, absl::optional<PrefetchProxyPrefetchStatus>>
+  CheckEligibilityOfURLSansUserData(Profile* profile, const GURL& url);
+
   // Computes the AfterSRPMetrics that would be returned for the next
-  // navigation, when it commits. This method exists to allow the PLM Observer
-  // to get the AfterSRPMetrics if the navigation fails to commit, so that
-  // metrics can be logged anyways. Returns nullptr if the after srp metrics
-  // wouldn't be set on the next commit.
+  // navigation, when it commits. This method exists to allow the PLM
+  // Observer to get the AfterSRPMetrics if the navigation fails to commit,
+  // so that metrics can be logged anyways. Returns nullptr if the after srp
+  // metrics wouldn't be set on the next commit.
   std::unique_ptr<PrefetchProxyTabHelper::AfterSRPMetrics>
   ComputeAfterSRPMetricsBeforeCommit(content::NavigationHandle* handle) const;
 
@@ -404,21 +429,27 @@ class PrefetchProxyTabHelper
 
   // NavigationPredictorKeyedService::Observer:
   void OnPredictionUpdated(
-      const base::Optional<NavigationPredictorKeyedService::Prediction>
+      const absl::optional<NavigationPredictorKeyedService::Prediction>
           prediction) override;
+
+  // Fetches the |prefetch_targets|, and considers fetching subresources for
+  // |allowed_to_prefetch_subresources_| based on limits on per page subresource
+  // fetching.
+  void PrefetchUrls(const std::vector<GURL>& prefetch_targets,
+                    const std::set<GURL>& allowed_to_prefetch_subresources);
 
   // Used as a callback for when the eligibility of |url| is determined.
   void OnGotEligibilityResult(
       const GURL& url,
       bool eligible,
-      base::Optional<PrefetchProxyPrefetchStatus> status);
+      absl::optional<PrefetchProxyPrefetchStatus> status);
 
   // Creates a new URL Loader Factory on |page_|'s isolated network context.
   // |isolation_info| may be passed if the factory will be used in the renderer
   // for subresources.
   void CreateNewURLLoaderFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
-      base::Optional<net::IsolationInfo> isolation_info);
+      absl::optional<net::IsolationInfo> isolation_info);
 
   // Starts a query for all cookies on |url| in the isolated cookie jar so that
   // they can be copied to the normal profile. After this method is called,

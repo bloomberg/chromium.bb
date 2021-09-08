@@ -150,10 +150,9 @@ function lpf_8_wd\wd\()_neon
         movi            v6.8h,   #4
         add             v2.8h,   v2.8h,   v4.8h
         smin            v2.8h,   v2.8h,   v3.8h   // f = iclip_diff()
-        movi            v7.8h,   #3
         smax            v2.8h,   v2.8h,   v9.8h   // f = iclip_diff()
         sqadd           v4.8h,   v6.8h,   v2.8h   // f + 4
-        sqadd           v5.8h,   v7.8h,   v2.8h   // f + 3
+        sqadd           v5.8h,   v5.8h,   v2.8h   // f + 3
         smin            v4.8h,   v4.8h,   v3.8h   // imin(f + 4, 128 << bitdepth_min_8 - 1)
         smin            v5.8h,   v5.8h,   v3.8h   // imin(f + 3, 128 << bitdepth_min_8 - 1)
         sshr            v4.8h,   v4.8h,   #3      // f1
@@ -785,7 +784,7 @@ function lpf_\dir\()_sb_\type\()_16bpc_neon, export=1
         orr             w6,  w6,  w7             // vmask[0] |= vmask[1]
 
 1:
-        tst             w6,  #0x0f
+        tst             w6,  #0x03
 .ifc \dir, v
         ld1             {v0.8b}, [x4], #8
         ld1             {v1.8b}, [x3], #8
@@ -808,11 +807,11 @@ function lpf_\dir\()_sb_\type\()_16bpc_neon, export=1
         ld1r            {v6.8b}, [x5]             // sharp[1]
         sub             x5,  x5,  #8
         bif             v1.8b,   v0.8b,   v3.8b   // if (!l[0][0]) L = l[offset][0]
+        cmtst           v2.2s,   v1.2s,   v2.2s   // L != 0
         mul             v1.2s,   v1.2s,   v4.2s   // L
 .ifc \type, y
         dup             v15.2s,  w2               // vmask[2]
 .endif
-        cmtst           v2.2s,   v1.2s,   v2.2s   // L != 0
         dup             v14.2s,  w7               // vmask[1]
         mov             x16, v2.d[0]
         cmp             x16, #0
@@ -847,14 +846,14 @@ function lpf_\dir\()_sb_\type\()_16bpc_neon, export=1
         ushl            v10.8h,  v10.8h,  v31.8h
 
 .ifc \type, y
-        tst             w2,  #0x0f
+        tst             w2,  #0x03
         b.eq            2f
         // wd16
         bl              lpf_\dir\()_16_8_neon
         b               8f
 2:
 .endif
-        tst             w7,  #0x0f
+        tst             w7,  #0x03
         b.eq            3f
 .ifc \type, y
         // wd8

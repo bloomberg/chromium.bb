@@ -19,11 +19,17 @@
 
 #include "aom/aomcx.h"
 #include "aom/aom_encoder.h"
+#include "config/aom_config.h"
 
 namespace {
 
 // Dummy buffer of zero samples.
 constexpr unsigned char kBuffer[256 * 512 + 2 * 128 * 256] = { 0 };
+#if CONFIG_REALTIME_ONLY
+const int kUsage = 1;
+#else
+const int kUsage = 0;
+#endif
 
 TEST(EncodeSmallWidthHeight, SmallWidthMultiThreaded) {
   // The image has only one tile and the tile is two AV1 superblocks wide.
@@ -37,7 +43,7 @@ TEST(EncodeSmallWidthHeight, SmallWidthMultiThreaded) {
 
   aom_codec_iface_t *iface = aom_codec_av1_cx();
   aom_codec_enc_cfg_t cfg;
-  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, 0));
+  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, kUsage));
   cfg.g_threads = 2;
   cfg.g_w = kWidth;
   cfg.g_h = kHeight;
@@ -49,6 +55,7 @@ TEST(EncodeSmallWidthHeight, SmallWidthMultiThreaded) {
   EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&enc));
 }
 
+#if !CONFIG_REALTIME_ONLY
 TEST(EncodeSmallWidthHeight, SmallWidthMultiThreadedSpeed0) {
   // The image has only one tile and the tile is two AV1 superblocks wide.
   // For speed 0, superblock size is 128x128 (see av1_select_sb_size()).
@@ -72,6 +79,7 @@ TEST(EncodeSmallWidthHeight, SmallWidthMultiThreadedSpeed0) {
   EXPECT_EQ(AOM_CODEC_OK, aom_codec_encode(&enc, NULL, 0, 0, 0));
   EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&enc));
 }
+#endif
 
 TEST(EncodeSmallWidthHeight, SmallHeightMultiThreaded) {
   // The image has only one tile and the tile is one AV1 superblock tall.
@@ -85,7 +93,7 @@ TEST(EncodeSmallWidthHeight, SmallHeightMultiThreaded) {
 
   aom_codec_iface_t *iface = aom_codec_av1_cx();
   aom_codec_enc_cfg_t cfg;
-  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, 0));
+  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, kUsage));
   cfg.g_threads = 2;
   cfg.g_w = kWidth;
   cfg.g_h = kHeight;
@@ -97,6 +105,7 @@ TEST(EncodeSmallWidthHeight, SmallHeightMultiThreaded) {
   EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&enc));
 }
 
+#if !CONFIG_REALTIME_ONLY
 TEST(EncodeSmallWidthHeight, SmallHeightMultiThreadedSpeed0) {
   // The image has only one tile and the tile is one AV1 superblock tall.
   // For speed 0, superblock size is 128x128 (see av1_select_sb_size()).
@@ -120,5 +129,5 @@ TEST(EncodeSmallWidthHeight, SmallHeightMultiThreadedSpeed0) {
   EXPECT_EQ(AOM_CODEC_OK, aom_codec_encode(&enc, NULL, 0, 0, 0));
   EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&enc));
 }
-
+#endif
 }  // namespace

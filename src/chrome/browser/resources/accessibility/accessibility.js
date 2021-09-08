@@ -32,6 +32,12 @@ class BrowserProxy {
     ]);
   }
 
+  requestWidgetsTree(widgetId, requestType, allow, allowEmpty, deny) {
+    chrome.send(
+        'requestWidgetsTree',
+        [{widgetId, requestType, filters: {allow, allowEmpty, deny}}]);
+  }
+
   requestAccessibilityEvents(processId, routingId, start) {
     chrome.send('requestAccessibilityEvents', [{processId, routingId, start}]);
   }
@@ -53,6 +59,10 @@ const AXMode = {
   kHTML: 1 << 4,
   kLabelImages: 1 << 5,
   kPDF: 1 << 6,
+
+  get kAXModeBasic() {
+    return AXMode.kNativeAPIs | AXMode.kWebContents;
+  },
 
   get kAXModeWebContentsOnly() {
     return AXMode.kWebContents | AXMode.kInlineTextBoxes |
@@ -81,6 +91,8 @@ function getIdFromData(data) {
     return data.processId + '.' + data.routingId;
   } else if (data.type == 'browser') {
     return 'browser.' + data.sessionId;
+  } else if (data.type == 'widget') {
+    return 'widget.' + data.widgetId;
   } else {
     console.error('Unknown data type.', data);
     return '';
@@ -119,6 +131,9 @@ function requestTree(data, element) {
       browserProxy.requestNativeUITree(
           data.sessionId, requestType, allow, allowEmpty, deny);
     }, delay);
+  } else if (data.type == 'widget') {
+    browserProxy.requestWidgetsTree(
+        data.widgetId, requestType, allow, allowEmpty, deny);
   } else {
     browserProxy.requestWebContentsTree(
         data.processId, data.routingId, requestType, allow, allowEmpty, deny);
@@ -179,6 +194,25 @@ function initialize() {
     addToBrowsersList(browsers[i]);
   }
 
+  if (data['viewsAccessibility']) {
+    const widgets = data['widgets'];
+
+    if (widgets.length === 0) {
+      // There should always be at least 1 Widget displayed (for the current
+      // window). If this is not the case, and Views Accessibility is enabled,
+      // the only possibility is that Views Accessibility is not enabled for
+      // the current platform. Display a message to the user to indicate this.
+      $('widgets-not-supported').style.display = 'block';
+    } else {
+      for (let i = 0; i < widgets.length; i++) {
+        addToWidgetsList(widgets[i]);
+      }
+    }
+  } else {
+    $('widgets').style.display = 'none';
+    $('widgets-header').style.display = 'none';
+  }
+
   // Cache filters so they're easily accessible on page refresh.
   const allow = window.localStorage['chrome-accessibility-filter-allow'];
   const allowEmpty =
@@ -231,6 +265,17 @@ function addToBrowsersList(data) {
 
   const browsers = $('browsers');
   browsers.appendChild(row);
+}
+
+function addToWidgetsList(data) {
+  const id = getIdFromData(data);
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.id = id;
+  formatRow(row, data, null);
+
+  const widgets = $('widgets');
+  widgets.appendChild(row);
 }
 
 function formatRow(row, data, requestType) {

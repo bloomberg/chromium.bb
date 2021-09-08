@@ -30,7 +30,7 @@ import (
 const (
 	g3CanaryBucketName = "g3-compile-tasks"
 
-	InfraFailureErrorMsg    = "Your run failed due to unknown infrastructure failures. Ask the trooper to investigate (or directly ping rmistry@)."
+	InfraFailureErrorMsg    = "Your run failed due to unknown infrastructure failures. Ask the Infra Gardener to investigate (or directly ping rmistry@)."
 	MissingApprovalErrorMsg = "To run the G3 tryjob, changes must be either owned and authored by Googlers or approved (Code-Review+1) by Googlers."
 	MergeConflictErrorMsg   = "G3 tryjob failed because the change is causing a merge conflict when applying it to the Skia hash in G3."
 
@@ -159,7 +159,7 @@ func waitForCanaryRoll(parentCtx context.Context, taskFileName, taskStoragePath 
 	defer td.EndStep(ctx)
 
 	// For writing to the step's log stream.
-	stdout := td.NewLogStream(ctx, "stdout", td.Info)
+	stdout := td.NewLogStream(ctx, "stdout", td.SeverityInfo)
 	// Lets add the roll link only once to step data.
 	addedRollLinkStepData := false
 	for {

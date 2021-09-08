@@ -3,10 +3,49 @@
 // found in the LICENSE file.
 
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-import {LocalDestinationInfo, PrivetPrinterDescription, ProvisionalDestinationInfo} from '../native_layer.js';
+import {isChromeOS, isLacros} from 'chrome://resources/js/cr.m.js';
+
 import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationProvisionalType, DestinationType} from './destination.js';
 import {PrinterType} from './destination_match.js';
+// <if expr="chromeos or lacros">
+import {DestinationPolicies} from './destination_policies.js';
+// </if>
+
+/**
+ * @typedef {{
+ *   deviceName: string,
+ *   printerName: string,
+ *   printerDescription: (string | undefined),
+ *   cupsEnterprisePrinter: (boolean | undefined),
+ *   printerOptions: (Object | undefined),
+ *   policies: (DestinationPolicies | undefined),
+ * }}
+ */
+export let LocalDestinationInfo;
+
+/**
+ * @typedef {{
+ *   serviceName: string,
+ *   name: string,
+ *   hasLocalPrinting: boolean,
+ *   isUnregistered: boolean,
+ *   cloudID: string,
+ * }}
+ * @see PrintPreviewHandler::FillPrinterDescription in
+ * print_preview_handler.cc
+ */
+export let PrivetPrinterDescription;
+
+/**
+ * @typedef {{
+ *   extensionId: string,
+ *   extensionName: string,
+ *   id: string,
+ *   name: string,
+ *   description: (string|undefined),
+ * }}
+ */
+export let ProvisionalDestinationInfo;
 
 /**
  * @param{!PrinterType} type The type of printer to parse.
@@ -58,7 +97,8 @@ function parseLocalDestination(destinationInfo) {
   }
   return new Destination(
       destinationInfo.deviceName, DestinationType.LOCAL,
-      isChromeOS ? DestinationOrigin.CROS : DestinationOrigin.LOCAL,
+      (isChromeOS || isLacros) ? DestinationOrigin.CROS :
+                                 DestinationOrigin.LOCAL,
       destinationInfo.printerName, DestinationConnectionStatus.ONLINE, options);
 }
 

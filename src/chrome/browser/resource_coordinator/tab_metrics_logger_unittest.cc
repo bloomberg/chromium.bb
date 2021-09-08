@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features_test_helper.h"
@@ -25,6 +24,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
@@ -188,7 +188,7 @@ TEST_F(TabMetricsLoggerTest, GetNavigationEntryCount) {
 // Tests site_engagement_score.
 TEST_F(TabMetricsLoggerTest, GetSiteEngagementScore) {
   EXPECT_EQ(CurrentTabFeatures().site_engagement_score, 0);
-  SiteEngagementService::Get(profile())->ResetBaseScoreForURL(
+  site_engagement::SiteEngagementService::Get(profile())->ResetBaseScoreForURL(
       GURL(kChromiumUrl), 91);
   EXPECT_EQ(CurrentTabFeatures().site_engagement_score, 90);
 }
@@ -255,7 +255,7 @@ TEST_F(TabMetricsLoggerTest, GetTabFeatures) {
   tab_activity_simulator.Navigate(bg_contents, GURL(kChromiumUrl),
                                   page_transition);
   tab_strip_model->SetTabPinned(1, true);
-  SiteEngagementService::Get(profile())->ResetBaseScoreForURL(
+  site_engagement::SiteEngagementService::Get(profile())->ResetBaseScoreForURL(
       GURL(kChromiumUrl), 91);
 
   {

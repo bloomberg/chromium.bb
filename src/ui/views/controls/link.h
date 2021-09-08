@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/controls/label.h"
@@ -35,7 +35,7 @@ class VIEWS_EXPORT Link : public Label {
   // accepted; see below.
   using ClickedCallback = base::RepeatingCallback<void(const ui::Event& event)>;
 
-  explicit Link(const base::string16& title = base::string16(),
+  explicit Link(const std::u16string& title = std::u16string(),
                 int text_context = style::CONTEXT_LABEL,
                 int text_style = style::STYLE_LINK);
   ~Link() override;
@@ -74,7 +74,7 @@ class VIEWS_EXPORT Link : public Label {
   void OnFocus() override;
   void OnBlur() override;
   void SetFontList(const gfx::FontList& font_list) override;
-  void SetText(const base::string16& text) override;
+  void SetText(const std::u16string& text) override;
   void OnThemeChanged() override;
   void SetEnabledColor(SkColor color) override;
   bool IsSelectionSupported() const override;
@@ -94,9 +94,9 @@ class VIEWS_EXPORT Link : public Label {
   bool pressed_ = false;
 
   // The color when the link is neither pressed nor disabled.
-  base::Optional<SkColor> requested_enabled_color_;
+  absl::optional<SkColor> requested_enabled_color_;
 
-  PropertyChangedSubscription enabled_changed_subscription_;
+  base::CallbackListSubscription enabled_changed_subscription_;
 
   // Whether the link text should use underline style regardless of enabled or
   // focused state.

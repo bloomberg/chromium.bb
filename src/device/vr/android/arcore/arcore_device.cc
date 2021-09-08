@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/numerics/math_constants.h"
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "device/vr/android/arcore/ar_image_transport.h"
@@ -17,6 +17,8 @@
 #include "device/vr/android/arcore/arcore_impl.h"
 #include "device/vr/android/arcore/arcore_session_utils.h"
 #include "device/vr/android/mailbox_to_surface_bridge.h"
+#include "device/vr/public/cpp/xr_frame_sink_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display.h"
 
 using base::android::JavaRef;
@@ -30,11 +32,10 @@ namespace device {
 namespace {
 
 mojom::VRDisplayInfoPtr CreateVRDisplayInfo(const gfx::Size& frame_size) {
-  mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
-  device->left_eye = mojom::VREyeParameters::New();
-  device->right_eye = nullptr;
-  mojom::VREyeParametersPtr& left_eye = device->left_eye;
-  left_eye->field_of_view = mojom::VRFieldOfView::New();
+  mojom::XRViewPtr view = mojom::XRView::New();
+  // ARCore is monoscopic and does not have an associated eye.
+  view->eye = mojom::XREye::kNone;
+  view->field_of_view = mojom::VRFieldOfView::New();
   // TODO(lincolnfrog): get these values for real (see gvr device).
   double fov_x = 1437.387;
   double fov_y = 1438.074;
@@ -43,12 +44,15 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(const gfx::Size& frame_size) {
   int height = frame_size.height();
   float horizontal_degrees = atan(width / (2.0 * fov_x)) * kDegreesPerRadian;
   float vertical_degrees = atan(height / (2.0 * fov_y)) * kDegreesPerRadian;
-  left_eye->field_of_view->left_degrees = horizontal_degrees;
-  left_eye->field_of_view->right_degrees = horizontal_degrees;
-  left_eye->field_of_view->up_degrees = vertical_degrees;
-  left_eye->field_of_view->down_degrees = vertical_degrees;
-  left_eye->render_width = width;
-  left_eye->render_height = height;
+  view->field_of_view->left_degrees = horizontal_degrees;
+  view->field_of_view->right_degrees = horizontal_degrees;
+  view->field_of_view->up_degrees = vertical_degrees;
+  view->field_of_view->down_degrees = vertical_degrees;
+  view->viewport = gfx::Size(width, height);
+
+  mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
+  device->views.emplace_back(std::move(view));
+
   return device;
 }
 
@@ -62,13 +66,15 @@ ArCoreDevice::ArCoreDevice(
     std::unique_ptr<ArImageTransportFactory> ar_image_transport_factory,
     std::unique_ptr<MailboxToSurfaceBridgeFactory>
         mailbox_to_surface_bridge_factory,
-    std::unique_ptr<vr::ArCoreSessionUtils> arcore_session_utils)
+    std::unique_ptr<ArCoreSessionUtils> arcore_session_utils,
+    XrFrameSinkClientFactory xr_frame_sink_client_factory)
     : VRDeviceBase(mojom::XRDeviceId::ARCORE_DEVICE_ID),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       arcore_factory_(std::move(arcore_factory)),
       ar_image_transport_factory_(std::move(ar_image_transport_factory)),
       mailbox_bridge_factory_(std::move(mailbox_to_surface_bridge_factory)),
       arcore_session_utils_(std::move(arcore_session_utils)),
+      xr_frame_sink_client_factory_(std::move(xr_frame_sink_client_factory)),
       mailbox_bridge_(mailbox_bridge_factory_->Create()),
       session_state_(std::make_unique<ArCoreDevice::SessionState>()) {
   // Ensure display_info_ is set to avoid crash in CallDeferredSessionCallback
@@ -83,7 +89,7 @@ ArCoreDevice::ArCoreDevice(
 
 ArCoreDevice::~ArCoreDevice() {
   // If there's still a pending session request, reject it.
-  CallDeferredRequestSessionCallback(base::nullopt);
+  CallDeferredRequestSessionCallback(absl::nullopt);
 
   // Ensure that any active sessions are terminated. Terminating the GL thread
   // would normally do so via its session_shutdown_callback_, but that happens
@@ -110,7 +116,7 @@ void ArCoreDevice::RequestSession(
 
   if (HasExclusiveSession()) {
     DVLOG(1) << __func__ << ": Rejecting additional session request";
-    std::move(callback).Run(nullptr, mojo::NullRemote());
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -124,15 +130,23 @@ void ArCoreDevice::RequestSession(
   session_state_->optional_features_.insert(options->optional_features.begin(),
                                             options->optional_features.end());
 
-  bool use_dom_overlay =
+  const bool use_dom_overlay =
       base::Contains(options->required_features,
                      device::mojom::XRSessionFeature::DOM_OVERLAY) ||
       base::Contains(options->optional_features,
                      device::mojom::XRSessionFeature::DOM_OVERLAY);
 
+  session_state_->depth_options_ = std::move(options->depth_options);
+
   // mailbox_bridge_ is either supplied from the constructor, or recreated in
   // OnSessionEnded().
   DCHECK(mailbox_bridge_);
+
+  // We create the FrameSinkClient here and clear it in OnSessionEnded.
+  DCHECK(!frame_sink_client_);
+  frame_sink_client_ = xr_frame_sink_client_factory_.Run(
+      options->render_process_id, options->render_frame_id);
+  DCHECK(frame_sink_client_);
 
   for (auto& image : options->tracked_images) {
     DVLOG(3) << __func__ << ": tracked image size_in_pixels="
@@ -159,13 +173,18 @@ void ArCoreDevice::OnGlThreadReady(int render_process_id,
   auto destroyed_callback =
       base::BindOnce(&ArCoreDevice::OnDrawingSurfaceDestroyed, GetWeakPtr());
 
+  bool can_render_dom_content =
+      session_state_->arcore_gl_thread_->GetArCoreGl()->CanRenderDOMContent();
+
   arcore_session_utils_->RequestArSession(
-      render_process_id, render_frame_id, use_overlay,
+      render_process_id, render_frame_id, use_overlay, can_render_dom_content,
       std::move(ready_callback), std::move(touch_callback),
       std::move(destroyed_callback));
 }
 
 void ArCoreDevice::OnDrawingSurfaceReady(gfx::AcceleratedWidget window,
+                                         gpu::SurfaceHandle surface_handle,
+                                         ui::WindowAndroid* root_window,
                                          display::Display::Rotation rotation,
                                          const gfx::Size& frame_size) {
   DVLOG(1) << __func__ << ": size=" << frame_size.width() << "x"
@@ -175,7 +194,8 @@ void ArCoreDevice::OnDrawingSurfaceReady(gfx::AcceleratedWidget window,
   auto display_info = CreateVRDisplayInfo(frame_size);
   SetVRDisplayInfo(std::move(display_info));
 
-  RequestArCoreGlInitialization(window, rotation, frame_size);
+  RequestArCoreGlInitialization(window, surface_handle, root_window, rotation,
+                                frame_size);
 }
 
 void ArCoreDevice::OnDrawingSurfaceTouch(bool is_primary,
@@ -198,7 +218,7 @@ void ArCoreDevice::OnDrawingSurfaceTouch(bool is_primary,
 void ArCoreDevice::OnDrawingSurfaceDestroyed() {
   DVLOG(1) << __func__;
 
-  CallDeferredRequestSessionCallback(base::nullopt);
+  CallDeferredRequestSessionCallback(absl::nullopt);
 
   OnSessionEnded();
 }
@@ -230,8 +250,20 @@ void ArCoreDevice::OnSessionEnded() {
   // of this class between construction and RequestSession, perform all the
   // initialization at once on the first successful RequestSession call.
 
+  // If we have a frame sink client, notify it that it's surface has been
+  // destroyed. While this is required in the case of the surface actually being
+  // destroyed, it's a good idea to do it before we actually end the session.
+  // Note that this may trigger the bindings on the session to disconnect.
+  if (frame_sink_client_)
+    frame_sink_client_->SurfaceDestroyed();
+
   // Reset per-session members to initial values.
   session_state_ = std::make_unique<ArCoreDevice::SessionState>();
+
+  // The frame sink client is re-requested when we start a new session, but once
+  // a session has ended it should be destroyed. However, it needs to outlive
+  // the gl thread.
+  frame_sink_client_.reset();
 
   // The image transport factory should be reusable, but we've std::moved it
   // to the GL thread. Make a new one for next time. (This is cheap, it's
@@ -247,9 +279,8 @@ void ArCoreDevice::OnSessionEnded() {
 }
 
 void ArCoreDevice::CallDeferredRequestSessionCallback(
-    base::Optional<std::unordered_set<device::mojom::XRSessionFeature>>
-        enabled_features) {
-  DVLOG(1) << __func__ << " success=" << enabled_features.has_value();
+    absl::optional<ArCoreGlInitializeResult> initialize_result) {
+  DVLOG(1) << __func__ << " success=" << initialize_result.has_value();
   DCHECK(IsOnMainThread());
 
   // We might not have any pending session requests, i.e. if destroyed
@@ -260,15 +291,15 @@ void ArCoreDevice::CallDeferredRequestSessionCallback(
   mojom::XRRuntime::RequestSessionCallback deferred_callback =
       std::move(session_state_->pending_request_session_callback_);
 
-  if (!enabled_features) {
-    std::move(deferred_callback).Run(nullptr, mojo::NullRemote());
+  if (!initialize_result) {
+    std::move(deferred_callback).Run(nullptr);
     return;
   }
 
   // Success case should only happen after GL thread is ready.
-  auto create_callback =
-      base::BindOnce(&ArCoreDevice::OnCreateSessionCallback, GetWeakPtr(),
-                     std::move(deferred_callback), *enabled_features);
+  auto create_callback = base::BindOnce(
+      &ArCoreDevice::OnCreateSessionCallback, GetWeakPtr(),
+      std::move(deferred_callback), std::move(*initialize_result));
 
   auto shutdown_callback =
       base::BindOnce(&ArCoreDevice::OnSessionEnded, GetWeakPtr());
@@ -283,32 +314,43 @@ void ArCoreDevice::CallDeferredRequestSessionCallback(
 
 void ArCoreDevice::OnCreateSessionCallback(
     mojom::XRRuntime::RequestSessionCallback deferred_callback,
-    const std::unordered_set<device::mojom::XRSessionFeature>& enabled_features,
-    mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
-    mojom::VRDisplayInfoPtr display_info,
-    mojo::PendingRemote<mojom::XRSessionController> session_controller,
-    mojom::XRPresentationConnectionPtr presentation_connection) {
+    ArCoreGlInitializeResult initialize_result,
+    ArCoreGlCreateSessionResult create_session_result) {
   DVLOG(2) << __func__;
   DCHECK(IsOnMainThread());
 
-  mojom::XRSessionPtr session = mojom::XRSession::New();
-  session->data_provider = std::move(frame_data_provider);
-  session->display_info = std::move(display_info);
-  session->submit_frame_sink = std::move(presentation_connection);
-  session->enabled_features.assign(enabled_features.begin(),
-                                   enabled_features.end());
+  auto session_result = mojom::XRRuntimeSessionResult::New();
+  session_result->controller =
+      std::move(create_session_result.session_controller);
+
+  if (initialize_result.frame_sink_id.is_valid()) {
+    session_result->frame_sink_id = initialize_result.frame_sink_id;
+  }
+
+  session_result->session = mojom::XRSession::New();
+  auto* session = session_result->session.get();
+
+  session->data_provider = std::move(create_session_result.frame_data_provider);
+  session->display_info = std::move(create_session_result.display_info);
+  session->submit_frame_sink =
+      std::move(create_session_result.presentation_connection);
+  session->enabled_features.assign(initialize_result.enabled_features.begin(),
+                                   initialize_result.enabled_features.end());
   session->device_config = device::mojom::XRSessionDeviceConfig::New();
   auto* config = session->device_config.get();
 
   config->supports_viewport_scaling = true;
+  config->depth_configuration =
+      initialize_result.depth_configuration
+          ? initialize_result.depth_configuration->Clone()
+          : nullptr;
 
   // ARCORE only supports immersive-ar sessions
   session->enviroment_blend_mode =
       device::mojom::XREnvironmentBlendMode::kAlphaBlend;
   session->interaction_mode = device::mojom::XRInteractionMode::kScreenSpace;
 
-  std::move(deferred_callback)
-      .Run(std::move(session), std::move(session_controller));
+  std::move(deferred_callback).Run(std::move(session_result));
 }
 
 void ArCoreDevice::PostTaskToGlThread(base::OnceClosure task) {
@@ -324,6 +366,8 @@ bool ArCoreDevice::IsOnMainThread() {
 
 void ArCoreDevice::RequestArCoreGlInitialization(
     gfx::AcceleratedWidget drawing_widget,
+    gpu::SurfaceHandle surface_handle,
+    ui::WindowAndroid* root_window,
     int drawing_rotation,
     const gfx::Size& frame_size) {
   DVLOG(1) << __func__;
@@ -331,7 +375,7 @@ void ArCoreDevice::RequestArCoreGlInitialization(
 
   if (!arcore_session_utils_->EnsureLoaded()) {
     DLOG(ERROR) << "ARCore was not loaded properly.";
-    OnArCoreGlInitializationComplete(base::nullopt);
+    OnArCoreGlInitializationComplete(absl::nullopt);
     return;
   }
 
@@ -344,31 +388,48 @@ void ArCoreDevice::RequestArCoreGlInitialization(
     PostTaskToGlThread(base::BindOnce(
         &ArCoreGl::Initialize,
         session_state_->arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(),
-        arcore_session_utils_.get(), arcore_factory_.get(), drawing_widget,
+        arcore_session_utils_.get(), arcore_factory_.get(),
+        frame_sink_client_.get(), drawing_widget, surface_handle, root_window,
         frame_size, rotation, session_state_->required_features_,
         session_state_->optional_features_,
         std::move(session_state_->tracked_images_),
+        std::move(session_state_->depth_options_),
         CreateMainThreadCallback(base::BindOnce(
             &ArCoreDevice::OnArCoreGlInitializationComplete, GetWeakPtr()))));
     return;
   }
 
-  OnArCoreGlInitializationComplete(session_state_->enabled_features_);
+  // Since the GL is already initialized, we already have session_state_ that we
+  // can pass along.
+  OnArCoreGlInitializationComplete(ArCoreGlInitializeResult(
+      session_state_->enabled_features_, session_state_->depth_configuration_,
+      session_state_->frame_sink_id_));
 }
 
 void ArCoreDevice::OnArCoreGlInitializationComplete(
-    base::Optional<std::unordered_set<device::mojom::XRSessionFeature>>
-        enabled_features) {
-  DVLOG(1) << __func__;
+    absl::optional<ArCoreGlInitializeResult> arcore_initialization_result) {
+  DVLOG(1) << __func__ << ": arcore_initialization_result.has_value()="
+           << arcore_initialization_result.has_value();
   DCHECK(IsOnMainThread());
 
-  session_state_->is_arcore_gl_initialized_ = enabled_features.has_value();
-  session_state_->enabled_features_ = enabled_features.value_or(
-      std::unordered_set<device::mojom::XRSessionFeature>{});
+  session_state_->is_arcore_gl_initialized_ =
+      arcore_initialization_result.has_value();
+
+  if (arcore_initialization_result) {
+    session_state_->enabled_features_ =
+        arcore_initialization_result->enabled_features;
+    session_state_->depth_configuration_ =
+        arcore_initialization_result->depth_configuration;
+    session_state_->frame_sink_id_ =
+        arcore_initialization_result->frame_sink_id;
+  } else {
+    session_state_->enabled_features_ = {};
+    session_state_->depth_configuration_ = absl::nullopt;
+  }
 
   // We only start GL initialization after the user has granted consent, so we
   // can now start the session.
-  CallDeferredRequestSessionCallback(enabled_features);
+  CallDeferredRequestSessionCallback(std::move(arcore_initialization_result));
 }
 
 }  // namespace device

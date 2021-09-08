@@ -674,7 +674,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
     connectable_extension =
         ExtensionBuilder()
             .SetManifest(manifest.Build())
-            .SetLocation(Manifest::INTERNAL)
+            .SetLocation(mojom::ManifestLocation::kInternal)
             .SetID(crx_file::id_util::GenerateId("connectable"))
             .Build();
   }
@@ -863,8 +863,8 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
   {
     // Add back the `idle` permission, and also add `power`.
     APIPermissionSet apis;
-    apis.insert(APIPermission::kPower);
-    apis.insert(APIPermission::kIdle);
+    apis.insert(mojom::APIPermissionID::kPower);
+    apis.insert(mojom::APIPermissionID::kIdle);
     extension->permissions_data()->SetPermissions(
         std::make_unique<PermissionSet>(std::move(apis),
                                         ManifestPermissionSet(),
@@ -1173,8 +1173,8 @@ TEST_P(ResponseValidationNativeExtensionBindingsSystemUnittest,
                             ->request_handler()
                             ->has_response_validator_for_testing());
 
-  base::Optional<std::string> validation_failure_method_name;
-  base::Optional<std::string> validation_failure_error;
+  absl::optional<std::string> validation_failure_method_name;
+  absl::optional<std::string> validation_failure_error;
 
   auto on_validation_failure =
       [&validation_failure_method_name, &validation_failure_error](

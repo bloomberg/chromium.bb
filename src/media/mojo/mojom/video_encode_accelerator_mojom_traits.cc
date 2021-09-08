@@ -5,10 +5,10 @@
 #include "media/mojo/mojom/video_encode_accelerator_mojom_traits.h"
 
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace mojo {
 
@@ -167,8 +167,9 @@ EnumTraits<media::mojom::VideoEncodeAcceleratorConfig_StorageType,
            media::VideoEncodeAccelerator::Config::StorageType>::
     ToMojom(media::VideoEncodeAccelerator::Config::StorageType input) {
   switch (input) {
-    case media::VideoEncodeAccelerator::Config::StorageType::kDmabuf:
-      return media::mojom::VideoEncodeAcceleratorConfig_StorageType::kDmabuf;
+    case media::VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer:
+      return media::mojom::VideoEncodeAcceleratorConfig_StorageType::
+          kGpuMemoryBuffer;
     case media::VideoEncodeAccelerator::Config::StorageType::kShmem:
       return media::mojom::VideoEncodeAcceleratorConfig_StorageType::kShmem;
   }
@@ -185,8 +186,10 @@ bool EnumTraits<media::mojom::VideoEncodeAcceleratorConfig_StorageType,
     case media::mojom::VideoEncodeAcceleratorConfig_StorageType::kShmem:
       *output = media::VideoEncodeAccelerator::Config::StorageType::kShmem;
       return true;
-    case media::mojom::VideoEncodeAcceleratorConfig_StorageType::kDmabuf:
-      *output = media::VideoEncodeAccelerator::Config::StorageType::kDmabuf;
+    case media::mojom::VideoEncodeAcceleratorConfig_StorageType::
+        kGpuMemoryBuffer:
+      *output =
+          media::VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer;
       return true;
   }
   NOTREACHED();
@@ -255,21 +258,21 @@ bool StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
   if (!input.ReadOutputProfile(&output_profile))
     return false;
 
-  base::Optional<uint32_t> initial_framerate;
+  absl::optional<uint32_t> initial_framerate;
   if (input.has_initial_framerate())
     initial_framerate = input.initial_framerate();
 
-  base::Optional<uint32_t> gop_length;
+  absl::optional<uint32_t> gop_length;
   if (input.has_gop_length())
     gop_length = input.gop_length();
 
-  base::Optional<uint8_t> h264_output_level;
+  absl::optional<uint8_t> h264_output_level;
   if (input.has_h264_output_level())
     h264_output_level = input.h264_output_level();
 
   bool is_constrained_h264 = input.is_constrained_h264();
 
-  base::Optional<media::VideoEncodeAccelerator::Config::StorageType>
+  absl::optional<media::VideoEncodeAccelerator::Config::StorageType>
       storage_type;
   if (input.has_storage_type()) {
     if (!input.ReadStorageType(&storage_type))
@@ -289,6 +292,8 @@ bool StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
       input_format, input_visible_size, output_profile, input.initial_bitrate(),
       initial_framerate, gop_length, h264_output_level, is_constrained_h264,
       storage_type, content_type, spatial_layers);
+
+  output->require_low_delay = input.require_low_delay();
   return true;
 }
 

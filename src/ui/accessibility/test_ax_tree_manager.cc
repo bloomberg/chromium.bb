@@ -14,7 +14,27 @@ TestAXTreeManager::TestAXTreeManager() = default;
 
 TestAXTreeManager::TestAXTreeManager(std::unique_ptr<AXTree> tree)
     : tree_(std::move(tree)) {
-  AXTreeManagerMap::GetInstance().AddTreeManager(GetTreeID(), this);
+  if (tree_)
+    AXTreeManagerMap::GetInstance().AddTreeManager(GetTreeID(), this);
+}
+
+TestAXTreeManager::TestAXTreeManager(TestAXTreeManager&& manager)
+    : tree_(std::move(manager.tree_)) {
+  if (tree_) {
+    AXTreeManagerMap::GetInstance().RemoveTreeManager(GetTreeID());
+    AXTreeManagerMap::GetInstance().AddTreeManager(GetTreeID(), this);
+  }
+}
+
+TestAXTreeManager& TestAXTreeManager::operator=(TestAXTreeManager&& manager) {
+  if (this == &manager)
+    return *this;
+  if (manager.tree_)
+    AXTreeManagerMap::GetInstance().RemoveTreeManager(manager.GetTreeID());
+  // std::move(nullptr) == nullptr, so no need to check if `manager.tree_` is
+  // assigned.
+  SetTree(std::move(manager.tree_));
+  return *this;
 }
 
 TestAXTreeManager::~TestAXTreeManager() {
@@ -40,16 +60,17 @@ void TestAXTreeManager::SetTree(std::unique_ptr<AXTree> tree) {
     AXTreeManagerMap::GetInstance().RemoveTreeManager(GetTreeID());
 
   tree_ = std::move(tree);
-  AXTreeManagerMap::GetInstance().AddTreeManager(GetTreeID(), this);
+  if (tree_)
+    AXTreeManagerMap::GetInstance().AddTreeManager(GetTreeID(), this);
 }
 
 AXNode* TestAXTreeManager::GetNodeFromTree(const AXTreeID tree_id,
-                                           const AXNode::AXID node_id) const {
+                                           const AXNodeID node_id) const {
   return (tree_ && GetTreeID() == tree_id) ? tree_->GetFromId(node_id)
                                            : nullptr;
 }
 
-AXNode* TestAXTreeManager::GetNodeFromTree(const AXNode::AXID node_id) const {
+AXNode* TestAXTreeManager::GetNodeFromTree(const AXNodeID node_id) const {
   return tree_ ? tree_->GetFromId(node_id) : nullptr;
 }
 
@@ -76,17 +97,17 @@ AXNode* TestAXTreeManager::GetRootAsAXNode() const {
 }
 
 AXNode* TestAXTreeManager::GetParentNodeFromParentTreeAsAXNode() const {
-  ui::AXTreeID parent_tree_id = GetParentTreeID();
+  AXTreeID parent_tree_id = GetParentTreeID();
   TestAXTreeManager* parent_manager = static_cast<TestAXTreeManager*>(
-      ui::AXTreeManagerMap::GetInstance().GetManager(parent_tree_id));
+      AXTreeManagerMap::GetInstance().GetManager(parent_tree_id));
   if (!parent_manager)
     return nullptr;
 
-  std::set<int32_t> host_node_ids =
+  std::set<AXNodeID> host_node_ids =
       parent_manager->GetTree()->GetNodeIdsForChildTreeId(GetTreeID());
 
-  for (int32_t host_node_id : host_node_ids) {
-    ui::AXNode* parent_node =
+  for (AXNodeID host_node_id : host_node_ids) {
+    AXNode* parent_node =
         parent_manager->GetNodeFromTree(parent_tree_id, host_node_id);
     if (parent_node)
       return parent_node;

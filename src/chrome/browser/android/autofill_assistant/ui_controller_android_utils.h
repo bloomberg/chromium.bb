@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "base/android/jni_android.h"
-#include "base/optional.h"
 #include "components/autofill_assistant/browser/bottom_sheet_state.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/view_layout.pb.h"
+#include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace autofill_assistant {
@@ -36,7 +38,7 @@ base::android::ScopedJavaLocalRef<jobject> GetJavaColor(
 
 // Returns the pixelsize of |proto| in |jcontext|, or |nullopt| if |proto| is
 // invalid.
-base::Optional<int> GetPixelSize(
+absl::optional<int> GetPixelSize(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jobject>& jcontext,
     const ClientDimensionProto& proto);
@@ -79,7 +81,7 @@ void ShowJavaInfoPopup(JNIEnv* env,
 // Converts a java string to native. Returns an empty string if input is null.
 std::string SafeConvertJavaStringToNative(
     JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& jstring);
+    const base::android::JavaRef<jstring>& jstring);
 
 // Creates a BottomSheetState from the Android SheetState enum defined in
 // components/browser_ui/bottomsheet/BottomSheetController.java.
@@ -99,6 +101,27 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaAssistantChip(
 base::android::ScopedJavaLocalRef<jobject> CreateJavaAssistantChipList(
     JNIEnv* env,
     const std::vector<ChipProto>& chips);
+
+// Creates a std::map from an incoming set of Java string keys and values.
+std::map<std::string, std::string> CreateStringMapFromJava(
+    JNIEnv* env,
+    const base::android::JavaRef<jobjectArray>& keys,
+    const base::android::JavaRef<jobjectArray>& values);
+
+// Creates a C++ trigger context for the specified java inputs.
+std::unique_ptr<TriggerContext> CreateTriggerContext(
+    JNIEnv* env,
+    content::WebContents* web_contents,
+    const base::android::JavaRef<jstring>& jexperiment_ids,
+    const base::android::JavaRef<jobjectArray>& jparameter_names,
+    const base::android::JavaRef<jobjectArray>& jparameter_values,
+    jboolean onboarding_shown,
+    jboolean is_direct_action,
+    const base::android::JavaRef<jstring>& jinitial_url);
+
+// Returns true if |web_contents| is owned by a custom tab. Assumes that
+// |web_contents| is valid and currently owned by a tab.
+bool IsCustomTab(content::WebContents* web_contents);
 
 }  // namespace ui_controller_android_utils
 }  //  namespace autofill_assistant

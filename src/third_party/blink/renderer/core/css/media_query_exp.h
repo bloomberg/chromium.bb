@@ -106,6 +106,10 @@ class CORE_EXPORT MediaQueryExp {
 
   bool IsDeviceDependent() const;
 
+  bool IsWidthDependent() const;
+
+  bool IsHeightDependent() const;
+
   String Serialize() const;
 
  private:
@@ -117,4 +121,4 @@ class CORE_EXPORT MediaQueryExp {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_EXP_H_

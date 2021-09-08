@@ -107,13 +107,13 @@ class MockMediaRouter : public MediaRouterBase {
   MOCK_METHOD0(OnUserGesture, void());
   MOCK_METHOD1(OnPresentationSessionDetached,
                void(const MediaRoute::Id& route_id));
-  std::unique_ptr<PresentationConnectionStateSubscription>
-  AddPresentationConnectionStateChangedCallback(
+  base::CallbackListSubscription AddPresentationConnectionStateChangedCallback(
       const MediaRoute::Id& route_id,
       const content::PresentationConnectionStateChangedCallback& callback)
       override {
     OnAddPresentationConnectionStateChangedCallbackInvoked(callback);
-    return connection_state_callbacks_.Add(callback);
+    return MediaRouterBase::AddPresentationConnectionStateChangedCallback(
+        route_id, callback);
   }
   MOCK_CONST_METHOD0(GetCurrentRoutes, std::vector<MediaRoute>());
 
@@ -140,11 +140,6 @@ class MockMediaRouter : public MediaRouterBase {
   MOCK_METHOD1(UnregisterRouteMessageObserver,
                void(RouteMessageObserver* observer));
   MOCK_METHOD0(GetMediaSinkServiceStatus, std::string());
-
- private:
-  base::CallbackList<void(
-      const content::PresentationConnectionStateChangeInfo&)>
-      connection_state_callbacks_;
 };
 
 }  // namespace media_router

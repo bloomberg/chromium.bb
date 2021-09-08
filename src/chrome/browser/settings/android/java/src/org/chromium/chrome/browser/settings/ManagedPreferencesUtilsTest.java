@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.not;
 import android.content.Context;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.ActivityTestRule;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -27,24 +26,24 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.browser_ui.settings.R;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests of {@link ManagedPreferencesUtils}.
  *
- * TODO(chouinard): Once SettingsLauncher and SettingsActivity have
- * compontentized interfaces, these test should be moved to
- * //components/browser_ui/settings/.
+ * TODO(crbug.com/1166810): Move these tests to //components/browser_ui/settings/.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class ManagedPreferencesUtilsTest {
     @Rule
-    public ActivityTestRule<SettingsActivity> mRule =
-            new ActivityTestRule<>(SettingsActivity.class);
+    public BaseActivityTestRule<SettingsActivity> mRule =
+            new BaseActivityTestRule<>(SettingsActivity.class);
 
     private Context mContext;
 

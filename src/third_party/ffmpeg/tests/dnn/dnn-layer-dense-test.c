@@ -59,7 +59,7 @@ static int test(void)
     print(list(output.flatten()))
     */
 
-    ConvolutionalParams params;
+    DenseParams params;
     DnnOperand operands[2];
     int32_t input_indexes[1];
     float input[1*5*6*3] = {
@@ -107,7 +107,7 @@ static int test(void)
     operands[1].data = NULL;
 
     input_indexes[0] = 0;
-    dnn_execute_layer_dense(operands, input_indexes, 1, &params, NULL);
+    ff_dnn_execute_layer_dense(operands, input_indexes, 1, &params, NULL);
 
     output = operands[1].data;
     for (int i = 0; i < sizeof(expected_output) / sizeof(float); i++) {

@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">baner</translation>
 <translation id="145015347812617860">Elementy: <ph name="COUNT" /></translation>
 <translation id="1480676835519562650">wielokrotny wybór, wybrano <ph name="SELECTED" /> z <ph name="COUNT" />.</translation>
+<translation id="1588438908519853928">Normalny</translation>
 <translation id="1589122976691792535">region</translation>
 <translation id="1591562245178063882">W tym miesiącu</translation>
 <translation id="1637811476055996098">Wybierz pliki</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">licznik czasu</translation>
 <translation id="3199563858620722075">pole złożone</translation>
 <translation id="3220661731597678625">bieżący krok</translation>
+<translation id="3321030238473337787">Szybkość odtwarzania</translation>
 <translation id="3329013043687509092">Nasycenie</translation>
 <translation id="3450233048674729344">Wartość nie może być większa niż <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definicja</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">pasek menu</translation>
 <translation id="4293574643247337246">nagłówek strony</translation>
 <translation id="4360991593054037559">Podaj prawidłową wartość. Dwie najbliższe prawidłowe wartości to <ph name="VALID_VALUE_LOW" /> i <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4371899966896349864">ukryj menu szybkości odtwarzania</translation>
 <translation id="4384249794467006333">Ten obraz nie ma etykiety. Aby pobrać opisy obrazów, otwórz menu Więcej opcji w prawym górnym rogu.</translation>
 <translation id="4384583879834880242">Pytania i odpowiedzi</translation>
 <translation id="4444765639179266822">Wygląda jak napis: <ph name="OCR_TEXT" /></translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">nagłówek wiersza</translation>
 <translation id="5143125788380636750">epilog</translation>
 <translation id="5164977714490026579">Wartość nie może być mniejsza niż <ph name="MINIMUM" />.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Podaj część przed znakiem „<ph name="ATSIGN" />”. Adres „<ph name="INVALIDADDRESS" />” jest niepełny.</translation>
 <translation id="5334352251556557839">Nie można odtworzyć multimediów.</translation>
 <translation id="537648784377940524">Data minimalna (<ph name="MIN_DATE_OR_TIME" />) musi przypadać przed datą maksymalną (<ph name="MAX_DATE_OR_TIME" />).</translation>
+<translation id="5378437566635403538">rozwinięto, otwarto okno.</translation>
 <translation id="5406322316791861025">figura</translation>
 <translation id="5425179576310518467">bieżąca data</translation>
 <translation id="5453733299334684579">element drzewa</translation>
 <translation id="5466621249238537318">Wybierz jeden lub kilka plików.</translation>
 <translation id="5468998798572797635">zamknij pełny ekran</translation>
+<translation id="5516235301412634559">0,75</translation>
 <translation id="5516424706154626233">selektor daty</translation>
 <translation id="5537725057119320332">Przesyłaj</translation>
 <translation id="5546461542133609677">wyłącz wyciszenie</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">więcej opcji</translation>
 <translation id="576709008726043716">wprowadzenie</translation>
 <translation id="57838592816432529">Wycisz</translation>
+<translation id="5786442179789148008">pokaż menu szybkości odtwarzania</translation>
+<translation id="5787939484346677755">rozwinięto, dostępne są opcje autouzupełniania.</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
 <translation id="588258955323874662">Pełny ekran</translation>
 <translation id="5888666972993069672">Przesyłam na urządzenie <ph name="DEVICE_FRIENDLY_NAME" /></translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5939518447894949180">Resetuj</translation>
 <translation id="5966707198760109579">Tydzień</translation>
+<translation id="5985507339671257014">0,5</translation>
 <translation id="5987525920412732405">przycisk przewijany</translation>
 <translation id="6011459053400940133">suwak głośności</translation>
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6023896073578205740">pole listy</translation>
 <translation id="6150588977291308318">bibliografia</translation>
 <translation id="6164829606128959761">miernik</translation>
+<translation id="6165053282446038410">rozwinięto, liczba dostępnych opcji autouzupełniania: <ph name="COUNT" />.</translation>
 <translation id="6166809985690652833">posłowie</translation>
 <translation id="6209276755895393898">Wygląda jak: <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">bieżąca strona</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="668171684555832681">Inny...</translation>
 <translation id="6692633176391053278">element kroczący</translation>
+<translation id="6696580792574109116">selektor miesięcy</translation>
 <translation id="6709093583001123835">Wymagana wartość: <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Niska jakość odtwarzania</translation>
 <translation id="6755330956360078551">etykietka</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">wyciszenie</translation>
 <translation id="6885760532393684712">katalog</translation>
 <translation id="689129560213475294">kolofon</translation>
+<translation id="6919891270253167948">1,5</translation>
 <translation id="6934078000481955284">cytat blokowy</translation>
 <translation id="693476918119313863">nagłówek</translation>
 <translation id="6941933287844615239">pobierz multimedia</translation>
 <translation id="6981594929165378967">wstawienie</translation>
+<translation id="698788488269350478">rozwinięto.</translation>
 <translation id="6989848892321993519">Wydłuż ten tekst co najmniej do <ph name="MIN_CHARACTERS" /> znaków (teraz używasz jednego znaku).</translation>
 <translation id="7034405885550056553">sugestia</translation>
 <translation id="709897737746224366">Podaj wartość w wymaganym formacie.</translation>
 <translation id="7102274145889307184">bieżąca lokalizacja</translation>
 <translation id="7118469954320184356">Brak opisu.</translation>
 <translation id="7139483182332611405">wstęp</translation>
+<translation id="7198226213493847604">wyskakujący przycisk otwierający menu</translation>
 <translation id="7214187073215825913">informacje o treści</translation>
 <translation id="7238347055216017155">wyróżnienie</translation>
 <translation id="7263440858009898357">Wybierz element z listy.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">Aby uzyskać brakujące opisy obrazów, otwórz menu kontekstowe.</translation>
 <translation id="7750228210027921155">Obraz w obrazie</translation>
 <translation id="775297008183122718">Nieprawidłowy wpis</translation>
+<translation id="7782515065589691344">1,25</translation>
 <translation id="7789962463072032349">wstrzymaj</translation>
 <translation id="7802800022689234070">trójkąt rozwinięcia</translation>
 <translation id="7852167693871241274">Suwak odcienia</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">odsyłacz</translation>
 <translation id="811583516810654505">Pobieram opis...</translation>
 <translation id="8117451130807776954">W tym tygodniu</translation>
+<translation id="8131955114056917397">0,25</translation>
 <translation id="8199524924445686405">rrrr</translation>
 <translation id="8208673686607688524">selektor lokalnej daty i godziny</translation>
 <translation id="8261464734335370856">Nieprawidłowa pisownia</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">sterowanie zdalnym odtwarzaniem</translation>
 <translation id="862370744433916922">podtytuł</translation>
 <translation id="8634971699417195529">Pokaż selektor miesiąca</translation>
+<translation id="8637593834423658414">1,75</translation>
+<translation id="8668988909814782445">Zawijaj tekst</translation>
 <translation id="8711688047404765493">dane wyjściowe</translation>
 <translation id="8750798805984357768">Wybierz jedną z opcji.</translation>
 <translation id="8808573423886751634">rozdział</translation>
 <translation id="8845239796550121995">Przesyłam na telewizor</translation>
 <translation id="8851136666856101339">główny</translation>
+<translation id="8861621546968757188">wyskakujący przycisk okna</translation>
 <translation id="8875657656876809964">Błąd odtwarzania filmu</translation>
 <translation id="8889402386540077796">Odcień</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>

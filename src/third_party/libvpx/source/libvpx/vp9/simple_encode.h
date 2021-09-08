@@ -87,6 +87,24 @@ struct MotionVectorInfo {
   double mv_column[2];
 };
 
+// Accumulated tpl stats of all blocks in one frame.
+// For each frame, the tpl stats are computed per 32x32 block.
+struct TplStatsInfo {
+  // Intra complexity: the sum of absolute transform difference (SATD) of
+  // intra predicted residuals.
+  int64_t intra_cost;
+  // Inter complexity: the SATD of inter predicted residuals.
+  int64_t inter_cost;
+  // Motion compensated information flow. It measures how much information
+  // is propagated from the current frame to other frames.
+  int64_t mc_flow;
+  // Motion compensated dependency cost. It equals to its own intra_cost
+  // plus the mc_flow.
+  int64_t mc_dep_cost;
+  // Motion compensated reference cost.
+  int64_t mc_ref_cost;
+};
+
 struct RefFrameInfo {
   int coding_indexes[kRefFrameTypeMax];
 
@@ -261,6 +279,18 @@ struct EncodeFrameResult {
   // Similar to partition info, all 4x4 blocks inside the same partition block
   // share the same motion vector information.
   std::vector<MotionVectorInfo> motion_vector_info;
+  // A vector of the tpl stats information.
+  // The tpl stats measure the complexity of a frame, as well as the
+  // information propagated along the motion trajectory between frames, in
+  // the reference frame structure.
+  // The tpl stats could be used as a more accurate spatial and temporal
+  // complexity measure in addition to the first pass stats.
+  // The vector contains tpl stats for all show frames in a GOP.
+  // The tpl stats stored in the vector is according to the encoding order.
+  // For example, suppose there are N show frames for the current GOP.
+  // Then tpl_stats_info[0] stores the information of the first frame to be
+  // encoded for this GOP, i.e, the AltRef frame.
+  std::vector<TplStatsInfo> tpl_stats_info;
   ImageBuffer coded_frame;
 
   // recode_count, q_index_history and rate_history are only available when
@@ -331,21 +361,32 @@ class SimpleEncode {
   // The following configs in VP9EncoderConfig are allowed to change in this
   // function. See https://ffmpeg.org/ffmpeg-codecs.html#libvpx for each
   // config's meaning.
-  // Configs in VP9EncoderConfig:      Equivalent configs in ffmpeg:
-  // 1  key_freq                       -g
-  // 2  two_pass_vbrmin_section        -minrate * 100LL / bit_rate
-  // 3  two_pass_vbrmax_section        -maxrate * 100LL / bit_rate
-  // 4  under_shoot_pct                -undershoot-pct
-  // 5  over_shoot_pct                 -overshoot-pct
-  // 6  max_threads                    -threads
-  // 7  frame_parallel_decoding_mode   -frame-parallel
-  // 8  tile_column                    -tile-columns
-  // 9  arnr_max_frames                -arnr-maxframes
-  // 10 arnr_strength                  -arnr-strength
-  // 11 lag_in_frames                  -rc_lookahead
-  // 12 encode_breakout                -static-thresh
-  // 13 enable_tpl_model               -enable-tpl
-  // 14 enable_auto_arf                -auto-alt-ref
+  // Configs in VP9EncoderConfig:          Equivalent configs in ffmpeg:
+  // 1  key_freq                           -g
+  // 2  two_pass_vbrmin_section            -minrate * 100LL / bit_rate
+  // 3  two_pass_vbrmax_section            -maxrate * 100LL / bit_rate
+  // 4  under_shoot_pct                    -undershoot-pct
+  // 5  over_shoot_pct                     -overshoot-pct
+  // 6  max_threads                        -threads
+  // 7  frame_parallel_decoding_mode       -frame-parallel
+  // 8  tile_column                        -tile-columns
+  // 9  arnr_max_frames                    -arnr-maxframes
+  // 10 arnr_strength                      -arnr-strength
+  // 11 lag_in_frames                      -rc_lookahead
+  // 12 encode_breakout                    -static-thresh
+  // 13 enable_tpl_model                   -enable-tpl
+  // 14 enable_auto_arf                    -auto-alt-ref
+  // 15 rc_mode
+  //    Possible Settings:
+  //      0 - Variable Bit Rate (VPX_VBR)  -b:v <bit_rate>
+  //      1 - Constant Bit Rate (VPX_CBR)  -b:v <bit_rate> -minrate <bit_rate>
+  //                                        -maxrate <bit_rate>
+  //        two_pass_vbrmin_section == 100   i.e. bit_rate == minrate == maxrate
+  //        two_pass_vbrmax_section == 100
+  //      2 - Constrained Quality (VPX_CQ) -crf <cq_level> -b:v bit_rate
+  //      3 - Constant Quality (VPX_Q)     -crf <cq_level> -b:v 0
+  //    See https://trac.ffmpeg.org/wiki/Encode/VP9 for more details.
+  // 16 cq_level                          see rc_mode for details.
   StatusCode SetEncodeConfig(const char *name, const char *value);
 
   // A debug function that dumps configs from VP9EncoderConfig

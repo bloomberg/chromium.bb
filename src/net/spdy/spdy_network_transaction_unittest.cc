@@ -29,10 +29,12 @@
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_session_peer.h"
@@ -50,6 +52,7 @@
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
+#include "net/spdy/alps_decoder.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -68,6 +71,7 @@
 #include "net/websockets/websocket_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -261,6 +265,13 @@ class SpdyNetworkTransactionTest : public TestWithTaskEnvironment {
       session_deps_->socket_factory->AddSocketDataProvider(data);
     }
 
+    size_t GetSpdySessionCount() {
+      std::unique_ptr<base::Value> value(
+          session_->spdy_session_pool()->SpdySessionPoolInfoToValue());
+      CHECK(value && value->is_list());
+      return value->GetList().size();
+    }
+
     HttpNetworkTransaction* trans() { return trans_.get(); }
     void ResetTrans() { trans_.reset(); }
     const TransactionHelperResult& output() { return output_; }
@@ -413,8 +424,7 @@ class SpdyNetworkTransactionTest : public TestWithTaskEnvironment {
     SpdySessionKey key(HostPortPair::FromURL(request_.url),
                        ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                        SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                       request_.network_isolation_key,
-                       false /* disable_secure_dns */);
+                       request_.network_isolation_key, SecureDnsPolicy::kAllow);
     HttpNetworkSession* session = helper.session();
     base::WeakPtr<SpdySession> spdy_session =
         session->spdy_session_pool()->FindAvailableSession(
@@ -762,7 +772,7 @@ TEST_F(SpdyNetworkTransactionTest, RequestsOrderedByPriority) {
   SpdySessionKey key(HostPortPair("www.example.org", 443),
                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                     NetworkIsolationKey(), false /* disable_secure_dns */);
+                     NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   auto spdy_session = CreateSpdySession(helper.session(), key, log_);
   EXPECT_TRUE(spdy_session);
 
@@ -2432,129 +2442,6 @@ TEST_F(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
   helper.VerifyDataConsumed();
 }
 
-TEST_F(SpdyNetworkTransactionTest, TestRawHeaderSizeSuccessfullRequest) {
-  spdy::Http2HeaderBlock headers(
-      spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
-  headers["user-agent"] = "";
-  headers["accept-encoding"] = "gzip, deflate";
-
-  spdy::SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyHeaders(1, std::move(headers), LOWEST, true));
-  MockWrite writes[] = {
-      CreateMockWrite(req, 0),
-  };
-
-  spdy::SpdySerializedFrame resp(
-      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-
-  spdy::SpdySerializedFrame response_body_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "should not include", true));
-
-  MockRead response_headers(CreateMockRead(resp, 1));
-  MockRead reads[] = {
-      response_headers, CreateMockRead(response_body_frame, 2),
-      MockRead(ASYNC, nullptr, 0, 3)  // EOF
-  };
-  SequencedSocketData data(reads, writes);
-
-  TestDelegate delegate;
-  SpdyURLRequestContext spdy_url_request_context;
-  TestNetworkDelegate network_delegate;
-  spdy_url_request_context.set_network_delegate(&network_delegate);
-  SSLSocketDataProvider ssl_data(ASYNC, OK);
-  ssl_data.next_proto = kProtoHTTP2;
-
-  std::unique_ptr<URLRequest> request(spdy_url_request_context.CreateRequest(
-      GURL(kDefaultUrl), DEFAULT_PRIORITY, &delegate,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  spdy_url_request_context.socket_factory().AddSSLSocketDataProvider(&ssl_data);
-  spdy_url_request_context.socket_factory().AddSocketDataProvider(&data);
-
-  request->Start();
-  base::RunLoop().Run();
-
-  EXPECT_LT(0, request->GetTotalSentBytes());
-  EXPECT_LT(0, request->GetTotalReceivedBytes());
-  EXPECT_EQ(response_headers.data_len, request->raw_header_size());
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-}
-
-TEST_F(SpdyNetworkTransactionTest,
-       TestRawHeaderSizeSuccessfullPushHeadersFirst) {
-  spdy::Http2HeaderBlock headers(
-      spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
-  headers["user-agent"] = "";
-  headers["accept-encoding"] = "gzip, deflate";
-
-  spdy::SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyHeaders(1, std::move(headers), LOWEST, true));
-  spdy::SpdySerializedFrame priority(
-      spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
-  MockWrite writes[] = {
-      CreateMockWrite(req, 0), CreateMockWrite(priority, 2),
-  };
-
-  spdy::SpdySerializedFrame resp(
-      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-  spdy::SpdySerializedFrame response_body_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "should not include", true));
-
-  spdy::Http2HeaderBlock push_headers;
-  push_headers[":method"] = "GET";
-  spdy_util_.AddUrlToHeaderBlock(std::string(kDefaultUrl) + "b.dat",
-                                 &push_headers);
-
-  spdy::SpdySerializedFrame push_init_frame(
-      spdy_util_.ConstructSpdyPushPromise(1, 2, std::move(push_headers)));
-
-  spdy::SpdySerializedFrame push_headers_frame(
-      spdy_util_.ConstructSpdyPushHeaders(2, nullptr, 0));
-
-  spdy::SpdySerializedFrame push_body_frame(
-      spdy_util_.ConstructSpdyDataFrame(2, "should not include either", false));
-
-  MockRead push_init_read(CreateMockRead(push_init_frame, 1));
-  MockRead response_headers(CreateMockRead(resp, 5));
-  // raw_header_size() will contain the size of the push promise frame
-  // initialization.
-  int expected_response_headers_size =
-      response_headers.data_len + push_init_read.data_len;
-
-  MockRead reads[] = {
-      push_init_read,
-      CreateMockRead(push_headers_frame, 3),
-      CreateMockRead(push_body_frame, 4),
-      response_headers,
-      CreateMockRead(response_body_frame, 6),
-      MockRead(ASYNC, 0, 7)  // EOF
-  };
-
-  SequencedSocketData data(reads, writes);
-
-  TestDelegate delegate;
-  SpdyURLRequestContext spdy_url_request_context;
-  TestNetworkDelegate network_delegate;
-  spdy_url_request_context.set_network_delegate(&network_delegate);
-  SSLSocketDataProvider ssl_data(ASYNC, OK);
-  ssl_data.next_proto = kProtoHTTP2;
-
-  std::unique_ptr<URLRequest> request(spdy_url_request_context.CreateRequest(
-      GURL(kDefaultUrl), DEFAULT_PRIORITY, &delegate,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  spdy_url_request_context.socket_factory().AddSSLSocketDataProvider(&ssl_data);
-  spdy_url_request_context.socket_factory().AddSocketDataProvider(&data);
-
-  request->Start();
-  base::RunLoop().Run();
-
-  EXPECT_LT(0, request->GetTotalSentBytes());
-  EXPECT_LT(0, request->GetTotalReceivedBytes());
-  EXPECT_EQ(expected_response_headers_size, request->raw_header_size());
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-}
-
 TEST_F(SpdyNetworkTransactionTest, RedirectGetRequest) {
   SpdyURLRequestContext spdy_url_request_context;
   // Use a different port to avoid trying to reuse the initial H2 session.
@@ -2616,8 +2503,8 @@ TEST_F(SpdyNetworkTransactionTest, RedirectGetRequest) {
 
   EXPECT_EQ(1, delegate.received_redirect_count());
 
-  request->FollowDeferredRedirect(base::nullopt /* removed_headers */,
-                                  base::nullopt /* modified_headers */);
+  request->FollowDeferredRedirect(absl::nullopt /* removed_headers */,
+                                  absl::nullopt /* modified_headers */);
   delegate.RunUntilComplete();
 
   EXPECT_EQ(1, delegate.response_started_count());
@@ -2712,8 +2599,8 @@ TEST_F(SpdyNetworkTransactionTest, RedirectServerPush) {
   delegate1.RunUntilRedirect();
   EXPECT_EQ(1, delegate1.received_redirect_count());
 
-  request1->FollowDeferredRedirect(base::nullopt /* removed_headers */,
-                                   base::nullopt /* modified_headers */);
+  request1->FollowDeferredRedirect(absl::nullopt /* removed_headers */,
+                                   absl::nullopt /* modified_headers */);
   delegate1.RunUntilComplete();
   EXPECT_EQ(1, delegate1.response_started_count());
   EXPECT_FALSE(delegate1.received_data_before_response());
@@ -3682,7 +3569,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsPush) {
   SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED,
                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                     NetworkIsolationKey(), false /* disable_secure_dns */);
+                     NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -3798,7 +3685,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsCrossOriginPush) {
   SpdySessionKey key1(HostPortPair::FromURL(GURL(kUrl1)), ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session1 =
       spdy_session_pool->FindAvailableSession(
           key1, /* enable_ip_based_pooling = */ true,
@@ -3811,7 +3698,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsCrossOriginPush) {
   SpdySessionKey key2(HostPortPair::FromURL(GURL(kUrl2)), ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   EXPECT_FALSE(spdy_session_pool->FindAvailableSession(
       key2, /* enable_ip_based_pooling = */ true,
       /* is_websocket = */ false, log_));
@@ -3898,10 +3785,10 @@ TEST_F(SpdyNetworkTransactionTest, NoConnectionPoolingOverTunnel) {
                       ProxyServer::FromPacString(kPacString),
                       PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> session1 =
       helper.session()->spdy_session_pool()->FindAvailableSession(
-          key1, true /* enable_up_base_pooling */, false /* is_websocket */,
+          key1, true /* enable_ip_based_pooling */, false /* is_websocket */,
           NetLogWithSource());
   ASSERT_TRUE(session1);
 
@@ -3959,10 +3846,10 @@ TEST_F(SpdyNetworkTransactionTest, NoConnectionPoolingOverTunnel) {
   SpdySessionKey key2(
       HostPortPair("example.test", 443), ProxyServer::FromPacString(kPacString),
       PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
-      SocketTag(), NetworkIsolationKey(), false /* disable_secure_dns */);
+      SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> session2 =
       helper.session()->spdy_session_pool()->FindAvailableSession(
-          key2, true /* enable_up_base_pooling */, false /* is_websocket */,
+          key2, true /* enable_ip_based_pooling */, false /* is_websocket */,
           NetLogWithSource());
   ASSERT_TRUE(session2);
   ASSERT_TRUE(session1);
@@ -4002,9 +3889,9 @@ TEST_F(SpdyNetworkTransactionTest, ConnectionPoolingSessionClosedBeforeUse) {
   SpdySessionKey key1(HostPortPair("www.example.org", 443),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   EXPECT_TRUE(helper.session()->spdy_session_pool()->FindAvailableSession(
-      key1, true /* enable_up_base_pooling */, false /* is_websocket */,
+      key1, true /* enable_ip_based_pooling */, false /* is_websocket */,
       NetLogWithSource()));
 
   // The second request uses a second connection.
@@ -4049,10 +3936,10 @@ TEST_F(SpdyNetworkTransactionTest, ConnectionPoolingSessionClosedBeforeUse) {
   SpdySessionKey key2(HostPortPair("example.test", 443), ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> session1 =
       helper.session()->spdy_session_pool()->FindAvailableSession(
-          key2, true /* enable_up_base_pooling */, false /* is_websocket */,
+          key2, true /* enable_ip_based_pooling */, false /* is_websocket */,
           NetLogWithSource());
   ASSERT_TRUE(session1);
   EXPECT_EQ(key1, session1->spdy_session_key());
@@ -4076,7 +3963,7 @@ TEST_F(SpdyNetworkTransactionTest, ConnectionPoolingSessionClosedBeforeUse) {
   // Inspect the new session.
   base::WeakPtr<SpdySession> session2 =
       helper.session()->spdy_session_pool()->FindAvailableSession(
-          key2, true /* enable_up_base_pooling */, false /* is_websocket */,
+          key2, true /* enable_ip_based_pooling */, false /* is_websocket */,
           NetLogWithSource());
   ASSERT_TRUE(session2);
   EXPECT_EQ(key2, session2->spdy_session_key());
@@ -4158,9 +4045,9 @@ TEST_F(SpdyNetworkTransactionTest, ConnectionPoolingMultipleSocketTags) {
   SpdySessionKey key1(HostPortPair("www.example.org", 443),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   EXPECT_TRUE(helper.session()->spdy_session_pool()->FindAvailableSession(
-      key1, true /* enable_up_base_pooling */, false /* is_websocket */,
+      key1, true /* enable_ip_based_pooling */, false /* is_websocket */,
       NetLogWithSource()));
 
   // Set on-demand mode for the next two requests.
@@ -4205,7 +4092,7 @@ TEST_F(SpdyNetworkTransactionTest, ConnectionPoolingMultipleSocketTags) {
   SpdySessionKey key2(HostPortPair("example.test", 443), ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, kSocketTag2,
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
 
   // Complete the third requests's DNS lookup now, which should hijack the
   // SpdySession from the second request.
@@ -4213,7 +4100,7 @@ TEST_F(SpdyNetworkTransactionTest, ConnectionPoolingMultipleSocketTags) {
   SpdySessionKey key3(HostPortPair("example.test", 443), ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, kSocketTag3,
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
 
   // Wait for the second request to get headers.  It should create a new H2
   // session to do so.
@@ -4240,6 +4127,356 @@ TEST_F(SpdyNetworkTransactionTest, ConnectionPoolingMultipleSocketTags) {
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_alpn_negotiated);
   ASSERT_THAT(ReadTransaction(trans3.get(), &response_data), IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  helper.VerifyDataConsumed();
+}
+
+TEST_F(SpdyNetworkTransactionTest, SocketTagChangeSessionTagWithDnsAliases) {
+  SocketTag socket_tag_1(SocketTag::UNSET_UID, 1);
+  SocketTag socket_tag_2(SocketTag::UNSET_UID, 2);
+  request_.socket_tag = socket_tag_1;
+
+  std::unique_ptr<SpdySessionDependencies> session_deps =
+      std::make_unique<SpdySessionDependencies>();
+  std::unique_ptr<MockCachingHostResolver> host_resolver =
+      std::make_unique<MockCachingHostResolver>(2 /* cache_invalidation_num */);
+  session_deps->host_resolver = std::move(host_resolver);
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+
+  GURL url = request_.url;
+  std::vector<std::string> dns_aliases({"alias1", "alias2", "alias3"});
+  helper.session_deps()->host_resolver->rules()->AddIPLiteralRuleWithDnsAliases(
+      url.host(), "127.0.0.1", dns_aliases);
+
+  spdy::SpdySerializedFrame req1(
+      spdy_util_.ConstructSpdyGet(url.spec().c_str(), 1, DEFAULT_PRIORITY));
+  spdy_util_.UpdateWithStreamDestruction(1);
+  spdy::SpdySerializedFrame req2(
+      spdy_util_.ConstructSpdyGet(url.spec().c_str(), 3, DEFAULT_PRIORITY));
+  MockWrite writes[] = {
+      CreateMockWrite(req1, 0),
+      CreateMockWrite(req2, 3),
+  };
+
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame resp2(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  spdy::SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+  MockRead reads[] = {CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
+                      CreateMockRead(resp2, 4), CreateMockRead(body2, 5),
+                      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6)};
+
+  SequencedSocketData data(MockConnect(ASYNC, OK), reads, writes);
+  helper.AddData(&data);
+
+  // Run a transaction to completion to set up a SPDY session. This can't use
+  // RunToCompletion(), since it can't call VerifyDataConsumed() yet because
+  // there are still further requests expected.
+  helper.RunPreTestSetup();
+  helper.RunDefaultTest();
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+
+  // A new SPDY session should have been created.
+  EXPECT_EQ(1u, helper.GetSpdySessionCount());
+  SpdySessionKey key1(HostPortPair(url.host(), 443), ProxyServer::Direct(),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, socket_tag_1,
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+  EXPECT_TRUE(helper.session()->spdy_session_pool()->FindAvailableSession(
+      key1, true /* enable_ip_based_pooling */, false /* is_websocket */,
+      NetLogWithSource()));
+  EXPECT_EQ(
+      dns_aliases,
+      helper.session()->spdy_session_pool()->GetDnsAliasesForSessionKey(key1));
+
+  // Clear host resolver rules to ensure that cached values for DNS aliases
+  // are used.
+  helper.session_deps()->host_resolver->rules()->ClearRules();
+
+  HttpRequestInfo request2;
+  request2.socket_tag = socket_tag_2;
+  request2.method = "GET";
+  request2.url = url;
+  request2.load_flags = 0;
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  SpdySessionKey key2(HostPortPair(url.host(), 443), ProxyServer::Direct(),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, socket_tag_2,
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+  auto trans2 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                         helper.session());
+  TestCompletionCallback callback2;
+  EXPECT_THAT(
+      trans2->Start(&request2, callback2.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+
+  // Wait for the second request to get headers.  It should have reused the
+  // first session but changed the tag.
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
+
+  EXPECT_EQ(1u, helper.GetSpdySessionCount());
+  EXPECT_FALSE(helper.session()->spdy_session_pool()->FindAvailableSession(
+      key1, true /* enable_ip_based_pooling */, false /* is_websocket */,
+      NetLogWithSource()));
+  EXPECT_TRUE(helper.session()
+                  ->spdy_session_pool()
+                  ->GetDnsAliasesForSessionKey(key1)
+                  .empty());
+  EXPECT_TRUE(helper.session()->spdy_session_pool()->FindAvailableSession(
+      key2, true /* enable_ip_based_pooling */, false /* is_websocket */,
+      NetLogWithSource()));
+  EXPECT_EQ(
+      dns_aliases,
+      helper.session()->spdy_session_pool()->GetDnsAliasesForSessionKey(key2));
+
+  const HttpResponseInfo* response = trans2->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  std::string response_data;
+  ASSERT_THAT(ReadTransaction(trans2.get(), &response_data), IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  helper.VerifyDataConsumed();
+}
+
+TEST_F(SpdyNetworkTransactionTest,
+       SocketTagChangeFromIPAliasedSessionWithDnsAliases) {
+  SocketTag socket_tag_1(SocketTag::UNSET_UID, 1);
+  SocketTag socket_tag_2(SocketTag::UNSET_UID, 2);
+  request_.socket_tag = socket_tag_1;
+
+  std::unique_ptr<SpdySessionDependencies> session_deps =
+      std::make_unique<SpdySessionDependencies>();
+  std::unique_ptr<MockCachingHostResolver> host_resolver =
+      std::make_unique<MockCachingHostResolver>(2 /* cache_invalidation_num */);
+  session_deps->host_resolver = std::move(host_resolver);
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  GURL url1 = request_.url;
+  std::vector<std::string> dns_aliases1({"alias1", "alias2", "alias3"});
+  GURL url2("https://example.test/");
+  std::vector<std::string> dns_aliases2({"example.net", "example.com"});
+
+  helper.session_deps()->host_resolver->rules()->AddIPLiteralRuleWithDnsAliases(
+      url1.host(), "127.0.0.1", dns_aliases1);
+  helper.session_deps()->host_resolver->rules()->AddIPLiteralRuleWithDnsAliases(
+      url2.host(), "127.0.0.1", dns_aliases2);
+
+  spdy::SpdySerializedFrame req1(
+      spdy_util_.ConstructSpdyGet(url1.spec().c_str(), 1, DEFAULT_PRIORITY));
+  spdy_util_.UpdateWithStreamDestruction(1);
+  spdy::SpdySerializedFrame req2(
+      spdy_util_.ConstructSpdyGet(url2.spec().c_str(), 3, DEFAULT_PRIORITY));
+  spdy_util_.UpdateWithStreamDestruction(3);
+  spdy::SpdySerializedFrame req3(
+      spdy_util_.ConstructSpdyGet(url2.spec().c_str(), 5, DEFAULT_PRIORITY));
+  spdy_util_.UpdateWithStreamDestruction(5);
+  spdy::SpdySerializedFrame req4(
+      spdy_util_.ConstructSpdyGet(url1.spec().c_str(), 7, DEFAULT_PRIORITY));
+  MockWrite writes[] = {
+      CreateMockWrite(req1, 0),
+      CreateMockWrite(req2, 3),
+      CreateMockWrite(req3, 6),
+      CreateMockWrite(req4, 9),
+  };
+
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame resp2(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  spdy::SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+  spdy::SpdySerializedFrame resp3(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 5));
+  spdy::SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(5, true));
+  spdy::SpdySerializedFrame resp4(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 7));
+  spdy::SpdySerializedFrame body4(spdy_util_.ConstructSpdyDataFrame(7, true));
+  MockRead reads[] = {CreateMockRead(resp1, 1),
+                      CreateMockRead(body1, 2),
+                      CreateMockRead(resp2, 4),
+                      CreateMockRead(body2, 5),
+                      CreateMockRead(resp3, 7),
+                      CreateMockRead(body3, 8),
+                      CreateMockRead(resp4, 10),
+                      CreateMockRead(body4, 11),
+                      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 12)};
+
+  SequencedSocketData data(MockConnect(ASYNC, OK), reads, writes);
+  helper.AddData(&data);
+
+  // Run a transaction to completion to set up a SPDY session. This can't use
+  // RunToCompletion(), since it can't call VerifyDataConsumed() yet.
+  helper.RunPreTestSetup();
+  helper.RunDefaultTest();
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+
+  // A new SPDY session should have been created.
+  EXPECT_EQ(1u, helper.GetSpdySessionCount());
+  SpdySessionKey key1(HostPortPair(url1.host(), 443), ProxyServer::Direct(),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, socket_tag_1,
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+  EXPECT_TRUE(helper.session()->spdy_session_pool()->FindAvailableSession(
+      key1, true /* enable_ip_based_pooling */, false /* is_websocket */,
+      NetLogWithSource()));
+  EXPECT_EQ(
+      dns_aliases1,
+      helper.session()->spdy_session_pool()->GetDnsAliasesForSessionKey(key1));
+
+  HttpRequestInfo request2;
+  request2.socket_tag = socket_tag_1;
+  request2.method = "GET";
+  request2.url = url2;
+  request2.load_flags = 0;
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  SpdySessionKey key2(HostPortPair(url2.host(), 443), ProxyServer::Direct(),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, socket_tag_1,
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+  auto trans2 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                         helper.session());
+  TestCompletionCallback callback2;
+  EXPECT_THAT(
+      trans2->Start(&request2, callback2.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+
+  // Wait for the second request to get headers.  It should have reused the
+  // first session.
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
+
+  EXPECT_EQ(1u, helper.GetSpdySessionCount());
+  EXPECT_TRUE(helper.session()->spdy_session_pool()->FindAvailableSession(
+      key2, true /* enable_ip_based_pooling */, false /* is_websocket */,
+      NetLogWithSource()));
+  EXPECT_EQ(
+      dns_aliases2,
+      helper.session()->spdy_session_pool()->GetDnsAliasesForSessionKey(key2));
+
+  const HttpResponseInfo* response = trans2->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  std::string response_data;
+  ASSERT_THAT(ReadTransaction(trans2.get(), &response_data), IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  // Clear host resolver rules to ensure that cached values for DNS aliases
+  // are used.
+  helper.session_deps()->host_resolver->rules()->ClearRules();
+  trans2.reset();
+
+  HttpRequestInfo request3;
+  request3.socket_tag = socket_tag_2;
+  request3.method = "GET";
+  request3.url = url2;
+  request3.load_flags = 0;
+  request3.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  SpdySessionKey key3(HostPortPair(url2.host(), 443), ProxyServer::Direct(),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, socket_tag_2,
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+  auto trans3 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                         helper.session());
+  TestCompletionCallback callback3;
+  EXPECT_THAT(
+      trans3->Start(&request3, callback3.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+
+  // Wait for the third request to get headers.  It should have reused the
+  // first session but changed the socket tag.
+  EXPECT_THAT(callback3.WaitForResult(), IsOk());
+
+  EXPECT_EQ(1u, helper.GetSpdySessionCount());
+  EXPECT_FALSE(helper.session()->spdy_session_pool()->FindAvailableSession(
+      key2, true /* enable_ip_based_pooling */, false /* is_websocket */,
+      NetLogWithSource()));
+  EXPECT_TRUE(helper.session()
+                  ->spdy_session_pool()
+                  ->GetDnsAliasesForSessionKey(key2)
+                  .empty());
+  EXPECT_TRUE(helper.session()->spdy_session_pool()->FindAvailableSession(
+      key3, true /* enable_ip_based_pooling */, false /* is_websocket */,
+      NetLogWithSource()));
+  EXPECT_EQ(
+      dns_aliases2,
+      helper.session()->spdy_session_pool()->GetDnsAliasesForSessionKey(key3));
+
+  response = trans3->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  ASSERT_THAT(ReadTransaction(trans3.get(), &response_data), IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  trans3.reset();
+
+  HttpRequestInfo request4;
+  request4.socket_tag = socket_tag_2;
+  request4.method = "GET";
+  request4.url = url1;
+  request4.load_flags = 0;
+  request4.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  SpdySessionKey key4(HostPortPair(url1.host(), 443), ProxyServer::Direct(),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, socket_tag_2,
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+  auto trans4 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                         helper.session());
+  TestCompletionCallback callback4;
+  EXPECT_THAT(
+      trans4->Start(&request4, callback4.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+
+  // Wait for the third request to get headers.  It should have reused the
+  // first session but changed the socket tag.
+  EXPECT_THAT(callback4.WaitForResult(), IsOk());
+
+  EXPECT_EQ(1u, helper.GetSpdySessionCount());
+  EXPECT_FALSE(helper.session()->spdy_session_pool()->FindAvailableSession(
+      key1, true /* enable_ip_based_pooling */, false /* is_websocket */,
+      NetLogWithSource()));
+  EXPECT_TRUE(helper.session()
+                  ->spdy_session_pool()
+                  ->GetDnsAliasesForSessionKey(key1)
+                  .empty());
+  EXPECT_TRUE(helper.session()->spdy_session_pool()->FindAvailableSession(
+      key4, true /* enable_ip_based_pooling */, false /* is_websocket */,
+      NetLogWithSource()));
+  EXPECT_EQ(
+      dns_aliases1,
+      helper.session()->spdy_session_pool()->GetDnsAliasesForSessionKey(key4));
+
+  response = trans4->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  ASSERT_THAT(ReadTransaction(trans4.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 
   helper.VerifyDataConsumed();
@@ -5130,7 +5367,7 @@ TEST_F(SpdyNetworkTransactionTest, GracefulGoaway) {
   SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED,
                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                     NetworkIsolationKey(), false /* disable_secure_dns */);
+                     NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -5302,10 +5539,10 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
 
 // Same as above test, but checks that NetworkIsolationKeys are respected.
 TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredRetryWithNetworkIsolationKey) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
   const NetworkIsolationKey kNetworkIsolationKeys[] = {
       kNetworkIsolationKey1, kNetworkIsolationKey2, NetworkIsolationKey()};
@@ -5507,10 +5744,10 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
 // Same as above, but also test that NetworkIsolationKeys are respected.
 TEST_F(SpdyNetworkTransactionTest,
        HTTP11RequiredProxyRetryWithNetworkIsolationKey) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
   const NetworkIsolationKey kNetworkIsolationKeys[] = {
       kNetworkIsolationKey1, kNetworkIsolationKey2, NetworkIsolationKey()};
@@ -5749,13 +5986,13 @@ TEST_F(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   SpdySessionKey session_pool_key_direct(
       host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-      NetworkIsolationKey(), false /* disable_secure_dns */);
+      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   EXPECT_TRUE(HasSpdySession(spdy_session_pool, session_pool_key_direct));
   SpdySessionKey session_pool_key_proxy(
       host_port_pair_,
       ProxyServer::FromURI("www.foo.com", ProxyServer::SCHEME_HTTP),
       PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
-      SocketTag(), NetworkIsolationKey(), false /* disable_secure_dns */);
+      SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   EXPECT_FALSE(HasSpdySession(spdy_session_pool, session_pool_key_proxy));
 
   // New SpdyTestUtil instance for the session that will be used for the
@@ -5967,7 +6204,7 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   ASSERT_TRUE(response_start->headers);
   EXPECT_EQ(401, response_start->headers->response_code());
   EXPECT_TRUE(response_start->was_fetched_via_spdy);
-  const base::Optional<AuthChallengeInfo>& auth_challenge =
+  const absl::optional<AuthChallengeInfo>& auth_challenge =
       response_start->auth_challenge;
   ASSERT_TRUE(auth_challenge);
   EXPECT_FALSE(auth_challenge->is_proxy);
@@ -5975,8 +6212,7 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   EXPECT_EQ("MyRealm", auth_challenge->realm);
 
   // Restart with a username/password.
-  AuthCredentials credentials(base::ASCIIToUTF16("foo"),
-                              base::ASCIIToUTF16("bar"));
+  AuthCredentials credentials(u"foo", u"bar");
   TestCompletionCallback callback_restart;
   const int rv_restart = trans->RestartWithAuth(
       credentials, callback_restart.callback());
@@ -6378,19 +6614,11 @@ class SpdyNetworkTransactionPushUrlTest
     // NetworkIsolationKeys are respected.
     request_.network_isolation_key = NetworkIsolationKey::CreateTransient();
 
-    // Enable cross-origin push. Since we are not using a proxy, this should
-    // not actually enable cross-origin SPDY push.
-    auto session_deps = std::make_unique<SpdySessionDependencies>();
-    auto proxy_delegate = std::make_unique<TestProxyDelegate>();
-    proxy_delegate->set_trusted_spdy_proxy(net::ProxyServer::FromURI(
-        "https://123.45.67.89:443", net::ProxyServer::SCHEME_HTTP));
-    session_deps->proxy_resolution_service->SetProxyDelegate(
-        proxy_delegate.get());
-
     auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
     ssl_provider->ssl_info.client_cert_sent = GetParam().client_cert_sent;
     ssl_provider->ssl_info.cert =
         ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+    auto session_deps = std::make_unique<SpdySessionDependencies>();
     if (GetParam().expect_ct_error) {
       ssl_provider->ssl_info.ct_policy_compliance =
           ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
@@ -6511,7 +6739,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
   SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED,
                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                     NetworkIsolationKey(), false /* disable_secure_dns */);
+                     NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -6620,7 +6848,7 @@ TEST_F(SpdyNetworkTransactionTest,
   SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED,
                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                     NetworkIsolationKey(), false /* disable_secure_dns */);
+                     NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -6836,7 +7064,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   SpdySessionKey key0(host_port_pair0, ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session0 =
       spdy_session_pool->FindAvailableSession(
           key0, /* enable_ip_based_pooling = */ true,
@@ -6848,7 +7076,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   SpdySessionKey key1(host_port_pair1, ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session1 =
       spdy_session_pool->FindAvailableSession(
           key1, /* enable_ip_based_pooling = */ true,
@@ -7507,14 +7735,12 @@ TEST_F(SpdyNetworkTransactionTest, FlowControlStallResume) {
   writes.push_back(CreateMockWrite(req, i++));
   for (size_t j = 0; j < num_upload_buffers; j++) {
     for (size_t k = 0; k < num_frames_in_one_upload_buffer; k++) {
-      if (k == num_frames_in_one_upload_buffer - 1 &&
-          kBufferSize % kMaxSpdyFrameChunkSize != 0) {
-        if (j == num_upload_buffers - 1 &&
-            (initial_window_size % kBufferSize != 0)) {
-          writes.push_back(CreateMockWrite(body3, i++));
-        } else {
-          writes.push_back(CreateMockWrite(body2, i++));
-        }
+      if (j == num_upload_buffers - 1 &&
+          (initial_window_size % kBufferSize != 0)) {
+        writes.push_back(CreateMockWrite(body3, i++));
+      } else if (k == num_frames_in_one_upload_buffer - 1 &&
+                 kBufferSize % kMaxSpdyFrameChunkSize != 0) {
+        writes.push_back(CreateMockWrite(body2, i++));
       } else {
         writes.push_back(CreateMockWrite(body1, i++));
       }
@@ -7658,14 +7884,12 @@ TEST_F(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   writes.push_back(CreateMockWrite(req, i++));
   for (size_t j = 0; j < num_upload_buffers; j++) {
     for (size_t k = 0; k < num_frames_in_one_upload_buffer; k++) {
-      if (k == num_frames_in_one_upload_buffer - 1 &&
-          kBufferSize % kMaxSpdyFrameChunkSize != 0) {
-        if (j == num_upload_buffers - 1 &&
-            (initial_window_size % kBufferSize != 0)) {
-          writes.push_back(CreateMockWrite(body3, i++));
-        } else {
-          writes.push_back(CreateMockWrite(body2, i++));
-        }
+      if (j == num_upload_buffers - 1 &&
+          (initial_window_size % kBufferSize != 0)) {
+        writes.push_back(CreateMockWrite(body3, i++));
+      } else if (k == num_frames_in_one_upload_buffer - 1 &&
+                 kBufferSize % kMaxSpdyFrameChunkSize != 0) {
+        writes.push_back(CreateMockWrite(body2, i++));
       } else {
         writes.push_back(CreateMockWrite(body1, i++));
       }
@@ -7821,14 +8045,12 @@ TEST_F(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   writes.push_back(CreateMockWrite(req, i++));
   for (size_t j = 0; j < num_upload_buffers; j++) {
     for (size_t k = 0; k < num_frames_in_one_upload_buffer; k++) {
-      if (k == num_frames_in_one_upload_buffer - 1 &&
-          kBufferSize % kMaxSpdyFrameChunkSize != 0) {
-        if (j == num_upload_buffers - 1 &&
-            (initial_window_size % kBufferSize != 0)) {
-          writes.push_back(CreateMockWrite(body3, i++));
-        } else {
-          writes.push_back(CreateMockWrite(body2, i++));
-        }
+      if (j == num_upload_buffers - 1 &&
+          (initial_window_size % kBufferSize != 0)) {
+        writes.push_back(CreateMockWrite(body3, i++));
+      } else if (k == num_frames_in_one_upload_buffer - 1 &&
+                 kBufferSize % kMaxSpdyFrameChunkSize != 0) {
+        writes.push_back(CreateMockWrite(body2, i++));
       } else {
         writes.push_back(CreateMockWrite(body1, i++));
       }
@@ -8406,7 +8628,7 @@ TEST_F(SpdyNetworkTransactionTest, PushCanceledByServerAfterClaimed) {
   SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED,
                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                     NetworkIsolationKey(), false /* disable_secure_dns */);
+                     NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   HttpNetworkSession* session = helper.session();
   base::WeakPtr<SpdySession> spdy_session =
       session->spdy_session_pool()->FindAvailableSession(
@@ -8526,7 +8748,7 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOpensNewConnection) {
   SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED,
                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                     NetworkIsolationKey(), false /* disable_secure_dns */);
+                     NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session =
       helper.session()->spdy_session_pool()->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -8674,7 +8896,7 @@ TEST_F(SpdyNetworkTransactionTest,
   SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED,
                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                     NetworkIsolationKey(), false /* disable_secure_dns */);
+                     NetworkIsolationKey(), SecureDnsPolicy::kAllow);
 
   base::WeakPtr<SpdySession> spdy_session =
       helper.session()->spdy_session_pool()->FindAvailableSession(
@@ -8755,7 +8977,7 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
   SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED,
                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                     NetworkIsolationKey(), false /* disable_secure_dns */);
+                     NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session =
       helper.session()->spdy_session_pool()->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -8951,7 +9173,7 @@ TEST_F(SpdyNetworkTransactionTest,
       HostPortPair::FromURL(request_.url),
       ProxyServer::FromURI("https://proxy:70", ProxyServer::SCHEME_HTTPS),
       PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
-      SocketTag(), NetworkIsolationKey(), false /* disable_secure_dns */);
+      SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
 
   base::WeakPtr<SpdySession> spdy_session =
       helper.session()->spdy_session_pool()->FindAvailableSession(
@@ -9064,7 +9286,7 @@ TEST_F(SpdyNetworkTransactionTest,
   SpdySessionKey key1(HostPortPair::FromURL(request_.url),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session1 =
       helper.session()->spdy_session_pool()->FindAvailableSession(
           key1, /* enable_ip_based_pooling = */ true,
@@ -9079,7 +9301,7 @@ TEST_F(SpdyNetworkTransactionTest,
   SpdySessionKey key2(HostPortPair::FromURL(request2.url),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session2 =
       helper.session()->spdy_session_pool()->FindAvailableSession(
           key1, /* enable_ip_based_pooling = */ true,
@@ -9218,7 +9440,7 @@ TEST_F(SpdyNetworkTransactionTest,
   SpdySessionKey key1(HostPortPair::FromURL(request_.url),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session1 =
       helper.session()->spdy_session_pool()->FindAvailableSession(
           key1, /* enable_ip_based_pooling = */ true,
@@ -9234,7 +9456,7 @@ TEST_F(SpdyNetworkTransactionTest,
   SpdySessionKey key2(HostPortPair::FromURL(request2.url),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session2 =
       helper.session()->spdy_session_pool()->FindAvailableSession(
           key1, /* enable_ip_based_pooling = */ true,
@@ -9382,7 +9604,7 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketHttp11Required) {
   SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED,
                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                     NetworkIsolationKey(), false /* disable_secure_dns */);
+                     NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session =
       helper.session()->spdy_session_pool()->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -10232,7 +10454,7 @@ TEST_F(SpdyNetworkTransactionTest,
   const uint8_t flags = 0xcc;
   const std::string payload("foo");
   session_deps->greased_http2_frame =
-      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+      absl::optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
   session_deps->http2_end_stream_with_data_frame = false;
 
@@ -10275,7 +10497,7 @@ TEST_F(SpdyNetworkTransactionTest, GreaseFrameTypeWithGetRequest) {
   const uint8_t flags = 0xcc;
   const std::string payload("foo");
   session_deps->greased_http2_frame =
-      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+      absl::optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
   session_deps->http2_end_stream_with_data_frame = true;
 
@@ -10337,7 +10559,7 @@ TEST_F(SpdyNetworkTransactionTest,
   const uint8_t flags = 0xcc;
   const std::string payload("foo");
   session_deps->greased_http2_frame =
-      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+      absl::optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
   session_deps->http2_end_stream_with_data_frame = true;
 
@@ -10397,7 +10619,7 @@ TEST_F(SpdyNetworkTransactionTest,
   const uint8_t flags = 0xcc;
   const std::string payload("foo");
   session_deps->greased_http2_frame =
-      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+      absl::optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
   session_deps->http2_end_stream_with_data_frame = true;
 
@@ -10458,7 +10680,7 @@ TEST_F(SpdyNetworkTransactionTest, DoNotGreaseFrameTypeWithConnect) {
   const uint8_t flags = 0xcc;
   const std::string payload("foo");
   session_deps->greased_http2_frame =
-      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+      absl::optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
   session_deps->http2_end_stream_with_data_frame = true;
 
@@ -10540,7 +10762,7 @@ TEST_F(SpdyNetworkTransactionTest, OnDataSentDoesNotCrashWithGreasedFrameType) {
   const uint8_t flags = 0xcc;
   const std::string payload("foo");
   session_deps->greased_http2_frame =
-      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+      absl::optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
   session_deps->http2_end_stream_with_data_frame = true;
 
@@ -10619,6 +10841,32 @@ TEST_F(SpdyNetworkTransactionTest, NotAllowHTTP1NotBlockH2Post) {
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
+}
+
+TEST_F(SpdyNetworkTransactionTest, AlpsFramingError) {
+  base::HistogramTester histogram_tester;
+
+  spdy::SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
+      0, spdy::ERROR_CODE_PROTOCOL_ERROR, "Error parsing ALPS: 3"));
+  MockWrite writes[] = {CreateMockWrite(goaway, 0)};
+  SequencedSocketData data(base::span<MockRead>(), writes);
+
+  auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  // Not a complete HTTP/2 frame.
+  ssl_provider->peer_application_settings = "boo";
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+  helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
+
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
+
+  histogram_tester.ExpectUniqueSample(
+      "Net.SpdySession.AlpsDecoderStatus",
+      static_cast<int>(AlpsDecoder::Error::kNotOnFrameBoundary), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdySession.AlpsAcceptChEntries", 0);
+  histogram_tester.ExpectTotalCount("Net.SpdySession.AlpsSettingParameterCount",
+                                    0);
 }
 
 }  // namespace net

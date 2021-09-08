@@ -160,6 +160,7 @@ static int kmsgrab_get_fb2(AVFormatContext *avctx,
     KMSGrabContext *ctx = avctx->priv_data;
     drmModeFB2 *fb;
     int err, i, nb_objects;
+    uint64_t modifier = ctx->drm_format_modifier;
 
     fb = drmModeGetFB2(ctx->hwctx->fd, plane->fb_id);
     if (!fb) {
@@ -175,13 +176,6 @@ static int kmsgrab_get_fb2(AVFormatContext *avctx,
         err = AVERROR(EIO);
         goto fail;
     }
-    if (fb->modifier != ctx->drm_format_modifier) {
-        av_log(avctx, AV_LOG_ERROR, "Plane %"PRIu32" framebuffer "
-               "format modifier changed: now %"PRIx64".\n",
-               ctx->plane_id, fb->modifier);
-        err = AVERROR(EIO);
-        goto fail;
-    }
     if (fb->width != ctx->width || fb->height != ctx->height) {
         av_log(avctx, AV_LOG_ERROR, "Plane %"PRIu32" framebuffer "
                "dimensions changed: now %"PRIu32"x%"PRIu32".\n",
@@ -194,6 +188,9 @@ static int kmsgrab_get_fb2(AVFormatContext *avctx,
         err = AVERROR(EIO);
         goto fail;
     }
+
+    if (fb->flags & DRM_MODE_FB_MODIFIERS)
+        modifier = fb->modifier;
 
     *desc = (AVDRMFrameDescriptor) {
         .nb_layers = 1,
@@ -243,7 +240,7 @@ static int kmsgrab_get_fb2(AVFormatContext *avctx,
             desc->objects[obj] = (AVDRMObjectDescriptor) {
                 .fd              = fd,
                 .size            = size,
-                .format_modifier = fb->modifier,
+                .format_modifier = modifier,
             };
             desc->layers[0].planes[i] = (AVDRMPlaneDescriptor) {
                 .object_index = obj,
@@ -271,7 +268,7 @@ static int kmsgrab_read_packet(AVFormatContext *avctx, AVPacket *pkt)
     int64_t now;
     int err;
 
-    now = av_gettime();
+    now = av_gettime_relative();
     if (ctx->frame_last) {
         int64_t delay;
         while (1) {
@@ -279,10 +276,11 @@ static int kmsgrab_read_packet(AVFormatContext *avctx, AVPacket *pkt)
             if (delay <= 0)
                 break;
             av_usleep(delay);
-            now = av_gettime();
+            now = av_gettime_relative();
         }
     }
     ctx->frame_last = now;
+    now = av_gettime();
 
     plane = drmModeGetPlane(ctx->hwctx->fd, ctx->plane_id);
     if (!plane) {
@@ -557,15 +555,18 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
             err = AVERROR(EINVAL);
             goto fail;
         }
-        if (ctx->drm_format_modifier != DRM_FORMAT_MOD_INVALID &&
-            ctx->drm_format_modifier != fb2->modifier) {
-            av_log(avctx, AV_LOG_ERROR, "Framebuffer format modifier "
-                   "%"PRIx64" does not match expected modifier.\n",
-                   fb2->modifier);
-            err = AVERROR(EINVAL);
-            goto fail;
-        } else {
-            ctx->drm_format_modifier = fb2->modifier;
+
+        if (fb2->flags & DRM_MODE_FB_MODIFIERS) {
+            if (ctx->drm_format_modifier != DRM_FORMAT_MOD_INVALID &&
+                ctx->drm_format_modifier != fb2->modifier) {
+                av_log(avctx, AV_LOG_ERROR, "Framebuffer format modifier "
+                       "%"PRIx64" does not match expected modifier.\n",
+                       fb2->modifier);
+                err = AVERROR(EINVAL);
+                goto fail;
+            } else {
+                ctx->drm_format_modifier = fb2->modifier;
+            }
         }
         av_log(avctx, AV_LOG_VERBOSE, "Format is %s, from "
                "DRM format %"PRIx32" modifier %"PRIx64".\n",

@@ -29,11 +29,13 @@ class ArcAppShortcutSearchResult : public ChromeSearchResult,
                                    public AppIconLoaderDelegate {
  public:
   // Constructor for ArcAppShortcutSearchResult. |is_recommendation|
-  // defines the display type of search results.
+  // defines the display type of search results. |query| will take on the
+  // default value for zero state results.
   ArcAppShortcutSearchResult(arc::mojom::AppShortcutItemPtr data,
                              Profile* profile,
                              AppListControllerDelegate* list_controller,
-                             bool is_recommendation);
+                             bool is_recommendation,
+                             const std::u16string& query);
   ~ArcAppShortcutSearchResult() override;
 
   // ChromeSearchResult:
@@ -48,7 +50,7 @@ class ArcAppShortcutSearchResult : public ChromeSearchResult,
   std::string GetAppId() const;
 
   // Gets accessible name for this app shortcut.
-  base::string16 ComputeAccessibleName() const;
+  std::u16string ComputeAccessibleName() const;
 
   arc::mojom::AppShortcutItemPtr data_;
   std::unique_ptr<arc::IconDecodeRequest> icon_decode_request_;

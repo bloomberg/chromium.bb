@@ -82,6 +82,7 @@
     _presented = YES;
     _hasBadge = badgeSupport;
     _infobarType = infobarType;
+    _shouldUseDefaultDismissal = YES;
   }
   return self;
 }
@@ -108,16 +109,9 @@
   }
 
   // Make sure to display the Toolbar/s before presenting the Banner.
-  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
     _animatedFullscreenDisabler =
         std::make_unique<AnimatedScopedFullscreenDisabler>(
             FullscreenController::FromBrowser(self.browser));
-  } else {
-    _animatedFullscreenDisabler =
-        std::make_unique<AnimatedScopedFullscreenDisabler>(
-            FullscreenController::FromBrowserState(
-                self.browser->GetBrowserState()));
-  }
   _animatedFullscreenDisabler->StartAnimation();
 
   [self.bannerViewController
@@ -160,7 +154,7 @@
                  }];
 
   // Dismisses the presented banner after a certain number of seconds.
-  if (!UIAccessibilityIsVoiceOverRunning()) {
+  if (!UIAccessibilityIsVoiceOverRunning() && self.shouldUseDefaultDismissal) {
     NSTimeInterval timeInterval =
         self.highPriorityPresentation
             ? kInfobarBannerLongPresentationDurationInSeconds
@@ -296,7 +290,7 @@
   UIView* omniboxView = omniboxGuide.owningView;
   CGRect omniboxFrame = [omniboxView convertRect:omniboxGuide.layoutFrame
                                           toView:omniboxView.window];
-  return CGRectGetMaxY(omniboxFrame) - kInfobarBannerOverlapWithOmnibox;
+  return CGRectGetMaxY(omniboxFrame);
 }
 
 - (UIView*)bannerView {

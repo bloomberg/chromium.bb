@@ -7,9 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/app/application_delegate/app_state_observer.h"
+
 @protocol BrowserInterfaceProvider;
 @protocol ConnectionInformation;
 class ChromeBrowserState;
+class PrefService;
 @protocol StartupInformation;
 @protocol TabOpening;
 
@@ -29,7 +32,8 @@ class ChromeBrowserState;
                    tabOpener:(id<TabOpening>)tabOpener
        connectionInformation:(id<ConnectionInformation>)connectionInformation
           startupInformation:(id<StartupInformation>)startupInformation
-                browserState:(ChromeBrowserState*)browserState;
+                browserState:(ChromeBrowserState*)browserState
+                   initStage:(InitStage)initStage;
 
 // Handles the 3D touch application static items. If the First Run UI is active,
 // |completionHandler| will be called with NO.
@@ -40,7 +44,8 @@ class ChromeBrowserState;
                    (id<ConnectionInformation>)connectionInformation
                   startupInformation:(id<StartupInformation>)startupInformation
                    interfaceProvider:
-                       (id<BrowserInterfaceProvider>)interfaceProvider;
+                       (id<BrowserInterfaceProvider>)interfaceProvider
+                           initStage:(InitStage)initStage;
 
 // Returns YES if Chrome is passing a Handoff to itself or if it is an opening
 // from Spotlight.
@@ -52,7 +57,13 @@ class ChromeBrowserState;
                            (id<ConnectionInformation>)connectionInformation
                           startupInformation:
                               (id<StartupInformation>)startupInformation
-                                browserState:(ChromeBrowserState*)browserState;
+                                browserState:(ChromeBrowserState*)browserState
+                                   initStage:(InitStage)initStage;
+
+// Return YES if the user intends to open links in a certain mode and the
+// browser will proceed the request.
++ (BOOL)canProceedWithUserActivity:(NSUserActivity*)userActivity
+                       prefService:(PrefService*)prefService;
 
 @end
 

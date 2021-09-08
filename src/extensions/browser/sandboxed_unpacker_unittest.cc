@@ -4,6 +4,8 @@
 
 #include "extensions/browser/sandboxed_unpacker.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -85,10 +87,10 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
   }
 
   base::FilePath temp_dir() const { return temp_dir_; }
-  base::string16 unpack_error_message() const {
+  std::u16string unpack_error_message() const {
     if (error_)
       return error_->message();
-    return base::string16();
+    return std::u16string();
   }
   CrxInstallErrorType unpack_error_type() const {
     if (error_)
@@ -140,7 +142,7 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
     std::move(quit_closure_).Run();
   }
 
-  base::Optional<CrxInstallError> error_;
+  absl::optional<CrxInstallError> error_;
   base::OnceClosure quit_closure_;
   base::FilePath temp_dir_;
   bool* deleted_tracker_ = nullptr;
@@ -155,8 +157,8 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   void SetUp() override {
     ExtensionsTest::SetUp();
     ASSERT_TRUE(extensions_dir_.CreateUniqueTempDir());
-    in_process_utility_thread_helper_.reset(
-        new content::InProcessUtilityThreadHelper);
+    in_process_utility_thread_helper_ =
+        std::make_unique<content::InProcessUtilityThreadHelper>();
     // It will delete itself.
     client_ = new MockSandboxedUnpackerClient;
 
@@ -170,9 +172,10 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   }
 
   void InitSandboxedUnpacker() {
-    sandboxed_unpacker_ = new SandboxedUnpacker(
-        Manifest::INTERNAL, Extension::NO_FLAGS, extensions_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get(), client_);
+    sandboxed_unpacker_ =
+        new SandboxedUnpacker(mojom::ManifestLocation::kInternal,
+                              Extension::NO_FLAGS, extensions_dir_.GetPath(),
+                              base::ThreadTaskRunnerHandle::Get(), client_);
   }
 
   void TearDown() override {
@@ -226,7 +229,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     return client_->temp_dir().AppendASCII(kTempExtensionName);
   }
 
-  base::string16 GetInstallErrorMessage() const {
+  std::u16string GetInstallErrorMessage() const {
     return client_->unpack_error_message();
   }
 
@@ -265,7 +268,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     sandboxed_unpacker_->extension_root_ = path;
   }
 
-  base::Optional<base::Value> RewriteManifestFile(const base::Value& manifest) {
+  absl::optional<base::Value> RewriteManifestFile(const base::Value& manifest) {
     return sandboxed_unpacker_->RewriteManifestFile(manifest);
   }
 
@@ -338,9 +341,8 @@ TEST_F(SandboxedUnpackerTest, MissingMessagesFile) {
   SetupUnpacker("missing_messages_file.crx", "");
   EXPECT_TRUE(base::MatchPattern(
       GetInstallErrorMessage(),
-      base::ASCIIToUTF16("*") +
-          base::ASCIIToUTF16(manifest_errors::kLocalesMessagesFileMissing) +
-          base::ASCIIToUTF16("*_locales?en_US?messages.json'.")))
+      u"*" + base::ASCIIToUTF16(manifest_errors::kLocalesMessagesFileMissing) +
+          u"*_locales?en_US?messages.json'."))
       << GetInstallErrorMessage();
   ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
             GetInstallErrorType());
@@ -360,10 +362,9 @@ TEST_F(SandboxedUnpackerTest, NoLocaleData) {
 }
 
 TEST_F(SandboxedUnpackerTest, ImageDecodingError) {
-  const char kExpected[] = "Could not decode image: ";
+  const char16_t kExpected[] = u"Could not decode image: ";
   SetupUnpacker("bad_image.crx", "");
-  EXPECT_TRUE(base::StartsWith(GetInstallErrorMessage(),
-                               base::ASCIIToUTF16(kExpected),
+  EXPECT_TRUE(base::StartsWith(GetInstallErrorMessage(), kExpected,
                                base::CompareCase::INSENSITIVE_ASCII))
       << "Expected prefix: \"" << kExpected << "\", actual error: \""
       << GetInstallErrorMessage() << "\"";
@@ -444,7 +445,7 @@ TEST_F(SandboxedUnpackerTest, TestRewriteManifestInjections) {
                       FILE_PATH_LITERAL("manifest.fingerprint")),
                   fingerprint.c_str(),
                   base::checked_cast<int>(fingerprint.size()));
-  base::Optional<base::Value> manifest(RewriteManifestFile(
+  absl::optional<base::Value> manifest(RewriteManifestFile(
       *DictionaryBuilder().Set(kVersionStr, kTestVersion).Build()));
   auto* key = manifest->FindStringKey("key");
   auto* version = manifest->FindStringKey(kVersionStr);
@@ -465,8 +466,7 @@ TEST_F(SandboxedUnpackerTest, InvalidMessagesFile) {
   EXPECT_FALSE(base::PathExists(install_path));
   EXPECT_TRUE(base::MatchPattern(
       GetInstallErrorMessage(),
-      base::ASCIIToUTF16(
-          "*_locales?en_US?messages.json': Line: 4, column: 1,*")))
+      u"*_locales?en_US?messages.json': Line: 4, column: 1,*"))
       << GetInstallErrorMessage();
   ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
             GetInstallErrorType());

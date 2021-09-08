@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -29,9 +28,11 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/mojom/manifest.mojom-shared.h"
 #include "extensions/common/url_pattern_set.h"
 #include "services/preferences/public/cpp/dictionary_value_update.h"
 #include "services/preferences/public/cpp/scoped_pref_update.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class ExtensionPrefValueMap;
 class PrefService;
@@ -90,6 +91,14 @@ class ExtensionPrefs : public KeyedService {
     DELAY_REASON_WAIT_FOR_IDLE = 2,
     DELAY_REASON_WAIT_FOR_IMPORTS = 3,
     DELAY_REASON_WAIT_FOR_OS_UPDATE = 4,
+  };
+
+  // This enum is used to specify the operation for bit map prefs.
+  enum BitMapPrefOperation {
+    BIT_MAP_PREF_ADD,
+    BIT_MAP_PREF_REMOVE,
+    BIT_MAP_PREF_REPLACE,
+    BIT_MAP_PREF_CLEAR
   };
 
   // Wrappers around a prefs::ScopedDictionaryPrefUpdate, which allow us to
@@ -186,6 +195,7 @@ class ExtensionPrefs : public KeyedService {
   bool IsExtensionDisabled(const std::string& id) const;
 
   // Get/Set the order that the browser actions appear in the toolbar.
+  // TODO(devlin): Remove this. The pref is no longer used.
   ExtensionIdList GetToolbarOrder() const;
   void SetToolbarOrder(const ExtensionIdList& extension_ids);
 
@@ -219,7 +229,7 @@ class ExtensionPrefs : public KeyedService {
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
   void OnExtensionUninstalled(const std::string& extension_id,
-                              const Manifest::Location& location,
+                              const mojom::ManifestLocation location,
                               bool external_uninstall);
 
   // Sets the extension's state to enabled and clears disable reasons.
@@ -231,13 +241,37 @@ class ExtensionPrefs : public KeyedService {
   void SetExtensionDisabled(const std::string& extension_id,
                             int disable_reasons);
 
+  // TODO(crbug.com/1180996): Rename this function to
+  // SetSafeBrowsingExtensionBlocklistState and move it to the
+  // blocklist_extension_prefs file.
   void SetExtensionBlocklistState(const std::string& extension_id,
                                   BlocklistState state);
 
   // Checks whether |extension_id| is marked as greylisted.
+  // Warning: This function only takes Safe Browsing blocklist states into
+  // account. Please use blocklist_prefs::GetExtensionBlocklistState instead.
+  // TODO(crbug.com/1180996): Rename this function to
+  // GetSafeBrowsingExtensionBlocklistState and move it to the
+  // blocklist_extension_prefs file.
   // TODO(oleg): Replace IsExtensionBlocklisted by this method.
   BlocklistState GetExtensionBlocklistState(
       const std::string& extension_id) const;
+
+  // Gets the value of a bit map pref. Gets the value of
+  // |extension_id| from |pref_key|. If the value is not found or invalid,
+  // return the |default_bit|.
+  int GetBitMapPrefBits(const std::string& extension_id,
+                        base::StringPiece pref_key,
+                        int default_bit) const;
+  // Modifies the extensions bit map pref |pref_key| to add a new bit value,
+  // remove an existing bit value, or clear all bits. If |operation| is
+  // BIT_MAP_PREF_CLEAR, then |pending_bits| are ignored. If the updated pref
+  // value is the same as the |default_bit|, the pref value will be set to null.
+  void ModifyBitMapPrefBits(const std::string& extension_id,
+                            int pending_bits,
+                            BitMapPrefOperation operation,
+                            base::StringPiece pref_key,
+                            int default_bit);
 
   // Gets or sets profile wide ExtensionPrefs.
   void SetIntegerPref(const PrefMap& pref, int value);
@@ -372,7 +406,7 @@ class ExtensionPrefs : public KeyedService {
   // For updating the prefs when the install location is changed for the
   // extension.
   void SetInstallLocation(const std::string& extension_id,
-                          Manifest::Location location);
+                          mojom::ManifestLocation location);
 
   // Returns whether the extension with |id| has its blocklist bit set.
   //
@@ -407,12 +441,6 @@ class ExtensionPrefs : public KeyedService {
   // Subsequent calls return true. It's not possible through an API to ever
   // reset it. Don't call it unless you mean it!
   bool SetAlertSystemFirstRun();
-
-  // Whether extensions that were previously visible in the toolbar from
-  // |BrowserActionsContainer| have been migrated to pinned extensions in the
-  // |ExtensionsToolbarContainer|.
-  bool IsPinnedExtensionsMigrationComplete();
-  void MarkPinnedExtensionsMigrationComplete();
 
   // Returns the last value set via SetLastPingDay. If there isn't such a
   // pref, the returned Time will return true for is_null().
@@ -659,9 +687,9 @@ class ExtensionPrefs : public KeyedService {
   void SetDNRDynamicRulesetChecksum(const ExtensionId& extension_id,
                                     int checksum);
 
-  // Returns the set of enabled static ruleset IDs or base::nullopt if the
+  // Returns the set of enabled static ruleset IDs or absl::nullopt if the
   // extension hasn't updated the set of enabled static rulesets.
-  base::Optional<std::set<declarative_net_request::RulesetID>>
+  absl::optional<std::set<declarative_net_request::RulesetID>>
   GetDNREnabledStaticRulesets(const ExtensionId& extension_id) const;
   // Updates the set of enabled static rulesets for the |extension_id|. This
   // preference gets cleared on extension update.
@@ -732,7 +760,7 @@ class ExtensionPrefs : public KeyedService {
   // loaded again after this.
   void MarkObsoleteComponentExtensionAsRemoved(
       const std::string& extension_id,
-      const Manifest::Location& location);
+      const mojom::ManifestLocation location);
 
   // When called before the ExtensionService is created, alerts that are
   // normally suppressed in first run will still trigger.
@@ -753,13 +781,8 @@ class ExtensionPrefs : public KeyedService {
   friend class ExtensionPrefsBlocklistedExtensions;  // Unit test.
   friend class ExtensionPrefsComponentExtension;     // Unit test.
   friend class ExtensionPrefsUninstallExtension;     // Unit test.
-
-  enum DisableReasonChange {
-    DISABLE_REASON_ADD,
-    DISABLE_REASON_REMOVE,
-    DISABLE_REASON_REPLACE,
-    DISABLE_REASON_CLEAR
-  };
+  friend class
+      ExtensionPrefsBitMapPrefValueClearedIfEqualsDefaultValue;  // Unit test.
 
   // See the Create methods.
   ExtensionPrefs(
@@ -849,10 +872,10 @@ class ExtensionPrefs : public KeyedService {
   // Modifies the extensions disable reasons to add a new reason, remove an
   // existing reason, or clear all reasons. Notifies observers if the set of
   // DisableReasons has changed.
-  // If |change| is DISABLE_REASON_CLEAR, then |reason| is ignored.
+  // If |operation| is BIT_MAP_PREF_CLEAR, then |reasons| are ignored.
   void ModifyDisableReasons(const std::string& extension_id,
                             int reasons,
-                            DisableReasonChange change);
+                            BitMapPrefOperation operation);
 
   // Installs the persistent extension preferences into |prefs_|'s extension
   // pref store. Does nothing if extensions_disabled_ is true.

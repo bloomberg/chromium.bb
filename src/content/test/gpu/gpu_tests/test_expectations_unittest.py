@@ -2,12 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import gpu_project_config
+from __future__ import print_function
+
 import inspect
 import itertools
-import mock
 import os
+import re
+import sys
 import unittest
+
+if sys.version_info[0] == 2:
+  import mock
+else:
+  import unittest.mock as mock
+
+import gpu_project_config
 
 from gpu_tests import gpu_helper
 from gpu_tests import gpu_integration_test
@@ -56,6 +65,13 @@ ANDROID_CONDITIONS = [
     'android-kitkat',
 ]
 GENERIC_CONDITIONS = OS_CONDITIONS + GPU_CONDITIONS
+
+VALID_BUG_REGEXES = [
+    re.compile(r'crbug\.com\/\d+'),
+    re.compile(r'crbug\.com\/angleproject\/\d+'),
+    re.compile(r'crbug\.com\/swiftshader\/\d+'),
+    re.compile(r'skbug\.com\/\d+'),
+]
 
 _map_specific_to_generic = {sos: 'win' for sos in WIN_CONDITIONS}
 _map_specific_to_generic.update({sos: 'mac' for sos in MAC_CONDITIONS})
@@ -231,10 +247,13 @@ def CheckTestExpectationPatternsForConflicts(expectations, file_name):
 def _FindTestCases():
   test_cases = []
   for start_dir in gpu_project_config.CONFIG.start_dirs:
+    # Note we deliberately only scan the integration tests as a
+    # workaround for http://crbug.com/1195465 .
     modules_to_classes = discover.DiscoverClasses(
         start_dir,
         gpu_project_config.CONFIG.top_level_dir,
-        base_class=gpu_integration_test.GpuIntegrationTest)
+        base_class=gpu_integration_test.GpuIntegrationTest,
+        pattern='*_integration_test.py')
     test_cases.extend(modules_to_classes.values())
   return test_cases
 
@@ -246,7 +265,7 @@ class GpuTestExpectationsValidation(unittest.TestCase):
     errors = ''
     for test_case in _FindTestCases():
       if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
-        for webgl_version in xrange(
+        for webgl_version in range(
             1, 2 + (test_case == webgl_conformance_test_class)):
           _ = list(
               test_case.GenerateGpuTests(
@@ -263,7 +282,7 @@ class GpuTestExpectationsValidation(unittest.TestCase):
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
     for test_case in _FindTestCases():
       if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
-        for webgl_version in xrange(
+        for webgl_version in range(
             1, 2 + (test_case == webgl_conformance_test_class)):
           _ = list(
               test_case.GenerateGpuTests(
@@ -286,7 +305,7 @@ class GpuTestExpectationsValidation(unittest.TestCase):
 
     webgl_test_class = (
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
-    for webgl_version in xrange(1, 3):
+    for webgl_version in range(1, 3):
       _ = list(
           webgl_test_class.GenerateGpuTests(
               gpu_helper.GetMockArgs(webgl_version='%d.0.0' % webgl_version)))
@@ -299,7 +318,7 @@ class GpuTestExpectationsValidation(unittest.TestCase):
   def testForBrokenWebglExtensionExpectations(self):
     webgl_test_class = (
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
-    for webgl_version in xrange(1, 3):
+    for webgl_version in range(1, 3):
       tests = [
           test[0] for test in webgl_test_class.GenerateGpuTests(
               gpu_helper.GetMockArgs(webgl_version='%d.0.0' % webgl_version))
@@ -309,10 +328,10 @@ class GpuTestExpectationsValidation(unittest.TestCase):
         expectations.parse_tagged_list(f.read())
 
         # remove non webgl extension expectations
-        for test in expectations.individual_exps.keys():
+        for test in list(expectations.individual_exps.keys()):
           if not test.lower().startswith('webglextension'):
             expectations.individual_exps.pop(test)
-        for test in expectations.glob_exps.keys():
+        for test in list(expectations.glob_exps.keys()):
           if not test.lower().startswith('webglextension'):
             expectations.glob_exps.pop(test)
 
@@ -343,6 +362,22 @@ class GpuTestExpectationsValidation(unittest.TestCase):
         if (test_case.Name() not in ('pixel', 'webgl_conformance')
             and test_case.ExpectationsFiles()):
           CheckTestExpectationsAreForExistingTests(self, test_case, options)
+
+  def testExpectationBugValidity(self):
+    expectation_dir = os.path.join(os.path.dirname(__file__),
+                                   'test_expectations')
+    for expectation_file in os.listdir(expectation_dir):
+      with open(os.path.join(expectation_dir, expectation_file)) as f:
+        content = f.read()
+      list_parser = expectations_parser.TaggedTestListParser(content)
+      for expectation in list_parser.expectations:
+        reason = expectation.reason
+        if not reason:
+          continue
+        if not any(r.match(reason) for r in VALID_BUG_REGEXES):
+          self.fail('Bug string "%s" in expectation file %s is either not in a '
+                    'recognized format or references an unknown project.' %
+                    (reason, expectation_file))
 
   def testWebglTestExpectationsForDriverTags(self):
     webgl_conformance_test_class = (
@@ -462,7 +497,7 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
                          'a/c/* [ Failure ]\n')
     options = gpu_helper.GetMockArgs()
     test_class = gpu_integration_test.GpuIntegrationTest
-    with tempfile_ext.NamedTemporaryFile() as expectations_file,            \
+    with tempfile_ext.NamedTemporaryFile(mode='w') as expectations_file,    \
          mock.patch.object(
              test_class, 'GenerateGpuTests', return_value=[('a/b/c', ())]), \
          mock.patch.object(
@@ -533,3 +568,7 @@ def testDriverVersionComparision(self):
   self.assertTrue(
       gpu_helper.EvaluateVersionComparison('24.20.100.7000', 'eq',
                                            '25.20.100.7000', 'win', 'intel'))
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity=2)

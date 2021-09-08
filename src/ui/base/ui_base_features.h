@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/base/buildflags.h"
 
 namespace features {
@@ -15,15 +16,17 @@ namespace features {
 // Keep sorted!
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kClipboardFilenames;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kColorProviderRedirection;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kCompositorThreadedScrollbarScrolling;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kExperimentalFlingAnimation;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kSettingsShowsPerKeyboardSettings;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kInputMethodSettingsUiUpdate;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
@@ -47,8 +50,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUiGpuRasterizationEnabled();
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kCalculateNativeWinOcclusion;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kCalculateNativeWinOcclusionCheckVirtualDesktopUsed;
-COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kElasticOverscrollWin;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kInputPaneOnScreenKeyboard;
@@ -56,11 +57,25 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kPointerEventsForTouch;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kPrecisionTouchpadLogging;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kScreenPowerListenerForNativeWinOcclusion;
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kTSFImeSupport;
 
 // Returns true if the system should use WM_POINTER events for touch events.
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUsingWMPointerForTouch();
 #endif  // defined(OS_WIN)
+
+#if defined(OS_CHROMEOS)
+// This flag is intended to supercede kNewShortcutMapping.
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kImprovedKeyboardShortcuts;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsImprovedKeyboardShortcutsEnabled();
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kDeprecateAltBasedSixPack;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsDeprecateAltBasedSixPackEnabled();
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
@@ -92,7 +107,12 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kUseCommonSelectPopup;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUseCommonSelectPopupEnabled();
 
-#if defined(OS_CHROMEOS)
+// Used to enable keyboard accessible tooltips.
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kKeyboardAccessibleTooltip;
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsKeyboardAccessibleTooltipEnabled();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kHandwritingGesture;
 
@@ -101,6 +121,19 @@ extern const base::Feature kNewShortcutMapping;
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsNewShortcutMappingEnabled();
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kDeprecateAltClick;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsDeprecateAltClickEnabled();
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kShortcutCustomizationApp;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsShortcutCustomizationAppEnabled();
+
 #endif
 
 // Indicates whether DrmOverlayManager should used the synchronous API to
@@ -139,6 +172,23 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const char kPredictorNameLinearResampling[];
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const char kPredictorNameEmpty[];
 
+// Enables resampling of scroll events using an experimental latency of +3.3ms
+// instead of the original -5ms.
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kResamplingScrollEventsExperimentalPrediction;
+
+// The type of prediction used. TimeBased uses a fixed timing, FramesBased uses
+// a ratio of the vsync refresh rate. The timing/ratio can be changed on the
+// command line through a `latency` param.
+COMPONENT_EXPORT(UI_BASE_FEATURES) extern const char kPredictionTypeTimeBased[];
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const char kPredictionTypeFramesBased[];
+// The default values for `latency`
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const char kPredictionTypeDefaultTime[];
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const char kPredictionTypeDefaultFramesRatio[];
+
 // The type of filter to use for filtering events. These values are used as the
 // 'filter' feature param for |blink::features::kFilteringScrollPrediction|.
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const char kFilterNameEmpty[];
@@ -147,6 +197,9 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) extern const char kFilterNameOneEuro[];
 // Android only feature, for swipe to move cursor.
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kSwipeToMoveCursor;
+
+// Enables UI debugging tools such as shortcuts.
+COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kUIDebugTools;
 
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsSwipeToMoveCursorEnabled();
 

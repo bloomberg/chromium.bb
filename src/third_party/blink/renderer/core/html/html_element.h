@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -41,6 +42,7 @@ class HTMLFormElement;
 class KeyboardEvent;
 class StringOrTrustedScript;
 class StringTreatNullAsEmptyStringOrTrustedScript;
+class V8UnionStringTreatNullAsEmptyStringOrTrustedScript;
 
 enum TranslateAttributeMode {
   kTranslateAttributeYes,
@@ -61,13 +63,20 @@ class CORE_EXPORT HTMLElement : public Element {
 
   String title() const final;
 
-  void setInnerText(const String&, ExceptionState&);
-  virtual void setInnerText(const StringOrTrustedScript&, ExceptionState&);
-  virtual void setInnerText(const StringTreatNullAsEmptyStringOrTrustedScript&,
-                            ExceptionState&);
   String innerText();
-  void innerText(StringOrTrustedScript& result);
-  void innerText(StringTreatNullAsEmptyStringOrTrustedScript& result);
+  void setInnerText(const String&, ExceptionState&);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8UnionStringTreatNullAsEmptyStringOrTrustedScript* innerTextForBinding();
+  virtual void setInnerTextForBinding(
+      const V8UnionStringTreatNullAsEmptyStringOrTrustedScript*
+          string_or_trusted_script,
+      ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void innerTextForBinding(StringTreatNullAsEmptyStringOrTrustedScript& result);
+  virtual void setInnerTextForBinding(
+      const StringTreatNullAsEmptyStringOrTrustedScript&,
+      ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void setOuterText(const String&, ExceptionState&);
 
   virtual bool HasCustomFocusLogic() const;
@@ -96,7 +105,7 @@ class CORE_EXPORT HTMLElement : public Element {
 
   void click();
 
-  void AccessKeyAction(bool send_mouse_events) override;
+  void AccessKeyAction(SimulatedClickCreationScope creation_scope) override;
 
   bool ShouldSerializeEndTag() const;
 
@@ -105,9 +114,11 @@ class CORE_EXPORT HTMLElement : public Element {
   HTMLFormElement* FindFormAncestor() const;
 
   bool HasDirectionAuto() const;
-  TextDirection DirectionalityIfhasDirAutoAttribute(bool& is_auto) const;
 
   virtual bool IsHTMLBodyElement() const { return false; }
+  // TODO(crbug.com/1123606): Remove this virtual method once the fenced frame
+  // origin trial is over.
+  virtual bool IsHTMLFencedFrameElement() const { return false; }
   virtual bool IsHTMLFrameSetElement() const { return false; }
   virtual bool IsHTMLPortalElement() const { return false; }
   virtual bool IsHTMLUnknownElement() const { return false; }
@@ -153,6 +164,14 @@ class CORE_EXPORT HTMLElement : public Element {
   virtual FormAssociated* ToFormAssociatedOrNull() { return nullptr; }
   bool IsFormAssociatedCustomElement() const;
 
+  static void AdjustCandidateDirectionalityForSlot(
+      HeapHashSet<Member<Node>> candidate_set);
+  void UpdateDescendantHasDirAutoAttribute(bool has_dir_auto);
+  void UpdateDirectionalityAndDescendant(TextDirection direction);
+  void UpdateDescendantDirectionality(TextDirection direction);
+  void AdjustDirectionalityIfNeededAfterShadowRootChanged();
+  void BeginParsingChildren() override;
+
  protected:
   enum AllowPercentage { kDontAllowPercentageValues, kAllowPercentageValues };
   enum AllowZero { kDontAllowZeroValues, kAllowZeroValues };
@@ -185,7 +204,7 @@ class CORE_EXPORT HTMLElement : public Element {
   unsigned ParseBorderWidthAttribute(const AtomicString&) const;
 
   void ChildrenChanged(const ChildrenChange&) override;
-  void CalculateAndAdjustDirectionality();
+  bool CalculateAndAdjustAutoDirectionality(Node* stay_within);
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode& insertion_point) override;
@@ -206,10 +225,11 @@ class CORE_EXPORT HTMLElement : public Element {
 
   DocumentFragment* TextToFragment(const String&, ExceptionState&);
 
-  bool SelfOrAncestorHasDirAutoAttribute() const;
   void AdjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child);
-  void AdjustDirectionalityIfNeededAfterChildrenChanged(const ChildrenChange&);
-  TextDirection Directionality() const;
+  void AdjustDirectionalityIfNeededAfterChildrenChanged(
+      const ChildrenChange& change);
+  TextDirection ResolveAutoDirectionality(bool& is_deferred,
+                                          Node* stay_within) const;
 
   TranslateAttributeMode GetTranslateAttributeMode() const;
 

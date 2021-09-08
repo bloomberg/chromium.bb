@@ -25,7 +25,7 @@ SkColor GetBackgroundColor() {
 }  // namespace
 
 RoundedLabelButton::RoundedLabelButton(PressedCallback callback,
-                                       const base::string16& text)
+                                       const std::u16string& text)
     : views::LabelButton(std::move(callback), text) {
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetBorder(views::CreateEmptyBorder(gfx::Insets()));
@@ -58,22 +58,6 @@ gfx::Size RoundedLabelButton::CalculatePreferredSize() const {
 
 int RoundedLabelButton::GetHeightForWidth(int width) const {
   return kTrayItemSize;
-}
-
-std::unique_ptr<views::InkDrop> RoundedLabelButton::CreateInkDrop() {
-  return TrayPopupUtils::CreateInkDrop(this);
-}
-
-std::unique_ptr<views::InkDropRipple> RoundedLabelButton::CreateInkDropRipple()
-    const {
-  return TrayPopupUtils::CreateInkDropRipple(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent());
-}
-
-std::unique_ptr<views::InkDropHighlight>
-RoundedLabelButton::CreateInkDropHighlight() const {
-  return TrayPopupUtils::CreateInkDropHighlight(this);
 }
 
 const char* RoundedLabelButton::GetClassName() const {

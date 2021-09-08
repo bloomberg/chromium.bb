@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -17,23 +18,19 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/notreached.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_widget.h"
 #include "content/web_test/renderer/test_runner.h"
 #include "content/web_test/renderer/web_test_spell_checker.h"
-#include "content/web_test/renderer/web_view_test_proxy.h"
-#include "content/web_test/renderer/web_widget_test_proxy.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "net/base/filename_util.h"
+#include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
@@ -41,31 +38,32 @@
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/blink.h"
-#include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "v8/include/v8.h"
 
+using blink::ContextMenuData;
 using blink::DragOperationsMask;
-using blink::WebContextMenuData;
+using blink::MenuItemInfo;
 using blink::WebDragData;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebInputEventResult;
 using blink::WebKeyboardEvent;
 using blink::WebLocalFrame;
-using blink::WebMenuItemInfo;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebPagePopup;
@@ -406,21 +404,12 @@ const char kSeparatorIdentifier[] = "---------";
 const char kDisabledIdentifier[] = "#";
 const char kCheckedIdentifier[] = "*";
 
-// Web tests are written to be dsf-independent. This scale should be applied to
-// coordinates provided from js, to convert them to physical pixels when
-// UseZoomForDSF is enabled.
-float DeviceScaleFactorForEvents(WebWidgetTestProxy* widget) {
-  if (!widget->compositor_deps()->IsUseZoomForDSFEnabled())
-    return 1;
-  return widget->GetWebWidget()->GetOriginalScreenInfo().device_scale_factor;
-}
-
 bool OutsideRadius(const gfx::PointF& a, const gfx::PointF& b, float radius) {
   return ((a.x() - b.x()) * (a.x() - b.x()) +
           (a.y() - b.y()) * (a.y() - b.y())) > radius * radius;
 }
 
-void PopulateCustomItems(const WebVector<WebMenuItemInfo>& customItems,
+void PopulateCustomItems(const WebVector<MenuItemInfo>& customItems,
                          const std::string& prefix,
                          std::vector<std::string>* strings) {
   for (size_t i = 0; i < customItems.size(); ++i) {
@@ -429,15 +418,15 @@ void PopulateCustomItems(const WebVector<WebMenuItemInfo>& customItems,
       prefixCopy = kDisabledIdentifier + prefix;
     if (customItems[i].checked)
       prefixCopy = kCheckedIdentifier + prefix;
-    if (customItems[i].type == blink::WebMenuItemInfo::kSeparator) {
+    if (customItems[i].type == blink::MenuItemInfo::kSeparator) {
       strings->push_back(prefixCopy + kSeparatorIdentifier);
-    } else if (customItems[i].type == blink::WebMenuItemInfo::kSubMenu) {
-      strings->push_back(prefixCopy + customItems[i].label.Utf8() +
+    } else if (customItems[i].type == blink::MenuItemInfo::kSubMenu) {
+      strings->push_back(prefixCopy + base::UTF16ToUTF8(customItems[i].label) +
                          kSubMenuIdentifier);
       PopulateCustomItems(customItems[i].sub_menu_items,
                           prefixCopy + kSubMenuDepthIdentifier, strings);
     } else {
-      strings->push_back(prefixCopy + customItems[i].label.Utf8());
+      strings->push_back(prefixCopy + base::UTF16ToUTF8(customItems[i].label));
     }
   }
 }
@@ -451,8 +440,7 @@ void PopulateCustomItems(const WebVector<WebMenuItemInfo>& customItems,
 // flags.
 // - Some test even checks actual string content. So providing it would be also
 // helpful.
-std::vector<std::string> MakeMenuItemStringsFor(
-    WebContextMenuData* context_menu) {
+std::vector<std::string> MakeMenuItemStringsFor(ContextMenuData* context_menu) {
   // These constants are based on Safari's context menu because tests are made
   // for it.
   static const char* kNonEditableMenuStrings[] = {
@@ -485,8 +473,8 @@ std::vector<std::string> MakeMenuItemStringsFor(
       strings.push_back(*item);
     }
     WebVector<WebString> suggestions;
-    WebTestSpellChecker::FillSuggestionList(context_menu->misspelled_word,
-                                            &suggestions);
+    WebTestSpellChecker::FillSuggestionList(
+        WebString::FromUTF16(context_menu->misspelled_word), &suggestions);
     for (const WebString& suggestion : suggestions)
       strings.push_back(suggestion.Utf8());
   } else {
@@ -1254,26 +1242,22 @@ EventSender::SavedEvent::SavedEvent()
       milliseconds(0),
       modifiers(0) {}
 
-EventSender::EventSender(WebWidgetTestProxy* web_widget_test_proxy)
-    : web_widget_test_proxy_(web_widget_test_proxy),
-      replaying_saved_events_(false) {
+EventSender::EventSender(blink::WebFrameWidget* web_frame_widget,
+                         content::TestRunner* test_runner)
+    : web_frame_widget_(web_frame_widget),
+      test_runner_(test_runner) {
   Reset();
 }
 
 EventSender::~EventSender() {}
 
 void EventSender::Reset() {
-  current_drag_data_ = base::nullopt;
-  current_drag_effect_ = blink::kDragOperationNone;
+  current_drag_data_ = absl::nullopt;
+  current_drag_effect_ = ui::mojom::DragOperation::kNone;
   current_drag_effects_allowed_ = blink::kDragOperationNone;
   current_pointer_state_.clear();
   is_drag_mode_ = true;
   force_layout_on_events_ = true;
-
-  // Disable the zoom level override. Reset() also happens during creation of
-  // the RenderWidget, which we can detect by checking for the WebWidget.
-  if (web_widget_test_proxy_->GetWebFrameWidget())
-    web_widget_test_proxy_->GetWebFrameWidget()->ResetZoomLevelForTesting();
 
 #if defined(OS_WIN)
   wm_key_down_ = WM_KEYDOWN;
@@ -1307,8 +1291,8 @@ void EventSender::Install(WebLocalFrame* frame) {
   EventSenderBindings::Install(weak_factory_.GetWeakPtr(), frame);
 }
 
-void EventSender::SetContextMenuData(const WebContextMenuData& data) {
-  last_context_menu_data_.reset(new WebContextMenuData(data));
+void EventSender::SetContextMenuData(const ContextMenuData& data) {
+  last_context_menu_data_ = std::make_unique<ContextMenuData>(data);
 }
 
 int EventSender::ModifiersForPointer(int pointer_id) {
@@ -1339,7 +1323,7 @@ void EventSender::DoDragDrop(const WebDragData& drag_data,
           current_pointer_state_[kRawMousePointerId].modifiers_,
           current_pointer_state_[kRawMousePointerId].current_buttons_),
       base::BindOnce(
-          [](base::WeakPtr<EventSender> sender, blink::DragOperation op) {
+          [](base::WeakPtr<EventSender> sender, ui::mojom::DragOperation op) {
             if (sender)
               sender->current_drag_effect_ = op;
           },
@@ -1587,7 +1571,7 @@ void EventSender::KeyDown(const std::string& code_str,
       }
     }
     if (!code) {
-      base::string16 code_str16 = base::UTF8ToUTF16(code_str);
+      std::u16string code_str16 = base::UTF8ToUTF16(code_str);
       if (code_str16.size() != 1u) {
         v8::Isolate* isolate = blink::MainThreadIsolate();
         isolate->ThrowException(v8::Exception::TypeError(
@@ -1601,8 +1585,7 @@ void EventSender::KeyDown(const std::string& code_str,
       if (base::IsAsciiAlpha(code)) {
         domKeyString.assign(code_str);
         domCodeString.assign("Key");
-        domCodeString.push_back(
-            base::ToUpperASCII(static_cast<base::char16>(code)));
+        domCodeString.push_back(base::ToUpperASCII(char16_t{code}));
       } else if (base::IsAsciiDigit(code)) {
         domKeyString.assign(code_str);
         domCodeString.assign("Digit");
@@ -1677,7 +1660,7 @@ void EventSender::KeyDown(const std::string& code_str,
   // behavior here.
   std::string edit_command;
   if (GetEditCommand(event_down, &edit_command)) {
-    web_widget_test_proxy_->GetWebFrameWidget()->AddEditCommandForNextKeyEvent(
+    web_frame_widget_->AddEditCommandForNextKeyEvent(
         WebString::FromLatin1(edit_command), "");
   }
 
@@ -1691,10 +1674,10 @@ void EventSender::KeyDown(const std::string& code_str,
                    current_pointer_state_[kRawMousePointerId].current_buttons_,
                    current_pointer_state_[kRawMousePointerId].last_pos_,
                    click_count_, &event);
-    FinishDragAndDrop(event, blink::kDragOperationNone);
+    FinishDragAndDrop(event, ui::mojom::DragOperation::kNone);
   }
 
-  web_widget_test_proxy_->GetWebFrameWidget()->ClearEditCommands();
+  web_frame_widget_->ClearEditCommands();
 
   if (generate_char) {
     WebKeyboardEvent event_char = event_up;
@@ -1844,12 +1827,13 @@ void EventSender::DumpFilenameBeingDragged() {
                                 std::string(),   // mime_type
                                 std::string());  // default_name
 #if defined(OS_WIN)
-      filename = filename.ReplaceExtension(filename_extension.Utf16());
+      filename = filename.ReplaceExtension(
+          base::UTF8ToWide(filename_extension.Utf8()));
 #else
       filename = filename.ReplaceExtension(filename_extension.Utf8());
 #endif
-      test_runner()->PrintMessage(std::string("Filename being dragged: ") +
-                                  filename.AsUTF8Unsafe() + "\n");
+      test_runner_->PrintMessage(std::string("Filename being dragged: ") +
+                                 filename.AsUTF8Unsafe() + "\n");
       return;
     }
   }
@@ -1917,7 +1901,7 @@ void EventSender::BeginDragWithItems(
   }
   if (!file_paths.empty()) {
     current_drag_data_->SetFilesystemId(
-        test_runner()->RegisterIsolatedFileSystem(file_paths));
+        test_runner_->RegisterIsolatedFileSystem(file_paths));
   }
   current_drag_effects_allowed_ = blink::kDragOperationCopy;
 
@@ -1947,7 +1931,7 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeFilename;
     item.filename_data =
-        web_view_proxy()->GetAbsoluteWebStringFromUTF8Path(file_path);
+        test_runner_->GetAbsoluteWebStringFromUTF8Path(file_path);
     items.emplace_back(item);
   }
 
@@ -1975,7 +1959,7 @@ void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
   // Web tests provide inputs in device-scale independent values, and need to be
   // adjusted to physical pixels when blink is working in physical pixels as
   // determined by UseZoomForDSF.
-  float dsf = DeviceScaleFactorForEvents(web_widget_test_proxy_);
+  float dsf = DeviceScaleFactorForEvents();
   x *= dsf;
   y *= dsf;
 
@@ -2085,7 +2069,7 @@ void EventSender::MouseMoveTo(blink::WebLocalFrame* frame,
   // Web tests provide inputs in device-scale independent values, and need to be
   // adjusted to physical pixels when blink is working in physical pixels as
   // determined by UseZoomForDSF.
-  float dsf = DeviceScaleFactorForEvents(web_widget_test_proxy_);
+  float dsf = DeviceScaleFactorForEvents();
   x *= dsf;
   y *= dsf;
 
@@ -2290,7 +2274,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   // Web tests provide inputs in device-scale independent values, and need to be
   // adjusted to physical pixels when blink is working in physical pixels as
   // determined by UseZoomForDSF.
-  float dsf = DeviceScaleFactorForEvents(web_widget_test_proxy_);
+  float dsf = DeviceScaleFactorForEvents();
   x *= dsf;
   y *= dsf;
 
@@ -2474,7 +2458,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
                    current_pointer_state_[kRawMousePointerId].current_buttons_,
                    gfx::PointF(x, y), click_count_, &mouse_event);
 
-    FinishDragAndDrop(mouse_event, blink::kDragOperationNone);
+    FinishDragAndDrop(mouse_event, ui::mojom::DragOperation::kNone);
   }
   args->Return(result != WebInputEventResult::kNotHandled);
 }
@@ -2482,8 +2466,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
 void EventSender::UpdateClickCountForButton(WebMouseEvent::Button button_type) {
   // The radius constant is dsf-independent, but events are in physical pixels.
   // Convert the radius to physical pixels to compare to the event position.
-  float radius = kMultipleClickRadiusPixels *
-                 DeviceScaleFactorForEvents(web_widget_test_proxy_);
+  float radius = kMultipleClickRadiusPixels * DeviceScaleFactorForEvents();
 
   bool fast_enough =
       GetCurrentEventTime() - last_click_time_ < kMultipleClickTime;
@@ -2524,7 +2507,7 @@ WebMouseWheelEvent EventSender::GetMouseWheelEvent(gin::Arguments* args,
   // integers (see MouseEvent::screenX() for example). If the web test provides
   // a non-whole number (including after device scale factor is applied) we drop
   // the fractional part.
-  float dsf = DeviceScaleFactorForEvents(web_widget_test_proxy_);
+  float dsf = DeviceScaleFactorForEvents();
   horizontal *= dsf;
   vertical *= dsf;
 
@@ -2634,24 +2617,25 @@ void EventSender::InitPointerProperties(gin::Arguments* args,
 }
 
 void EventSender::FinishDragAndDrop(const WebMouseEvent& event,
-                                    blink::DragOperation drag_effect) {
+                                    ui::mojom::DragOperation drag_effect) {
   // Bail if cancelled.
   if (!current_drag_data_)
     return;
 
   current_drag_effect_ = drag_effect;
-  if (current_drag_effect_) {
+  if (current_drag_effect_ != ui::mojom::DragOperation::kNone) {
     // Specifically pass any keyboard modifiers to the drop method. This allows
     // tests to control the drop type (i.e. copy or move).
     MainFrameWidget()->DragTargetDrop(
         *current_drag_data_, event.PositionInWidget(), event.PositionInScreen(),
-        event.GetModifiers());
+        event.GetModifiers(), base::DoNothing());
   } else {
     MainFrameWidget()->DragTargetDragLeave(gfx::PointF(), gfx::PointF());
   }
-  current_drag_data_ = base::nullopt;
-  MainFrameWidget()->DragSourceEndedAt(
-      event.PositionInWidget(), event.PositionInScreen(), current_drag_effect_);
+  current_drag_data_ = absl::nullopt;
+  MainFrameWidget()->DragSourceEndedAt(event.PositionInWidget(),
+                                       event.PositionInScreen(),
+                                       current_drag_effect_, base::DoNothing());
   MainFrameWidget()->DragSourceSystemDragEnded();
 }
 
@@ -2681,7 +2665,7 @@ void EventSender::DoDragAfterMouseMove(const WebMouseEvent& event) {
       event.PositionInWidget(), event.PositionInScreen(),
       current_drag_effects_allowed_, event.GetModifiers(),
       base::BindOnce(
-          [](base::WeakPtr<EventSender> sender, blink::DragOperation op) {
+          [](base::WeakPtr<EventSender> sender, ui::mojom::DragOperation op) {
             if (sender)
               sender->current_drag_effect_ = op;
           },
@@ -2805,24 +2789,16 @@ void EventSender::SendGesturesForMouseWheelEvent(
   HandleInputEventOnViewOrPopup(end_event);
 }
 
-TestRunner* EventSender::test_runner() {
-  return web_widget_test_proxy_->GetWebViewTestProxy()->GetTestRunner();
-}
-
-WebViewTestProxy* EventSender::web_view_proxy() {
-  return web_widget_test_proxy_->GetWebViewTestProxy();
-}
-
 const blink::WebView* EventSender::view() const {
-  return web_widget_test_proxy_->GetWebViewTestProxy()->GetWebView();
+  return web_frame_widget_->LocalRoot()->View();
 }
 
 blink::WebView* EventSender::view() {
-  return web_widget_test_proxy_->GetWebViewTestProxy()->GetWebView();
+  return web_frame_widget_->LocalRoot()->View();
 }
 
 blink::WebWidget* EventSender::widget() {
-  return web_widget_test_proxy_->GetWebWidget();
+  return web_frame_widget_;
 }
 
 blink::WebFrameWidget* EventSender::MainFrameWidget() {
@@ -2842,6 +2818,12 @@ blink::WebFrameWidget* EventSender::MainFrameWidget() {
 void EventSender::UpdateLifecycleToPrePaint() {
   widget()->UpdateLifecycle(blink::WebLifecycleUpdate::kPrePaint,
                             blink::DocumentUpdateReason::kTest);
+}
+
+float EventSender::DeviceScaleFactorForEvents() {
+  if (!blink::Platform::Current()->IsUseZoomForDSFEnabled())
+    return 1;
+  return web_frame_widget_->GetOriginalScreenInfo().device_scale_factor;
 }
 
 }  // namespace content

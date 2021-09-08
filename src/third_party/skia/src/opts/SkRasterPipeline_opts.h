@@ -723,8 +723,6 @@ namespace SK_OPTS_NS {
         return {p[ix[0]], p[ix[1]], p[ix[2]], p[ix[3]]};
     }
 
-    // TODO: these loads and stores are incredibly difficult to follow.
-
     SI void load2(const uint16_t* ptr, size_t tail, U16* r, U16* g) {
         __m128i _01;
         if (__builtin_expect(tail,0)) {
@@ -1034,11 +1032,6 @@ static const size_t N = sizeof(F) / sizeof(float);
     // We can still only pass 16 floats, so best as 4x {r,g,b,a}.
     #define ABI __attribute__((pcs("aapcs-vfp")))
     #define JUMPER_NARROW_STAGES 1
-#elif 0 && defined(_MSC_VER) && defined(__clang__) && defined(__x86_64__)
-    // SysV ABI makes it very sensible to use wide stages with clang-cl.
-    // TODO: crashes during compilation  :(
-    #define ABI __attribute__((sysv_abi))
-    #define JUMPER_NARROW_STAGES 0
 #elif defined(_MSC_VER)
     // Even if not vectorized, this lets us pass {r,g,b,a} as registers,
     // instead of {b,a} on the stack.  Narrow stages work best for __vectorcall.
@@ -1254,7 +1247,6 @@ SI U32 ix_and_ptr(T** ptr, const SkRasterPipeline_GatherCtx* ctx, F x, F y) {
 //
 // You can adjust the expected input to [0,bias] by tweaking that parameter.
 SI U32 to_unorm(F v, F scale, F bias = 1.0f) {
-    // TODO: platform-specific implementations to to_unorm(), removing round() entirely?
     // Any time we use round() we probably want to use to_unorm().
     return round(min(max(0, v), bias), scale);
 }
@@ -1454,7 +1446,11 @@ BLEND_MODE(softlight) {
     //    3. light src, light dst?
     F darkSrc = d*(sa + (s2 - sa)*(1.0f - m)),     // Used in case 1.
       darkDst = (m4*m4 + m4)*(m - 1.0f) + 7.0f*m,  // Used in case 2.
+    #if defined(SK_RASTER_PIPELINE_LEGACY_RCP_RSQRT)
       liteDst = rcp(rsqrt(m)) - m,                 // Used in case 3.
+    #else
+      liteDst = sqrt_(m) - m,
+    #endif
       liteSrc = d*sa + da*(s2 - sa) * if_then_else(two(two(d)) <= da, darkDst, liteDst); // 2 or 3?
     return s*inv(da) + d*inv(sa) + if_then_else(s2 <= sa, darkSrc, liteSrc);      // 1 or (2 or 3)?
 }
@@ -1810,7 +1806,7 @@ STAGE(emboss, const SkRasterPipeline_EmbossCtx* ctx) {
     b = mad(b, mul, add);
 }
 
-STAGE(byte_tables, const void* ctx) {  // TODO: rename Tables SkRasterPipeline_ByteTablesCtx
+STAGE(byte_tables, const void* ctx) {
     struct Tables { const uint8_t *r, *g, *b, *a; };
     auto tables = (const Tables*)ctx;
 
@@ -1877,12 +1873,13 @@ STAGE(HLGish, const skcms_TransferFunction* ctx) {
         v = strip_sign(v, &sign);
 
         const float R = ctx->a, G = ctx->b,
-                    a = ctx->c, b = ctx->d, c = ctx->e;
+                    a = ctx->c, b = ctx->d, c = ctx->e,
+                    K = ctx->f + 1.0f;
 
         F r = if_then_else(v*R <= 1, approx_powf(v*R, G)
                                    , approx_exp((v-c)*a) + b);
 
-        return apply_sign(r, sign);
+        return K * apply_sign(r, sign);
     };
     r = fn(r);
     g = fn(g);
@@ -1895,8 +1892,10 @@ STAGE(HLGinvish, const skcms_TransferFunction* ctx) {
         v = strip_sign(v, &sign);
 
         const float R = ctx->a, G = ctx->b,
-                    a = ctx->c, b = ctx->d, c = ctx->e;
+                    a = ctx->c, b = ctx->d, c = ctx->e,
+                    K = ctx->f + 1.0f;
 
+        v /= K;
         F r = if_then_else(v <= 1, R * approx_powf(v, G)
                                  , a * approx_log(v - b) + c);
 
@@ -2334,6 +2333,9 @@ STAGE(bt709_luminance_or_luma_to_alpha, Ctx::None) {
     a = r*0.2126f + g*0.7152f + b*0.0722f;
     r = g = b = 0;
 }
+STAGE(bt709_luminance_or_luma_to_rgb, Ctx::None) {
+    r = g = b = r*0.2126f + g*0.7152f + b*0.0722f;
+}
 
 STAGE(matrix_translate, const float* m) {
     r += m[0];
@@ -2444,7 +2446,6 @@ STAGE(gradient, const SkRasterPipeline_GradientCtx* c) {
 }
 
 STAGE(evenly_spaced_2_stop_gradient, const void* ctx) {
-    // TODO: Rename Ctx SkRasterPipeline_EvenlySpaced2StopGradientCtx.
     struct Ctx { float f[4], b[4]; };
     auto c = (const Ctx*)ctx;
 
@@ -2680,7 +2681,7 @@ STAGE(gauss_a_to_rgba, Ctx::None) {
 SI F tile(F v, SkTileMode mode, float limit, float invLimit) {
     // The ix_and_ptr() calls in sample() will clamp tile()'s output, so no need to clamp here.
     switch (mode) {
-        case SkTileMode::kDecal:  // TODO, for now fallthrough to clamp
+        case SkTileMode::kDecal:
         case SkTileMode::kClamp:  return v;
         case SkTileMode::kRepeat: return v - floor_(v*invLimit)*limit;
         case SkTileMode::kMirror:
@@ -2695,7 +2696,7 @@ SI void sample(const SkRasterPipeline_SamplerCtx2* ctx, F x, F y,
     y = tile(y, ctx->tileY, ctx->height, ctx->invHeight);
 
     switch (ctx->ct) {
-        default: *r = *g = *b = *a = 0;  // TODO
+        default: *r = *g = *b = *a = 0;
                  break;
 
         case kRGBA_8888_SkColorType:
@@ -3099,23 +3100,31 @@ SI F mad(F f, F m, F a) { return f*m+a; }
 SI U32 trunc_(F x) { return (U32)cast<I32>(x); }
 
 SI F rcp(F x) {
-#if defined(JUMPER_IS_HSW) || defined(JUMPER_IS_SKX)
-    __m256 lo,hi;
-    split(x, &lo,&hi);
-    return join<F>(_mm256_rcp_ps(lo), _mm256_rcp_ps(hi));
-#elif defined(JUMPER_IS_SSE2) || defined(JUMPER_IS_SSE41) || defined(JUMPER_IS_AVX)
-    __m128 lo,hi;
-    split(x, &lo,&hi);
-    return join<F>(_mm_rcp_ps(lo), _mm_rcp_ps(hi));
-#elif defined(JUMPER_IS_NEON)
-    auto rcp = [](float32x4_t v) {
-        auto est = vrecpeq_f32(v);
-        return vrecpsq_f32(v,est)*est;
-    };
-    float32x4_t lo,hi;
-    split(x, &lo,&hi);
-    return join<F>(rcp(lo), rcp(hi));
+#if defined(SK_RASTER_PIPELINE_LEGACY_RCP_RSQRT)
+    #if defined(JUMPER_IS_HSW) || defined(JUMPER_IS_SKX)
+        __m256 lo,hi;
+        split(x, &lo,&hi);
+        return join<F>(_mm256_rcp_ps(lo), _mm256_rcp_ps(hi));
+    #elif defined(JUMPER_IS_SSE2) || defined(JUMPER_IS_SSE41) || defined(JUMPER_IS_AVX)
+        __m128 lo,hi;
+        split(x, &lo,&hi);
+        return join<F>(_mm_rcp_ps(lo), _mm_rcp_ps(hi));
+    #elif defined(JUMPER_IS_NEON)
+        auto rcp = [](float32x4_t v) {
+            auto est = vrecpeq_f32(v);
+            return vrecpsq_f32(v,est)*est;
+        };
+        float32x4_t lo,hi;
+        split(x, &lo,&hi);
+        return join<F>(rcp(lo), rcp(hi));
+    #else
+        return 1.0f / x;
+    #endif
 #else
+    // Please don't use _mm[256_rcp_ps, vrecp[es]q_f32, etc. here.
+    // They deliver inconsistent results, both across arch (x86 vs ARM vs ARM64),
+    // but also even within (SSE/AVX vs AVX-512, Intel vs AMD).
+    // This annoys people who want pixel-exact golden tests.  (sia:11861)
     return 1.0f / x;
 #endif
 }
@@ -3722,6 +3731,9 @@ STAGE_PP(bt709_luminance_or_luma_to_alpha, Ctx::None) {
     a = (r*54 + g*183 + b*19)/256;  // 0.2126, 0.7152, 0.0722 with 256 denominator.
     r = g = b = 0;
 }
+STAGE_PP(bt709_luminance_or_luma_to_rgb, Ctx::None) {
+    r = g = b =(r*54 + g*183 + b*19)/256;  // 0.2126, 0.7152, 0.0722 with 256 denominator.
+}
 
 // ~~~~~~ Coverage scales / lerps ~~~~~~ //
 
@@ -3997,150 +4009,6 @@ STAGE_PP(srcover_rgba_8888, const SkRasterPipeline_MemoryCtx* ctx) {
     store_8888_(ptr, tail, r,g,b,a);
 }
 
-#if defined(SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE)
-    static void(*bilerp_clamp_8888)(void) = nullptr;
-    static void(*bilinear)(void) = nullptr;
-#else
-STAGE_GP(bilerp_clamp_8888, const SkRasterPipeline_GatherCtx* ctx) {
-    // (cx,cy) are the center of our sample.
-    F cx = x,
-      cy = y;
-
-    // All sample points are at the same fractional offset (fx,fy).
-    // They're the 4 corners of a logical 1x1 pixel surrounding (x,y) at (0.5,0.5) offsets.
-    F fx = fract(cx + 0.5f),
-      fy = fract(cy + 0.5f);
-
-    // We'll accumulate the color of all four samples into {r,g,b,a} directly.
-    r = g = b = a = 0;
-
-    // The first three sample points will calculate their area using math
-    // just like in the float code above, but the fourth will take up all the rest.
-    //
-    // Logically this is the same as doing the math for the fourth pixel too,
-    // but rounding error makes this a better strategy, keeping opaque opaque, etc.
-    //
-    // We can keep up to 8 bits of fractional precision without overflowing 16-bit,
-    // so our "1.0" area is 256.
-    const uint16_t bias = 256;
-    U16 remaining = bias;
-
-    for (float dy = -0.5f; dy <= +0.5f; dy += 1.0f)
-    for (float dx = -0.5f; dx <= +0.5f; dx += 1.0f) {
-        // (x,y) are the coordinates of this sample point.
-        F x = cx + dx,
-          y = cy + dy;
-
-        // ix_and_ptr() will clamp to the image's bounds for us.
-        const uint32_t* ptr;
-        U32 ix = ix_and_ptr(&ptr, ctx, x,y);
-
-        U16 sr,sg,sb,sa;
-        from_8888(gather<U32>(ptr, ix), &sr,&sg,&sb,&sa);
-
-        // In bilinear interpolation, the 4 pixels at +/- 0.5 offsets from the sample pixel center
-        // are combined in direct proportion to their area overlapping that logical query pixel.
-        // At positive offsets, the x-axis contribution to that rectangle is fx,
-        // or (1-fx) at negative x.  Same deal for y.
-        F sx = (dx > 0) ? fx : 1.0f - fx,
-          sy = (dy > 0) ? fy : 1.0f - fy;
-
-        U16 area = (dy == 0.5f && dx == 0.5f) ? remaining
-                                              : cast<U16>(sx * sy * bias);
-        for (size_t i = 0; i < N; i++) {
-            SkASSERT(remaining[i] >= area[i]);
-        }
-        remaining -= area;
-
-        r += sr * area;
-        g += sg * area;
-        b += sb * area;
-        a += sa * area;
-    }
-
-    r = (r + bias/2) / bias;
-    g = (g + bias/2) / bias;
-    b = (b + bias/2) / bias;
-    a = (a + bias/2) / bias;
-}
-
-// TODO: lowp::tile() is identical to the highp tile()... share?
-SI F tile(F v, SkTileMode mode, float limit, float invLimit) {
-    // After ix_and_ptr() will clamp the output of tile(), so we need not clamp here.
-    switch (mode) {
-        case SkTileMode::kDecal:  // TODO, for now fallthrough to clamp
-        case SkTileMode::kClamp:  return v;
-        case SkTileMode::kRepeat: return v - floor_(v*invLimit)*limit;
-        case SkTileMode::kMirror:
-            return abs_( (v-limit) - (limit+limit)*floor_((v-limit)*(invLimit*0.5f)) - limit );
-    }
-    SkUNREACHABLE;
-}
-
-SI void sample(const SkRasterPipeline_SamplerCtx2* ctx, F x, F y,
-               U16* r, U16* g, U16* b, U16* a) {
-    x = tile(x, ctx->tileX, ctx->width , ctx->invWidth );
-    y = tile(y, ctx->tileY, ctx->height, ctx->invHeight);
-
-    switch (ctx->ct) {
-        default: *r = *g = *b = *a = 0;  // TODO
-                 break;
-
-        case kRGBA_8888_SkColorType:
-        case kBGRA_8888_SkColorType: {
-            const uint32_t* ptr;
-            U32 ix = ix_and_ptr(&ptr, ctx, x,y);
-            from_8888(gather<U32>(ptr, ix), r,g,b,a);
-            if (ctx->ct == kBGRA_8888_SkColorType) {
-                std::swap(*r,*b);
-            }
-        } break;
-    }
-}
-
-template <int D>
-SI void sampler(const SkRasterPipeline_SamplerCtx2* ctx,
-                F cx, F cy, const F (&wx)[D], const F (&wy)[D],
-                U16* r, U16* g, U16* b, U16* a) {
-
-    float start = -0.5f*(D-1);
-
-    const uint16_t bias = 256;
-    U16 remaining = bias;
-
-    *r = *g = *b = *a = 0;
-    F y = cy + start;
-    for (int j = 0; j < D; j++, y += 1.0f) {
-        F x = cx + start;
-        for (int i = 0; i < D; i++, x += 1.0f) {
-            U16 R,G,B,A;
-            sample(ctx, x,y, &R,&G,&B,&A);
-
-            U16 w = (i == D-1 && j == D-1) ? remaining
-                                           : cast<U16>(wx[i]*wy[j]*bias);
-            remaining -= w;
-            *r += w*R;
-            *g += w*G;
-            *b += w*B;
-            *a += w*A;
-        }
-    }
-    *r = (*r + bias/2) / bias;
-    *g = (*g + bias/2) / bias;
-    *b = (*b + bias/2) / bias;
-    *a = (*a + bias/2) / bias;
-}
-
-STAGE_GP(bilinear, const SkRasterPipeline_SamplerCtx2* ctx) {
-    F fx = fract(x + 0.5f),
-      fy = fract(y + 0.5f);
-    const F wx[] = {1.0f - fx, fx};
-    const F wy[] = {1.0f - fy, fy};
-
-    sampler(ctx, x,y, wx,wy, &r,&g,&b,&a);
-}
-#endif
-
 // ~~~~~~ GrSwizzle stage ~~~~~~ //
 
 STAGE_PP(swizzle, void* ctx) {
@@ -4170,7 +4038,7 @@ STAGE_PP(swizzle, void* ctx) {
     NOT_IMPLEMENTED(unbounded_set_rgb)
     NOT_IMPLEMENTED(unbounded_uniform_color)
     NOT_IMPLEMENTED(unpremul)
-    NOT_IMPLEMENTED(dither)  // TODO
+    NOT_IMPLEMENTED(dither)
     NOT_IMPLEMENTED(load_16161616)
     NOT_IMPLEMENTED(load_16161616_dst)
     NOT_IMPLEMENTED(store_16161616)
@@ -4206,7 +4074,7 @@ STAGE_PP(swizzle, void* ctx) {
     NOT_IMPLEMENTED(store_1010102)
     NOT_IMPLEMENTED(gather_1010102)
     NOT_IMPLEMENTED(store_u16_be)
-    NOT_IMPLEMENTED(byte_tables)  // TODO
+    NOT_IMPLEMENTED(byte_tables)
     NOT_IMPLEMENTED(colorburn)
     NOT_IMPLEMENTED(colordodge)
     NOT_IMPLEMENTED(softlight)
@@ -4216,8 +4084,8 @@ STAGE_PP(swizzle, void* ctx) {
     NOT_IMPLEMENTED(luminosity)
     NOT_IMPLEMENTED(matrix_3x3)
     NOT_IMPLEMENTED(matrix_3x4)
-    NOT_IMPLEMENTED(matrix_4x5)  // TODO
-    NOT_IMPLEMENTED(matrix_4x3)  // TODO
+    NOT_IMPLEMENTED(matrix_4x5)
+    NOT_IMPLEMENTED(matrix_4x3)
     NOT_IMPLEMENTED(parametric)
     NOT_IMPLEMENTED(gamma_)
     NOT_IMPLEMENTED(PQish)
@@ -4225,28 +4093,30 @@ STAGE_PP(swizzle, void* ctx) {
     NOT_IMPLEMENTED(HLGinvish)
     NOT_IMPLEMENTED(rgb_to_hsl)
     NOT_IMPLEMENTED(hsl_to_rgb)
-    NOT_IMPLEMENTED(gauss_a_to_rgba)  // TODO
-    NOT_IMPLEMENTED(mirror_x)         // TODO
-    NOT_IMPLEMENTED(repeat_x)         // TODO
-    NOT_IMPLEMENTED(mirror_y)         // TODO
-    NOT_IMPLEMENTED(repeat_y)         // TODO
+    NOT_IMPLEMENTED(gauss_a_to_rgba)
+    NOT_IMPLEMENTED(mirror_x)
+    NOT_IMPLEMENTED(repeat_x)
+    NOT_IMPLEMENTED(mirror_y)
+    NOT_IMPLEMENTED(repeat_y)
     NOT_IMPLEMENTED(negate_x)
-    NOT_IMPLEMENTED(bicubic)  // TODO if I can figure out negative weights
+    NOT_IMPLEMENTED(bilinear)
+    NOT_IMPLEMENTED(bilerp_clamp_8888)
+    NOT_IMPLEMENTED(bicubic)
     NOT_IMPLEMENTED(bicubic_clamp_8888)
-    NOT_IMPLEMENTED(bilinear_nx)      // TODO
-    NOT_IMPLEMENTED(bilinear_ny)      // TODO
-    NOT_IMPLEMENTED(bilinear_px)      // TODO
-    NOT_IMPLEMENTED(bilinear_py)      // TODO
-    NOT_IMPLEMENTED(bicubic_n3x)      // TODO
-    NOT_IMPLEMENTED(bicubic_n1x)      // TODO
-    NOT_IMPLEMENTED(bicubic_p1x)      // TODO
-    NOT_IMPLEMENTED(bicubic_p3x)      // TODO
-    NOT_IMPLEMENTED(bicubic_n3y)      // TODO
-    NOT_IMPLEMENTED(bicubic_n1y)      // TODO
-    NOT_IMPLEMENTED(bicubic_p1y)      // TODO
-    NOT_IMPLEMENTED(bicubic_p3y)      // TODO
-    NOT_IMPLEMENTED(save_xy)          // TODO
-    NOT_IMPLEMENTED(accumulate)       // TODO
+    NOT_IMPLEMENTED(bilinear_nx)
+    NOT_IMPLEMENTED(bilinear_ny)
+    NOT_IMPLEMENTED(bilinear_px)
+    NOT_IMPLEMENTED(bilinear_py)
+    NOT_IMPLEMENTED(bicubic_n3x)
+    NOT_IMPLEMENTED(bicubic_n1x)
+    NOT_IMPLEMENTED(bicubic_p1x)
+    NOT_IMPLEMENTED(bicubic_p3x)
+    NOT_IMPLEMENTED(bicubic_n3y)
+    NOT_IMPLEMENTED(bicubic_n1y)
+    NOT_IMPLEMENTED(bicubic_p1y)
+    NOT_IMPLEMENTED(bicubic_p3y)
+    NOT_IMPLEMENTED(save_xy)
+    NOT_IMPLEMENTED(accumulate)
     NOT_IMPLEMENTED(xy_to_2pt_conical_well_behaved)
     NOT_IMPLEMENTED(xy_to_2pt_conical_strip)
     NOT_IMPLEMENTED(xy_to_2pt_conical_focal_on_circle)
@@ -4263,5 +4133,7 @@ STAGE_PP(swizzle, void* ctx) {
 }  // namespace lowp
 
 }  // namespace SK_OPTS_NS
+
+#undef SI
 
 #endif//SkRasterPipeline_opts_DEFINED

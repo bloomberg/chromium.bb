@@ -19,12 +19,12 @@ import("${dawn_root}/generator/dawn_generator.gni")
 import("${dawn_root}/scripts/dawn_component.gni")
 import("${dawn_root}/scripts/dawn_features.gni")
 
-# Import mac_min_system_version
+# Import mac_deployment_target
 if (is_mac) {
   if (dawn_has_build) {
     import("//build/config/mac/mac_sdk.gni")
   } else {
-    mac_min_system_version = "10.11.0"
+    mac_deployment_target = "10.11.0"
   }
 }
 
@@ -34,6 +34,9 @@ enable_vulkan_validation_layers = dawn_enable_vulkan_validation_layers &&
 if (enable_vulkan_validation_layers) {
   import("//build_overrides/vulkan_validation_layers.gni")
 }
+
+# ANGLE is an optional dependency; only use it if the path has been set.
+use_angle = dawn_use_angle && defined(dawn_angle_dir)
 
 # Swiftshader is an optional dependency, only use it if the path has been set.
 use_swiftshader = dawn_use_swiftshader && dawn_swiftshader_dir != ""
@@ -63,7 +66,7 @@ config("dawn_native_internal") {
   # TODO(cwallez@chromium.org): Consider using API_AVAILABLE annotations on all
   # metal code in dawn once crbug.com/1004024 is sorted out if Chromium still
   # supports 10.10 then.
-  if (is_mac && mac_min_system_version == "10.10.0") {
+  if (is_mac && mac_deployment_target == "10.10.0") {
     cflags_objcc = [ "-Wno-unguarded-availability" ]
   }
 }
@@ -74,9 +77,22 @@ config("dawn_native_weak_framework") {
   }
 }
 
+# Config that adds the @executable_path rpath if needed so that Swiftshader or the Vulkan loader are found.
+config("dawn_native_vulkan_rpath") {
+  if (is_mac && dawn_enable_vulkan &&
+      (use_swiftshader || enable_vulkan_loader)) {
+    ldflags = [
+      "-rpath",
+      "@executable_path/",
+    ]
+  }
+}
+
 dawn_json_generator("dawn_native_utils_gen") {
   target = "dawn_native_utils"
   outputs = [
+    "src/dawn_native/ChainUtils_autogen.h",
+    "src/dawn_native/ChainUtils_autogen.cpp",
     "src/dawn_native/ProcTable.cpp",
     "src/dawn_native/wgpu_structs_autogen.h",
     "src/dawn_native/wgpu_structs_autogen.cpp",
@@ -132,6 +148,7 @@ source_set("dawn_native_sources") {
     "${dawn_root}/third_party/gn/spirv_cross:spirv_cross",
     "${dawn_spirv_tools_dir}:spvtools_opt",
     "${dawn_spirv_tools_dir}:spvtools_val",
+    "${dawn_tint_dir}/src:libtint",
   ]
   defines = []
   libs = []
@@ -167,6 +184,8 @@ source_set("dawn_native_sources") {
     "Buffer.h",
     "CachedObject.cpp",
     "CachedObject.h",
+    "CallbackTaskManager.cpp",
+    "CallbackTaskManager.h",
     "CommandAllocator.cpp",
     "CommandAllocator.h",
     "CommandBuffer.cpp",
@@ -179,14 +198,16 @@ source_set("dawn_native_sources") {
     "CommandValidation.h",
     "Commands.cpp",
     "Commands.h",
+    "CompilationMessages.cpp",
+    "CompilationMessages.h",
     "ComputePassEncoder.cpp",
     "ComputePassEncoder.h",
     "ComputePipeline.cpp",
     "ComputePipeline.h",
     "CopyTextureForBrowserHelper.cpp",
     "CopyTextureForBrowserHelper.h",
-    "CreateReadyPipelineTracker.cpp",
-    "CreateReadyPipelineTracker.h",
+    "CreatePipelineAsyncTask.cpp",
+    "CreatePipelineAsyncTask.h",
     "Device.cpp",
     "Device.h",
     "DynamicUploader.cpp",
@@ -203,10 +224,10 @@ source_set("dawn_native_sources") {
     "ErrorInjector.h",
     "ErrorScope.cpp",
     "ErrorScope.h",
-    "ErrorScopeTracker.cpp",
-    "ErrorScopeTracker.h",
     "Extensions.cpp",
     "Extensions.h",
+    "ExternalTexture.cpp",
+    "ExternalTexture.h",
     "Fence.cpp",
     "Fence.h",
     "Format.cpp",
@@ -218,11 +239,15 @@ source_set("dawn_native_sources") {
     "InternalPipelineStore.h",
     "ObjectBase.cpp",
     "ObjectBase.h",
+    "ObjectContentHasher.cpp",
+    "ObjectContentHasher.h",
     "PassResourceUsage.h",
     "PassResourceUsageTracker.cpp",
     "PassResourceUsageTracker.h",
     "PerStage.cpp",
     "PerStage.h",
+    "PersistentCache.cpp",
+    "PersistentCache.h",
     "Pipeline.cpp",
     "Pipeline.h",
     "PipelineLayout.cpp",
@@ -231,6 +256,8 @@ source_set("dawn_native_sources") {
     "PooledResourceMemoryAllocator.h",
     "ProgrammablePassEncoder.cpp",
     "ProgrammablePassEncoder.h",
+    "QueryHelper.cpp",
+    "QueryHelper.h",
     "QuerySet.cpp",
     "QuerySet.h",
     "Queue.cpp",
@@ -259,12 +286,17 @@ source_set("dawn_native_sources") {
     "SpirvUtils.h",
     "StagingBuffer.cpp",
     "StagingBuffer.h",
+    "Subresource.cpp",
+    "Subresource.h",
+    "SubresourceStorage.h",
     "Surface.cpp",
     "Surface.h",
     "SwapChain.cpp",
     "SwapChain.h",
     "Texture.cpp",
     "Texture.h",
+    "TintUtils.cpp",
+    "TintUtils.h",
     "ToBackend.h",
     "Toggles.cpp",
     "Toggles.h",
@@ -273,11 +305,33 @@ source_set("dawn_native_sources") {
 
   if (dawn_use_x11) {
     libs += [ "X11" ]
+    sources += [
+      "XlibXcbFunctions.cpp",
+      "XlibXcbFunctions.h",
+    ]
   }
 
-  if (is_win) {
+  # Only win32 app needs to link with user32.lib
+  # In UWP, all availiable APIs are defined in WindowsApp.lib
+  if (is_win && !dawn_is_winuwp) {
     libs += [ "user32.lib" ]
   }
+
+  if (dawn_is_winuwp && is_debug) {
+    # DXGIGetDebugInterface1 is defined in dxgi.lib
+    # But this API is tagged as a development-only capability
+    # which implies that linking to this function will cause
+    # the application to fail Windows store certification
+    # So we only link to it in debug build when compiling for UWP.
+    # In win32 we load dxgi.dll using LoadLibrary
+    # so no need for static linking.
+    libs += [ "dxgi.lib" ]
+  }
+
+  # TODO(dawn:766):
+  # Should link dxcompiler.lib and WinPixEventRuntime_UAP.lib in UWP
+  # Somehow use dxcompiler.lib makes CoreApp unable to activate
+  # WinPIX should be added as third party tools and linked statically
 
   if (dawn_enable_d3d12) {
     libs += [ "dxguid.lib" ]
@@ -446,6 +500,8 @@ source_set("dawn_native_sources") {
       "opengl/NativeSwapChainImplGL.h",
       "opengl/OpenGLFunctions.cpp",
       "opengl/OpenGLFunctions.h",
+      "opengl/OpenGLVersion.cpp",
+      "opengl/OpenGLVersion.h",
       "opengl/PersistentPipelineStateGL.cpp",
       "opengl/PersistentPipelineStateGL.h",
       "opengl/PipelineGL.cpp",
@@ -592,8 +648,11 @@ source_set("dawn_native_sources") {
     }
   }
 
-  if (dawn_enable_wgsl) {
-    deps += [ "${dawn_tint_dir}:libtint" ]
+  if (use_angle) {
+    data_deps += [
+      "${dawn_angle_dir}:libEGL",
+      "${dawn_angle_dir}:libGLESv2",
+    ]
   }
 }
 
@@ -612,7 +671,10 @@ dawn_component("dawn_native") {
   ]
   sources = [ "DawnNative.cpp" ]
   configs = [ ":dawn_native_internal" ]
-  public_configs = [ ":dawn_native_weak_framework" ]
+  public_configs = [
+    ":dawn_native_weak_framework",
+    ":dawn_native_vulkan_rpath",
+  ]
 
   if (dawn_enable_d3d12) {
     sources += [ "d3d12/D3D12Backend.cpp" ]

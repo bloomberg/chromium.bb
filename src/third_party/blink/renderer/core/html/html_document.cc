@@ -66,7 +66,7 @@ HTMLDocument::HTMLDocument(const DocumentInit& initializer,
                            DocumentClassFlags extended_document_classes)
     : Document(initializer, kHTMLDocumentClass | extended_document_classes) {
   ClearXMLVersion();
-  if (IsSrcdocDocument() || initializer.ImportsController()) {
+  if (IsSrcdocDocument()) {
     DCHECK(InNoQuirksMode());
     LockCompatibilityMode();
   }
@@ -82,8 +82,7 @@ Document* HTMLDocument::CloneDocumentWithoutChildren() const {
   return MakeGarbageCollected<HTMLDocument>(
       DocumentInit::Create()
           .WithExecutionContext(GetExecutionContext())
-          .WithURL(Url())
-          .WithRegistrationContext(RegistrationContext()));
+          .WithURL(Url()));
 }
 
 // --------------------------------------------------------------------------

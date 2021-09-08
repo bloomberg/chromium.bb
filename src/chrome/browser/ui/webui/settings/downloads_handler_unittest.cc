@@ -25,8 +25,7 @@ class DownloadsHandlerTest : public testing::Test {
   DownloadsHandlerTest()
       : download_manager_(new content::MockDownloadManager()),
         handler_(&profile_) {
-    content::BrowserContext::SetDownloadManagerForTesting(
-        &profile_, base::WrapUnique(download_manager_));
+    profile_.SetDownloadManagerForTesting(base::WrapUnique(download_manager_));
     std::unique_ptr<ChromeDownloadManagerDelegate> delegate =
         std::make_unique<ChromeDownloadManagerDelegate>(&profile_);
     chrome_download_manager_delegate_ = delegate.get();
@@ -65,9 +64,8 @@ class DownloadsHandlerTest : public testing::Test {
     std::string event;
     ASSERT_TRUE(data.arg1()->GetAsString(&event));
     EXPECT_EQ("auto-open-downloads-changed", event);
-    bool auto_open_downloads = false;
-    ASSERT_TRUE(data.arg2()->GetAsBoolean(&auto_open_downloads));
-    EXPECT_FALSE(auto_open_downloads);
+    ASSERT_TRUE(data.arg2()->is_bool());
+    EXPECT_FALSE(data.arg2()->GetBool());
   }
 
   Profile* profile() { return &profile_; }

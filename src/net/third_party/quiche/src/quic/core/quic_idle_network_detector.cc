@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_idle_network_detector.h"
+#include "quic/core/quic_idle_network_detector.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
+#include "quic/core/quic_constants.h"
 
 namespace quic {
 
@@ -112,7 +112,7 @@ void QuicIdleNetworkDetector::SetAlarm() {
 
 void QuicIdleNetworkDetector::MaybeSetAlarmOnSentPacket(
     QuicTime::Delta pto_delay) {
-  DCHECK(shorter_idle_timeout_on_sent_packet_);
+  QUICHE_DCHECK(shorter_idle_timeout_on_sent_packet_);
   if (!handshake_timeout_.IsInfinite() || !alarm_->IsSet()) {
     SetAlarm();
     return;

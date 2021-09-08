@@ -10,9 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/json/string_escape.h"
-#include "base/strings/string16.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/translate/core/common/translate_util.h"
@@ -70,8 +67,7 @@ TranslateController::~TranslateController() {
 
 void TranslateController::InjectTranslateScript(
     const std::string& translate_script) {
-  [js_manager_ setScript:base::SysUTF8ToNSString(translate_script)];
-  [js_manager_ inject];
+  [js_manager_ injectWithTranslateScript:translate_script];
 }
 
 void TranslateController::RevertTranslation() {
@@ -147,7 +143,7 @@ bool TranslateController::OnTranslateReady(
 bool TranslateController::OnTranslateComplete(
     const base::DictionaryValue& command) {
   double error_code = 0.;
-  std::string original_language;
+  std::string source_language;
   double translation_time = 0.;
 
   if (!command.HasKey("errorCode") ||
@@ -160,16 +156,16 @@ bool TranslateController::OnTranslateComplete(
   TranslateErrors::Type error_type =
       static_cast<TranslateErrors::Type>(error_code);
   if (error_type == TranslateErrors::NONE) {
-    if (!command.HasKey("originalPageLanguage") ||
+    if (!command.HasKey("pageSourceLanguage") ||
         !command.HasKey("translationTime")) {
       return false;
     }
-    command.GetString("originalPageLanguage", &original_language);
+    command.GetString("pageSourceLanguage", &source_language);
     command.GetDouble("translationTime", &translation_time);
   }
 
   if (observer_)
-    observer_->OnTranslateComplete(error_type, original_language,
+    observer_->OnTranslateComplete(error_type, source_language,
                                    translation_time);
   return true;
 }
@@ -279,14 +275,12 @@ void TranslateController::OnRequestFetchComplete(
                          &escaped_response_text);
 
   std::string final_url = url_loader->GetFinalURL().spec();
-  [js_manager_
-      handleTranslateResponseWithURL:base::SysUTF8ToNSString(url)
-                           requestID:request_id
-                        responseCode:response_code
-                          statusText:base::SysUTF8ToNSString(status_text)
-                         responseURL:base::SysUTF8ToNSString(final_url)
-                        responseText:base::SysUTF8ToNSString(
-                                         escaped_response_text)];
+  [js_manager_ handleTranslateResponseWithURL:url
+                                    requestID:request_id
+                                 responseCode:response_code
+                                   statusText:status_text
+                                  responseURL:final_url
+                                 responseText:escaped_response_text];
 
   request_fetchers_.erase(it);
 }

@@ -8,9 +8,16 @@ copy_to_gen("network") {
   sources = [
     "cacheable.rawresponse",
     "csp-report-only.rawresponse",
+    "fetch.html",
+    "image.svg",
     "last-modified.html",
     "last-modified.rawresponse",
+    "requests.html",
     "resources-from-cache.html",
+    "trusted-type-policy-violation-report-only.rawresponse",
+    "trusted-type-violations-enforced.rawresponse",
+    "trusted-type-violations-report-only-in-html.rawresponse",
+    "trusted-type-violations-report-only.rawresponse",
     "unreachable.rawresponse",
     "utf-8.rawresponse",
   ]

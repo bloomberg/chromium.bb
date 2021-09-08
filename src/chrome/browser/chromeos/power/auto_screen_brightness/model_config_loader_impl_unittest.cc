@@ -9,6 +9,7 @@
 
 #include "chrome/browser/chromeos/power/auto_screen_brightness/model_config_loader_impl.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -17,7 +18,6 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,7 +33,7 @@ class TestObserver : public ModelConfigLoader::Observer {
   ~TestObserver() override = default;
 
   // ModelConfigLoader::Observer overrides:
-  void OnModelConfigLoaded(base::Optional<ModelConfig> model_config) override {
+  void OnModelConfigLoaded(absl::optional<ModelConfig> model_config) override {
     model_config_loader_initialized_ = true;
     model_config_ = model_config;
   }
@@ -41,11 +41,11 @@ class TestObserver : public ModelConfigLoader::Observer {
   bool model_config_loader_initialized() const {
     return model_config_loader_initialized_;
   }
-  base::Optional<ModelConfig> model_config() { return model_config_; }
+  absl::optional<ModelConfig> model_config() { return model_config_; }
 
  private:
   bool model_config_loader_initialized_ = false;
-  base::Optional<ModelConfig> model_config_;
+  absl::optional<ModelConfig> model_config_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };

@@ -14,17 +14,17 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root.h"
+#include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root_map.h"
+#include "chrome/browser/ash/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/arc/mojom/file_system.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/file_system/external_mount_points.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 using content::BrowserThread;
@@ -34,7 +34,11 @@ namespace chromeos {
 namespace {
 
 const char kAndroidDownloadDirPrefix[] = "/storage/emulated/0/Download/";
-const char kAndroidMyFilesDirPrefix[] = "/storage/MyFiles/";
+// The path of the MyFiles directory inside Android. The UUID "0000....2019" is
+// defined in components/arc/volume_mounter/arc_volume_mounter_bridge.cc.
+// TODO(crbug.com/929031): Move MyFiles constants to a common place.
+const char kAndroidMyFilesDirPrefix[] =
+    "/storage/0000000000000000000000000000CAFEF00D2019/";
 
 const char kMediaDocumentsProviderAuthority[] =
     "com.android.providers.media.documents";
@@ -96,7 +100,7 @@ class RecentArcMediaSource::MediaRoot {
 
  private:
   void OnGetRecentDocuments(
-      base::Optional<std::vector<arc::mojom::DocumentPtr>> maybe_documents);
+      absl::optional<std::vector<arc::mojom::DocumentPtr>> maybe_documents);
   void ScanDirectory(const base::FilePath& path);
   void OnReadDirectory(
       const base::FilePath& path,
@@ -114,7 +118,7 @@ class RecentArcMediaSource::MediaRoot {
   const base::FilePath relative_mount_path_;
 
   // Set at the beginning of GetRecentFiles().
-  base::Optional<Params> params_;
+  absl::optional<Params> params_;
 
   // Number of in-flight ReadDirectory() calls by ScanDirectory().
   int num_inflight_readdirs_ = 0;
@@ -126,7 +130,7 @@ class RecentArcMediaSource::MediaRoot {
   // In case of multiple files with the same document ID found, the file with
   // lexicographically smallest URL is kept. A nullopt value means the
   // corresponding file is not (yet) found.
-  std::map<std::string, base::Optional<RecentFile>> document_id_to_file_;
+  std::map<std::string, absl::optional<RecentFile>> document_id_to_file_;
 
   base::WeakPtrFactory<MediaRoot> weak_ptr_factory_{this};
 
@@ -174,7 +178,7 @@ void RecentArcMediaSource::MediaRoot::GetRecentFiles(Params params) {
 }
 
 void RecentArcMediaSource::MediaRoot::OnGetRecentDocuments(
-    base::Optional<std::vector<arc::mojom::DocumentPtr>> maybe_documents) {
+    absl::optional<std::vector<arc::mojom::DocumentPtr>> maybe_documents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(params_.has_value());
   DCHECK_EQ(0, num_inflight_readdirs_);
@@ -190,7 +194,7 @@ void RecentArcMediaSource::MediaRoot::OnGetRecentDocuments(
               document->android_file_system_path.value())) {
         continue;
       }
-      document_id_to_file_.emplace(document->document_id, base::nullopt);
+      document_id_to_file_.emplace(document->document_id, absl::nullopt);
     }
   }
 
@@ -256,7 +260,7 @@ void RecentArcMediaSource::MediaRoot::OnReadDirectory(
     // We keep the lexicographically smallest URL to stabilize the results when
     // there are multiple files with the same document ID.
     auto url = BuildDocumentsProviderUrl(subpath);
-    base::Optional<RecentFile>& entry = iter->second;
+    absl::optional<RecentFile>& entry = iter->second;
     if (!entry.has_value() ||
         storage::FileSystemURL::Comparator()(url, entry.value().url()))
       entry = RecentFile(url, file.last_modified);
@@ -276,7 +280,7 @@ void RecentArcMediaSource::MediaRoot::OnComplete() {
 
   std::vector<RecentFile> files;
   for (const auto& entry : document_id_to_file_) {
-    const base::Optional<RecentFile>& file = entry.second;
+    const absl::optional<RecentFile>& file = entry.second;
     if (file.has_value())
       files.emplace_back(file.value());
   }

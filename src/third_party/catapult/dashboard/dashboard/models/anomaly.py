@@ -16,7 +16,7 @@ from dashboard.common import timing
 from dashboard.common import utils
 from dashboard.common import datastore_hooks
 from dashboard.models import internal_only_model
-from dashboard.models.subscription import Subscription
+from dashboard.models import subscription
 
 # A string to describe the magnitude of a change from zero to non-zero.
 FREAKIN_HUGE = 'zero-to-nonzero'
@@ -70,8 +70,14 @@ class Anomaly(internal_only_model.InternalOnlyModel):
       choices=['untriaged', 'triaged', 'ignored', 'invalid'])
 
   # The subscribers who recieve alerts
-  subscriptions = ndb.LocalStructuredProperty(Subscription, repeated=True)
+  subscriptions = ndb.LocalStructuredProperty(
+      subscription.Subscription, repeated=True)
   subscription_names = ndb.StringProperty(indexed=True, repeated=True)
+
+  # The anomaly configuration used to generate this anomaly, associated with the
+  # subscription.
+  matching_subscription = ndb.LocalStructuredProperty(subscription.Subscription)
+  anomaly_config = ndb.JsonProperty()
 
   # Each Alert is related to one Test.
   test = ndb.KeyProperty(indexed=True)
@@ -97,6 +103,10 @@ class Anomaly(internal_only_model.InternalOnlyModel):
   # Ownership data, mapping e-mails to the benchmark's owners' emails and
   # component as the benchmark's Monorail component
   ownership = ndb.JsonProperty()
+
+  # Alert grouping is used to overide the default alert group (test suite)
+  # for auto-triage.
+  alert_grouping = ndb.StringProperty(indexed=False, repeated=True)
 
   # The number of points before and after this anomaly that were looked at
   # when finding this anomaly.

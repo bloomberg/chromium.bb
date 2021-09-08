@@ -11,10 +11,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/api/storage/value_store_cache.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/value_store/settings_namespace.h"
 
 namespace content {
 class BrowserContext;
@@ -49,7 +49,7 @@ class StorageFrontend : public BrowserContextKeyedAPI {
   // for the |extension|.
   void RunWithStorage(scoped_refptr<const Extension> extension,
                       settings_namespace::Namespace settings_namespace,
-                      const ValueStoreCache::StorageCallback& callback);
+                      ValueStoreCache::StorageCallback callback);
 
   // Deletes the settings for the given |extension_id|.
   void DeleteStorageSoon(const std::string& extension_id);

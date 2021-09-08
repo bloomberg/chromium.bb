@@ -16,6 +16,7 @@ syntax = "proto2";
 
 package location.nearby.proto;
 
+
 option optimize_for = LITE_RUNTIME;
 option java_package = "com.google.location.nearby.proto";
 option java_outer_classname = "NearbyClientEnums";
@@ -25,6 +26,10 @@ option objc_class_prefix = "GNCP";
 enum UserType {
   UNKNOWN_USER_TYPE = 0;
   PRODUCTION = 1;
+  MODULEFOOD = 2;
+  TEST = 3;
+  PRESTO_DOGFOOD = 4;
+  AUTO_TEST = 5;
 }
 
 // The client that is logging.

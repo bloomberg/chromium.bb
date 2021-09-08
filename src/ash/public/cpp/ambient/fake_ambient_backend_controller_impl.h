@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
@@ -46,7 +47,11 @@ class ASH_PUBLIC_EXPORT FakeAmbientBackendControllerImpl
   // Simulate to reply the request of FetchSettingsAndAlbums().
   // If |success| is true, will return fake data.
   // If |success| is false, will return null |settings| data.
-  void ReplyFetchSettingsAndAlbums(bool success);
+  // If |settings| contains a value, that will be used as the argument to
+  // the pending callback.
+  void ReplyFetchSettingsAndAlbums(
+      bool success,
+      const absl::optional<AmbientSettings>& settings = absl::nullopt);
 
   // Whether there is a pending FetchSettingsAndAlbums() request.
   bool IsFetchSettingsAndAlbumsPending() const;
@@ -59,14 +64,14 @@ class ASH_PUBLIC_EXPORT FakeAmbientBackendControllerImpl
 
   // Sets the weather info that will be returned in subsequent calls to
   // `FetchWeather`.
-  void SetWeatherInfo(base::Optional<WeatherInfo> info);
+  void SetWeatherInfo(absl::optional<WeatherInfo> info);
 
  private:
   OnSettingsAndAlbumsFetchedCallback pending_fetch_settings_albums_callback_;
 
   UpdateSettingsCallback pending_update_callback_;
 
-  base::Optional<WeatherInfo> weather_info_;
+  absl::optional<WeatherInfo> weather_info_;
 };
 
 }  // namespace ash

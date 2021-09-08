@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/accessibility_tree_formatter_base.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/ax_inspect_factory.h"
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -22,12 +22,21 @@ namespace content {
 
 namespace {
 
+const ui::AXPropertyFilter::Type ALLOW_EMPTY =
+    ui::AXPropertyFilter::ALLOW_EMPTY;
+const ui::AXPropertyFilter::Type SCRIPT = ui::AXPropertyFilter::SCRIPT;
+
 class AccessibilityTreeFormatterMacBrowserTest : public ContentBrowserTest {
  public:
   AccessibilityTreeFormatterMacBrowserTest() {}
   ~AccessibilityTreeFormatterMacBrowserTest() override {}
 
   // Checks the formatted accessible tree for the given data URL.
+  void TestAndCheck(const char* url,
+                    const std::vector<ui::AXPropertyFilter>& property_filters,
+                    const std::vector<ui::AXNodeFilter>& node_filters,
+                    const char* expected) const;
+
   void TestAndCheck(const char* url,
                     const std::vector<const char*>& filters,
                     const char* expected) const;
@@ -48,39 +57,40 @@ class AccessibilityTreeFormatterMacBrowserTest : public ContentBrowserTest {
 
 void AccessibilityTreeFormatterMacBrowserTest::TestAndCheck(
     const char* url,
-    const std::vector<const char*>& filters,
+    const std::vector<ui::AXPropertyFilter>& property_filters,
+    const std::vector<ui::AXNodeFilter>& node_filters,
     const char* expected) const {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
-
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(url)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(url)));
   waiter.WaitForNotification();
 
-  // Set property filters
   std::unique_ptr<ui::AXTreeFormatter> formatter =
-      AccessibilityTreeFormatter::Create();
+      AXInspectFactory::CreatePlatformFormatter();
 
-  std::vector<ui::AXPropertyFilter> property_filters;
+  formatter->SetPropertyFilters(property_filters,
+                                ui::AXTreeFormatter::kFiltersDefaultSet);
+  formatter->SetNodeFilters(node_filters);
 
-  for (const char* filter : filters) {
-    property_filters.push_back(
-        ui::AXPropertyFilter(filter, ui::AXPropertyFilter::ALLOW_EMPTY));
-  }
-
-  formatter->AddDefaultFilters(&property_filters);
-  formatter->SetPropertyFilters(property_filters);
-
-  // Format the tree
   BrowserAccessibility* root = GetManager()->GetRoot();
-  CHECK(root);
+  ASSERT_NE(nullptr, root);
 
-  std::string got;
-  formatter->FormatAccessibilityTreeForTesting(root, &got);
+  std::string actual = formatter->Format(root);
+  EXPECT_EQ(actual, expected);
+}
 
-  EXPECT_EQ(got, expected);
+void AccessibilityTreeFormatterMacBrowserTest::TestAndCheck(
+    const char* url,
+    const std::vector<const char*>& filters,
+    const char* expected) const {
+  std::vector<ui::AXPropertyFilter> property_filters;
+  for (const char* filter : filters) {
+    property_filters.emplace_back(filter, ALLOW_EMPTY);
+  }
+  TestAndCheck(url, property_filters, {}, expected);
 }
 
 void AccessibilityTreeFormatterMacBrowserTest::TestWrongParameters(
@@ -183,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                            <p contentEditable='true'>Text</p>)~~",
                       {"1, 2", "NaN"}, ":2;AXLineForIndex(Argument)=*",
                       R"~~(AXWebArea
-++AXTextArea AXLineForIndex(Argument)=ERROR:FAILED_TO_PARSE_ARGS AXValue='Text'
+++AXTextArea AXLineForIndex(Argument)=ERROR:FAILED_TO_PARSE AXValue='Text'
 ++++AXStaticText AXValue='Text'
 )~~");
 }
@@ -220,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                            <table role="grid"><tr><td>CELL</td></tr></table>)~~",
                       {"0, 0", "{1, 2}", "[1, NaN]", "[NaN, 1]"},
                       "AXCellForColumnAndRow(Argument)=*", R"~~(AXWebArea
-++AXTable AXCellForColumnAndRow(Argument)=ERROR:FAILED_TO_PARSE_ARGS
+++AXTable AXCellForColumnAndRow(Argument)=ERROR:FAILED_TO_PARSE
 ++++AXRow
 ++++++AXCell
 ++++++++AXStaticText AXValue='CELL'
@@ -248,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                       {"1, 2", "[]", "{loc: 1, leno: 2}", "{loco: 1, len: 2}",
                        "{loc: NaN, len: 2}", "{loc: 2, len: NaN}"},
                       ":2;AXStringForRange(Argument)=*", R"~~(AXWebArea
-++AXTextArea AXStringForRange(Argument)=ERROR:FAILED_TO_PARSE_ARGS AXValue='Text'
+++AXTextArea AXStringForRange(Argument)=ERROR:FAILED_TO_PARSE AXValue='Text'
 ++++AXStaticText AXValue='Text'
 )~~");
 }
@@ -270,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                       {"1, 2", "2", ":4"},
                       ":2;AXIndexForChildUIElement(Argument)=*",
                       R"~~(AXWebArea
-++AXTextArea AXIndexForChildUIElement(Argument)=ERROR:FAILED_TO_PARSE_ARGS AXValue='Text'
+++AXTextArea AXIndexForChildUIElement(Argument)=ERROR:FAILED_TO_PARSE AXValue='Text'
 ++++AXStaticText AXValue='Text'
 )~~");
 }
@@ -293,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                            <p>Text</p>)~~",
       {"1, 2", "2", "{2, 1, down}", "{:2, NaN, down}", "{:2, 1, hoho}"},
       ":1;AXIndexForTextMarker(Argument)=*",
-      R"~~(AXWebArea AXIndexForTextMarker(Argument)=ERROR:FAILED_TO_PARSE_ARGS
+      R"~~(AXWebArea AXIndexForTextMarker(Argument)=ERROR:FAILED_TO_PARSE
 ++AXGroup
 ++++AXStaticText AXValue='Text'
 )~~");
@@ -320,20 +330,45 @@ IN_PROC_BROWSER_TEST_F(
       {"1, 2", "2", "{focus: {:2, 1, down}}", "{anchor: {:2, 1, down}}",
        "{anchor: {2, 1, down}, focus: {2, 1, down}}"},
       ":1;AXStringForTextMarkerRange(Argument)=*",
-      R"~~(AXWebArea AXStringForTextMarkerRange(Argument)=ERROR:FAILED_TO_PARSE_ARGS
+      R"~~(AXWebArea AXStringForTextMarkerRange(Argument)=ERROR:FAILED_TO_PARSE
 ++AXGroup
 ++++AXStaticText AXValue='Text'
 )~~");
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
-                       NestedCalls_Attributes) {
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest, NestedCalls) {
   TestAndCheck(R"~~(data:text/html,
                     <p>Text</p>)~~",
                {":1;AXIndexForTextMarker(AXTextMarkerForIndex(0))"},
                R"~~(AXWebArea AXIndexForTextMarker(AXTextMarkerForIndex(0))=0
 ++AXGroup
 ++++AXStaticText AXValue='Text'
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest, Script) {
+  TestAndCheck(R"~~(data:text/html,
+                    <input aria-label='input'>)~~",
+               {{":3.AXRole", SCRIPT}}, {{"*", "*"}},
+               R"~~(:3.AXRole='AXTextField'
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Script_ByDOMId) {
+  TestAndCheck(R"~~(data:text/html,
+                    <input id='textbox' aria-label='input'>)~~",
+               {{"textbox.AXRole", SCRIPT}}, {{"*", "*"}},
+               R"~~(textbox.AXRole='AXTextField'
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Script_ByDOMId_WrongDOMId) {
+  TestAndCheck(R"~~(data:text/html,
+                    <input id='textbox' aria-label='input'>)~~",
+               {{"textbo.AXRole", SCRIPT}}, {{"*", "*"}},
+               R"~~(textbo.AXRole=ERROR:FAILED_TO_PARSE
 )~~");
 }
 

@@ -88,9 +88,6 @@ class CommonTest : public Test {
 template <typename T>
 T* CommonTest<T>::shared_ = nullptr;
 
-// This #ifdef block tests typed tests.
-#if GTEST_HAS_TYPED_TEST
-
 using testing::Types;
 
 // Tests that SetUpTestSuite()/TearDownTestSuite(), fixture ctor/dtor,
@@ -193,21 +190,16 @@ TYPED_TEST(TypedTestWithNames, TestSuiteName) {
   if (std::is_same<TypeParam, char>::value) {
     EXPECT_STREQ(::testing::UnitTest::GetInstance()
                      ->current_test_info()
-                     ->test_case_name(),
+                     ->test_suite_name(),
                  "TypedTestWithNames/char0");
   }
   if (std::is_same<TypeParam, int>::value) {
     EXPECT_STREQ(::testing::UnitTest::GetInstance()
                      ->current_test_info()
-                     ->test_case_name(),
+                     ->test_suite_name(),
                  "TypedTestWithNames/int1");
   }
 }
-
-#endif  // GTEST_HAS_TYPED_TEST
-
-// This #ifdef block tests type-parameterized tests.
-#if GTEST_HAS_TYPED_TEST_P
 
 using testing::Types;
 using testing::internal::TypedTestSuitePState;
@@ -315,13 +307,13 @@ TYPED_TEST_P(TypeParametrizedTestWithNames, TestSuiteName) {
   if (std::is_same<TypeParam, char>::value) {
     EXPECT_STREQ(::testing::UnitTest::GetInstance()
                      ->current_test_info()
-                     ->test_case_name(),
+                     ->test_suite_name(),
                  "CustomName/TypeParametrizedTestWithNames/parChar0");
   }
   if (std::is_same<TypeParam, int>::value) {
     EXPECT_STREQ(::testing::UnitTest::GetInstance()
                      ->current_test_info()
-                     ->test_case_name(),
+                     ->test_suite_name(),
                  "CustomName/TypeParametrizedTestWithNames/parInt1");
   }
 }
@@ -443,20 +435,3 @@ INSTANTIATE_TYPED_TEST_SUITE_P(My, TrimmedTest, TrimTypes);
 
 }  // namespace library2
 
-#endif  // GTEST_HAS_TYPED_TEST_P
-
-#if !defined(GTEST_HAS_TYPED_TEST) && !defined(GTEST_HAS_TYPED_TEST_P)
-
-// Google Test may not support type-parameterized tests with some
-// compilers. If we use conditional compilation to compile out all
-// code referring to the gtest_main library, MSVC linker will not link
-// that library at all and consequently complain about missing entry
-// point defined in that library (fatal error LNK1561: entry point
-// must be defined). This dummy test keeps gtest_main linked in.
-TEST(DummyTest, TypedTestsAreNotSupportedOnThisPlatform) {}
-
-#if _MSC_VER
-GTEST_DISABLE_MSC_WARNINGS_POP_()  //  4127
-#endif                             //  _MSC_VER
-
-#endif  // #if !defined(GTEST_HAS_TYPED_TEST) && !defined(GTEST_HAS_TYPED_TEST_P)

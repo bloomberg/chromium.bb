@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <unordered_map>
 
 #include "base/threading/thread_task_runner_handle.h"
@@ -792,7 +793,7 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
   EXPECT_EQ(node->opacity, 0.25f);
 }
 
-TEST_F(ScrollbarLayerTest, ScrollbarLayerPushProperties) {
+TEST_F(AuraScrollbarLayerTest, ScrollbarLayerPushProperties) {
   // Pushing changed bounds of scroll layer can lead to calling
   // OnOpacityAnimated on scrollbar layer which means OnOpacityAnimated should
   // be independent of scrollbar layer's properties as scrollbar layer can push
@@ -827,7 +828,6 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerPushProperties) {
       scroll_layer->element_id()));
 
   scroll_layer->SetBounds(gfx::Size(20, 20));
-  scroll_layer->ShowScrollbars();
   scroll_layer->SetForceRenderSurfaceForTesting(true);
   layer_tree_host_->UpdateLayers();
   host_impl->CreatePendingTree();
@@ -1019,8 +1019,8 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
  public:
   ScrollbarLayerSolidColorThumbTest() {
     LayerTreeSettings layer_tree_settings;
-    host_impl_.reset(new FakeLayerTreeHostImpl(
-        layer_tree_settings, &task_runner_provider_, &task_graph_runner_));
+    host_impl_ = std::make_unique<FakeLayerTreeHostImpl>(
+        layer_tree_settings, &task_runner_provider_, &task_graph_runner_);
 
     const int kThumbThickness = 3;
     const int kTrackStart = 0;

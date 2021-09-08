@@ -9,7 +9,7 @@
 It can also be run stand-alone as a convenient way of installing a well-tested
 near-tip-of-tree clang version:
 
-  $ curl -s https://raw.githubusercontent.com/chromium/chromium/master/tools/clang/scripts/update.py | python - --output-dir=/tmp/clang
+  $ curl -s https://raw.githubusercontent.com/chromium/chromium/main/tools/clang/scripts/update.py | python - --output-dir=/tmp/clang
 
 (Note that the output dir may be deleted and re-created if it exists.)
 """
@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 import argparse
 import os
+import platform
 import shutil
 import stat
 import sys
@@ -35,15 +36,14 @@ import zipfile
 
 
 # Do NOT CHANGE this if you don't know what you're doing -- see
-# https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
+# https://chromium.googlesource.com/chromium/src/+/main/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
 # This is the output of `git describe` and is usable as a commit-ish.
-CLANG_REVISION = 'llvmorg-12-init-11462-g418f18c6'
-CLANG_SUB_REVISION = 1
+CLANG_REVISION = 'llvmorg-13-init-10392-gd3676d4b'
+CLANG_SUB_REVISION = 2
 
 PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)
-RELEASE_VERSION = '12.0.0'
-
+RELEASE_VERSION = '13.0.0'
 
 CDS_URL = os.environ.get('CDS_CLANG_BUCKET_OVERRIDE',
     'https://commondatastorage.googleapis.com/chromium-browser-clang')
@@ -161,6 +161,7 @@ def GetPlatformUrlPrefix(host_os):
   _HOST_OS_URL_MAP = {
       'linux': 'Linux_x64',
       'mac': 'Mac',
+      'mac-arm64': 'Mac_arm64',
       'win': 'Win',
   }
   return CDS_URL + '/' + _HOST_OS_URL_MAP[host_os] + '/'
@@ -178,12 +179,31 @@ def DownloadAndUnpackPackage(package_file, output_dir, host_os):
     sys.exit(1)
 
 
+def DownloadAndUnpackClangMacRuntime(output_dir):
+  cds_file = "clang-%s.tgz" % PACKAGE_VERSION
+  # We run this only for the runtime libraries, and 'mac' and 'mac-arm64' both
+  # have the same (universal) runtime libraries. It doesn't matter which one
+  # we download here.
+  cds_full_url = GetPlatformUrlPrefix('mac') + cds_file
+  path_prefixes = [
+      'lib/clang/' + RELEASE_VERSION + '/lib/darwin', 'include/c++/v1'
+  ]
+  try:
+    DownloadAndUnpack(cds_full_url, output_dir, path_prefixes)
+  except URLError:
+    print('Failed to download prebuilt clang %s' % cds_file)
+    print('Use build.py if you want to build locally.')
+    print('Exiting.')
+    sys.exit(1)
+
+
 # TODO(hans): Create a clang-win-runtime package instead.
 def DownloadAndUnpackClangWinRuntime(output_dir):
-  cds_file = "clang-%s.tgz" %  PACKAGE_VERSION
+  cds_file = "clang-%s.tgz" % PACKAGE_VERSION
   cds_full_url = GetPlatformUrlPrefix('win') + cds_file
-  path_prefixes =  [ 'lib/clang/' + RELEASE_VERSION + '/lib/',
-                     'bin/llvm-symbolizer.exe' ]
+  path_prefixes = [
+      'lib/clang/' + RELEASE_VERSION + '/lib/windows', 'bin/llvm-symbolizer.exe'
+  ]
   try:
     DownloadAndUnpack(cds_full_url, output_dir, path_prefixes)
   except URLError:
@@ -205,12 +225,11 @@ def UpdatePackage(package_name, host_os):
     package_file = 'clang-tidy'
   elif package_name == 'lld_mac':
     package_file = 'lld'
-    if host_os != 'mac':
-      print(
-          'The lld_mac package cannot be downloaded for non-macs.',
-          file=sys.stderr)
-      print(
-          'On non-mac, lld is included in the clang package.', file=sys.stderr)
+    if host_os not in ('mac', 'mac-arm64'):
+      print('The lld_mac package can only be downloaded on macOS.',
+            file=sys.stderr)
+      print('On non-mac, lld is included in the clang package.',
+            file=sys.stderr)
       return 1
   elif package_name == 'objdump':
     package_file = 'llvmobjdump'
@@ -256,6 +275,8 @@ def UpdatePackage(package_name, host_os):
 
   DownloadAndUnpackPackage(package_file, LLVM_BUILD_DIR, host_os)
 
+  if package_name == 'clang' and 'mac' in target_os:
+    DownloadAndUnpackClangMacRuntime(LLVM_BUILD_DIR)
   if package_name == 'clang' and 'win' in target_os:
     # When doing win/cross builds on other hosts, get the Windows runtime
     # libraries, and llvm-symbolizer.exe (needed in asan builds).
@@ -273,6 +294,8 @@ def main():
       'win32': 'win',
   }
   default_host_os = _PLATFORM_HOST_OS_MAP.get(sys.platform, sys.platform)
+  if default_host_os == 'mac' and platform.machine() == 'arm64':
+    default_host_os = 'mac-arm64'
 
   parser = argparse.ArgumentParser(description='Update clang.')
   parser.add_argument('--output-dir',
@@ -280,13 +303,11 @@ def main():
   parser.add_argument('--package',
                       help='What package to update (default: clang)',
                       default='clang')
-  parser.add_argument(
-      '--host-os',
-      help='Which host OS to download for (default: %s)' % default_host_os,
-      default=default_host_os,
-      choices=('linux', 'mac', 'win'))
-  parser.add_argument('--force-local-build', action='store_true',
-                      help='(no longer used)')
+  parser.add_argument('--host-os',
+                      help='Which host OS to download for (default: %s)' %
+                      default_host_os,
+                      default=default_host_os,
+                      choices=('linux', 'mac', 'mac-arm64', 'win'))
   parser.add_argument('--print-revision', action='store_true',
                       help='Print current clang revision and exit.')
   parser.add_argument('--llvm-force-head-revision', action='store_true',
@@ -297,11 +318,6 @@ def main():
   parser.add_argument('--verify-version',
                       help='Verify that clang has the passed-in version.')
   args = parser.parse_args()
-
-  if args.force_local_build:
-    print(('update.py --force-local-build is no longer used to build clang; '
-           'use build.py instead.'))
-    return 1
 
   if args.verify_version and args.verify_version != RELEASE_VERSION:
     print('RELEASE_VERSION is %s but --verify-version argument was %s.' % (

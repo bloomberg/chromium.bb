@@ -41,9 +41,7 @@ class ActiveTabInfo : public RequestCoordinator::ActiveTabInfo {
   ~ActiveTabInfo() override {}
   bool DoesActiveTabMatch(const GURL& url) override {
     // Loop through to find the active tab and report whether the URL matches.
-    for (auto iter = TabModelList::begin(); iter != TabModelList::end();
-         ++iter) {
-      TabModel* model = *iter;
+    for (const TabModel* model : TabModelList::models()) {
       if (model->GetProfile() == profile_) {
         content::WebContents* contents = model->GetActiveWebContents();
         // Check visibility to make sure Chrome is in the foreground.
@@ -91,8 +89,8 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<LoadTerminationListenerImpl> load_termination_listener =
       std::make_unique<LoadTerminationListenerImpl>();
-  offliner.reset(new BackgroundLoaderOffliner(
-      context, policy.get(), model, std::move(load_termination_listener)));
+  offliner = std::make_unique<BackgroundLoaderOffliner>(
+      context, policy.get(), model, std::move(load_termination_listener));
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::ThreadPool::CreateSequencedTaskRunner(

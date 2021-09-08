@@ -20,7 +20,7 @@ ChromeVoxOptionsTest = class extends ChromeVoxNextE2ETest {
     const mockFeedback = this.createMockFeedback();
     chrome.automation.getDesktop((desktop) => {
       desktop.addEventListener(
-          chrome.automation.EventType.LOAD_COMPLETE, (evt) => {
+          EventType.LOAD_COMPLETE, (evt) => {
             if (evt.target.docUrl.indexOf('options/options.html') === -1 ||
                 !evt.target.docLoaded) {
               return;
@@ -42,10 +42,8 @@ ChromeVoxOptionsTest = class extends ChromeVoxNextE2ETest {
 
 TEST_F('ChromeVoxOptionsTest', 'NumberReadingStyleSelect', function() {
   this.runOnOptionsPage((mockFeedback, evt) => {
-    const numberStyleSelect = evt.target.find({
-      role: chrome.automation.RoleType.POP_UP_BUTTON,
-      attributes: {name: 'Read numbers as:'}
-    });
+    const numberStyleSelect = evt.target.find(
+        {role: RoleType.POP_UP_BUTTON, attributes: {name: 'Read numbers as:'}});
     assertNotNullNorUndefined(numberStyleSelect);
     mockFeedback.call(numberStyleSelect.focus.bind(numberStyleSelect))
         .expectSpeech('Read numbers as:', 'Words', 'Collapsed')
@@ -69,22 +67,16 @@ TEST_F('ChromeVoxOptionsTest', 'NumberReadingStyleSelect', function() {
   });
 });
 
-// TODO(crbug.com/1128926): Test times out flakily in MSAN builds.
-TEST_F_WITH_PREAMBLE(
-    `
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_PunctuationEchoSelect DISABLED_PunctuationEchoSelect
-#else
-#define MAYBE_PunctuationEchoSelect PunctuationEchoSelect
-#endif
-`,
-    'ChromeVoxOptionsTest', 'MAYBE_PunctuationEchoSelect', function() {
+// TODO(crbug.com/1128926, crbug.com/1172387):
+// Test times out flakily.
+TEST_F(
+    'ChromeVoxOptionsTest', 'DISABLED_PunctuationEchoSelect', function() {
       this.runOnOptionsPage((mockFeedback, evt) => {
         const PUNCTUATION_ECHO_NONE = '0';
         const PUNCTUATION_ECHO_SOME = '1';
         const PUNCTUATION_ECHO_ALL = '2';
         const punctuationEchoSelect = evt.target.find({
-          role: chrome.automation.RoleType.POP_UP_BUTTON,
+          role: RoleType.POP_UP_BUTTON,
           attributes: {name: 'Punctuation echo:'}
         });
         assertNotNullNorUndefined(punctuationEchoSelect);
@@ -123,10 +115,12 @@ TEST_F_WITH_PREAMBLE(
       });
     });
 
-TEST_F('ChromeVoxOptionsTest', 'SmartStickyMode', function() {
+// TODO(crbug.com/1128926, crbug.com/1172387):
+// Test times out flakily.
+TEST_F('ChromeVoxOptionsTest', 'DISABLED_SmartStickyMode', function() {
   this.runOnOptionsPage((mockFeedback, evt) => {
     const smartStickyModeCheckbox = evt.target.find({
-      role: chrome.automation.RoleType.CHECK_BOX,
+      role: RoleType.CHECK_BOX,
       attributes:
           {name: 'Turn off sticky mode when editing text (Smart Sticky Mode)'}
     });
@@ -151,76 +145,81 @@ TEST_F('ChromeVoxOptionsTest', 'SmartStickyMode', function() {
   });
 });
 
-TEST_F('ChromeVoxOptionsTest', 'UsePitchChanges', function() {
-  this.runOnOptionsPage((mockFeedback, evt) => {
-    const pitchChangesCheckbox = evt.target.find({
-      role: chrome.automation.RoleType.CHECK_BOX,
-      attributes: {
-        name: 'Change pitch when speaking element types and quoted, deleted, ' +
-            'bolded, parenthesized, or capitalized text.'
-      }
+// TODO(crbug.com/1169396, crbug.com/1172387):
+// Test times out or crashes flakily.
+TEST_F(
+    'ChromeVoxOptionsTest', 'DISABLED_UsePitchChanges', function() {
+      this.runOnOptionsPage((mockFeedback, evt) => {
+        const pitchChangesCheckbox = evt.target.find({
+          role: RoleType.CHECK_BOX,
+          attributes: {
+            name: 'Change pitch when speaking element types and quoted, ' +
+                'deleted, bolded, parenthesized, or capitalized text.'
+          }
+        });
+        const capitalStrategySelect = evt.target.find({
+          role: RoleType.POP_UP_BUTTON,
+          attributes: {name: 'When reading capitals:'}
+        });
+        assertNotNullNorUndefined(pitchChangesCheckbox);
+        assertNotNullNorUndefined(capitalStrategySelect);
+
+        // Assert initial pref values.
+        assertEquals('true', localStorage['usePitchChanges']);
+        assertEquals('increasePitch', localStorage['capitalStrategy']);
+
+        mockFeedback.call(pitchChangesCheckbox.focus.bind(pitchChangesCheckbox))
+            .expectSpeech(
+                'Change pitch when speaking element types and quoted, ' +
+                    'deleted, bolded, parenthesized, or capitalized text.',
+                'Check box', 'Checked')
+            .call(pitchChangesCheckbox.doDefault.bind(pitchChangesCheckbox))
+            .expectSpeech(
+                'Change pitch when speaking element types and quoted, ' +
+                    'deleted, bolded, parenthesized, or capitalized text.',
+                'Check box', 'Not checked')
+            .call(() => {
+              assertEquals('false', localStorage['usePitchChanges']);
+              // Toggling usePitchChanges affects capitalStrategy. Ensure that
+              // the preference has been changed and that the 'Increase pitch'
+              // option is hidden.
+              assertEquals('announceCapitals', localStorage['capitalStrategy']);
+
+              // Open the menu first in order to assert this.
+              // const increasePitchOption = evt.target.find({
+              //  role: RoleType.MENU_LIST_OPTION,
+              //  attributes: {name: 'Increase pitch'}
+              //});
+              // assertNotNullNorUndefined(increasePitchOption);
+              // assertTrue(increasePitchOption.state.invisible);
+            })
+            .call(capitalStrategySelect.focus.bind(capitalStrategySelect))
+            .expectSpeech(
+                'When reading capitals:', 'Speak "cap" before letter',
+                'Collapsed')
+            .call(pitchChangesCheckbox.doDefault.bind(pitchChangesCheckbox))
+            .expectSpeech(
+                'Change pitch when speaking element types and quoted, ' +
+                    'deleted, bolded, parenthesized, or capitalized text.',
+                'Check box', 'Checked')
+            .call(() => {
+              assertEquals('true', localStorage['usePitchChanges']);
+              // Ensure that the capitalStrategy preference is restored to its
+              // initial setting and that the 'Increase pitch' option is visible
+              // again.
+              assertEquals('increasePitch', localStorage['capitalStrategy']);
+
+              // Open the menu first in order to assert this.
+              // const increasePitchOption = evt.target.find({
+              //  role: RoleType.MENU_LIST_OPTION,
+              //  attributes: {name: 'Increase pitch'}
+              //});
+              // assertNotNullNorUndefined(increasePitchOption);
+              // assertEquals(undefined, increasePitchOption.state.invisible);
+            })
+            .call(capitalStrategySelect.focus.bind(capitalStrategySelect))
+            .expectSpeech(
+                'When reading capitals:', 'Increase pitch', 'Collapsed');
+        mockFeedback.replay();
+      });
     });
-    const capitalStrategySelect = evt.target.find({
-      role: chrome.automation.RoleType.POP_UP_BUTTON,
-      attributes: {name: 'When reading capitals:'}
-    });
-    assertNotNullNorUndefined(pitchChangesCheckbox);
-    assertNotNullNorUndefined(capitalStrategySelect);
-
-    // Assert initial pref values.
-    assertEquals('true', localStorage['usePitchChanges']);
-    assertEquals('increasePitch', localStorage['capitalStrategy']);
-
-    mockFeedback.call(pitchChangesCheckbox.focus.bind(pitchChangesCheckbox))
-        .expectSpeech(
-            'Change pitch when speaking element types and quoted, ' +
-                'deleted, bolded, parenthesized, or capitalized text.',
-            'Check box', 'Checked')
-        .call(pitchChangesCheckbox.doDefault.bind(pitchChangesCheckbox))
-        .expectSpeech(
-            'Change pitch when speaking element types and quoted, ' +
-                'deleted, bolded, parenthesized, or capitalized text.',
-            'Check box', 'Not checked')
-        .call(() => {
-          assertEquals('false', localStorage['usePitchChanges']);
-          // Toggling usePitchChanges affects capitalStrategy. Ensure that the
-          // preference has been changed and that the 'Increase pitch' option
-          // is hidden.
-          assertEquals('announceCapitals', localStorage['capitalStrategy']);
-
-          // Open the menu first in order to assert this.
-          // const increasePitchOption = evt.target.find({
-          //  role: chrome.automation.RoleType.MENU_LIST_OPTION,
-          //  attributes: {name: 'Increase pitch'}
-          //});
-          // assertNotNullNorUndefined(increasePitchOption);
-          // assertTrue(increasePitchOption.state.invisible);
-        })
-        .call(capitalStrategySelect.focus.bind(capitalStrategySelect))
-        .expectSpeech(
-            'When reading capitals:', 'Speak "cap" before letter', 'Collapsed')
-        .call(pitchChangesCheckbox.doDefault.bind(pitchChangesCheckbox))
-        .expectSpeech(
-            'Change pitch when speaking element types and quoted, ' +
-                'deleted, bolded, parenthesized, or capitalized text.',
-            'Check box', 'Checked')
-        .call(() => {
-          assertEquals('true', localStorage['usePitchChanges']);
-          // Ensure that the capitalStrategy preference is restored to its
-          // initial setting and that the 'Increase pitch' option is visible
-          // again.
-          assertEquals('increasePitch', localStorage['capitalStrategy']);
-
-          // Open the menu first in order to assert this.
-          // const increasePitchOption = evt.target.find({
-          //  role: chrome.automation.RoleType.MENU_LIST_OPTION,
-          //  attributes: {name: 'Increase pitch'}
-          //});
-          // assertNotNullNorUndefined(increasePitchOption);
-          // assertEquals(undefined, increasePitchOption.state.invisible);
-        })
-        .call(capitalStrategySelect.focus.bind(capitalStrategySelect))
-        .expectSpeech('When reading capitals:', 'Increase pitch', 'Collapsed');
-    mockFeedback.replay();
-  });
-});

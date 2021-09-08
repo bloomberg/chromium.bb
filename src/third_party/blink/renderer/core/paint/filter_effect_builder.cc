@@ -122,14 +122,14 @@ Vector<float> SepiaMatrix(double amount) {
 
 }  // namespace
 
-FilterEffectBuilder::FilterEffectBuilder(
-    const FloatRect& reference_box,
-    float zoom,
-    const PaintFlags* fill_flags,
-    const PaintFlags* stroke_flags,
-    SkBlurImageFilter::TileMode blur_tile_mode)
+FilterEffectBuilder::FilterEffectBuilder(const FloatRect& reference_box,
+                                         float zoom,
+                                         const PaintFlags* fill_flags,
+                                         const PaintFlags* stroke_flags,
+                                         SkTileMode blur_tile_mode)
     : reference_box_(reference_box),
       zoom_(zoom),
+      shorthand_scale_(1),
       fill_flags_(fill_flags),
       stroke_flags_(stroke_flags),
       blur_tile_mode_(blur_tile_mode) {}
@@ -193,6 +193,21 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount()));
         effect = MakeGarbageCollected<FEColorMatrix>(
             parent_filter, FECOLORMATRIX_TYPE_HUEROTATE,
+            std::move(input_parameters));
+        break;
+      }
+      case FilterOperation::LUMINANCE_TO_ALPHA: {
+        Vector<float> input_parameters;
+        effect = MakeGarbageCollected<FEColorMatrix>(
+            parent_filter, FECOLORMATRIX_TYPE_LUMINANCETOALPHA,
+            std::move(input_parameters));
+        break;
+      }
+      case FilterOperation::COLOR_MATRIX: {
+        Vector<float> input_parameters =
+            To<ColorMatrixFilterOperation>(filter_operation)->Values();
+        effect = MakeGarbageCollected<FEColorMatrix>(
+            parent_filter, FECOLORMATRIX_TYPE_MATRIX,
             std::move(input_parameters));
         break;
       }
@@ -262,6 +277,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
       case FilterOperation::BLUR: {
         float std_deviation = FloatValueForLength(
             To<BlurFilterOperation>(filter_operation)->StdDeviation(), 0);
+        std_deviation *= shorthand_scale_;
         effect = MakeGarbageCollected<FEGaussianBlur>(
             parent_filter, std_deviation, std_deviation);
         break;
@@ -269,8 +285,10 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
       case FilterOperation::DROP_SHADOW: {
         const ShadowData& shadow =
             To<DropShadowFilterOperation>(*filter_operation).Shadow();
+        FloatPoint offset = shadow.Location().ScaledBy(shorthand_scale_);
+        float radius = shadow.Blur() * shorthand_scale_;
         effect = MakeGarbageCollected<FEDropShadow>(
-            parent_filter, shadow.Blur(), shadow.Blur(), shadow.X(), shadow.Y(),
+            parent_filter, radius, radius, offset.X(), offset.Y(),
             shadow.GetColor().GetColor(), 1);
         break;
       }
@@ -279,6 +297,19 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
             To<BoxReflectFilterOperation>(filter_operation);
         effect = MakeGarbageCollected<FEBoxReflect>(
             parent_filter, box_reflect_operation->Reflection());
+        break;
+      }
+      case FilterOperation::CONVOLVE_MATRIX: {
+        ConvolveMatrixFilterOperation* convolve_matrix_operation =
+            To<ConvolveMatrixFilterOperation>(filter_operation);
+        effect = MakeGarbageCollected<FEConvolveMatrix>(
+            parent_filter, convolve_matrix_operation->KernelSize(),
+            convolve_matrix_operation->Divisor(),
+            convolve_matrix_operation->Bias(),
+            convolve_matrix_operation->TargetOffset(),
+            convolve_matrix_operation->EdgeMode(),
+            convolve_matrix_operation->PreserveAlpha(),
+            convolve_matrix_operation->KernelMatrix());
         break;
       }
       default:
@@ -352,6 +383,17 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
         }
         break;
       }
+      case FilterOperation::LUMINANCE_TO_ALPHA:
+      case FilterOperation::CONVOLVE_MATRIX:
+        // These filter types only exist for Canvas filters.
+        NOTREACHED();
+        break;
+      case FilterOperation::COLOR_MATRIX: {
+        Vector<float> matrix_values =
+            To<ColorMatrixFilterOperation>(*op).Values();
+        filters.AppendColorMatrixFilter(matrix_values);
+        break;
+      }
       case FilterOperation::INVERT:
       case FilterOperation::OPACITY:
       case FilterOperation::BRIGHTNESS:
@@ -378,13 +420,16 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
       case FilterOperation::BLUR: {
         float pixel_radius =
             To<BlurFilterOperation>(*op).StdDeviation().GetFloatValue();
+        pixel_radius *= shorthand_scale_;
         filters.AppendBlurFilter(pixel_radius, blur_tile_mode_);
         break;
       }
       case FilterOperation::DROP_SHADOW: {
         const ShadowData& shadow = To<DropShadowFilterOperation>(*op).Shadow();
-        filters.AppendDropShadowFilter(FlooredIntPoint(shadow.Location()),
-                                       shadow.Blur(),
+        IntPoint floored_offset =
+            FlooredIntPoint(shadow.Location().ScaledBy(shorthand_scale_));
+        float radius = shadow.Blur() * shorthand_scale_;
+        filters.AppendDropShadowFilter(floored_offset, radius,
                                        shadow.GetColor().GetColor());
         break;
       }
@@ -424,7 +469,7 @@ Filter* FilterEffectBuilder::BuildReferenceFilter(
       DynamicTo<SVGFilterElement>(resource ? resource->Target() : nullptr);
   if (!filter_element)
     return nullptr;
-  if (auto* resource_container = resource->ResourceContainer())
+  if (auto* resource_container = resource->ResourceContainerNoCycleCheck())
     resource_container->ClearInvalidationMask();
   FloatRect filter_region =
       SVGLengthContext::ResolveRectangle<SVGFilterElement>(

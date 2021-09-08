@@ -30,7 +30,7 @@ public:
         state->doUpload(upload);
     }
 
-    void set(GrRenderTarget*, const SkIRect& contentBounds, GrSurfaceOrigin,
+    void set(GrRenderTarget*, bool useMSAASurface, const SkIRect& contentBounds, GrSurfaceOrigin,
              const LoadAndStoreInfo&, const StencilLoadAndStoreInfo&);
 
     void reset() {
@@ -55,8 +55,9 @@ private:
     void onEnd() override;
     bool onBindPipeline(const GrProgramInfo& programInfo, const SkRect& drawBounds) override;
     void onSetScissorRect(const SkIRect& scissor) override;
-    bool onBindTextures(const GrPrimitiveProcessor&, const GrSurfaceProxy* const primProcTextures[],
-                        const GrPipeline& pipeline) override;
+    bool onBindTextures(const GrGeometryProcessor&,
+                        const GrSurfaceProxy* const geomProcTextures[],
+                        const GrPipeline&) override;
     void onBindBuffers(sk_sp<const GrBuffer> indexBuffer, sk_sp<const GrBuffer> instanceBuffer,
                        sk_sp<const GrBuffer> vertexBuffer, GrPrimitiveRestart) override;
     void onDraw(int vertexCount, int baseVertex) override;
@@ -73,10 +74,12 @@ private:
                                int drawCount) override;
     void multiDrawElementsANGLEOrWebGL(const GrBuffer* drawIndirectBuffer, size_t offset,
                                        int drawCount);
-    void onClear(const GrScissorState& scissor, const SkPMColor4f& color) override;
+    void onClear(const GrScissorState& scissor, std::array<float, 4> color) override;
     void onClearStencilClip(const GrScissorState& scissor, bool insideStencilMask) override;
 
-    GrGLGpu* fGpu;
+    GrGLGpu* const fGpu;
+
+    bool fUseMultisampleFBO;
     SkIRect fContentBounds;
     LoadAndStoreInfo fColorLoadAndStoreInfo;
     StencilLoadAndStoreInfo fStencilLoadAndStoreInfo;

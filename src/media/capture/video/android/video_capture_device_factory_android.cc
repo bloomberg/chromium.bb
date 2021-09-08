@@ -10,7 +10,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "media/capture/video/android/capture_jni_headers/VideoCaptureFactory_jni.h"
 #include "media/capture/video/android/video_capture_device_android.h"
 
@@ -38,7 +37,7 @@ VideoCaptureDeviceFactoryAndroid::CreateDevice(
   DCHECK(thread_checker_.CalledOnValidThread());
   int id;
   if (!base::StringToInt(device_descriptor.device_id, &id))
-    return std::unique_ptr<VideoCaptureDevice>();
+    return nullptr;
 
   std::unique_ptr<VideoCaptureDeviceAndroid> video_capture_device(
       new VideoCaptureDeviceAndroid(device_descriptor));
@@ -82,8 +81,10 @@ void VideoCaptureDeviceFactoryAndroid::GetDevicesInfo(
     const std::string device_id =
         base::android::ConvertJavaStringToUTF8(device_id_jstring);
 
-    const int capture_api_type =
-        Java_VideoCaptureFactory_getCaptureApiType(env, camera_index);
+    const VideoCaptureApi capture_api_type = static_cast<VideoCaptureApi>(
+        Java_VideoCaptureFactory_getCaptureApiType(env, camera_index));
+    if (capture_api_type == VideoCaptureApi::UNKNOWN)
+      continue;
     VideoCaptureControlSupport control_support;
     const int facing_mode =
         Java_VideoCaptureFactory_getFacingMode(env, camera_index);
@@ -101,9 +102,8 @@ void VideoCaptureDeviceFactoryAndroid::GetDevicesInfo(
     // currently only used for USB model identifiers, so this implementation
     // just indicates an unknown device model (by not providing one).
     VideoCaptureDeviceInfo device_info(VideoCaptureDeviceDescriptor(
-        display_name, device_id, "" /*model_id*/,
-        static_cast<VideoCaptureApi>(capture_api_type), control_support,
-        VideoCaptureTransportType::OTHER_TRANSPORT,
+        display_name, device_id, "" /*model_id*/, capture_api_type,
+        control_support, VideoCaptureTransportType::OTHER_TRANSPORT,
         static_cast<VideoFacingMode>(facing_mode)));
 
     auto it = supported_formats_cache_.find(device_id);

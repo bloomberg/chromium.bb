@@ -44,8 +44,8 @@ class SaveUpdateWithAccountStoreBubbleController
 
   // Called by the view code when username or password is corrected using
   // the username correction or password selection features in PendingView.
-  void OnCredentialEdited(base::string16 new_username,
-                          base::string16 new_password);
+  void OnCredentialEdited(std::u16string new_username,
+                          std::u16string new_password);
 
   // The password bubble can switch its state between "save" and "update"
   // depending on the user input. |state_| only captures the correct state on
@@ -93,7 +93,7 @@ class SaveUpdateWithAccountStoreBubbleController
   bool DidAuthForAccountStoreOptInFail() const;
 
   // PasswordBubbleControllerBase methods:
-  base::string16 GetTitle() const override;
+  std::u16string GetTitle() const override;
 
   password_manager::ui::State state() const { return state_; }
 
@@ -109,10 +109,6 @@ class SaveUpdateWithAccountStoreBubbleController
 
 #if defined(UNIT_TEST)
   void set_clock(base::Clock* clock) { clock_ = clock; }
-
-  void allow_passwords_revealing() {
-    password_revealing_requires_reauth_ = false;
-  }
 
   bool password_revealing_requires_reauth() const {
     return password_revealing_requires_reauth_;

@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_section.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -17,9 +17,48 @@ namespace chromeos {
 namespace settings {
 namespace {
 
-const std::vector<SearchConcept>& GetKerberosSearchConcepts() {
+// Provides search tags that are always available when the feature is enabled by
+// policy/flag.
+const std::vector<SearchConcept>& GetFixedKerberosSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(fsandrade): add Kerberos search tags here.
+      {IDS_OS_SETTINGS_TAG_KERBEROS_SECTION,
+       mojom::kKerberosSectionPath,
+       mojom::SearchResultIcon::kAuthKey,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kKerberos}},
+      {IDS_OS_SETTINGS_TAG_KERBEROS,
+       mojom::kKerberosAccountsV2SubpagePath,
+       mojom::SearchResultIcon::kAuthKey,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kKerberosAccountsV2}},
+      {IDS_OS_SETTINGS_TAG_KERBEROS_ADD,
+       mojom::kKerberosAccountsV2SubpagePath,
+       mojom::SearchResultIcon::kAuthKey,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAddKerberosTicketV2}},
+  });
+  return *tags;
+}
+
+// Provides search tags that are only available when the feature is enabled by
+// policy/flag and there is at least one Kerberos ticket.
+const std::vector<SearchConcept>& GetDynamicKerberosSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_KERBEROS_REMOVE,
+       mojom::kKerberosAccountsV2SubpagePath,
+       mojom::SearchResultIcon::kAuthKey,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kRemoveKerberosTicketV2}},
+      {IDS_OS_SETTINGS_TAG_KERBEROS_ACTIVE,
+       mojom::kKerberosAccountsV2SubpagePath,
+       mojom::SearchResultIcon::kAuthKey,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kSetActiveKerberosTicketV2}},
   });
   return *tags;
 }
@@ -39,7 +78,7 @@ KerberosSection::KerberosSection(
   if (kerberos_credentials_manager_) {
     // Kerberos search tags are added/removed dynamically.
     kerberos_credentials_manager_->AddObserver(this);
-    OnKerberosEnabledStateChanged();
+    UpdateKerberosSearchConcepts();
   }
 }
 
@@ -53,8 +92,8 @@ KerberosSection::~KerberosSection() {
 }
 
 void KerberosSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
-  // TODO(fsandrade): add Kerberos section title to corresponding UI element,
-  // when it's created.
+  html_source->AddLocalizedString("kerberosPageTitle",
+                                  IDS_OS_SETTINGS_KERBEROS);
 
   KerberosAccountsHandler::AddLoadTimeKerberosStrings(
       html_source, kerberos_credentials_manager_);
@@ -111,13 +150,34 @@ void KerberosSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             kKerberosAccountsV2Settings, generator);
 }
 
+void KerberosSection::OnAccountsChanged() {
+  UpdateKerberosSearchConcepts();
+}
+
 void KerberosSection::OnKerberosEnabledStateChanged() {
+  UpdateKerberosSearchConcepts();
+}
+
+// Updates search tags according to the KerberosEnabled state and the presence
+// of Kerberos tickets in the system.
+void KerberosSection::UpdateKerberosSearchConcepts() {
+  CHECK(kerberos_credentials_manager_);
+
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
 
-  if (kerberos_credentials_manager_->IsKerberosEnabled())
-    updater.AddSearchTags(GetKerberosSearchConcepts());
-  else
-    updater.RemoveSearchTags(GetKerberosSearchConcepts());
+  // Removes all search tags first. They will be added conditionally later.
+  updater.RemoveSearchTags(GetFixedKerberosSearchConcepts());
+  updater.RemoveSearchTags(GetDynamicKerberosSearchConcepts());
+
+  if (kerberos_credentials_manager_->IsKerberosEnabled()) {
+    updater.AddSearchTags(GetFixedKerberosSearchConcepts());
+
+    const std::string account_name =
+        kerberos_credentials_manager_->GetActiveAccount();
+    if (!account_name.empty()) {
+      updater.AddSearchTags(GetDynamicKerberosSearchConcepts());
+    }
+  }
 }
 
 }  // namespace settings

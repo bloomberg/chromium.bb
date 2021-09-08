@@ -4,11 +4,14 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_issue_reporter.h"
 
-#include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
@@ -21,7 +24,6 @@ InspectorIssueReporter::InspectorIssueReporter(InspectorIssueStorage* storage)
 InspectorIssueReporter::~InspectorIssueReporter() = default;
 
 void InspectorIssueReporter::Trace(Visitor* visitor) const {
-  visitor->Trace(storage_);
 }
 
 void InspectorIssueReporter::DidFailLoading(
@@ -32,7 +34,7 @@ void InspectorIssueReporter::DidFailLoading(
     const base::UnguessableToken& token) {
   if (!storage_)
     return;
-  base::Optional<network::mojom::BlockedByResponseReason>
+  absl::optional<network::mojom::BlockedByResponseReason>
       blocked_by_response_reason = error.GetBlockedByResponseReason();
   if (!blocked_by_response_reason)
     return;
@@ -58,4 +60,27 @@ void InspectorIssueReporter::DidFailLoading(
                 mojom::blink::InspectorIssueCode::kBlockedByResponseIssue,
                 std::move(details)));
 }
+
+void InspectorIssueReporter::DomContentLoadedEventFired(LocalFrame* frame) {
+  if (!frame)
+    return;
+
+  auto* document = frame->GetDocument();
+  if (!document || !document->GetExecutionContext())
+    return;
+
+  auto url = document->Url();
+  if (url.IsEmpty() || url.IsAboutBlankURL())
+    return;
+
+  if (document->InNoQuirksMode())
+    return;
+
+  AuditsIssue::ReportQuirksModeIssue(
+      document->GetExecutionContext(), document->InLimitedQuirksMode(),
+      DOMNodeIds::IdForNode(document), url.GetString(),
+      IdentifiersFactory::FrameId(frame),
+      IdentifiersFactory::LoaderId(document->Loader()));
+}
+
 }  // namespace blink

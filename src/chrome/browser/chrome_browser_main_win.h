@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/files/file_path_watcher.h"
 #include "chrome/browser/chrome_browser_main.h"
 
 class ModuleWatcher;
@@ -34,7 +33,7 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
 
   // BrowserParts overrides.
   void ToolkitInitialized() override;
-  void PreMainMessageLoopStart() override;
+  void PreCreateMainMessageLoop() override;
   int PreCreateThreads() override;
   void PostMainMessageLoopRun() override;
 

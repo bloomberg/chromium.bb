@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/simulator/quic_endpoint_base.h"
+#include "quic/test_tools/simulator/quic_endpoint_base.h"
 
 #include <memory>
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test_output.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "quic/core/crypto/crypto_handshake_message.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_data_writer.h"
+#include "quic/platform/api/quic_test_output.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/simulator/simulator.h"
 
 namespace quic {
 namespace simulator {
@@ -60,7 +60,7 @@ QuicEndpointBase::QuicEndpointBase(Simulator* simulator,
       peer_name_(peer_name),
       writer_(this),
       nic_tx_queue_(simulator,
-                    quiche::QuicheStringPrintf("%s (TX Queue)", name.c_str()),
+                    absl::StrCat(name, " (TX Queue)"),
                     kMaxOutgoingPacketSize * kTxQueueSize),
       connection_(nullptr),
       write_blocked_count_(0),
@@ -73,7 +73,7 @@ QuicEndpointBase::~QuicEndpointBase() {
     const char* perspective_prefix =
         connection_->perspective() == Perspective::IS_CLIENT ? "C" : "S";
 
-    std::string identifier = quiche::QuicheStrCat(
+    std::string identifier = absl::StrCat(
         perspective_prefix, connection_->connection_id().ToString());
     QuicRecordTrace(identifier, trace_visitor_->trace()->SerializeAsString());
   }
@@ -132,9 +132,9 @@ WriteResult QuicEndpointBase::Writer::WritePacket(
     const QuicIpAddress& /*self_address*/,
     const QuicSocketAddress& /*peer_address*/,
     PerPacketOptions* options) {
-  DCHECK(!IsWriteBlocked());
-  DCHECK(options == nullptr);
-  DCHECK(buf_len <= kMaxOutgoingPacketSize);
+  QUICHE_DCHECK(!IsWriteBlocked());
+  QUICHE_DCHECK(options == nullptr);
+  QUICHE_DCHECK(buf_len <= kMaxOutgoingPacketSize);
 
   // Instead of losing a packet, become write-blocked when the egress queue is
   // full.

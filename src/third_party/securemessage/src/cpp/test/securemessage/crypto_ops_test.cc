@@ -56,19 +56,19 @@ class CryptoOpsTest {
     return CryptoOps::Aes256CBCEncrypt(encryptionKey, iv, plaintext);
   }
 
-  static string GetPurpose(CryptoOps::SigType sigType) {
+  static std::string GetPurpose(CryptoOps::SigType sigType) {
     return CryptoOps::GetPurpose(sigType);
   }
 
-  static string GetPurpose(CryptoOps::EncType encType) {
+  static std::string GetPurpose(CryptoOps::EncType encType) {
     return CryptoOps::GetPurpose(encType);
   }
 
-  static string Int32BytesToString(int32_t value) {
+  static std::string Int32BytesToString(int32_t value) {
     return CryptoOps::Int32BytesToString(value);
   }
 
-  static bool StringToInt32Bytes(const string& value, int32_t* result) {
+  static bool StringToInt32Bytes(const std::string& value, int32_t* result) {
     return CryptoOps::StringToInt32Bytes(value, result);
   }
 };
@@ -163,7 +163,7 @@ TEST(CryptoOpsTest, TestHkdf) {
   ByteBuffer salt(kHkdfCase1Salt, kHkdfCase1SaltLength);
   ByteBuffer info(kHkdfCase1Info, kHkdfCase1InfoLength);
 
-  unique_ptr<string> result =
+  unique_ptr<std::string> result =
       CryptoOps::Hkdf(key_data.String(), salt.String(), info.String());
 
   EXPECT_NE(nullptr, result);
@@ -174,10 +174,10 @@ TEST(CryptoOpsTest, TestHkdf) {
 
 TEST(CryptoOpsTest, TestDeriveAes256KeyFor) {
   CryptoOps::SecretKey aesKey1(
-      string(CryptoOpsTest::AesKeySize(), static_cast<char>(1)),
+      std::string(CryptoOpsTest::AesKeySize(), static_cast<char>(1)),
       CryptoOps::AES_256_KEY);
   CryptoOps::SecretKey aesKey2(
-      string(CryptoOpsTest::AesKeySize(), static_cast<char>(2)),
+      std::string(CryptoOpsTest::AesKeySize(), static_cast<char>(2)),
       CryptoOps::AES_256_KEY);
 
   // Test that deriving with the same key and purpose twice is deterministic
@@ -195,9 +195,9 @@ TEST(CryptoOpsTest, TestDeriveAes256KeyFor) {
 }
 
 TEST(CryptoOpsTest, TestAes256CbcEncryptDecrypt) {
-  string plaintext(16, static_cast<char>(1));
-  string iv(16, static_cast<char>(2));
-  string key(32, static_cast<char>(3));
+  std::string plaintext(16, static_cast<char>(1));
+  std::string iv(16, static_cast<char>(2));
+  std::string key(32, static_cast<char>(3));
   CryptoOps::SecretKey aesKey(key, CryptoOps::AES_256_KEY);
 
   unique_ptr<ByteBuffer> ciphertext_ptr = CryptoOpsTest::Aes256CBCEncrypt(
@@ -239,17 +239,17 @@ TEST(CryptoOpsTest, TestEncryptDecrypt) {
   ByteBuffer key("5uper 5ecret");
 
   // Create a bogus iv with 16 bytes of the number 42.
-  ByteBuffer iv(string(16, static_cast<char>(42)));
+  ByteBuffer iv(std::string(16, static_cast<char>(42)));
 
   CryptoOps::SecretKey aesKey(key.String(), CryptoOps::AES_256_KEY);
-  unique_ptr<string> ciphertext_ptr = CryptoOps::Encrypt(
+  unique_ptr<std::string> ciphertext_ptr = CryptoOps::Encrypt(
       aesKey, CryptoOps::AES_256_CBC, iv.String(), plaintext.String());
 
   EXPECT_NE(nullptr, ciphertext_ptr);
   EXPECT_NE(plaintext.String(), *ciphertext_ptr);
 
-  iv = ByteBuffer(string(16, 42));
-  unique_ptr<string> plaintext_ptr = CryptoOps::Decrypt(
+  iv = ByteBuffer(std::string(16, 42));
+  unique_ptr<std::string> plaintext_ptr = CryptoOps::Decrypt(
       aesKey, CryptoOps::AES_256_CBC, iv.String(), *ciphertext_ptr);
   EXPECT_NE(nullptr, plaintext_ptr);
   EXPECT_EQ(plaintext.String(), *plaintext_ptr);
@@ -258,26 +258,26 @@ TEST(CryptoOpsTest, TestEncryptDecrypt) {
 TEST(CryptoOpsTest, TestEncryptDecryptEmpty) {
   ByteBuffer plaintext;
   ByteBuffer key("5uper 5ecret");
-  ByteBuffer iv(string(kAesIvLength, static_cast<char>(42)));
+  ByteBuffer iv(std::string(kAesIvLength, static_cast<char>(42)));
 
   CryptoOps::SecretKey aesKey(key.String(), CryptoOps::AES_256_KEY);
-  unique_ptr<string> ciphertext_ptr = CryptoOps::Encrypt(
+  unique_ptr<std::string> ciphertext_ptr = CryptoOps::Encrypt(
       aesKey, CryptoOps::AES_256_CBC, iv.String(), plaintext.String());
 
   EXPECT_NE(nullptr, ciphertext_ptr);
   EXPECT_NE(plaintext.String(), *ciphertext_ptr);
 
-  iv = ByteBuffer(string(kAesIvLength, static_cast<char>(42)));
-  unique_ptr<string> plaintext_ptr = CryptoOps::Decrypt(
+  iv = ByteBuffer(std::string(kAesIvLength, static_cast<char>(42)));
+  unique_ptr<std::string> plaintext_ptr = CryptoOps::Decrypt(
       aesKey, CryptoOps::AES_256_CBC, iv.String(), *ciphertext_ptr);
   EXPECT_NE(nullptr, plaintext_ptr);
   EXPECT_EQ((size_t)0, plaintext_ptr->size());
 }
 
 TEST(CryptoOpsTest, TestGenerateIV) {
-  unique_ptr<string> iv1 = CryptoOps::GenerateIv(CryptoOps::AES_256_CBC);
-  unique_ptr<string> iv2 = CryptoOps::GenerateIv(CryptoOps::AES_256_CBC);
-  unique_ptr<string> iv3 = CryptoOps::GenerateIv(CryptoOps::NONE);
+  unique_ptr<std::string> iv1 = CryptoOps::GenerateIv(CryptoOps::AES_256_CBC);
+  unique_ptr<std::string> iv2 = CryptoOps::GenerateIv(CryptoOps::AES_256_CBC);
+  unique_ptr<std::string> iv3 = CryptoOps::GenerateIv(CryptoOps::NONE);
 
   EXPECT_NE(nullptr, iv1);
   EXPECT_NE(nullptr, iv2);
@@ -308,15 +308,15 @@ TEST(CryptoOpsTest, TestSignVerifyHmacSha256) {
   // sign() function internally derives a key from the original key.  So
   // instead, we're testing the output against a known good output from the
   // Java implementation of securemessage.
-  string key_string(20, static_cast<char>(0x0b));
-  string data_string("Hi There");
+  std::string key_string(20, static_cast<char>(0x0b));
+  std::string data_string("Hi There");
   unsigned char expected_signature[32] = {
       0x3b, 0x14, 0x7b, 0x0f, 0xe6, 0x6a, 0x00, 0x47, 0xa2, 0x60, 0x4c,
       0xf2, 0x64, 0x29, 0xad, 0x07, 0x5d, 0x86, 0x8b, 0x01, 0xdb, 0x11,
       0xef, 0x6f, 0x4e, 0xc2, 0x2d, 0x8b, 0xdb, 0x66, 0xf1, 0x8c};
   CryptoOps::SecretKey secret_key(key_string,
                                   CryptoOps::KeyAlgorithm::AES_256_KEY);
-  unique_ptr<string> signature =
+  unique_ptr<std::string> signature =
       CryptoOps::Sign(CryptoOps::SigType::HMAC_SHA256, secret_key, data_string);
   EXPECT_NE(nullptr, signature);
   EXPECT_EQ((size_t)32, signature->length());
@@ -356,18 +356,20 @@ TEST(CryptoOpsTest, TestSignVerifyEcdsaP256sha256) {
       0x53, 0xfe, 0xad, 0x6d, 0x69, 0xaa, 0x34, 0xff, 0x17, 0x69, 0x0a, 0xb0,
       0xa3, 0xf2, 0x1b, 0x33, 0xee, 0xfb};
 
-  string data_string("Hi There");
+  std::string data_string("Hi There");
 
   // Test Signing
-  CryptoOps::PrivateKey private_key(string((const char*)private_key_bytes, 381),
-                                    CryptoOps::KeyAlgorithm::ECDSA_KEY);
-  unique_ptr<string> signature = CryptoOps::Sign(
+  CryptoOps::PrivateKey private_key(
+      std::string((const char*)private_key_bytes, 381),
+      CryptoOps::KeyAlgorithm::ECDSA_KEY);
+  unique_ptr<std::string> signature = CryptoOps::Sign(
       CryptoOps::SigType::ECDSA_P256_SHA256, private_key, data_string);
   EXPECT_NE(nullptr, signature);
 
   // Test Verifying
-  CryptoOps::PublicKey public_key(string((const char*)public_key_bytes, 335),
-                                  CryptoOps::KeyAlgorithm::ECDSA_KEY);
+  CryptoOps::PublicKey public_key(
+      std::string((const char*)public_key_bytes, 335),
+      CryptoOps::KeyAlgorithm::ECDSA_KEY);
   bool signature_verifies =
       CryptoOps::Verify(CryptoOps::SigType::ECDSA_P256_SHA256, public_key,
                         *signature, data_string);
@@ -508,13 +510,13 @@ TEST(CryptoOpsTest, TestSignVerifyRsa2048Sha256) {
       0xee, 0xa8, 0x9c, 0xfa, 0x49, 0x67, 0x42, 0x15, 0x31, 0x0e, 0xd0, 0xc2,
       0x7b, 0x02, 0x03, 0x01, 0x00, 0x01};
 
-  string data_string("Hi There");
+  std::string data_string("Hi There");
 
   // Test Signing
   CryptoOps::PrivateKey private_key(
       ByteBuffer(private_key_bytes, 1193).String(),
       CryptoOps::KeyAlgorithm::RSA_KEY);
-  unique_ptr<string> signature = CryptoOps::Sign(
+  unique_ptr<std::string> signature = CryptoOps::Sign(
       CryptoOps::SigType::RSA2048_SHA256, private_key, data_string);
   EXPECT_NE(nullptr, signature);
 
@@ -532,7 +534,7 @@ TEST(CryptoOpsTest, TestEcKeyAgreement) {
   unique_ptr<CryptoOps::KeyPair> server_key_pair =
       CryptoOps::GenerateEcP256KeyPair();
 
-  string client_y, server_y;
+  std::string client_y, server_y;
   bool success;
   success = CryptoOps::ExportEcP256Key(*(client_key_pair->public_key),
                                        NULL, &client_y);
@@ -580,23 +582,24 @@ TEST(CryptoOpsTest, TestGenerateRsa2048KeyPair) {
 }
 
 TEST(CryptoOpsTest, TestInt32BytesToString) {
-  EXPECT_EQ(string("\x05\xF2\x23\x00", 4),
+  EXPECT_EQ(std::string("\x05\xF2\x23\x00", 4),
             CryptoOpsTest::Int32BytesToString(0x05F22300));
 
   // All zero bytes.
-  EXPECT_EQ(string("\x0\x0\x0\x0", 4), CryptoOpsTest::Int32BytesToString(0));
+  EXPECT_EQ(std::string("\x0\x0\x0\x0", 4),
+            CryptoOpsTest::Int32BytesToString(0));
 
   // Leading 0 byte.
-  EXPECT_EQ(string("\x00\x00\x93\x06", 4),
+  EXPECT_EQ(std::string("\x00\x00\x93\x06", 4),
             CryptoOpsTest::Int32BytesToString(0x00009306));
 
   // Negative value.
-  EXPECT_EQ(string("\xE0\x00\x00\x00", 4),
-                   CryptoOpsTest::Int32BytesToString(0xE0000000));
+  EXPECT_EQ(std::string("\xE0\x00\x00\x00", 4),
+            CryptoOpsTest::Int32BytesToString(0xE0000000));
 
   // Negative non-leading bytes.
-  EXPECT_EQ(string("\x0F\x81\xA3\x99", 4),
-                   CryptoOpsTest::Int32BytesToString(0x0F81A399));
+  EXPECT_EQ(std::string("\x0F\x81\xA3\x99", 4),
+            CryptoOpsTest::Int32BytesToString(0x0F81A399));
 }
 
 TEST(CryptoOpsTest, TestStringToInt32Bytes) {
@@ -604,43 +607,118 @@ TEST(CryptoOpsTest, TestStringToInt32Bytes) {
   int32_t result = 0x34F4EE21;
 
   // Empty string.
-  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(string(), &result));
+  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(std::string(), &result));
   EXPECT_EQ(0, result);
 
   // All zero bytes.
-  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(string("\x00\x00\x00\x00", 4),
-                                                &result));
+  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(
+      std::string("\x00\x00\x00\x00", 4), &result));
   EXPECT_EQ(0, result);
 
   // Positive value.
-  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(string("\x05\xF2\x23\x00", 4),
-                                                &result));
+  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(
+      std::string("\x05\xF2\x23\x00", 4), &result));
   EXPECT_EQ(0x05F22300, result);
 
   // Leading 0 byte.
-  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(string("\x00\x00\x93\x06", 4),
-                                                &result));
+  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(
+      std::string("\x00\x00\x93\x06", 4), &result));
   EXPECT_EQ(0x00009306, result);
 
   // Negative value.
-  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(string("\xE0\x00\x00\x00", 4),
-                                                &result));
-  EXPECT_EQ(0xE0000000, static_cast<uint32_t>(result));
+  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(
+      std::string("\xE0\x00\x00\x00", 4), &result));
+  EXPECT_EQ(0xE0000000, result);
 
   // Negative non-leading bytes.
-  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(string("\x0F\x81\xA3\x99", 4),
-                                                &result));
+  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(
+      std::string("\x0F\x81\xA3\x99", 4), &result));
   EXPECT_EQ(0x0F81A399, result);
 
   // String shorter than 4 bytes.
-  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(string("\x81\xA3\x99", 3),
+  EXPECT_TRUE(CryptoOpsTest::StringToInt32Bytes(std::string("\x81\xA3\x99", 3),
                                                 &result));
   EXPECT_EQ(0x0081A399, result);
 
   // String longer than 4 bytes (invalid value).
-  EXPECT_FALSE(
-      CryptoOpsTest::StringToInt32Bytes(string("\x00\x00\x81\xA3\x99", 5),
-                                        &result));
+  EXPECT_FALSE(CryptoOpsTest::StringToInt32Bytes(
+      std::string("\x00\x00\x81\xA3\x99", 5), &result));
+}
+
+TEST(CryptoOpsTest, SecureRandom) {
+  unique_ptr<ByteBuffer> random_bytes;
+
+  // Length must be positive.
+  random_bytes = CryptoOps::SecureRandom(0);
+  EXPECT_FALSE(random_bytes);
+
+  // Check length of |random_bytes| the same as the length requested.
+  const size_t length1 = 32;
+  random_bytes = CryptoOps::SecureRandom(length1);
+  ASSERT_TRUE(random_bytes);
+  EXPECT_EQ(length1, random_bytes->size());
+
+  const size_t length2 = 64;
+  random_bytes = CryptoOps::SecureRandom(length2);
+  ASSERT_TRUE(random_bytes);
+  EXPECT_EQ(length2, random_bytes->size());
+}
+
+TEST(CryptoOpsTest, Sha256) {
+  // Hashing an empty message should fail.
+  EXPECT_FALSE(CryptoOps::Sha256(ByteBuffer(std::string())));
+
+  // Examples from
+  // http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA256.pdf
+  {
+    const std::string input = "abc";
+    const std::string digest =
+        "0xba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+
+    unique_ptr<ByteBuffer> hash = CryptoOps::Sha256(ByteBuffer(input));
+    EXPECT_TRUE(hash);
+    EXPECT_EQ(digest, hash->AsDebugHexString());
+  }
+
+  {
+    const std::string input =
+        "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+    const std::string digest =
+        "0x248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1";
+    unique_ptr<ByteBuffer> hash = CryptoOps::Sha256(ByteBuffer(input));
+    EXPECT_TRUE(hash);
+    EXPECT_EQ(digest, hash->AsDebugHexString());
+  }
+}
+
+TEST(CryptoOpsTest, Sha512) {
+  // Hashing an empty message should fail.
+  EXPECT_FALSE(CryptoOps::Sha512(ByteBuffer(std::string())));
+
+  // Examples from
+  // http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA512.pdf
+  {
+    const std::string input = "abc";
+    const std::string digest =
+        "0xddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a219"
+        "2992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f";
+
+    unique_ptr<ByteBuffer> hash = CryptoOps::Sha512(ByteBuffer(input));
+    EXPECT_TRUE(hash);
+    EXPECT_EQ(digest, hash->AsDebugHexString());
+  }
+
+  {
+    const std::string input =
+        "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklm"
+        "nopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu";
+    const std::string digest =
+        "0x8e959b75dae313da8cf4f72814fc143f8f7779c6eb9f7fa17299aeadb6889018501"
+        "d289e4900f7e4331b99dec4b5433ac7d329eeb6dd26545e96e55b874be909";
+    unique_ptr<ByteBuffer> hash = CryptoOps::Sha512(ByteBuffer(input));
+    EXPECT_TRUE(hash);
+    EXPECT_EQ(digest, hash->AsDebugHexString());
+  }
 }
 
 }  // namespace

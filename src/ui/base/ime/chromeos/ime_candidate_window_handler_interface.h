@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/component_export.h"
-#include "base/strings/string16.h"
 
 namespace gfx {
 class Rect;
@@ -16,7 +17,7 @@ class Rect;
 
 namespace ui {
 class CandidateWindow;
-}
+}  // namespace ui
 
 namespace chromeos {
 
@@ -24,7 +25,7 @@ namespace chromeos {
 class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
     IMECandidateWindowHandlerInterface {
  public:
-  virtual ~IMECandidateWindowHandlerInterface() {}
+  virtual ~IMECandidateWindowHandlerInterface() = default;
 
   // Called when the IME updates the lookup table.
   virtual void UpdateLookupTable(const ui::CandidateWindow& candidate_window,
@@ -32,7 +33,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
 
   // Called when the IME updates the preedit text. The |text| is given in
   // UTF-16 encoding.
-  virtual void UpdatePreeditText(const base::string16& text,
+  virtual void UpdatePreeditText(const std::u16string& text,
                                  uint32_t cursor_pos,
                                  bool visible) = 0;
 
@@ -48,7 +49,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
   virtual void FocusStateChanged(bool is_focused) {}
 
  protected:
-  IMECandidateWindowHandlerInterface() {}
+  IMECandidateWindowHandlerInterface() = default;
 };
 
 }  // namespace chromeos

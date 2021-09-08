@@ -28,11 +28,11 @@ class WebView;
 
 namespace content {
 
-class WebViewTestProxy;
+class WebFrameTestProxy;
 
 class AccessibilityController {
  public:
-  explicit AccessibilityController(WebViewTestProxy* web_view_test_proxy);
+  explicit AccessibilityController(WebFrameTestProxy* web_frame_test_proxy);
   ~AccessibilityController();
 
   void Reset();
@@ -57,12 +57,13 @@ class AccessibilityController {
   v8::Local<v8::Object> FocusedElement();
   v8::Local<v8::Object> RootElement();
   v8::Local<v8::Object> AccessibleElementById(const std::string& id);
+  bool CanCallAOMEventListeners() const;
 
   v8::Local<v8::Object> FindAccessibleElementByIdRecursive(
       const blink::WebAXObject&,
       const blink::WebString& id);
 
-  blink::WebAXObject GetAccessibilityObjectForMainFrame();
+  blink::WebAXObject GetAccessibilityObjectForMainFrame() const;
 
   // If true, will log all accessibility notifications.
   bool log_accessibility_events_;
@@ -71,8 +72,8 @@ class AccessibilityController {
 
   v8::Persistent<v8::Function> notification_callback_;
 
-  blink::WebView* web_view();
-  WebViewTestProxy* web_view_test_proxy_;
+  blink::WebView* web_view() const;
+  WebFrameTestProxy* web_frame_test_proxy_;
 
   std::unique_ptr<blink::WebAXContext> ax_context_;
 
