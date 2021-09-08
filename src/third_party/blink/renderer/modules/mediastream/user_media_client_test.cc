@@ -192,7 +192,7 @@ class MockMediaDevicesDispatcherHost
         blink::mojom::blink::VideoInputDeviceCapabilities::New();
     device->device_id = kFakeVideoInputDeviceId1;
     device->group_id = String("dummy");
-    device->facing_mode = media::MEDIA_VIDEO_FACING_USER;
+    device->facing_mode = mojom::blink::FacingMode::USER;
     if (!video_source_ || !video_source_->IsRunning() ||
         !video_source_->GetCurrentFormat()) {
       device->formats.push_back(media::VideoCaptureFormat(
@@ -210,7 +210,7 @@ class MockMediaDevicesDispatcherHost
     device = blink::mojom::blink::VideoInputDeviceCapabilities::New();
     device->device_id = kFakeVideoInputDeviceId2;
     device->group_id = String("dummy");
-    device->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
+    device->facing_mode = mojom::blink::FacingMode::ENVIRONMENT;
     device->formats.push_back(media::VideoCaptureFormat(
         gfx::Size(640, 480), 30.0f, media::PIXEL_FORMAT_I420));
     result.push_back(std::move(device));
@@ -255,6 +255,10 @@ class MockMediaDevicesDispatcherHost
       bool subscribe_audio_output,
       mojo::PendingRemote<blink::mojom::blink::MediaDevicesListener> listener)
       override {
+    NOTREACHED();
+  }
+
+  void SetCaptureHandleConfig(mojom::blink::CaptureHandleConfigPtr) override {
     NOTREACHED();
   }
 
@@ -475,12 +479,16 @@ class UserMediaClientUnderTest : public UserMediaClient {
 
 class UserMediaChromeClient : public EmptyChromeClient {
  public:
-  ScreenInfo GetScreenInfo(LocalFrame&) const override {
-    ScreenInfo info;
-    info.rect = gfx::Rect(blink::kDefaultScreenCastWidth,
-                          blink::kDefaultScreenCastHeight);
-    return info;
+  UserMediaChromeClient() {
+    screen_info_.rect = gfx::Rect(blink::kDefaultScreenCastWidth,
+                                  blink::kDefaultScreenCastHeight);
   }
+  const ScreenInfo& GetScreenInfo(LocalFrame&) const override {
+    return screen_info_;
+  }
+
+ private:
+  ScreenInfo screen_info_;
 };
 
 }  // namespace
@@ -495,11 +503,9 @@ class UserMediaClientTest : public ::testing::Test {
     // Create our test object.
     auto* msd_observer = new blink::WebMediaStreamDeviceObserver(nullptr);
 
-    ChromeClient* client = MakeGarbageCollected<UserMediaChromeClient>();
-    Page::PageClients page_clients;
-    page_clients.chrome_client = client;
+    ChromeClient* chrome_client = MakeGarbageCollected<UserMediaChromeClient>();
     dummy_page_holder_ =
-        std::make_unique<DummyPageHolder>(IntSize(1, 1), &page_clients);
+        std::make_unique<DummyPageHolder>(IntSize(1, 1), chrome_client);
 
     user_media_processor_ = MakeGarbageCollected<UserMediaProcessorUnderTest>(
         &(dummy_page_holder_->GetFrame()), base::WrapUnique(msd_observer),
@@ -627,7 +633,7 @@ class UserMediaClientTest : public ::testing::Test {
       MediaStreamComponent* component,
       int width,
       int height,
-      const base::Optional<double>& frame_rate = base::Optional<double>()) {
+      const absl::optional<double>& frame_rate = absl::optional<double>()) {
     blink::MockConstraintFactory factory;
     factory.basic().width.SetExact(width);
     factory.basic().height.SetExact(height);
@@ -927,8 +933,9 @@ TEST_F(UserMediaClientTest, DefaultConstraintsPropagate) {
             blink::MediaStreamVideoSource::kDefaultWidth);
   EXPECT_EQ(video_capture_settings.Height(),
             blink::MediaStreamVideoSource::kDefaultHeight);
-  EXPECT_EQ(video_capture_settings.FrameRate(),
-            blink::MediaStreamVideoSource::kDefaultFrameRate);
+  EXPECT_EQ(
+      video_capture_settings.FrameRate(),
+      static_cast<float>(blink::MediaStreamVideoSource::kDefaultFrameRate));
   EXPECT_EQ(video_capture_settings.ResolutionChangePolicy(),
             media::ResolutionChangePolicy::FIXED_RESOLUTION);
   EXPECT_FALSE(video_capture_settings.noise_reduction());
@@ -937,10 +944,11 @@ TEST_F(UserMediaClientTest, DefaultConstraintsPropagate) {
   const blink::VideoTrackAdapterSettings& track_settings =
       video_capture_settings.track_adapter_settings();
   EXPECT_FALSE(track_settings.target_size().has_value());
-  EXPECT_EQ(track_settings.min_aspect_ratio(),
-            1.0 / blink::MediaStreamVideoSource::kDefaultHeight);
+  EXPECT_EQ(
+      track_settings.min_aspect_ratio(),
+      1.0 / static_cast<double>(blink::MediaStreamVideoSource::kDefaultHeight));
   EXPECT_EQ(track_settings.max_aspect_ratio(),
-            blink::MediaStreamVideoSource::kDefaultWidth);
+            static_cast<double>(blink::MediaStreamVideoSource::kDefaultWidth));
   // 0.0 is the default max_frame_rate and it indicates no frame-rate adjustment
   EXPECT_EQ(track_settings.max_frame_rate(), 0.0);
 }

@@ -45,7 +45,7 @@
       <feature>The <code>multiDrawArraysWEBGL</code>, <code>multiDrawElementsWEBGL</code>, <code>multiDrawArraysInstancedWEBGL</code>, and <code>multiDrawElementsInstancedWEBGL</code> entry points are added. These provide a counterpoint to instanced rendering and are more flexible for certain scenarios. They behave identically to multiple calls to <code>drawArrays</code>, <code>drawElements</code>, <code>drawArraysInstanced</code>, and <code>drawElementsInstanced</code> except they handle multiple lists of arguments in one call.</feature>
 
       <feature>The <code>gl_DrawID</code> builtin is added to the shading language. For any Multi* draw call variant, the index of the draw <code>i</code> may be read by the vertex shader as <code>gl_DrawID</code>. For non Multi* calls, the value of gl_DrawID is 0.</feature>
-      
+
       <feature>
         When this extension is enabled, the
         following extensions are enabled implicitly:
@@ -54,7 +54,7 @@
           ANGLE_instanced_arrays</a></li>
         </ul>
       </feature>
-      
+
       <glsl extname="GL_ANGLE_multi_draw">
         <stage type="vertex"/>
         <input name="gl_DrawID" type="int" />
@@ -66,24 +66,24 @@
 
 [NoInterfaceObject]
 interface WEBGL_multi_draw {
-  void multiDrawArraysWEBGL(
+  undefined multiDrawArraysWEBGL(
       GLenum mode,
       (Int32Array or sequence&lt;GLint&gt;) firstsList, GLuint firstsOffset,
       (Int32Array or sequence&lt;GLsizei&gt;) countsList, GLuint countsOffset,
       GLsizei drawcount);
-  void multiDrawElementsWEBGL(
+  undefined multiDrawElementsWEBGL(
       GLenum mode,
       (Int32Array or sequence&lt;GLint&gt;) countsList, GLuint countsOffset,
       GLenum type,
       (Int32Array or sequence&lt;GLsizei&gt;) offsetsList, GLuint offsetsOffset,
       GLsizei drawcount);
-  void multiDrawArraysInstancedWEBGL(
+  undefined multiDrawArraysInstancedWEBGL(
       GLenum mode,
       (Int32Array or sequence&lt;GLint&gt;) firstsList, GLuint firstsOffset,
       (Int32Array or sequence&lt;GLsizei&gt;) countsList, GLuint countsOffset,
       (Int32Array or sequence&lt;GLsizei&gt;) instanceCountsList, GLuint instanceCountsOffset,
       GLsizei drawcount);
-  void multiDrawElementsInstancedWEBGL(
+  undefined multiDrawElementsInstancedWEBGL(
       GLenum mode,
       (Int32Array or sequence&lt;GLint&gt;) countsList, GLuint countsOffset,
       GLenum type,
@@ -95,7 +95,7 @@ interface WEBGL_multi_draw {
   </idl>
 
   <newfun>
-    <function name="multiDrawArraysWEBGL" type="void">
+    <function name="multiDrawArraysWEBGL" type="undefined">
       <param name="mode" type="GLenum"/>
       <param name="firstsList" type="(Int32Array or sequence&lt;GLint&gt;)"/>
       <param name="firstsOffset" type="GLuint"/>
@@ -103,7 +103,7 @@ interface WEBGL_multi_draw {
       <param name="countsOffset" type="GLuint"/>
       <param name="drawCount" type="GLsizei"/>
     </function>
-    <function name="multiDrawElementsWEBGL" type="void">
+    <function name="multiDrawElementsWEBGL" type="undefined">
       <param name="mode" type="GLenum"/>
       <param name="countsList" type="(Int32Array or sequence&lt;GLsizei&gt;)"/>
       <param name="countsOffset" type="GLuint"/>
@@ -112,7 +112,7 @@ interface WEBGL_multi_draw {
       <param name="offsetsOffset" type="GLuint"/>
       <param name="drawCount" type="GLsizei"/>
     </function>
-    <function name="multiDrawArraysInstancedWEBGL" type="void">
+    <function name="multiDrawArraysInstancedWEBGL" type="undefined">
       <param name="mode" type="GLenum"/>
       <param name="firstsList" type="(Int32Array or sequence&lt;GLint&gt;)"/>
       <param name="firstsOffset" type="GLuint"/>
@@ -122,7 +122,7 @@ interface WEBGL_multi_draw {
       <param name="instanceCountsOffset" type="GLuint"/>
       <param name="drawCount" type="GLsizei"/>
     </function>
-    <function name="multiDrawElementsInstancedWEBGL" type="void">
+    <function name="multiDrawElementsInstancedWEBGL" type="undefined">
       <param name="mode" type="GLenum"/>
       <param name="countsList" type="(Int32Array or sequence&lt;GLsizei&gt;)"/>
       <param name="countsOffset" type="GLuint"/>
@@ -143,6 +143,7 @@ interface WEBGL_multi_draw {
     <pre>
 var ext = gl.getExtension("WEBGL_multi_draw");
 
+
 {
   // multiDrawArrays variant.
   let firsts = new Int32Array(...);
@@ -152,12 +153,10 @@ var ext = gl.getExtension("WEBGL_multi_draw");
 
 {
   // multiDrawElements variant.
-  // Assumes that the indices which have been previously uploaded to the
-  // ELEMENT_ARRAY_BUFFER are to be treated as UNSIGNED_SHORT.
   let counts = new Int32Array(...);
   let offsets = new Int32Array(...);
   ext.multiDrawElementsWEBGL(
-      gl.TRIANGLES, counts, 0, gl.UNSIGNED_SHORT, offsets, 0, counts.length);
+      gl.TRIANGLES, counts, 0, gl.UNSIGNED_INT, offsets, 0, counts.length);
 }
 
 {
@@ -171,13 +170,11 @@ var ext = gl.getExtension("WEBGL_multi_draw");
 
 {
   // multiDrawElementsInstanced variant.
-  // Assumes that the indices which have been previously uploaded to the
-  // ELEMENT_ARRAY_BUFFER are to be treated as UNSIGNED_SHORT.
   let counts = new Int32Array(...);
   let offsets = new Int32Array(...);
   let instanceCounts = new Int32Array(...);
   ext.multiDrawElementsInstancedWEBGL(
-      gl.TRIANGLES, counts, 0, gl.UNSIGNED_SHORT, offsets, 0, instanceCounts, 0,
+      gl.POINTS, counts, 0, gl.UNSIGNED_SHORT, offsets, 0, instanceCounts, 0,
       counts.length);
 }
 

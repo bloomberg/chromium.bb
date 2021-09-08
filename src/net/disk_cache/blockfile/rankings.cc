@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/process/process.h"
@@ -280,6 +281,8 @@ void Rankings::Insert(CacheRankingsBlock* node, bool modified, List list) {
 
   UpdateTimes(node, modified);
   node->Store();
+  // Make sure other aliased in-memory copies get synchronized.
+  UpdateIterators(node);
   GenerateCrash(ON_INSERT_3);
 
   // The last thing to do is move our head to point to a node already stored.
@@ -812,7 +815,8 @@ int Rankings::CheckListSection(List list, Addr end1, Addr end2, bool forward,
   std::unique_ptr<CacheRankingsBlock> node;
   Addr prev_addr(current);
   do {
-    node.reset(new CacheRankingsBlock(backend_->File(current), current));
+    node =
+        std::make_unique<CacheRankingsBlock>(backend_->File(current), current);
     node->Load();
     if (!SanityCheck(node.get(), true))
       return ERR_INVALID_ENTRY;
@@ -871,7 +875,8 @@ void Rankings::UpdateIterators(CacheRankingsBlock* node) {
   for (auto it = iterators_.begin(); it != iterators_.end(); ++it) {
     if (it->first == address && it->second->HasData()) {
       CacheRankingsBlock* other = it->second;
-      *other->Data() = *node->Data();
+      if (other != node)
+        *other->Data() = *node->Data();
     }
   }
 }

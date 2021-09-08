@@ -62,6 +62,7 @@ const BASIC_LOCAL_ENTRY_SET = [
  */
 const BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN = BASIC_LOCAL_ENTRY_SET.concat([
   ENTRIES.hiddenFile,
+  ENTRIES.dotTrash,
 ]);
 
 /**
@@ -641,16 +642,6 @@ async function mountCrostini(appId, initialEntries = BASIC_CROSTINI_ENTRY_SET) {
 }
 
 /**
- * Returns true if the Files app is running with the flag FilesNg.
- * @param {string} appId Files app windowId.
- */
-async function isFilesNg(appId) {
-  const body = await remoteCall.waitForElement(appId, 'body');
-  const cssClass = body.attributes['class'] || '';
-  return cssClass.includes('files-ng');
-}
-
-/**
  * Returns true if the SinglePartitionFormat flag is on.
  * @param {string} appId Files app windowId.
  */
@@ -659,4 +650,23 @@ async function isSinglePartitionFormat(appId) {
       appId, ['files-format-dialog', 'cr-dialog']);
   const flag = dialog.attributes['single-partition-format'] || '';
   return !!flag;
+}
+
+/**
+ * Waits until the MediaApp/Backlight shows up.
+ */
+async function waitForMediaApp() {
+  // The MediaApp window should open for the image.
+  const caller = getCaller();
+  const mediaAppAppId = 'jhdjimmaggjajfjphpljagpgkidjilnj';
+  await repeatUntil(async () => {
+    const result = await sendTestMessage({
+      name: 'hasSwaStarted',
+      swaAppId: mediaAppAppId,
+    });
+
+    if (result !== 'true') {
+      return pending(caller, 'Waiting for MediaApp to open');
+    }
+  });
 }

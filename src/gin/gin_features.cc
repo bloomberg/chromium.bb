@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gin/gin_features.h"
+#include "base/metrics/field_trial_params.h"
 
 namespace features {
 
@@ -16,7 +17,7 @@ const base::Feature kV8FlushBytecode{"V8FlushBytecode",
 
 // Enables finalizing streaming JS compilations on a background thread.
 const base::Feature kV8OffThreadFinalization{"V8OffThreadFinalization",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables lazy feedback allocation in V8.
 const base::Feature kV8LazyFeedbackAllocation{"V8LazyFeedbackAllocation",
@@ -49,5 +50,44 @@ const base::Feature kV8LocalHeaps{"V8LocalHeaps",
 // Enables TurboFan's direct heap access.
 const base::Feature kV8TurboDirectHeapAccess{"V8TurboDirectHeapAccess",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables fallback to a breadth-first regexp engine on excessive backtracking.
+const base::Feature kV8ExperimentalRegexpEngine{
+    "V8ExperimentalRegexpEngine", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables experimental Turboprop compiler.
+const base::Feature kV8Turboprop{"V8Turboprop",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables experimental Sparkplug compiler.
+const base::Feature kV8Sparkplug{"V8Sparkplug",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Makes sure the experimental Sparkplug compiler is only enabled if short
+// builtin calls are enabled too.
+const base::Feature kV8SparkplugNeedsShortBuiltinCalls{
+    "V8SparkplugNeedsShortBuiltinCalls", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables short builtin calls feature.
+const base::Feature kV8ShortBuiltinCalls{"V8ShortBuiltinCalls",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables fast API calls in TurboFan.
+const base::Feature kV8TurboFastApiCalls{"V8TurboFastApiCalls",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables untrusted code mitigations.
+const base::Feature kV8UntrustedCodeMitigations{
+    "V8UntrustedCodeMitigations", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Artificially delays script execution.
+const base::Feature kV8ScriptAblation{"V8ScriptAblation",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kV8ScriptDelayOnceMs{&kV8ScriptAblation,
+                                                   "V8ScriptDelayOnceMs", 0};
+const base::FeatureParam<int> kV8ScriptDelayMs{&kV8ScriptAblation,
+                                               "V8ScriptDelayMs", 0};
+const base::FeatureParam<double> kV8ScriptDelayFraction{
+    &kV8ScriptAblation, "V8ScriptDelayFraction", 0.0};
 
 }  // namespace features

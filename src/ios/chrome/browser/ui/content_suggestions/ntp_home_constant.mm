@@ -15,6 +15,14 @@ NSString* FakeOmniboxAccessibilityID() {
   return @"NTPHomeFakeOmniboxAccessibilityID";
 }
 
+NSString* DiscoverHeaderTitleAccessibilityID() {
+  return @"DiscoverHeaderTitleAccessibilityID";
+}
+
+NSString* NTPLogoAccessibilityID() {
+  return @"NTPLogoAccessibilityID";
+}
+
 const CGFloat kMostVisitedBottomMarginIPad = 80;
 const CGFloat kMostVisitedBottomMarginIPhone = 60;
 const CGFloat kSuggestionPeekingHeight = 60;

@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/common/content_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace net {
@@ -68,6 +68,9 @@ class CONTENT_EXPORT NavigationURLLoader {
       NavigationURLLoaderDelegate* delegate,
       LoaderType loader_type,
       mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
+      mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
+          url_loader_network_observer,
+      mojo::PendingRemote<network::mojom::DevToolsObserver> devtools_observer,
       std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
           initial_interceptors = {});
 

@@ -40,9 +40,14 @@ class CONTENT_EXPORT TracingDelegate {
 
   virtual bool IsAllowedToEndBackgroundScenario(
       const content::BackgroundTracingConfig& config,
-      bool requires_anonymized_data);
+      bool requires_anonymized_data,
+      bool is_crash_scenario);
 
   virtual bool IsProfileLoaded();
+
+  // Whether system-wide performance trace collection using the external system
+  // tracing service is enabled.
+  virtual bool IsSystemWideTracingEnabled();
 
   // Used to add any additional metadata to traces.
   virtual std::unique_ptr<base::DictionaryValue> GenerateMetadataDict();

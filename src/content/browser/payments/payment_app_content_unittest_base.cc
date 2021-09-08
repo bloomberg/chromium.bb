@@ -10,9 +10,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/fake_service_worker.h"
@@ -191,8 +192,9 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
   int64_t registration_id;
   blink::mojom::ServiceWorkerRegistrationOptions registration_opt;
   registration_opt.scope = scope_url;
+  storage::StorageKey key(url::Origin::Create(scope_url));
   worker_helper_->context()->RegisterServiceWorker(
-      sw_script_url, registration_opt,
+      sw_script_url, key, registration_opt,
       blink::mojom::FetchClientSettingsObject::New(),
       base::BindOnce(&RegisterServiceWorkerCallback, &called,
                      &registration_id));
@@ -245,11 +247,12 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
 }
 
 void PaymentAppContentUnitTestBase::UnregisterServiceWorker(
-    const GURL& scope_url) {
+    const GURL& scope_url,
+    const storage::StorageKey& key) {
   // Unregister service worker.
   bool called = false;
   worker_helper_->context()->UnregisterServiceWorker(
-      scope_url, /*is_immediate=*/false,
+      scope_url, key, /*is_immediate=*/false,
       base::BindOnce(&UnregisterServiceWorkerCallback, &called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -275,7 +278,7 @@ const GURL& PaymentAppContentUnitTestBase::last_sw_scope_url() const {
 
 StoragePartitionImpl* PaymentAppContentUnitTestBase::storage_partition() {
   return static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
 }
 
 PaymentAppContextImpl* PaymentAppContentUnitTestBase::payment_app_context() {

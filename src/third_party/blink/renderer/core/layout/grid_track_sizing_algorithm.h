@@ -6,7 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_TRACK_SIZING_ALGORITHM_H_
 
 #include <memory>
-#include "base/optional.h"
+
+#include "base/dcheck_is_on.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/grid_baseline_alignment.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
@@ -60,10 +62,10 @@ class GridTrack {
   bool InfinitelyGrowable() const { return infinitely_growable_; }
   void SetInfinitelyGrowable(bool);
 
-  base::Optional<LayoutUnit> GrowthLimitCap() const {
+  absl::optional<LayoutUnit> GrowthLimitCap() const {
     return growth_limit_cap_;
   }
-  void SetGrowthLimitCap(base::Optional<LayoutUnit>);
+  void SetGrowthLimitCap(absl::optional<LayoutUnit>);
 
   const GridTrackSize& CachedTrackSize() const {
     DCHECK(cached_track_size_.has_value());
@@ -79,9 +81,9 @@ class GridTrack {
   LayoutUnit growth_limit_;
   LayoutUnit planned_size_;
   LayoutUnit size_during_distribution_;
-  base::Optional<LayoutUnit> growth_limit_cap_;
+  absl::optional<LayoutUnit> growth_limit_cap_;
   bool infinitely_growable_;
-  base::Optional<GridTrackSize> cached_track_size_;
+  absl::optional<GridTrackSize> cached_track_size_;
 };
 
 class GridTrackSizingAlgorithm final {
@@ -97,7 +99,7 @@ class GridTrackSizingAlgorithm final {
   // the algorithm.
   void Setup(GridTrackSizingDirection,
              size_t num_tracks,
-             base::Optional<LayoutUnit> available_space);
+             absl::optional<LayoutUnit> available_space);
   void Run();
   void Reset();
 
@@ -120,11 +122,11 @@ class GridTrackSizingAlgorithm final {
   Vector<GridTrack>& Tracks(GridTrackSizingDirection);
   const Vector<GridTrack>& Tracks(GridTrackSizingDirection) const;
 
-  base::Optional<LayoutUnit> FreeSpace(GridTrackSizingDirection) const;
-  void SetFreeSpace(GridTrackSizingDirection, base::Optional<LayoutUnit>);
+  absl::optional<LayoutUnit> FreeSpace(GridTrackSizingDirection) const;
+  void SetFreeSpace(GridTrackSizingDirection, absl::optional<LayoutUnit>);
 
-  base::Optional<LayoutUnit> AvailableSpace(GridTrackSizingDirection) const;
-  void SetAvailableSpace(GridTrackSizingDirection, base::Optional<LayoutUnit>);
+  absl::optional<LayoutUnit> AvailableSpace(GridTrackSizingDirection) const;
+  void SetAvailableSpace(GridTrackSizingDirection, absl::optional<LayoutUnit>);
 
 #if DCHECK_IS_ON()
   bool TracksAreWiderThanMinTrackBreadth() const;
@@ -137,7 +139,7 @@ class GridTrackSizingAlgorithm final {
   }
 
  private:
-  base::Optional<LayoutUnit> AvailableSpace() const;
+  absl::optional<LayoutUnit> AvailableSpace() const;
   bool IsRelativeGridLengthAsAuto(const GridLength&,
                                   GridTrackSizingDirection) const;
   bool IsRelativeSizedTrackAsAuto(const GridTrackSize&,
@@ -204,7 +206,7 @@ class GridTrackSizingAlgorithm final {
   // method at thise level.
   void InitializeTrackSizes();
   void ResolveIntrinsicTrackSizes();
-  void StretchFlexibleTracks(base::Optional<LayoutUnit> free_space);
+  void StretchFlexibleTracks(absl::optional<LayoutUnit> free_space);
   void StretchAutoTracks();
 
   // State machine.
@@ -215,11 +217,11 @@ class GridTrackSizingAlgorithm final {
   bool WasSetup() const { return !!strategy_; }
   bool needs_setup_{true};
   bool has_percent_sized_rows_indefinite_height_{false};
-  base::Optional<LayoutUnit> available_space_columns_;
-  base::Optional<LayoutUnit> available_space_rows_;
+  absl::optional<LayoutUnit> available_space_columns_;
+  absl::optional<LayoutUnit> available_space_rows_;
 
-  base::Optional<LayoutUnit> free_space_columns_;
-  base::Optional<LayoutUnit> free_space_rows_;
+  absl::optional<LayoutUnit> free_space_columns_;
+  absl::optional<LayoutUnit> free_space_rows_;
 
   // We need to keep both alive in order to properly size grids with orthogonal
   // writing modes.
@@ -253,7 +255,7 @@ class GridTrackSizingAlgorithm final {
   SizingState sizing_state_;
 
   GridBaselineAlignment baseline_alignment_;
-  typedef HashMap<const LayoutBox*, bool> BaselineItemsCache;
+  using BaselineItemsCache = HashMap<const LayoutBox*, bool>;
   BaselineItemsCache column_baseline_items_map_;
   BaselineItemsCache row_baseline_items_map_;
 
@@ -286,11 +288,11 @@ class GridTrackSizingAlgorithmStrategy {
   LayoutUnit MinSizeForChild(LayoutBox&) const;
 
   virtual void MaximizeTracks(Vector<GridTrack>&,
-                              base::Optional<LayoutUnit>& free_space) = 0;
+                              absl::optional<LayoutUnit>& free_space) = 0;
   virtual double FindUsedFlexFraction(
       Vector<size_t>& flexible_sized_tracks_index,
       GridTrackSizingDirection,
-      base::Optional<LayoutUnit> initial_free_space) const = 0;
+      absl::optional<LayoutUnit> initial_free_space) const = 0;
   virtual bool RecomputeUsedFlexFractionIfNeeded(
       Vector<size_t>& flexible_sized_tracks_index,
       double& flex_fraction,
@@ -315,7 +317,7 @@ class GridTrackSizingAlgorithmStrategy {
   bool UpdateOverrideContainingBlockContentSizeForChild(
       LayoutBox&,
       GridTrackSizingDirection,
-      base::Optional<LayoutUnit> = base::nullopt) const;
+      absl::optional<LayoutUnit> = absl::nullopt) const;
   LayoutUnit ComputeTrackBasedSize() const;
 
   GridTrackSizingDirection Direction() const { return algorithm_.direction_; }
@@ -324,7 +326,7 @@ class GridTrackSizingAlgorithmStrategy {
   void DistributeSpaceToTracks(Vector<GridTrack*>& tracks,
                                LayoutUnit& available_logical_space) const;
   const LayoutGrid* GetLayoutGrid() const { return algorithm_.layout_grid_; }
-  base::Optional<LayoutUnit> AvailableSpace() const {
+  absl::optional<LayoutUnit> AvailableSpace() const {
     return algorithm_.AvailableSpace();
   }
 

@@ -4,14 +4,27 @@
 
 #include "third_party/blink/renderer/core/css/cssom/css_scale.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 
 namespace blink {
 
 namespace {
 
 bool IsValidScaleCoord(CSSNumericValue* coord) {
+  // TODO(crbug.com/1188610): Following might be needed for another CSSOM
+  // constructor to resolve the valid type for 'calc'.
+  if (coord && coord->GetType() != CSSStyleValue::StyleValueType::kUnitType) {
+    const CSSMathExpressionNode* node = coord->ToCalcExpressionNode();
+    if (!node)
+      return false;
+    CSSPrimitiveValue::UnitType resolved_type = node->ResolvedUnitType();
+    return (resolved_type == CSSPrimitiveValue::UnitType::kNumber ||
+            resolved_type == CSSPrimitiveValue::UnitType::kInteger);
+  }
   return coord && coord->Type().MatchesNumber();
 }
 
@@ -62,6 +75,41 @@ CSSScale* FromScale3d(const CSSFunctionValue& value) {
 
 }  // namespace
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+CSSScale* CSSScale::Create(const V8CSSNumberish* x,
+                           const V8CSSNumberish* y,
+                           ExceptionState& exception_state) {
+  CSSNumericValue* x_value = CSSNumericValue::FromNumberish(x);
+  CSSNumericValue* y_value = CSSNumericValue::FromNumberish(y);
+
+  if (!IsValidScaleCoord(x_value) || !IsValidScaleCoord(y_value)) {
+    exception_state.ThrowTypeError("Must specify an number unit");
+    return nullptr;
+  }
+
+  return CSSScale::Create(x_value, y_value);
+}
+
+CSSScale* CSSScale::Create(const V8CSSNumberish* x,
+                           const V8CSSNumberish* y,
+                           const V8CSSNumberish* z,
+                           ExceptionState& exception_state) {
+  CSSNumericValue* x_value = CSSNumericValue::FromNumberish(x);
+  CSSNumericValue* y_value = CSSNumericValue::FromNumberish(y);
+  CSSNumericValue* z_value = CSSNumericValue::FromNumberish(z);
+
+  if (!IsValidScaleCoord(x_value) || !IsValidScaleCoord(y_value) ||
+      !IsValidScaleCoord(z_value)) {
+    exception_state.ThrowTypeError("Must specify a number for X, Y and Z");
+    return nullptr;
+  }
+
+  return CSSScale::Create(x_value, y_value, z_value);
+}
+
+#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
 CSSScale* CSSScale::Create(const CSSNumberish& x,
                            const CSSNumberish& y,
                            ExceptionState& exception_state) {
@@ -69,7 +117,7 @@ CSSScale* CSSScale::Create(const CSSNumberish& x,
   CSSNumericValue* y_value = CSSNumericValue::FromNumberish(y);
 
   if (!IsValidScaleCoord(x_value) || !IsValidScaleCoord(y_value)) {
-    exception_state.ThrowTypeError("Must specify an number unit");
+    exception_state.ThrowTypeError("Must specify a number unit");
     return nullptr;
   }
 
@@ -93,6 +141,8 @@ CSSScale* CSSScale::Create(const CSSNumberish& x,
   return CSSScale::Create(x_value, y_value, z_value);
 }
 
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
 CSSScale* CSSScale::FromCSSValue(const CSSFunctionValue& value) {
   switch (value.FunctionType()) {
     case CSSValueID::kScale:
@@ -108,6 +158,55 @@ CSSScale* CSSScale::FromCSSValue(const CSSFunctionValue& value) {
       return nullptr;
   }
 }
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+V8CSSNumberish* CSSScale::x() {
+  return MakeGarbageCollected<V8CSSNumberish>(x_);
+}
+
+V8CSSNumberish* CSSScale::y() {
+  return MakeGarbageCollected<V8CSSNumberish>(y_);
+}
+
+V8CSSNumberish* CSSScale::z() {
+  return MakeGarbageCollected<V8CSSNumberish>(z_);
+}
+
+void CSSScale::setX(const V8CSSNumberish* x, ExceptionState& exception_state) {
+  CSSNumericValue* value = CSSNumericValue::FromNumberish(x);
+
+  if (!IsValidScaleCoord(value)) {
+    exception_state.ThrowTypeError("Must specify a number unit");
+    return;
+  }
+
+  x_ = value;
+}
+
+void CSSScale::setY(const V8CSSNumberish* y, ExceptionState& exception_state) {
+  CSSNumericValue* value = CSSNumericValue::FromNumberish(y);
+
+  if (!IsValidScaleCoord(value)) {
+    exception_state.ThrowTypeError("Must specify a number unit");
+    return;
+  }
+
+  y_ = value;
+}
+
+void CSSScale::setZ(const V8CSSNumberish* z, ExceptionState& exception_state) {
+  CSSNumericValue* value = CSSNumericValue::FromNumberish(z);
+
+  if (!IsValidScaleCoord(value)) {
+    exception_state.ThrowTypeError("Must specify a number unit");
+    return;
+  }
+
+  z_ = value;
+}
+
+#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void CSSScale::setX(const CSSNumberish& x, ExceptionState& exception_state) {
   CSSNumericValue* value = CSSNumericValue::FromNumberish(x);
@@ -141,6 +240,8 @@ void CSSScale::setZ(const CSSNumberish& z, ExceptionState& exception_state) {
 
   z_ = value;
 }
+
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 DOMMatrix* CSSScale::toMatrix(ExceptionState& exception_state) const {
   CSSUnitValue* x = x_->to(CSSPrimitiveValue::UnitType::kNumber);

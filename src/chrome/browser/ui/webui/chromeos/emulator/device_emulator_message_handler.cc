@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/system/fake_input_device_settings.h"
-#include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/ash/system/fake_input_device_settings.h"
+#include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chromeos/dbus/audio/fake_cras_audio_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -407,7 +407,7 @@ void DeviceEmulatorMessageHandler::UpdatePowerSources(
   // Try to find the previously selected source in the list.
   const power_manager::PowerSupplyProperties_PowerSource* selected_source =
       nullptr;
-  for (const auto& val : *sources) {
+  for (const auto& val : sources->GetList()) {
     const base::DictionaryValue* dict;
     CHECK(val.GetAsDictionary(&dict));
     power_manager::PowerSupplyProperties_PowerSource* source =

@@ -125,7 +125,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
   void CenterWindow(const gfx::Size& size) override;
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const override;
-  bool SetWindowTitle(const base::string16& title) override;
+  bool SetWindowTitle(const std::u16string& title) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
   void InitModalType(ui::ModalType modal_type) override;
@@ -188,6 +188,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
       Widget::VisibilityTransition transition) override;
   bool IsTranslucentWindowOpacitySupported() const override;
   ui::GestureRecognizer* GetGestureRecognizer() override;
+  ui::GestureConsumer* GetGestureConsumer() override;
   void OnSizeConstraintsChanged() override;
   void OnNativeViewHierarchyWillChange() override;
   void OnNativeViewHierarchyChanged() override;

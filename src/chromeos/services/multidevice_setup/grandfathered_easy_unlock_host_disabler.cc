@@ -4,11 +4,11 @@
 
 #include "chromeos/services/multidevice_setup/grandfathered_easy_unlock_host_disabler.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -113,7 +113,7 @@ void GrandfatheredEasyUnlockHostDisabler::OnHostChangedOnBackend() {
 void GrandfatheredEasyUnlockHostDisabler::DisableEasyUnlockHostIfNecessary() {
   timer_->Stop();
 
-  base::Optional<multidevice::RemoteDeviceRef> host_to_disable =
+  absl::optional<multidevice::RemoteDeviceRef> host_to_disable =
       GetEasyUnlockHostToDisable();
 
   if (!host_to_disable)
@@ -170,7 +170,7 @@ void GrandfatheredEasyUnlockHostDisabler::OnDisableEasyUnlockHostResult(
     return;
 
   if (success) {
-    SetPotentialEasyUnlockHostToDisable(base::nullopt);
+    SetPotentialEasyUnlockHostToDisable(absl::nullopt);
     return;
   }
 
@@ -184,7 +184,7 @@ void GrandfatheredEasyUnlockHostDisabler::OnDisableEasyUnlockHostResult(
 }
 
 void GrandfatheredEasyUnlockHostDisabler::SetPotentialEasyUnlockHostToDisable(
-    base::Optional<multidevice::RemoteDeviceRef> device) {
+    absl::optional<multidevice::RemoteDeviceRef> device) {
   pref_service_->SetString(kEasyUnlockHostIdToDisablePrefName,
                            !device || device->GetDeviceId().empty()
                                ? kNoDevice
@@ -195,14 +195,14 @@ void GrandfatheredEasyUnlockHostDisabler::SetPotentialEasyUnlockHostToDisable(
                                : device->instance_id());
 }
 
-base::Optional<multidevice::RemoteDeviceRef>
+absl::optional<multidevice::RemoteDeviceRef>
 GrandfatheredEasyUnlockHostDisabler::GetEasyUnlockHostToDisable() {
   std::string legacy_device_id =
       pref_service_->GetString(kEasyUnlockHostIdToDisablePrefName);
   std::string instance_id =
       pref_service_->GetString(kEasyUnlockHostInstanceIdToDisablePrefName);
   if (legacy_device_id == kNoDevice && instance_id == kNoDevice)
-    return base::nullopt;
+    return absl::nullopt;
 
   multidevice::RemoteDeviceRefList synced_devices =
       device_sync_client_->GetSyncedDevices();
@@ -222,8 +222,8 @@ GrandfatheredEasyUnlockHostDisabler::GetEasyUnlockHostToDisable() {
   //   - the device is the BetterTogether host.
   if (it == synced_devices.end() || !IsEasyUnlockHost(*it) ||
       *it == current_better_together_host_) {
-    SetPotentialEasyUnlockHostToDisable(base::nullopt);
-    return base::nullopt;
+    SetPotentialEasyUnlockHostToDisable(absl::nullopt);
+    return absl::nullopt;
   }
 
   return *it;

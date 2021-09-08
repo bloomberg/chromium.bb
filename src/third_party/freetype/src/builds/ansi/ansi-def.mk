@@ -3,7 +3,7 @@
 #
 
 
-# Copyright (C) 1996-2020 by
+# Copyright (C) 1996-2021 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -13,11 +13,11 @@
 # fully.
 
 
-DELETE    := rm -f
-CAT       := cat
-SEP       := /
-BUILD_DIR := $(TOP_DIR)/builds/ansi
-PLATFORM  := ansi
+DELETE       := rm -f
+CAT          := cat
+SEP          := /
+PLATFORM_DIR := $(TOP_DIR)/builds/ansi
+PLATFORM     := ansi
 
 # This is used for `make refdoc' and `make refdoc-venv'
 #
@@ -64,7 +64,7 @@ T := -o$(space)
 #
 #   These should concern: debug output, optimization & warnings.
 #
-#   Use the ANSIFLAGS variable to define the compiler flags used to enfore
+#   Use the ANSIFLAGS variable to define the compiler flags used to enforce
 #   ANSI compliance.
 #
 CFLAGS ?= -c

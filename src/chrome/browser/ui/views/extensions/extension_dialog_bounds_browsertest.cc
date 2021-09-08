@@ -5,18 +5,22 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/accessibility/magnification_manager.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/test/browser_test.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 namespace {
+
+using ::ash::MagnificationManager;
 
 class ExtensionDialogBoundsTest
     : public SupportsTestDialog<extensions::ExtensionBrowserTest> {
@@ -38,9 +42,12 @@ class ExtensionDialogBoundsTest
   }
 
   void EnableDockedMagnifier() const {
-    chromeos::MagnificationManager::Get()->SetDockedMagnifierEnabled(true);
-    ASSERT_TRUE(
-        chromeos::MagnificationManager::Get()->IsDockedMagnifierEnabled());
+    extensions::TestExtensionRegistryObserver registry_observer(
+        extensions::ExtensionRegistry::Get(
+            ash::AccessibilityManager::Get()->profile()));
+    MagnificationManager::Get()->SetDockedMagnifierEnabled(true);
+    registry_observer.WaitForExtensionLoaded();
+    ASSERT_TRUE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
   }
 
  private:
@@ -77,10 +84,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDialogBoundsTest, Test_OpenFileDialog) {
   ShowAndVerifyUi();
 }
 
-// TODO(crbug.com/1012025): Test crashes as enabling docked magnifier now loads
-// another extension (Accessibility Common).
-IN_PROC_BROWSER_TEST_F(ExtensionDialogBoundsTest,
-                       DISABLED_Test_BigExtensionDialog) {
+IN_PROC_BROWSER_TEST_F(ExtensionDialogBoundsTest, Test_BigExtensionDialog) {
   EnableDockedMagnifier();
   ShowAndVerifyUi();
 }

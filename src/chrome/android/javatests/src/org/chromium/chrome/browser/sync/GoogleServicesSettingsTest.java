@@ -16,10 +16,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.settings.GoogleServicesSettings;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -43,7 +43,7 @@ import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
- * Tests for ManageSyncSettings.
+ * Tests for GoogleServicesSettings.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
@@ -51,13 +51,17 @@ public class GoogleServicesSettingsTest {
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
-    @Rule
     public final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
 
-    @Rule
     public final SettingsActivityTestRule<GoogleServicesSettings> mSettingsActivityTestRule =
-            new SettingsActivityTestRule<>(GoogleServicesSettings.class, true);
+            new SettingsActivityTestRule<>(GoogleServicesSettings.class);
+
+    // SettingsActivity has to be finished before the outer CTA can be finished or trying to finish
+    // CTA won't work.
+    @Rule
+    public final RuleChain mRuleChain =
+            RuleChain.outerRule(mActivityTestRule).around(mSettingsActivityTestRule);
 
     @Before
     public void setUp() {
@@ -94,7 +98,7 @@ public class GoogleServicesSettingsTest {
                         -> Assert.assertNull("Account should be signed out!",
                                 IdentityServicesProvider.get()
                                         .getIdentityManager(Profile.getLastUsedRegularProfile())
-                                        .getPrimaryAccountInfo(ConsentLevel.NOT_REQUIRED)));
+                                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN)));
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> Assert.assertFalse("SIGNIN_ALLOWED pref should be unset",
@@ -106,7 +110,6 @@ public class GoogleServicesSettingsTest {
     @Test
     @LargeTest
     @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
-    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1142481")
     public void showSignOutDialogBeforeSigningUserOut() {
         mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         final GoogleServicesSettings googleServicesSettings = startGoogleServicesSettings();
@@ -278,28 +281,6 @@ public class GoogleServicesSettingsTest {
                             .findPreference(
                                     GoogleServicesSettings.PREF_AUTOFILL_ASSISTANT_SUBSECTION)
                             .isVisible());
-        });
-    }
-
-    @Test
-    @LargeTest
-    @Feature({"Preference"})
-    @EnableFeatures(ChromeFeatureList.SAFE_BROWSING_SECTION_UI)
-    public void testSafeBrowsingSafeBrowsingSectionUiFlagOn() {
-        final GoogleServicesSettings googleServicesSettings = startGoogleServicesSettings();
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertNull("Safe Browsing should be null when Safe Browsing section is enabled.",
-                    googleServicesSettings.findPreference(
-                            GoogleServicesSettings.PREF_SAFE_BROWSING));
-            Assert.assertNull(
-                    "Password leak detection should be null when Safe Browsing section is enabled.",
-                    googleServicesSettings.findPreference(
-                            GoogleServicesSettings.PREF_PASSWORD_LEAK_DETECTION));
-            Assert.assertNull(
-                    "Safe Browsing scout should be null when Safe Browsing section is enabled.",
-                    googleServicesSettings.findPreference(
-                            GoogleServicesSettings.PREF_SAFE_BROWSING_SCOUT_REPORTING));
         });
     }
 

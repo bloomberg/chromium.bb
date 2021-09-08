@@ -34,10 +34,10 @@ class SharingMessageBridgeImpl : public SharingMessageBridge,
   // ModelTypeSyncBridge implementation.
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
       override;
-  base::Optional<syncer::ModelError> MergeSyncData(
+  absl::optional<syncer::ModelError> MergeSyncData(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList entity_data) override;
-  base::Optional<syncer::ModelError> ApplySyncChanges(
+  absl::optional<syncer::ModelError> ApplySyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList entity_changes) override;
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;
@@ -46,7 +46,8 @@ class SharingMessageBridgeImpl : public SharingMessageBridge,
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
   void OnCommitAttemptErrors(
       const syncer::FailedCommitResponseDataList& error_response_list) override;
-  void OnCommitAttemptFailed(syncer::SyncCommitError commit_error) override;
+  CommitAttemptFailedBehavior OnCommitAttemptFailed(
+      syncer::SyncCommitError commit_error) override;
   void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
                                 metadata_change_list) override;
 

@@ -10,10 +10,10 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
@@ -108,8 +108,9 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
         List<PickerBitmap> pickerBitmaps = new ArrayList<>();
 
         // The DATA column is deprecated in the Android Q SDK. Replaced by relative_path.
-        String directoryColumnName =
-                BuildInfo.isAtLeastQ() ? "relative_path" : MediaStore.Files.FileColumns.DATA;
+        String directoryColumnName = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                ? "relative_path"
+                : MediaStore.Files.FileColumns.DATA;
         final String[] selectColumns = {
                 MediaStore.Files.FileColumns._ID,
                 MediaStore.Files.FileColumns.DATE_ADDED,
@@ -118,9 +119,9 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
                 directoryColumnName,
         };
 
-        String whereClause = "(" + directoryColumnName + " LIKE ? OR " + directoryColumnName
-                + " LIKE ? OR " + directoryColumnName + " LIKE ?) AND " + directoryColumnName
-                + " NOT LIKE ?";
+        String whereClause = directoryColumnName + " LIKE ? OR " + directoryColumnName
+                + " LIKE ? OR " + directoryColumnName + " LIKE ? OR " + directoryColumnName
+                + " LIKE ? OR " + directoryColumnName + " LIKE ?";
         String additionalClause = "";
         if (mIncludeImages) {
             additionalClause = MediaStore.Files.FileColumns.MEDIA_TYPE + "="
@@ -136,11 +137,16 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
         String cameraDir = getCameraDirectory();
         String picturesDir = Environment.DIRECTORY_PICTURES;
         String downloadsDir = Environment.DIRECTORY_DOWNLOADS;
-        String screenshotsDir = Environment.DIRECTORY_PICTURES + "/Screenshots";
-        if (!BuildInfo.isAtLeastQ()) {
+        // Files downloaded from the user's Google Photos library go to a Restored folder.
+        String restoredDir = Environment.DIRECTORY_DCIM + "/Restored";
+        // On some devices, such as Samsung and Redmi, the Screenshots folder is located under
+        // DCIM/Screenshots, as opposed to DCIM/Pictures/Screenshots.
+        String screenshotsDir = Environment.DIRECTORY_DCIM + "/Screenshots";
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             cameraDir = Environment.getExternalStoragePublicDirectory(cameraDir).toString();
             picturesDir = Environment.getExternalStoragePublicDirectory(picturesDir).toString();
             downloadsDir = Environment.getExternalStoragePublicDirectory(downloadsDir).toString();
+            restoredDir = Environment.getExternalStoragePublicDirectory(restoredDir).toString();
             screenshotsDir =
                     Environment.getExternalStoragePublicDirectory(screenshotsDir).toString();
         }
@@ -150,7 +156,7 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
                 cameraDir + "%",
                 picturesDir + "%",
                 downloadsDir + "%",
-                // Exclude low-quality sources, such as the screenshots directory:
+                restoredDir + "%",
                 screenshotsDir + "%",
         };
 

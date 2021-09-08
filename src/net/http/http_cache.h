@@ -25,7 +25,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/completion_once_callback.h"
@@ -301,13 +300,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   enum {
     kResponseInfoIndex = 0,
     kResponseContentIndex,
-    // Only currently used in DoTruncateCachedMetadata().
-    // TODO(mmenke): Remove this in and DoTruncateCachedMetadata() in M79, after
-    // most metadata entries in the cache have been removed. Without
-    // DoTruncateCachedMetadata(), the metadata will be removed when a cache
-    // entry is destroyed, but some conditionalized updates will keep it around.
-    kMetadataIndex,
-
+    kDeprecatedMetadataIndex,
     // Must remain at the end of the enum.
     kNumCacheEntryDataIndices
   };
@@ -327,7 +320,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   friend class MockHttpCache;
   friend class HttpCacheIOCallbackTest;
 
-  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, SplitCacheWithFrameOrigin);
+  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, SplitCacheWithNetworkIsolationKey);
   FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, NonSplitCache);
   FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, SplitCache);
   FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, SplitCacheUsesRegistrableDomain);

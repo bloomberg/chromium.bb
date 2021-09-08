@@ -8,7 +8,8 @@
 #include <dawn/dawn_proc_table.h>
 #include <dawn/webgpu.h>
 
-#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/webgpu_resource_provider_cache.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
@@ -29,25 +30,33 @@ class PLATFORM_EXPORT DawnControlClientHolder
     : public RefCounted<DawnControlClientHolder> {
  public:
   DawnControlClientHolder(
-      std::unique_ptr<WebGraphicsContext3DProvider> context_provider);
+      std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void Destroy();
-  bool IsDestroyed() const;
 
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> GetContextProviderWeakPtr()
+      const;
   WebGraphicsContext3DProvider* GetContextProvider() const;
   gpu::webgpu::WebGPUInterface* GetInterface() const;
-  const DawnProcTable& GetProcs() const;
+  const DawnProcTable& GetProcs() const { return procs_; }
   void SetContextLost();
   bool IsContextLost() const;
   void SetLostContextCallback();
+  std::unique_ptr<RecyclableCanvasResource> GetOrCreateCanvasResource(
+      const IntSize& size,
+      const CanvasResourceParams& params,
+      bool is_origin_top_left);
 
  private:
   friend class RefCounted<DawnControlClientHolder>;
   ~DawnControlClientHolder() = default;
 
-  std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
+  std::unique_ptr<WebGraphicsContext3DProviderWrapper> context_provider_;
   gpu::webgpu::WebGPUInterface* interface_;
+  DawnProcTable procs_;
   bool lost_ = false;
+  WebGPURecyclableResourceCache recyclable_resource_cache_;
 };
 
 }  // namespace blink

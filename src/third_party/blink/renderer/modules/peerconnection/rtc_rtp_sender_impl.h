@@ -170,7 +170,7 @@ class MODULES_EXPORT RTCRtpSenderImpl : public blink::RTCRtpSenderPlatform {
 };
 
 class MODULES_EXPORT RTCRtpSenderOnlyTransceiver
-    : public RTCRtpTransceiverPlatform {
+    : public RTCRtpPlanBTransceiverPlatform {
  public:
   explicit RTCRtpSenderOnlyTransceiver(
       std::unique_ptr<blink::RTCRtpSenderPlatform> sender);
@@ -186,9 +186,9 @@ class MODULES_EXPORT RTCRtpSenderOnlyTransceiver
   webrtc::RtpTransceiverDirection Direction() const override;
   webrtc::RTCError SetDirection(
       webrtc::RtpTransceiverDirection direction) override;
-  base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
+  absl::optional<webrtc::RtpTransceiverDirection> CurrentDirection()
       const override;
-  base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
+  absl::optional<webrtc::RtpTransceiverDirection> FiredDirection()
       const override;
   webrtc::RTCError SetCodecPreferences(
       Vector<webrtc::RtpCodecCapability>) override;

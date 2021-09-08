@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <map>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,7 +16,6 @@
 #include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -94,7 +94,7 @@ struct BrowsingHistoryService::QueryHistoryState
     : public base::RefCounted<BrowsingHistoryService::QueryHistoryState> {
   QueryHistoryState() = default;
 
-  base::string16 search_text;
+  std::u16string search_text;
   QueryOptions original_options;
 
   QuerySourceStatus local_status = UNINITIALIZED;
@@ -115,13 +115,15 @@ struct BrowsingHistoryService::QueryHistoryState
 BrowsingHistoryService::HistoryEntry::HistoryEntry(
     BrowsingHistoryService::HistoryEntry::EntryType entry_type,
     const GURL& url,
-    const base::string16& title,
+    const std::u16string& title,
     base::Time time,
     const std::string& client_id,
     bool is_search_result,
-    const base::string16& snippet,
+    const std::u16string& snippet,
     bool blocked_visit,
-    const GURL& remote_icon_url_for_uma)
+    const GURL& remote_icon_url_for_uma,
+    int visit_count,
+    int typed_count)
     : entry_type(entry_type),
       url(url),
       title(title),
@@ -130,7 +132,9 @@ BrowsingHistoryService::HistoryEntry::HistoryEntry(
       is_search_result(is_search_result),
       snippet(snippet),
       blocked_visit(blocked_visit),
-      remote_icon_url_for_uma(remote_icon_url_for_uma) {
+      remote_icon_url_for_uma(remote_icon_url_for_uma),
+      visit_count(visit_count),
+      typed_count(typed_count) {
   all_timestamps.insert(time.ToInternalValue());
 }
 
@@ -180,10 +184,10 @@ BrowsingHistoryService::BrowsingHistoryService(
   if (web_history) {
     web_history_service_observation_.Observe(web_history);
   } else if (sync_service_) {
-    // If |web_history| is not available, it means that history sync is
-    // disabled. If |sync_service_| is not null, it means that syncing is
+    // If `web_history` is not available, it means that history sync is
+    // disabled. If `sync_service_` is not null, it means that syncing is
     // possible, and that history sync/web history may become enabled later, so
-    // attach start observing. If |sync_service_| is null then we cannot start
+    // attach start observing. If `sync_service_` is null then we cannot start
     // observing. This is okay because sync will never start for us, for example
     // it may be disabled by flag or we're part of an incognito/guest mode
     // window.
@@ -203,7 +207,8 @@ void BrowsingHistoryService::OnStateChanged(syncer::SyncService* sync) {
   if (web_history) {
     DCHECK(!web_history_service_observation_.IsObserving());
     web_history_service_observation_.Observe(web_history);
-    sync_service_observation_.RemoveObservation();
+    DCHECK(sync_service_observation_.IsObserving());
+    sync_service_observation_.Reset();
   }
 }
 
@@ -211,7 +216,7 @@ void BrowsingHistoryService::WebHistoryTimeout(
     scoped_refptr<QueryHistoryState> state) {
   state->remote_status = TIMED_OUT;
 
-  // Don't reset |web_history_request_| so we can still record histogram.
+  // Don't reset `web_history_request_` so we can still record histogram.
   // TODO(dubroy): Communicate the failure to the front end.
   if (!query_task_tracker_.HasTrackedTasks())
     ReturnResultsToDriver(std::move(state));
@@ -221,7 +226,7 @@ void BrowsingHistoryService::WebHistoryTimeout(
                             NUM_WEB_HISTORY_QUERY_BUCKETS);
 }
 
-void BrowsingHistoryService::QueryHistory(const base::string16& search_text,
+void BrowsingHistoryService::QueryHistory(const std::u16string& search_text,
                                           const QueryOptions& options) {
   scoped_refptr<QueryHistoryState> state =
       base::MakeRefCounted<QueryHistoryState>();
@@ -450,7 +455,7 @@ void BrowsingHistoryService::MergeDuplicateResults(
   std::sort(sorted.begin(), sorted.end(), HistoryEntry::SortByTimeDescending);
 
   // Pre-reserve the size of the new vector. Since we're working with pointers
-  // later on not doing this could lead to the vector being resized and to
+  // later on, not doing this could lead to the vector being resized and to
   // pointers to invalid locations.
   std::vector<HistoryEntry> deduped;
   deduped.reserve(sorted.size());
@@ -458,7 +463,7 @@ void BrowsingHistoryService::MergeDuplicateResults(
   // Maps a URL to the most recent entry on a particular day.
   std::map<GURL, HistoryEntry*> current_day_entries;
 
-  // Keeps track of the day that |current_day_urls| is holding the URLs for,
+  // Keeps track of the day that `current_day_entries` is holding entries for
   // in order to handle removing per-day duplicates.
   base::Time current_day_midnight;
 
@@ -489,14 +494,18 @@ void BrowsingHistoryService::MergeDuplicateResults(
           !entry.remote_icon_url_for_uma.is_empty()) {
         matching_entry->remote_icon_url_for_uma = entry.remote_icon_url_for_uma;
       }
+
+      // Aggregate visit and typed counts.
+      matching_entry->visit_count += entry.visit_count;
+      matching_entry->typed_count += entry.typed_count;
     }
   }
 
   // If the beginning of either source was not reached, that means there are
-  // more results from that source, and then other source needs to have its data
-  // held back until the former source catches up. This only send the UI history
-  // entries in the correct order. Subsequent continuation requests will get the
-  // delayed entries.
+  // more results from that source, and the other source needs to have its data
+  // held back until the former source catches up. This only sends the UI
+  // history entries in the correct order. Subsequent continuation requests will
+  // get the delayed entries.
   base::Time oldest_allowed = base::Time();
   if (state->local_status == MORE_RESULTS) {
     oldest_allowed = std::max(oldest_allowed, oldest_local);
@@ -508,7 +517,7 @@ void BrowsingHistoryService::MergeDuplicateResults(
   } else if (CanRetry(state->remote_status)) {
     // TODO(skym): It is unclear if this is the best behavior. The UI is going
     // to behave incorrectly if out of order results are received. So to
-    // guarantee that doesn't happen, use |oldest_local| for continuation
+    // guarantee that doesn't happen, use `oldest_local` for continuation
     // calls. This will result in missing history entries for the failed calls.
     // crbug.com/685866 is related to this problem.
     state->remote_end_time_for_continuation = oldest_local;
@@ -548,7 +557,7 @@ void BrowsingHistoryService::QueryComplete(
     output.emplace_back(HistoryEntry(
         HistoryEntry::LOCAL_ENTRY, page.url(), page.title(), page.visit_time(),
         std::string(), !state->search_text.empty(), page.snippet().text(),
-        page.blocked_visit(), GURL()));
+        page.blocked_visit(), GURL(), page.visit_count(), page.typed_count()));
   }
 
   state->local_status =
@@ -562,7 +571,7 @@ void BrowsingHistoryService::ReturnResultsToDriver(
     scoped_refptr<QueryHistoryState> state) {
   std::vector<HistoryEntry> results;
 
-  // Always merge remote results, because Web History does not deduplicate .
+  // Always merge remote results, because Web History does not deduplicate.
   // Local history should be using per-query deduplication, but if we are in a
   // continuation, it's possible that we have carried over pending entries along
   // with new results, and these two sets may contain duplicates. Assuming every
@@ -644,9 +653,9 @@ void BrowsingHistoryService::WebHistoryQueryComplete(
         const base::DictionaryValue* result = nullptr;
         const base::ListValue* results = nullptr;
         const base::ListValue* ids = nullptr;
-        base::string16 url;
-        base::string16 title;
-        base::string16 favicon_url;
+        std::u16string url;
+        std::u16string title;
+        std::u16string favicon_url;
 
         if (!(events->GetDictionary(i, &event) &&
               event->GetList("result", &results) &&
@@ -689,8 +698,8 @@ void BrowsingHistoryService::WebHistoryQueryComplete(
 
           state->remote_results.emplace_back(HistoryEntry(
               HistoryEntry::REMOTE_ENTRY, gurl, title, time, client_id,
-              !state->search_text.empty(), base::string16(),
-              /* blocked_visit */ false, GURL(favicon_url)));
+              !state->search_text.empty(), std::u16string(),
+              /* blocked_visit */ false, GURL(favicon_url), 0, 0));
         }
       }
     }

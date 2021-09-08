@@ -22,7 +22,53 @@ import (
 	t "github.com/google/wuffs/lang/token"
 )
 
-func (q *checker) tcheckVars(block []*a.Node) error {
+type cpuArchBits uint32
+
+const (
+	cpuArchBitsARMCRC32 = cpuArchBits(0x00000001)
+	cpuArchBitsARMNeon  = cpuArchBits(0x00000002)
+	cpuArchBitsX86SSE42 = cpuArchBits(0x00000004)
+)
+
+func calcCPUArchBits(n *a.Func) (ret cpuArchBits) {
+	for _, o := range n.Asserts() {
+		o := o.AsAssert()
+		if !o.IsChooseCPUArch() {
+			continue
+		}
+		switch o.Condition().RHS().AsExpr().Ident() {
+		case t.IDARMCRC32:
+			ret |= cpuArchBitsARMCRC32
+		case t.IDARMNeon:
+			ret |= cpuArchBitsARMNeon
+		case t.IDX86SSE42:
+			ret |= cpuArchBitsX86SSE42
+		}
+	}
+	return ret
+}
+
+func (q *checker) tcheckCPUArchBits(cab cpuArchBits, typ *a.TypeExpr) error {
+	if qid := typ.Innermost().QID(); (qid[0] == t.IDBase) && qid[1].IsBuiltInCPUArch() {
+		need := cpuArchBits(0)
+		switch qid[1] {
+		case t.IDARMCRC32Utility, t.IDARMCRC32U32:
+			need = cpuArchBitsARMCRC32
+		case t.IDARMNeonUtility,
+			t.IDARMNeonU8x8, t.IDARMNeonU16x4, t.IDARMNeonU32x2, t.IDARMNeonU64x1,
+			t.IDARMNeonU8x16, t.IDARMNeonU16x8, t.IDARMNeonU32x4, t.IDARMNeonU64x2:
+			need = cpuArchBitsARMNeon
+		case t.IDX86SSE42Utility, t.IDX86M128I:
+			need = cpuArchBitsX86SSE42
+		}
+		if (cab & need) != need {
+			return fmt.Errorf("check: missing cpu_arch for %q", typ.Innermost().Str(q.tm))
+		}
+	}
+	return nil
+}
+
+func (q *checker) tcheckVars(cab cpuArchBits, block []*a.Node) error {
 	for _, o := range block {
 		if o.Kind() != a.KVar {
 			break
@@ -44,6 +90,9 @@ func (q *checker) tcheckVars(block []*a.Node) error {
 		if err := q.tcheckTypeExpr(o.XType(), 0); err != nil {
 			return err
 		}
+		if err := q.tcheckCPUArchBits(cab, o.XType()); err != nil {
+			return err
+		}
 		q.localVars[name] = o.XType()
 	}
 	return nil
@@ -60,6 +109,11 @@ func (q *checker) tcheckStatement(n *a.Node) error {
 
 	case a.KAssign:
 		if err := q.tcheckAssign(n.AsAssign()); err != nil {
+			return err
+		}
+
+	case a.KChoose:
+		if err := q.tcheckChoose(n.AsChoose()); err != nil {
 			return err
 		}
 
@@ -124,6 +178,9 @@ func (q *checker) tcheckStatement(n *a.Node) error {
 
 	case a.KIterate:
 		for n := n.AsIterate(); n != nil; n = n.ElseIterate() {
+			if err := q.tcheckExpr(n.UnrollAsExpr(), 0); err != nil {
+				return err
+			}
 			for _, o := range n.Assigns() {
 				if err := q.tcheckStatement(o); err != nil {
 					return err
@@ -196,6 +253,17 @@ func (q *checker) tcheckStatement(n *a.Node) error {
 
 	setPlaceholderMBoundsMType(n)
 	return nil
+}
+
+func (q *checker) tcheckFuncAssert(n *a.Assert) error {
+	if n.IsChooseCPUArch() {
+		cond := n.Condition()
+		cond.SetMType(typeExprBool)
+		cond.LHS().AsExpr().SetMType(typeExprU32)
+		cond.RHS().AsExpr().SetMType(typeExprU32)
+		return nil
+	}
+	return fmt.Errorf("check: function assertions are not supported yet")
 }
 
 func (q *checker) tcheckAssert(n *a.Assert) error {
@@ -523,18 +591,24 @@ func (q *checker) tcheckExprCall(n *a.Expr, depth uint32) error {
 		return fmt.Errorf("check: %q has effect %q but %q has effect %q",
 			n.Str(q.tm), ne, f.QQID().Str(q.tm), fe)
 	}
+	if f.HasChooseCPUArch() {
+		return fmt.Errorf(`check: cannot call cpu_arch function %q directly, only via "choose"`,
+			f.QQID().Str(q.tm))
+	}
 
 	genericType1 := (*a.TypeExpr)(nil)
 	genericType2 := (*a.TypeExpr)(nil)
-	switch f.Receiver() {
-	case t.QID{t.IDBase, t.IDDagger1}:
-		genericType1 = lhs.MType().Receiver()
-	case t.QID{t.IDBase, t.IDDagger2}:
-		genericType2 = lhs.MType().Receiver()
-		if genericType2.Decorator() != t.IDTable {
-			return fmt.Errorf("check: internal error: %q is not a generic table", genericType2.Str(q.tm))
+	if recv := f.Receiver(); recv[0] == t.IDBase {
+		switch recv[1] {
+		case t.IDDagger1:
+			genericType1 = lhs.MType().Receiver()
+		case t.IDDagger2:
+			genericType2 = lhs.MType().Receiver()
+			if genericType2.Decorator() != t.IDTable {
+				return fmt.Errorf("check: internal error: %q is not a generic table", genericType2.Str(q.tm))
+			}
+			genericType1 = a.NewTypeExpr(t.IDSlice, 0, 0, nil, nil, genericType2.Inner())
 		}
-		genericType1 = a.NewTypeExpr(t.IDSlice, 0, 0, nil, nil, genericType2.Inner())
 	}
 
 	// Check that the func's in type matches the arguments.
@@ -598,20 +672,21 @@ func (q *checker) tcheckDot(n *a.Expr, depth uint32) error {
 	if lTyp.IsSliceType() {
 		qqid[0] = t.IDBase
 		qqid[1] = t.IDDagger1
-		if q.c.builtInSliceFuncs[qqid] == nil {
-			return fmt.Errorf("check: no slice method %q", n.Ident().Str(q.tm))
+		if (q.c.builtInSliceFuncs[qqid] != nil) ||
+			((q.c.builtInSliceU8Funcs[qqid] != nil) && lTyp.Eq(typeExprSliceU8)) {
+			n.SetMType(a.NewTypeExpr(t.IDFunc, 0, n.Ident(), lTyp.AsNode(), nil, nil))
+			return nil
 		}
-		n.SetMType(a.NewTypeExpr(t.IDFunc, 0, n.Ident(), lTyp.AsNode(), nil, nil))
-		return nil
+		return fmt.Errorf("check: no slice method %q", n.Ident().Str(q.tm))
 
 	} else if lTyp.IsTableType() {
 		qqid[0] = t.IDBase
 		qqid[1] = t.IDDagger2
-		if q.c.builtInTableFuncs[qqid] == nil {
-			return fmt.Errorf("check: no table method %q", n.Ident().Str(q.tm))
+		if q.c.builtInTableFuncs[qqid] != nil {
+			n.SetMType(a.NewTypeExpr(t.IDFunc, 0, n.Ident(), lTyp.AsNode(), nil, nil))
+			return nil
 		}
-		n.SetMType(a.NewTypeExpr(t.IDFunc, 0, n.Ident(), lTyp.AsNode(), nil, nil))
-		return nil
+		return fmt.Errorf("check: no table method %q", n.Ident().Str(q.tm))
 
 	} else if lTyp.Decorator() != 0 {
 		return fmt.Errorf("check: invalid type %q for dot-expression LHS %q", lTyp.Str(q.tm), lhs.Str(q.tm))
@@ -1058,6 +1133,31 @@ swtch:
 		return fmt.Errorf("check: %q is not a type", typ.Str(q.tm))
 	}
 	typ.AsNode().SetMType(typeExprTypeExpr)
+	return nil
+}
+
+func (q *checker) tcheckChoose(n *a.Choose) error {
+	qqid := q.astFunc.QQID()
+	fQQID := t.QQID{qqid[0], qqid[1], n.Name()}
+	f := q.c.funcs[fQQID]
+	if f == nil {
+		return fmt.Errorf("check: no function named %q", fQQID.Str(q.tm))
+	} else if !f.Choosy() {
+		return fmt.Errorf("check: choose assignee %q is not choosy", fQQID[2].Str(q.tm))
+	}
+	for _, o := range n.Args() {
+		o := o.AsExpr()
+		gQQID := t.QQID{qqid[0], qqid[1], o.Ident()}
+		g := q.c.funcs[gQQID]
+		if g == nil {
+			return fmt.Errorf("check: no function named %q", gQQID.Str(q.tm))
+		} else if err := f.CheckChooseCompatible(g); err != nil {
+			return fmt.Errorf("check: incompatible choose functions %q and %q: %v",
+				fQQID.Str(q.tm), gQQID.Str(q.tm), err)
+		}
+		o.SetMBounds(bounds{one, one})
+		o.SetMType(typeExprNonNullptr)
+	}
 	return nil
 }
 

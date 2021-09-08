@@ -9,6 +9,7 @@
 
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/events/event.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/metrics.h"
@@ -22,10 +23,11 @@ SelectionController::SelectionController(SelectionControllerDelegate* delegate)
     : aggregated_clicks_(0),
       delegate_(delegate),
       handles_selection_clipboard_(false) {
-// On Linux, update the selection clipboard on a text selection.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  set_handles_selection_clipboard(true);
-#endif
+  // If selection clipboard is used, update it on a text selection.
+  if (ui::Clipboard::IsSupportedClipboardBuffer(
+          ui::ClipboardBuffer::kSelection)) {
+    set_handles_selection_clipboard(true);
+  }
 
   DCHECK(delegate);
 }

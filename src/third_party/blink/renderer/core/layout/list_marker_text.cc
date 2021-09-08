@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/list_marker_text.h"
 
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -178,18 +179,31 @@ static String ToHebrew(int number) {
   DCHECK_GE(number, 0);
   DCHECK_LE(number, 999999);
 
+  Vector<UChar> letters;
+
   if (number == 0) {
     static const UChar kHebrewZero[3] = {0x05E1, 0x05E4, 0x05D0};
-    return String(kHebrewZero, 3);
+    letters.Append(kHebrewZero, 3);
+  } else {
+    if (number > 999) {
+      ToHebrewUnder1000(number / 1000, letters);
+      if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled())
+        letters.push_front(kHebrewPunctuationGereshCharacter);
+      else
+        letters.push_front('\'');
+      number = number % 1000;
+    }
+    ToHebrewUnder1000(number, letters);
   }
 
-  Vector<UChar> letters;
-  if (number > 999) {
-    ToHebrewUnder1000(number / 1000, letters);
-    letters.push_front('\'');
-    number = number % 1000;
+  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
+    // Since Hebrew is RTL, legacy implementation generates letters in the
+    // reversed ordering, which is actually wrong because characters in a String
+    // should always be in the logical ordering. We re-reverse it so that the
+    // output ordering is correct.
+    std::reverse(letters.begin(), letters.end());
   }
-  ToHebrewUnder1000(number, letters);
+
   return String(letters);
 }
 
@@ -461,6 +475,8 @@ static EListStyleType EffectiveListMarkerType(EListStyleType type, int count) {
     case EListStyleType::kDecimal:
     case EListStyleType::kDevanagari:
     case EListStyleType::kDisc:
+    case EListStyleType::kDisclosureClosed:
+    case EListStyleType::kDisclosureOpen:
     case EListStyleType::kGujarati:
     case EListStyleType::kGurmukhi:
     case EListStyleType::kKannada:
@@ -535,6 +551,8 @@ UChar Suffix(EListStyleType type, int count) {
   switch (effective_type) {
     case EListStyleType::kCircle:
     case EListStyleType::kDisc:
+    case EListStyleType::kDisclosureClosed:
+    case EListStyleType::kDisclosureOpen:
     case EListStyleType::kNone:
     case EListStyleType::kSquare:
       return ' ';
@@ -616,6 +634,14 @@ String GetText(EListStyleType type, int count) {
       return String(&kWhiteBulletCharacter, 1);
     case EListStyleType::kDisc:
       return String(&kBulletCharacter, 1);
+
+    // TODO(layout-dev): Text for disclosure-* should not depend on physical
+    // shape?
+    case EListStyleType::kDisclosureClosed:
+      return String(&kBlackRightPointingSmallTriangle, 1);
+    case EListStyleType::kDisclosureOpen:
+      return String(&kBlackDownPointingSmallTriangle, 1);
+
     case EListStyleType::kSquare:
       // The CSS 2.1 test suite uses U+25EE BLACK MEDIUM SMALL SQUARE
       // instead, but I think this looks better.

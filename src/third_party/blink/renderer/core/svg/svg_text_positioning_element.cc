@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_text_positioning_element.h"
 
+#include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/svg/svg_animated_length_list.h"
 #include "third_party/blink/renderer/core/svg/svg_animated_number_list.h"
@@ -70,7 +71,8 @@ void SVGTextPositioningElement::Trace(Visitor* visitor) const {
 }
 
 void SVGTextPositioningElement::SvgAttributeChanged(
-    const QualifiedName& attr_name) {
+    const SvgAttributeChangedParams& params) {
+  const QualifiedName& attr_name = params.name;
   bool update_relative_lengths =
       attr_name == svg_names::kXAttr || attr_name == svg_names::kYAttr ||
       attr_name == svg_names::kDxAttr || attr_name == svg_names::kDyAttr;
@@ -85,14 +87,18 @@ void SVGTextPositioningElement::SvgAttributeChanged(
     if (!layout_object)
       return;
 
-    if (LayoutSVGText* text_layout_object =
-            LayoutSVGText::LocateLayoutSVGTextAncestor(layout_object))
-      text_layout_object->SetNeedsPositioningValuesUpdate();
+    if (LayoutSVGBlock* text_or_ng_text =
+            LayoutSVGText::LocateLayoutSVGTextAncestor(layout_object)) {
+      if (auto* text_layout_object = DynamicTo<LayoutSVGText>(text_or_ng_text))
+        text_layout_object->SetNeedsPositioningValuesUpdate();
+      else
+        To<LayoutNGSVGText>(text_or_ng_text)->SetNeedsPositioningValuesUpdate();
+    }
     MarkForLayoutAndParentResourceInvalidation(*layout_object);
     return;
   }
 
-  SVGTextContentElement::SvgAttributeChanged(attr_name);
+  SVGTextContentElement::SvgAttributeChanged(params);
 }
 
 }  // namespace blink

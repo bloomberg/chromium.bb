@@ -1,5 +1,6 @@
 include_rules = [
     "+base/i18n/rtl.h",
+    "+base/json",
     "+base/time/time_override.h",
     "+base/profiler/module_cache.h",
     "+base/sampling_heap_profiler/poisson_allocation_sampler.h",
@@ -22,5 +23,17 @@ specific_include_rules = {
   ],
   "inspector_emulation_agent_test.cc": [
     "+media/media_buildflags.h",
+  ],
+  "inspector_highlight_test.cc": [
+    "+base/test/values_test_util.h",
+  ],
+  "inspector_contrast.cc": [
+    "+ui/gfx/color_utils.h",
+  ],
+  "inspector_contrast.h": [
+    "+cc/base/rtree.h",
+  ],
+  "inspector_network_agent.h": [
+    "+net/filter/source_stream.h",
   ],
 }

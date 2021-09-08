@@ -14,6 +14,7 @@
 #include "src/core/SkAutoMalloc.h"
 #include "src/core/SkMathPriv.h"
 #include "src/core/SkMatrixPriv.h"
+#include "src/core/SkMipmapBuilder.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkSafeMath.h"
 
@@ -197,6 +198,26 @@ void SkReadBuffer::readIRect(SkIRect* rect) {
 void SkReadBuffer::readRect(SkRect* rect) {
     if (!this->readPad32(rect, sizeof(SkRect))) {
         rect->setEmpty();
+    }
+}
+
+SkRect SkReadBuffer::readRect() {
+    SkRect r;
+    if (!this->readPad32(&r, sizeof(SkRect))) {
+        r.setEmpty();
+    }
+    return r;
+}
+
+SkSamplingOptions SkReadBuffer::readSampling() {
+    if (this->readBool()) {
+        float B = this->readScalar();
+        float C = this->readScalar();
+        return SkSamplingOptions({B, C});
+    } else {
+        SkFilterMode filter = this->read32LE(SkFilterMode::kLinear);
+        SkMipmapMode mipmap = this->read32LE(SkMipmapMode::kLinear);
+        return SkSamplingOptions(filter, mipmap);
     }
 }
 

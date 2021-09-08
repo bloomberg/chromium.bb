@@ -113,14 +113,15 @@ class MetricsLog {
   // always incrementing for use in measuring time durations.
   static int64_t GetCurrentTime();
 
-  // Record core profile settings into the SystemProfileProto.
+  // Records core profile settings into the SystemProfileProto.
   static void RecordCoreSystemProfile(MetricsServiceClient* client,
                                       SystemProfileProto* system_profile);
 
-  // Record core profile settings into the SystemProfileProto without a client.
+  // Records core profile settings into the SystemProfileProto without a client.
   static void RecordCoreSystemProfile(
       const std::string& version,
       metrics::SystemProfileProto::Channel channel,
+      bool is_extended_stable_channel,
       const std::string& application_locale,
       const std::string& package_name,
       SystemProfileProto* system_profile);
@@ -166,8 +167,6 @@ class MetricsLog {
   // Fills |encoded_log| with the serialized protobuf representation of the
   // record.  Must only be called after CloseLog() has been called.
   void GetEncodedLog(std::string* encoded_log);
-
-  const base::TimeTicks& creation_time() const { return creation_time_; }
 
   LogType log_type() const { return log_type_; }
 

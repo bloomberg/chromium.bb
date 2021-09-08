@@ -12,7 +12,6 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/trees/paint_holding_commit_trigger.h"
@@ -79,8 +78,6 @@ class CC_EXPORT Proxy {
 
   virtual void SetPaintWorkletLayerPainter(
       std::unique_ptr<PaintWorkletLayerPainter> painter) = 0;
-
-  virtual bool SupportsImplScrolling() const = 0;
 
   virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
                                           BrowserControlsState current,

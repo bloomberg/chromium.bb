@@ -47,7 +47,7 @@ bool SyncCredentialsFilter::ShouldSave(const PasswordForm& form) const {
     // not know about the account yet.
     if (sync_util::IsGaiaCredentialPage(form.signon_realm)) {
       CoreAccountInfo primary_account = identity_manager->GetPrimaryAccountInfo(
-          signin::ConsentLevel::kNotRequired);
+          signin::ConsentLevel::kSignin);
       if (primary_account.IsEmpty() ||
           gaia::AreEmailsSame(base::UTF16ToUTF8(form.username_value),
                               primary_account.email)) {
@@ -68,12 +68,11 @@ bool SyncCredentialsFilter::ShouldSave(const PasswordForm& form) const {
 
 bool SyncCredentialsFilter::ShouldSaveGaiaPasswordHash(
     const PasswordForm& form) const {
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
-  return !client_->IsIncognito() &&
-         sync_util::IsGaiaCredentialPage(form.signon_realm);
-#else
+  if (base::FeatureList::IsEnabled(features::kPasswordReuseDetectionEnabled)) {
+    return !client_->IsIncognito() &&
+           sync_util::IsGaiaCredentialPage(form.signon_realm);
+  }
   return false;
-#endif  // PASSWORD_REUSE_DETECTION_ENABLED
 }
 
 bool SyncCredentialsFilter::ShouldSaveEnterprisePasswordHash(

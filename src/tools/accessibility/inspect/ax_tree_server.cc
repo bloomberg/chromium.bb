@@ -10,7 +10,6 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -20,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "content/public/browser/ax_inspect_factory.h"
 
 using ui::AXTreeFormatter;
 using ui::AXTreeSelector;
@@ -41,30 +41,29 @@ base::Value BuildTreeForWindow(gfx::AcceleratedWidget widget,
 }
 
 AXTreeServer::AXTreeServer(const AXTreeSelector& selector,
-                           const base::FilePath& filters_path,
-                           bool use_json) {
-  Run(base::BindOnce(&BuildTreeForSelector, selector), filters_path, use_json);
+                           const base::FilePath& filters_path) {
+  Run(base::BindOnce(&BuildTreeForSelector, selector), filters_path);
 }
 
 AXTreeServer::AXTreeServer(gfx::AcceleratedWidget widget,
-                           const base::FilePath& filters_path,
-                           bool use_json) {
-  Run(base::BindOnce(&BuildTreeForWindow, widget), filters_path, use_json);
+                           const base::FilePath& filters_path) {
+  Run(base::BindOnce(&BuildTreeForWindow, widget), filters_path);
 }
 
 void AXTreeServer::Run(BuildTree build_tree,
-                       const base::FilePath& filters_path,
-                       bool use_json) {
+                       const base::FilePath& filters_path) {
   std::unique_ptr<AXTreeFormatter> formatter(
-      AccessibilityTreeFormatter::Create());
+      AXInspectFactory::CreatePlatformFormatter());
 
   // Set filters.
-  std::vector<ui::AXPropertyFilter> filters = GetPropertyFilters(filters_path);
-  if (filters.empty()) {
-    LOG(ERROR) << "Failed to parse filters";
+  absl::optional<std::vector<ui::AXPropertyFilter>> filters =
+      GetPropertyFilters(filters_path);
+  if (!filters) {
+    LOG(ERROR) << "Failed to parse filters2";
     return;
   }
-  formatter->SetPropertyFilters(filters);
+  formatter->SetPropertyFilters(*filters,
+                                ui::AXTreeFormatter::kFiltersDefaultSet);
 
   // Get accessibility tree as a nested dictionary.
   base::Value dict = std::move(build_tree).Run(formatter.get());
@@ -73,16 +72,15 @@ void AXTreeServer::Run(BuildTree build_tree,
     return;
   }
 
-  // Format the tree.
-  Format(*formatter, base::Value::AsDictionaryValue(dict), use_json);
+  // Write to console.
+  printf("%s", formatter->FormatTree(dict).c_str());
 }
 
-std::vector<ui::AXPropertyFilter> AXTreeServer::GetPropertyFilters(
-    const base::FilePath& filters_path) {
+absl::optional<std::vector<ui::AXPropertyFilter>>
+AXTreeServer::GetPropertyFilters(const base::FilePath& filters_path) {
+  std::vector<ui::AXPropertyFilter> filters;
   if (filters_path.empty()) {
-    return {
-      ui::AXPropertyFilter("*", ui::AXPropertyFilter::ALLOW),
-    };
+    return filters;
   }
 
   std::string raw_filters_text;
@@ -91,10 +89,9 @@ std::vector<ui::AXPropertyFilter> AXTreeServer::GetPropertyFilters(
     LOG(ERROR) << "Failed to open filters file " << filters_path
                << ". Note: path traversal components ('..') are not allowed "
                   "for security reasons";
-    return {};
+    return absl::nullopt;
   }
 
-  std::vector<ui::AXPropertyFilter> filters;
   for (const std::string& line :
        base::SplitString(raw_filters_text, "\n", base::TRIM_WHITESPACE,
                          base::SPLIT_WANT_ALL)) {
@@ -112,30 +109,10 @@ std::vector<ui::AXPropertyFilter> AXTreeServer::GetPropertyFilters(
                            ui::AXPropertyFilter::DENY);
     } else if (!line.empty()) {
       LOG(ERROR) << "Unrecognized filter instruction at line: " << line;
-      return {};
+      return absl::nullopt;
     }
   }
   return filters;
-}
-
-void AXTreeServer::Format(AXTreeFormatter& formatter,
-                          const base::DictionaryValue& dict,
-                          bool use_json) {
-  std::string accessibility_contents;
-
-  // Format accessibility tree as JSON or text.
-  if (use_json) {
-    const std::unique_ptr<base::DictionaryValue> filtered_dict =
-        formatter.FilterAccessibilityTree(dict);
-    base::JSONWriter::WriteWithOptions(*filtered_dict,
-                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                       &accessibility_contents);
-  } else {
-    formatter.FormatAccessibilityTree(dict, &accessibility_contents);
-  }
-
-  // Write to console.
-  printf("%s", accessibility_contents.c_str());
 }
 
 }  // namespace content

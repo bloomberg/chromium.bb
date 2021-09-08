@@ -6,6 +6,7 @@ package org.chromium.weblayer_private.test_interfaces;
 
 import android.os.Bundle;
 import org.chromium.weblayer_private.interfaces.IBrowser;
+import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ITab;
 
@@ -70,4 +71,28 @@ interface ITestWebLayer {
 
   boolean isWindowOnSmallDevice(in IBrowser browser) = 21;
   IObjectWrapper getSecurityButton(IObjectWrapper /* View */ urlBarView) = 22;
+  void fetchAccessToken(in IProfile profile, in IObjectWrapper /* Set<String */ scopes, in IObjectWrapper /* ValueCallback<String> */ onTokenFetched) = 23;
+  // Add a TestContentCaptureConsumer for the provided |browser|, with a Runnable |onNewEvent| to notify the
+  // caller when the events happened, the event ID will be received through |eventsObserved| list.
+  void addContentCaptureConsumer(in IBrowser browser,
+                                 in IObjectWrapper /* Runnable */ onNewEvent,
+                                 in IObjectWrapper /* ArrayList<Integer> */ eventsObserved) = 24;
+
+  // Notifies the caller of autofill-related events that occur in |browser|. The caller is notified
+  // via |onNewEvent| when a new event occurs, at which point the list of events that have occurred
+  // since notifyOfAutofillEvents() was first invoked will be available via |eventsObserved|.
+  // Note: Calling this method results in stubbing out the actual system-level integration with
+  // Android Autofill.
+  void notifyOfAutofillEvents(in IBrowser browser,
+                              in IObjectWrapper /* Runnable */ onNewEvent,
+                              in IObjectWrapper /* ArrayList<Integer> */ eventsObserved) = 25;
+
+  // Simulates tapping the download notification with `id`.
+  void activateBackgroundFetchNotification(int id) = 26;
+
+  // Speeds up download service initialization.
+  void expediteDownloadService() = 27;
+
+  // Mocks the GMSCore Fido calls used by WebAuthn.
+  void setMockWebAuthnEnabled(in boolean enabled) = 28;
 }

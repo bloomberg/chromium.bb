@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_headers_stream.h"
+#include "quic/core/http/quic_headers_stream.h"
 
 #include "absl/base/macros.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
+#include "quic/core/http/quic_spdy_session.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
 
 namespace quic {
 
@@ -84,8 +84,9 @@ bool QuicHeadersStream::OnStreamFrameAcked(QuicStreamOffset offset,
           std::min(acked_length, header.full_length - header_offset);
 
       if (header.unacked_length < header_length) {
-        QUIC_BUG << "Unsent stream data is acked. unacked_length: "
-                 << header.unacked_length << " acked_length: " << header_length;
+        QUIC_BUG(quic_bug_10416_1)
+            << "Unsent stream data is acked. unacked_length: "
+            << header.unacked_length << " acked_length: " << header_length;
         OnUnrecoverableError(QUIC_INTERNAL_ERROR,
                              "Unsent stream data is acked");
         return false;

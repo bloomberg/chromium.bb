@@ -8,11 +8,9 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/process_snapshot_server.h"
 #include "chrome/browser/task_manager/providers/task_provider.h"
 #include "chrome/browser/task_manager/providers/vm/vm_process_task.h"
@@ -28,6 +26,8 @@ class VmProcessTaskProvider : public TaskProvider,
                               public ProcessSnapshotServer::Observer {
  public:
   VmProcessTaskProvider();
+  VmProcessTaskProvider(const VmProcessTaskProvider&) = delete;
+  VmProcessTaskProvider& operator=(const VmProcessTaskProvider&) = delete;
   ~VmProcessTaskProvider() override;
 
   // task_manager::TaskProvider:
@@ -50,8 +50,6 @@ class VmProcessTaskProvider : public TaskProvider,
 
   // Map of PIDs to the corresponding Task object for a running VM.
   base::flat_map<base::ProcessId, std::unique_ptr<VmProcessTask>> task_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(VmProcessTaskProvider);
 };
 
 }  // namespace task_manager

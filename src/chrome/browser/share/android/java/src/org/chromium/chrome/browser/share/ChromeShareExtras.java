@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.share;
 
 import org.chromium.components.browser_ui.share.ShareParams;
+import org.chromium.url.GURL;
 
 /**
  * A container object for passing share extras not contained in {@link ShareParams} to {@link
@@ -34,7 +35,7 @@ public class ChromeShareExtras {
     /**
      * Source URL of the image.
      */
-    private final String mImageSrcUrl;
+    private final GURL mImageSrcUrl;
 
     /** Indicates if text property is highlighted by user. */
     private final boolean mIsUserHighlightedText;
@@ -42,15 +43,18 @@ public class ChromeShareExtras {
     /** Whether it is sharing a tab group. */
     private final boolean mSharingTabGroup;
 
+    private final boolean mIsReshareHighlightedText;
+
     private ChromeShareExtras(boolean saveLastUsed, boolean shareDirectly,
-            boolean isUrlOfVisiblePage, String imageSrcUrl, boolean isUserHighlightedText,
-            boolean sharingTabGroup) {
+            boolean isUrlOfVisiblePage, GURL imageSrcUrl, boolean isUserHighlightedText,
+            boolean sharingTabGroup, boolean isReshareHighlightedText) {
         mSaveLastUsed = saveLastUsed;
         mShareDirectly = shareDirectly;
         mIsUrlOfVisiblePage = isUrlOfVisiblePage;
-        mImageSrcUrl = imageSrcUrl;
+        mImageSrcUrl = imageSrcUrl == null ? GURL.emptyGURL() : imageSrcUrl;
         mIsUserHighlightedText = isUserHighlightedText;
         mSharingTabGroup = sharingTabGroup;
+        mIsReshareHighlightedText = isReshareHighlightedText;
     }
 
     /**
@@ -78,7 +82,7 @@ public class ChromeShareExtras {
     /**
      * @return Source URL of the image.
      */
-    public String getImageSrcUrl() {
+    public GURL getImageSrcUrl() {
         return mImageSrcUrl;
     }
 
@@ -96,6 +100,10 @@ public class ChromeShareExtras {
         return mSharingTabGroup;
     }
 
+    public boolean isReshareHighlightedText() {
+        return mIsReshareHighlightedText;
+    }
+
     /**
      * The builder for {@link ChromeShareExtras} objects.
      */
@@ -103,9 +111,10 @@ public class ChromeShareExtras {
         private boolean mSaveLastUsed;
         private boolean mShareDirectly;
         private boolean mIsUrlOfVisiblePage;
-        private String mImageSrcUrl;
+        private GURL mImageSrcUrl;
         private boolean mIsUserHighlightedText;
         private boolean mSharingTabGroup;
+        private boolean mIsReshareHighlightedText;
 
         /**
          * Sets whether to save the chosen activity for future direct sharing.
@@ -135,7 +144,7 @@ public class ChromeShareExtras {
         /**
          * Sets source URL of the image.
          */
-        public Builder setImageSrcUrl(String imageSrcUrl) {
+        public Builder setImageSrcUrl(GURL imageSrcUrl) {
             mImageSrcUrl = imageSrcUrl;
             return this;
         }
@@ -156,9 +165,15 @@ public class ChromeShareExtras {
             return this;
         }
 
+        public Builder setIsReshareHighlightedText(boolean isReshareHighlightedText) {
+            mIsReshareHighlightedText = isReshareHighlightedText;
+            return this;
+        }
+
         public ChromeShareExtras build() {
             return new ChromeShareExtras(mSaveLastUsed, mShareDirectly, mIsUrlOfVisiblePage,
-                    mImageSrcUrl, mIsUserHighlightedText, mSharingTabGroup);
+                    mImageSrcUrl, mIsUserHighlightedText, mSharingTabGroup,
+                    mIsReshareHighlightedText);
         }
     }
 }

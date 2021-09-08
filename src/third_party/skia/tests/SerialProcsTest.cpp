@@ -55,7 +55,7 @@ DEF_TEST(serial_procs_image, reporter) {
     {
         SkPictureRecorder rec;
         SkCanvas* canvas = rec.beginRecording(128, 128);
-        canvas->drawImage(src_img, 0, 0, nullptr);
+        canvas->drawImage(src_img, 0, 0);
         pic = rec.finishRecordingAsPicture();
     }
 
@@ -163,7 +163,7 @@ DEF_TEST(serial_procs_picture, reporter) {
     p0 = make_pic([p1](SkCanvas* c) {
         SkPaint paint;
         SkTileMode tm = SkTileMode::kClamp;
-        paint.setShader(p1->makeShader(tm, tm));
+        paint.setShader(p1->makeShader(tm, tm, SkFilterMode::kNearest));
         c->drawPaint(paint);
     });
     test_pictures(reporter, p0, 1, true);

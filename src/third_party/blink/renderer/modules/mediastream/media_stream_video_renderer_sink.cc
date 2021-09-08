@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_renderer_sink.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -47,6 +48,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
   }
 
   void OnVideoFrame(scoped_refptr<media::VideoFrame> frame,
+                    std::vector<scoped_refptr<media::VideoFrame>> scaled_frames,
                     base::TimeTicks /*current_time*/) {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     DCHECK(frame);
@@ -70,6 +72,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
     }
 
     frame_size_ = frame->natural_size();
+    // Scaled frames are currently ignored.
     repaint_cb_.Run(std::move(frame));
   }
 
@@ -87,9 +90,9 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
     if (!video_frame)
       return;
 
-    video_frame->metadata()->end_of_stream = true;
-    video_frame->metadata()->reference_time = base::TimeTicks::Now();
-    OnVideoFrame(video_frame, base::TimeTicks());
+    video_frame->metadata().end_of_stream = true;
+    video_frame->metadata().reference_time = base::TimeTicks::Now();
+    OnVideoFrame(video_frame, {}, base::TimeTicks());
   }
 
   void Start() {
@@ -148,8 +151,9 @@ MediaStreamVideoRendererSink::~MediaStreamVideoRendererSink() {
 void MediaStreamVideoRendererSink::Start() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
-  frame_deliverer_.reset(new MediaStreamVideoRendererSink::FrameDeliverer(
-      repaint_cb_, weak_factory_.GetWeakPtr(), main_render_task_runner_));
+  frame_deliverer_ =
+      std::make_unique<MediaStreamVideoRendererSink::FrameDeliverer>(
+          repaint_cb_, weak_factory_.GetWeakPtr(), main_render_task_runner_);
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&FrameDeliverer::Start,
@@ -164,7 +168,8 @@ void MediaStreamVideoRendererSink::Start() {
           &FrameDeliverer::OnVideoFrame,
           WTF::CrossThreadUnretained(frame_deliverer_.get()))),
       // Local display video rendering is considered a secure link.
-      true);
+      MediaStreamVideoSink::IsSecure::kYes,
+      MediaStreamVideoSink::UsesAlpha::kDefault);
 
   if (video_component_->Source()->GetReadyState() ==
           MediaStreamSource::kReadyStateEnded ||

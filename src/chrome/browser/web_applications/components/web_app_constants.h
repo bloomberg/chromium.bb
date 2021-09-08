@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_CONSTANTS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_CONSTANTS_H_
 
+#include <iosfwd>
 #include <vector>
 
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
@@ -29,9 +30,11 @@ enum Type {
   // set.
   kSync,
   kDefault,
-  kMaxValue = kDefault
+  kMaxValue = kDefault,
 };
 }  // namespace Source
+
+std::ostream& operator<<(std::ostream& os, Source::Type type);
 
 // Type of OS hook.
 //
@@ -43,10 +46,13 @@ enum Type {
   kShortcuts = 0,
   kRunOnOsLogin,
   kShortcutsMenu,
+  kUninstallationViaOsSettings,
   kFileHandlers,
-  kMaxValue = kFileHandlers,
+  kProtocolHandlers,
+  kUrlHandlers,
+  kMaxValue = kUrlHandlers,
 };
-}
+}  // namespace OsHookType
 
 // The result of an attempted web app installation, uninstallation or update.
 //
@@ -89,7 +95,7 @@ enum class InstallResultCode {
   kExpectedAppIdCheckFailed = 15,
   // The network request for the install URL timed out.
   kInstallURLLoadTimeOut = 16,
-  // Placeholder uninstall fails (in PendingAppManager).
+  // Placeholder uninstall fails (in ExternallyManagedAppManager).
   kFailedPlaceholderUninstall = 17,
   // Web App is not considered installable, i.e. missing manifest fields, no
   // service worker, etc.
@@ -109,7 +115,7 @@ enum class InstallResultCode {
   kSuccessOfflineOnlyInstall = 23,
   kSuccessOfflineFallbackInstall = 24,
 
-  kMaxValue = kSuccessOfflineFallbackInstall
+  kMaxValue = kSuccessOfflineFallbackInstall,
 };
 
 // Checks if InstallResultCode is not a failure.
@@ -118,8 +124,10 @@ bool IsSuccess(InstallResultCode code);
 // Checks if InstallResultCode indicates a new app was installed.
 bool IsNewInstall(InstallResultCode code);
 
-// PendingAppManager: Where an app was installed from. This affects what flags
-// will be used when installing the app.
+std::ostream& operator<<(std::ostream& os, InstallResultCode code);
+
+// ExternallyManagedAppManager: Where an app was installed from. This affects
+// what flags will be used when installing the app.
 //
 // Internal means that the set of apps to install is defined statically, and
 // can be determined solely by 'first party' data: the Chromium binary,
@@ -145,7 +153,7 @@ bool IsNewInstall(InstallResultCode code);
 //
 // In practice, every kExternalXxx enum definition should correspond to
 // exactly one place in the code where
-// PendingAppManager::SynchronizeInstalledApps is called.
+// ExternallyManagedAppManager::SynchronizeInstalledApps is called.
 enum class ExternalInstallSource {
   // Do not remove or re-order the names, only append to the end. Their
   // integer values are persisted in the preferences.
@@ -156,24 +164,27 @@ enum class ExternalInstallSource {
 
   // Installed by default on the system, such as "all such-and-such make and
   // model Chromebooks should have this app installed".
-  // The corresponding PendingAppManager::SynchronizeInstalledApps call site is
+  // The corresponding ExternallyManagedAppManager::SynchronizeInstalledApps
+  // call site is
   // in WebAppProvider::OnScanForExternalWebApps.
   kExternalDefault = 1,
 
   // Installed by sys-admin policy, such as "all example.com employees should
   // have this app installed".
-  // The corresponding PendingAppManager::SynchronizeInstalledApps call site is
+  // The corresponding ExternallyManagedAppManager::SynchronizeInstalledApps
+  // call site is
   // in WebAppPolicyManager::RefreshPolicyInstalledApps.
   kExternalPolicy = 2,
 
   // Installed as a Chrome component, such as a help app, or a settings app.
-  // The corresponding PendingAppManager::SynchronizeInstalledApps call site is
+  // The corresponding ExternallyManagedAppManager::SynchronizeInstalledApps
+  // call site is
   // in SystemWebAppManager::RefreshPolicyInstalledApps.
   kSystemInstalled = 3,
 
   // Installed from ARC.
   // There is no call to SynchronizeInstalledApps for this type, as these apps
-  // are not installed via PendingAppManager. This is used in
+  // are not installed via ExternallyManagedAppManager. This is used in
   // ExternallyInstalledWebAppPrefs to track navigation url to app_id entries.
   kArc = 4,
 };
@@ -200,14 +211,28 @@ apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
 
 // The operation mode for Run on OS Login.
 enum class RunOnOsLoginMode {
-  // kUndefined: The web app is not registered with the OS.
-  kUndefined = 0,
-  // kWindowed: The web app is registered with the OS and will be launched as
+  // kNotRun: The web app will not run during OS login.
+  kNotRun = 0,
+  // kWindowed: The web app will run during OS login and will be launched as
   // normal window. This is also the default launch mode for web apps.
   kWindowed = 1,
-  // kMinimized: The web app is registered with the OS and will be launched as a
+  // kMinimized: The web app will run during OS login and will be launched as a
   // minimized window.
-  kMinimized = 2
+  kMinimized = 2,
+};
+
+// Command line parameter representing RunOnOsLoginMode::kWindowed.
+extern const char kRunOnOsLoginModeWindowed[];
+
+enum class RunOnOsLoginPolicy {
+  // kAllowed: User can configure an app to run on OS Login.
+  kAllowed = 0,
+  // kDisallow: Policy prevents users from configuring an app to run on OS
+  // Login.
+  kBlocked = 1,
+  // kRunWindowed: Policy requires an app to to run on OS Login as a normal
+  // window.
+  kRunWindowed = 2,
 };
 
 std::string RunOnOsLoginModeToString(RunOnOsLoginMode mode);
@@ -222,7 +247,7 @@ enum class InstallIphResult {
   kCanceled = 1,
   // Ignored IPH, didn't click install.
   kIgnored = 2,
-  kMaxValue = kIgnored
+  kMaxValue = kIgnored,
 };
 
 // Number of times IPH can be ignored for this app before it's muted.
@@ -233,6 +258,23 @@ constexpr int kIphMuteAfterConsecutiveAppAgnosticIgnores = 4;
 constexpr int kIphAppSpecificMuteTimeSpanDays = 90;
 // Number of days to mute IPH after it's ignored for any app.
 constexpr int kIphAppAgnosticMuteTimeSpanDays = 14;
+// Default threshold for site engagement score if it's not set by field trial
+// param.
+constexpr int kIphFieldTrialParamDefaultSiteEngagementThreshold = 10;
+// Maximum number of file handlers that a single web application may install.
+// chrome:// web applications are exempt from this limit.
+constexpr size_t kMaxFileHandlers = 10;
+
+// Expected file handler update actions to be taken by OsIntegrationManager
+// during UpdateOsHooks.
+enum class FileHandlerUpdateAction {
+  // Perform update, removing and re-adding all file handlers.
+  kUpdate = 0,
+  // Remove all file handlers.
+  kRemove = 1,
+  // Do not perform update.
+  kNoUpdate = 2,
+};
 
 }  // namespace web_app
 

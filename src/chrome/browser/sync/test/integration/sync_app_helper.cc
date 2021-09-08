@@ -10,6 +10,7 @@
 
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
@@ -20,7 +21,6 @@
 #include "chrome/common/extensions/manifest_handlers/app_icon_color_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
-#include "chrome/common/extensions/sync_helper.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
@@ -46,7 +46,7 @@ struct AppState {
   GURL launch_web_url;
   GURL bookmark_app_scope;
   std::string icon_color;
-  base::Optional<SkColor> theme_color;
+  absl::optional<SkColor> theme_color;
   std::string description;
   std::string name;
   bool from_bookmark;
@@ -115,7 +115,7 @@ AppStateMap GetAppStates(Profile* profile) {
           ->GenerateInstalledExtensionsSet());
   for (const auto& extension : *extensions) {
     if (extension->is_app() &&
-        extensions::sync_helper::IsSyncable(extension.get())) {
+        extensions::util::ShouldSync(extension.get(), profile)) {
       const std::string& id = extension->id();
       LoadApp(profile, id, &(app_state_map[id]));
     }
@@ -126,12 +126,11 @@ AppStateMap GetAppStates(Profile* profile) {
           ->extension_service()
           ->pending_extension_manager();
 
-  std::list<std::string> pending_crx_ids;
-  pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_crx_ids);
+  std::list<std::string> pending_crx_ids =
+      pending_extension_manager->GetPendingIdsForUpdateCheck();
 
-  for (std::list<std::string>::const_iterator id = pending_crx_ids.begin();
-       id != pending_crx_ids.end(); ++id) {
-    LoadApp(profile, *id, &(app_state_map[*id]));
+  for (const auto& id : pending_crx_ids) {
+    LoadApp(profile, id, &(app_state_map[id]));
   }
 
   return app_state_map;

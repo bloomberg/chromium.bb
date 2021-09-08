@@ -78,6 +78,8 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
 
     bool IsTransitionPropertySpecificKeyframe() const final { return true; }
 
+    const TypedInterpolationValue* GetValue() const { return value_.get(); }
+
     void Trace(Visitor*) const override;
 
    private:
@@ -126,4 +128,4 @@ struct DowncastTraits<TransitionPropertySpecificKeyframe> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TRANSITION_KEYFRAME_H_

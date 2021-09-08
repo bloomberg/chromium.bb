@@ -60,7 +60,7 @@ message ConnectionRequestFrame {
   // Should always match cs/symbol:location.nearby.proto.connections.Medium
   enum Medium {
     UNKNOWN_MEDIUM = 0;
-    MDNS = 1;
+    MDNS = 1 [deprecated = true];
     BLUETOOTH = 2;
     WIFI_HOTSPOT = 3;
     BLE = 4;
@@ -84,6 +84,8 @@ message ConnectionRequestFrame {
   repeated Medium mediums = 5;
   optional bytes endpoint_info = 6;
   optional MediumMetadata medium_metadata = 7;
+  optional int32 keep_alive_interval_millis = 8;
+  optional int32 keep_alive_timeout_millis = 9;
 }
 
 message ConnectionResponseFrame {
@@ -166,6 +168,7 @@ message BandwidthUpgradeNegotiationFrame {
     SAFE_TO_CLOSE_PRIOR_CHANNEL = 3;
     CLIENT_INTRODUCTION = 4;
     UPGRADE_FAILURE = 5;
+    CLIENT_INTRODUCTION_ACK = 6;
   }
 
   // Accompanies UPGRADE_PATH_AVAILABLE and UPGRADE_FAILURE events.
@@ -173,7 +176,7 @@ message BandwidthUpgradeNegotiationFrame {
     // Should always match cs/symbol:location.nearby.proto.connections.Medium
     enum Medium {
       UNKNOWN_MEDIUM = 0;
-      MDNS = 1;
+      MDNS = 1 [deprecated = true];
       BLUETOOTH = 2;
       WIFI_HOTSPOT = 3;
       BLE = 4;
@@ -190,6 +193,7 @@ message BandwidthUpgradeNegotiationFrame {
       optional string password = 2;
       optional int32 port = 3;
       optional string gateway = 4 [default = "0.0.0.0"];
+      optional int32 frequency = 5 [default = -1];
     }
 
     // Accompanies Medium.WIFI_LAN.
@@ -237,6 +241,9 @@ message BandwidthUpgradeNegotiationFrame {
 
     // Disable Encryption for this upgrade medium to improve throughput.
     optional bool supports_disabling_encryption = 7;
+
+    // An ack will be sent after the CLIENT_INTRODUCTION frame.
+    optional bool supports_client_introduction_ack = 9;
   }
 
   // Accompanies CLIENT_INTRODUCTION events.
@@ -245,11 +252,15 @@ message BandwidthUpgradeNegotiationFrame {
     optional bool supports_disabling_encryption = 2;
   }
 
+  // Accompanies CLIENT_INTRODUCTION_ACK events.
+  message ClientIntroductionAck {}
+
   optional EventType event_type = 1;
 
   // Exactly one of the following fields will be set.
   optional UpgradePathInfo upgrade_path_info = 2;
   optional ClientIntroduction client_introduction = 3;
+  optional ClientIntroductionAck client_introduction_ack = 4;
 }
 
 message KeepAliveFrame {
@@ -280,6 +291,8 @@ message MediumMetadata {
   optional bytes ip_address = 3;
   // True if local device supports 6GHz.
   optional bool supports_6_ghz = 4;
+  // True if local device has mobile radio.
+  optional bool mobile_radio = 5;
 }
 
 // LocationHint is used to specify a location as well as format.

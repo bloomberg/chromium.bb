@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import os
 import platform
 import subprocess
@@ -124,3 +125,14 @@ class MacPlatformBackend(posix_platform_backend.PosixPlatformBackend):
     p = self.LaunchApplication('purge', elevate_privilege=mavericks_or_later)
     p.communicate()
     assert p.returncode == 0, 'Failed to flush system cache'
+
+  def GetIntelPowerGadgetPath(self):
+    gadget_path = '/Applications/Intel Power Gadget/PowerLog'
+    if not os.path.isfile(gadget_path):
+      logging.debug('Cannot locate Intel Power Gadget at ' + gadget_path)
+      return None
+    return gadget_path
+
+  def SupportsIntelPowerGadget(self):
+    gadget_path = self.GetIntelPowerGadgetPath()
+    return gadget_path is not None

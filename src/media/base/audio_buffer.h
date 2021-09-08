@@ -65,6 +65,15 @@ class MEDIA_EXPORT AudioBuffer
       const base::TimeDelta timestamp,
       scoped_refptr<AudioBufferMemoryPool> pool = nullptr);
 
+  // Create an AudioBuffer from a copy of the data in |audio_bus|.
+  // For optimal efficiency when many buffers are being created, a
+  // AudioBufferMemoryPool can be provided to avoid thrashing memory.
+  static scoped_refptr<AudioBuffer> CopyFrom(
+      int sample_rate,
+      const base::TimeDelta timestamp,
+      const AudioBus* audio_bus,
+      scoped_refptr<AudioBufferMemoryPool> pool = nullptr);
+
   // Create an AudioBuffer for compressed bitstream. Its channel data is copied
   // from |data|, and the size is |data_size|. |data| must not be null and
   // |frame_count| must be >= 0.
@@ -110,6 +119,13 @@ class MEDIA_EXPORT AudioBuffer
       int frame_count,
       const base::TimeDelta timestamp);
 
+  // Helper function that creates a new AudioBus which wraps |audio_buffer| and
+  // takes a reference on it, if the memory layout (e.g. |sample_format_|) is
+  // compatible with wrapping. Otherwise, this copies |audio_buffer| to a new
+  // AudioBus, using ReadFrames().
+  static std::unique_ptr<AudioBus> WrapOrCopyToAudioBus(
+      scoped_refptr<AudioBuffer> audio_buffer);
+
   // Create a AudioBuffer indicating we've reached end of stream.
   // Calling any method other than end_of_stream() on the resulting buffer
   // is disallowed.
@@ -130,6 +146,14 @@ class MEDIA_EXPORT AudioBuffer
                   int source_frame_offset,
                   int dest_frame_offset,
                   AudioBus* dest) const;
+
+  // Copy all |adjusted_frame_count_| frames into |dest|. Each of |dest|'s
+  // elements correspond to a different channel. It's the caller's
+  // responsibility to make sure enough memory per channel was allocated.
+  // The frames are converted and clipped from their source format into planar
+  // float32 data.
+  // Note: Bitstream formats are not supported.
+  void ReadAllFrames(const std::vector<float*>& dest) const;
 
   // Trim an AudioBuffer by removing |frames_to_trim| frames from the start.
   // Timestamp and duration are adjusted to reflect the fewer frames.

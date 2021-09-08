@@ -20,7 +20,6 @@ Polymer({
 
   behaviors: [
     OobeI18nBehavior,
-    OobeDialogHostBehavior,
     LoginScreenBehavior,
     MultiStepBehavior,
   ],
@@ -52,8 +51,11 @@ Polymer({
     this.initializeLoginScreen('ConfirmSamlPasswordScreen', {
       resetAllowed: true,
     });
-    this.addSubmitListener(this.$.passwordInput, 'password');
-    this.addSubmitListener(this.$.confirmPasswordInput, 'confirm');
+
+    cr.ui.LoginUITools.addSubmitListener(
+        this.$.passwordInput, this.submit_.bind(this));
+    cr.ui.LoginUITools.addSubmitListener(
+        this.$.confirmPasswordInput, this.submit_.bind(this));
   },
 
   /** Initial UI State for screen */
@@ -82,7 +84,7 @@ Polymer({
 
   reset() {
     if (this.$.cancelConfirmDlg.open)
-      this.$.cancelConfirmDlg.close();
+      this.$.cancelConfirmDlg.hideDialog();
     this.setUIStep(UIState.PASSWORD);
     this.$.passwordInput.invalid = false;
     this.$.passwordInput.value = '';
@@ -93,15 +95,15 @@ Polymer({
   },
 
   onCancel_() {
-    this.$.cancelConfirmDlg.showModal();
+    this.$.cancelConfirmDlg.showDialog();
   },
 
   onCancelNo_() {
-    this.$.cancelConfirmDlg.close();
+    this.$.cancelConfirmDlg.hideDialog();
   },
 
   onCancelYes_() {
-    this.$.cancelConfirmDlg.close();
+    this.$.cancelConfirmDlg.hideDialog();
 
     cr.ui.Oobe.showScreen({id: 'gaia-signin'});
     cr.ui.Oobe.resetSigninUI(true);
@@ -126,10 +128,6 @@ Polymer({
     this.setUIStep(UIState.PROGRESS);
     this.callback_(this.$.passwordInput.value);
     this.reset();
-  },
-
-  onFieldSubmit(id) {
-    this.submit_();
   },
 
   onDialogOverlayClosed_() {

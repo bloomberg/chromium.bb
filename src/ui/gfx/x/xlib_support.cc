@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "library_loaders/xlib_loader.h"
+#include "library_loaders/xlib_xcb_loader.h"
 
 namespace x11 {
 
@@ -24,6 +25,11 @@ XlibLoader* GetXlibLoader() {
   return xlib_loader.get();
 }
 
+XlibXcbLoader* GetXlibXcbLoader() {
+  static base::NoDestructor<XlibXcbLoader> xlib_xcb_loader;
+  return xlib_xcb_loader.get();
+}
+
 }  // namespace
 
 DISABLE_CFI_ICALL
@@ -33,6 +39,9 @@ void InitXlib() {
     return;
 
   CHECK(xlib_loader->Load("libX11.so.6"));
+
+  auto* xlib_xcb_loader = GetXlibXcbLoader();
+  CHECK(xlib_xcb_loader->Load("libX11-xcb.so.1"));
 
   CHECK(xlib_loader->XInitThreads());
 
@@ -50,6 +59,11 @@ void SetXlibErrorHandler() {
 }
 
 DISABLE_CFI_ICALL
+void XlibFree(void* data) {
+  GetXlibLoader()->XFree(data);
+}
+
+DISABLE_CFI_ICALL
 XlibDisplay::XlibDisplay(const std::string& address) {
   InitXlib();
 
@@ -59,8 +73,15 @@ XlibDisplay::XlibDisplay(const std::string& address) {
 
 DISABLE_CFI_ICALL
 XlibDisplay::~XlibDisplay() {
-  if (display_)
-    GetXlibLoader()->XCloseDisplay(display_);
+  if (!display_)
+    return;
+
+  auto* loader = GetXlibLoader();
+  // Events are not processed on |display_|, so if any client asks to receive
+  // events, they will just queue up and leak memory.  This check makes sure
+  // |display_| never had any pending events before it is closed.
+  CHECK(!loader->XPending(display_));
+  loader->XCloseDisplay(display_);
 }
 
 DISABLE_CFI_ICALL
@@ -96,6 +117,11 @@ XlibDisplayWrapper& XlibDisplayWrapper::operator=(XlibDisplayWrapper&& other) {
   other.display_ = nullptr;
   other.type_ = XlibDisplayType::kNormal;
   return *this;
+}
+
+DISABLE_CFI_ICALL
+struct xcb_connection_t* XlibDisplayWrapper::GetXcbConnection() {
+  return GetXlibXcbLoader()->XGetXCBConnection(display_);
 }
 
 }  // namespace x11

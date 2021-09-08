@@ -78,6 +78,9 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::ValuesIn(viz::GetGpuRendererTypes()),
                          ::testing::PrintToStringParamName());
 
+// viz::GetGpuRendererTypes() can return an empty list on some platforms.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(LayerTreeHostScrollbarsPixelTest);
+
 TEST_P(LayerTreeHostScrollbarsPixelTest, NoScale) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
@@ -173,14 +176,22 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   scale_transform.Scale(scale, scale);
   layer->SetTransform(scale_transform);
 
-  if (renderer_type_ == viz::RendererType::kSkiaGL ||
+  if (use_swangle() || use_skia_vulkan() ||
+      renderer_type_ == viz::RendererType::kSkiaGL ||
       renderer_type_ == viz::RendererType::kSkiaDawn)
     pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 
-  RunPixelTest(background,
-               use_skia_vulkan()
-                   ? base::FilePath(FILE_PATH_LITERAL("spiral_64_scale_vk.png"))
-                   : base::FilePath(FILE_PATH_LITERAL("spiral_64_scale.png")));
+  RunPixelTest(
+      background,
+      base::FilePath(
+          use_swangle()
+              ? (use_skia_vulkan() ? FILE_PATH_LITERAL("spiral_64_scale_vk.png")
+                                   : FILE_PATH_LITERAL("spiral_64_scale.png"))
+              : (use_skia_vulkan()
+                     ? FILE_PATH_LITERAL(
+                           "spiral_64_scale_legacy_swiftshader_vk.png")
+                     : FILE_PATH_LITERAL(
+                           "spiral_64_scale_legacy_swiftshader.png"))));
 }
 
 class LayerTreeHostOverlayScrollbarsPixelTest
@@ -249,6 +260,10 @@ INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostOverlayScrollbarsPixelTest,
                          ::testing::ValuesIn(viz::GetGpuRendererTypes()),
                          ::testing::PrintToStringParamName());
+
+// viz::GetGpuRendererTypes() can return an empty list on some platforms.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
+    LayerTreeHostOverlayScrollbarsPixelTest);
 
 // Simulate increasing the thickness of a painted overlay scrollbar. Ensure that
 // the scrollbar border remains crisp.

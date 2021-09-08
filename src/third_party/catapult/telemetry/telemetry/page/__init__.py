@@ -1,10 +1,11 @@
 # Copyright 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import inspect
 import logging
 import os
-import urlparse
+import six.moves.urllib.parse # pylint: disable=import-error
 
 from py_utils import cloud_storage  # pylint: disable=import-error
 
@@ -78,7 +79,7 @@ class Page(story.Story):
     current_tab = shared_state.current_tab
     # Collect garbage from previous run several times to make the results more
     # stable if needed.
-    for _ in xrange(0, 5):
+    for _ in range(0, 5):
       current_tab.CollectGarbage()
     action_runner = action_runner_module.ActionRunner(
         current_tab, skip_waits=self.skip_waits)
@@ -145,7 +146,7 @@ class Page(story.Story):
 
   @property
   def _scheme(self):
-    return urlparse.urlparse(self.url).scheme
+    return six.moves.urllib.parse.urlparse(self.url).scheme
 
   @property
   def is_file(self):
@@ -158,7 +159,7 @@ class Page(story.Story):
     assert self.is_file
     # Because ? is a valid character in a filename,
     # we have to treat the URL as a non-file by removing the scheme.
-    parsed_url = urlparse.urlparse(self.url[7:])
+    parsed_url = six.moves.urllib.parse.urlparse(self.url[7:])
     return os.path.normpath(os.path.join(
         self._base_dir, parsed_url.netloc + parsed_url.path))
 

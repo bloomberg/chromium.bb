@@ -12,8 +12,9 @@ const path = require('path');
 
 const FRONT_END_FOLDER = path.join(__filename, '..', '..', '..', '..', 'front_end');
 
+const CURRENT_YEAR = new Date().getFullYear();
 const LINE_LICENSE_HEADER = [
-  'Copyright 2020 The Chromium Authors. All rights reserved.',
+  `Copyright ${CURRENT_YEAR} The Chromium Authors. All rights reserved.`,
   'Use of this source code is governed by a BSD-style license that can be',
   'found in the LICENSE file.',
 ];
@@ -48,58 +49,35 @@ const BLOCK_LICENSE_HEADER = [
   'OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.',
 ];
 
-const LINE_REGEXES = LINE_LICENSE_HEADER.map(line => new RegExp('[ ]?' + line.replace('2020', '(\\(c\\) )?\\d{4}')));
+const LINE_REGEXES =
+    LINE_LICENSE_HEADER.map(line => new RegExp('[ ]?' + line.replace(CURRENT_YEAR, '(\\(c\\) )?\\d{4}')));
 const BLOCK_REGEX = new RegExp('[\\s\\\\n\\*]*' + BLOCK_LICENSE_HEADER.join('[\\s\\\\n\\*]*'), 'm');
 
 const LICENSE_HEADER_ADDITION = LINE_LICENSE_HEADER.map(line => `// ${line}`).join('\n') + '\n\n';
 
 const EXCLUDED_FILES = [
-  // FIXME: Dagre bundles must be moved to third_party
-  'dagre_layout/dagre.js',
   // FIXME: Diff bundles must be moved to third_party
   'diff/diff_match_patch.js',
 ];
 
 const OTHER_LICENSE_HEADERS = [
   // Apple
-  'bindings/ResourceUtils.js',
   'common/Color.js',
   'common/Object.js',
   'common/ResourceType.js',
   'data_grid/DataGrid.js',
   'dom_extension/DOMExtension.js',
   'elements/MetricsSidebarPane.js',
-  'profiler/CPUProfileView.js',
-  'profiler/ProfilesPanel.js',
-  'resources/ApplicationCacheItemsView.js',
-  'resources/ApplicationCacheModel.js',
-  'resources/DatabaseModel.js',
-  'resources/DatabaseQueryView.js',
-  'resources/DatabaseTableView.js',
   'sdk/Resource.js',
   'sdk/Script.js',
-  'source_frame/FontView.js',
-  'source_frame/ImageView.js',
   'sources/CallStackSidebarPane.js',
   'ui/Panel.js',
   'ui/Treeoutline.js',
-  // Brian Grinstead
-  'color_picker/Spectrum.js',
-  // Joseph Pecoraro
-  'console/ConsolePanel.js',
   // Research In Motion Limited
   'network/ResourceWebSocketFrameView.js',
-  // 280 North Inc.
-  'profiler/BottomUpProfileDataGrid.js',
-  'profiler/ProfileDataGrid.js',
-  'profiler/TopDownProfileDataGrid.js',
   // IBM Corp
   'sources/WatchExpressionsSidebarPane.js',
   // Multiple authors
-  'components/JSPresentationUtils.js',
-  'console/ConsoleView.js',
-  'console/ConsoleViewMessage.js',
-  'cookie_table/CookiesTable.js',
   'elements/ComputedStyleWidget.js',
   'elements/ElementsPanel.js',
   'elements/ElementsTreeElement.js',
@@ -107,23 +85,9 @@ const OTHER_LICENSE_HEADERS = [
   'elements/EventListenersWidget.js',
   'elements/PropertiesWidget.js',
   'elements/StylesSidebarPane.js',
-  'main/MainImpl.js',
-  'network/HARWriter.js',
-  'network/NetworkDataGridNode.js',
-  'network/NetworkLogView.js',
-  'network/NetworkPanel.js',
-  'network/NetworkTimeCalculator.js',
-  'network/RequestHeadersView.js',
-  'object_ui/ObjectPropertiesSection.js',
-  'perf_ui/TimelineGrid.js',
-  'platform/utilities.js',
-  'platform/UIString.js',
-  'resources/ApplicationPanelSidebar.js',
-  'resources/CookieItemsView.js',
-  'resources/DOMStorageItemsView.js',
-  'resources/DOMStorageModel.js',
+  'main/MainImpl.ts',
+  'platform/UIString.ts',
   'sdk/DOMModel.js',
-  'source_frame/ResourceSourceFrame.js',
   'sources/ScopeChainSidebarPane.js',
   'sources/SourcesPanel.js',
   'theme_support/theme_support_impl.js',
@@ -187,9 +151,9 @@ module.exports = {
           return;
         }
 
-        const {leading: comments} = context.getComments(node.body[0]);
+        const comments = context.getSourceCode().getCommentsBefore(node.body[0]);
 
-        if (!comments || comments.length === 0) {
+        if (!comments || comments.length === 0 || comments.length === 1 && comments[0].type === 'Shebang') {
           context.report({
             node,
             message: 'Missing license header',
@@ -197,23 +161,35 @@ module.exports = {
               return fixer.insertTextBefore(node, LICENSE_HEADER_ADDITION);
             },
           });
-        } else if (comments[0].type === 'Line') {
-          if (isMissingLineCommentLicense(comments)) {
+          return;
+        }
+
+        // If a file has a Shebang comment, it has to be the very first line, so we need to check the license exists _after_ that comment;
+        let commentsToCheck = comments;
+        let firstCommentToCheck = comments[0];
+
+        if (comments[0].type === 'Shebang') {
+          commentsToCheck = comments.slice(1);
+          firstCommentToCheck = commentsToCheck[0];
+        }
+
+        if (firstCommentToCheck.type === 'Line') {
+          if (isMissingLineCommentLicense(commentsToCheck)) {
             context.report({
               node,
               message: 'Incorrect line license header',
               fix(fixer) {
-                return fixer.insertTextBefore(comments[0], LICENSE_HEADER_ADDITION);
+                return fixer.insertTextBefore(firstCommentToCheck, LICENSE_HEADER_ADDITION);
               }
             });
           }
         } else {
-          if (isMissingBlockLineCommentLicense(comments[0].value)) {
+          if (isMissingBlockLineCommentLicense(firstCommentToCheck.value)) {
             context.report({
               node,
               message: 'Incorrect block license header',
               fix(fixer) {
-                return fixer.insertTextBefore(comments[0], LICENSE_HEADER_ADDITION);
+                return fixer.insertTextBefore(firstCommentToCheck, LICENSE_HEADER_ADDITION);
               }
             });
           }

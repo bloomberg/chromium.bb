@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
+#include "quic/core/crypto/quic_crypto_client_config.h"
 
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "quic/core/crypto/proof_verifier.h"
+#include "quic/core/quic_server_id.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/mock_random.h"
+#include "quic/test_tools/quic_test_utils.h"
 
 using testing::StartsWith;
 
@@ -81,45 +81,6 @@ TEST_F(QuicCryptoClientConfigTest, CachedState_SetProofVerifyDetails) {
   EXPECT_EQ(details, state.proof_verify_details());
 }
 
-TEST_F(QuicCryptoClientConfigTest, CachedState_ServerNonce) {
-  QuicCryptoClientConfig::CachedState state;
-  EXPECT_FALSE(state.has_server_nonce());
-
-  std::string server_nonce = "nonce_1";
-  state.add_server_nonce(server_nonce);
-  EXPECT_TRUE(state.has_server_nonce());
-  EXPECT_EQ(server_nonce, state.GetNextServerNonce());
-  EXPECT_FALSE(state.has_server_nonce());
-
-  // Allow the ID to be set multiple times.  It's unusual that this would
-  // happen, but not impossible.
-  server_nonce = "nonce_2";
-  state.add_server_nonce(server_nonce);
-  EXPECT_TRUE(state.has_server_nonce());
-  EXPECT_EQ(server_nonce, state.GetNextServerNonce());
-  server_nonce = "nonce_3";
-  state.add_server_nonce(server_nonce);
-  EXPECT_EQ(server_nonce, state.GetNextServerNonce());
-  EXPECT_FALSE(state.has_server_nonce());
-
-  // Test FIFO behavior.
-  const std::string first_nonce = "first_nonce";
-  const std::string second_nonce = "second_nonce";
-  state.add_server_nonce(first_nonce);
-  state.add_server_nonce(second_nonce);
-  EXPECT_TRUE(state.has_server_nonce());
-  EXPECT_EQ(first_nonce, state.GetNextServerNonce());
-  EXPECT_EQ(second_nonce, state.GetNextServerNonce());
-}
-
-TEST_F(QuicCryptoClientConfigTest, CachedState_ServerNonceConsumedBeforeSet) {
-  QuicCryptoClientConfig::CachedState state;
-  EXPECT_FALSE(state.has_server_nonce());
-  EXPECT_QUIC_BUG(state.GetNextServerNonce(),
-                  "Attempting to consume a server nonce "
-                  "that was never designated.");
-}
-
 TEST_F(QuicCryptoClientConfigTest, CachedState_InitializeFrom) {
   QuicCryptoClientConfig::CachedState state;
   QuicCryptoClientConfig::CachedState other;
@@ -130,7 +91,6 @@ TEST_F(QuicCryptoClientConfigTest, CachedState_InitializeFrom) {
   EXPECT_EQ(state.source_address_token(), other.source_address_token());
   EXPECT_EQ(state.certs(), other.certs());
   EXPECT_EQ(1u, other.generation_counter());
-  EXPECT_FALSE(state.has_server_nonce());
 }
 
 TEST_F(QuicCryptoClientConfigTest, InchoateChlo) {
@@ -486,11 +446,12 @@ TEST_F(QuicCryptoClientConfigTest, ProcessReject) {
       new QuicCryptoNegotiatedParameters);
   std::string error;
   QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
-  EXPECT_THAT(config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
-                                      AllSupportedTransportVersions().front(),
-                                      "", &cached, out_params, &error),
-              IsQuicNoError());
-  EXPECT_FALSE(cached.has_server_nonce());
+  EXPECT_THAT(
+      config.ProcessRejection(
+          rej, QuicWallTime::FromUNIXSeconds(0),
+          AllSupportedVersionsWithQuicCrypto().front().transport_version, "",
+          &cached, out_params, &error),
+      IsQuicNoError());
 }
 
 TEST_F(QuicCryptoClientConfigTest, ProcessRejectWithLongTTL) {
@@ -506,10 +467,12 @@ TEST_F(QuicCryptoClientConfigTest, ProcessRejectWithLongTTL) {
       new QuicCryptoNegotiatedParameters);
   std::string error;
   QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
-  EXPECT_THAT(config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
-                                      AllSupportedTransportVersions().front(),
-                                      "", &cached, out_params, &error),
-              IsQuicNoError());
+  EXPECT_THAT(
+      config.ProcessRejection(
+          rej, QuicWallTime::FromUNIXSeconds(0),
+          AllSupportedVersionsWithQuicCrypto().front().transport_version, "",
+          &cached, out_params, &error),
+      IsQuicNoError());
   cached.SetProofValid();
   EXPECT_FALSE(cached.IsComplete(QuicWallTime::FromUNIXSeconds(long_ttl)));
   EXPECT_FALSE(

@@ -17,6 +17,7 @@
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/sessions_export.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace sessions {
 
@@ -37,6 +38,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   typedef TabRestoreService::Tab Tab;
   typedef TabRestoreService::TimeFactory TimeFactory;
   typedef TabRestoreService::Window Window;
+  typedef TabRestoreService::Group Group;
 
   // Provides a way for the client to add behavior to the tab restore service
   // helper (e.g. implementing tabs persistence).
@@ -84,9 +86,13 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   // Helper methods used to implement TabRestoreService.
   void AddObserver(TabRestoreServiceObserver* observer);
   void RemoveObserver(TabRestoreServiceObserver* observer);
-  void CreateHistoricalTab(LiveTab* live_tab, int index);
+  absl::optional<SessionID> CreateHistoricalTab(LiveTab* live_tab, int index);
   void BrowserClosing(LiveTabContext* context);
   void BrowserClosed(LiveTabContext* context);
+  void CreateHistoricalGroup(LiveTabContext* context,
+                             const tab_groups::TabGroupId& id);
+  void GroupClosed(const tab_groups::TabGroupId& group);
+  void GroupCloseStopped(const tab_groups::TabGroupId& group);
   void ClearEntries();
   void DeleteNavigationEntries(const DeletionPredicate& predicate);
 
@@ -124,7 +130,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  // Calls either ValidateTab or ValidateWindow as appropriate.
+  // Calls ValidateTab, ValidateWindow, or ValidateGroup as appropriate.
   static bool ValidateEntry(const Entry& entry);
 
  private:
@@ -156,6 +162,9 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   // Validates all the tabs in a window, plus the window's active tab index.
   static bool ValidateWindow(const Window& window);
 
+  // Validates all the tabs in a group.
+  static bool ValidateGroup(const Group& group);
+
   // Removes all navigation entries matching |predicate| from |tab|.
   // Returns true if |tab| should be deleted because it is empty.
   static bool DeleteFromTab(const DeletionPredicate& predicate, Tab* tab);
@@ -165,12 +174,20 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   static bool DeleteFromWindow(const DeletionPredicate& predicate,
                                Window* window);
 
+  // Removes all navigation entries matching |predicate| from tabs in |group|.
+  // Returns true if |group| should be deleted because it is empty.
+  static bool DeleteFromGroup(const DeletionPredicate& predicate, Group* group);
+
   // Returns true if |tab| is one we care about restoring.
   bool IsTabInteresting(const Tab& tab);
 
   // Checks whether |window| is interesting --- if it only contains a single,
   // uninteresting tab, it's not interesting.
   bool IsWindowInteresting(const Window& window);
+
+  // Checks whether |group| is interesting -- as long as it contains tabs,
+  // it is.
+  bool IsGroupInteresting(const Group& group);
 
   // Validates and checks |entry| for interesting.
   bool FilterEntry(const Entry& entry);
@@ -200,6 +217,11 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   // corresponding BrowserClosed. We cache the set of contexts closing to
   // avoid creating historical tabs for them.
   std::set<LiveTabContext*> closing_contexts_;
+
+  // Set of groups that we've received a CreateHistoricalGroup method for but no
+  // corresponding GroupClosed. We cache the set of groups closing to avoid
+  // creating historical tabs for them.
+  std::set<tab_groups::TabGroupId> closing_groups_;
 
   TimeFactory* const time_factory_;
 

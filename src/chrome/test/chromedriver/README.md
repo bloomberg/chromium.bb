@@ -28,6 +28,14 @@ This will create an executable binary in the build folder named
 Once built, ChromeDriver can be used with various third-party libraries that
 support WebDriver protocol, including language bindings provided by Selenium.
 
+Note that if your build target OS is Android (i.e., you have
+`target_os = "android"` in your `args.gn` file), you will need to use the
+following command to build ChromeDriver targeting the host system:
+
+```
+autoninja -C out/Default clang_x64/chromedriver
+```
+
 ### Verifying the Build
 
 For testing purposes, ChromeDriver can be used interactively with python.
@@ -44,7 +52,7 @@ $ python
 >>> import server
 >>> import chromedriver
 >>> cd_server = server.Server('../../../out/Default/chromedriver')
->>> driver = chromedriver.ChromeDriver(cd_server.GetUrl())
+>>> driver = chromedriver.ChromeDriver(cd_server.GetUrl(), cd_server.GetPid())
 >>> driver.Load('http://www.google.com')
 >>> driver.Quit()
 >>> cd_server.Kill()
@@ -54,9 +62,9 @@ By default, ChromeDriver will look in its own directory for Chrome to use.
 If Chrome is not found there, it will use the system installed Chrome.
 
 To use ChromeDriver with Chrome on Android pass the Android package name in the
-chromeOptions.androidPackage capability when creating the driver. The path to
-adb_commands.py and the adb tool from the Android SDK must be set in PATH. For
-more detailed instructions see the user site.
+chromeOptions.androidPackage capability when creating the driver. You also need
+to have Android SDK's Android Debug Bridge (adb) server running. For
+more detailed instructions see the [user site](https://chromedriver.chromium.org/getting-started/getting-started---android).
 
 ## Architecture
 
@@ -68,7 +76,7 @@ is essentially synchronous JSON commands over HTTP. WebDriver clients are
 available in many languages, and many are available from the open source
 [Selenium WebDriver project](https://www.selenium.dev/).
 ChromeDriver uses the webserver from
-[net/server](https://source.chromium.org/chromium/chromium/src/+/master:net/server/).
+[net/server](https://source.chromium.org/chromium/chromium/src/+/main:net/server/).
 
 Additional information is available on the following pages:
 * [Threading](docs/threading.md): ChromeDriver threading model.
@@ -100,9 +108,6 @@ Code for a python client.
 * [server/](server/):
 Code for the chromedriver server.
 A python wrapper to the chromedriver server.
-
-* [extension/](extension/):
-An extension used for automating the desktop browser.
 
 * [test/](test/):
 Integration tests.

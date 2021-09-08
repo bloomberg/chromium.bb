@@ -37,6 +37,7 @@ base::LazyInstance<CustomLocationProviderCallback>::Leaky
 base::LazyInstance<std::unique_ptr<network::PendingSharedURLLoaderFactory>>::
     Leaky g_pending_url_loader_factory = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<std::string>::Leaky g_api_key = LAZY_INSTANCE_INITIALIZER;
+GeolocationManager* g_geolocation_manager;
 }  // namespace
 
 // static
@@ -49,11 +50,13 @@ void GeolocationProviderImpl::SetGeolocationConfiguration(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& api_key,
     const CustomLocationProviderCallback& custom_location_provider_getter,
+    GeolocationManager* geolocation_manager,
     bool use_gms_core_location_provider) {
   if (url_loader_factory)
     g_pending_url_loader_factory.Get() = url_loader_factory->Clone();
   g_api_key.Get() = api_key;
   g_custom_location_provider_callback.Get() = custom_location_provider_getter;
+  g_geolocation_manager = geolocation_manager;
   if (use_gms_core_location_provider) {
 #if defined(OS_ANDROID)
     JNIEnv* env = base::android::AttachCurrentThread();
@@ -64,12 +67,12 @@ void GeolocationProviderImpl::SetGeolocationConfiguration(
   }
 }
 
-std::unique_ptr<GeolocationProvider::Subscription>
+base::CallbackListSubscription
 GeolocationProviderImpl::AddLocationUpdateCallback(
     const LocationUpdateCallback& callback,
     bool enable_high_accuracy) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  std::unique_ptr<GeolocationProvider::Subscription> subscription;
+  base::CallbackListSubscription subscription;
   if (enable_high_accuracy) {
     subscription = high_accuracy_callbacks_.Add(callback);
   } else {
@@ -175,7 +178,7 @@ void GeolocationProviderImpl::OnClientsChanged() {
 #if defined(OS_MAC)
       options.message_pump_type = base::MessagePumpType::NS_RUNLOOP;
 #endif
-      StartWithOptions(options);
+      StartWithOptions(std::move(options));
       if (user_did_opt_into_location_services_)
         InformProvidersPermissionGranted();
     }
@@ -246,8 +249,8 @@ void GeolocationProviderImpl::Init() {
   DCHECK(!net::NetworkChangeNotifier::CreateIfNeeded())
       << "PositionCacheImpl needs a global NetworkChangeNotifier";
   arbitrator_ = std::make_unique<LocationArbitrator>(
-      g_custom_location_provider_callback.Get(), std::move(url_loader_factory),
-      g_api_key.Get(),
+      g_custom_location_provider_callback.Get(), g_geolocation_manager,
+      main_task_runner_, std::move(url_loader_factory), g_api_key.Get(),
       std::make_unique<PositionCacheImpl>(
           base::DefaultTickClock::GetInstance()));
   arbitrator_->SetUpdateCallback(callback);

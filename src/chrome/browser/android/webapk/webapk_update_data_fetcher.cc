@@ -6,27 +6,26 @@
 
 #include <jni.h>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/android/chrome_jni_headers/WebApkUpdateDataFetcher_jni.h"
-#include "chrome/browser/android/color_helpers.h"
-#include "chrome/browser/android/shortcut_helper.h"
-#include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
-#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/webapps/browser/android/webapps_icon_utils.h"
+#include "components/webapps/browser/android/webapps_utils.h"
+#include "components/webapps/browser/installable/installable_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/smhasher/src/MurmurHash2.h"
+#include "ui/android/color_helpers.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
@@ -112,23 +111,23 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
   if (!IsInScope(url, scope_))
     return;
 
-  InstallableParams params;
+  webapps::InstallableParams params;
   params.valid_manifest = true;
   params.prefer_maskable_icon =
-      ShortcutHelper::DoesAndroidSupportMaskableIcons();
+      webapps::WebappsIconUtils::DoesAndroidSupportMaskableIcons();
   params.has_worker = true;
   params.valid_primary_icon = true;
   params.valid_splash_icon = true;
   params.wait_for_worker = true;
-  InstallableManager* installable_manager =
-      InstallableManager::FromWebContents(web_contents());
+  webapps::InstallableManager* installable_manager =
+      webapps::InstallableManager::FromWebContents(web_contents());
   installable_manager->GetData(
       params, base::BindOnce(&WebApkUpdateDataFetcher::OnDidGetInstallableData,
                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApkUpdateDataFetcher::OnDidGetInstallableData(
-    const InstallableData& data) {
+    const webapps::InstallableData& data) {
   // Determine whether or not the manifest is WebAPK-compatible. There are 3
   // cases:
   // 1. the site isn't installable.
@@ -143,13 +142,14 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
   // observing too. It is based on our assumption that it is invalid for
   // web developers to change the Web Manifest location. When it does
   // change, we will treat the new Web Manifest as the one of another WebAPK.
-  if (!data.errors.empty() || data.manifest->IsEmpty() ||
+  if (!data.NoBlockingErrors() || data.manifest.IsEmpty() ||
       web_manifest_url_ != data.manifest_url ||
-      !AreWebManifestUrlsWebApkCompatible(*data.manifest)) {
+      !webapps::WebappsUtils::AreWebManifestUrlsWebApkCompatible(
+          data.manifest)) {
     return;
   }
 
-  info_.UpdateFromManifest(*data.manifest);
+  info_.UpdateFromManifest(data.manifest);
   info_.manifest_url = data.manifest_url;
   info_.best_primary_icon_url = data.primary_icon_url;
   primary_icon_ = *data.primary_icon;
@@ -173,7 +173,7 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
   WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-      content::BrowserContext::GetDefaultStoragePartition(profile)
+      profile->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess()
           .get(),
       url::Origin::Create(last_fetched_url_), urls,
@@ -182,7 +182,7 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
 }
 
 void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
-    base::Optional<std::map<std::string, WebApkIconHasher::Icon>> hashes) {
+    absl::optional<std::map<std::string, WebApkIconHasher::Icon>> hashes) {
   if (!hashes)
     return;
 
@@ -240,8 +240,8 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
         (info_.share_target->enctype ==
          blink::mojom::ManifestShareTarget_Enctype::kMultipartFormData);
 
-    std::vector<base::string16> file_names;
-    std::vector<std::vector<base::string16>> accepts;
+    std::vector<std::u16string> file_names;
+    std::vector<std::vector<std::u16string>> accepts;
     for (auto& f : info_.share_target->params.files) {
       file_names.push_back(f.name);
       accepts.push_back(f.accept);
@@ -255,7 +255,7 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
   // Wraps the shortcut info in a 2D vector for convenience.
   // The inner vector represents a shortcut items, with the following fields:
   // <name>, <short name>, <launch url>, <icon url>, <icon hash>.
-  std::vector<std::vector<base::string16>> shortcuts;
+  std::vector<std::vector<std::u16string>> shortcuts;
   DCHECK_EQ(info_.shortcut_items.size(), info_.best_shortcut_icon_urls.size());
 
   for (size_t i = 0; i < info_.shortcut_items.size(); i++) {
@@ -271,7 +271,7 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
     }
 
     shortcuts.push_back({shortcut.name,
-                         shortcut.short_name.value_or(base::string16()),
+                         shortcut.short_name.value_or(std::u16string()),
                          base::UTF8ToUTF16(shortcut.url.spec()),
                          base::UTF8ToUTF16(chosen_icon_url.spec()),
                          base::UTF8ToUTF16(chosen_icon_hash),
@@ -284,8 +284,8 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
       java_is_primary_icon_maskable, java_splash_icon_url,
       java_splash_icon_murmur2_hash, java_splash_icon, java_icon_urls,
       static_cast<int>(info_.display), static_cast<int>(info_.orientation),
-      OptionalSkColorToJavaColor(info_.theme_color),
-      OptionalSkColorToJavaColor(info_.background_color), java_share_action,
+      ui::OptionalSkColorToJavaColor(info_.theme_color),
+      ui::OptionalSkColorToJavaColor(info_.background_color), java_share_action,
       java_share_params_title, java_share_params_text,
       java_share_params_is_method_post, java_share_params_is_enctype_multipart,
       java_share_params_file_names, java_share_params_accepts,

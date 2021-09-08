@@ -60,9 +60,6 @@ TEST_F(LeakDetectionRequestTest, ServerError) {
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.LeakDetection.HttpResponseCode",
       net::HTTP_INTERNAL_SERVER_ERROR, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PasswordManager.LeakDetection.NetErrorCode",
-      -net::ERR_HTTP_RESPONSE_CODE_FAILURE, 1);
 }
 
 TEST_F(LeakDetectionRequestTest, QuotaLimit) {
@@ -83,9 +80,6 @@ TEST_F(LeakDetectionRequestTest, QuotaLimit) {
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.LeakDetection.HttpResponseCode",
       net::HTTP_TOO_MANY_REQUESTS, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PasswordManager.LeakDetection.NetErrorCode",
-      -net::ERR_HTTP_RESPONSE_CODE_FAILURE, 1);
 }
 
 TEST_F(LeakDetectionRequestTest, MalformedServerResponse) {
@@ -122,7 +116,7 @@ TEST_F(LeakDetectionRequestTest, WellformedServerResponse) {
                              {kUsernameHash, kEncryptedPayload},
                              callback.Get());
   EXPECT_CALL(callback,
-              Run(testing::Pointee(SingleLookupResponse()), Eq(base::nullopt)));
+              Run(testing::Pointee(SingleLookupResponse()), Eq(absl::nullopt)));
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(

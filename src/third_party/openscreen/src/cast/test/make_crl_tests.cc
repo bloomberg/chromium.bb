@@ -22,9 +22,7 @@ namespace {
 std::string* AddRevokedPublicKeyHash(TbsCrl* tbs_crl, X509* cert) {
   std::string* pubkey_hash = tbs_crl->add_revoked_public_key_hashes();
   std::string pubkey_spki = GetSpkiTlv(cert);
-  ErrorOr<std::string> hash_value = SHA256HashString(pubkey_spki);
-  OSP_DCHECK(hash_value.is_value());
-  *pubkey_hash = std::move(hash_value.value());
+  *pubkey_hash = SHA256HashString(pubkey_spki).value();
   return pubkey_hash;
 }
 
@@ -34,9 +32,8 @@ void AddSerialNumberRange(TbsCrl* tbs_crl,
                           uint64_t last) {
   SerialNumberRange* serial_range = tbs_crl->add_revoked_serial_number_ranges();
   std::string issuer_spki = GetSpkiTlv(issuer);
-  ErrorOr<std::string> issuer_hash = SHA256HashString(issuer_spki);
-  OSP_DCHECK(issuer_hash.is_value());
-  serial_range->set_issuer_public_key_hash(std::move(issuer_hash.value()));
+  serial_range->set_issuer_public_key_hash(
+      SHA256HashString(issuer_spki).value());
   serial_range->set_first_serial_number(first);
   serial_range->set_last_serial_number(last);
 }
@@ -57,7 +54,7 @@ TbsCrl MakeTbsCrl(uint64_t not_before,
   // NOTE: Include default serial number range at device-level, which should not
   // include any of our certs.
   ErrorOr<uint64_t> maybe_serial =
-      ParseDerUint64(device_cert->cert_info->serialNumber);
+      ParseDerUint64(X509_get0_serialNumber(device_cert));
   OSP_DCHECK(maybe_serial);
   uint64_t serial = maybe_serial.value();
   OSP_DCHECK_LE(serial, UINT64_MAX - 200);
@@ -181,7 +178,7 @@ int CastMain() {
     TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
                                 device_cert.get(), inter_cert.get());
     ErrorOr<uint64_t> maybe_serial =
-        ParseDerUint64(inter_cert->cert_info->serialNumber);
+        ParseDerUint64(X509_get0_serialNumber(inter_cert.get()));
     OSP_DCHECK(maybe_serial);
     uint64_t serial = maybe_serial.value();
     OSP_DCHECK_GE(serial, 10);
@@ -196,7 +193,7 @@ int CastMain() {
     TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
                                 device_cert.get(), inter_cert.get());
     ErrorOr<uint64_t> maybe_serial =
-        ParseDerUint64(device_cert->cert_info->serialNumber);
+        ParseDerUint64(X509_get0_serialNumber(device_cert.get()));
     OSP_DCHECK(maybe_serial);
     uint64_t serial = maybe_serial.value();
     OSP_DCHECK_GE(serial, 10);

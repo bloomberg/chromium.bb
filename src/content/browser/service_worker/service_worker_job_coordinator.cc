@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/service_worker_register_job_base.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 
 namespace content {
 
@@ -55,12 +56,6 @@ void ServiceWorkerJobCoordinator::JobQueue::StartOneJob() {
 void ServiceWorkerJobCoordinator::JobQueue::AbortAll() {
   for (const auto& job : jobs_)
     job->Abort();
-  jobs_.clear();
-}
-
-void ServiceWorkerJobCoordinator::JobQueue::ClearForShutdown() {
-  for (const auto& job : jobs_)
-    job->WillShutDown();
   jobs_.clear();
 }
 
@@ -145,12 +140,6 @@ void ServiceWorkerJobCoordinator::Abort(const GURL& scope) {
 void ServiceWorkerJobCoordinator::AbortAll() {
   for (auto& job_pair : job_queues_)
     job_pair.second.AbortAll();
-  job_queues_.clear();
-}
-
-void ServiceWorkerJobCoordinator::ClearForShutdown() {
-  for (auto& job_pair : job_queues_)
-    job_pair.second.ClearForShutdown();
   job_queues_.clear();
 }
 

@@ -4,7 +4,7 @@
  *
  *   FreeType API for color filtering of subpixel bitmap glyphs (body).
  *
- * Copyright (C) 2006-2020 by
+ * Copyright (C) 2006-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -428,7 +428,7 @@
 
     ft_memcpy( library->lcd_geometry, sub, 3 * sizeof( FT_Vector ) );
 
-    return FT_THROW( Unimplemented_Feature );
+    return FT_Err_Ok;
   }
 
 #endif /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */

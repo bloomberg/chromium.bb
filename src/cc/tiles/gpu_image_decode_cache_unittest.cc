@@ -312,7 +312,7 @@ class GPUImageDecodeTestMockContextProvider : public viz::TestContextProvider {
         std::move(support), std::move(gl), std::move(raster));
   }
 
-  void SetContextCapabilitiesOverride(base::Optional<gpu::Capabilities> caps) {
+  void SetContextCapabilitiesOverride(absl::optional<gpu::Capabilities> caps) {
     capabilities_override_ = caps;
   }
 
@@ -335,7 +335,7 @@ class GPUImageDecodeTestMockContextProvider : public viz::TestContextProvider {
                             nullptr /* sii */,
                             true) {}
 
-  base::Optional<gpu::Capabilities> capabilities_override_;
+  absl::optional<gpu::Capabilities> capabilities_override_;
 };
 
 class FakeRasterDarkModeFilter : public RasterDarkModeFilter {
@@ -357,10 +357,8 @@ class FakeRasterDarkModeFilter : public RasterDarkModeFilter {
   sk_sp<SkColorFilter> color_filter_;
 };
 
-SkMatrix CreateMatrix(const SkSize& scale) {
-  SkMatrix matrix;
-  matrix.setScale(scale.width(), scale.height());
-  return matrix;
+SkM44 CreateMatrix(const SkSize& scale) {
+  return SkM44::Scale(scale.width(), scale.height());
 }
 
 #define EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE(condition) \
@@ -493,7 +491,7 @@ class GpuImageDecodeCacheTest
 
   DrawImage CreateDrawImageInternal(
       const PaintImage& paint_image,
-      const SkMatrix& matrix = SkMatrix::I(),
+      const SkM44& matrix = SkM44(),
       gfx::ColorSpace* color_space = nullptr,
       SkFilterQuality filter_quality = kMedium_SkFilterQuality,
       SkIRect* src_rect = nullptr,
@@ -517,7 +515,7 @@ class GpuImageDecodeCacheTest
 
   DrawImage CreateDrawImageWithDarkModeInternal(
       const PaintImage& paint_image,
-      const SkMatrix& matrix = SkMatrix::I(),
+      const SkM44& matrix = SkM44(),
       gfx::ColorSpace* color_space = nullptr,
       SkFilterQuality filter_quality = kMedium_SkFilterQuality,
       SkIRect* src_rect = nullptr,
@@ -583,7 +581,7 @@ class GpuImageDecodeCacheTest
       DecodedDrawImage new_draw_image(
           image_entry->image(), draw_image.dark_mode_color_filter(),
           draw_image.src_rect_offset(), draw_image.scale_adjustment(),
-          draw_image.filter_quality());
+          draw_image.filter_quality(), draw_image.is_budgeted());
       return new_draw_image;
     }
 
@@ -603,7 +601,7 @@ class GpuImageDecodeCacheTest
   void CompareAllPlanesToMippedVersions(
       GpuImageDecodeCache* cache,
       const DrawImage& draw_image,
-      const base::Optional<uint32_t> transfer_cache_id,
+      const absl::optional<uint32_t> transfer_cache_id,
       bool should_have_mips) {
     for (size_t i = 0; i < kNumYUVPlanes; ++i) {
       sk_sp<SkImage> original_uploaded_plane;
@@ -629,7 +627,7 @@ class GpuImageDecodeCacheTest
   void VerifyUploadedPlaneSizes(
       GpuImageDecodeCache* cache,
       const DrawImage& draw_image,
-      const base::Optional<uint32_t> transfer_cache_id,
+      const absl::optional<uint32_t> transfer_cache_id,
       const SkISize plane_sizes[SkYUVAInfo::kMaxPlanes],
       SkYUVAPixmapInfo::DataType expected_type =
           SkYUVAPixmapInfo::DataType::kUnorm8,
@@ -748,7 +746,7 @@ TEST_P(GpuImageDecodeCacheTest, GetTaskForImageSmallerScale) {
 TEST_P(GpuImageDecodeCacheTest, GetTaskForImageLowerQuality) {
   auto cache = CreateCache();
   PaintImage image = CreatePaintImageInternal(GetNormalImageSize());
-  SkMatrix matrix = CreateMatrix(SkSize::Make(0.4f, 0.4f));
+  SkM44 matrix = CreateMatrix(SkSize::Make(0.4f, 0.4f));
   DrawImage draw_image = CreateDrawImageInternal(image, matrix);
   ImageDecodeCache::TaskResult result =
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
@@ -871,7 +869,7 @@ TEST_P(GpuImageDecodeCacheTest, GetTaskForImageLargerScaleNoReuse) {
 
 TEST_P(GpuImageDecodeCacheTest, GetTaskForImageHigherQuality) {
   auto cache = CreateCache();
-  SkMatrix matrix = CreateMatrix(SkSize::Make(0.4f, 0.4f));
+  SkM44 matrix = CreateMatrix(SkSize::Make(0.4f, 0.4f));
   PaintImage first_image = CreatePaintImageInternal(GetNormalImageSize());
   DrawImage first_draw_image = CreateDrawImageInternal(
       first_image, matrix, nullptr /* color_space */, kLow_SkFilterQuality);
@@ -1149,6 +1147,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDraw) {
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -1194,6 +1193,7 @@ TEST_P(GpuImageDecodeCacheTest, GetHdrDecodedImageForDrawToHdr) {
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_EQ(decoded_draw_image.image()->colorType(), kRGBA_F16_SkColorType);
 
   auto cs = gfx::ColorSpace(*decoded_draw_image.image()->colorSpace());
@@ -1244,6 +1244,7 @@ TEST_P(GpuImageDecodeCacheTest, GetHdrDecodedImageForDrawToSdr) {
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_NE(decoded_draw_image.image()->colorType(), kRGBA_F16_SkColorType);
 
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
@@ -1271,6 +1272,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeDecodedImageForDraw) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE(
       cache->DiscardableIsLockedForTesting(draw_image));
@@ -1299,7 +1301,9 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawAtRasterDecode) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -1338,6 +1342,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
   viz::ContextProvider::ScopedContextLock context_lock(context_provider());
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
@@ -1345,6 +1350,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
   DecodedDrawImage larger_decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(larger_draw_image));
   EXPECT_TRUE(larger_decoded_draw_image.image());
+  EXPECT_TRUE(larger_decoded_draw_image.is_budgeted());
   EXPECT_TRUE(larger_decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
@@ -1358,7 +1364,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
 
 TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawHigherQuality) {
   auto cache = CreateCache();
-  SkMatrix matrix = CreateMatrix(SkSize::Make(0.5f, 0.5f));
+  SkM44 matrix = CreateMatrix(SkSize::Make(0.5f, 0.5f));
   PaintImage image = CreatePaintImageInternal(GetNormalImageSize());
   DrawImage draw_image = CreateDrawImageInternal(
       image, matrix, nullptr /* color_space */, kLow_SkFilterQuality);
@@ -1384,6 +1390,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawHigherQuality) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
@@ -1421,6 +1428,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawNegative) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   const int expected_width =
       image.width() * std::abs(draw_image.scale().width());
   const int expected_height =
@@ -1455,6 +1463,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeScaledDecodedImageForDraw) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   // The mip level scale should never go below 0 in any dimension.
   EXPECT_EQ(GetLargeImageSize().width(), decoded_draw_image.image()->width());
   EXPECT_EQ(GetLargeImageSize().height(), decoded_draw_image.image()->height());
@@ -1490,6 +1499,7 @@ TEST_P(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
 
@@ -1522,10 +1532,12 @@ TEST_P(GpuImageDecodeCacheTest,
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   DecodedDrawImage another_decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_FALSE(another_decoded_draw_image.is_budgeted());
   EXPECT_EQ(decoded_draw_image.image()->uniqueID(),
             another_decoded_draw_image.image()->uniqueID());
 
@@ -1551,6 +1563,7 @@ TEST_P(GpuImageDecodeCacheTest,
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE(
       cache->DiscardableIsLockedForTesting(draw_image));
@@ -1561,6 +1574,7 @@ TEST_P(GpuImageDecodeCacheTest,
   DecodedDrawImage second_decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(second_decoded_draw_image.image());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(second_decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE(
       cache->DiscardableIsLockedForTesting(draw_image));
@@ -1776,7 +1790,7 @@ TEST_P(GpuImageDecodeCacheTest, OrphanedZeroRefImagesImmediatelyDeleted) {
 TEST_P(GpuImageDecodeCacheTest, QualityCappedAtMedium) {
   auto cache = CreateCache();
   PaintImage image = CreatePaintImageInternal(GetNormalImageSize());
-  SkMatrix matrix = CreateMatrix(SkSize::Make(0.4f, 0.4f));
+  SkM44 matrix = CreateMatrix(SkSize::Make(0.4f, 0.4f));
 
   // Create an image with kLow_FilterQuality.
   DrawImage low_draw_image = CreateDrawImageInternal(
@@ -1849,7 +1863,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawMipUsageChange) {
 TEST_P(GpuImageDecodeCacheTest, OutOfRasterDecodeTask) {
   auto cache = CreateCache();
   PaintImage image = CreatePaintImageInternal(GetNormalImageSize());
-  SkMatrix matrix = CreateMatrix(SkSize::Make(1.0f, 1.0f));
+  SkM44 matrix = CreateMatrix(SkSize::Make(1.0f, 1.0f));
   DrawImage draw_image = CreateDrawImageInternal(
       image, matrix, nullptr /* color_space */, kLow_SkFilterQuality);
 
@@ -2244,6 +2258,7 @@ TEST_P(GpuImageDecodeCacheTest, AlreadyBudgetedImagesAreNotAtRaster) {
   viz::ContextProvider::ScopedContextLock context_lock(context_provider());
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
   cache->UnrefImage(draw_image);
   cache->UnrefImage(draw_image);
@@ -2267,6 +2282,7 @@ TEST_P(GpuImageDecodeCacheTest, ImageBudgetingByCount) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
 
   // Try another image, it shouldn't be budgeted and should be at-raster.
   PaintImage second_paint_image =
@@ -2282,6 +2298,7 @@ TEST_P(GpuImageDecodeCacheTest, ImageBudgetingByCount) {
   DecodedDrawImage second_decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(second_draw_image));
   EXPECT_TRUE(second_decoded_draw_image.image());
+  EXPECT_FALSE(second_decoded_draw_image.is_budgeted());
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
   cache->DrawWithImageFinished(second_draw_image, second_decoded_draw_image);
@@ -2307,6 +2324,7 @@ TEST_P(GpuImageDecodeCacheTest, ImageBudgetingBySize) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
 
   // Try another image, it shouldn't be budgeted and should be at-raster.
   PaintImage test_paint_image = CreatePaintImageInternal(test_image_size);
@@ -2321,6 +2339,7 @@ TEST_P(GpuImageDecodeCacheTest, ImageBudgetingBySize) {
   DecodedDrawImage second_decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(second_draw_image));
   EXPECT_TRUE(second_decoded_draw_image.image());
+  EXPECT_FALSE(second_decoded_draw_image.is_budgeted());
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
   cache->DrawWithImageFinished(second_draw_image, second_decoded_draw_image);
@@ -2438,6 +2457,7 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadNoScale) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
   // For non-lazy images used at the original scale, no cpu component should be
   // cached
@@ -2500,6 +2520,7 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageLargeImageColorConverted) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
   // For non-lazy images color converted during scaling, cpu component should be
   // cached.
@@ -2525,6 +2546,7 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadDownscaled) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
 }
 
@@ -2679,7 +2701,7 @@ TEST_P(GpuImageDecodeCacheTest, BasicMips) {
     // it attached.
     DecodedDrawImage serialized_decoded_draw_image =
         cache->GetDecodedImageForDraw(draw_image);
-    const base::Optional<uint32_t> transfer_cache_entry_id =
+    const absl::optional<uint32_t> transfer_cache_entry_id =
         serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
         EnsureImageBacked(std::move(serialized_decoded_draw_image));
@@ -2746,7 +2768,7 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
     // it attached.
     DecodedDrawImage serialized_decoded_draw_image =
         cache->GetDecodedImageForDraw(draw_image);
-    const base::Optional<uint32_t> transfer_cache_entry_id =
+    const absl::optional<uint32_t> transfer_cache_entry_id =
         serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
         EnsureImageBacked(std::move(serialized_decoded_draw_image));
@@ -2793,7 +2815,7 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
     // it attached.
     DecodedDrawImage serialized_decoded_draw_image =
         cache->GetDecodedImageForDraw(draw_image);
-    const base::Optional<uint32_t> transfer_cache_entry_id =
+    const absl::optional<uint32_t> transfer_cache_entry_id =
         serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
         EnsureImageBacked(std::move(serialized_decoded_draw_image));
@@ -2848,7 +2870,7 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
     // it attached.
     DecodedDrawImage serialized_decoded_draw_image =
         cache->GetDecodedImageForDraw(draw_image);
-    const base::Optional<uint32_t> transfer_cache_entry_id =
+    const absl::optional<uint32_t> transfer_cache_entry_id =
         serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
         EnsureImageBacked(std::move(serialized_decoded_draw_image));
@@ -2888,7 +2910,7 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
     // it attached.
     DecodedDrawImage serialized_decoded_draw_image =
         cache->GetDecodedImageForDraw(draw_image);
-    const base::Optional<uint32_t> transfer_cache_entry_id =
+    const absl::optional<uint32_t> transfer_cache_entry_id =
         serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
         EnsureImageBacked(std::move(serialized_decoded_draw_image));
@@ -2982,7 +3004,7 @@ TEST_P(GpuImageDecodeCacheTest,
     // it attached.
     DecodedDrawImage serialized_decoded_draw_image =
         cache->GetDecodedImageForDraw(draw_image);
-    const base::Optional<uint32_t> transfer_cache_entry_id =
+    const absl::optional<uint32_t> transfer_cache_entry_id =
         serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
         EnsureImageBacked(std::move(serialized_decoded_draw_image));
@@ -3073,7 +3095,7 @@ TEST_P(GpuImageDecodeCacheTest, HighBitDepthYUVDecoding) {
     // it attached.
     DecodedDrawImage serialized_decoded_draw_image =
         cache->GetDecodedImageForDraw(draw_image);
-    const base::Optional<uint32_t> transfer_cache_entry_id =
+    const absl::optional<uint32_t> transfer_cache_entry_id =
         serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
         EnsureImageBacked(std::move(serialized_decoded_draw_image));
@@ -3284,7 +3306,7 @@ TEST_P(GpuImageDecodeCacheTest, ScaledYUVDecodeScaledDrawCorrectlyMipsPlanes) {
         // has it attached.
         DecodedDrawImage serialized_decoded_draw_image =
             cache->GetDecodedImageForDraw(draw_image);
-        const base::Optional<uint32_t> transfer_cache_entry_id =
+        const absl::optional<uint32_t> transfer_cache_entry_id =
             serialized_decoded_draw_image.transfer_cache_entry_id();
         DecodedDrawImage decoded_draw_image =
             EnsureImageBacked(std::move(serialized_decoded_draw_image));
@@ -3385,6 +3407,7 @@ TEST_P(GpuImageDecodeCacheTest, GetBorderlineLargeDecodedImageForDraw) {
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -3455,7 +3478,7 @@ TEST_P(GpuImageDecodeCacheTest, DarkModeImageCacheSize) {
   // Another draw image with smaller src rect for image1.
   SkIRect src = SkIRect::MakeWH(10, 10);
   DrawImage draw_image12 = CreateDrawImageWithDarkModeInternal(
-      image1, SkMatrix::I(), nullptr, kMedium_SkFilterQuality, &src);
+      image1, SkM44(), nullptr, kMedium_SkFilterQuality, &src);
   ImageDecodeCache::TaskResult result12 = cache->GetTaskForImageAndRef(
       draw_image12, ImageDecodeCache::TracingInfo());
   GetImageAndDrawFinishedForDarkMode(cache.get(), draw_image12,

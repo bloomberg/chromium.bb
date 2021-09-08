@@ -5,11 +5,11 @@
 #ifndef QUICHE_QUIC_CORE_CONGESTION_CONTROL_BBR2_STARTUP_H_
 #define QUICHE_QUIC_CORE_CONGESTION_CONTROL_BBR2_STARTUP_H_
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_misc.h"
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/congestion_control/bbr2_misc.h"
+#include "quic/core/quic_bandwidth.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -34,7 +34,8 @@ class QUIC_EXPORT_PRIVATE Bbr2StartupMode final : public Bbr2ModeBase {
 
   Limits<QuicByteCount> GetCwndLimits() const override {
     // Inflight_lo is never set in STARTUP.
-    DCHECK_EQ(Bbr2NetworkModel::inflight_lo_default(), model_->inflight_lo());
+    QUICHE_DCHECK_EQ(Bbr2NetworkModel::inflight_lo_default(),
+                     model_->inflight_lo());
     return NoGreaterThan(model_->inflight_lo());
   }
 
@@ -44,8 +45,6 @@ class QUIC_EXPORT_PRIVATE Bbr2StartupMode final : public Bbr2ModeBase {
                             QuicTime /*quiescence_start_time*/) override {
     return Bbr2Mode::STARTUP;
   }
-
-  bool FullBandwidthReached() const { return full_bandwidth_reached_; }
 
   struct QUIC_EXPORT_PRIVATE DebugState {
     bool full_bandwidth_reached;
@@ -58,18 +57,9 @@ class QUIC_EXPORT_PRIVATE Bbr2StartupMode final : public Bbr2ModeBase {
  private:
   const Bbr2Params& Params() const;
 
-  // Check bandwidth growth in the past round. Must be called at the end of a
-  // round.
-  // Return true if the bandwidth growed as expected.
-  // Return false otherwise, if enough rounds have elapsed without expected
-  // growth, also sets |full_bandwidth_reached_| to true.
-  bool CheckBandwidthGrowth(const Bbr2CongestionEvent& congestion_event);
-
   void CheckExcessiveLosses(const Bbr2CongestionEvent& congestion_event);
-
-  bool full_bandwidth_reached_;
-  QuicBandwidth full_bandwidth_baseline_;
-  QuicRoundTripCount rounds_without_bandwidth_growth_;
+  // Used when the pacing gain can decrease in STARTUP.
+  QuicBandwidth max_bw_at_round_beginning_ = QuicBandwidth::Zero();
 };
 
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(

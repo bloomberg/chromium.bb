@@ -23,7 +23,8 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/constants/chromeos_paths.h"
+#include "ash/constants/ash_paths.h"
+#include "chromeos/dbus/constants/dbus_paths.h"
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -141,6 +142,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::RegisterPathProvider();
+  chromeos::dbus_paths::RegisterPathProvider();
 #endif
 #if BUILDFLAG(ENABLE_NACL) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
   nacl::RegisterPathProvider();
@@ -206,6 +208,10 @@ void ShellMainDelegate::ZygoteForked() {
           switches::kProcessType);
   breakpad::InitCrashReporter(process_type);
 }
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void ShellMainDelegate::PostEarlyInitialization(bool is_running_tests) {}
 #endif
 
 // static

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -13,6 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_connection_handler.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/login/localized_values_builder.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -39,15 +41,22 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
     {"networkListItemConnecting", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING},
     {"networkListItemConnectingTo", IDS_NETWORK_LIST_CONNECTING_TO},
     {"networkListItemInitializing", IDS_NETWORK_LIST_INITIALIZING},
+    {"networkListItemTitle", IDS_NETWORK_LIST_ITEM_TITLE},
     {"networkListItemSubpageButtonLabel",
      IDS_NETWORK_LIST_ITEM_SUBPAGE_BUTTON_LABEL},
     {"networkListItemLabel", IDS_NETWORK_LIST_ITEM_LABEL},
     {"networkListItemLabelCellular", IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR},
+    {"networkListItemLabelCellularWithProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_WITH_PROVIDER_NAME},
     {"networkListItemLabelCellularManaged",
      IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED},
+    {"networkListItemLabelCellularManagedWithProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED_WITH_PROVIDER_NAME},
     {"networkListItemLabelEthernetManaged",
      IDS_NETWORK_LIST_ITEM_LABEL_ETHERNET_MANAGED},
     {"networkListItemLabelTether", IDS_NETWORK_LIST_ITEM_LABEL_TETHER},
+    {"networkListItemLabelTetherWithProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_TETHER_WITH_PROVIDER_NAME},
     {"networkListItemLabelWifi", IDS_NETWORK_LIST_ITEM_LABEL_WIFI},
     {"networkListItemLabelWifiManaged",
      IDS_NETWORK_LIST_ITEM_LABEL_WIFI_MANAGED},
@@ -57,21 +66,53 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
      IDS_NETWORK_LIST_ITEM_LABEL_ETHERNET_MANAGED_WITH_CONNECTION_STATUS},
     {"networkListItemLabelCellularWithConnectionStatus",
      IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_WITH_CONNECTION_STATUS},
+    {"networkListItemLabelCellularWithConnectionStatusAndProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_WITH_CONNECTION_STATUS_AND_PROVIDER_NAME},
     {"networkListItemLabelCellularManagedWithConnectionStatus",
      IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED_WITH_CONNECTION_STATUS},
+    {"networkListItemLabelCellularManagedWithConnectionStatusAndProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED_WITH_CONNECTION_STATUS_AND_PROVIDER_NAME},
+    {"networkListItemLabelCellularUnactivated",
+     IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_UNACTIVATED},
+    {"networkListItemLabelCellularUnactivatedWithConnectionStatus",
+     IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_UNACTIVATED_WITH_CONNECTION_STATUS},
     {"networkListItemLabelWifiWithConnectionStatus",
      IDS_NETWORK_LIST_ITEM_LABEL_WIFI_WITH_CONNECTION_STATUS},
     {"networkListItemLabelWifiManagedWithConnectionStatus",
      IDS_NETWORK_LIST_ITEM_LABEL_WIFI_MANAGED_WITH_CONNECTION_STATUS},
     {"networkListItemLabelTetherWithConnectionStatus",
      IDS_NETWORK_LIST_ITEM_LABEL_TETHER_WITH_CONNECTION_STATUS},
+    {"networkListItemLabelTetherWithConnectionStatusAndProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_TETHER_WITH_CONNECTION_STATUS_AND_PROVIDER_NAME},
+    {"networkListItemLabelESimPendingProfile",
+     IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE},
+    {"networkListItemLabelESimPendingProfileWithProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_WITH_PROVIDER_NAME},
+    {"networkListItemLabelESimPendingProfileInstalling",
+     IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_INSTALLING},
+    {"networkListItemLabelESimPendingProfileWithProviderNameInstalling",
+     IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_WITH_PROVIDER_NAME_INSTALLING},
     {"wifiNetworkStatusSecured", IDS_WIFI_NETWORK_STATUS_SECURED},
     {"wifiNetworkStatusUnsecured", IDS_WIFI_NETWORK_STATUS_UNSECURED},
     {"networkListItemNotAvailable", IDS_NETWORK_LIST_NOT_AVAILABLE},
     {"networkListItemScanning", IDS_SETTINGS_INTERNET_MOBILE_SEARCH},
     {"networkListItemSimCardLocked", IDS_NETWORK_LIST_SIM_CARD_LOCKED},
+    {"networkListItemUpdatedCellularSimCardLocked",
+     IDS_NETWORK_LIST_UPDATED_CELLULAR_SIM_CARD_LOCKED},
     {"networkListItemNotConnected", IDS_NETWORK_LIST_NOT_CONNECTED},
     {"networkListItemNoNetwork", IDS_NETWORK_LIST_NO_NETWORK},
+    {"networkListItemActivate", IDS_NETWORK_LIST_ITEM_ACTIVATE},
+    {"networkListItemActivateA11yLabel",
+     IDS_NETWORK_LIST_ITEM_ACTIVATE_A11Y_LABEL},
+    {"networkListItemActivating", IDS_NETWORK_LIST_ITEM_ACTIVATING},
+    {"networkListItemUnavailableSimNetwork",
+     IDS_NETWORK_LIST_ITEM_UNAVAILABLE_SIM_NETWORK},
+    {"networkListItemDownload", IDS_NETWORK_LIST_ITEM_DOWNLOAD},
+    {"networkListItemDownloadA11yLabel",
+     IDS_NETWORK_LIST_ITEM_DOWNLOAD_A11Y_LABEL},
+    {"networkListItemUnlock", IDS_NETWORK_LIST_ITEM_UNLOCK},
+    {"networkListItemUnlockA11YLabel", IDS_NETWORK_LIST_ITEM_UNLOCK_A11Y_LABEL},
+    {"networkListItemAddingProfile", IDS_NETWORK_LIST_ITEM_ADDING_PROFILE},
     {"vpnNameTemplate", IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE},
     {"networkIconLabelEthernet", IDS_NETWORK_ICON_LABEL_ETHERNET},
     {"networkIconLabelVpn", IDS_NETWORK_ICON_LABEL_VPN},
@@ -85,7 +126,7 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
 }  //  namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
-  AddLocalizedStringsBulk(html_source, kElementLocalizedStrings);
+  html_source->AddLocalizedStrings(kElementLocalizedStrings);
 }
 
 void AddLocalizedValuesToBuilder(::login::LocalizedValuesBuilder* builder) {
@@ -105,6 +146,9 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
       {"OncCellular-APN-Authentication", IDS_ONC_CELLULAR_APN_AUTHENTICATION},
       {"OncCellular-APN-Password", IDS_ONC_CELLULAR_APN_PASSWORD},
       {"OncCellular-APN-Username", IDS_ONC_CELLULAR_APN_USERNAME},
+      {"OncCellular-APN-Attach", IDS_ONC_CELLULAR_APN_ATTACH},
+      {"OncCellular-APN-Attach_TooltipText",
+       IDS_ONC_CELLULAR_APN_ATTACH_TOOLTIP_TEXT},
       {"OncCellular-ActivationState", IDS_ONC_CELLULAR_ACTIVATION_STATE},
       {"OncCellular-ActivationState_Activated",
        IDS_ONC_CELLULAR_ACTIVATION_STATE_ACTIVATED},
@@ -123,6 +167,8 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
       {"OncCellular-HomeProvider-Country",
        IDS_ONC_CELLULAR_HOME_PROVIDER_COUNTRY},
       {"OncCellular-HomeProvider-Name", IDS_ONC_CELLULAR_HOME_PROVIDER_NAME},
+      {"OncCellular-ICCID", IDS_ONC_CELLULAR_ICCID},
+      {"OncCellular-IMEI", IDS_ONC_CELLULAR_IMEI},
       {"OncCellular-Manufacturer", IDS_ONC_CELLULAR_MANUFACTURER},
       {"OncCellular-ModelID", IDS_ONC_CELLULAR_MODEL_ID},
       {"OncCellular-NetworkTechnology", IDS_ONC_CELLULAR_NETWORK_TECHNOLOGY},
@@ -209,7 +255,7 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
       {"Oncipv4-Netmask", IDS_ONC_IPV4_NETMASK},
       {"Oncipv6-IPAddress", IDS_ONC_IPV6_ADDRESS},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
 void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
@@ -261,7 +307,11 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkSimChangePin", IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN},
       {"networkSimChangePinTitle",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN_TITLE},
+      {"networkSimLockedTooltip",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TOOLTIP},
       {"networkSimEnter", IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_ENTER},
+      {"networkSimLockedSubtitle",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_SUBTITLE},
       {"networkSimEnterNewPin",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_NEW_PIN},
       {"networkSimEnterOldPin",
@@ -269,9 +319,23 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkSimEnterPin", IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN},
       {"networkSimEnterPinTitle",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_TITLE},
+      {"networkSimEnterPinDescription",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_DESCRIPTION},
+      {"networkSimEnterPinSubtext",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_DESCRIPTION_TEXT_LABEL},
       {"networkSimEnterPuk", IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PUK},
       {"networkSimLockEnable", IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_ENABLE},
+      {"networkSimLockEnableSublabel",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_ENABLE_SUBLABEL},
       {"networkSimLockedTitle", IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TITLE},
+      {"networkSimPukDialogSubtitle",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_SUBTITLE},
+      {"networkSimPukDialogWarningNoFailures",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_NO_FAILURES},
+      {"networkSimPukDialogWarningWithFailure",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_WITH_FAILURE},
+      {"networkSimPukDialogWarningWithFailures",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_WITH_FAILURES},
       {"networkSimLockedWarning",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_WARNING},
       {"networkSimReEnterNewPin",
@@ -280,10 +344,14 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_NETWORK_SIM_RE_ENTER_NEW_PIN},
       {"networkSimErrorIncorrectPin",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN},
+      {"networkSimErrorIncorrectPinPlural",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN_PLURAL},
       {"networkSimErrorIncorrectPuk",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PUK},
       {"networkSimErrorInvalidPin",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN},
+      {"networkSimErrorInvalidPinPlural",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN_PLURAL},
       {"networkSimErrorInvalidPuk",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK},
       {"networkSimErrorPinMismatch",
@@ -313,7 +381,9 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkProxyWpadNone", IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD_NONE},
       {"remove", IDS_REMOVE},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+
+  html_source->AddBoolean("useAttachApn", features::ShouldUseAttachApn());
 }
 
 void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
@@ -335,11 +405,11 @@ void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
       {"hidePassword", IDS_SETTINGS_PASSWORD_HIDE},
       {"showPassword", IDS_SETTINGS_PASSWORD_SHOW},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 
   html_source->AddBoolean(
       "showHiddenNetworkWarning",
-      base::FeatureList::IsEnabled(features::kHiddenNetworkWarning));
+      base::FeatureList::IsEnabled(::features::kHiddenNetworkWarning));
 
   // Login screen and public account users can only create shared network
   // configurations. Other users default to unshared network configurations.
@@ -361,10 +431,10 @@ void AddErrorLocalizedStrings(content::WebUIDataSource* html_source) {
       {NetworkConnectionHandler::kErrorPassphraseRequired,
        IDS_NETWORK_ERROR_PASSPHRASE_REQUIRED},
       {"networkErrorUnknown", IDS_NETWORK_ERROR_UNKNOWN},
-      {"networkErrorNotHardwareBacked",
-       IDS_SETTINGS_INTERNET_NETWORK_REQUIRE_HARDWARE_BACKED},
+      {"networkErrorNotAvailableForNetworkAuth",
+       IDS_SETTINGS_INTERNET_NETWORK_NOT_AVAILABLE_FOR_NETWORK_AUTH},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 
   // Include Shill errors.
   const char* const shill_errors[] = {

@@ -187,7 +187,7 @@ void HomeToOverviewNudgeController::SetNudgeAllowedForCurrentShelf(
 
 void HomeToOverviewNudgeController::OnWidgetDestroying(views::Widget* widget) {
   nudge_ = nullptr;
-  widget_observer_.RemoveAll();
+  widget_observations_.RemoveAllObservations();
 }
 
 void HomeToOverviewNudgeController::OnWidgetBoundsChanged(
@@ -233,14 +233,14 @@ void HomeToOverviewNudgeController::ShowNudge() {
 
   UpdateNudgeAnchorBounds();
 
-  widget_observer_.Add(nudge_->GetWidget());
-  widget_observer_.Add(hotseat_widget_);
+  widget_observations_.AddObservation(nudge_->GetWidget());
+  widget_observations_.AddObservation(hotseat_widget_);
 
   nudge_->GetWidget()->Show();
   nudge_->GetWidget()->GetLayer()->SetTransform(gfx::Transform());
   nudge_->label()->layer()->SetOpacity(0.0f);
 
-  hotseat_widget_->GetLayer()->SetTransform(gfx::Transform());
+  hotseat_widget_->GetLayerForNudgeAnimation()->SetTransform(gfx::Transform());
 
   base::TimeDelta total_animation_duration;
 
@@ -260,7 +260,7 @@ void HomeToOverviewNudgeController::ShowNudge() {
   };
 
   total_animation_duration +=
-      animate_initial_transform(hotseat_widget_->GetLayer());
+      animate_initial_transform(hotseat_widget_->GetLayerForNudgeAnimation());
   animate_initial_transform(nudge_->GetWidget()->GetLayer());
 
   // Additionally the nudge label should fade in.
@@ -296,12 +296,12 @@ void HomeToOverviewNudgeController::ShowNudge() {
   // The final position should match the position after the initial animated
   // transform.
   for (int i = 0; i < kNudgeShowThrobIterations; ++i) {
-    total_animation_duration +=
-        enqueue_loop_transform(hotseat_widget_->GetLayer(), false /*up*/);
+    total_animation_duration += enqueue_loop_transform(
+        hotseat_widget_->GetLayerForNudgeAnimation(), false /*up*/);
     enqueue_loop_transform(nudge_->GetWidget()->GetLayer(), false /*up*/);
 
-    total_animation_duration +=
-        enqueue_loop_transform(hotseat_widget_->GetLayer(), true /*up*/);
+    total_animation_duration += enqueue_loop_transform(
+        hotseat_widget_->GetLayerForNudgeAnimation(), true /*up*/);
     enqueue_loop_transform(nudge_->GetWidget()->GetLayer(), true /*up*/);
   }
 
@@ -339,7 +339,8 @@ void HomeToOverviewNudgeController::HideNudge(HideTransition transition) {
     layer->SetTransform(gfx::Transform());
   };
 
-  animate_hide_transform(transition, hotseat_widget_->GetLayer());
+  animate_hide_transform(transition,
+                         hotseat_widget_->GetLayerForNudgeAnimation());
   animate_hide_transform(transition, nudge_->GetWidget()->GetLayer());
 
   {
@@ -354,7 +355,7 @@ void HomeToOverviewNudgeController::HideNudge(HideTransition transition) {
     nudge_->label()->layer()->SetOpacity(0.0f);
   }
 
-  widget_observer_.RemoveAll();
+  widget_observations_.RemoveAllObservations();
   nudge_ = nullptr;
 
   // Invalidated nudge tap handler callbacks.

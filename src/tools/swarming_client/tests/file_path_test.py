@@ -281,6 +281,7 @@ class FilePathTest(auto_stub.TestCase):
       finally:
         file_path.rmtree(tempdir)
 
+    @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
     def test_rmtree_win(self):
       # Mock our sleep for faster test case execution.
       sleeps = []
@@ -303,6 +304,7 @@ class FilePathTest(auto_stub.TestCase):
       finally:
         proc.wait()
 
+    @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
     def test_filter_processes_dir_win(self):
       python_dir = os.path.dirname(sys.executable)
       processes = file_path._filter_processes_dir_win(
@@ -382,6 +384,8 @@ class FilePathTest(auto_stub.TestCase):
       self.assertEqual('files2', os.path.basename(actual))
 
   else:
+
+    @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
     def test_undeleteable_chmod(self):
       # Create a file and a directory with an empty ACL. Then try to delete it.
       dirpath = os.path.join(self.tempdir, 'd')
@@ -393,6 +397,7 @@ class FilePathTest(auto_stub.TestCase):
       os.chmod(dirpath, 0)
       file_path.rmtree(dirpath)
 
+    @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
     def test_undeleteable_owner(self):
       # Create a file and a directory with an empty ACL. Then try to delete it.
       dirpath = os.path.join(self.tempdir, 'd')

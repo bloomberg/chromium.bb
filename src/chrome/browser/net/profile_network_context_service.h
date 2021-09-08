@@ -14,9 +14,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -25,6 +26,7 @@
 #include "components/prefs/pref_member.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/net_buildflags.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 class PrefRegistrySimple;
@@ -66,10 +68,10 @@ class ProfileNetworkContextService
       bool in_memory,
       const base::FilePath& relative_partition_path,
       network::mojom::NetworkContextParams* network_context_params,
-      network::mojom::CertVerifierCreationParams*
+      cert_verifier::mojom::CertVerifierCreationParams*
           cert_verifier_creation_params);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void UpdateAdditionalCertificates();
 #endif
 
@@ -102,7 +104,7 @@ class ProfileNetworkContextService
   FRIEND_TEST_ALL_PREFIXES(ProfileNetworkContextServiceDiskCacheBrowsertest,
                            DiskCacheSize);
   FRIEND_TEST_ALL_PREFIXES(
-      ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+      ProfileNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest,
       Test);
 
   friend class AmbientAuthenticationTestHelper;
@@ -142,7 +144,7 @@ class ProfileNetworkContextService
       bool in_memory,
       const base::FilePath& relative_partition_path,
       network::mojom::NetworkContextParams* network_context_params,
-      network::mojom::CertVerifierCreationParams*
+      cert_verifier::mojom::CertVerifierCreationParams*
           cert_verifier_creation_params);
 
   // Returns the path for a given storage partition.
@@ -168,9 +170,9 @@ class ProfileNetworkContextService
   PrefChangeRegistrar pref_change_registrar_;
 
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
-  ScopedObserver<content_settings::CookieSettings,
-                 content_settings::CookieSettings::Observer>
-      cookie_settings_observer_{this};
+  base::ScopedObservation<content_settings::CookieSettings,
+                          content_settings::CookieSettings::Observer>
+      cookie_settings_observation_{this};
 
   // Used to post schedule CT policy updates
   base::OneShotTimer ct_policy_update_timer_;

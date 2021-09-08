@@ -4,6 +4,10 @@
 
 #include "chromecast/browser/webview/webview_browser_context.h"
 #include "base/files/file_path.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/profile_metrics/browser_profile_type.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 
 namespace chromecast {
@@ -20,8 +24,19 @@ class WebviewBrowserContext::ResourceContext : public content::ResourceContext {
 WebviewBrowserContext::WebviewBrowserContext(
     content::BrowserContext* main_browser_context)
     : main_browser_context_(main_browser_context),
-      resource_context_(std::make_unique<ResourceContext>()) {}
-WebviewBrowserContext::~WebviewBrowserContext() {}
+      resource_context_(std::make_unique<ResourceContext>()) {
+  profile_metrics::SetBrowserProfileType(
+      this, profile_metrics::BrowserProfileType::kIncognito);
+}
+
+WebviewBrowserContext::~WebviewBrowserContext() {
+  NotifyWillBeDestroyed();
+  ShutdownStoragePartitions();
+  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
+      this);
+  content::GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                                 resource_context_.release());
+}
 
 base::FilePath WebviewBrowserContext::GetPath() {
   return base::FilePath();
@@ -87,11 +102,6 @@ WebviewBrowserContext::GetBackgroundSyncController() {
 content::BrowsingDataRemoverDelegate*
 WebviewBrowserContext::GetBrowsingDataRemoverDelegate() {
   return nullptr;
-}
-
-content::SharedCorsOriginAccessList*
-WebviewBrowserContext::GetSharedCorsOriginAccessList() {
-  return main_browser_context_->GetSharedCorsOriginAccessList();
 }
 
 std::unique_ptr<content::ZoomLevelDelegate>

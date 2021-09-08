@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string>
 #include <thread>
+#include <unordered_map>
 #include <utility>
 
 #include "util/benchmark.h"
@@ -20,6 +21,7 @@
 #include "re2/prog.h"
 #include "re2/re2.h"
 #include "re2/regexp.h"
+#include "util/mutex.h"
 #include "util/pcre.h"
 
 namespace re2 {
@@ -152,24 +154,29 @@ ParseImpl SearchParse1CachedPCRE, SearchParse1CachedRE2;
 
 // Generate random text that won't contain the search string,
 // to test worst-case search behavior.
-void MakeText(std::string* text, int64_t nbytes) {
-  srand(1);
-  text->resize(nbytes);
-  for (int64_t i = 0; i < nbytes; i++) {
-    // Generate a one-byte rune that isn't a control character (e.g. '\n').
-    // Clipping to 0x20 introduces some bias, but we don't need uniformity.
-    int byte = rand() & 0x7F;
-    if (byte < 0x20)
-      byte = 0x20;
-    (*text)[i] = byte;
-  }
+std::string RandomText(int64_t nbytes) {
+  static const std::string* const text = []() {
+    std::string* text = new std::string;
+    srand(1);
+    text->resize(16<<20);
+    for (int64_t i = 0; i < 16<<20; i++) {
+      // Generate a one-byte rune that isn't a control character (e.g. '\n').
+      // Clipping to 0x20 introduces some bias, but we don't need uniformity.
+      int byte = rand() & 0x7F;
+      if (byte < 0x20)
+        byte = 0x20;
+      (*text)[i] = byte;
+    }
+    return text;
+  }();
+  CHECK_LE(nbytes, 16<<20);
+  return text->substr(0, nbytes);
 }
 
 // Makes text of size nbytes, then calls run to search
 // the text for regexp iters times.
 void Search(benchmark::State& state, const char* regexp, SearchImpl* search) {
-  std::string s;
-  MakeText(&s, state.range(0));
+  std::string s = RandomText(state.range(0));
   search(state, regexp, s, Prog::kUnanchored, false);
   state.SetBytesProcessed(state.iterations() * state.range(0));
 }
@@ -273,8 +280,7 @@ void SearchBigFixed(benchmark::State& state, SearchImpl* search) {
   std::string s;
   s.append(state.range(0)/2, 'x');
   std::string regexp = "^" + s + ".*$";
-  std::string t;
-  MakeText(&t, state.range(0)/2);
+  std::string t = RandomText(state.range(0)/2);
   s += t;
   search(state, regexp.c_str(), s, Prog::kUnanchored, true);
   state.SetBytesProcessed(state.iterations() * state.range(0));
@@ -295,8 +301,7 @@ BENCHMARK_RANGE(Search_BigFixed_CachedRE2,     8, 1<<20)->ThreadRange(1, NumCPUs
 // Benchmark: FindAndConsume
 
 void FindAndConsume(benchmark::State& state) {
-  std::string s;
-  MakeText(&s, state.range(0));
+  std::string s = RandomText(state.range(0));
   s.append("Hello World");
   RE2 re("((Hello World))");
   for (auto _ : state) {
@@ -314,8 +319,7 @@ BENCHMARK_RANGE(FindAndConsume, 8, 16<<20)->ThreadRange(1, NumCPUs());
 
 void SearchSuccess(benchmark::State& state, const char* regexp,
                    SearchImpl* search) {
-  std::string s;
-  MakeText(&s, state.range(0));
+  std::string s = RandomText(state.range(0));
   search(state, regexp, s, Prog::kAnchored, true);
   state.SetBytesProcessed(state.iterations() * state.range(0));
 }
@@ -385,8 +389,7 @@ BENCHMARK_RANGE(Search_Success1_CachedBitState, 8, 2<<20)->ThreadRange(1, NumCPU
 // Note that OnePass doesn't implement it!
 
 void SearchAltMatch(benchmark::State& state, SearchImpl* search) {
-  std::string s;
-  MakeText(&s, state.range(0));
+  std::string s = RandomText(state.range(0));
   search(state, "\\C*", s, Prog::kAnchored, true);
   state.SetBytesProcessed(state.iterations() * state.range(0));
 }
@@ -770,8 +773,7 @@ BENCHMARK(BM_RE2_Compile)->ThreadRange(1, NumCPUs());
 // Makes text of size nbytes, then calls run to search
 // the text for regexp iters times.
 void SearchPhone(benchmark::State& state, ParseImpl* search) {
-  std::string s;
-  MakeText(&s, state.range(0));
+  std::string s = RandomText(state.range(0));
   s.append("(650) 253-0001");
   search(state, "(\\d{3}-|\\(\\d{3}\\)\\s+)(\\d{3}-\\d{4})", s);
   state.SetBytesProcessed(state.iterations() * state.range(0));
@@ -939,13 +941,52 @@ void SearchRE2(benchmark::State& state, const char* regexp,
 // regexp parsing and compiling once.  This lets us measure
 // search time without the per-regexp overhead.
 
+Prog* GetCachedProg(const char* regexp) {
+  static auto& mutex = *new Mutex;
+  MutexLock lock(&mutex);
+  static auto& cache = *new std::unordered_map<std::string, Prog*>;
+  Prog* prog = cache[regexp];
+  if (prog == NULL) {
+    Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
+    CHECK(re);
+    prog = re->CompileToProg(int64_t{1}<<31);  // mostly for the DFA
+    CHECK(prog);
+    cache[regexp] = prog;
+    re->Decref();
+  }
+  return prog;
+}
+
+PCRE* GetCachedPCRE(const char* regexp) {
+  static auto& mutex = *new Mutex;
+  MutexLock lock(&mutex);
+  static auto& cache = *new std::unordered_map<std::string, PCRE*>;
+  PCRE* re = cache[regexp];
+  if (re == NULL) {
+    re = new PCRE(regexp, PCRE::UTF8);
+    CHECK_EQ(re->error(), "");
+    cache[regexp] = re;
+  }
+  return re;
+}
+
+RE2* GetCachedRE2(const char* regexp) {
+  static auto& mutex = *new Mutex;
+  MutexLock lock(&mutex);
+  static auto& cache = *new std::unordered_map<std::string, RE2*>;
+  RE2* re = cache[regexp];
+  if (re == NULL) {
+    re = new RE2(regexp);
+    CHECK_EQ(re->error(), "");
+    cache[regexp] = re;
+  }
+  return re;
+}
+
 void SearchCachedDFA(benchmark::State& state, const char* regexp,
                      const StringPiece& text, Prog::Anchor anchor,
                      bool expect_match) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(int64_t{1}<<31);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   for (auto _ : state) {
     bool failed = false;
     CHECK_EQ(prog->SearchDFA(text, StringPiece(), anchor, Prog::kFirstMatch,
@@ -953,63 +994,45 @@ void SearchCachedDFA(benchmark::State& state, const char* regexp,
              expect_match);
     CHECK(!failed);
   }
-  delete prog;
-  re->Decref();
 }
 
 void SearchCachedNFA(benchmark::State& state, const char* regexp,
                      const StringPiece& text, Prog::Anchor anchor,
                      bool expect_match) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(0);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   for (auto _ : state) {
     CHECK_EQ(prog->SearchNFA(text, StringPiece(), anchor, Prog::kFirstMatch,
                              NULL, 0),
              expect_match);
   }
-  delete prog;
-  re->Decref();
 }
 
 void SearchCachedOnePass(benchmark::State& state, const char* regexp,
                          const StringPiece& text, Prog::Anchor anchor,
                          bool expect_match) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(0);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   CHECK(prog->IsOnePass());
   for (auto _ : state) {
     CHECK_EQ(prog->SearchOnePass(text, text, anchor, Prog::kFirstMatch, NULL, 0),
              expect_match);
   }
-  delete prog;
-  re->Decref();
 }
 
 void SearchCachedBitState(benchmark::State& state, const char* regexp,
                           const StringPiece& text, Prog::Anchor anchor,
                           bool expect_match) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(0);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   CHECK(prog->CanBitState());
   for (auto _ : state) {
     CHECK_EQ(prog->SearchBitState(text, text, anchor, Prog::kFirstMatch, NULL, 0),
              expect_match);
   }
-  delete prog;
-  re->Decref();
 }
 
 void SearchCachedPCRE(benchmark::State& state, const char* regexp,
                       const StringPiece& text, Prog::Anchor anchor,
                       bool expect_match) {
-  PCRE re(regexp, PCRE::UTF8);
-  CHECK_EQ(re.error(), "");
+  PCRE& re = *GetCachedPCRE(regexp);
   for (auto _ : state) {
     if (anchor == Prog::kAnchored)
       CHECK_EQ(PCRE::FullMatch(text, re), expect_match);
@@ -1021,8 +1044,7 @@ void SearchCachedPCRE(benchmark::State& state, const char* regexp,
 void SearchCachedRE2(benchmark::State& state, const char* regexp,
                      const StringPiece& text, Prog::Anchor anchor,
                      bool expect_match) {
-  RE2 re(regexp);
-  CHECK_EQ(re.error(), "");
+  RE2& re = *GetCachedRE2(regexp);
   for (auto _ : state) {
     if (anchor == Prog::kAnchored)
       CHECK_EQ(RE2::FullMatch(text, re), expect_match);
@@ -1115,67 +1137,46 @@ void Parse3RE2(benchmark::State& state, const char* regexp,
 
 void Parse3CachedNFA(benchmark::State& state, const char* regexp,
                      const StringPiece& text) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(0);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   StringPiece sp[4];  // 4 because sp[0] is whole match.
   for (auto _ : state) {
     CHECK(prog->SearchNFA(text, StringPiece(), Prog::kAnchored,
                           Prog::kFullMatch, sp, 4));
   }
-  delete prog;
-  re->Decref();
 }
 
 void Parse3CachedOnePass(benchmark::State& state, const char* regexp,
                          const StringPiece& text) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(0);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   CHECK(prog->IsOnePass());
   StringPiece sp[4];  // 4 because sp[0] is whole match.
   for (auto _ : state) {
     CHECK(prog->SearchOnePass(text, text, Prog::kAnchored, Prog::kFullMatch, sp, 4));
   }
-  delete prog;
-  re->Decref();
 }
 
 void Parse3CachedBitState(benchmark::State& state, const char* regexp,
                           const StringPiece& text) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(0);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   CHECK(prog->CanBitState());
   StringPiece sp[4];  // 4 because sp[0] is whole match.
   for (auto _ : state) {
     CHECK(prog->SearchBitState(text, text, Prog::kAnchored, Prog::kFullMatch, sp, 4));
   }
-  delete prog;
-  re->Decref();
 }
 
 void Parse3CachedBacktrack(benchmark::State& state, const char* regexp,
                            const StringPiece& text) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(0);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   StringPiece sp[4];  // 4 because sp[0] is whole match.
   for (auto _ : state) {
     CHECK(prog->UnsafeSearchBacktrack(text, text, Prog::kAnchored, Prog::kFullMatch, sp, 4));
   }
-  delete prog;
-  re->Decref();
 }
 
 void Parse3CachedPCRE(benchmark::State& state, const char* regexp,
                       const StringPiece& text) {
-  PCRE re(regexp, PCRE::UTF8);
-  CHECK_EQ(re.error(), "");
+  PCRE& re = *GetCachedPCRE(regexp);
   StringPiece sp1, sp2, sp3;
   for (auto _ : state) {
     CHECK(PCRE::FullMatch(text, re, &sp1, &sp2, &sp3));
@@ -1184,8 +1185,7 @@ void Parse3CachedPCRE(benchmark::State& state, const char* regexp,
 
 void Parse3CachedRE2(benchmark::State& state, const char* regexp,
                      const StringPiece& text) {
-  RE2 re(regexp);
-  CHECK_EQ(re.error(), "");
+  RE2& re = *GetCachedRE2(regexp);
   StringPiece sp1, sp2, sp3;
   for (auto _ : state) {
     CHECK(RE2::FullMatch(text, re, &sp1, &sp2, &sp3));
@@ -1262,67 +1262,46 @@ void Parse1RE2(benchmark::State& state, const char* regexp,
 
 void Parse1CachedNFA(benchmark::State& state, const char* regexp,
                      const StringPiece& text) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(0);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   StringPiece sp[2];  // 2 because sp[0] is whole match.
   for (auto _ : state) {
     CHECK(prog->SearchNFA(text, StringPiece(), Prog::kAnchored,
                           Prog::kFullMatch, sp, 2));
   }
-  delete prog;
-  re->Decref();
 }
 
 void Parse1CachedOnePass(benchmark::State& state, const char* regexp,
                          const StringPiece& text) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(0);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   CHECK(prog->IsOnePass());
   StringPiece sp[2];  // 2 because sp[0] is whole match.
   for (auto _ : state) {
     CHECK(prog->SearchOnePass(text, text, Prog::kAnchored, Prog::kFullMatch, sp, 2));
   }
-  delete prog;
-  re->Decref();
 }
 
 void Parse1CachedBitState(benchmark::State& state, const char* regexp,
                           const StringPiece& text) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(0);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   CHECK(prog->CanBitState());
   StringPiece sp[2];  // 2 because sp[0] is whole match.
   for (auto _ : state) {
     CHECK(prog->SearchBitState(text, text, Prog::kAnchored, Prog::kFullMatch, sp, 2));
   }
-  delete prog;
-  re->Decref();
 }
 
 void Parse1CachedBacktrack(benchmark::State& state, const char* regexp,
                            const StringPiece& text) {
-  Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
-  CHECK(re);
-  Prog* prog = re->CompileToProg(0);
-  CHECK(prog);
+  Prog* prog = GetCachedProg(regexp);
   StringPiece sp[2];  // 2 because sp[0] is whole match.
   for (auto _ : state) {
     CHECK(prog->UnsafeSearchBacktrack(text, text, Prog::kAnchored, Prog::kFullMatch, sp, 2));
   }
-  delete prog;
-  re->Decref();
 }
 
 void Parse1CachedPCRE(benchmark::State& state, const char* regexp,
                       const StringPiece& text) {
-  PCRE re(regexp, PCRE::UTF8);
-  CHECK_EQ(re.error(), "");
+  PCRE& re = *GetCachedPCRE(regexp);
   StringPiece sp1;
   for (auto _ : state) {
     CHECK(PCRE::FullMatch(text, re, &sp1));
@@ -1331,8 +1310,7 @@ void Parse1CachedPCRE(benchmark::State& state, const char* regexp,
 
 void Parse1CachedRE2(benchmark::State& state, const char* regexp,
                      const StringPiece& text) {
-  RE2 re(regexp);
-  CHECK_EQ(re.error(), "");
+  RE2& re = *GetCachedRE2(regexp);
   StringPiece sp1;
   for (auto _ : state) {
     CHECK(RE2::FullMatch(text, re, &sp1));
@@ -1341,8 +1319,7 @@ void Parse1CachedRE2(benchmark::State& state, const char* regexp,
 
 void SearchParse2CachedPCRE(benchmark::State& state, const char* regexp,
                             const StringPiece& text) {
-  PCRE re(regexp, PCRE::UTF8);
-  CHECK_EQ(re.error(), "");
+  PCRE& re = *GetCachedPCRE(regexp);
   for (auto _ : state) {
     StringPiece sp1, sp2;
     CHECK(PCRE::PartialMatch(text, re, &sp1, &sp2));
@@ -1351,8 +1328,7 @@ void SearchParse2CachedPCRE(benchmark::State& state, const char* regexp,
 
 void SearchParse2CachedRE2(benchmark::State& state, const char* regexp,
                            const StringPiece& text) {
-  RE2 re(regexp);
-  CHECK_EQ(re.error(), "");
+  RE2& re = *GetCachedRE2(regexp);
   for (auto _ : state) {
     StringPiece sp1, sp2;
     CHECK(RE2::PartialMatch(text, re, &sp1, &sp2));
@@ -1361,8 +1337,7 @@ void SearchParse2CachedRE2(benchmark::State& state, const char* regexp,
 
 void SearchParse1CachedPCRE(benchmark::State& state, const char* regexp,
                             const StringPiece& text) {
-  PCRE re(regexp, PCRE::UTF8);
-  CHECK_EQ(re.error(), "");
+  PCRE& re = *GetCachedPCRE(regexp);
   for (auto _ : state) {
     StringPiece sp1;
     CHECK(PCRE::PartialMatch(text, re, &sp1));
@@ -1371,8 +1346,7 @@ void SearchParse1CachedPCRE(benchmark::State& state, const char* regexp,
 
 void SearchParse1CachedRE2(benchmark::State& state, const char* regexp,
                            const StringPiece& text) {
-  RE2 re(regexp);
-  CHECK_EQ(re.error(), "");
+  RE2& re = *GetCachedRE2(regexp);
   for (auto _ : state) {
     StringPiece sp1;
     CHECK(RE2::PartialMatch(text, re, &sp1));
@@ -1507,8 +1481,7 @@ BENCHMARK(ASCIIMatchPCRE)->ThreadRange(1, NumCPUs());
 BENCHMARK(ASCIIMatchRE2)->ThreadRange(1, NumCPUs());
 
 void FullMatchPCRE(benchmark::State& state, const char *regexp) {
-  std::string s;
-  MakeText(&s, state.range(0));
+  std::string s = RandomText(state.range(0));
   s += "ABCDEFGHIJ";
   PCRE re(regexp);
   for (auto _ : state) {
@@ -1518,8 +1491,7 @@ void FullMatchPCRE(benchmark::State& state, const char *regexp) {
 }
 
 void FullMatchRE2(benchmark::State& state, const char *regexp) {
-  std::string s;
-  MakeText(&s, state.range(0));
+  std::string s = RandomText(state.range(0));
   s += "ABCDEFGHIJ";
   RE2 re(regexp, RE2::Latin1);
   for (auto _ : state) {

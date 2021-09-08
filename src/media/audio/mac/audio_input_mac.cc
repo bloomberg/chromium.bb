@@ -6,6 +6,8 @@
 
 #include <CoreServices/CoreServices.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
@@ -25,7 +27,7 @@ namespace {
 // should ideally be set to about the same value as in
 // audio_low_latency_input_mac.cc, to make comparing them reasonable.
 const int kInputCallbackStartTimeoutInSeconds = 8;
-}
+}  // namespace
 
 PCMQueueInAudioInputStream::PCMQueueInAudioInputStream(
     AudioManagerMac* manager,
@@ -64,7 +66,7 @@ PCMQueueInAudioInputStream::~PCMQueueInAudioInputStream() {
   DCHECK(!audio_queue_);
 }
 
-bool PCMQueueInAudioInputStream::Open() {
+AudioInputStream::OpenOutcome PCMQueueInAudioInputStream::Open() {
   OSStatus err = AudioQueueNewInput(&format_,
                                     &HandleInputBufferStatic,
                                     this,
@@ -74,9 +76,10 @@ bool PCMQueueInAudioInputStream::Open() {
                                     &audio_queue_);
   if (err != noErr) {
     HandleError(err);
-    return false;
+    return AudioInputStream::OpenOutcome::kFailed;
   }
-  return SetupBuffers();
+  return SetupBuffers() ? AudioInputStream::OpenOutcome::kSuccess
+                        : AudioInputStream::OpenOutcome::kFailed;
 }
 
 void PCMQueueInAudioInputStream::Start(AudioInputCallback* callback) {
@@ -111,7 +114,7 @@ void PCMQueueInAudioInputStream::Start(AudioInputCallback* callback) {
   // callbacks starts indicating if input audio recording starts as intended.
   // CheckInputStartupSuccess() will check if |input_callback_is_active_| is
   // true when the timer expires.
-  input_callback_timer_.reset(new base::OneShotTimer());
+  input_callback_timer_ = std::make_unique<base::OneShotTimer>();
   input_callback_timer_->Start(
       FROM_HERE,
       base::TimeDelta::FromSeconds(kInputCallbackStartTimeoutInSeconds), this,

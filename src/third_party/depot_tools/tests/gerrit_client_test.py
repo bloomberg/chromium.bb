@@ -13,9 +13,11 @@ import unittest
 if sys.version_info.major == 2:
   from StringIO import StringIO
   import mock
+  BUILTIN_OPEN = '__builtin__.open'
 else:
   from io import StringIO
   from unittest import mock
+  BUILTIN_OPEN = 'builtins.open'
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -53,6 +55,38 @@ class TestGerritClient(unittest.TestCase):
         limit=10,
         start=20,
         o_params=['op1', 'op2'])
+
+  @mock.patch('gerrit_util.CreateChange', return_value={})
+  def test_createchange(self, util_mock):
+    gerrit_client.main([
+        'createchange', '--host', 'https://example.org/foo', '--project',
+        'project', '--branch', 'main', '--subject', 'subject', '-p',
+        'work_in_progress=true'
+    ])
+    util_mock.assert_called_once_with('example.org',
+                                      'project',
+                                      branch='main',
+                                      subject='subject',
+                                      params=[('work_in_progress', 'true')])
+
+  @mock.patch(BUILTIN_OPEN, mock.mock_open())
+  @mock.patch('gerrit_util.ChangeEdit', return_value='')
+  def test_changeedit(self, util_mock):
+    open().read.return_value = 'test_data'
+    gerrit_client.main([
+        'changeedit', '--host', 'https://example.org/foo', '--change', '1',
+        '--path', 'path/to/file', '--file', '/my/foo'
+    ])
+    util_mock.assert_called_once_with('example.org', 1, 'path/to/file',
+                                      'test_data')
+
+  @mock.patch('gerrit_util.PublishChangeEdit', return_value='')
+  def test_publishchangeedit(self, util_mock):
+    gerrit_client.main([
+        'publishchangeedit', '--host', 'https://example.org/foo', '--change',
+        '1', '--notify', 'yes'
+    ])
+    util_mock.assert_called_once_with('example.org', 1, 'yes')
 
   @mock.patch('gerrit_util.AbandonChange', return_value='')
   def test_abandon(self, util_mock):

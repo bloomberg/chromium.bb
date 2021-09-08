@@ -15,24 +15,23 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CollectionUtil;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelInterface;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
+import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.version.ChromeVersionInfo;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.url.GURL;
 
-import java.net.URL;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -52,6 +51,16 @@ class ContextualSearchPolicy {
     private static final String RELATED_SEARCHES_DARK_LAUNCH = "d";
     private static final String NO_EXPERIMENT_STAMP = RELATED_SEARCHES_STAMP_VERSION
             + RELATED_SEARCHES_EXPERIMENT_RECIPE_STAGE + RELATED_SEARCHES_NO_EXPERIMENT;
+    /**
+     * Verbosity param used to control requested results.
+     * <ul>
+     *   <li> "d" specifies a dark launch, which means return none </li>
+     *   <li> "v" for verbose  </li>
+     *   <li> "x" for extra verbose </li>
+     *   <li> "" for the default </li></ul>
+     * See also the verbosity entry in about_flags to correlate.
+     */
+    private static final String RELATED_SEARCHES_VERBOSITY_PARAM = "verbosity";
 
     // TODO(donnd): remove -- deprecated.
     private static final HashSet<String> PREDOMINENTLY_ENGLISH_SPEAKING_COUNTRIES =
@@ -60,12 +69,14 @@ class ContextualSearchPolicy {
     private final SharedPreferencesManager mPreferencesManager;
     private final ContextualSearchSelectionController mSelectionController;
     private ContextualSearchNetworkCommunicator mNetworkCommunicator;
-    private ContextualSearchPanel mSearchPanel;
+    private ContextualSearchPanelInterface mSearchPanel;
 
     // Members used only for testing purposes.
     private boolean mDidOverrideDecidedStateForTesting;
     private boolean mDecidedStateForTesting;
     private Integer mTapTriggeredPromoLimitForTesting;
+    private boolean mDidOverrideAllowSendingPageUrlForTesting;
+    private boolean mAllowSendingPageUrlForTesting;
 
     /**
      * ContextualSearchPolicy constructor.
@@ -83,7 +94,7 @@ class ContextualSearchPolicy {
      * Sets the handle to the ContextualSearchPanel.
      * @param panel The ContextualSearchPanel.
      */
-    public void setContextualSearchPanel(ContextualSearchPanel panel) {
+    public void setContextualSearchPanel(ContextualSearchPanelInterface panel) {
         mSearchPanel = panel;
     }
 
@@ -138,7 +149,7 @@ class ContextualSearchPolicy {
      */
     boolean shouldPrefetchSearchResult() {
         if (isMandatoryPromoAvailable()
-                || !PrivacyPreferencesManager.getInstance().getNetworkPredictionEnabled()) {
+                || !PrivacyPreferencesManagerImpl.getInstance().getNetworkPredictionEnabled()) {
             return false;
         }
 
@@ -209,6 +220,15 @@ class ContextualSearchPolicy {
      */
     boolean isPromoAvailable() {
         return isUserUndecided();
+    }
+
+    /**
+     * Returns whether conditions are right for an IPH for Longpress to be shown.
+     * We only show this for users that have already opted-in because it's all about using page
+     * context with the right gesture.
+     */
+    boolean isLongpressInPanelHelpCondition() {
+        return mSelectionController.isTapSelection() && canResolveLongpress() && !isUserUndecided();
     }
 
     /**
@@ -351,7 +371,7 @@ class ContextualSearchPolicy {
         // and it's also possible that public pages, e.g. news, have more searches for multi-word
         // entities like people.
         if (!isUserUndecided()) {
-            URL url = mNetworkCommunicator.getBasePageUrl();
+            GURL url = mNetworkCommunicator.getBasePageUrl();
             ContextualSearchUma.logBasePageProtocol(isBasePageHTTP(url));
             boolean isSingleWord = !CONTAINS_WHITESPACE_PATTERN.matcher(searchTerm.trim()).find();
             ContextualSearchUma.logSearchTermResolvedWords(isSingleWord);
@@ -390,10 +410,9 @@ class ContextualSearchPolicy {
         if (!TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()) return false;
 
         // Only allow HTTP or HTTPS URLs.
-        URL url = mNetworkCommunicator.getBasePageUrl();
-        String urlProtocol = url != null ? url.getProtocol() : "";
-        if (!(urlProtocol.equals(UrlConstants.HTTP_SCHEME)
-                    || urlProtocol.equals(UrlConstants.HTTPS_SCHEME))) {
+        GURL url = mNetworkCommunicator.getBasePageUrl();
+
+        if (url == null || !UrlUtilities.isHttpOrHttps(url)) {
             return false;
         }
 
@@ -406,6 +425,8 @@ class ContextualSearchPolicy {
      * @return Whether we can send a URL.
      */
     private boolean hasSendUrlPermissions() {
+        if (mDidOverrideAllowSendingPageUrlForTesting) return mAllowSendingPageUrlForTesting;
+
         // Check whether the user has enabled anonymous URL-keyed data collection.
         // This is surfaced on the relatively new "Make searches and browsing better" user setting.
         // In case an experiment is active for the legacy UI call through the unified consent
@@ -472,6 +493,16 @@ class ContextualSearchPolicy {
     }
 
     /**
+     * Overrides the user preference for sending the page URL to Google.
+     * @param doAllowSendingPageUrl Whether to allow sending the page URL or not, for tests.
+     */
+    @VisibleForTesting
+    void overrideAllowSendingPageUrlForTesting(boolean doAllowSendingPageUrl) {
+        mDidOverrideAllowSendingPageUrlForTesting = true;
+        mAllowSendingPageUrlForTesting = doAllowSendingPageUrl;
+    }
+
+    /**
      * @return count of times the panel with the promo has been opened.
      */
     @VisibleForTesting
@@ -489,58 +520,8 @@ class ContextualSearchPolicy {
     }
 
     // --------------------------------------------------------------------------------------------
-    // Translation support.
+    // Additional considerations.
     // --------------------------------------------------------------------------------------------
-
-    /**
-     * Determines whether translation is needed between the given languages.
-     * @param sourceLanguage The source language code; language we're translating from.
-     * @param targetLanguages A list of target language codes; languages we might translate to.
-     * @return Whether translation is needed or not.
-     */
-    boolean needsTranslation(String sourceLanguage, List<String> targetLanguages) {
-        // For now, we just look for a language match.
-        for (String targetLanguage : targetLanguages) {
-            if (TextUtils.equals(sourceLanguage, targetLanguage)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * @return The best target language from the ordered list, or the empty string if
-     *         none is available.
-     */
-    String bestTargetLanguage(List<String> targetLanguages) {
-        return bestTargetLanguage(targetLanguages, Locale.getDefault().getCountry());
-    }
-
-    /**
-     * Determines the best language to convert into, given the ordered list of languages the user
-     * knows, and the UX language.
-     * @param targetLanguages The list of languages to consider converting to.
-     * @param countryOfUx The country of the UX.
-     * @return the best language or an empty string.
-     */
-    @VisibleForTesting
-    String bestTargetLanguage(List<String> targetLanguages, String countryOfUx) {
-        // For now, we just return the first language, unless it's English
-        // (due to over-usage).
-        // TODO(donnd): Improve this logic. Determining the right language seems non-trivial.
-        // E.g. If this language doesn't match the user's server preferences, they might see a page
-        // in one language and the one box translation in another, which might be confusing.
-        // Also this logic should only apply on Android, where English setup is overused.
-        if (targetLanguages.size() > 1
-                && TextUtils.equals(targetLanguages.get(0), Locale.ENGLISH.getLanguage())
-                && !PREDOMINENTLY_ENGLISH_SPEAKING_COUNTRIES.contains(countryOfUx)) {
-            return targetLanguages.get(1);
-        } else if (targetLanguages.size() > 0) {
-            return targetLanguages.get(0);
-        } else {
-            return "";
-        }
-    }
 
     /**
      * @return The ISO country code for the user's home country, or an empty string if not
@@ -575,8 +556,8 @@ class ContextualSearchPolicy {
      * @param url The URL of the base page.
      * @return Whether the given content view is for an HTTP page.
      */
-    boolean isBasePageHTTP(@Nullable URL url) {
-        return url != null && UrlConstants.HTTP_SCHEME.equals(url.getProtocol());
+    boolean isBasePageHTTP(@Nullable GURL url) {
+        return url != null && UrlConstants.HTTP_SCHEME.equals(url.getScheme());
     }
 
     // --------------------------------------------------------------------------------------------
@@ -701,13 +682,26 @@ class ContextualSearchPolicy {
         String experimentConfigStamp =
                 ContextualSearchFieldTrial.getRelatedSearchesExperiementConfigurationStamp();
         if (TextUtils.isEmpty(experimentConfigStamp)) experimentConfigStamp = NO_EXPERIMENT_STAMP;
-        // TODO(donnd): Consider supporting URL-only requests -- for now content is required.
         StringBuilder stampBuilder = new StringBuilder().append(experimentConfigStamp);
         if (isLanguageRestricted) stampBuilder.append(RELATED_SEARCHES_LANGUAGE_RESTRICTION);
-        // Hard code a tag so the server knows this version of the client is doing a dark launch
-        // and cannot decode Related Searches.
-        stampBuilder.append(RELATED_SEARCHES_DARK_LAUNCH);
+        // Add a tag so the server knows this version of the client is doing a dark launch
+        // and cannot decode Related Searches, unless overridden by a Feature flag.
+        String resultsToReturnCode = getNumberOfRelatedSearchesToRequestCode();
+        if (resultsToReturnCode.length() > 0) stampBuilder.append(resultsToReturnCode);
         return stampBuilder.toString();
+    }
+
+    /**
+     * Returns the number of results to request from the server, as a single coded letter, or
+     * {@code null} if the server should just return the default number of Related Searches.
+     */
+    private String getNumberOfRelatedSearchesToRequestCode() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.RELATED_SEARCHES_UI)) {
+            return RELATED_SEARCHES_DARK_LAUNCH;
+        }
+        // Return the Feature param, which could be an empty string if not present.
+        return ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.RELATED_SEARCHES_UI, RELATED_SEARCHES_VERBOSITY_PARAM);
     }
 
     // --------------------------------------------------------------------------------------------

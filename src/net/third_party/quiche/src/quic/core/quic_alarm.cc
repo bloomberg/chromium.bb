@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_alarm.h"
+#include "quic/core/quic_alarm.h"
 
 namespace quic {
 
@@ -12,8 +12,8 @@ QuicAlarm::QuicAlarm(QuicArenaScopedPtr<Delegate> delegate)
 QuicAlarm::~QuicAlarm() {}
 
 void QuicAlarm::Set(QuicTime new_deadline) {
-  DCHECK(!IsSet());
-  DCHECK(new_deadline.IsInitialized());
+  QUICHE_DCHECK(!IsSet());
+  QUICHE_DCHECK(new_deadline.IsInitialized());
   deadline_ = new_deadline;
   SetImpl();
 }

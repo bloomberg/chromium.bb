@@ -31,18 +31,18 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_aura.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/input/scrollbar.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay.h"
+#include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
@@ -55,6 +55,11 @@ namespace {
 // TODO(crbug.com/953847): Adapt testharness tests to native themes and remove
 // this.
 constexpr int kScrollbarThicknessForWebTests = 15;
+
+// While the theme does not have specific values for scrollbar-width: thin
+// we just use a fixed 2/3 ratio of the default value.
+constexpr float kAutoProportion = 1.f;
+constexpr float kThinProportion = 2.f / 3.f;
 
 // Contains a flag indicating whether WebThemeEngine should paint a UI widget
 // for a scrollbar part, and if so, what part and state apply.
@@ -123,6 +128,13 @@ PartPaintingParams ButtonPartPaintingParams(const Scrollbar& scrollbar,
   return PartPaintingParams(paint_part, state);
 }
 
+inline float Proportion(EScrollbarWidth scrollbar_width) {
+  if (scrollbar_width == EScrollbarWidth::kThin)
+    return kThinProportion;
+  else
+    return kAutoProportion;
+}
+
 }  // namespace
 
 ScrollbarTheme& ScrollbarTheme::NativeTheme() {
@@ -137,21 +149,30 @@ bool ScrollbarThemeAura::SupportsDragSnapBack() const {
 // Disable snapback on desktop Linux to better integrate with the desktop
 // behavior. Typically, Linux apps do not implement scrollbar snapback (this
 // is true for at least GTK and QT apps).
-#if defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   return false;
 #else
   return true;
 #endif
 }
 
-int ScrollbarThemeAura::ScrollbarThickness(float scale_from_dip) {
-  if (WebTestSupport::IsRunningWebTest())
-    return kScrollbarThicknessForWebTests * scale_from_dip;
+int ScrollbarThemeAura::ScrollbarThickness(float scale_from_dip,
+                                           EScrollbarWidth scrollbar_width) {
+  if (scrollbar_width == EScrollbarWidth::kNone)
+    return 0;
+
+  if (WebTestSupport::IsRunningWebTest()) {
+    return kScrollbarThicknessForWebTests * Proportion(scrollbar_width) *
+           scale_from_dip;
+  }
 
   // Horiz and Vert scrollbars are the same thickness.
   IntSize scrollbar_size = IntSize(Platform::Current()->ThemeEngine()->GetSize(
       WebThemeEngine::kPartScrollbarVerticalTrack));
-  return scrollbar_size.Width() * scale_from_dip;
+
+  return scrollbar_size.Width() * Proportion(scrollbar_width) * scale_from_dip;
 }
 
 bool ScrollbarThemeAura::HasThumb(const Scrollbar& scrollbar) {
@@ -194,19 +215,19 @@ IntRect ScrollbarThemeAura::TrackRect(const Scrollbar& scrollbar) {
 }
 
 int ScrollbarThemeAura::MinimumThumbLength(const Scrollbar& scrollbar) {
-  if (scrollbar.Orientation() == kVerticalScrollbar) {
-    return scrollbar.ScaleFromDIP() *
-           Platform::Current()
-               ->ThemeEngine()
-               ->GetSize(WebThemeEngine::kPartScrollbarVerticalThumb)
-               .height();
-  }
+  int scrollbar_thickness =
+      (scrollbar.Orientation() == kVerticalScrollbar)
+          ? Platform::Current()
+                ->ThemeEngine()
+                ->GetSize(WebThemeEngine::kPartScrollbarVerticalThumb)
+                .height()
+          : Platform::Current()
+                ->ThemeEngine()
+                ->GetSize(WebThemeEngine::kPartScrollbarHorizontalThumb)
+                .width();
 
-  return scrollbar.ScaleFromDIP() *
-         Platform::Current()
-             ->ThemeEngine()
-             ->GetSize(WebThemeEngine::kPartScrollbarHorizontalThumb)
-             .width();
+  return scrollbar_thickness * Proportion(scrollbar.CSSScrollbarWidth()) *
+         scrollbar.ScaleFromDIP();
 }
 
 void ScrollbarThemeAura::PaintTrack(GraphicsContext& context,
@@ -303,7 +324,9 @@ ScrollbarPart ScrollbarThemeAura::PartsToInvalidateOnThumbPositionChange(
 
 bool ScrollbarThemeAura::ShouldCenterOnThumb(const Scrollbar& scrollbar,
                                              const WebMouseEvent& event) {
-#if defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   if (event.button == WebPointerProperties::Button::kMiddle)
     return true;
 #endif

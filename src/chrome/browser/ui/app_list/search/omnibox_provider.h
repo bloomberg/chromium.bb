@@ -8,8 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/app_list/search/score_normalizer/score_normalizer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/favicon_cache.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AppListControllerDelegate;
 class AutocompleteController;
@@ -27,7 +30,7 @@ class OmniboxProvider : public SearchProvider,
   ~OmniboxProvider() override;
 
   // SearchProvider overrides:
-  void Start(const base::string16& query) override;
+  void Start(const std::u16string& query) override;
   ash::AppListSearchResultType ResultType() override;
 
  private:
@@ -49,6 +52,11 @@ class OmniboxProvider : public SearchProvider,
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.
   std::unique_ptr<AutocompleteController> controller_;
+
+  FaviconCache favicon_cache_;
+
+  // The normalizer normalizes the relevance scores of Results
+  absl::optional<ScoreNormalizer> normalizer_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxProvider);
 };

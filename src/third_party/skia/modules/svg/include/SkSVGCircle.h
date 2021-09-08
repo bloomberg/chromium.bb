@@ -15,30 +15,27 @@ struct SkPoint;
 
 class SkSVGCircle final : public SkSVGShape {
 public:
-    ~SkSVGCircle() override = default;
     static sk_sp<SkSVGCircle> Make() { return sk_sp<SkSVGCircle>(new SkSVGCircle()); }
 
-    void setCx(const SkSVGLength&);
-    void setCy(const SkSVGLength&);
-    void setR(const SkSVGLength&);
+    SVG_ATTR(Cx, SkSVGLength, SkSVGLength(0))
+    SVG_ATTR(Cy, SkSVGLength, SkSVGLength(0))
+    SVG_ATTR(R , SkSVGLength, SkSVGLength(0))
 
 protected:
-    void onSetAttribute(SkSVGAttribute, const SkSVGValue&) override;
+    bool parseAndSetAttribute(const char*, const char*) override;
 
     void onDraw(SkCanvas*, const SkSVGLengthContext&, const SkPaint&,
                 SkPathFillType) const override;
 
     SkPath onAsPath(const SkSVGRenderContext&) const override;
 
+    SkRect onObjectBoundingBox(const SkSVGRenderContext&) const override;
+
 private:
     SkSVGCircle();
 
     // resolve and return the center and radius values
     std::tuple<SkPoint, SkScalar> resolve(const SkSVGLengthContext&) const;
-
-    SkSVGLength fCx = SkSVGLength(0);
-    SkSVGLength fCy = SkSVGLength(0);
-    SkSVGLength fR  = SkSVGLength(0);
 
     using INHERITED = SkSVGShape;
 };
