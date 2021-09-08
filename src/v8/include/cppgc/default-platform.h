@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "cppgc/platform.h"
-#include "libplatform/libplatform.h"
+#include "v8-default-platform.h"
 #include "v8config.h"  // NOLINT(build/include_directory)
 
 namespace cppgc {
@@ -33,11 +33,11 @@ class V8_EXPORT DefaultPlatform : public Platform {
   explicit DefaultPlatform(
       int thread_pool_size = 0,
       IdleTaskSupport idle_task_support = IdleTaskSupport::kDisabled,
-      std::unique_ptr<TracingController> tracing_controller = {})
+      TracingController* tracing_controller = nullptr)
       : v8_platform_(v8::platform::NewDefaultPlatform(
             thread_pool_size, idle_task_support,
             v8::platform::InProcessStackDumping::kDisabled,
-            std::move(tracing_controller))) {}
+            tracing_controller)) {}
 
   cppgc::PageAllocator* GetPageAllocator() override {
     return v8_platform_->GetPageAllocator();

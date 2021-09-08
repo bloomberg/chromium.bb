@@ -8315,9 +8315,14 @@ class V8_EXPORT Isolate {
   /**
    * Initial configuration parameters for a new Isolate.
    */
-  struct V8_EXPORT CreateParams {
-    CreateParams();
-    ~CreateParams();
+  struct CreateParams {
+    // blpwtk2: We cannot export the entire CreateParams struct because this
+    // will implicitly cause the array_buffer_allocator_shared to be exported
+    // as well. This is a problem because the reference count manipulators of
+    // std::shared_ptr are not exported. This causes a link-time error
+    // because these manipulators cannot be imported by other modules.
+    V8_EXPORT CreateParams();
+    V8_EXPORT ~CreateParams();
 
     /**
      * Allows the host application to provide the address of a function that is
