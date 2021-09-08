@@ -187,15 +187,6 @@ void WebResourceRequestSender::SendSync(
     }
   }
 
-  PeerRequestInfoProvider request_info(request.get());
-  std::unique_ptr<ResourceLoaderBridge> bridge(
-      delegate_->OverrideResourceLoaderBridge(
-          request_info));
-  if (bridge.get()) {
-    bridge->SyncLoad(response);
-    return;
-  }
-
   CheckSchemeForReferrerPolicy(*request);
 
   DCHECK(loader_options & network::mojom::kURLLoadOptionSynchronous);
@@ -280,29 +271,8 @@ int WebResourceRequestSender::SendAsync(
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
 
-  std::unique_ptr<ResourceLoaderBridge> bridge =
-      delegate_->OverrideResourceLoaderBridge(
-          PeerRequestInfoProvider(request.get()));
-
-  if (bridge) {
-    bridge->Start(std::make_unique<RequestPeerReceiver>(peer.get(), request_id,
-                                                        loading_task_runner));
-    pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
-        std::move(peer), request->destination, std::move(bridge),
-        request->render_frame_id, request->url,
-        std::move(resource_load_info_notifier_wrapper));
-
-    pending_requests_[request_id]->url_loader_client =
-        std::make_unique<URLLoaderClientImpl>(
-            request_id, this, loading_task_runner,
-            true /* bypass_redirect_checks */, request->url);
-    return request_id;
-  }
-
-  CheckSchemeForReferrerPolicy(*request);
-
   request_info_ = std::make_unique<PendingRequestInfo>(
-      std::move(peer), request->destination, std::move(bridge), request->url,
+      std::move(peer), request->destination, request->url,
       std::move(resource_load_info_notifier_wrapper));
 
   request_info_->resource_load_info_notifier_wrapper
@@ -344,11 +314,6 @@ int WebResourceRequestSender::SendAsync(
 void WebResourceRequestSender::Cancel(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 
-  if (it->second.get()->bridge) {
-    it->second.get()->bridge->Cancel();
-    return;
-  }
-
   // Cancel the request if it didn't complete, and clean it up so the bridge
   // will receive no more messages.
   DeletePendingRequest(std::move(task_runner));
@@ -380,10 +345,6 @@ void WebResourceRequestSender::DidChangePriority(
     return;
   }
 
-  // blpwtk2: Null-check before we attempt to use the throttling loader. This
-  // check is needed because we bail out very early in the StartAsync function
-  // if the embedder's URL loader is used, and we never give the chance for
-  // the throttling loader to be installed later in the function.
   request_info_->url_loader->SetPriority(new_priority, intra_priority_value);
 }
 
@@ -405,9 +366,6 @@ void WebResourceRequestSender::DeletePendingRequest(
   // process.
   request_info_->url_loader_client.reset();
 
-  if (is_external_loader)
-    it->second.get()->bridge.reset(nullptr);
-
   // Always delete the `request_info_` asyncly so that cancelling the request
   // doesn't delete the request context which the `request_info_->peer` points
   // to while its response is still being handled.
@@ -417,13 +375,11 @@ void WebResourceRequestSender::DeletePendingRequest(
 WebResourceRequestSender::PendingRequestInfo::PendingRequestInfo(
     scoped_refptr<WebRequestPeer> peer,
     network::mojom::RequestDestination request_destination,
-    std::unique_ptr<ResourceLoaderBridge> bridge,
     const GURL& request_url,
     std::unique_ptr<ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper)
     : peer(std::move(peer)),
       request_destination(request_destination),
-      bridge(std::move(bridge)),
       url(request_url),
       response_url(request_url),
       local_request_start(base::TimeTicks::Now()),
