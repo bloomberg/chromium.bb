@@ -17,16 +17,17 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_S
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_INITIALIZED;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_LENS_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_SURFACE_BODY_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.LENS_BUTTON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_CONTAINER_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.RESET_TASK_SURFACE_HEADER_SCROLL_POSITION;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TAB_SWITCHER_TITLE_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TASKS_SURFACE_BODY_TOP_MARGIN;
-import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TRENDY_TERMS_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
 
 import android.view.View;
@@ -77,6 +78,9 @@ class TasksViewBinder {
                 model.get(INCOGNITO_COOKIE_CONTROLS_MANAGER).updateIfNecessary();
             }
             view.setIncognitoDescriptionVisibility(isVisible);
+        } else if (propertyKey == IS_LENS_BUTTON_VISIBLE) {
+            view.getSearchBoxCoordinator().setLensButtonVisibility(
+                    model.get(IS_LENS_BUTTON_VISIBLE));
         } else if (propertyKey == IS_SURFACE_BODY_VISIBLE) {
             view.setSurfaceBodyVisibility(model.get(IS_SURFACE_BODY_VISIBLE));
         } else if (propertyKey == IS_TAB_CAROUSEL_VISIBLE) {
@@ -84,6 +88,9 @@ class TasksViewBinder {
         } else if (propertyKey == IS_VOICE_RECOGNITION_BUTTON_VISIBLE) {
             view.getSearchBoxCoordinator().setVoiceSearchButtonVisibility(
                     model.get(IS_VOICE_RECOGNITION_BUTTON_VISIBLE));
+        } else if (propertyKey == LENS_BUTTON_CLICK_LISTENER) {
+            view.getSearchBoxCoordinator().addLensButtonClickListener(
+                    model.get(LENS_BUTTON_CLICK_LISTENER));
         } else if (propertyKey == MORE_TABS_CLICK_LISTENER) {
             view.setMoreTabsOnClickListener(model.get(MORE_TABS_CLICK_LISTENER));
         } else if (propertyKey == MV_TILES_VISIBLE) {
@@ -97,8 +104,6 @@ class TasksViewBinder {
             view.setMVTilesContainerTopMargin(model.get(MV_TILES_CONTAINER_TOP_MARGIN));
         } else if (propertyKey == TAB_SWITCHER_TITLE_TOP_MARGIN) {
             view.setTabSwitcherTitleTopMargin(model.get(TAB_SWITCHER_TITLE_TOP_MARGIN));
-        } else if (propertyKey == TRENDY_TERMS_VISIBLE) {
-            view.setTrendyTermsVisibility(model.get(TRENDY_TERMS_VISIBLE));
         } else if (propertyKey == RESET_TASK_SURFACE_HEADER_SCROLL_POSITION) {
             view.resetScrollPosition();
         }

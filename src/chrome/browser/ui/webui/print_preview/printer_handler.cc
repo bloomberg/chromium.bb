@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 
 #include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/webui/print_preview/extension_printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
 #include "chrome/common/buildflags.h"
@@ -13,8 +14,10 @@
 #include "chrome/browser/ui/webui/print_preview/privet_printer_handler.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/print_preview/local_printer_handler_chromeos.h"
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/ui/webui/print_preview/local_printer_handler_lacros.h"
 #else
 #include "chrome/browser/ui/webui/print_preview/local_printer_handler_default.h"
 #endif
@@ -31,9 +34,11 @@ std::unique_ptr<PrinterHandler> PrinterHandler::CreateForExtensionPrinters(
 std::unique_ptr<PrinterHandler> PrinterHandler::CreateForLocalPrinters(
     content::WebContents* preview_web_contents,
     Profile* profile) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return LocalPrinterHandlerChromeos::CreateDefault(profile,
                                                     preview_web_contents);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  return LocalPrinterHandlerLacros::CreateDefault(preview_web_contents);
 #else
   return std::make_unique<LocalPrinterHandlerDefault>(preview_web_contents);
 #endif

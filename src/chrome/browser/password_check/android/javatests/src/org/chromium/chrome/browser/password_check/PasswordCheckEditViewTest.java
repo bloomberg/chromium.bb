@@ -51,13 +51,12 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.password_manager.settings.ReauthenticationManager;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.url.GURL;
 
 import java.util.concurrent.ExecutionException;
@@ -67,7 +66,6 @@ import java.util.concurrent.ExecutionException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@EnableFeatures({ChromeFeatureList.PASSWORD_CHECK})
 public class PasswordCheckEditViewTest {
     private static final CompromisedCredential ANA = new CompromisedCredential(
             "https://some-url.com/signin", new GURL("https://some-url.com/"), "Ana", "some-url.com",
@@ -129,6 +127,7 @@ public class PasswordCheckEditViewTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1210268")
     public void testSiteAndUsernameDisabled() {
         onView(withId(R.id.site_edit)).check(matches(allOf(not(isEnabled()), not(isFocusable()))));
         onView(withId(R.id.username_edit))

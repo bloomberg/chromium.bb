@@ -74,12 +74,10 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(
-            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-            GrClampType clampType) override {
-        return fHelper.finalizeProcessors(
-                caps, clip, hasMixedSampledCoverage, clampType, GrProcessorAnalysisCoverage::kNone,
-                &fRegions[0].fColor, &fWideColor);
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                      GrClampType clampType) override {
+        return fHelper.finalizeProcessors(caps, clip, clampType, GrProcessorAnalysisCoverage::kNone,
+                                          &fRegions[0].fColor, &fWideColor);
     }
 
 private:
@@ -87,10 +85,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         GrGeometryProcessor* gp = make_gp(arena, fViewMatrix, fWideColor);
         if (!gp) {
             SkDebugf("Couldn't create GrGeometryProcessor\n");
@@ -100,7 +99,7 @@ private:
         fProgramInfo = fHelper.createProgramInfoWithStencil(caps, arena, writeView,
                                                             std::move(appliedClip), dstProxyView,
                                                             gp, GrPrimitiveType::kTriangles,
-                                                            renderPassXferBarriers);
+                                                            renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrepareDraws(Target* target) override {
@@ -121,7 +120,7 @@ private:
             return;
         }
 
-        QuadHelper helper(target, fProgramInfo->primProc().vertexStride(), numRects);
+        QuadHelper helper(target, fProgramInfo->geomProc().vertexStride(), numRects);
 
         GrVertexWriter vertices{helper.vertices()};
         if (!vertices.fPtr) {
@@ -148,7 +147,7 @@ private:
         }
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
         flushState->drawMesh(*fMesh);
     }
 

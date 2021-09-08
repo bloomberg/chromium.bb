@@ -10,6 +10,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/candidate_window.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -26,7 +27,10 @@ namespace {
 // the vertical candidate window.
 class VerticalCandidateLabel : public views::Label {
  public:
+  METADATA_HEADER(VerticalCandidateLabel);
   VerticalCandidateLabel() = default;
+  VerticalCandidateLabel(const VerticalCandidateLabel&) = delete;
+  VerticalCandidateLabel& operator=(const VerticalCandidateLabel&) = delete;
   ~VerticalCandidateLabel() override = default;
 
  private:
@@ -39,11 +43,10 @@ class VerticalCandidateLabel : public views::Label {
     size.SetToMin(gfx::Size(kMaxCandidateLabelWidth, size.height()));
     return size;
   }
-
-  const char* GetClassName() const override { return "VerticalCandidateLabel"; }
-
-  DISALLOW_COPY_AND_ASSIGN(VerticalCandidateLabel);
 };
+
+BEGIN_METADATA(VerticalCandidateLabel, views::Label)
+END_METADATA
 
 // Creates the shortcut label, and returns it (never returns nullptr).
 // The label text is not set in this function.
@@ -161,9 +164,9 @@ void CandidateView::SetWidths(int shortcut_width, int candidate_width) {
 }
 
 void CandidateView::SetEntry(const ui::CandidateWindow::Entry& entry) {
-  base::string16 label = entry.label;
+  std::u16string label = entry.label;
   if (!label.empty() && orientation_ != ui::CandidateWindow::VERTICAL)
-    label += base::ASCIIToUTF16(".");
+    label += u".";
   shortcut_label_->SetText(label);
   candidate_label_->SetText(entry.value);
   annotation_label_->SetText(entry.annotation);
@@ -211,10 +214,6 @@ void CandidateView::StateChanged(ButtonState old_state) {
     SetHighlighted(true);
 }
 
-const char* CandidateView::GetClassName() const {
-  return "CandidateView";
-}
-
 bool CandidateView::OnMouseDragged(const ui::MouseEvent& event) {
   if (!HitTestPoint(event.location())) {
     // Moves the drag target to the sibling view.
@@ -226,7 +225,7 @@ bool CandidateView::OnMouseDragged(const ui::MouseEvent& event) {
       gfx::Point location_in_sibling(location_in_widget);
       ConvertPointFromWidget(view, &location_in_sibling);
       if (view->HitTestPoint(location_in_sibling)) {
-        GetWidget()->GetRootView()->SetMouseHandler(view);
+        GetWidget()->GetRootView()->SetMouseAndGestureHandler(view);
         auto* sibling = static_cast<CandidateView*>(view);
         sibling->SetHighlighted(true);
         return view->OnMouseDragged(ui::MouseEvent(event, this, sibling));
@@ -299,6 +298,9 @@ void CandidateView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
                              total_candidates_);
 }
+
+BEGIN_METADATA(CandidateView, views::Button)
+END_METADATA
 
 }  // namespace ime
 }  // namespace ui

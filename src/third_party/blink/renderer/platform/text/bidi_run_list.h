@@ -24,13 +24,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_RUN_LIST_H_
 
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
 template <class Run>
 class BidiRunList final {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   BidiRunList()
@@ -245,4 +244,4 @@ void BidiRunList<Run>::ReverseRuns(unsigned start, unsigned end) {
 
 }  // namespace blink
 
-#endif  // BidiRunList
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_RUN_LIST_H_

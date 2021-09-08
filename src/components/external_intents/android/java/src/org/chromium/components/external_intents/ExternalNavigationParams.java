@@ -6,6 +6,7 @@ package org.chromium.components.external_intents;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
 /**
@@ -13,13 +14,13 @@ import org.chromium.url.Origin;
  */
 public class ExternalNavigationParams {
     /** The URL which we are navigating to. */
-    private final String mUrl;
+    private final GURL mUrl;
 
     /** Whether we are currently in an incognito context. */
     private final boolean mIsIncognito;
 
     /** The referrer URL for the current navigation. */
-    private final String mReferrerUrl;
+    private final GURL mReferrerUrl;
 
     /** The page transition type for the current navigation. */
     private final int mPageTransition;
@@ -38,6 +39,9 @@ public class ExternalNavigationParams {
 
     /** Whether this navigation happens in background tab. */
     private final boolean mIsBackgroundTabNavigation;
+
+    /** Whether intent launches are allowed in background tabs. */
+    private final boolean mIntentLaunchesAllowedInBackgroundTabs;
 
     /** Whether this navigation happens in main frame. */
     private final boolean mIsMainFrame;
@@ -67,21 +71,24 @@ public class ExternalNavigationParams {
      */
     private Origin mInitiatorOrigin;
 
-    private ExternalNavigationParams(String url, boolean isIncognito, String referrerUrl,
+    private ExternalNavigationParams(GURL url, boolean isIncognito, GURL referrerUrl,
             int pageTransition, boolean isRedirect, boolean appMustBeInForeground,
             RedirectHandler redirectHandler, boolean openInNewTab,
-            boolean isBackgroundTabNavigation, boolean isMainFrame, String nativeClientPackageName,
-            boolean hasUserGesture, boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent,
+            boolean isBackgroundTabNavigation, boolean intentLaunchesAllowedInBackgroundTabs,
+            boolean isMainFrame, String nativeClientPackageName, boolean hasUserGesture,
+            boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent,
             boolean isRendererInitiated, @Nullable Origin initiatorOrigin) {
         mUrl = url;
+        assert mUrl != null;
         mIsIncognito = isIncognito;
         mPageTransition = pageTransition;
-        mReferrerUrl = referrerUrl;
+        mReferrerUrl = (referrerUrl == null) ? GURL.emptyGURL() : referrerUrl;
         mIsRedirect = isRedirect;
         mApplicationMustBeInForeground = appMustBeInForeground;
         mRedirectHandler = redirectHandler;
         mOpenInNewTab = openInNewTab;
         mIsBackgroundTabNavigation = isBackgroundTabNavigation;
+        mIntentLaunchesAllowedInBackgroundTabs = intentLaunchesAllowedInBackgroundTabs;
         mIsMainFrame = isMainFrame;
         mNativeClientPackageName = nativeClientPackageName;
         mHasUserGesture = hasUserGesture;
@@ -92,7 +99,7 @@ public class ExternalNavigationParams {
     }
 
     /** @return The URL to potentially open externally. */
-    public String getUrl() {
+    public GURL getUrl() {
         return mUrl;
     }
 
@@ -102,7 +109,7 @@ public class ExternalNavigationParams {
     }
 
     /** @return The referrer URL. */
-    public String getReferrerUrl() {
+    public GURL getReferrerUrl() {
         return mReferrerUrl;
     }
 
@@ -137,6 +144,11 @@ public class ExternalNavigationParams {
     /** @return Whether this navigation happens in background tab. */
     public boolean isBackgroundTabNavigation() {
         return mIsBackgroundTabNavigation;
+    }
+
+    /** @return Whether intent launches are allowed in background tabs. */
+    public boolean areIntentLaunchesAllowedInBackgroundTabs() {
+        return mIntentLaunchesAllowedInBackgroundTabs;
     }
 
     /** @return Whether this navigation happens in main frame. */
@@ -183,13 +195,13 @@ public class ExternalNavigationParams {
     /** The builder for {@link ExternalNavigationParams} objects. */
     public static class Builder {
         /** The URL which we are navigating to. */
-        private String mUrl;
+        private GURL mUrl;
 
         /** Whether we are currently in an incognito context. */
         private boolean mIsIncognito;
 
         /** The referrer URL for the current navigation. */
-        private String mReferrerUrl;
+        private GURL mReferrerUrl;
 
         /** The page transition type for the current navigation. */
         private int mPageTransition;
@@ -208,6 +220,9 @@ public class ExternalNavigationParams {
 
         /** Whether this navigation happens in background tab. */
         private boolean mIsBackgroundTabNavigation;
+
+        /** Whether intent launches are allowed in background tabs. */
+        private boolean mIntentLaunchesAllowedInBackgroundTabs;
 
         /** Whether this navigation happens in main frame. */
         private boolean mIsMainFrame;
@@ -237,12 +252,12 @@ public class ExternalNavigationParams {
          */
         private Origin mInitiatorOrigin;
 
-        public Builder(String url, boolean isIncognito) {
+        public Builder(GURL url, boolean isIncognito) {
             mUrl = url;
             mIsIncognito = isIncognito;
         }
 
-        public Builder(String url, boolean isIncognito, String referrer, int pageTransition,
+        public Builder(GURL url, boolean isIncognito, GURL referrer, int pageTransition,
                 boolean isRedirect) {
             mUrl = url;
             mIsIncognito = isIncognito;
@@ -272,6 +287,12 @@ public class ExternalNavigationParams {
         /** Sets whether this navigation happens in background tab. */
         public Builder setIsBackgroundTabNavigation(boolean v) {
             mIsBackgroundTabNavigation = v;
+            return this;
+        }
+
+        /** Sets whether intent launches are allowed in background tabs. */
+        public Builder setIntentLaunchesAllowedInBackgroundTabs(boolean v) {
+            mIntentLaunchesAllowedInBackgroundTabs = v;
             return this;
         }
 
@@ -322,9 +343,10 @@ public class ExternalNavigationParams {
         public ExternalNavigationParams build() {
             return new ExternalNavigationParams(mUrl, mIsIncognito, mReferrerUrl, mPageTransition,
                     mIsRedirect, mApplicationMustBeInForeground, mRedirectHandler, mOpenInNewTab,
-                    mIsBackgroundTabNavigation, mIsMainFrame, mNativeClientPackageName,
-                    mHasUserGesture, mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent,
-                    mIsRendererInitiated, mInitiatorOrigin);
+                    mIsBackgroundTabNavigation, mIntentLaunchesAllowedInBackgroundTabs,
+                    mIsMainFrame, mNativeClientPackageName, mHasUserGesture,
+                    mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent, mIsRendererInitiated,
+                    mInitiatorOrigin);
         }
     }
 }

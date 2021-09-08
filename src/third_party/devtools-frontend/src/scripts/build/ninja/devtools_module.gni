@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../../all_devtools_modules.gni")
 import("../../../third_party/typescript/typescript.gni")
 import("./copy.gni")
 import("./vars.gni")
@@ -24,39 +23,28 @@ template("devtools_module") {
     # `ts_library` is finished.
     typescript_config_name = invoker.target_name
 
-    is_web_worker = defined(invoker.is_web_worker) && invoker.is_web_worker
+    visibility += [ ":*" ]
   }
+  _target_outputs = get_target_outputs(_typescript_target_dep)
+  _javascript_implementation_files =
+      filter_include(_target_outputs + invoker.data, [ "*.js" ])
 
-  if (is_debug) {
-    copy_gen_to_resources(target_name) {
-      sources = filter_include(get_target_outputs(_typescript_target_dep),
-                               [
-                                 "*.js",
-                                 "*.map",
-                               ])
+  group(target_name) {
+    public_deps = [ _typescript_target_dep ]
 
-      public_deps = [ _typescript_target_dep ]
+    visibility = invoker.visibility + [ ":*" ]
 
-      visibility = invoker.visibility + [ ":*" ]
-    }
-
-    _target_outputs = get_target_outputs(":" + target_name + "-copy")
-    _filtered_target_outputs =
-        filter_exclude(
-            filter_exclude(_target_outputs, generated_typescript_modules),
-            [ "*.map" ])
-    assert(
-        _filtered_target_outputs == [],
-        "$_filtered_target_outputs are not listed in all_typescript_module_sources")
-  } else {
-    group(target_name) {
-      public_deps = [ _typescript_target_dep ]
-
-      visibility = invoker.visibility + [ ":*" ]
+    data = _javascript_implementation_files +
+           filter_include(invoker.data + _target_outputs, [ "*.map" ])
+    if (is_debug) {
+      metadata = {
+        grd_files = _javascript_implementation_files
+      }
     }
   }
 }
 
 set_defaults("devtools_module") {
   visibility = []
+  data = []
 }

@@ -4,7 +4,9 @@
 
 #include "shell_tab_handler.h"
 
+#include "ash/capture_mode/capture_mode_util.h"
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shell.h"
@@ -26,6 +28,10 @@ void ShellTabHandler::OnKeyEvent(ui::KeyEvent* key_event) {
       shell_->tablet_mode_controller()->InTabletMode()) {
     return;
   }
+
+  // Capture session will process their own tab events.
+  if (capture_mode_util::IsCaptureModeActive())
+    return;
 
   aura::Window* root_window_for_new_windows =
       Shell::GetRootWindowForNewWindows();

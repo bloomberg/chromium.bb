@@ -5,15 +5,15 @@
 #ifndef CHROME_BROWSER_AUTOFILL_ANDROID_INTERNAL_AUTHENTICATOR_ANDROID_H_
 #define CHROME_BROWSER_AUTOFILL_ANDROID_INTERNAL_AUTHENTICATOR_ANDROID_H_
 
-#include <memory>
-#include <string>
-
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "components/autofill/core/browser/payments/internal_authenticator.h"
-#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/global_routing_id.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
-#include "url/origin.h"
+
+namespace url {
+class Origin;
+}
 
 namespace content {
 class RenderFrameHost;
@@ -67,8 +67,8 @@ class InternalAuthenticatorAndroid : public autofill::InternalAuthenticator {
   // pointer issues.
   base::android::JavaRef<jobject>& GetJavaObject();
 
-  base::android::ScopedJavaGlobalRef<jobject> java_authenticator_impl_ref_;
-  content::RenderFrameHost* render_frame_host_;
+  const content::GlobalFrameRoutingId render_frame_host_id_;
+  base::android::ScopedJavaGlobalRef<jobject> java_internal_authenticator_ref_;
   blink::mojom::Authenticator::MakeCredentialCallback
       make_credential_response_callback_;
   blink::mojom::Authenticator::GetAssertionCallback

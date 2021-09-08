@@ -26,12 +26,11 @@ class DocumentModulatorImpl final : public ModulatorImplBase {
   // Implements Modulator.
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType,
-      util::PassKey<ModuleScriptLoader>) override;
+      base::PassKey<ModuleScriptLoader>) override;
 
  private:
   // Implements ModulatorImplBase.
   bool IsDynamicImportForbidden(String* reason) override;
-  mojom::blink::V8CacheOptions GetV8CacheOptions() const override;
 };
 
 }  // namespace blink

@@ -30,8 +30,7 @@ class ActiveMapTest
   virtual ~ActiveMapTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
+    InitializeConfig(GET_PARAM(1));
     cpu_used_ = GET_PARAM(2);
   }
 
@@ -87,14 +86,6 @@ class ActiveMapTest
 };
 
 TEST_P(ActiveMapTest, Test) { DoTest(); }
-
-class ActiveMapTestLarge : public ActiveMapTest {};
-
-TEST_P(ActiveMapTestLarge, Test) { DoTest(); }
-
-AV1_INSTANTIATE_TEST_SUITE(ActiveMapTestLarge,
-                           ::testing::Values(::libaom_test::kRealTime),
-                           ::testing::Range(0, 5));
 
 AV1_INSTANTIATE_TEST_SUITE(ActiveMapTest,
                            ::testing::Values(::libaom_test::kRealTime),

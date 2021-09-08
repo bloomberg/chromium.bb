@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -29,8 +28,8 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-using base::ASCIIToUTF16;
 using base::TestMockTimeTaskRunner;
 using testing::_;
 using testing::AnyNumber;
@@ -70,7 +69,7 @@ class MockHttpAuthObserver : public HttpAuthObserver {
 
   MOCK_METHOD0(OnLoginModelDestroying, void());
   MOCK_METHOD2(OnAutofillDataAvailable,
-               void(const base::string16&, const base::string16&));
+               void(const std::u16string&, const std::u16string&));
 
   DISALLOW_COPY_AND_ASSIGN(MockHttpAuthObserver);
 };
@@ -152,8 +151,8 @@ TEST_F(HttpAuthManagerTest, HttpAuthFilling) {
     observed_form.signon_realm = "proxy.com/realm";
 
     PasswordForm stored_form = observed_form;
-    stored_form.username_value = ASCIIToUTF16("user");
-    stored_form.password_value = ASCIIToUTF16("1234");
+    stored_form.username_value = u"user";
+    stored_form.password_value = u"1234";
 
     MockHttpAuthObserver observer;
 
@@ -161,8 +160,8 @@ TEST_F(HttpAuthManagerTest, HttpAuthFilling) {
     EXPECT_CALL(*store_, GetLogins(_, _)).WillOnce(SaveArg<1>(&consumer));
     httpauth_manager()->SetObserverAndDeliverCredentials(&observer,
                                                          observed_form);
-    EXPECT_CALL(observer, OnAutofillDataAvailable(ASCIIToUTF16("user"),
-                                                  ASCIIToUTF16("1234")))
+    EXPECT_CALL(observer, OnAutofillDataAvailable(std::u16string(u"user"),
+                                                  std::u16string(u"1234")))
         .Times(filling_enabled);
     ASSERT_TRUE(consumer);
     std::vector<std::unique_ptr<PasswordForm>> result;
@@ -194,8 +193,8 @@ TEST_F(HttpAuthManagerTest, HttpAuthSaving) {
                                                          observed_form);
     // Emulate that http auth credentials submitted.
     PasswordForm submitted_form = observed_form;
-    submitted_form.username_value = ASCIIToUTF16("user");
-    submitted_form.password_value = ASCIIToUTF16("1234");
+    submitted_form.username_value = u"user";
+    submitted_form.password_value = u"1234";
     httpauth_manager()->OnPasswordFormSubmitted(submitted_form);
     httpauth_manager()->OnPasswordFormDismissed();
 
@@ -225,8 +224,8 @@ TEST_F(HttpAuthManagerTest, DontSaveEmptyPasswords) {
                                                        observed_form);
   // Emulate that http auth credentials submitted with an empty password.
   PasswordForm submitted_form = observed_form;
-  submitted_form.username_value = ASCIIToUTF16("user");
-  submitted_form.password_value = base::string16();
+  submitted_form.username_value = u"user";
+  submitted_form.password_value = std::u16string();
   httpauth_manager()->OnPasswordFormSubmitted(submitted_form);
   httpauth_manager()->OnPasswordFormDismissed();
 
@@ -275,8 +274,8 @@ TEST_F(HttpAuthManagerTest, NavigationWhenMatchingNotReady) {
                                                        observed_form);
 
   PasswordForm submitted_form = observed_form;
-  submitted_form.username_value = ASCIIToUTF16("user");
-  submitted_form.password_value = ASCIIToUTF16("1234");
+  submitted_form.username_value = u"user";
+  submitted_form.password_value = u"1234";
   httpauth_manager()->OnPasswordFormSubmitted(submitted_form);
   httpauth_manager()->OnPasswordFormDismissed();
 

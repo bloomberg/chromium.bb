@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory_tracker.h"
@@ -17,6 +19,7 @@
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -142,7 +145,7 @@ TEST(ProcessMemoryDumpTest, Clear) {
   ASSERT_EQ(shared_mad2, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid2));
   ASSERT_EQ(MemoryAllocatorDump::Flags::WEAK, shared_mad2->flags());
 
-  traced_value.reset(new TracedValue);
+  traced_value = std::make_unique<TracedValue>();
   pmd1->SerializeAllocatorDumpsInto(traced_value.get());
 
   pmd1.reset();
@@ -206,7 +209,7 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   ASSERT_TRUE(MemoryAllocatorDump::Flags::WEAK & shared_mad2->flags());
 
   // Check that calling serialization routines doesn't cause a crash.
-  traced_value.reset(new TracedValue);
+  traced_value = std::make_unique<TracedValue>();
   pmd1->SerializeAllocatorDumpsInto(traced_value.get());
 
   pmd1.reset();
@@ -486,17 +489,20 @@ TEST(ProcessMemoryDumpTest, MAYBE_CountResidentBytes) {
   const size_t size1 = 5 * page_size;
   void* memory1 = Map(size1);
   memset(memory1, 0, size1);
-  size_t res1 = ProcessMemoryDump::CountResidentBytes(memory1, size1);
-  ASSERT_EQ(res1, size1);
+  absl::optional<size_t> res1 =
+      ProcessMemoryDump::CountResidentBytes(memory1, size1);
+  ASSERT_TRUE(res1.has_value());
+  ASSERT_EQ(res1.value(), size1);
   Unmap(memory1, size1);
 
   // Allocate a large memory segment (> 8Mib).
   const size_t kVeryLargeMemorySize = 15 * 1024 * 1024;
   void* memory2 = Map(kVeryLargeMemorySize);
   memset(memory2, 0, kVeryLargeMemorySize);
-  size_t res2 =
+  absl::optional<size_t> res2 =
       ProcessMemoryDump::CountResidentBytes(memory2, kVeryLargeMemorySize);
-  ASSERT_EQ(res2, kVeryLargeMemorySize);
+  ASSERT_TRUE(res2.has_value());
+  ASSERT_EQ(res2.value(), kVeryLargeMemorySize);
   Unmap(memory2, kVeryLargeMemorySize);
 }
 
@@ -516,7 +522,7 @@ TEST(ProcessMemoryDumpTest, MAYBE_CountResidentBytesInSharedMemory) {
     auto region = base::WritableSharedMemoryRegion::Create(kDirtyMemorySize);
     base::WritableSharedMemoryMapping mapping = region.Map();
     memset(mapping.memory(), 0, kDirtyMemorySize);
-    base::Optional<size_t> res1 =
+    absl::optional<size_t> res1 =
         ProcessMemoryDump::CountResidentBytesInSharedMemory(
             mapping.memory(), mapping.mapped_size());
     ASSERT_TRUE(res1.has_value());
@@ -530,7 +536,7 @@ TEST(ProcessMemoryDumpTest, MAYBE_CountResidentBytesInSharedMemory) {
         base::WritableSharedMemoryRegion::Create(kVeryLargeMemorySize);
     base::WritableSharedMemoryMapping mapping = region.Map();
     memset(mapping.memory(), 0, kVeryLargeMemorySize);
-    base::Optional<size_t> res2 =
+    absl::optional<size_t> res2 =
         ProcessMemoryDump::CountResidentBytesInSharedMemory(
             mapping.memory(), mapping.mapped_size());
     ASSERT_TRUE(res2.has_value());
@@ -543,7 +549,7 @@ TEST(ProcessMemoryDumpTest, MAYBE_CountResidentBytesInSharedMemory) {
     auto region = base::WritableSharedMemoryRegion::Create(kTouchedMemorySize);
     base::WritableSharedMemoryMapping mapping = region.Map();
     memset(mapping.memory(), 0, kTouchedMemorySize);
-    base::Optional<size_t> res3 =
+    absl::optional<size_t> res3 =
         ProcessMemoryDump::CountResidentBytesInSharedMemory(
             mapping.memory(), mapping.mapped_size());
     ASSERT_TRUE(res3.has_value());

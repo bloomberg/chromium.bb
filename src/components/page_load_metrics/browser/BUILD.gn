@@ -20,6 +20,8 @@ source_set("browser") {
     "observers/core/largest_contentful_paint_handler.h",
     "observers/core/uma_page_load_metrics_observer.cc",
     "observers/core/uma_page_load_metrics_observer.h",
+    "observers/early_hints_page_load_metrics_observer.cc",
+    "observers/early_hints_page_load_metrics_observer.h",
     "observers/layout_page_load_metrics_observer.cc",
     "observers/layout_page_load_metrics_observer.h",
     "observers/prerender_page_load_metrics_observer.cc",
@@ -30,6 +32,9 @@ source_set("browser") {
     "page_load_metrics_embedder_base.cc",
     "page_load_metrics_embedder_base.h",
     "page_load_metrics_embedder_interface.h",
+    "page_load_metrics_event.h",
+    "page_load_metrics_memory_tracker.cc",
+    "page_load_metrics_memory_tracker.h",
     "page_load_metrics_observer.cc",
     "page_load_metrics_observer.h",
     "page_load_metrics_observer_delegate.cc",
@@ -46,9 +51,13 @@ source_set("browser") {
     "resource_tracker.h",
   ]
   deps = [
+    "//build:chromeos_buildflags",
     "//components/data_reduction_proxy/core/browser",
+    "//components/keyed_service/content:content",
+    "//components/keyed_service/core:core",
     "//components/page_load_metrics/common",
     "//components/page_load_metrics/common:page_load_metrics_mojom",
+    "//components/performance_manager:performance_manager",
     "//content/public/browser",
     "//content/public/common",
     "//net",
@@ -60,6 +69,8 @@ source_set("browser") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "ads_page_load_metrics_test_waiter.cc",
+    "ads_page_load_metrics_test_waiter.h",
     "observers/page_load_metrics_observer_tester.cc",
     "observers/page_load_metrics_observer_tester.h",
     "page_load_metrics_test_content_browser_client.cc",
@@ -89,12 +100,15 @@ source_set("unit_tests") {
   sources = [
     "layout_shift_normalization_unittest.cc",
     "metrics_web_contents_observer_unittest.cc",
+    "observers/back_forward_cache_page_load_metrics_observer_unittest.cc",
     "observers/click_input_tracker_unittest.cc",
     "observers/core/uma_page_load_metrics_observer_unittest.cc",
+    "observers/early_hints_page_load_metrics_observer_unittest.cc",
     "observers/page_load_metrics_observer_content_test_harness.cc",
     "observers/page_load_metrics_observer_content_test_harness.h",
     "observers/prerender_page_load_metrics_observer_unittest.cc",
     "observers/use_counter_page_load_metrics_observer_unittest.cc",
+    "page_load_metrics_memory_tracker_unittest.cc",
     "page_load_metrics_util_unittest.cc",
     "resource_tracker_unittest.cc",
   ]
@@ -102,8 +116,10 @@ source_set("unit_tests") {
     ":browser",
     ":test_support",
     "//base/test:test_support",
+    "//components/keyed_service/content",
     "//components/page_load_metrics/common:page_load_metrics_mojom",
     "//components/page_load_metrics/common:test_support",
+    "//components/performance_manager",
     "//components/ukm:test_support",
     "//components/ukm/content",
     "//content/public/browser",

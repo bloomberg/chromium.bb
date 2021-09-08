@@ -24,10 +24,8 @@
 #include "core/internal/endpoint_manager.h"
 #include "core/internal/mediums/mediums.h"
 #include "core/options.h"
-#include "proto/connections/offline_wire_formats.pb.h"
 #include "platform/base/byte_array.h"
 #include "platform/public/scheduled_executor.h"
-#include "proto/connections_enums.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/time/time.h"
@@ -74,7 +72,7 @@ class BwuManager : public EndpointManager::FrameProcessor {
              absl::flat_hash_map<Medium, std::unique_ptr<BwuHandler>> handlers,
              Config config);
 
-  ~BwuManager() override = default;
+  ~BwuManager() override;
 
   // This is the point on the outbound BWU protocol where the handler_ is set.
   // Function initiates the bandwidth upgrade and sends an
@@ -99,9 +97,12 @@ class BwuManager : public EndpointManager::FrameProcessor {
   void Shutdown();
 
  private:
+  static constexpr absl::Duration kReadClientIntroductionFrameTimeout =
+      absl::Seconds(5);
   BwuHandler* SetCurrentBwuHandler(Medium medium);
   void InitBwuHandlers();
-  void RunOnBwuManagerThread(std::function<void()> runnable);
+  void RunOnBwuManagerThread(const std::string& name,
+                             std::function<void()> runnable);
   std::vector<Medium> StripOutUnavailableMediums(
       const std::vector<Medium>& mediums);
   Medium ChooseBestUpgradeMedium(const std::vector<Medium>& mediums);
@@ -112,7 +113,7 @@ class BwuManager : public EndpointManager::FrameProcessor {
   // Processes the BwuNegotiationFrames that come over the
   // EndpointChannel on both initiator and responder side of the upgrade.
   void OnBwuNegotiationFrame(ClientProxy* client,
-                             const BwuNegotiationFrame& frame,
+                             const BwuNegotiationFrame frame,
                              const string& endpoint_id);
 
   // Called to revert any state changed by the Initiator or Responder in the
@@ -143,6 +144,8 @@ class BwuManager : public EndpointManager::FrameProcessor {
                                            const std::string& endpoint_id);
   bool ReadClientIntroductionFrame(EndpointChannel* endpoint_channel,
                                    ClientIntroduction& introduction);
+  bool ReadClientIntroductionAckFrame(EndpointChannel* endpoint_channel);
+  bool WriteClientIntroductionAckFrame(EndpointChannel* endpoint_channel);
   void ProcessEndpointDisconnection(ClientProxy* client,
                                     const std::string& endpoint_id,
                                     CountDownLatch* barrier);
@@ -183,6 +186,11 @@ class BwuManager : public EndpointManager::FrameProcessor {
   absl::flat_hash_map<std::string, absl::Time> safe_to_close_write_timestamps_;
   absl::flat_hash_map<std::string, std::pair<CancelableAlarm, absl::Duration>>
       retry_upgrade_alarms_;
+  // Maps endpointId -> duration of delay before bwu retry.
+  // When bwu failed, retry_upgrade_alarms_ will clear the entry before the
+  // retry happen, then we can not find the last delay used in the alarm. Thus
+  // using a different map to keep track of the delays per endpoint.
+  absl::flat_hash_map<std::string, absl::Duration> retry_delays_;
 };
 
 }  // namespace connections

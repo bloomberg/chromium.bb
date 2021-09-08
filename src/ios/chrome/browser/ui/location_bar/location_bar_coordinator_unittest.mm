@@ -18,6 +18,8 @@
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/url_loading/fake_url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
@@ -25,7 +27,7 @@
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #include "testing/platform_test.h"
 
@@ -47,8 +49,6 @@ using variations::VariationsIdsProvider;
 }
 - (void)locationBarDidResignFirstResponder {
 }
-- (void)locationBarBeganEdit {
-}
 
 - (LocationBarModel*)locationBarModel {
   if (!_model) {
@@ -64,7 +64,9 @@ namespace {
 
 class LocationBarCoordinatorTest : public PlatformTest {
  protected:
-  LocationBarCoordinatorTest() : web_state_list_(&web_state_list_delegate_) {}
+  LocationBarCoordinatorTest()
+      : web_state_list_(&web_state_list_delegate_),
+        scene_state_([[SceneState alloc] initWithAppState:nil]) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -98,7 +100,9 @@ class LocationBarCoordinatorTest : public PlatformTest {
     UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser_.get());
     FakeUrlLoadingBrowserAgent::InjectForBrowser(browser_.get());
 
-    auto web_state = std::make_unique<web::TestWebState>();
+    SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
+
+    auto web_state = std::make_unique<web::FakeWebState>();
     web_state->SetBrowserState(browser_state_.get());
     web_state->SetCurrentURL(GURL("http://test/"));
     web_state_list_.InsertWebState(0, std::move(web_state),
@@ -133,6 +137,7 @@ class LocationBarCoordinatorTest : public PlatformTest {
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   std::unique_ptr<Browser> browser_;
+  SceneState* scene_state_;
   TestToolbarCoordinatorDelegate* delegate_;
 };
 

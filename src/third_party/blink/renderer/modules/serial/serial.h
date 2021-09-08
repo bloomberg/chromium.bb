@@ -15,23 +15,31 @@
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
 class ExecutionContext;
+class NavigatorBase;
 class ScriptPromiseResolver;
 class ScriptState;
 class SerialPort;
 class SerialPortRequestOptions;
 
 class Serial final : public EventTargetWithInlineData,
+                     public Supplement<NavigatorBase>,
                      public ExecutionContextLifecycleObserver,
                      public mojom::blink::SerialServiceClient {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit Serial(ExecutionContext&);
+  static const char kSupplementName[];
+
+  // Web-exposed navigator.serial
+  static Serial* serial(NavigatorBase&);
+
+  explicit Serial(NavigatorBase&);
 
   // EventTarget
   ExecutionContext* GetExecutionContext() const override;
@@ -72,13 +80,8 @@ class Serial final : public EventTargetWithInlineData,
                   Vector<mojom::blink::SerialPortInfoPtr>);
   void OnRequestPort(ScriptPromiseResolver*, mojom::blink::SerialPortInfoPtr);
 
-  HeapMojoRemote<mojom::blink::SerialService,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      service_;
-  HeapMojoReceiver<mojom::blink::SerialServiceClient,
-                   Serial,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
-      receiver_;
+  HeapMojoRemote<mojom::blink::SerialService> service_;
+  HeapMojoReceiver<mojom::blink::SerialServiceClient, Serial> receiver_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_ports_promises_;
   HeapHashSet<Member<ScriptPromiseResolver>> request_port_promises_;
   HeapHashMap<String, WeakMember<SerialPort>> port_cache_;

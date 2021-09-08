@@ -28,13 +28,16 @@ namespace {
 using ::testing::_;
 using ::testing::ByMove;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::Field;
 using ::testing::Return;
 using ::testing::StrictMock;
 
 constexpr char kTestEmail[] = "user@gmail.com";
 constexpr char kUsername[] = "USERNAME@gmail.com";
+constexpr char16_t kUsername16[] = u"USERNAME@gmail.com";
 constexpr char kPassword[] = "password123";
+constexpr char16_t kPassword16[] = u"password123";
 constexpr char kExampleCom[] = "https://example.com";
 
 const int64_t kMockElapsedTime =
@@ -104,8 +107,7 @@ PayloadAndCallback AuthenticatedLeakCheckTest::ImitateNetworkRequest() {
   identity_env().SetCookieAccounts({{info.email, info.gaia}});
   identity_env().SetRefreshTokenForAccount(info.account_id);
 
-  leak_check().Start(GURL(kExampleCom), base::ASCIIToUTF16(kUsername),
-                     base::ASCIIToUTF16(kPassword));
+  leak_check().Start(GURL(kExampleCom), kUsername16, kPassword16);
   // Crypto stuff is done here.
   task_env().RunUntilIdle();
 
@@ -159,8 +161,7 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenBeforeEncryption) {
   identity_env().SetRefreshTokenForAccount(info.account_id);
   const std::string access_token = "access_token";
 
-  leak_check().Start(GURL(kExampleCom), base::ASCIIToUTF16(kUsername),
-                     base::ASCIIToUTF16(kPassword));
+  leak_check().Start(GURL(kExampleCom), kUsername16, kPassword16);
   // Return the access token before the crypto stuff is done.
   identity_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       access_token, base::Time::Max());
@@ -177,7 +178,7 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenBeforeEncryption) {
               LookupSingleLeak(
                   _, access_token,
                   AllOf(Field(&LookupSingleLeakPayload::username_hash_prefix,
-                              ElementsAre(0xBD, 0x74, 0xA9, 0x20)),
+                              ElementsAre(0xBD, 0x74, 0xA9, 0x00)),
                         Field(&LookupSingleLeakPayload::encrypted_payload,
                               testing::Ne(""))),
                   _));
@@ -196,8 +197,7 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenAfterEncryption) {
   identity_env().SetCookieAccounts({{info.email, info.gaia}});
   identity_env().SetRefreshTokenForAccount(info.account_id);
 
-  leak_check().Start(GURL(kExampleCom), base::ASCIIToUTF16(kUsername),
-                     base::ASCIIToUTF16(kPassword));
+  leak_check().Start(GURL(kExampleCom), kUsername16, kPassword16);
   // crypto stuff is done here.
   task_env().RunUntilIdle();
 
@@ -211,7 +211,7 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenAfterEncryption) {
               LookupSingleLeak(
                   _, access_token,
                   AllOf(Field(&LookupSingleLeakPayload::username_hash_prefix,
-                              ElementsAre(0xBD, 0x74, 0xA9, 0x20)),
+                              ElementsAre(0xBD, 0x74, 0xA9, 0x00)),
                         Field(&LookupSingleLeakPayload::encrypted_payload,
                               testing::Ne(""))),
                   _));
@@ -235,8 +235,7 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenFailure) {
   identity_env().SetCookieAccounts({{info.email, info.gaia}});
   identity_env().SetRefreshTokenForAccount(info.account_id);
 
-  leak_check().Start(GURL(kExampleCom), base::ASCIIToUTF16(kUsername),
-                     base::ASCIIToUTF16(kPassword));
+  leak_check().Start(GURL(kExampleCom), kUsername16, kPassword16);
 
   EXPECT_CALL(delegate(), OnError(LeakDetectionError::kTokenRequestFailure));
   identity_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
@@ -263,18 +262,18 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_DecryptionError) {
   std::string key_server;
   // Append trash bytes to force a decryption error.
   response->reencrypted_lookup_hash =
-      CipherReEncrypt(payload_and_callback.payload, &key_server) +
+      *CipherReEncrypt(payload_and_callback.payload, &key_server) +
       "trash_bytes";
   response->encrypted_leak_match_prefixes.push_back(
-      crypto::SHA256HashString(CipherEncryptWithKey(
-          ScryptHashUsernameAndPassword("another_username", kPassword),
+      crypto::SHA256HashString(*CipherEncryptWithKey(
+          *ScryptHashUsernameAndPassword("another_username", kPassword),
           key_server)));
 
-  EXPECT_CALL(delegate(), OnLeakDetectionDone(false, GURL(kExampleCom),
-                                              base::ASCIIToUTF16(kUsername),
-                                              base::ASCIIToUTF16(kPassword)));
+  EXPECT_CALL(delegate(),
+              OnLeakDetectionDone(false, GURL(kExampleCom), Eq(kUsername16),
+                                  Eq(kPassword16)));
   std::move(payload_and_callback.callback)
-      .Run(std::move(response), base::nullopt);
+      .Run(std::move(response), absl::nullopt);
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(
@@ -297,17 +296,17 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_NoLeak) {
   auto response = std::make_unique<SingleLookupResponse>();
   std::string key_server;
   response->reencrypted_lookup_hash =
-      CipherReEncrypt(payload_and_callback.payload, &key_server);
+      *CipherReEncrypt(payload_and_callback.payload, &key_server);
   response->encrypted_leak_match_prefixes.push_back(
-      crypto::SHA256HashString(CipherEncryptWithKey(
-          ScryptHashUsernameAndPassword("another_username", kPassword),
+      crypto::SHA256HashString(*CipherEncryptWithKey(
+          *ScryptHashUsernameAndPassword("another_username", kPassword),
           key_server)));
 
-  EXPECT_CALL(delegate(), OnLeakDetectionDone(false, GURL(kExampleCom),
-                                              base::ASCIIToUTF16(kUsername),
-                                              base::ASCIIToUTF16(kPassword)));
+  EXPECT_CALL(delegate(),
+              OnLeakDetectionDone(false, GURL(kExampleCom), Eq(kUsername16),
+                                  Eq(kPassword16)));
   std::move(payload_and_callback.callback)
-      .Run(std::move(response), base::nullopt);
+      .Run(std::move(response), absl::nullopt);
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(
@@ -337,17 +336,17 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_Leak) {
   auto response = std::make_unique<SingleLookupResponse>();
   std::string key_server;
   response->reencrypted_lookup_hash =
-      CipherReEncrypt(payload_and_callback.payload, &key_server);
+      *CipherReEncrypt(payload_and_callback.payload, &key_server);
   response->encrypted_leak_match_prefixes.push_back(
-      crypto::SHA256HashString(CipherEncryptWithKey(
-          ScryptHashUsernameAndPassword(canonicalized_username, kPassword),
+      crypto::SHA256HashString(*CipherEncryptWithKey(
+          *ScryptHashUsernameAndPassword(canonicalized_username, kPassword),
           key_server)));
 
-  EXPECT_CALL(delegate(), OnLeakDetectionDone(true, GURL(kExampleCom),
-                                              base::ASCIIToUTF16(kUsername),
-                                              base::ASCIIToUTF16(kPassword)));
+  EXPECT_CALL(delegate(),
+              OnLeakDetectionDone(true, GURL(kExampleCom), Eq(kUsername16),
+                                  Eq(kPassword16)));
   std::move(payload_and_callback.callback)
-      .Run(std::move(response), base::nullopt);
+      .Run(std::move(response), absl::nullopt);
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(

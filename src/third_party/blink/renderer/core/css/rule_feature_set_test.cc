@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -61,8 +60,9 @@ class RuleFeatureSetTest : public testing::Test {
     RuleFeatureSet::SelectorPreMatch result =
         RuleFeatureSet::SelectorPreMatch::kSelectorNeverMatches;
     for (unsigned i = 0; i < indices.size(); ++i) {
-      RuleData* rule_data = RuleData::MaybeCreate(style_rule, indices[i], 0,
-                                                  kRuleHasNoSpecialState);
+      RuleData* rule_data = RuleData::MaybeCreate(
+          style_rule, indices[i], 0, kRuleHasNoSpecialState,
+          nullptr /* container_query */);
       DCHECK(rule_data);
       if (set.CollectFeaturesFromRuleData(rule_data))
         result = RuleFeatureSet::SelectorPreMatch::kSelectorMayMatch;
@@ -597,22 +597,6 @@ TEST_F(RuleFeatureSetTest, tagName) {
   CollectInvalidationSetsForPseudoClass(invalidation_lists,
                                         CSSSelector::kPseudoValid);
   ExpectTagNameInvalidation("e", invalidation_lists.descendants);
-}
-
-TEST_F(RuleFeatureSetTest, contentPseudo) {
-  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(".a ::content .b"));
-  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch, CollectFeatures(".a .c"));
-
-  InvalidationLists invalidation_lists;
-  CollectInvalidationSetsForClass(invalidation_lists, "a");
-  ExpectClassInvalidation("c", invalidation_lists.descendants);
-
-  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch, CollectFeatures(".a .b"));
-
-  invalidation_lists.descendants.clear();
-  CollectInvalidationSetsForClass(invalidation_lists, "a");
-  ExpectClassInvalidation("b", "c", invalidation_lists.descendants);
 }
 
 TEST_F(RuleFeatureSetTest, nonMatchingHost) {
@@ -1622,7 +1606,6 @@ RefTestData ref_not_equal_test_data[] = {
     {"", ":host"},
     {"", ":host(.a)"},
     {"", ":host-context(.a)"},
-    {"", "::content"},
     {"", "*"},
     {"", ":not(.a)"},
     {".a", ".b"},
@@ -1642,12 +1625,8 @@ RefTestData ref_not_equal_test_data[] = {
     // clang-format on
 };
 
-class RuleFeatureSetRefTest : public RuleFeatureSetTest,
-                              private ScopedCSSPseudoIsForTest,
-                              private ScopedCSSPseudoWhereForTest {
+class RuleFeatureSetRefTest : public RuleFeatureSetTest {
  public:
-  RuleFeatureSetRefTest()
-      : ScopedCSSPseudoIsForTest(true), ScopedCSSPseudoWhereForTest(true) {}
 
   void Run(const RefTestData& data) {
     RuleFeatureSet main_set;

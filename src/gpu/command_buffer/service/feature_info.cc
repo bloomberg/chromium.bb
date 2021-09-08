@@ -6,10 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -19,7 +21,7 @@
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/texture_definition.h"
+#include "gpu/command_buffer/service/native_image_buffer.h"
 #include "gpu/config/gpu_switches.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
@@ -196,7 +198,7 @@ FeatureInfo::FeatureInfo(
           .status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
       gpu::kGpuFeatureStatusEnabled;
 
-#if BUILDFLAG(IS_ASH) || BUILDFLAG(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMECAST)
   feature_flags_.chromium_image_ycbcr_420v = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::YUV_420_BIPLANAR);
@@ -204,7 +206,7 @@ FeatureInfo::FeatureInfo(
   feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   feature_flags_.chromium_image_ycbcr_p010 = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::P010);
@@ -224,7 +226,9 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   const auto useANGLE = command_line->GetSwitchValueASCII(switches::kUseANGLE);
 
   feature_flags_.is_swiftshader_for_webgl =
-      (useGL == gl::kGLImplementationSwiftShaderForWebGLName);
+      (useGL == gl::kGLImplementationSwiftShaderForWebGLName) ||
+      ((useGL == gl::kGLImplementationANGLEName) &&
+       (useANGLE == gl::kANGLEImplementationSwiftShaderForWebGLName));
 
   // The shader translator is needed to translate from WebGL-conformant GLES SL
   // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to
@@ -475,8 +479,8 @@ void FeatureInfo::InitializeFeatures() {
   const char* renderer_str =
       reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 
-  gl_version_info_.reset(
-      new gl::GLVersionInfo(version_str, renderer_str, extensions));
+  gl_version_info_ = std::make_unique<gl::GLVersionInfo>(
+      version_str, renderer_str, extensions);
 
   bool enable_es3 = IsWebGL2OrES3OrHigherContext();
 
@@ -493,7 +497,6 @@ void FeatureInfo::InitializeFeatures() {
   // changed on another decoder that does expose them.
   ScopedPixelUnpackBufferOverride scoped_pbo_override(has_pixel_buffers, 0);
 
-  AddExtensionString("GL_ANGLE_translated_shader_source");
   AddExtensionString("GL_CHROMIUM_async_pixel_transfers");
   AddExtensionString("GL_CHROMIUM_bind_uniform_location");
   AddExtensionString("GL_CHROMIUM_color_space_metadata");
@@ -524,6 +527,16 @@ void FeatureInfo::InitializeFeatures() {
 
   if (gfx::HasExtension(extensions, "GL_ANGLE_translated_shader_source")) {
     feature_flags_.angle_translated_shader_source = true;
+  }
+
+  // The validating command decoder always supports
+  // ANGLE_translated_shader_source regardless of the underlying context. But
+  // passthrough relies on the underlying ANGLE context which can't always
+  // support it (e.g. on Vulkan shaders are translated directly to binary
+  // SPIR-V).
+  if (!is_passthrough_cmd_decoder_ ||
+      feature_flags_.angle_translated_shader_source) {
+    AddExtensionString("GL_ANGLE_translated_shader_source");
   }
 
   // Check if we should allow GL_EXT_texture_compression_dxt1 and
@@ -946,11 +959,11 @@ void FeatureInfo::InitializeFeatures() {
         enable_texture_storage = false;
         break;
       case CONTEXT_TYPE_OPENGLES3:
+      case CONTEXT_TYPE_OPENGLES31_FOR_TESTING:
         enable_texture_format_bgra8888 = false;
         break;
       case CONTEXT_TYPE_WEBGL1:
       case CONTEXT_TYPE_WEBGL2:
-      case CONTEXT_TYPE_WEBGL2_COMPUTE:
       case CONTEXT_TYPE_WEBGPU:
         break;
     }
@@ -1565,10 +1578,6 @@ void FeatureInfo::InitializeFeatures() {
     validators_.g_l_state.AddValue(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT);
   }
 
-  if (workarounds_.avoid_egl_image_target_texture_reuse) {
-    TextureDefinition::AvoidEGLTargetTextureReuse();
-  }
-
   if (gl_version_info_->IsLowerThanGL(4, 3)) {
     // crbug.com/481184.
     // GL_PRIMITIVE_RESTART_FIXED_INDEX is only available on Desktop GL 4.3+,
@@ -2085,8 +2094,8 @@ bool FeatureInfo::IsWebGL2OrES3OrHigherContext() const {
   return IsWebGL2OrES3OrHigherContextType(context_type_);
 }
 
-bool FeatureInfo::IsWebGL2ComputeContext() const {
-  return IsWebGL2ComputeContextType(context_type_);
+bool FeatureInfo::IsES31ForTestingContext() const {
+  return IsES31ForTestingContextType(context_type_);
 }
 
 void FeatureInfo::AddExtensionString(const base::StringPiece& extension) {

@@ -16,6 +16,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/public/browser/ax_event_notification_details.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -102,8 +103,8 @@ class BrowserAccessibilityMacTest : public ui::CocoaTest {
     child2.relative_bounds.bounds.set_height(100);
     child2.role = ax::mojom::Role::kHeading;
 
-    manager_.reset(new BrowserAccessibilityManagerMac(
-        MakeAXTreeUpdate(root_, child1, child2), nullptr));
+    manager_ = std::make_unique<BrowserAccessibilityManagerMac>(
+        MakeAXTreeUpdate(root_, child1, child2), nullptr);
     accessibility_.reset(
         [ToBrowserAccessibilityCocoa(manager_->GetRoot()) retain]);
   }
@@ -121,6 +122,8 @@ class BrowserAccessibilityMacTest : public ui::CocoaTest {
   ui::AXNodeData root_;
   base::scoped_nsobject<BrowserAccessibilityCocoa> accessibility_;
   std::unique_ptr<BrowserAccessibilityManager> manager_;
+
+  const content::BrowserTaskEnvironment task_environment_;
 };
 
 // Standard hit test.
@@ -175,8 +178,8 @@ TEST_F(BrowserAccessibilityMacTest, TestComputeTextEdit) {
   root_ = ui::AXNodeData();
   root_.id = 1;
   root_.role = ax::mojom::Role::kTextField;
-  manager_.reset(
-      new BrowserAccessibilityManagerMac(MakeAXTreeUpdate(root_), nullptr));
+  manager_ = std::make_unique<BrowserAccessibilityManagerMac>(
+      MakeAXTreeUpdate(root_), nullptr);
   accessibility_.reset(
       [ToBrowserAccessibilityCocoa(manager_->GetRoot()) retain]);
 
@@ -184,44 +187,44 @@ TEST_F(BrowserAccessibilityMacTest, TestComputeTextEdit) {
 
   SetRootValue("text");
   AXTextEdit text_edit = [accessibility_ computeTextEdit];
-  EXPECT_EQ(base::UTF8ToUTF16("text"), text_edit.inserted_text);
+  EXPECT_EQ(u"text", text_edit.inserted_text);
   EXPECT_TRUE(text_edit.deleted_text.empty());
 
   SetRootValue("new text");
   text_edit = [accessibility_ computeTextEdit];
-  EXPECT_EQ(base::UTF8ToUTF16("new "), text_edit.inserted_text);
+  EXPECT_EQ(u"new ", text_edit.inserted_text);
   EXPECT_TRUE(text_edit.deleted_text.empty());
 
   SetRootValue("new text hello");
   text_edit = [accessibility_ computeTextEdit];
-  EXPECT_EQ(base::UTF8ToUTF16(" hello"), text_edit.inserted_text);
+  EXPECT_EQ(u" hello", text_edit.inserted_text);
   EXPECT_TRUE(text_edit.deleted_text.empty());
 
   SetRootValue("newer text hello");
   text_edit = [accessibility_ computeTextEdit];
-  EXPECT_EQ(base::UTF8ToUTF16("er"), text_edit.inserted_text);
+  EXPECT_EQ(u"er", text_edit.inserted_text);
   EXPECT_TRUE(text_edit.deleted_text.empty());
 
   // Deletion but no insertion.
 
   SetRootValue("new text hello");
   text_edit = [accessibility_ computeTextEdit];
-  EXPECT_EQ(base::UTF8ToUTF16("er"), text_edit.deleted_text);
+  EXPECT_EQ(u"er", text_edit.deleted_text);
   EXPECT_TRUE(text_edit.inserted_text.empty());
 
   SetRootValue("new text");
   text_edit = [accessibility_ computeTextEdit];
-  EXPECT_EQ(base::UTF8ToUTF16(" hello"), text_edit.deleted_text);
+  EXPECT_EQ(u" hello", text_edit.deleted_text);
   EXPECT_TRUE(text_edit.inserted_text.empty());
 
   SetRootValue("text");
   text_edit = [accessibility_ computeTextEdit];
-  EXPECT_EQ(base::UTF8ToUTF16("new "), text_edit.deleted_text);
+  EXPECT_EQ(u"new ", text_edit.deleted_text);
   EXPECT_TRUE(text_edit.inserted_text.empty());
 
   SetRootValue("");
   text_edit = [accessibility_ computeTextEdit];
-  EXPECT_EQ(base::UTF8ToUTF16("text"), text_edit.deleted_text);
+  EXPECT_EQ(u"text", text_edit.deleted_text);
   EXPECT_TRUE(text_edit.inserted_text.empty());
 
   // Both insertion and deletion.
@@ -230,18 +233,18 @@ TEST_F(BrowserAccessibilityMacTest, TestComputeTextEdit) {
   text_edit = [accessibility_ computeTextEdit];
   SetRootValue("new word hello");
   text_edit = [accessibility_ computeTextEdit];
-  EXPECT_EQ(base::UTF8ToUTF16("text"), text_edit.deleted_text);
-  EXPECT_EQ(base::UTF8ToUTF16("word"), text_edit.inserted_text);
+  EXPECT_EQ(u"text", text_edit.deleted_text);
+  EXPECT_EQ(u"word", text_edit.inserted_text);
 
   SetRootValue("new word there");
   text_edit = [accessibility_ computeTextEdit];
-  EXPECT_EQ(base::UTF8ToUTF16("hello"), text_edit.deleted_text);
-  EXPECT_EQ(base::UTF8ToUTF16("there"), text_edit.inserted_text);
+  EXPECT_EQ(u"hello", text_edit.deleted_text);
+  EXPECT_EQ(u"there", text_edit.inserted_text);
 
   SetRootValue("old word there");
   text_edit = [accessibility_ computeTextEdit];
-  EXPECT_EQ(base::UTF8ToUTF16("new"), text_edit.deleted_text);
-  EXPECT_EQ(base::UTF8ToUTF16("old"), text_edit.inserted_text);
+  EXPECT_EQ(u"new", text_edit.deleted_text);
+  EXPECT_EQ(u"old", text_edit.inserted_text);
 }
 
 // Test Mac-specific table APIs.
@@ -260,7 +263,8 @@ TEST_F(BrowserAccessibilityMacTest, TableAPIs) {
   MakeCell(&initial_state.nodes[5], 6, 1, 0);
   MakeCell(&initial_state.nodes[6], 7, 1, 1);
 
-  manager_.reset(new BrowserAccessibilityManagerMac(initial_state, nullptr));
+  manager_ =
+      std::make_unique<BrowserAccessibilityManagerMac>(initial_state, nullptr);
   base::scoped_nsobject<BrowserAccessibilityCocoa> ax_table_(
       [ToBrowserAccessibilityCocoa(manager_->GetRoot()) retain]);
   id children = [ax_table_ children];

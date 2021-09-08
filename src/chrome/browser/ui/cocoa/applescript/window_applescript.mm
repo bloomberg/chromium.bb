@@ -38,11 +38,10 @@
 
 @implementation WindowAppleScript
 
-- (id)init {
+- (instancetype)init {
   // Check which mode to open a new window.
   NSScriptCommand* command = [NSScriptCommand currentCommand];
-  NSString* mode = [[[command evaluatedArguments]
-      objectForKey:@"KeyDictionary"] objectForKey:@"mode"];
+  NSString* mode = [command evaluatedArguments][@"KeyDictionary"][@"mode"];
   AppController* appDelegate =
       base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
 
@@ -55,7 +54,7 @@
 
   Profile* profile;
   if ([mode isEqualToString:AppleScript::kIncognitoWindowMode]) {
-    profile = lastProfile->GetPrimaryOTRProfile();
+    profile = lastProfile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   }
   else if ([mode isEqualToString:AppleScript::kNormalWindowMode] || !mode) {
     profile = lastProfile;
@@ -65,23 +64,22 @@
     return nil;
   }
   // Set the mode to nil, to ensure that it is not set once more.
-  [[[command evaluatedArguments] objectForKey:@"KeyDictionary"]
-      setValue:nil forKey:@"mode"];
+  [[command evaluatedArguments][@"KeyDictionary"] setValue:nil forKey:@"mode"];
   return [self initWithProfile:profile];
 }
 
-- (id)initWithProfile:(Profile*)aProfile {
+- (instancetype)initWithProfile:(Profile*)aProfile {
   if (!aProfile) {
     [self release];
     return nil;
   }
 
   if ((self = [super init])) {
-    // TODO(https://crbug.com/1144992): If crash fixed, investigate why browser
-    // cannot be created here.
-    if (Browser::GetBrowserCreationStatusForProfile(aProfile) !=
-        Browser::BrowserCreationStatus::kOk) {
-      NOTREACHED();
+    // Since AppleScript requests can arrive at any time, including during
+    // browser shutdown or profile deletion, we have to check whether it's okay
+    // to spawn a new browser for the specified profile or not.
+    if (Browser::GetCreationStatusForProfile(aProfile) !=
+        Browser::CreationStatus::kOk) {
       [self release];
       return nil;
     }
@@ -95,7 +93,7 @@
   return self;
 }
 
-- (id)initWithBrowser:(Browser*)aBrowser {
+- (instancetype)initWithBrowser:(Browser*)aBrowser {
   if (!aBrowser) {
     [self release];
     return nil;
@@ -126,7 +124,7 @@
   if (!activeTabIndex) {
     return nil;
   }
-  return [NSNumber numberWithInt:activeTabIndex];
+  return @(activeTabIndex);
 }
 
 - (void)setActiveTabIndex:(NSNumber*)anActiveTabIndex {

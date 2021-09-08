@@ -15,6 +15,9 @@
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "media/mojo/mojom/media_player.mojom.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
 
@@ -55,9 +58,10 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
 
   // PictureInPictureWindowController:
   void Show() override;
+  void FocusInitiator() override;
   void Close(bool should_pause_video) override;
   void CloseAndFocusInitiator() override;
-  void OnWindowDestroyed() override;
+  void OnWindowDestroyed(bool should_pause_video) override;
   OverlayWindow* GetWindowForTesting() override;
   void UpdateLayerBounds() override;
   bool IsPlayerActive() override;
@@ -68,6 +72,13 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
   void SkipAd() override;
   void NextTrack() override;
   void PreviousTrack() override;
+  void ToggleMicrophone() override;
+  void ToggleCamera() override;
+  void HangUp() override;
+
+  // Called by the MediaSessionImpl when the MediaSessionInfo changes.
+  void MediaSessionInfoChanged(
+      const media_session::mojom::MediaSessionInfoPtr& info);
 
   void MediaSessionActionsChanged(
       const std::set<media_session::mojom::MediaSessionAction>& actions);
@@ -96,6 +107,7 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
   PictureInPictureResult StartSession(
       PictureInPictureServiceImpl* service,
       const MediaPlayerId&,
+      mojo::PendingAssociatedRemote<media::mojom::MediaPlayer> player_remote,
       const viz::SurfaceId& surface_id,
       const gfx::Size& natural_size,
       bool show_play_pause_button,
@@ -150,6 +162,15 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
   bool media_session_action_skip_ad_handled_ = false;
   bool media_session_action_next_track_handled_ = false;
   bool media_session_action_previous_track_handled_ = false;
+  bool media_session_action_toggle_microphone_handled_ = false;
+  bool media_session_action_toggle_camera_handled_ = false;
+  bool media_session_action_hang_up_handled_ = false;
+
+  // Tracks the current microphone state.
+  bool microphone_muted_ = false;
+
+  // Tracks the current camera state.
+  bool camera_turned_on_ = false;
 
   // Used to hide play/pause button if video is a MediaStream or has infinite
   // duration. Play/pause button visibility can be overridden by the Media

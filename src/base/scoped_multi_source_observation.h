@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 
 namespace base {
 
@@ -86,6 +86,7 @@ class ScopedMultiSourceObservation {
 
   // Returns true if |source| is being observed.
   bool IsObservingSource(Source* source) const {
+    DCHECK(source);
     return base::Contains(sources_, source);
   }
 

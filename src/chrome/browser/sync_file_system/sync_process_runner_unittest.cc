@@ -46,9 +46,9 @@ class FakeTimerHelper : public SyncProcessRunner::TimerHelper {
 
   void Start(const base::Location& from_here,
              const base::TimeDelta& delay,
-             const base::Closure& closure) override {
+             base::OnceClosure closure) override {
     scheduled_time_ = current_time_ + delay;
-    timer_task_ = closure;
+    timer_task_ = std::move(closure);
   }
 
   base::TimeTicks Now() const override { return current_time_; }
@@ -58,9 +58,7 @@ class FakeTimerHelper : public SyncProcessRunner::TimerHelper {
     if (current_time_ < scheduled_time_ || timer_task_.is_null())
       return;
 
-    base::Closure task = timer_task_;
-    timer_task_.Reset();
-    task.Run();
+    std::move(timer_task_).Run();
   }
 
   void AdvanceToScheduledTime() {
@@ -75,7 +73,7 @@ class FakeTimerHelper : public SyncProcessRunner::TimerHelper {
  private:
   base::TimeTicks current_time_;
   base::TimeTicks scheduled_time_;
-  base::Closure timer_task_;
+  base::OnceClosure timer_task_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTimerHelper);
 };
@@ -91,9 +89,9 @@ class FakeSyncProcessRunner : public SyncProcessRunner {
                           max_parallel_task),
         max_parallel_task_(max_parallel_task) {}
 
-  void StartSync(const SyncStatusCallback& callback) override {
+  void StartSync(SyncStatusCallback callback) override {
     EXPECT_LT(running_tasks_.size(), max_parallel_task_);
-    running_tasks_.push(callback);
+    running_tasks_.push(std::move(callback));
   }
 
   ~FakeSyncProcessRunner() override {}
@@ -104,9 +102,9 @@ class FakeSyncProcessRunner : public SyncProcessRunner {
 
   void CompleteTask(SyncStatusCode status) {
     ASSERT_FALSE(running_tasks_.empty());
-    SyncStatusCallback task = running_tasks_.front();
+    SyncStatusCallback task = std::move(running_tasks_.front());
     running_tasks_.pop();
-    task.Run(status);
+    std::move(task).Run(status);
   }
 
   bool HasRunningTask() const {

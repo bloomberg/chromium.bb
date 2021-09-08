@@ -14,6 +14,7 @@
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"
 
@@ -26,13 +27,13 @@ ScopedJavaLocalRef<jobject> CreateRenderInfoBarHelper(
     JNIEnv* env,
     int enumerated_icon_id,
     const JavaRef<jobject>& window,
-    const base::string16& compact_message_text,
-    const base::string16& compact_link_text,
-    const base::string16& message_text,
-    const base::string16& description_text,
-    const base::string16& learn_more_link_text,
-    const base::string16& primary_button_text,
-    const base::string16& secondary_button_text,
+    const std::u16string& compact_message_text,
+    const std::u16string& compact_link_text,
+    const std::u16string& message_text,
+    const std::u16string& description_text,
+    const std::u16string& learn_more_link_text,
+    const std::u16string& primary_button_text,
+    const std::u16string& secondary_button_text,
     bool secondary_button_should_open_settings,
     const std::vector<int>& content_settings) {
   ScopedJavaLocalRef<jstring> compact_message_text_java =
@@ -64,22 +65,24 @@ ScopedJavaLocalRef<jobject> CreateRenderInfoBarHelper(
 
 GroupedPermissionInfoBar::GroupedPermissionInfoBar(
     std::unique_ptr<GroupedPermissionInfoBarDelegate> delegate)
-    : ChromeConfirmInfoBar(std::move(delegate)) {}
+    : infobars::ConfirmInfoBar(std::move(delegate)) {}
 
 GroupedPermissionInfoBar::~GroupedPermissionInfoBar() {}
 
 base::android::ScopedJavaLocalRef<jobject>
-GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
+GroupedPermissionInfoBar::CreateRenderInfoBar(
+    JNIEnv* env,
+    const ResourceIdMapper& resource_id_mapper) {
   GroupedPermissionInfoBarDelegate* delegate = GetDelegate();
 
-  base::string16 compact_message_text = delegate->GetCompactMessageText();
-  base::string16 compact_link_text = delegate->GetCompactLinkText();
-  base::string16 message_text = delegate->GetMessageText();
-  base::string16 description_text = delegate->GetDescriptionText();
-  base::string16 learn_more_link_text = delegate->GetLinkText();
-  base::string16 primary_button_text =
+  std::u16string compact_message_text = delegate->GetCompactMessageText();
+  std::u16string compact_link_text = delegate->GetCompactLinkText();
+  std::u16string message_text = delegate->GetMessageText();
+  std::u16string description_text = delegate->GetDescriptionText();
+  std::u16string learn_more_link_text = delegate->GetLinkText();
+  std::u16string primary_button_text =
       GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK);
-  base::string16 secondary_button_text =
+  std::u16string secondary_button_text =
       GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL);
   const bool secondary_button_should_open_settings =
       delegate->ShouldSecondaryButtonOpenSettings();
@@ -93,9 +96,16 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
         static_cast<int>(delegate->GetContentSettingType(i)));
   }
 
+  content::WebContents* web_contents =
+      infobars::ContentInfoBarManager::WebContentsFromInfoBar(this);
+  DCHECK(web_contents);
+
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  DCHECK(tab);
+
   return CreateRenderInfoBarHelper(
       env, permission_icon,
-      GetTab()->web_contents()->GetTopLevelNativeWindow()->GetJavaObject(),
+      tab->web_contents()->GetTopLevelNativeWindow()->GetJavaObject(),
       compact_message_text, compact_link_text, message_text, description_text,
       learn_more_link_text, primary_button_text, secondary_button_text,
       secondary_button_should_open_settings, content_settings_types);

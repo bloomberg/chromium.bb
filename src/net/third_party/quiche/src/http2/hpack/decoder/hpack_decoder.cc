@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder.h"
+#include "http2/hpack/decoder/hpack_decoder.h"
 
-#include "net/third_party/quiche/src/http2/decoder/decode_status.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_estimate_memory_usage.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_flags.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
+#include "http2/decoder/decode_status.h"
+#include "http2/platform/api/http2_estimate_memory_usage.h"
+#include "http2/platform/api/http2_flag_utils.h"
+#include "http2/platform/api/http2_flags.h"
+#include "http2/platform/api/http2_logging.h"
 
 namespace http2 {
 
@@ -19,11 +20,6 @@ HpackDecoder::HpackDecoder(HpackDecoderListener* listener,
       error_(HpackDecodingError::kOk) {}
 
 HpackDecoder::~HpackDecoder() = default;
-
-void HpackDecoder::set_tables_debug_listener(
-    HpackDecoderTablesDebugListener* debug_listener) {
-  decoder_state_.set_tables_debug_listener(debug_listener);
-}
 
 void HpackDecoder::set_max_string_size_bytes(size_t max_string_size_bytes) {
   entry_buffer_.set_max_string_size_bytes(max_string_size_bytes);
@@ -68,7 +64,8 @@ bool HpackDecoder::DecodeFragment(DecodeBuffer* db) {
     return false;
   }
   // Should be positioned between entries iff decoding is complete.
-  DCHECK_EQ(block_decoder_.before_entry(), status == DecodeStatus::kDecodeDone)
+  QUICHE_DCHECK_EQ(block_decoder_.before_entry(),
+                   status == DecodeStatus::kDecodeDone)
       << status;
   if (!block_decoder_.before_entry()) {
     entry_buffer_.BufferStringsIfUnbuffered();

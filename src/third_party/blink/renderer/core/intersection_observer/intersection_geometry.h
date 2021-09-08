@@ -36,10 +36,13 @@ class CORE_EXPORT IntersectionGeometry {
     kShouldUseReplacedContentRect = 1 << 3,
     kShouldConvertToCSSPixels = 1 << 4,
     kShouldUseCachedRects = 1 << 5,
+    // Applies to boxes. If true, OverflowClipRect() is used if necessary
+    // instead of BorderBoundingBox().
+    kUseOverflowClipEdge = 1 << 6,
 
     // These flags will be computed
-    kRootIsImplicit = 1 << 6,
-    kIsVisible = 1 << 7
+    kRootIsImplicit = 1 << 7,
+    kIsVisible = 1 << 8
   };
 
   struct RootGeometry {
@@ -63,6 +66,8 @@ class CORE_EXPORT IntersectionGeometry {
     // True iff unscrolled_unclipped_intersection_rect actually intersects the
     // root, as defined by edge-inclusive intersection rules.
     bool does_intersect;
+    // True iff the target rect before any margins were applied was empty
+    bool pre_margin_target_rect_is_empty;
     // Invalidation flag
     bool valid;
   };

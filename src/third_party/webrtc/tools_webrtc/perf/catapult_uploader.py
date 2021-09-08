@@ -32,16 +32,19 @@ def _GenerateOauthToken():
             (p.stdout.read(), p.stderr.read()))
 
 
-def _SendHistogramSet(url, histograms, oauth_token):
+def _CreateHeaders(oauth_token):
+    return {'Authorization': 'Bearer %s' % oauth_token}
+
+
+def _SendHistogramSet(url, histograms):
     """Make a HTTP POST with the given JSON to the Performance Dashboard.
 
     Args:
       url: URL of Performance Dashboard instance, e.g.
           "https://chromeperf.appspot.com".
       histograms: a histogram set object that contains the data to be sent.
-      oauth_token: An oauth token to use for authorization.
     """
-    headers = {'Authorization': 'Bearer %s' % oauth_token}
+    headers = _CreateHeaders(_GenerateOauthToken())
 
     serialized = json.dumps(_ApplyHacks(histograms.AsDicts()), indent=4)
 
@@ -61,7 +64,7 @@ def _SendHistogramSet(url, histograms, oauth_token):
     return response, content
 
 
-def _WaitForUploadConfirmation(url, oauth_token, upload_token, wait_timeout,
+def _WaitForUploadConfirmation(url, upload_token, wait_timeout,
                                wait_polling_period):
     """Make a HTTP GET requests to the Performance Dashboard untill upload
     status is known or the time is out.
@@ -69,7 +72,6 @@ def _WaitForUploadConfirmation(url, oauth_token, upload_token, wait_timeout,
     Args:
       url: URL of Performance Dashboard instance, e.g.
           "https://chromeperf.appspot.com".
-      oauth_token: An oauth token to use for authorization.
       upload_token: String that identifies Performance Dashboard and can be used
         for the status check.
       wait_timeout: (datetime.timedelta) Maximum time to wait for the
@@ -79,9 +81,10 @@ def _WaitForUploadConfirmation(url, oauth_token, upload_token, wait_timeout,
     """
     assert wait_polling_period <= wait_timeout
 
-    headers = {'Authorization': 'Bearer %s' % oauth_token}
+    headers = _CreateHeaders(_GenerateOauthToken())
     http = httplib2.Http()
 
+    oauth_refreshed = False
     response = None
     resp_json = None
     current_time = datetime.datetime.now()
@@ -93,34 +96,94 @@ def _WaitForUploadConfirmation(url, oauth_token, upload_token, wait_timeout,
             time.sleep((next_poll_time - current_time).total_seconds())
         next_poll_time = datetime.datetime.now() + wait_polling_period
 
-        response, content = http.request(url + '/uploads' + upload_token,
+        response, content = http.request(url + '/uploads/' + upload_token,
                                          method='GET', headers=headers)
+
+        print 'Upload state polled. Response: %r.' % content
+
+        if not oauth_refreshed and response.status == 403:
+            print 'Oauth token refreshed. Continue polling.'
+            headers = _CreateHeaders(_GenerateOauthToken())
+            oauth_refreshed = True
+            continue
+
+        if response.status != 200:
+            break
+
         resp_json = json.loads(content)
-
-        print 'Upload state polled. Response: %s.' % content
-
-        if (response.status != 200 or
-            resp_json['state'] == 'COMPLETED' or
-            resp_json['state'] == 'FAILED'):
+        if resp_json['state'] == 'COMPLETED' or resp_json['state'] == 'FAILED':
             break
 
     return response, resp_json
 
 
+# Because of an issues on the Dashboard side few measurements over a large set
+# can fail to upload. That would lead to the whole upload to be marked as
+# failed. Check it, so it doesn't increase flakiness of our tests.
+# TODO(crbug.com/1145904): Remove check after fixed.
+def _CheckFullUploadInfo(url, upload_token,
+                         min_measurements_amount=100,
+                         max_failed_measurements_amount=1):
+    """Make a HTTP GET requests to the Performance Dashboard to get full info
+    about upload (including measurements). Checks if upload is correct despite
+    not having status "COMPLETED".
+
+    Args:
+      url: URL of Performance Dashboard instance, e.g.
+          "https://chromeperf.appspot.com".
+      upload_token: String that identifies Performance Dashboard and can be used
+        for the status check.
+      min_measurements_amount: minimal amount of measurements that the upload
+        should have to start tolerating failures in particular measurements.
+      max_failed_measurements_amount: maximal amount of failured measurements to
+        tolerate.
+    """
+    headers = _CreateHeaders(_GenerateOauthToken())
+    http = httplib2.Http()
+
+    response, content = http.request(url + '/uploads/' + upload_token +
+                                     '?additional_info=measurements',
+                                     method='GET', headers=headers)
+
+    print 'Full upload info: %r.' % content
+
+    if response.status != 200:
+        print 'Failed to reach the dashboard to get full upload info.'
+        return False
+
+    resp_json = json.loads(content)
+    if 'measurements' in resp_json:
+        measurements_cnt = len(resp_json['measurements'])
+        not_completed_state_cnt = len([
+            m for m in resp_json['measurements']
+            if m['state'] != 'COMPLETED'
+        ])
+
+        if (measurements_cnt >= min_measurements_amount and
+            not_completed_state_cnt <= max_failed_measurements_amount):
+            print('Not all measurements were uploaded. Measurements count: %d, '
+                  'failed to upload: %d' %
+                  (measurements_cnt, not_completed_state_cnt))
+            return True
+
+    return False
+
+
 # TODO(https://crbug.com/1029452): HACKHACK
 # Remove once we have doubles in the proto and handle -infinity correctly.
 def _ApplyHacks(dicts):
+    def _NoInf(value):
+        if value == float('inf'):
+            return histogram.JS_MAX_VALUE
+        if value == float('-inf'):
+            return -histogram.JS_MAX_VALUE
+        return value
+
     for d in dicts:
         if 'running' in d:
-
-            def _NoInf(value):
-                if value == float('inf'):
-                    return histogram.JS_MAX_VALUE
-                if value == float('-inf'):
-                    return -histogram.JS_MAX_VALUE
-                return value
-
             d['running'] = [_NoInf(value) for value in d['running']]
+        if 'sampleValues' in d:
+            d['sampleValues'] = [_NoInf(value) for value in d['sampleValues']]
 
     return dicts
 
@@ -160,27 +223,29 @@ def UploadToDashboard(options):
     if options.output_json_file:
         _DumpOutput(histograms, options.output_json_file)
 
-    oauth_token = _GenerateOauthToken()
-    response, content = _SendHistogramSet(
-        options.dashboard_url, histograms, oauth_token)
+    response, content = _SendHistogramSet(options.dashboard_url, histograms)
+
+    if response.status != 200:
+        print('Upload failed with %d: %s\n\n%s' % (response.status,
+                                                   response.reason, content))
+        return 1
 
     upload_token = json.loads(content).get('token')
     if not options.wait_for_upload or not upload_token:
-        print 'Not waiting for upload status confirmation.'
-        if response.status == 200:
-            print 'Received 200 from dashboard.'
-            return 0
-        else:
-            print('Upload failed with %d: %s\n\n%s' % (response.status,
-                                                      response.reason, content))
-            return 1
+        print('Received 200 from dashboard. ',
+              'Not waiting for the upload status confirmation.')
+        return 0
 
     response, resp_json = _WaitForUploadConfirmation(
         options.dashboard_url,
-        oauth_token,
         upload_token,
         datetime.timedelta(seconds=options.wait_timeout_sec),
         datetime.timedelta(seconds=options.wait_polling_period_sec))
+
+    if ((resp_json and resp_json['state'] == 'COMPLETED') or
+        _CheckFullUploadInfo(options.dashboard_url, upload_token)):
+        print 'Upload completed.'
+        return 0
 
     if response.status != 200 or resp_json['state'] == 'FAILED':
         print('Upload failed with %d: %s\n\n%s' % (response.status,
@@ -188,9 +253,6 @@ def UploadToDashboard(options):
                                                   str(resp_json)))
         return 1
 
-    if resp_json['state'] == 'COMPLETED':
-        print 'Upload completed.'
-        return 0
-
-    print('Upload wasn\'t completed in a given time: %d.', options.wait_timeout)
+    print('Upload wasn\'t completed in a given time: %d seconds.' %
+          options.wait_timeout_sec)
     return 1

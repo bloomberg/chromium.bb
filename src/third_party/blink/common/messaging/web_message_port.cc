@@ -9,6 +9,7 @@
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/messaging/transferable_message_mojom_traits.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 
 namespace blink {
@@ -19,7 +20,7 @@ WebMessagePort::Message& WebMessagePort::Message::operator=(Message&&) =
     default;
 WebMessagePort::Message::~Message() = default;
 
-WebMessagePort::Message::Message(const base::string16& data) : data(data) {}
+WebMessagePort::Message::Message(const std::u16string& data) : data(data) {}
 
 WebMessagePort::Message::Message(std::vector<WebMessagePort> ports)
     : ports(std::move(ports)) {}
@@ -28,11 +29,11 @@ WebMessagePort::Message::Message(WebMessagePort&& port) {
   ports.emplace_back(std::move(port));
 }
 
-WebMessagePort::Message::Message(const base::string16& data,
+WebMessagePort::Message::Message(const std::u16string& data,
                                  std::vector<WebMessagePort> ports)
     : data(data), ports(std::move(ports)) {}
 
-WebMessagePort::Message::Message(const base::string16& data,
+WebMessagePort::Message::Message(const std::u16string& data,
                                  WebMessagePort port)
     : data(data) {
   ports.emplace_back(std::move(port));

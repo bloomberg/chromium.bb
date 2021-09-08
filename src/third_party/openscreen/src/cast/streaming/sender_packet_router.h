@@ -146,7 +146,7 @@ class SenderPacketRouter : public BandwidthEstimator,
   // a burst-send.
   void ScheduleNextBurst();
 
-  // Performs a burst-send of packets. This is called whevener the Alarm fires.
+  // Performs a burst-send of packets. This is called whenever the Alarm fires.
   void SendBurstOfPackets();
 
   // Send an RTCP packet from each Sender that has one ready, and return the

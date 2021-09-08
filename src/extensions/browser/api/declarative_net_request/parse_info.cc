@@ -36,6 +36,9 @@ std::string GetError(ParseResult error_reason, const int* rule_id) {
       break;
     case ParseResult::SUCCESS:
       break;
+    case ParseResult::ERROR_REQUEST_METHOD_DUPLICATED:
+      return ErrorUtils::FormatErrorMessage(kErrorRequestMethodDuplicated,
+                                            base::NumberToString(*rule_id));
     case ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED:
       return ErrorUtils::FormatErrorMessage(kErrorResourceTypeDuplicated,
                                             base::NumberToString(*rule_id));
@@ -43,9 +46,6 @@ std::string GetError(ParseResult error_reason, const int* rule_id) {
       return ErrorUtils::FormatErrorMessage(
           kErrorInvalidRuleKey, base::NumberToString(*rule_id), kIDKey,
           base::NumberToString(kMinValidID));
-    case ParseResult::ERROR_EMPTY_RULE_PRIORITY:
-      return ErrorUtils::FormatErrorMessage(kErrorEmptyRulePriority,
-                                            base::NumberToString(*rule_id));
     case ParseResult::ERROR_INVALID_RULE_PRIORITY:
       return ErrorUtils::FormatErrorMessage(
           kErrorInvalidRuleKey, base::NumberToString(*rule_id), kPriorityKey,
@@ -60,6 +60,9 @@ std::string GetError(ParseResult error_reason, const int* rule_id) {
     case ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST:
       return ErrorUtils::FormatErrorMessage(
           kErrorEmptyList, base::NumberToString(*rule_id), kResourceTypesKey);
+    case ParseResult::ERROR_EMPTY_REQUEST_METHODS_LIST:
+      return ErrorUtils::FormatErrorMessage(
+          kErrorEmptyList, base::NumberToString(*rule_id), kRequestMethodsKey);
     case ParseResult::ERROR_EMPTY_URL_FILTER:
       return ErrorUtils::FormatErrorMessage(
           kErrorEmptyKey, base::NumberToString(*rule_id), kUrlFilterKey);
@@ -168,6 +171,16 @@ std::string GetError(ParseResult error_reason, const int* rule_id) {
       return ErrorUtils::FormatErrorMessage(
           kErrorInvalidAllowAllRequestsResourceType,
           base::NumberToString(*rule_id));
+    case ParseResult::ERROR_EMPTY_TAB_IDS_LIST:
+      return ErrorUtils::FormatErrorMessage(
+          kErrorEmptyList, base::NumberToString(*rule_id), kTabIdsKey);
+    case ParseResult::ERROR_TAB_IDS_ON_NON_SESSION_RULE:
+      return ErrorUtils::FormatErrorMessage(kErrorTabIdsOnNonSessionRule,
+                                            base::NumberToString(*rule_id),
+                                            kTabIdsKey, kExcludedTabIdsKey);
+    case ParseResult::ERROR_TAB_ID_DUPLICATED:
+      return ErrorUtils::FormatErrorMessage(kErrorTabIdDuplicated,
+                                            base::NumberToString(*rule_id));
   }
   NOTREACHED();
   return std::string();
@@ -177,13 +190,15 @@ std::string GetError(ParseResult error_reason, const int* rule_id) {
 
 ParseInfo::ParseInfo(size_t rules_count,
                      size_t regex_rules_count,
-                     int ruleset_checksum,
-                     std::vector<int> regex_limit_exceeded_rules)
+                     std::vector<int> regex_limit_exceeded_rules,
+                     flatbuffers::DetachedBuffer buffer,
+                     int ruleset_checksum)
     : has_error_(false),
       rules_count_(rules_count),
       regex_rules_count_(regex_rules_count),
-      ruleset_checksum_(ruleset_checksum),
-      regex_limit_exceeded_rules_(std::move(regex_limit_exceeded_rules)) {}
+      regex_limit_exceeded_rules_(std::move(regex_limit_exceeded_rules)),
+      buffer_(std::move(buffer)),
+      ruleset_checksum_(ruleset_checksum) {}
 
 ParseInfo::ParseInfo(ParseResult error_reason, const int* rule_id)
     : has_error_(true),

@@ -6,7 +6,6 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_PAYMENTS_CARD_NAME_FIX_FLOW_VIEW_H_
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 
 namespace autofill {
 

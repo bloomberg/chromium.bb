@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
+#include "quic/core/quic_crypto_stream.h"
 
 #include <cstdint>
 #include <memory>
@@ -10,15 +10,15 @@
 #include <utility>
 #include <vector>
 
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_stream_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "quic/core/crypto/crypto_handshake.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/quic_stream_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
 
 using testing::_;
 using testing::InSequence;
@@ -63,6 +63,11 @@ class MockQuicCryptoStream : public QuicCryptoStream,
   void OnOneRttPacketAcknowledged() override {}
   void OnHandshakePacketSent() override {}
   void OnHandshakeDoneReceived() override {}
+  void OnNewTokenReceived(absl::string_view /*token*/) override {}
+  std::string GetAddressToken() const override { return ""; }
+  bool ValidateAddressToken(absl::string_view /*token*/) const override {
+    return true;
+  }
   HandshakeState GetHandshakeState() const override { return HANDSHAKE_START; }
   void SetServerApplicationStateForResumption(
       std::unique_ptr<ApplicationState> /*application_state*/) override {}
@@ -576,20 +581,22 @@ TEST_F(QuicCryptoStreamTest, HasUnackedCryptoDataWithCryptoFrames) {
 
 // Regression test for bugfix of GetPacketHeaderSize.
 TEST_F(QuicCryptoStreamTest, CryptoMessageFramingOverhead) {
-  for (auto version : AllSupportedTransportVersions()) {
+  for (const ParsedQuicVersion& version :
+       AllSupportedVersionsWithQuicCrypto()) {
     SCOPED_TRACE(version);
     QuicByteCount expected_overhead = 48;
-    if (VersionHasIetfInvariantHeader(version)) {
+    if (version.HasIetfInvariantHeader()) {
       expected_overhead += 4;
     }
-    if (QuicVersionHasLongHeaderLengths(version)) {
+    if (version.HasLongHeaderLengths()) {
       expected_overhead += 3;
     }
-    if (VersionHasLengthPrefixedConnectionIds(version)) {
+    if (version.HasLengthPrefixedConnectionIds()) {
       expected_overhead += 1;
     }
-    EXPECT_EQ(expected_overhead, QuicCryptoStream::CryptoMessageFramingOverhead(
-                                     version, TestConnectionId()));
+    EXPECT_EQ(expected_overhead,
+              QuicCryptoStream::CryptoMessageFramingOverhead(
+                  version.transport_version, TestConnectionId()));
   }
 }
 

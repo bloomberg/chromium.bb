@@ -4,24 +4,28 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.app.Activity;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.ActivityUtils;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.payments.BrowserPaymentRequest;
 import org.chromium.components.payments.InvalidPaymentRequest;
+import org.chromium.components.payments.MojoPaymentRequestGateKeeper;
 import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentRequestService;
 import org.chromium.components.payments.PaymentRequestServiceUtil;
+import org.chromium.components.payments.SslValidityChecker;
 import org.chromium.components.user_prefs.UserPrefs;
-import org.chromium.content_public.browser.FeaturePolicyFeature;
+import org.chromium.content_public.browser.PermissionsPolicyFeature;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
-import org.chromium.mojo.system.MojoException;
-import org.chromium.mojo.system.MojoResult;
 import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.services.service_manager.InterfaceFactory;
 
@@ -54,13 +58,17 @@ public class ChromePaymentRequestFactory implements InterfaceFactory<PaymentRequ
     @VisibleForTesting
     public static class ChromePaymentRequestDelegateImpl
             implements ChromePaymentRequestService.Delegate {
-        private final TwaPackageManagerDelegate mPackageManagerDelegate =
-                new TwaPackageManagerDelegate();
         private final RenderFrameHost mRenderFrameHost;
         private boolean mSkipUiForBasicCard;
 
         private ChromePaymentRequestDelegateImpl(RenderFrameHost renderFrameHost) {
             mRenderFrameHost = renderFrameHost;
+        }
+
+        @Override
+        public BrowserPaymentRequest createBrowserPaymentRequest(
+                PaymentRequestService paymentRequestService) {
+            return new ChromePaymentRequestService(paymentRequestService, this);
         }
 
         @Override
@@ -105,8 +113,12 @@ public class ChromePaymentRequestFactory implements InterfaceFactory<PaymentRequ
             WebContents liveWebContents =
                     PaymentRequestServiceUtil.getLiveWebContents(mRenderFrameHost);
             if (liveWebContents == null) return null;
-            ChromeActivity activity = ChromeActivity.fromWebContents(liveWebContents);
-            return activity != null ? mPackageManagerDelegate.getTwaPackageName(activity) : null;
+            Activity activity = ActivityUtils.getActivityFromWebContents(liveWebContents);
+            if (!(activity instanceof CustomTabActivity)) return null;
+
+            CustomTabActivity customTabActivity = ((CustomTabActivity) activity);
+            if (!customTabActivity.isInTwaMode()) return null;
+            return customTabActivity.getTwaPackage();
         }
 
         @VisibleForTesting
@@ -135,9 +147,8 @@ public class ChromePaymentRequestFactory implements InterfaceFactory<PaymentRequ
     @Override
     public PaymentRequest createImpl() {
         if (mRenderFrameHost == null) return new InvalidPaymentRequest();
-        if (!mRenderFrameHost.isFeatureEnabled(FeaturePolicyFeature.PAYMENT)) {
-            mRenderFrameHost.getRemoteInterfaces().onConnectionError(
-                    new MojoException(MojoResult.PERMISSION_DENIED));
+        if (!mRenderFrameHost.isFeatureEnabled(PermissionsPolicyFeature.PAYMENT)) {
+            mRenderFrameHost.terminateRendererDueToBadMessage(241 /*PAYMENTS_WITHOUT_PERMISSION*/);
             return null;
         }
 
@@ -161,9 +172,8 @@ public class ChromePaymentRequestFactory implements InterfaceFactory<PaymentRequ
         WebContents webContents = WebContentsStatics.fromRenderFrameHost(mRenderFrameHost);
         if (webContents == null || webContents.isDestroyed()) return new InvalidPaymentRequest();
 
-        return PaymentRequestService.createPaymentRequest(mRenderFrameHost,
-                /*isOffTheRecord=*/delegate.isOffTheRecord(), delegate,
-                (paymentRequestService)
-                        -> new ChromePaymentRequestService(paymentRequestService, delegate));
+        return new MojoPaymentRequestGateKeeper(
+                (client, onClosed)
+                        -> new PaymentRequestService(mRenderFrameHost, client, onClosed, delegate));
     }
 }

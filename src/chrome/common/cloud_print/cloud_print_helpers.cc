@@ -30,7 +30,8 @@ namespace {
 // required by cloud print server.
 PrinterTags PreparePrinterTags(const PrinterTags& printer_tags) {
   PrinterTags printer_tags_out = printer_tags;
-  printer_tags_out[kChromeVersionTagName] = chrome::GetVersionString();
+  printer_tags_out[kChromeVersionTagName] =
+      chrome::GetVersionString(chrome::WithExtendedStable(false));
   printer_tags_out[kSystemNameTagName] =
       base::SysInfo::OperatingSystemName();
   printer_tags_out[kSystemVersionTagName] =
@@ -188,7 +189,7 @@ GURL GetUrlForGetAuthCode(const GURL& cloud_print_server_url,
 
 base::Value ParseResponseJSON(const std::string& response_data,
                               bool* succeeded) {
-  base::Optional<base::Value> message_value =
+  absl::optional<base::Value> message_value =
       base::JSONReader::Read(response_data);
   if (!message_value || !message_value->is_dict())
     return base::Value();
@@ -234,8 +235,8 @@ std::string GetPostDataForPrinterTags(
   return post_data;
 }
 
-std::string GetCloudPrintAuthHeader(const std::string& auth_token) {
-  return base::StringPrintf("Authorization: OAuth %s", auth_token.c_str());
+std::string GetCloudPrintAuthHeaderValue(const std::string& auth_token) {
+  return base::StringPrintf("OAuth %s", auth_token.c_str());
 }
 
 }  // namespace cloud_print

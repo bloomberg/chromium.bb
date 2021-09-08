@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$$, BackgroundManager, BackgroundSelectionType, BrowserProxy, ModuleRegistry, PromoBrowserCommandProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, BackgroundManager, BackgroundSelectionType, CustomizeDialogPage, ModuleRegistry, NewTabPageProxy, NtpElement, PromoBrowserCommandProxy, VoiceAction, WindowProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-import {assertNotStyle, assertStyle, createTestProxy, createTheme} from 'chrome://test/new_tab_page/test_support.js';
+import {fakeMetricsPrivate, MetricsTracker} from 'chrome://test/new_tab_page/metrics_test_support.js';
+import {assertNotStyle, assertStyle, createTheme} from 'chrome://test/new_tab_page/test_support.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
@@ -15,10 +16,28 @@ suite('NewTabPageAppTest', () => {
   let app;
 
   /**
-   * @implements {BrowserProxy}
+   * @implements {WindowProxy}
    * @extends {TestBrowserProxy}
    */
-  let testProxy;
+  let windowProxy;
+
+  /**
+   * @implements {newTabPage.mojom.PageHandlerRemote}
+   * @extends {TestBrowserProxy}
+   */
+  let handler;
+
+  /** @type {newTabPage.mojom.PageHandlerRemote} */
+  let callbackRouterRemote;
+
+  /** @type {MetricsTracker} */
+  let metrics;
+
+  /**
+   * @implements {ModuleRegistry}
+   * @extends {TestBrowserProxy}
+   */
+  let moduleRegistry;
 
   /**
    * @implements {BackgroundManager}
@@ -29,40 +48,38 @@ suite('NewTabPageAppTest', () => {
   /** @type {PromiseResolver} */
   let moduleResolver;
 
-  suiteSetup(() => {
-    loadTimeData.overrideValues({
-      realboxEnabled: false,
-    });
-  });
-
   setup(async () => {
     PolymerTest.clearBody();
 
-    testProxy = createTestProxy();
-    testProxy.handler.setResultFor('getBackgroundCollections', Promise.resolve({
+    windowProxy = TestBrowserProxy.fromClass(WindowProxy);
+    handler = TestBrowserProxy.fromClass(newTabPage.mojom.PageHandlerRemote);
+    handler.setResultFor('getBackgroundCollections', Promise.resolve({
       collections: [],
     }));
-    testProxy.handler.setResultFor('getDoodle', Promise.resolve({
+    handler.setResultFor('getDoodle', Promise.resolve({
       doodle: null,
     }));
-    testProxy.handler.setResultFor('getOneGoogleBarParts', Promise.resolve({
-      parts: null,
-    }));
-    testProxy.handler.setResultFor('getPromo', Promise.resolve({promo: null}));
-    testProxy.setResultMapperFor('matchMedia', () => ({
-                                                 addListener() {},
-                                                 removeListener() {},
-                                               }));
-    testProxy.setResultFor('waitForLazyRender', Promise.resolve());
-    BrowserProxy.instance_ = testProxy;
+    handler.setResultFor('getPromo', Promise.resolve({promo: null}));
+    windowProxy.setResultMapperFor('matchMedia', () => ({
+                                                   addListener() {},
+                                                   removeListener() {},
+                                                 }));
+    windowProxy.setResultFor('waitForLazyRender', Promise.resolve());
+    windowProxy.setResultFor('createIframeSrc', '');
+    WindowProxy.setInstance(windowProxy);
+    const callbackRouter = new newTabPage.mojom.PageCallbackRouter();
+    NewTabPageProxy.setInstance(handler, callbackRouter);
+    callbackRouterRemote = callbackRouter.$.bindNewPipeAndPassRemote();
     backgroundManager = TestBrowserProxy.fromClass(BackgroundManager);
     backgroundManager.setResultFor(
         'getBackgroundImageLoadTime', Promise.resolve(0));
-    BackgroundManager.instance_ = backgroundManager;
-    const moduleRegistry = TestBrowserProxy.fromClass(ModuleRegistry);
+    BackgroundManager.setInstance(backgroundManager);
+    moduleRegistry = TestBrowserProxy.fromClass(ModuleRegistry);
     moduleResolver = new PromiseResolver();
+    moduleRegistry.setResultFor('getDescriptors', []);
     moduleRegistry.setResultFor('initializeModules', moduleResolver.promise);
-    ModuleRegistry.instance_ = moduleRegistry;
+    ModuleRegistry.setInstance(moduleRegistry);
+    metrics = fakeMetricsPrivate();
 
     app = document.createElement('ntp-app');
     document.body.appendChild(app);
@@ -89,8 +106,8 @@ suite('NewTabPageAppTest', () => {
     const theme = createTheme();
 
     // Act.
-    testProxy.callbackRouterRemote.setTheme(theme);
-    await testProxy.callbackRouterRemote.$.flushForTesting();
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
 
     // Assert.
     assertDeepEquals(
@@ -99,8 +116,8 @@ suite('NewTabPageAppTest', () => {
 
   test('setting theme updates ntp', async () => {
     // Act.
-    testProxy.callbackRouterRemote.setTheme(createTheme());
-    await testProxy.callbackRouterRemote.$.flushForTesting();
+    callbackRouterRemote.setTheme(createTheme());
+    await callbackRouterRemote.$.flushForTesting();
 
     // Assert.
     assertEquals(1, backgroundManager.getCallCount('setBackgroundColor'));
@@ -116,7 +133,6 @@ suite('NewTabPageAppTest', () => {
     assertFalse(await backgroundManager.whenCalled('setShowBackgroundImage'));
     assertStyle($$(app, '#backgroundImageAttribution'), 'display', 'none');
     assertStyle($$(app, '#backgroundImageAttribution2'), 'display', 'none');
-    assertTrue($$(app, '#logo').doodleAllowed);
     assertFalse($$(app, '#logo').singleColored);
     assertFalse($$(app, '#logo').dark);
     assertEquals(0xffff0000, $$(app, '#logo').backgroundColor.value);
@@ -131,8 +147,8 @@ suite('NewTabPageAppTest', () => {
     };
 
     // Act.
-    testProxy.callbackRouterRemote.setTheme(theme);
-    await testProxy.callbackRouterRemote.$.flushForTesting();
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
 
     assertNotStyle($$(app, '#themeAttribution'), 'display', 'none');
     assertEquals('chrome://theme/foo', $$(app, '#themeAttribution img').src);
@@ -140,13 +156,11 @@ suite('NewTabPageAppTest', () => {
 
   test('realbox is not visible by default', async () => {
     // Assert.
-    assertNotStyle($$(app, '#fakebox'), 'display', 'none');
-    assertStyle($$(app, '#realbox'), 'display', 'none');
     assertStyle($$(app, '#realbox'), 'visibility', 'hidden');
 
     // Act.
-    testProxy.callbackRouterRemote.setTheme(createTheme());
-    await testProxy.callbackRouterRemote.$.flushForTesting();
+    callbackRouterRemote.setTheme(createTheme());
+    await callbackRouterRemote.$.flushForTesting();
 
     // Assert.
     assertStyle($$(app, '#realbox'), 'visibility', 'visible');
@@ -154,14 +168,16 @@ suite('NewTabPageAppTest', () => {
 
   test('open voice search event opens voice search overlay', async () => {
     // Act.
-    $$(app, '#fakebox').dispatchEvent(new Event('open-voice-search'));
+    $$(app, '#realbox').dispatchEvent(new Event('open-voice-search'));
     await flushTasks();
 
     // Assert.
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
+    assertEquals(1, metrics.count('NewTabPage.VoiceActions'));
     assertEquals(
-        newTabPage.mojom.VoiceSearchAction.kActivateSearchBox,
-        await testProxy.handler.whenCalled('onVoiceSearchAction'));
+        1,
+        metrics.count(
+            'NewTabPage.VoiceActions', VoiceAction.kActivateSearchBox));
   });
 
   test('voice search keyboard shortcut', async () => {
@@ -176,9 +192,11 @@ suite('NewTabPageAppTest', () => {
 
     // Assert.
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
+    assertEquals(1, metrics.count('NewTabPage.VoiceActions'));
     assertEquals(
-        newTabPage.mojom.VoiceSearchAction.kActivateKeyboard,
-        await testProxy.handler.whenCalled('onVoiceSearchAction'));
+        1,
+        metrics.count(
+            'NewTabPage.VoiceActions', VoiceAction.kActivateKeyboard));
 
     // Test other shortcut doesn't close voice search.
     // Act
@@ -208,52 +226,26 @@ suite('NewTabPageAppTest', () => {
     });
   }
 
-  [true, false].forEach(themeModeDoodlesEnabled => {
-    const allows = themeModeDoodlesEnabled ? 'allows' : 'disallows';
-    test(`setting background image shows image, ${allows} doodle`, async () => {
-      // Arrange.
-      loadTimeData.overrideValues({themeModeDoodlesEnabled});
-      const theme = createTheme();
-      theme.backgroundImage = {url: {url: 'https://img.png'}};
+  test('setting background image shows image', async () => {
+    // Arrange.
+    const theme = createTheme();
+    theme.backgroundImage = {url: {url: 'https://img.png'}};
 
-      // Act.
-      backgroundManager.resetResolver('setShowBackgroundImage');
-      testProxy.callbackRouterRemote.setTheme(theme);
-      await testProxy.callbackRouterRemote.$.flushForTesting();
+    // Act.
+    backgroundManager.resetResolver('setShowBackgroundImage');
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
 
-      // Assert.
-      assertEquals(1, backgroundManager.getCallCount('setShowBackgroundImage'));
-      assertTrue(await backgroundManager.whenCalled('setShowBackgroundImage'));
-      assertNotStyle(
-          $$(app, '#backgroundImageAttribution'), 'text-shadow', 'none');
-      assertEquals(1, backgroundManager.getCallCount('setBackgroundImage'));
-      assertEquals(
-          'https://img.png',
-          (await backgroundManager.whenCalled('setBackgroundImage')).url.url);
-      assertEquals(null, $$(app, '#logo').backgroundColor);
-      if (themeModeDoodlesEnabled) {
-        assertTrue($$(app, '#logo').doodleAllowed);
-      } else {
-        assertFalse($$(app, '#logo').doodleAllowed);
-      }
-    });
-
-    test(`setting non-default theme ${allows} doodle`, async function() {
-      // Arrange.
-      const theme = createTheme();
-      theme.isDefault = false;
-
-      // Act.
-      testProxy.callbackRouterRemote.setTheme(theme);
-      await testProxy.callbackRouterRemote.$.flushForTesting();
-
-      // Assert.
-      if (themeModeDoodlesEnabled) {
-        assertTrue($$(app, '#logo').doodleAllowed);
-      } else {
-        assertFalse($$(app, '#logo').doodleAllowed);
-      }
-    });
+    // Assert.
+    assertEquals(1, backgroundManager.getCallCount('setShowBackgroundImage'));
+    assertTrue(await backgroundManager.whenCalled('setShowBackgroundImage'));
+    assertNotStyle(
+        $$(app, '#backgroundImageAttribution'), 'text-shadow', 'none');
+    assertEquals(1, backgroundManager.getCallCount('setBackgroundImage'));
+    assertEquals(
+        'https://img.png',
+        (await backgroundManager.whenCalled('setBackgroundImage')).url.url);
+    assertEquals(null, $$(app, '#logo').backgroundColor);
   });
 
   test('setting attributions shows attributions', async function() {
@@ -264,8 +256,8 @@ suite('NewTabPageAppTest', () => {
     theme.backgroundImageAttributionUrl = {url: 'https://info.com'};
 
     // Act.
-    testProxy.callbackRouterRemote.setTheme(theme);
-    await testProxy.callbackRouterRemote.$.flushForTesting();
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
 
     // Assert.
     assertNotStyle($$(app, '#backgroundImageAttribution'), 'display', 'none');
@@ -285,8 +277,8 @@ suite('NewTabPageAppTest', () => {
     theme.logoColor = {value: 0xffff0000};
 
     // Act.
-    testProxy.callbackRouterRemote.setTheme(theme);
-    await testProxy.callbackRouterRemote.$.flushForTesting();
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
 
     // Assert.
     assertTrue($$(app, '#logo').singleColored);
@@ -299,8 +291,8 @@ suite('NewTabPageAppTest', () => {
     theme.backgroundImageAttribution1 = 'foo';
     theme.backgroundImageAttribution2 = 'bar';
     theme.backgroundImageAttributionUrl = {url: 'https://info.com'};
-    testProxy.callbackRouterRemote.setTheme(theme);
-    await testProxy.callbackRouterRemote.$.flushForTesting();
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
     assertEquals(backgroundManager.getCallCount('setBackgroundImage'), 1);
     assertEquals(
         'https://example.com/image.png',
@@ -343,8 +335,8 @@ suite('NewTabPageAppTest', () => {
   test('theme update when dialog closed clears selection', async () => {
     const theme = createTheme();
     theme.backgroundImage = {url: {url: 'https://example.com/image.png'}};
-    testProxy.callbackRouterRemote.setTheme(theme);
-    await testProxy.callbackRouterRemote.$.flushForTesting();
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
     assertEquals(1, backgroundManager.getCallCount('setBackgroundImage'));
     assertEquals(
         'https://example.com/image.png',
@@ -370,8 +362,8 @@ suite('NewTabPageAppTest', () => {
     dialog.dispatchEvent(new Event('close'));
     assertEquals(0, backgroundManager.getCallCount('setBackgroundImage'));
     backgroundManager.resetResolver('setBackgroundImage');
-    testProxy.callbackRouterRemote.setTheme(theme);
-    await testProxy.callbackRouterRemote.$.flushForTesting();
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
     assertEquals(2, backgroundManager.getCallCount('setBackgroundImage'));
     assertEquals(
         'https://example.com/image.png',
@@ -381,28 +373,28 @@ suite('NewTabPageAppTest', () => {
   test('theme updates add shortcut color', async () => {
     const theme = createTheme();
     theme.shortcutUseWhiteAddIcon = true;
-    testProxy.callbackRouterRemote.setTheme(theme);
+    callbackRouterRemote.setTheme(theme);
     const mostVisited = $$(app, '#mostVisited');
     assertFalse(mostVisited.hasAttribute('use-white-add-icon'));
-    await testProxy.callbackRouterRemote.$.flushForTesting();
+    await callbackRouterRemote.$.flushForTesting();
     assertTrue(mostVisited.hasAttribute('use-white-add-icon'));
   });
 
   test('theme updates use title pill', async () => {
     const theme = createTheme();
     theme.shortcutUseTitlePill = true;
-    testProxy.callbackRouterRemote.setTheme(theme);
+    callbackRouterRemote.setTheme(theme);
     const mostVisited = $$(app, '#mostVisited');
     assertFalse(mostVisited.hasAttribute('use-title-pill'));
-    await testProxy.callbackRouterRemote.$.flushForTesting();
+    await callbackRouterRemote.$.flushForTesting();
     assertTrue(mostVisited.hasAttribute('use-title-pill'));
   });
 
   test('can show promo with browser command', async () => {
-    const testProxy = PromoBrowserCommandProxy.getInstance();
-    testProxy.handler = TestBrowserProxy.fromClass(
+    const promoBrowserCommandHandler = TestBrowserProxy.fromClass(
         promoBrowserCommand.mojom.CommandHandlerRemote);
-    testProxy.handler.setResultFor(
+    PromoBrowserCommandProxy.getInstance().handler = promoBrowserCommandHandler;
+    promoBrowserCommandHandler.setResultFor(
         'canShowPromoWithCommand', Promise.resolve({canShow: true}));
 
     const commandId = 123;  // Unsupported command.
@@ -418,7 +410,7 @@ suite('NewTabPageAppTest', () => {
 
     // Make sure the command is sent to the browser.
     const expectedCommandId =
-        await testProxy.handler.whenCalled('canShowPromoWithCommand');
+        await promoBrowserCommandHandler.whenCalled('canShowPromoWithCommand');
     // Unsupported commands get resolved to the default command before being
     // sent to the browser.
     assertEquals(
@@ -431,10 +423,10 @@ suite('NewTabPageAppTest', () => {
   });
 
   test('executes promo browser command', async () => {
-    const testProxy = PromoBrowserCommandProxy.getInstance();
-    testProxy.handler = TestBrowserProxy.fromClass(
+    const promoBrowserCommandHandler = TestBrowserProxy.fromClass(
         promoBrowserCommand.mojom.CommandHandlerRemote);
-    testProxy.handler.setResultFor(
+    PromoBrowserCommandProxy.getInstance().handler = promoBrowserCommandHandler;
+    promoBrowserCommandHandler.setResultFor(
         'executeCommand', Promise.resolve({commandExecuted: true}));
 
     const commandId = 123;  // Unsupported command.
@@ -454,7 +446,7 @@ suite('NewTabPageAppTest', () => {
 
     // Make sure the command and click information are sent to the browser.
     const [expectedCommandId, expectedClickInfo] =
-        await testProxy.handler.whenCalled('executeCommand');
+        await promoBrowserCommandHandler.whenCalled('executeCommand');
     // Unsupported commands get resolved to the default command before being
     // sent to the browser.
     assertEquals(
@@ -466,6 +458,57 @@ suite('NewTabPageAppTest', () => {
     assertTrue(commandExecuted);
   });
 
+  suite('click recording', () => {
+    suiteSetup(() => {
+      loadTimeData.overrideValues({
+        modulesEnabled: true,
+      });
+    });
+
+    [['#content', NtpElement.kBackground],
+     ['ntp-logo', NtpElement.kLogo],
+     ['ntp-realbox', NtpElement.kRealbox],
+     ['ntp-most-visited', NtpElement.kMostVisited],
+     ['ntp-middle-slot-promo', NtpElement.kMiddleSlotPromo],
+     ['ntp-modules', NtpElement.kModule],
+    ].forEach(([selector, element]) => {
+      test(`clicking '${selector}' records click`, () => {
+        // Act.
+        $$(app, selector).click();
+
+        // Assert.
+        assertEquals(1, metrics.count('NewTabPage.Click'));
+        assertEquals(1, metrics.count('NewTabPage.Click', element));
+      });
+    });
+
+    test('clicking customize records click', () => {
+      // Act.
+      $$(app, '#customizeButton').click();
+      $$(app, '#customizeDialogIf').render();
+      $$(app, 'ntp-customize-dialog').click();
+
+      // Assert.
+      assertEquals(2, metrics.count('NewTabPage.Click'));
+      assertEquals(2, metrics.count('NewTabPage.Click', NtpElement.kCustomize));
+    });
+
+    test('clicking OGB records click', () => {
+      // Act.
+      window.dispatchEvent(new MessageEvent('message', {
+        data: {
+          frameType: 'one-google-bar',
+          messageType: 'click',
+        }
+      }));
+
+      // Assert.
+      assertEquals(1, metrics.count('NewTabPage.Click'));
+      assertEquals(
+          1, metrics.count('NewTabPage.Click', NtpElement.kOneGoogleBar));
+    });
+  });
+
   suite('modules', () => {
     suiteSetup(() => {
       loadTimeData.overrideValues({
@@ -473,89 +516,74 @@ suite('NewTabPageAppTest', () => {
       });
     });
 
-    [true, false].forEach(visible => {
-      test(`modules appended to page if visibility ${visible}`, async () => {
-        // Act.
-        moduleResolver.resolve([
-          {
-            id: 'foo',
-            element: document.createElement('div'),
-            title: 'Foo Title',
-          },
-          {
-            id: 'bar',
-            element: document.createElement('div'),
-            title: 'Bar Title',
-          }
-        ]);
-        $$(app, 'ntp-middle-slot-promo')
-            .dispatchEvent(new Event(
-                'ntp-middle-slot-promo-loaded',
-                {bubbles: true, composed: true}));
-        testProxy.callbackRouterRemote.setModulesVisible(visible);
-        await flushTasks();  // Wait for module descriptor resolution.
+    test('modules can open customize dialog', async () => {
+      // Act.
+      $$(app, 'ntp-modules').dispatchEvent(new Event('customize-module'));
+      $$(app, '#customizeDialogIf').render();
 
-        // Assert.
-        const modules = app.shadowRoot.querySelectorAll('ntp-module-wrapper');
-        assertEquals(2, modules.length);
-        assertEquals(
-            visible ? 1 : 0,
-            testProxy.handler.getCallCount('onModulesRendered'));
-        assertEquals(1, testProxy.handler.getCallCount('updateModulesVisible'));
+      // Assert.
+      assertTrue(!!$$(app, 'ntp-customize-dialog'));
+      assertEquals(
+          CustomizeDialogPage.MODULES,
+          $$(app, 'ntp-customize-dialog').selectedPage);
+    });
+
+    test('promo and modules coordinate', async () => {
+      // Arrange.
+      loadTimeData.overrideValues({navigationStartTime: 0.0});
+      windowProxy.setResultFor('now', 123.0);
+      const middleSlotPromo = $$(app, 'ntp-middle-slot-promo');
+      const modules = $$(app, 'ntp-modules');
+
+      // Assert.
+      assertStyle(middleSlotPromo, 'display', 'none');
+      assertStyle(modules, 'display', 'none');
+
+      // Act.
+      middleSlotPromo.dispatchEvent(new Event('ntp-middle-slot-promo-loaded'));
+
+      // Assert.
+      assertStyle(middleSlotPromo, 'display', 'none');
+      assertStyle(modules, 'display', 'none');
+
+      // Act.
+      modules.dispatchEvent(new Event('modules-loaded'));
+
+      // Assert.
+      assertNotStyle(middleSlotPromo, 'display', 'none');
+      assertNotStyle(modules, 'display', 'none');
+      assertEquals(1, metrics.count('NewTabPage.Modules.ShownTime'));
+      assertEquals(1, metrics.count('NewTabPage.Modules.ShownTime', 123));
+    });
+  });
+
+  suite('counterfactual modules', () => {
+    suiteSetup(() => {
+      loadTimeData.overrideValues({
+        modulesEnabled: false,
+        modulesLoadEnabled: true,
       });
     });
 
-    test('modules can be dismissed and restored', async () => {
-      // Arrange.
-      let dismissCalled = false;
-      let restoreCalled = false;
-
+    test('modules loaded but not rendered if counterfactual', async () => {
       // Act.
-      moduleResolver.resolve([{
-        id: 'foo',
-        element: document.createElement('div'),
-        title: 'Foo Title',
-        actions: {
-          dismiss: () => {
-            dismissCalled = true;
-            return 'Foo was removed';
-          },
-          restore: () => {
-            restoreCalled = true;
-          },
+      moduleResolver.resolve([
+        {
+          descriptor: {id: 'foo'},
+          element: document.createElement('div'),
+        },
+        {
+          descriptor: {id: 'bar'},
+          element: document.createElement('div'),
         }
-      }]);
-      await flushTasks();  // Wait for module descriptor resolution.
-
-      // Assert.
-      const modules = app.shadowRoot.querySelectorAll('ntp-module-wrapper');
-      assertEquals(1, modules.length);
-      assertNotStyle($$(modules[0], '#dismissButton'), 'display', 'none');
-      assertFalse($$(app, '#dismissModuleToast').open);
-
-      // Act.
-      $$(modules[0], '#dismissButton').click();
+      ]);
       await flushTasks();
 
       // Assert.
-      assertTrue($$(app, '#dismissModuleToast').open);
+      assertEquals(1, moduleRegistry.getCallCount('initializeModules'));
+      assertEquals(1, handler.getCallCount('onModulesLoadedWithData'));
       assertEquals(
-          'Foo was removed',
-          $$(app, '#dismissModuleToastMessage').textContent.trim());
-      assertNotStyle($$(app, '#undoDismissModuleButton'), 'display', 'none');
-      assertTrue(dismissCalled);
-      assertEquals(
-          'foo', await testProxy.handler.whenCalled('onDismissModule'));
-
-      // Act.
-      $$(app, '#undoDismissModuleButton').click();
-      await flushTasks();
-
-      // Assert.
-      assertFalse($$(app, '#dismissModuleToast').open);
-      assertTrue(restoreCalled);
-      assertEquals(
-          'foo', await testProxy.handler.whenCalled('onRestoreModule'));
+          0, app.shadowRoot.querySelectorAll('ntp-module-wrapper').length);
     });
   });
 });

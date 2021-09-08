@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chromecast/browser/bluetooth/cast_bluetooth_chooser.h"
+
 #include "base/bind.h"
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromecast {
@@ -50,7 +52,7 @@ void CastBluetoothChooser::GrantAccessToAllDevices() {
 
 void CastBluetoothChooser::AddOrUpdateDevice(const std::string& device_id,
                                              bool should_update_name,
-                                             const base::string16& device_name,
+                                             const std::u16string& device_name,
                                              bool is_gatt_connected,
                                              bool is_paired,
                                              int signal_strength_level) {

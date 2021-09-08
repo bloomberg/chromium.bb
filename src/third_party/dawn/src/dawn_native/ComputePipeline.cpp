@@ -14,8 +14,8 @@
 
 #include "dawn_native/ComputePipeline.h"
 
-#include "common/HashUtils.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/ObjectContentHasher.h"
 
 namespace dawn_native {
 
@@ -29,8 +29,9 @@ namespace dawn_native {
             DAWN_TRY(device->ValidateObject(descriptor->layout));
         }
 
-        DAWN_TRY(ValidateProgrammableStageDescriptor(
-            device, &descriptor->computeStage, descriptor->layout, SingleShaderStage::Compute));
+        DAWN_TRY(ValidateProgrammableStage(device, descriptor->computeStage.module,
+                                           descriptor->computeStage.entryPoint, descriptor->layout,
+                                           SingleShaderStage::Compute));
         return {};
     }
 
@@ -40,7 +41,8 @@ namespace dawn_native {
                                              const ComputePipelineDescriptor* descriptor)
         : PipelineBase(device,
                        descriptor->layout,
-                       {{SingleShaderStage::Compute, &descriptor->computeStage}}) {
+                       {{SingleShaderStage::Compute, descriptor->computeStage.module,
+                         descriptor->computeStage.entryPoint}}) {
     }
 
     ComputePipelineBase::ComputePipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag)
@@ -57,10 +59,6 @@ namespace dawn_native {
     // static
     ComputePipelineBase* ComputePipelineBase::MakeError(DeviceBase* device) {
         return new ComputePipelineBase(device, ObjectBase::kError);
-    }
-
-    size_t ComputePipelineBase::HashFunc::operator()(const ComputePipelineBase* pipeline) const {
-        return PipelineBase::HashForCache(pipeline);
     }
 
     bool ComputePipelineBase::EqualityFunc::operator()(const ComputePipelineBase* a,

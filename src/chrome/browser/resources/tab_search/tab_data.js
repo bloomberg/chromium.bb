@@ -4,6 +4,12 @@
 
 import {Tab} from './tab_search.mojom-webui.js';
 
+/** @enum {number} */
+export const TabItemType = {
+  OPEN: 1,
+  RECENTLY_CLOSED: 2,
+};
+
 /**
  * TabData contains tabSearch.mojom.Tab and data derived from it.
  * It makes tabSearch.mojom.Tab immutable and works well for closure compiler
@@ -25,5 +31,20 @@ export class TabData {
 
     /** @type {boolean} */
     this.inActiveWindow;
+
+    /** @type {!TabItemType} */
+    this.type;
+
+    /** @type {string} */
+    this.a11yTypeText;
   }
+}
+
+/**
+ * @param {!TabData} tabData
+ * @return {string}
+ */
+export function ariaLabel(tabData) {
+  return `${tabData.tab.title} ${tabData.hostname} ${
+      tabData.tab.lastActiveElapsedText} ${tabData.a11yTypeText}`;
 }

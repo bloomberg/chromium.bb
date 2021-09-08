@@ -45,7 +45,6 @@
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
@@ -90,7 +89,7 @@ std::string GetOperatingSystemVersion() {
 // Adds the list of |fonts| to the |machine|.
 void AddFontsToFingerprint(const base::ListValue& fonts,
                            Fingerprint::MachineCharacteristics* machine) {
-  for (const auto& it : fonts) {
+  for (const auto& it : fonts.GetList()) {
     // Each item in the list is a two-element list such that the first element
     // is the font family and the second is the font name.
     const base::ListValue* font_description = nullptr;
@@ -328,7 +327,7 @@ void FingerprintDataLoader::OnGpuInfoUpdate() {
     return;
 
   DCHECK(gpu_observation_.IsObservingSource(gpu_data_manager_));
-  gpu_observation_.RemoveObservation();
+  gpu_observation_.Reset();
   MaybeFillFingerprint();
 }
 

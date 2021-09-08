@@ -24,8 +24,7 @@ class VisibleUnitsWordTest : public EditingTestBase {
       const std::string& selection_text,
       WordSide word_side = WordSide::kNextWordIfOnBoundary) {
     const Position position = SetSelectionTextToBody(selection_text).Base();
-    return GetCaretTextFromBody(
-        EndOfWord(CreateVisiblePosition(position), word_side).DeepEquivalent());
+    return GetCaretTextFromBody(EndOfWordPosition(position, word_side));
   }
 
   std::string DoNextWord(const std::string& selection_text) {
@@ -178,10 +177,11 @@ TEST_P(ParameterizedVisibleUnitsWordTest, StartOfWordFirstLetter) {
 
 TEST_P(ParameterizedVisibleUnitsWordTest, StartOfWordShadowDOM) {
   const char* body_content =
-      "<a id=host><b id=one>1</b> <b id=two>22</b></a><i id=three>333</i>";
+      "<span id=host><b slot='#one' id=one>1</b> <b slot='#two' "
+      "id=two>22</b></span><i id=three>333</i>";
   const char* shadow_content =
-      "<p><u id=four>44444</u><content select=#two></content><span id=space> "
-      "</span><content select=#one></content><u id=five>55555</u></p>";
+      "<p><u id=four>44444</u><slot name=#two></slot><span id=space> "
+      "</span><slot name=#one></slot><u id=five>55555</u></p>";
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
@@ -213,7 +213,7 @@ TEST_P(ParameterizedVisibleUnitsWordTest, StartOfWordShadowDOM) {
                 StartOfWordPosition(
                     CreateVisiblePositionInFlatTree(*one, 1).DeepEquivalent()))
                 .DeepEquivalent());
-  EXPECT_EQ(Position(one, 0),
+  EXPECT_EQ(Position(four, 0),
             CreateVisiblePosition(
                 StartOfWordPosition(
                     CreateVisiblePositionInDOMTree(*two, 0).DeepEquivalent()))
@@ -233,8 +233,13 @@ TEST_P(ParameterizedVisibleUnitsWordTest, StartOfWordShadowDOM) {
                 StartOfWordPosition(
                     CreateVisiblePositionInFlatTree(*two, 1).DeepEquivalent()))
                 .DeepEquivalent());
-  // DOM tree canonicalization moves the result to a wrong position.
-  EXPECT_EQ(Position(two, 2),
+  EXPECT_EQ(Position(three, 0),
+            CreateVisiblePosition(
+                StartOfWordPosition(CreateVisiblePositionInDOMTree(
+                                        *three, 1, TextAffinity::kUpstream)
+                                        .DeepEquivalent()))
+                .DeepEquivalent());
+  EXPECT_EQ(Position(three, 0),
             CreateVisiblePosition(
                 StartOfWordPosition(
                     CreateVisiblePositionInDOMTree(*three, 1).DeepEquivalent()))
@@ -344,7 +349,7 @@ TEST_P(ParameterizedVisibleUnitsWordTest, EndOfWordBasic) {
   EXPECT_EQ("<p> (1) abc def|</p>", DoEndOfWord("<p> (1) abc d|ef</p>"));
   EXPECT_EQ("<p> (1) abc def|</p>", DoEndOfWord("<p> (1) abc de|f</p>"));
   EXPECT_EQ("<p> (1) abc def|</p>", DoEndOfWord("<p> (1) abc def|</p>"));
-  EXPECT_EQ("<p> (1) abc def|</p>", DoEndOfWord("<p> (1) abc def</p>|"));
+  EXPECT_EQ("<p> (1) abc def</p>|", DoEndOfWord("<p> (1) abc def</p>|"));
 }
 
 TEST_P(ParameterizedVisibleUnitsWordTest,
@@ -389,16 +394,17 @@ TEST_P(ParameterizedVisibleUnitsWordTest,
       "<p> (1) abc def|</p>",
       DoEndOfWord("<p> (1) abc def|</p>", WordSide::kPreviousWordIfOnBoundary));
   EXPECT_EQ(
-      "<p> (1) abc def|</p>",
+      "<p> (1) abc def</p>|",
       DoEndOfWord("<p> (1) abc def</p>|", WordSide::kPreviousWordIfOnBoundary));
 }
 
 TEST_P(ParameterizedVisibleUnitsWordTest, EndOfWordShadowDOM) {
   const char* body_content =
-      "<a id=host><b id=one>1</b> <b id=two>22</b></a><i id=three>333</i>";
+      "<span id=host><b slot='#one' id=one>1</b> <b slot='#two' "
+      "id=two>22</b></span><i id=three>333</i>";
   const char* shadow_content =
-      "<p><u id=four>44444</u><content select=#two></content><span id=space> "
-      "</span><content select=#one></content><u id=five>55555</u></p>";
+      "<p><u id=four>44444</u><slot name=#two></slot><span id=space> "
+      "</span><slot name=#one></slot><u id=five>55555</u></p>";
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
@@ -408,54 +414,33 @@ TEST_P(ParameterizedVisibleUnitsWordTest, EndOfWordShadowDOM) {
   Node* four = shadow_root->getElementById("four")->firstChild();
   Node* five = shadow_root->getElementById("five")->firstChild();
 
-  EXPECT_EQ(
-      Position(five, 5),
-      EndOfWord(CreateVisiblePositionInDOMTree(*one, 0)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(five, 5),
-      EndOfWord(CreateVisiblePositionInFlatTree(*one, 0)).DeepEquivalent());
+  EXPECT_EQ(Position(five, 5), EndOfWordPosition(Position(*one, 0)));
+  EXPECT_EQ(PositionInFlatTree(five, 5),
+            EndOfWordPosition(PositionInFlatTree(*one, 0)));
 
-  EXPECT_EQ(
-      Position(five, 5),
-      EndOfWord(CreateVisiblePositionInDOMTree(*one, 1)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(five, 5),
-      EndOfWord(CreateVisiblePositionInFlatTree(*one, 1)).DeepEquivalent());
+  EXPECT_EQ(Position(five, 5), EndOfWordPosition(Position(*one, 1)));
+  EXPECT_EQ(PositionInFlatTree(five, 5),
+            EndOfWordPosition(PositionInFlatTree(*one, 1)));
 
-  EXPECT_EQ(
-      Position(five, 5),
-      EndOfWord(CreateVisiblePositionInDOMTree(*two, 0)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(two, 2),
-      EndOfWord(CreateVisiblePositionInFlatTree(*two, 0)).DeepEquivalent());
+  EXPECT_EQ(Position(two, 2), EndOfWordPosition(Position(*two, 0)));
+  EXPECT_EQ(PositionInFlatTree(two, 2),
+            EndOfWordPosition(PositionInFlatTree(*two, 0)));
 
-  EXPECT_EQ(
-      Position(two, 2),
-      EndOfWord(CreateVisiblePositionInDOMTree(*two, 1)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(two, 2),
-      EndOfWord(CreateVisiblePositionInFlatTree(*two, 1)).DeepEquivalent());
+  EXPECT_EQ(Position(two, 2), EndOfWordPosition(Position(*two, 1)));
+  EXPECT_EQ(PositionInFlatTree(two, 2),
+            EndOfWordPosition(PositionInFlatTree(*two, 1)));
 
-  EXPECT_EQ(
-      Position(three, 3),
-      EndOfWord(CreateVisiblePositionInDOMTree(*three, 1)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(three, 3),
-      EndOfWord(CreateVisiblePositionInFlatTree(*three, 1)).DeepEquivalent());
+  EXPECT_EQ(Position(three, 3), EndOfWordPosition(Position(*three, 1)));
+  EXPECT_EQ(PositionInFlatTree(three, 3),
+            EndOfWordPosition(PositionInFlatTree(*three, 1)));
 
-  EXPECT_EQ(
-      Position(two, 2),
-      EndOfWord(CreateVisiblePositionInDOMTree(*four, 1)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(two, 2),
-      EndOfWord(CreateVisiblePositionInFlatTree(*four, 1)).DeepEquivalent());
+  EXPECT_EQ(Position(two, 2), EndOfWordPosition(Position(*four, 1)));
+  EXPECT_EQ(PositionInFlatTree(two, 2),
+            EndOfWordPosition(PositionInFlatTree(*four, 1)));
 
-  EXPECT_EQ(
-      Position(five, 5),
-      EndOfWord(CreateVisiblePositionInDOMTree(*five, 1)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(five, 5),
-      EndOfWord(CreateVisiblePositionInFlatTree(*five, 1)).DeepEquivalent());
+  EXPECT_EQ(Position(five, 5), EndOfWordPosition(Position(*five, 1)));
+  EXPECT_EQ(PositionInFlatTree(five, 5),
+            EndOfWordPosition(PositionInFlatTree(*five, 1)));
 }
 
 TEST_P(ParameterizedVisibleUnitsWordTest, EndOfWordTextSecurity) {
@@ -528,7 +513,7 @@ TEST_P(ParameterizedVisibleUnitsWordTest, NextWordSkipSpacesBasic) {
             DoNextWordSkippingSpaces("<p> (|1) abc def</p>"));
   EXPECT_EQ("<p> (1) |abc def</p>",
             DoNextWordSkippingSpaces("<p> (1|) abc def</p>"));
-  EXPECT_EQ("<p> (1) abc |def</p>",
+  EXPECT_EQ("<p> (1) |abc def</p>",
             DoNextWordSkippingSpaces("<p> (1)| abc def</p>"));
   EXPECT_EQ("<p> (1) abc |def</p>",
             DoNextWordSkippingSpaces("<p> (1) |abc def</p>"));
@@ -536,7 +521,7 @@ TEST_P(ParameterizedVisibleUnitsWordTest, NextWordSkipSpacesBasic) {
             DoNextWordSkippingSpaces("<p> (1) a|bc def</p>"));
   EXPECT_EQ("<p> (1) abc |def</p>",
             DoNextWordSkippingSpaces("<p> (1) ab|c def</p>"));
-  EXPECT_EQ("<p> (1) abc def|</p>",
+  EXPECT_EQ("<p> (1) abc |def</p>",
             DoNextWordSkippingSpaces("<p> (1) abc| def</p>"));
   EXPECT_EQ("<p> (1) abc def|</p>",
             DoNextWordSkippingSpaces("<p> (1) abc |def</p>"));
@@ -642,6 +627,30 @@ TEST_P(ParameterizedVisibleUnitsWordTest, NextWordSkipTextControl) {
             DoNextWord("foo<input value=\"bla\">ba|r"));
   EXPECT_EQ("foo<input value=\"bla\">bar|",
             DoNextWord("foo<input value=\"bla\">bar|"));
+}
+
+TEST_P(ParameterizedVisibleUnitsWordTest, NextWordSkipSpacesEmoji) {
+  EXPECT_EQ("<p> abc |😂 def</p>",
+            DoNextWordSkippingSpaces("<p> |abc &#x1F602; def</p>"));
+  EXPECT_EQ("<p> abc 😂 |def</p>",
+            DoNextWordSkippingSpaces("<p> abc |&#x1F602; def</p>"));
+  EXPECT_EQ("<p> abc 😂 def|</p>",
+            DoNextWordSkippingSpaces("<p> abc &#x1F602; |def</p>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsWordTest, NextWordEmoji) {
+  EXPECT_EQ("<p> abc| 😂 def</p>", DoNextWord("<p> |abc &#x1F602; def</p>"));
+  EXPECT_EQ("<p> abc 😂| def</p>", DoNextWord("<p> abc |&#x1F602; def</p>"));
+  EXPECT_EQ("<p> abc 😂 def|</p>", DoNextWord("<p> abc &#x1F602; |def</p>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsWordTest, NextWordEmojiSequence) {
+  EXPECT_EQ("<p> abc| 😂😂 def</p>",
+            DoNextWord("<p> |abc &#x1F602;&#x1F602; def</p>"));
+  EXPECT_EQ("<p> abc 😂😂| def</p>",
+            DoNextWord("<p> abc |&#x1F602;&#x1F602; def</p>"));
+  EXPECT_EQ("<p> abc 😂😂 def|</p>",
+            DoNextWord("<p> abc &#x1F602;&#x1F602; |def</p>"));
 }
 
 //----

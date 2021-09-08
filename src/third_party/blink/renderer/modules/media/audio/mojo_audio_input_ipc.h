@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/time/time.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_source_parameters.h"
 #include "media/mojo/mojom/audio_input_stream.mojom-blink.h"
@@ -70,9 +69,11 @@ class MODULES_EXPORT MojoAudioInputIPC
           stream_client_receiver,
       media::mojom::blink::ReadOnlyAudioDataPipePtr data_pipe,
       bool initially_muted,
-      const base::Optional<base::UnguessableToken>& stream_id) override;
-  void OnError() override;
+      const absl::optional<base::UnguessableToken>& stream_id) override;
+  void OnError(media::mojom::InputStreamErrorCode code) override;
   void OnMutedStateChanged(bool is_muted) override;
+
+  void OnDisconnect(uint32_t error, const std::string& reason);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -83,7 +84,7 @@ class MODULES_EXPORT MojoAudioInputIPC
 
   mojo::Remote<media::mojom::blink::AudioInputStream> stream_;
   // Initialized on StreamCreated.
-  base::Optional<base::UnguessableToken> stream_id_;
+  absl::optional<base::UnguessableToken> stream_id_;
   mojo::Receiver<AudioInputStreamClient> stream_client_receiver_{this};
   mojo::Receiver<mojom::blink::RendererAudioInputStreamFactoryClient>
       factory_client_receiver_{this};

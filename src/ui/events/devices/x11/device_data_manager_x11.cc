@@ -25,6 +25,7 @@
 #include "ui/events/event_switches.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/x/future.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 // XIScrollClass was introduced in XI 2.1 so we need to define it here
@@ -261,7 +262,7 @@ void DeviceDataManagerX11::UpdateDeviceList(x11::Connection* connection) {
   // Find all the touchpad devices.
   const XDeviceList& dev_list =
       ui::DeviceListCacheX11::GetInstance()->GetXDeviceList(connection);
-  x11::Atom xi_touchpad = gfx::GetAtom("TOUCHPAD");
+  x11::Atom xi_touchpad = x11::GetAtom("TOUCHPAD");
   for (const auto& device : dev_list) {
     if (device.device_type == xi_touchpad)
       touchpads_[device.device_id] = true;
@@ -275,7 +276,7 @@ void DeviceDataManagerX11::UpdateDeviceList(x11::Connection* connection) {
       ui::DeviceListCacheX11::GetInstance()->GetXI2DeviceList(connection);
   x11::Atom atoms[DT_LAST_ENTRY];
   for (int data_type = 0; data_type < DT_LAST_ENTRY; ++data_type)
-    atoms[data_type] = gfx::GetAtom(kCachedAtoms[data_type]);
+    atoms[data_type] = x11::GetAtom(kCachedAtoms[data_type]);
 
   for (const auto& info : info_list) {
     if (info.type == x11::Input::DeviceType::MasterPointer)
@@ -655,7 +656,7 @@ int DeviceDataManagerX11::GetMappedButton(int button) {
 }
 
 void DeviceDataManagerX11::UpdateButtonMap() {
-  if (auto reply = x11::Connection::Get()->GetPointerMapping({}).Sync())
+  if (auto reply = x11::Connection::Get()->GetPointerMapping().Sync())
     button_map_ = std::move(reply->map);
 }
 

@@ -28,6 +28,8 @@ class ArcCameraBridge : public KeyedService, public mojom::CameraHost {
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcCameraBridge* GetForBrowserContext(
       content::BrowserContext* context);
+  static ArcCameraBridge* GetForBrowserContextForTesting(
+      content::BrowserContext* context);
 
   ArcCameraBridge(content::BrowserContext* context,
                   ArcBridgeService* bridge_service);
@@ -35,8 +37,11 @@ class ArcCameraBridge : public KeyedService, public mojom::CameraHost {
 
   // mojom::CameraHost overrides:
   void StartCameraService(StartCameraServiceCallback callback) override;
-  void RegisterCameraHalClient(
+  void RegisterCameraHalClientLegacy(
       mojo::PendingRemote<cros::mojom::CameraHalClient> client) override;
+  void RegisterCameraHalClient(
+      mojo::PendingRemote<cros::mojom::CameraHalClient> client,
+      RegisterCameraHalClientCallback callback) override;
 
  private:
   class PendingStartCameraServiceResult;

@@ -6,6 +6,10 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/output_surface_client.h"
@@ -119,11 +123,12 @@ void GLOutputSurfaceOffscreen::SwapBuffers(OutputSurfaceFrame frame) {
 
 void GLOutputSurfaceOffscreen::OnSwapBuffersComplete(
     std::vector<ui::LatencyInfo> latency_info) {
-  latency_tracker()->OnGpuSwapBuffersCompleted(latency_info);
+  latency_tracker()->OnGpuSwapBuffersCompleted(std::move(latency_info));
   // Swap timings are not available since for offscreen there is no Swap, just a
   // SignalSyncToken. We use base::TimeTicks::Now() as an overestimate.
   auto now = base::TimeTicks::Now();
-  client()->DidReceiveSwapBuffersAck({.swap_start = now});
+  client()->DidReceiveSwapBuffersAck({.swap_start = now},
+                                     /*release_fence=*/gfx::GpuFenceHandle());
   client()->DidReceivePresentationFeedback(gfx::PresentationFeedback(
       now, base::TimeDelta::FromMilliseconds(16), /*flags=*/0));
 

@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -27,6 +26,7 @@
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/video/video_encode_accelerator.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -70,7 +70,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
     // This is valid only if image processor is used. The buffer associated with
     // this index can be reused in Dequeue().
-    base::Optional<size_t> ip_output_buffer_index;
+    absl::optional<size_t> ip_output_buffer_index;
   };
 
   // Store all the information of input frame passed to Encode().
@@ -87,7 +87,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
     // This is valid only if image processor is used. This info needs to be
     // propagated to InputRecord.
-    base::Optional<size_t> ip_output_buffer_index;
+    absl::optional<size_t> ip_output_buffer_index;
   };
 
   enum {
@@ -209,9 +209,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Try to set up the device to the input format we were Initialized() with,
   // or if the device doesn't support it, use one it can support, so that we
   // can later instantiate an ImageProcessor to convert to it. Return
-  // base::nullopt if no format is supported, otherwise return v4l2_format
+  // absl::nullopt if no format is supported, otherwise return v4l2_format
   // adjusted by the driver.
-  base::Optional<struct v4l2_format> NegotiateInputFormat(
+  absl::optional<struct v4l2_format> NegotiateInputFormat(
       VideoPixelFormat input_format,
       const gfx::Size& frame_size);
 
@@ -223,6 +223,12 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Initialize device controls with |config| or default values.
   bool InitControls(const Config& config);
+
+  // Initialize device controls with |config| or default values.
+  bool InitControlsH264(const Config& config);
+
+  // Initialize device controls with |config| or default values.
+  void InitControlsVP8(const Config& config);
 
   // Create the buffers we need.
   bool CreateInputBuffers();
@@ -258,13 +264,17 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // time Encode() if the coded size is different from the expected one by VEA.
   // For example, it happens in WebRTC simulcast case.
   gfx::Size input_frame_size_;
+  // A natural_size() of VideoFrame on VEA::Encode(). This is updated on the
+  // first time Encode() always. The natural_size() of VideoFrames fed by
+  // VEA::Encode() must be the same as |input_natural_size_|.
+  gfx::Size input_natural_size_;
 
   // Visible rectangle of VideoFrame to be fed to an encoder driver, in other
   // words, a visible rectangle that output encoded bitstream buffers represent.
   gfx::Rect encoder_input_visible_rect_;
 
   // Layout of device accepted input VideoFrame.
-  base::Optional<VideoFrameLayout> device_input_layout_;
+  absl::optional<VideoFrameLayout> device_input_layout_;
 
   // Stands for whether an input buffer is native graphic buffer.
   bool native_input_mode_;

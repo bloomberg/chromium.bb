@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,18 +50,11 @@ class V4L2H264Accelerator : public H264Decoder::H264Accelerator {
   void Reset() override;
 
  private:
-  // Max size of reference list.
-  static constexpr size_t kDPBIndicesListSize = 32;
-
-  void H264PictureListToDPBIndicesList(const H264Picture::Vector& src_pic_list,
-                                       uint8_t dst_list[kDPBIndicesListSize]);
-  void H264DPBToV4L2DPB(
-      const H264DPB& dpb,
-      std::vector<scoped_refptr<V4L2DecodeSurface>>* ref_surfaces);
+  std::vector<scoped_refptr<V4L2DecodeSurface>> H264DPBToV4L2DPB(
+      const H264DPB& dpb);
   scoped_refptr<V4L2DecodeSurface> H264PictureToV4L2DecodeSurface(
       H264Picture* pic);
 
-  size_t num_slices_;
   V4L2DecodeSurfaceHandler* const surface_handler_;
   V4L2Device* const device_;
 

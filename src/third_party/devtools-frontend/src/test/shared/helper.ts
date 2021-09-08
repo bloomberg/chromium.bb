@@ -2,21 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AssertionError} from 'chai';
+import {assert, AssertionError} from 'chai';
 import * as os from 'os';
 import * as puppeteer from 'puppeteer';
 
 import {reloadDevTools} from '../conductor/hooks.js';
-import {getBrowserAndPages, getHostedModeServerPort} from '../conductor/puppeteer-state.js';
+import {getBrowserAndPages, getTestServerPort} from '../conductor/puppeteer-state.js';
+import {getTestRunnerConfigSetting} from '../conductor/test_runner_config.js';
 import {AsyncScope} from './mocha-extensions.js';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     __pendingEvents: Map<string, Event[]>;
   }
 }
 
-export let platform: string;
+export type Platform = 'mac'|'win32'|'linux';
+export let platform: Platform;
 switch (os.platform()) {
   case 'darwin':
     platform = 'mac';
@@ -75,9 +79,13 @@ export const getElementPosition =
   };
 };
 
+interface ClickOptions extends puppeteer.ClickOptions {
+  modifier?: 'ControlOrMeta';
+}
+
 export const click = async (
     selector: string|puppeteer.JSHandle,
-    options?: {root?: puppeteer.JSHandle; clickOptions?: puppeteer.ClickOptions; maxPixelsFromLeft?: number;}) => {
+    options?: {root?: puppeteer.JSHandle, clickOptions?: ClickOptions, maxPixelsFromLeft?: number}) => {
   const {frontend} = getBrowserAndPages();
   const clickableElement =
       await getElementPosition(selector, options && options.root, options && options.maxPixelsFromLeft);
@@ -86,16 +94,24 @@ export const click = async (
     throw new Error(`Unable to locate clickable element "${selector}".`);
   }
 
+  const modifier = platform === 'mac' ? 'Meta' : 'Control';
+  if (options?.clickOptions?.modifier) {
+    await frontend.keyboard.down(modifier);
+  }
+
   // Click on the button and wait for the console to load. The reason we use this method
   // rather than elementHandle.click() is because the frontend attaches the behavior to
   // a 'mousedown' event (not the 'click' event). To avoid attaching the test behavior
   // to a specific event we instead locate the button in question and ask Puppeteer to
   // click on it instead.
   await frontend.mouse.click(clickableElement.x, clickableElement.y, options && options.clickOptions);
+  if (options?.clickOptions?.modifier) {
+    await frontend.keyboard.up(modifier);
+  }
 };
 
 export const doubleClick =
-    async (selector: string, options?: {root?: puppeteer.JSHandle; clickOptions?: puppeteer.ClickOptions}) => {
+    async (selector: string, options?: {root?: puppeteer.JSHandle, clickOptions?: puppeteer.ClickOptions}) => {
   const passedClickOptions = (options && options.clickOptions) || {};
   const clickOptionsWithDoubleClick: puppeteer.ClickOptions = {
     ...passedClickOptions,
@@ -130,7 +146,7 @@ export const pressKey = async (key: string, modifiers?: {control?: boolean, alt?
       await frontend.keyboard.down('Shift');
     }
   }
-  await frontend.keyboard.press(key);
+  await frontend.keyboard.press(key as puppeteer.KeyInput);
   if (modifiers) {
     if (modifiers.shift) {
       await frontend.keyboard.up('Shift');
@@ -200,6 +216,14 @@ export const waitFor =
                                }, asyncScope));
 };
 
+export const waitForMany = async (
+    selector: string, count: number, root?: puppeteer.JSHandle, asyncScope = new AsyncScope(), handler?: string) => {
+  return await asyncScope.exec(() => waitForFunction(async () => {
+                                 const elements = await $$(selector, root, handler);
+                                 return elements.length >= count ? elements : undefined;
+                               }, asyncScope));
+};
+
 export const waitForNone =
     async (selector: string, root?: puppeteer.JSHandle, asyncScope = new AsyncScope(), handler?: string) => {
   return await asyncScope.exec(() => waitForFunction(async () => {
@@ -256,6 +280,35 @@ export const waitForFunction = async<T>(fn: () => Promise<T|undefined>, asyncSco
   });
 };
 
+export const waitForFunctionWithTries = async<T>(
+    fn: () => Promise<T|undefined>, options: {tries: number} = {
+      tries: Number.MAX_SAFE_INTEGER,
+    },
+    asyncScope = new AsyncScope()): Promise<T|undefined> => {
+  return await asyncScope.exec(async () => {
+    let tries = 0;
+    while (tries++ < options.tries) {
+      const result = await fn();
+      if (result) {
+        return result;
+      }
+      await timeout(100);
+    }
+    return undefined;
+  });
+};
+
+export const waitForWithTries = async (
+    selector: string, root?: puppeteer.JSHandle, options: {tries: number} = {
+      tries: Number.MAX_SAFE_INTEGER,
+    },
+    asyncScope = new AsyncScope(), handler?: string) => {
+  return await asyncScope.exec(() => waitForFunctionWithTries(async () => {
+                                 const element = await $(selector, root, handler);
+                                 return (element || undefined);
+                               }, options, asyncScope));
+};
+
 export const debuggerStatement = (frontend: puppeteer.Page) => {
   return frontend.evaluate(() => {
     // eslint-disable-next-line no-debugger
@@ -303,8 +356,7 @@ export const goTo = async (url: string) => {
 
 export const overridePermissions = async (permissions: puppeteer.Permission[]) => {
   const {browser} = getBrowserAndPages();
-  await browser.defaultBrowserContext().overridePermissions(
-      `http://localhost:${getHostedModeServerPort()}`, permissions);
+  await browser.defaultBrowserContext().overridePermissions(`https://localhost:${getTestServerPort()}`, permissions);
 };
 
 export const clearPermissionsOverride = async () => {
@@ -316,14 +368,21 @@ export const goToResource = async (path: string) => {
   await goTo(`${getResourcesPath()}/${path}`);
 };
 
-export const getResourcesPath = () => {
-  return `http://localhost:${getHostedModeServerPort()}/test/e2e/resources`;
+export const goToResourceWithCustomHost = async (host: string, path: string) => {
+  assert.isTrue(host.endsWith('.test'), 'Only custom hosts with a .test domain are allowed.');
+  await goTo(`${getResourcesPath(host)}/${path}`);
+};
+
+export const getResourcesPath = (host: string = 'localhost') => {
+  let resourcesPath = getTestRunnerConfigSetting('hosted-server-e2e-resources-path', '/test/e2e/resources');
+  if (!resourcesPath.startsWith('/')) {
+    resourcesPath = `/${resourcesPath}`;
+  }
+  return `https://${host}:${getTestServerPort()}${resourcesPath}`;
 };
 
 export const step = async (description: string, step: Function) => {
   try {
-    // eslint-disable-next-line no-console
-    console.log(`     Running step "${description}"`);
     return await step();
   } catch (error) {
     if (error instanceof AssertionError) {
@@ -444,8 +503,8 @@ export const enableCDPLogging = async () => {
   });
 };
 
-export const selectOption = async (select: puppeteer.JSHandle<HTMLSelectElement>, value: string) => {
-  await select.evaluate(async (node, _value) => {
+export const selectOption = async (select: puppeteer.ElementHandle<HTMLSelectElement>, value: string) => {
+  await select.evaluate(async (node: HTMLSelectElement, _value: string) => {
     node.value = _value;
     const event = document.createEvent('HTMLEvents');
     event.initEvent('change', false, true);
@@ -492,4 +551,45 @@ export const getPendingEvents = function(frontend: puppeteer.Page, eventType: st
   }, eventType);
 };
 
-export {getBrowserAndPages, getHostedModeServerPort, reloadDevTools};
+export const hasClass = async(element: puppeteer.ElementHandle<Element>, classname: string): Promise<boolean> => {
+  return await element.evaluate((el, classname) => el.classList.contains(classname), classname);
+};
+
+export const waitForClass = async(element: puppeteer.ElementHandle<Element>, classname: string): Promise<void> => {
+  await waitForFunction(async () => {
+    return hasClass(element, classname);
+  });
+};
+
+export function assertNotNull<T>(val: T): asserts val is NonNullable<T> {
+  assert.isNotNull(val);
+}
+
+// We export Puppeteer so other test utils can import it from here and not rely
+// on Node modules resolution to import it.
+export {getBrowserAndPages, getTestServerPort, reloadDevTools, puppeteer};
+
+export function matchArray(actual: Array<string>, expected: Array<string|RegExp>): true|string {
+  if (actual.length !== expected.length) {
+    return `Expected [${actual.map(x => `"${x}"`).join(', ')}] to have length ${expected.length}`;
+  }
+
+  for (let i = 0; i < expected.length; ++i) {
+    const expectedItem = expected[i];
+    if (typeof expectedItem === 'string') {
+      if (actual[i] !== expectedItem) {
+        return `Expected item at position ${i} which was "${actual[i]}" to equal "${expectedItem}"`;
+      }
+    } else if (!expectedItem.test(actual[i])) {
+      return `Expected item at position ${i} which was "${actual[i]}" to match "${expectedItem}"`;
+    }
+  }
+  return true;
+}
+
+export function assertMatchArray(actual: Array<string>, expected: Array<string|RegExp>) {
+  const result = matchArray(actual, expected);
+  if (result !== true) {
+    throw new AssertionError(result);
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2021, Alliance for Open Media. All rights reserved
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -19,8 +19,8 @@
 #define CONFIG_ANALYZER 0
 #define CONFIG_AV1_DECODER 1
 #define CONFIG_AV1_ENCODER 1
-#define CONFIG_AV1_HIGHBITDEPTH 1
-#define CONFIG_AV1_TEMPORAL_DENOISING 0
+#define CONFIG_AV1_HIGHBITDEPTH 0
+#define CONFIG_AV1_TEMPORAL_DENOISING 1
 #define CONFIG_BIG_ENDIAN 0
 #define CONFIG_BITSTREAM_DEBUG 0
 #define CONFIG_COEFFICIENT_RANGE_CHECKING 0
@@ -32,6 +32,8 @@
 #define CONFIG_DISABLE_FULL_PIXEL_SPLIT_8X8 1
 #define CONFIG_DIST_8X8 0
 #define CONFIG_ENTROPY_STATS 0
+#define CONFIG_EXCLUDE_SIMD_MISMATCH 0
+#define CONFIG_FRAME_PARALLEL_ENCODE 0
 #define CONFIG_GCC 1
 #define CONFIG_GCOV 0
 #define CONFIG_GPROF 0
@@ -47,17 +49,19 @@
 #define CONFIG_NORMAL_TILE_MODE 1
 #define CONFIG_OPTICAL_FLOW_API 0
 #define CONFIG_OS_SUPPORT 1
+#define CONFIG_PARTITION_SEARCH_ORDER 0
 #define CONFIG_PIC 0
 #define CONFIG_RD_DEBUG 0
-#define CONFIG_REALTIME_ONLY 0
+#define CONFIG_REALTIME_ONLY 1
+#define CONFIG_RT_ML_PARTITIONING 0
 #define CONFIG_RUNTIME_CPU_DETECT 1
 #define CONFIG_SHARED 0
 #define CONFIG_SHARP_SETTINGS 0
 #define CONFIG_SIZE_LIMIT 1
 #define CONFIG_SPATIAL_RESAMPLING 1
 #define CONFIG_SPEED_STATS 0
+#define CONFIG_TUNE_BUTTERAUGLI 0
 #define CONFIG_TUNE_VMAF 0
-#define CONFIG_USE_VMAF_RC 0
 #define CONFIG_WEBM_IO 1
 #define DECODE_HEIGHT_LIMIT 16384
 #define DECODE_WIDTH_LIMIT 16384
@@ -82,4 +86,5 @@
 #define HAVE_VSX 0
 #define HAVE_WXWIDGETS 0
 #define INLINE inline
+#define STATIC_LINK_JXL 0
 #endif  // AOM_CONFIG_H_

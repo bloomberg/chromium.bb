@@ -4,8 +4,8 @@
 
 (async function() {
   TestRunner.addResult(`Tests conversion of Inspector's resource representation into HAR format.\n`);
-  await TestRunner.loadModule('network_test_runner');
-  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.loadTestModule('network_test_runner');
+  await TestRunner.loadModule('console'); await TestRunner.loadTestModule('application_test_runner');
 
   await TestRunner.NetworkAgent.setCacheDisabled(true);
   await TestRunner.reloadPagePromise();
@@ -17,15 +17,18 @@
   `);
 
   function findRequestByURL(url) {
-    const requests = NetworkTestRunner.networkRequests();
-    for (var i = 0; i < requests.length; ++i) {
-      if (url.test(requests[i].url()))
-        return requests[i];
-    }
+    return NetworkTestRunner.networkRequests().find(request => url.test(request.url()));
   }
 
   function addCookieHeadersToRequest(request) {
-    request.setRequestHeaders([{name: 'Cookie', value: 'a=b; $Path=/path; $Domain=example.com; a1=b1\nc1=d1'}]);
+    const c1 = new SDK.Cookie('a', 'b');
+    c1.addAttribute('path', '/path');
+    c1.addAttribute('domain', 'example.com');
+    request._includedRequestCookies = [
+      c1,
+      new SDK.Cookie('a1', 'b1'),
+      new SDK.Cookie('c1', 'd1'),
+    ];
 
     request.responseHeaders = [{
       name: 'Set-Cookie',
@@ -36,7 +39,7 @@
 
   addCookieHeadersToRequest(findRequestByURL(/inspected-page\.html$/));
   const requests = NetworkTestRunner.networkRequests();
-  var log = await SDK.HARLog.build(requests);
+  var log = await NetworkTestRunner.buildHARLog(requests);
   // Filter out favicon.ico requests that only appear on certain platforms.
   log.entries = log.entries.filter(function(entry) {
     return !/favicon\.ico$/.test(entry.request.url);
