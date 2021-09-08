@@ -10,10 +10,10 @@
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
-#include "net/third_party/quiche/src/spdy/core/http2_frame_decoder_adapter.h"
-#include "net/third_party/quiche/src/spdy/core/recording_headers_handler.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_test_utils.h"
+#include "common/platform/api/quiche_test.h"
+#include "spdy/core/http2_frame_decoder_adapter.h"
+#include "spdy/core/recording_headers_handler.h"
+#include "spdy/core/spdy_test_utils.h"
 
 namespace spdy {
 
@@ -100,6 +100,11 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
                SpdyStreamId parent_stream_id,
                int weight,
                bool exclusive),
+              (override));
+  MOCK_METHOD(void,
+              OnPriorityUpdate,
+              (SpdyStreamId prioritized_stream_id,
+               absl::string_view priority_field_value),
               (override));
   MOCK_METHOD(bool,
               OnUnknownFrame,

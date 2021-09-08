@@ -4,14 +4,13 @@
 
 #include <cerrno>
 #include <memory>
+#include <string>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string16.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/services/storage/indexed_db/leveldb/fake_leveldb_factory.h"
@@ -52,11 +51,10 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
           nullptr, task_runner.get(),
           TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase),
       /*blob_storage_context=*/nullptr,
-      /*native_file_system_context=*/nullptr,
+      /*file_system_access_context=*/nullptr,
       /*filesystem_proxy=*/nullptr,
       IndexedDBBackingStore::BlobFilesCleanedCallback(),
-      IndexedDBBackingStore::ReportOutstandingBlobsCallback(), task_runner,
-      task_runner);
+      IndexedDBBackingStore::ReportOutstandingBlobsCallback(), task_runner);
   leveldb::Status s = backing_store->Initialize(false);
   EXPECT_FALSE(s.ok());
   ASSERT_TRUE(temp_directory.Delete());
@@ -91,11 +89,10 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
             task_runner.get(),
             TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase),
         /*blob_storage_context=*/nullptr,
-        /*native_file_system_context=*/nullptr,
+        /*file_system_access_context=*/nullptr,
         /*filesystem_proxy=*/nullptr,
         IndexedDBBackingStore::BlobFilesCleanedCallback(),
-        IndexedDBBackingStore::ReportOutstandingBlobsCallback(), task_runner,
-        task_runner);
+        IndexedDBBackingStore::ReportOutstandingBlobsCallback(), task_runner);
     leveldb::Status s = backing_store->Initialize(false);
     ASSERT_TRUE(s.IsIOError());
   }

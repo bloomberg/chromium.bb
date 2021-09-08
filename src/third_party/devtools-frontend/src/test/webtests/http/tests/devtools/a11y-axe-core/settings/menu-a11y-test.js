@@ -6,13 +6,13 @@
   TestRunner.addResult(
       'Tests accessibility in the settings menu using the axe-core linter.');
 
-  await TestRunner.loadModule('axe_core_test_runner');
+  await TestRunner.loadTestModule('axe_core_test_runner');
   await TestRunner.loadModule('settings');
+  await TestRunner.loadLegacyModule('settings');
 
   await UI.actionRegistry.action('settings.show').execute();
 
-  const tabbedPane = runtime.sharedInstance(Settings.SettingsScreen)
-                         ._tabbedLocation.tabbedPane();
+  const tabbedPane = Settings.SettingsScreen.instance()._tabbedLocation.tabbedPane();
 
   // force tabs to update
   tabbedPane._innerUpdateTabElements();

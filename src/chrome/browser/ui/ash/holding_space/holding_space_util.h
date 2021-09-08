@@ -22,7 +22,7 @@ class FilePath;
 namespace ash {
 
 class HoldingSpaceImage;
-class HoldingSpaceThumbnailLoader;
+class ThumbnailLoader;
 
 // A utility for holding space.
 namespace holding_space_util {
@@ -32,7 +32,7 @@ struct ValidityRequirement {
   ValidityRequirement(const ValidityRequirement& other);
   ValidityRequirement(ValidityRequirement&& other);
   bool must_exist = true;
-  base::Optional<base::TimeDelta> must_be_newer_than = base::nullopt;
+  absl::optional<base::TimeDelta> must_be_newer_than = absl::nullopt;
 };
 
 using FilePathList = std::vector<base::FilePath>;
@@ -70,11 +70,11 @@ GURL ResolveFileSystemUrl(Profile* profile, const base::FilePath& file_path);
 
 // Resolves the image associated with the specified `file_path`.
 std::unique_ptr<HoldingSpaceImage> ResolveImage(
-    HoldingSpaceThumbnailLoader* thumbnail_loader,
+    ThumbnailLoader* thumbnail_loader,
     HoldingSpaceItem::Type type,
     const base::FilePath& file_path);
 
-void SetNowForTesting(base::Optional<base::Time> now);
+void SetNowForTesting(absl::optional<base::Time> now);
 
 }  // namespace holding_space_util
 }  // namespace ash

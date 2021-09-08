@@ -188,6 +188,7 @@ typedef struct av1_ext_ref_frame {
  *
  * This set of macros define the control functions available for the AOM
  * decoder interface.
+ * The range for decoder control ID is >= 256.
  *
  * \sa #aom_codec_control(aom_codec_ctx_t *ctx, int ctrl_id, ...)
  */
@@ -380,8 +381,6 @@ enum aom_dec_control_id {
    * value is set to nonzero. The default value is 0.
    */
   AV1D_SET_SKIP_FILM_GRAIN,
-
-  AOM_DECODER_CTRL_ID_MAX,
 
   /*!\brief Codec control function to check the presence of forward key frames
    */

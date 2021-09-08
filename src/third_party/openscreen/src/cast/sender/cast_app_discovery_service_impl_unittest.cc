@@ -4,9 +4,10 @@
 
 #include "cast/sender/cast_app_discovery_service_impl.h"
 
+#include <utility>
+
 #include "cast/common/channel/testing/fake_cast_socket.h"
 #include "cast/common/channel/testing/mock_socket_error_handler.h"
-#include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/service_info.h"
 #include "cast/sender/testing/test_helpers.h"
@@ -79,12 +80,10 @@ class CastAppDiscoveryServiceImplTest : public ::testing::Test {
   FakeCastSocketPair fake_cast_socket_pair_;
   int32_t socket_id_;
   MockSocketErrorHandler mock_error_handler_;
-  VirtualConnectionManager manager_;
-  VirtualConnectionRouter router_{&manager_};
+  VirtualConnectionRouter router_;
   FakeClock clock_{Clock::now()};
   FakeTaskRunner task_runner_{&clock_};
-  CastPlatformClient platform_client_{&router_, &manager_, &FakeClock::now,
-                                      &task_runner_};
+  CastPlatformClient platform_client_{&router_, &FakeClock::now, &task_runner_};
   CastAppDiscoveryServiceImpl app_discovery_service_{&platform_client_,
                                                      &FakeClock::now};
 

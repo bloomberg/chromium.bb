@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory_hooks.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
@@ -42,6 +41,7 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/dynamic_library_support.h"
 #include "sandbox/policy/sandbox_type.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -60,6 +60,10 @@
 
 #include "base/file_descriptor_store.h"
 #include "base/posix/global_descriptors.h"
+#endif
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#include "base/files/scoped_file.h"
 #endif
 
 #if defined(OS_MAC)
@@ -115,7 +119,7 @@ void PopulateFDsFromCommandLine() {
   if (shared_file_param.empty())
     return;
 
-  base::Optional<std::map<int, std::string>> shared_file_descriptors =
+  absl::optional<std::map<int, std::string>> shared_file_descriptors =
       ParseSharedFileSwitchValue(shared_file_param);
   if (!shared_file_descriptors)
     return;
@@ -302,6 +306,10 @@ int RunContentProcess(const ContentMainParams& params,
     autorelease_pool = std::make_unique<base::mac::ScopedNSAutoreleasePool>();
     content_main_params.autorelease_pool = autorelease_pool.get();
     InitializeMac();
+#endif
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+    base::subtle::EnableFDOwnershipEnforcement(true);
 #endif
 
     mojo::core::Configuration mojo_config;

@@ -17,6 +17,7 @@
 #include "include/private/SkTDArray.h"
 #include "src/gpu/GrSurfaceProxyView.h"
 #include "src/gpu/GrTextureProxy.h"
+#include "src/gpu/SkGr.h"
 
 class GrTexture;
 #endif
@@ -27,7 +28,6 @@ class GrDirectContext;
 class GrImageContext;
 class GrSamplerState;
 class SkCachedData;
-struct SkYUVASizeInfo;
 
 enum {
     kNeedNewImageUniqueID = 0
@@ -49,6 +49,8 @@ public:
                               int srcY,
                               CachingHint) const = 0;
 
+    virtual bool onHasMipmaps() const = 0;
+
     virtual SkMipmap* onPeekMips() const { return nullptr; }
 
     sk_sp<SkMipmap> refMips() const {
@@ -61,7 +63,7 @@ public:
     virtual void onAsyncRescaleAndReadPixels(const SkImageInfo&,
                                              const SkIRect& srcRect,
                                              RescaleGamma,
-                                             SkFilterQuality,
+                                             RescaleMode,
                                              ReadPixelsCallback,
                                              ReadPixelsContext);
     /**
@@ -72,7 +74,7 @@ public:
                                                    const SkIRect& srcRect,
                                                    const SkISize& dstSize,
                                                    RescaleGamma,
-                                                   SkFilterQuality,
+                                                   RescaleMode,
                                                    ReadPixelsCallback,
                                                    ReadPixelsContext);
 
@@ -86,23 +88,41 @@ public:
         return GrSemaphoresSubmitted::kNo;
     }
 
-    // Return the proxy if this image is backed by a single proxy. For YUVA images, this
-    // will return nullptr unless the YUVA planes have been converted to RGBA in which case
-    // that single backing proxy will be returned.
-    virtual GrTextureProxy* peekProxy() const { return nullptr; }
+    // Returns a GrSurfaceProxyView representation of the image, if possible. This also returns
+    // a color type. This may be different than the image's color type when the image is not
+    // texture-backed and the capabilities of the GPU require a data type conversion to put
+    // the data in a texture.
+    std::tuple<GrSurfaceProxyView, GrColorType> asView(
+            GrRecordingContext* context,
+            GrMipmapped mipmapped,
+            GrImageTexGenPolicy policy = GrImageTexGenPolicy::kDraw) const;
 
-    // If it exists, this returns a pointer to the GrSurfaceProxyView of image. The caller does not
-    // own the returned view and must copy it if they want to gain a ref to the internal proxy.
-    // If the returned view is not null, then it is guaranteed to have a valid proxy. Additionally
-    // this call will flatten a SkImage_GpuYUV to a single texture.
-    virtual const GrSurfaceProxyView* view(GrRecordingContext*) const { return nullptr; }
+    /**
+     * Returns a GrFragmentProcessor that can be used with the passed GrRecordingContext to
+     * draw the image. SkSamplingOptions indicates the filter and SkTileMode[] indicates the x and
+     * y tile modes. The passed matrix is applied to the coordinates before sampling the image.
+     * Optional 'subset' indicates whether the tile modes should be applied to a subset of the image
+     * Optional 'domain' is a bound on the coordinates of the image that will be required and can be
+     * used to optimize the shader if 'subset' is also specified.
+     */
+    std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(GrRecordingContext*,
+                                                             SkSamplingOptions,
+                                                             const SkTileMode[2],
+                                                             const SkMatrix&,
+                                                             const SkRect* subset = nullptr,
+                                                             const SkRect* domain = nullptr) const;
 
-    virtual GrSurfaceProxyView refView(GrRecordingContext*, GrMipmapped) const = 0;
-    virtual GrSurfaceProxyView refPinnedView(GrRecordingContext*, uint32_t* uniqueID) const {
-        return {};
-    }
     virtual bool isYUVA() const { return false; }
+
+    // If this image is the current cached image snapshot of a surface then this is called when the
+    // surface is destroyed to indicate no further writes may happen to surface backing store.
+    virtual void generatingSurfaceIsDeleted() {}
 #endif
+
+    virtual bool onPinAsTexture(GrRecordingContext*) const { return false; }
+    virtual void onUnpinAsTexture(GrRecordingContext*) const {}
+    virtual bool isPinnedOnContext(GrRecordingContext*) const { return false; }
+
     virtual GrBackendTexture onGetBackendTexture(bool flushPendingGrContextIO,
                                                  GrSurfaceOrigin* origin) const;
 
@@ -123,6 +143,9 @@ public:
     // True for images instantiated in GPU memory
     virtual bool onIsTextureBacked() const { return false; }
 
+    // Amount of texture memory used by texture-backed images.
+    virtual size_t onTextureSize() const { return 0; }
+
     // Call when this image is part of the key to a resourcecache entry. This allows the cache
     // to know automatically those entries can be purged when this SkImage deleted.
     virtual void notifyAddedToRasterCache() const {
@@ -130,9 +153,6 @@ public:
     }
 
     virtual bool onIsValid(GrRecordingContext*) const = 0;
-
-    virtual bool onPinAsTexture(GrRecordingContext*) const { return false; }
-    virtual void onUnpinAsTexture(GrRecordingContext*) const {}
 
     virtual sk_sp<SkImage> onMakeColorTypeAndColorSpace(SkColorType, sk_sp<SkColorSpace>,
                                                         GrDirectContext*) const = 0;
@@ -147,7 +167,49 @@ public:
 protected:
     SkImage_Base(const SkImageInfo& info, uint32_t uniqueID);
 
+#if SK_SUPPORT_GPU
+    // Utility for making a copy of an existing view when the GrImageTexGenPolicy is not kDraw.
+    static GrSurfaceProxyView CopyView(GrRecordingContext*,
+                                       GrSurfaceProxyView src,
+                                       GrMipmapped,
+                                       GrImageTexGenPolicy);
+
+    static std::unique_ptr<GrFragmentProcessor> MakeFragmentProcessorFromView(GrRecordingContext*,
+                                                                              GrSurfaceProxyView,
+                                                                              SkAlphaType,
+                                                                              SkSamplingOptions,
+                                                                              const SkTileMode[2],
+                                                                              const SkMatrix&,
+                                                                              const SkRect* subset,
+                                                                              const SkRect* domain);
+
+    /**
+     * Returns input view if it is already mipmapped. Otherwise, attempts to make a mipmapped view
+     * with the same contents. If the mipmapped copy is successfully created it will be cached
+     * using the image unique ID. A subsequent call with the same unique ID will return the cached
+     * view if it has not been purged. The view is cached with a key domain specific to this
+     * function.
+     */
+    static GrSurfaceProxyView FindOrMakeCachedMipmappedView(GrRecordingContext*,
+                                                            GrSurfaceProxyView,
+                                                            uint32_t imageUniqueID);
+#endif
+
 private:
+#if SK_SUPPORT_GPU
+    virtual std::tuple<GrSurfaceProxyView, GrColorType> onAsView(
+            GrRecordingContext*,
+            GrMipmapped,
+            GrImageTexGenPolicy policy) const = 0;
+
+    virtual std::unique_ptr<GrFragmentProcessor> onAsFragmentProcessor(
+            GrRecordingContext*,
+            SkSamplingOptions,
+            const SkTileMode[2],
+            const SkMatrix&,
+            const SkRect* subset,
+            const SkRect* domain) const = 0;
+#endif
     // Set true by caches when they cache content that's derived from the current pixels.
     mutable std::atomic<bool> fAddedToRasterCache;
 
@@ -165,5 +227,21 @@ static inline SkImage_Base* as_IB(const sk_sp<SkImage>& image) {
 static inline const SkImage_Base* as_IB(const SkImage* image) {
     return static_cast<const SkImage_Base*>(image);
 }
+
+#if SK_SUPPORT_GPU
+inline GrSurfaceProxyView SkImage_Base::CopyView(GrRecordingContext* context,
+                                                 GrSurfaceProxyView src,
+                                                 GrMipmapped mipmapped,
+                                                 GrImageTexGenPolicy policy) {
+    SkBudgeted budgeted = policy == GrImageTexGenPolicy::kNew_Uncached_Budgeted
+                          ? SkBudgeted::kYes
+                          : SkBudgeted::kNo;
+    return GrSurfaceProxyView::Copy(context,
+                                    std::move(src),
+                                    mipmapped,
+                                    SkBackingFit::kExact,
+                                    budgeted);
+}
+#endif
 
 #endif

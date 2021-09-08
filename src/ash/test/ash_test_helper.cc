@@ -6,11 +6,13 @@
 
 #include <algorithm>
 
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/ambient/test/ambient_ash_test_helper.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/test/test_assistant_service.h"
+#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"
 #include "ash/host/ash_window_tree_host.h"
@@ -22,6 +24,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
+#include "ash/system/message_center/session_state_notification_blocker.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_views_delegate.h"
@@ -32,14 +35,15 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
-#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/chromeos/mock_input_method_manager.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
@@ -84,10 +88,8 @@ class AshTestHelper::PowerPolicyControllerInitializer {
   }
 };
 
-AshTestHelper::AshTestHelper(ConfigType config_type,
-                             ui::ContextFactory* context_factory)
-    : AuraTestHelper(context_factory, config_type == kUnitTest),
-      config_type_(config_type) {
+AshTestHelper::AshTestHelper(ui::ContextFactory* context_factory)
+    : AuraTestHelper(context_factory) {
   views::ViewsTestHelperAura::SetFallbackTestViewsDelegateFactory(
       &MakeTestViewsDelegate);
 
@@ -102,16 +104,14 @@ AshTestHelper::AshTestHelper(ConfigType config_type,
         ::switches::kHostWindowBounds, "10+10-800x600");
   }
 
-  if (config_type_ == kUnitTest)
-    TabletModeController::SetUseScreenshotForTest(false);
+  TabletModeController::SetUseScreenshotForTest(false);
 
-  if (config_type_ != kShell)
-    display::ResetDisplayIdForTest();
+  display::ResetDisplayIdForTest();
 
   chromeos::CrasAudioClient::InitializeFake();
   // Create CrasAudioHandler for testing since g_browser_process is not
   // created in AshTestBase tests.
-  chromeos::CrasAudioHandler::InitializeForTesting();
+  CrasAudioHandler::InitializeForTesting();
 
   // Reset the global state for the cursor manager. This includes the
   // last cursor visibility state, etc.
@@ -153,7 +153,9 @@ void AshTestHelper::TearDown() {
   // CompositorFrameSinkClient::ReclaimResources()
   base::RunLoop().RunUntilIdle();
 
-  chromeos::CrasAudioHandler::Shutdown();
+  chromeos::LoginState::Shutdown();
+
+  CrasAudioHandler::Shutdown();
   chromeos::CrasAudioClient::Shutdown();
 
   // The PowerPolicyController holds a pointer to the PowerManagementClient, so
@@ -168,7 +170,7 @@ void AshTestHelper::TearDown() {
   test_keyboard_controller_observer_.reset();
   session_controller_client_.reset();
   test_views_delegate_.reset();
-  new_window_delegate_.reset();
+  new_window_delegate_provider_.reset();
   bluez_dbus_manager_initializer_.reset();
   system_tray_client_.reset();
   assistant_service_.reset();
@@ -178,6 +180,15 @@ void AshTestHelper::TearDown() {
   command_line_.reset();
 
   AuraTestHelper::TearDown();
+
+  // Cleanup the global state for InputMethodManager, but only if
+  // it was setup by this test helper. This allows tests to implement
+  // their own override, and in that case we shouldn't call Shutdown
+  // otherwise the global state will be deleted twice.
+  if (input_method_manager_) {
+    chromeos::input_method::InputMethodManager::Shutdown();
+    input_method_manager_ = nullptr;
+  }
 }
 
 aura::Window* AshTestHelper::GetContext() {
@@ -213,6 +224,14 @@ aura::client::CaptureClient* AshTestHelper::GetCaptureClient() {
 void AshTestHelper::SetUp(InitParams init_params) {
   // This block of objects are conditionally initialized here rather than in the
   // constructor to make it easier for test classes to override them.
+  if (!input_method::InputMethodManager::Get()) {
+    // |input_method_manager_| is not owned and is cleaned up in TearDown()
+    // by calling InputMethodManager::Shutdown().
+    input_method_manager_ =
+        new chromeos::input_method::MockInputMethodManager();
+    input_method::InputMethodManager::Initialize(input_method_manager_);
+  }
+
   if (!bluez::BluezDBusManager::IsInitialized()) {
     bluez_dbus_manager_initializer_ =
         std::make_unique<BluezDBusManagerInitializer>();
@@ -223,12 +242,22 @@ void AshTestHelper::SetUp(InitParams init_params) {
     power_policy_controller_initializer_ =
         std::make_unique<PowerPolicyControllerInitializer>();
   }
-  if (!NewWindowDelegate::GetInstance())
-    new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
+  if (!NewWindowDelegate::GetInstance()) {
+    new_window_delegate_provider_ =
+        std::make_unique<TestNewWindowDelegateProvider>(
+            std::make_unique<TestNewWindowDelegate>());
+  }
   if (!views::ViewsDelegate::GetInstance())
     test_views_delegate_ = MakeTestViewsDelegate();
 
+  chromeos::LoginState::Initialize();
+
   ambient_ash_test_helper_ = std::make_unique<AmbientAshTestHelper>();
+
+  // There is a temporary M92-M94 notification that shows once to users
+  // at startup, but this interferes with many tests that expect a
+  // specific active window, or a certain number of notifications.
+  AcceleratorControllerImpl::SetShouldShowShortcutNotificationForTest(false);
 
   ShellInitParams shell_init_params;
   shell_init_params.delegate = std::move(init_params.delegate);
@@ -240,6 +269,12 @@ void AshTestHelper::SetUp(InitParams init_params) {
       std::make_unique<TestKeyboardUIFactory>();
   Shell::CreateInstance(std::move(shell_init_params));
   Shell* shell = Shell::Get();
+
+  // Disable the notification delay timer used to prevent non system
+  // notifications from showing up right after login. This needs to be done
+  // before any user sessions are added since the delay timer starts right
+  // after that.
+  SessionStateNotificationBlocker::SetUseLoginNotificationDelayForTest(false);
 
   // Cursor is visible by default in tests.
   shell->cursor_manager()->ShowCursor();
@@ -260,11 +295,6 @@ void AshTestHelper::SetUp(InitParams init_params) {
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
-  if (config_type_ == kShell) {
-    shell->wallpaper_controller()->ShowDefaultWallpaperForTesting();
-    return;
-  }
-
   // Don't change the display size due to host size resize.
   display::test::DisplayManagerTestApi(shell->display_manager())
       .DisableChangeDisplayUponHostResize();
@@ -274,9 +304,6 @@ void AshTestHelper::SetUp(InitParams init_params) {
   test_keyboard_controller_observer_ =
       std::make_unique<TestKeyboardControllerObserver>(
           shell->keyboard_controller());
-
-  if (config_type_ != kUnitTest)
-    return;
 
   // Tests that change the display configuration generally don't care about the
   // notifications and the popup UI can interfere with things like cursors.

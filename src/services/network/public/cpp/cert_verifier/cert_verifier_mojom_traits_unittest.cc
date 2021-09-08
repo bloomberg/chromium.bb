@@ -34,7 +34,7 @@ TEST(CertVerifierMojomTraitsTest, RequestParams) {
   net::CertVerifier::RequestParams out_params;
 
   ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::RequestParams>(
-      &params, &out_params));
+      params, out_params));
 
   ASSERT_EQ(params, out_params);
 }
@@ -114,7 +114,7 @@ TEST(CertVerifierMojomTraitsTest, ConfigBasic) {
   net::CertVerifier::Config out_config;
 
   ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CertVerifierConfig>(
-      &config, &out_config));
+      config, out_config));
   ASSERT_TRUE(ConfigsEqual(config, out_config));
 }
 
@@ -128,19 +128,16 @@ TEST(CertVerifierMojomTraitsTest, ConfigTrue) {
   net::CertVerifier::Config out_config;
 
   ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CertVerifierConfig>(
-      &config, &out_config));
+      config, out_config));
   ASSERT_TRUE(ConfigsEqual(config, out_config));
 }
 
 TEST(CertVerifierMojomTraitsTest, ConfigCRLAndAdditionalCerts) {
   std::string crl_set;
 
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    base::ReadFileToString(
-        net::GetTestCertsDirectory().AppendASCII("crlset_by_leaf_spki.raw"),
-        &crl_set);
-  }
+  base::ReadFileToString(
+      net::GetTestCertsDirectory().AppendASCII("crlset_by_leaf_spki.raw"),
+      &crl_set);
 
   const base::FilePath certs_dir = net::GetTestCertsDirectory();
 
@@ -157,7 +154,7 @@ TEST(CertVerifierMojomTraitsTest, ConfigCRLAndAdditionalCerts) {
   net::CertVerifier::Config out_config;
 
   ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CertVerifierConfig>(
-      &config, &out_config));
+      config, out_config));
   ASSERT_TRUE(ConfigsEqual(config, out_config));
 }
 

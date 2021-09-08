@@ -25,10 +25,11 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeApplicationImpl;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 
@@ -72,6 +73,7 @@ public class IncognitoCustomTabIntentDataProvider extends BrowserServicesIntentD
 
     @Nullable
     private final String mUrlToLoad;
+    private final String mSendersPackageName;
 
     /** Whether this CustomTabActivity was explicitly started by another Chrome Activity. */
     private final boolean mIsOpenedByChrome;
@@ -85,6 +87,7 @@ public class IncognitoCustomTabIntentDataProvider extends BrowserServicesIntentD
         assert intent != null;
         mIntent = intent;
         mUrlToLoad = resolveUrlToLoad(intent);
+        mSendersPackageName = getSendersPackageNameFromIntent(intent);
         mSession = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         mIsTrustedIntent = isTrustedCustomTab(intent, mSession);
         mAnimationBundle = IntentUtils.safeGetBundleExtra(
@@ -110,7 +113,6 @@ public class IncognitoCustomTabIntentDataProvider extends BrowserServicesIntentD
     }
 
     private static @CustomTabsUiType int getUiType(Intent intent) {
-        if (isForPaymentsFlow(intent)) return CustomTabsUiType.PAYMENT_REQUEST;
         if (isForReaderMode(intent)) return CustomTabsUiType.READER_MODE;
 
         return CustomTabsUiType.DEFAULT;
@@ -121,33 +123,31 @@ public class IncognitoCustomTabIntentDataProvider extends BrowserServicesIntentD
                 intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
     }
 
-    private static boolean isForPaymentsFlow(Intent intent) {
-        final int requestedUiType =
-                IntentUtils.safeGetIntExtra(intent, EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT);
-        return (isTrustedIntent(intent) && (requestedUiType == CustomTabsUiType.PAYMENT_REQUEST));
-    }
-
     private static boolean isForReaderMode(Intent intent) {
         final int requestedUiType =
                 IntentUtils.safeGetIntExtra(intent, EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT);
-        return (isTrustedIntent(intent) && (requestedUiType == CustomTabsUiType.READER_MODE));
+        return (isIntentFromChrome(intent) && (requestedUiType == CustomTabsUiType.READER_MODE));
+    }
+
+    private static boolean isIntentFromThirdPartyAllowed() {
+        return CachedFeatureFlags.isEnabled(
+                ChromeFeatureList.CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY);
     }
 
     private static boolean isIntentFromFirstParty(Intent intent) {
-        CustomTabsSessionToken sessionToken =
-                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        String sendersPackageName =
-                CustomTabsConnection.getInstance().getClientPackageNameForSession(sessionToken);
+        String sendersPackageName = getSendersPackageNameFromIntent(intent);
         return !TextUtils.isEmpty(sendersPackageName)
-                && ChromeApplication.getComponent().resolveExternalAuthUtils().isGoogleSigned(
+                && ChromeApplicationImpl.getComponent().resolveExternalAuthUtils().isGoogleSigned(
                         sendersPackageName);
     }
 
+    private static boolean isIntentFromChrome(Intent intent) {
+        return IntentHandler.wasIntentSenderChrome(intent);
+    }
+
     private static boolean isTrustedIntent(Intent intent) {
-        CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        boolean isOpenedByChrome =
-                IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OPENED_BY_CHROME, false);
-        return isTrustedCustomTab(intent, session) && isOpenedByChrome;
+        if (isIntentFromChrome(intent)) return true;
+        return isIntentFromFirstParty(intent) || isIntentFromThirdPartyAllowed();
     }
 
     private static boolean isAllowedToAddCustomMenuItem(Intent intent) {
@@ -172,26 +172,65 @@ public class IncognitoCustomTabIntentDataProvider extends BrowserServicesIntentD
         }
     }
 
+    private static String getSendersPackageNameFromIntent(Intent intent) {
+        CustomTabsSessionToken sessionToken =
+                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        return CustomTabsConnection.getInstance().getClientPackageNameForSession(sessionToken);
+    }
+
+    public static void addIncongitoExtrasForChromeFeatures(
+            Intent intent, @IntentHandler.IncognitoCCTCallerId int chromeCallerId) {
+        intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
+        intent.putExtra(IntentHandler.EXTRA_INCOGNITO_CCT_CALLER_ID, chromeCallerId);
+    }
+
+    public @IntentHandler.IncognitoCCTCallerId int getFeatureIdForMetricsCollection() {
+        if (isIntentFromChrome(mIntent)) {
+            assert mIntent.hasExtra(IntentHandler.EXTRA_INCOGNITO_CCT_CALLER_ID)
+                : "Intent coming from Chrome features should add the extra "
+                    + "IntentHandler.EXTRA_INCOGNITO_CCT_CALLER_ID.";
+
+            @IntentHandler.IncognitoCCTCallerId
+            int incognitoCCTChromeClientId = IntentUtils.safeGetIntExtra(mIntent,
+                    IntentHandler.EXTRA_INCOGNITO_CCT_CALLER_ID,
+                    IntentHandler.IncognitoCCTCallerId.OTHER_CHROME_FEATURES);
+
+            boolean isValidEntry = (incognitoCCTChromeClientId
+                            > IntentHandler.IncognitoCCTCallerId.OTHER_CHROME_FEATURES
+                    && incognitoCCTChromeClientId < IntentHandler.IncognitoCCTCallerId.NUM_ENTRIES);
+            assert isValidEntry : "Invalid EXTRA_INCOGNITO_CCT_CALLER_ID value!";
+            if (!isValidEntry) {
+                incognitoCCTChromeClientId =
+                        IntentHandler.IncognitoCCTCallerId.OTHER_CHROME_FEATURES;
+            }
+            return incognitoCCTChromeClientId;
+        } else if (isIntentFromFirstParty(mIntent)) {
+            return IntentHandler.IncognitoCCTCallerId.GOOGLE_APPS;
+        } else {
+            return IntentHandler.IncognitoCCTCallerId.OTHER_APPS;
+        }
+    }
+
     // TODO(https://crbug.com/1023759): Remove this function and enable
     // incognito CCT request for all apps.
     public static boolean isValidIncognitoIntent(Intent intent) {
         if (!isIncognitoRequested(intent)) return false;
-        // Incognito requests for payments flow are supported without
-        // INCOGNITO_CCT flag as an exceptional case that can use Chrome
-        // incognito profile.
-        if (isForPaymentsFlow(intent)) return true;
         // Allow first parties to use for experimentation regardless of state of feature.
         if (isIntentFromFirstParty(intent)
                 && IntentUtils.safeGetBooleanExtra(
                         intent, EXTRA_FORCE_ENABLE_FOR_EXPERIMENT, false)) {
             return true;
         }
-        assert ChromeFeatureList.isInitialized();
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_INCOGNITO);
+        if (!isTrustedIntent(intent)) return false;
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.CCT_INCOGNITO);
     }
 
     private String resolveUrlToLoad(Intent intent) {
         return IntentHandler.getUrlFromIntent(intent);
+    }
+
+    public String getSendersPackageName() {
+        return mSendersPackageName;
     }
 
     @Override

@@ -15,6 +15,8 @@ namespace bookmarks {
 class BookmarkNode;
 }
 
+class GURL;
+
 namespace web {
 class WebState;
 }
@@ -31,9 +33,14 @@ class WebState;
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
-// Presents the bookmark UI for a single bookmark.
-- (void)presentBookmarkEditorForWebState:(web::WebState*)webState
-                     currentlyBookmarked:(BOOL)bookmarked;
+// Called before the instance is deallocated.
+- (void)shutdown;
+
+// Adds a bookmark for |URL| with the given |title|.
+- (void)bookmarkURL:(const GURL&)URL title:(NSString*)title;
+
+// Presents the bookmark UI to edit an existing bookmark with |URL|.
+- (void)presentBookmarkEditorForURL:(const GURL&)URL;
 
 // Presents the bookmarks browser modally.
 - (void)presentBookmarks;

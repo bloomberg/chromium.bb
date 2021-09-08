@@ -11,9 +11,9 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -27,8 +27,10 @@
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/test_data_stream.h"
 #include "net/cert/ct_policy_status.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_request_info.h"
 #include "net/http/transport_security_state_test_util.h"
 #include "net/log/net_log_event_type.h"
@@ -41,6 +43,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/transport_connect_job.h"
+#include "net/spdy/alps_decoder.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_session_test_util.h"
@@ -55,6 +58,8 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -66,7 +71,6 @@ namespace net {
 namespace {
 
 const char kHttpURLFromAnotherOrigin[] = "http://www.example2.org/a.dat";
-const char kHttpsURLFromAnotherOrigin[] = "https://www.example2.org/b.dat";
 const char kPushedUrl[] = "https://www.example.org/a.dat";
 
 const char kBodyData[] = "Body data";
@@ -170,7 +174,7 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
              SpdySessionKey::IsProxySession::kFalse,
              SocketTag(),
              NetworkIsolationKey(),
-             false /* disable_secure_dns */),
+             SecureDnsPolicy::kAllow),
         ssl_(SYNCHRONOUS, OK) {}
 
   ~SpdySessionTest() override {
@@ -211,12 +215,6 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
     DCHECK(!session_);
     session_ =
         ::net::CreateSpdySession(http_session_.get(), key_, log_.bound());
-  }
-
-  void CreateTrustedSpdySession() {
-    DCHECK(!session_);
-    session_ = ::net::CreateTrustedSpdySession(http_session_.get(), key_,
-                                               log_.bound());
   }
 
   void StallSessionSend() {
@@ -396,10 +394,15 @@ class SpdySessionTestWithMockTime : public SpdySessionTest {
 // Try to create a SPDY session that will fail during
 // initialization. Nothing should blow up.
 TEST_F(SpdySessionTest, InitialReadError) {
-  CreateNetworkSession();
+  MockRead reads[] = {MockRead(ASYNC, ERR_CONNECTION_CLOSED, 0)};
+  SequencedSocketData data(reads, base::span<MockWrite>());
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  session_ = TryCreateFakeSpdySessionExpectingFailure(spdy_session_pool_, key_,
-                                                      ERR_CONNECTION_CLOSED);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
   EXPECT_TRUE(session_);
   // Flush the read.
   base::RunLoop().RunUntilIdle();
@@ -2151,7 +2154,7 @@ bool NetLogSourceFromEventParameters(const base::Value* event_params,
     *source = NetLogSource();
     return false;
   }
-  base::Optional<int> opt_int;
+  absl::optional<int> opt_int;
   opt_int = source_dict->FindIntKey("id");
   if (!opt_int) {
     *source = NetLogSource();
@@ -2837,7 +2840,7 @@ TEST_F(SpdySessionTest, VerifyDomainAuthenticationExpectCT) {
                         PRIVACY_MODE_DISABLED,
                         SpdySessionKey::IsProxySession::kFalse, SocketTag(),
                         NetworkIsolationKey::CreateTransient(),
-                        false /* disable_secure_dns */);
+                        SecureDnsPolicy::kAllow);
   ssl_.ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   ssl_.ssl_info.is_issued_by_known_root = true;
@@ -3633,9 +3636,9 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
                 ClientSocketPool::GroupId(
                     host_port2, ClientSocketPool::SocketType::kHttp,
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-                    false /* disable_secure_dns */),
+                    SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
-                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                absl::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
                 SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
                 callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
                 pool, NetLogWithSource()));
@@ -3678,7 +3681,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   SpdySessionKey key1(HostPortPair("www.example.org", 80),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> session1 =
       ::net::CreateSpdySession(http_session_.get(), key1, NetLogWithSource());
   EXPECT_FALSE(pool->IsStalled());
@@ -3687,7 +3690,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   SpdySessionKey key2(HostPortPair("mail.example.org", 80),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   std::unique_ptr<SpdySessionPool::SpdySessionRequest> request;
   bool is_blocking_request_for_session = false;
   SpdySessionRequestDelegate request_delegate;
@@ -3723,9 +3726,9 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
                 ClientSocketPool::GroupId(
                     host_port3, ClientSocketPool::SocketType::kHttp,
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-                    false /* disable_secure_dns */),
+                    SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
-                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                absl::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
                 SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
                 callback3.callback(), ClientSocketPool::ProxyAuthCallback(),
                 pool, NetLogWithSource()));
@@ -3804,9 +3807,9 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
                 ClientSocketPool::GroupId(
                     host_port2, ClientSocketPool::SocketType::kHttp,
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-                    false /* disable_secure_dns */),
+                    SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
-                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                absl::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
                 SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
                 callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
                 pool, NetLogWithSource()));
@@ -3837,11 +3840,11 @@ TEST_F(SpdySessionTest, SpdySessionKeyPrivacyMode) {
   SpdySessionKey key_privacy_enabled(
       host_port_pair, ProxyServer::Direct(), PRIVACY_MODE_ENABLED,
       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-      NetworkIsolationKey(), false /* disable_secure_dns */);
+      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   SpdySessionKey key_privacy_disabled(
       host_port_pair, ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-      NetworkIsolationKey(), false /* disable_secure_dns */);
+      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));
@@ -4233,7 +4236,7 @@ TEST_F(SpdySessionTest, SessionFlowControlTooMuchDataTwoDataFrames) {
   spdy::SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       0, spdy::ERROR_CODE_FLOW_CONTROL_ERROR,
       "delta_window_size is 400 in DecreaseRecvWindowSize, which is larger "
-      "than the receive window size of 500"));
+      "than the receive window size of 300"));
   MockWrite writes[] = {
       CreateMockWrite(goaway, 4),
   };
@@ -5452,109 +5455,9 @@ TEST_F(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
   histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
-// Tests that HTTP SPDY push streams that advertise an origin different from the
-// associated stream are accepted from a trusted SPDY proxy.
-TEST_F(SpdySessionTest, TrustedSpdyProxy) {
-  base::HistogramTester histogram_tester;
-
-  // Origin of kDefaultUrl should be different from the origin of
-  // kHttpURLFromAnotherOrigin and kHttpsURLFromAnotherOrigin.
-  ASSERT_NE(GURL(kDefaultUrl).host(), GURL(kHttpURLFromAnotherOrigin).host());
-  ASSERT_NE(GURL(kDefaultUrl).host(), GURL(kHttpsURLFromAnotherOrigin).host());
-
-  // cross_origin_push contains HTTP resource for an origin different from the
-  // origin of kDefaultUrl, and should be accepted.
-  spdy::SpdySerializedFrame cross_origin_push(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, kHttpURLFromAnotherOrigin));
-  // cross_origin_https_push contains HTTPS resource, and should be refused.
-  spdy::SpdySerializedFrame cross_origin_https_push(
-      spdy_util_.ConstructSpdyPush(nullptr, 0, 4, 1,
-                                   kHttpsURLFromAnotherOrigin));
-  MockRead reads[] = {
-      MockRead(ASYNC, ERR_IO_PENDING, 1),
-      CreateMockRead(cross_origin_push, 2),
-      MockRead(ASYNC, ERR_IO_PENDING, 4),
-      CreateMockRead(cross_origin_https_push, 5),
-      MockRead(ASYNC, ERR_IO_PENDING, 7),
-      MockRead(ASYNC, 0, 8),
-  };
-
-  spdy::SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
-  spdy::SpdySerializedFrame priority_http(
-      spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
-  spdy::SpdySerializedFrame rst_https(
-      spdy_util_.ConstructSpdyRstStream(4, spdy::ERROR_CODE_REFUSED_STREAM));
-  MockWrite writes[] = {
-      CreateMockWrite(req, 0), CreateMockWrite(priority_http, 3),
-      CreateMockWrite(rst_https, 6),
-  };
-
-  SequencedSocketData data(reads, writes);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  AddSSLSocketData();
-
-  CreateNetworkSession();
-  CreateTrustedSpdySession();
-
-  base::WeakPtr<SpdyStream> spdy_stream =
-      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                test_url_, LOWEST, NetLogWithSource());
-  ASSERT_TRUE(spdy_stream);
-  EXPECT_EQ(0u, spdy_stream->stream_id());
-  test::StreamDelegateDoNothing delegate(spdy_stream);
-  spdy_stream->SetDelegate(&delegate);
-
-  EXPECT_EQ(0u, num_active_streams());
-  EXPECT_EQ(1u, num_created_streams());
-  EXPECT_EQ(0u, num_pushed_streams());
-  EXPECT_EQ(0u, num_active_pushed_streams());
-
-  spdy::Http2HeaderBlock headers(
-      spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
-  spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
-
-  // Run until 1st stream is activated.
-  EXPECT_EQ(0u, delegate.stream_id());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, delegate.stream_id());
-  EXPECT_EQ(1u, num_active_streams());
-  EXPECT_EQ(0u, num_created_streams());
-  EXPECT_EQ(0u, num_pushed_streams());
-  EXPECT_EQ(0u, num_active_pushed_streams());
-
-  // Run until pushed stream is created.
-  data.Resume();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, num_active_streams());
-  EXPECT_EQ(0u, num_created_streams());
-  EXPECT_EQ(1u, num_pushed_streams());
-  EXPECT_EQ(1u, num_active_pushed_streams());
-
-  // Reset incoming pushed stream.
-  data.Resume();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, num_active_streams());
-  EXPECT_EQ(0u, num_created_streams());
-  EXPECT_EQ(1u, num_pushed_streams());
-  EXPECT_EQ(1u, num_active_pushed_streams());
-
-  // Read EOF.
-  data.Resume();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(session_);
-
-  histogram_tester.ExpectBucketCount(
-      "Net.SpdyPushedStreamFate",
-      static_cast<int>(SpdyPushedStreamFate::kNonHttpSchemeFromTrustedProxy),
-      1);
-  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
-}
-
-// Tests that if the SPDY trusted proxy is not set, then push streams that
-// advertise an origin different from the associated stream are refused.
-TEST_F(SpdySessionTest, TrustedSpdyProxyNotSet) {
+// Tests that push streams that advertise an origin different from the
+// associated stream are refused.
+TEST_F(SpdySessionTest, StreamsAdvertisingDifferentOriginAreRefused) {
   base::HistogramTester histogram_tester;
 
   // Origin of kDefaultUrl should be different from the origin of
@@ -6106,7 +6009,7 @@ TEST_F(SpdySessionTest, GreaseFrameTypeAfterSettings) {
   const uint8_t flags = 0xcc;
   const std::string payload("foo");
   session_deps_.greased_http2_frame =
-      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+      absl::optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
 
   // Connection preface.
@@ -6440,7 +6343,7 @@ TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameWithExpectCTError) {
                         PRIVACY_MODE_DISABLED,
                         SpdySessionKey::IsProxySession::kFalse, SocketTag(),
                         NetworkIsolationKey::CreateTransient(),
-                        false /* disable_secure_dns */);
+                        SecureDnsPolicy::kAllow);
   ssl_.ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   ssl_.ssl_info.is_issued_by_known_root = true;
@@ -6622,14 +6525,14 @@ TEST_F(AltSvcFrameTest,
   session_deps_.http_server_properties =
       std::make_unique<HttpServerProperties>();
 
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
   key_ = SpdySessionKey(HostPortPair::FromURL(test_url_), ProxyServer::Direct(),
                         PRIVACY_MODE_DISABLED,
                         SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                        kNetworkIsolationKey1, false /* disable_secure_dns */);
+                        kNetworkIsolationKey1, SecureDnsPolicy::kAllow);
 
   spdy::SpdyAltSvcIR altsvc_ir(/* stream_id = */ 1);
   altsvc_ir.add_altsvc(alternative_service_);
@@ -6882,11 +6785,6 @@ class TestSSLConfigService : public SSLConfigService {
         return true;
       }
     }
-    return false;
-  }
-
-  bool ShouldSuppressLegacyTLSWarning(
-      const std::string& hostname) const override {
     return false;
   }
 
@@ -7243,6 +7141,287 @@ TEST_F(SpdySessionTest, UpdateHeaderTableSize) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data.AllWriteDataConsumed());
   EXPECT_TRUE(data.AllReadDataConsumed());
+}
+
+TEST_F(SpdySessionTest, PriorityUpdateDisabled) {
+  session_deps_.enable_priority_update = false;
+
+  spdy::SettingsMap settings;
+  settings[spdy::SETTINGS_DEPRECATE_HTTP2_PRIORITIES] = 1;
+  auto settings_frame = spdy_util_.ConstructSpdySettings(settings);
+  auto settings_ack = spdy_util_.ConstructSpdySettingsAck();
+
+  MockRead reads[] = {CreateMockRead(settings_frame, 0),
+                      MockRead(ASYNC, ERR_IO_PENDING, 2),
+                      MockRead(ASYNC, 0, 3)};
+  MockWrite writes[] = {CreateMockWrite(settings_ack, 1)};
+  SequencedSocketData data(reads, writes);
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  // HTTP/2 priorities enabled by default.
+  // PRIORITY_UPDATE is disabled by |enable_priority_update| = false.
+  EXPECT_TRUE(session_->ShouldSendHttp2Priority());
+  EXPECT_FALSE(session_->ShouldSendPriorityUpdate());
+
+  // Receive SETTINGS frame.
+  base::RunLoop().RunUntilIdle();
+
+  // Since |enable_priority_update| = false,
+  // SETTINGS_DEPRECATE_HTTP2_PRIORITIES has no effect.
+  EXPECT_TRUE(session_->ShouldSendHttp2Priority());
+  EXPECT_FALSE(session_->ShouldSendPriorityUpdate());
+
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+}
+
+TEST_F(SpdySessionTest, PriorityUpdateEnabledHttp2PrioritiesDeprecated) {
+  session_deps_.enable_priority_update = true;
+
+  spdy::SettingsMap settings;
+  settings[spdy::SETTINGS_DEPRECATE_HTTP2_PRIORITIES] = 1;
+  auto settings_frame = spdy_util_.ConstructSpdySettings(settings);
+  auto settings_ack = spdy_util_.ConstructSpdySettingsAck();
+
+  MockRead reads[] = {CreateMockRead(settings_frame, 0),
+                      MockRead(ASYNC, ERR_IO_PENDING, 2),
+                      MockRead(ASYNC, 0, 3)};
+  MockWrite writes[] = {CreateMockWrite(settings_ack, 1)};
+  SequencedSocketData data(reads, writes);
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  // Both priority schemes are enabled until SETTINGS frame is received.
+  EXPECT_TRUE(session_->ShouldSendHttp2Priority());
+  EXPECT_TRUE(session_->ShouldSendPriorityUpdate());
+
+  // Receive SETTINGS frame.
+  base::RunLoop().RunUntilIdle();
+
+  // SETTINGS_DEPRECATE_HTTP2_PRIORITIES = 1 disables HTTP/2 priorities.
+  EXPECT_FALSE(session_->ShouldSendHttp2Priority());
+  EXPECT_TRUE(session_->ShouldSendPriorityUpdate());
+
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+}
+
+TEST_F(SpdySessionTest, PriorityUpdateEnabledHttp2PrioritiesNotDeprecated) {
+  session_deps_.enable_priority_update = true;
+
+  spdy::SettingsMap settings;
+  settings[spdy::SETTINGS_DEPRECATE_HTTP2_PRIORITIES] = 0;
+  auto settings_frame = spdy_util_.ConstructSpdySettings(settings);
+  auto settings_ack = spdy_util_.ConstructSpdySettingsAck();
+
+  MockRead reads[] = {CreateMockRead(settings_frame, 0),
+                      MockRead(ASYNC, ERR_IO_PENDING, 2),
+                      MockRead(ASYNC, 0, 3)};
+  MockWrite writes[] = {CreateMockWrite(settings_ack, 1)};
+  SequencedSocketData data(reads, writes);
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  // Both priority schemes are enabled until SETTINGS frame is received.
+  EXPECT_TRUE(session_->ShouldSendHttp2Priority());
+  EXPECT_TRUE(session_->ShouldSendPriorityUpdate());
+
+  // Receive SETTINGS frame.
+  base::RunLoop().RunUntilIdle();
+
+  // SETTINGS_DEPRECATE_HTTP2_PRIORITIES = 0 disables PRIORITY_UPDATE.
+  EXPECT_TRUE(session_->ShouldSendHttp2Priority());
+  EXPECT_FALSE(session_->ShouldSendPriorityUpdate());
+
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+}
+
+TEST_F(SpdySessionTest, SettingsDeprecateHttp2PrioritiesValueMustNotChange) {
+  spdy::SettingsMap settings0;
+  settings0[spdy::SETTINGS_DEPRECATE_HTTP2_PRIORITIES] = 0;
+  auto settings_frame0 = spdy_util_.ConstructSpdySettings(settings0);
+  spdy::SettingsMap settings1;
+  settings1[spdy::SETTINGS_DEPRECATE_HTTP2_PRIORITIES] = 1;
+  auto settings_frame1 = spdy_util_.ConstructSpdySettings(settings1);
+  MockRead reads[] = {
+      CreateMockRead(settings_frame1, 0), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(settings_frame1, 3), MockRead(ASYNC, ERR_IO_PENDING, 5),
+      CreateMockRead(settings_frame0, 6)};
+
+  auto settings_ack = spdy_util_.ConstructSpdySettingsAck();
+  auto goaway = spdy_util_.ConstructSpdyGoAway(
+      0, spdy::ERROR_CODE_PROTOCOL_ERROR,
+      "spdy::SETTINGS_DEPRECATE_HTTP2_PRIORITIES value changed after first "
+      "SETTINGS frame.");
+  MockWrite writes[] = {
+      CreateMockWrite(settings_ack, 1), CreateMockWrite(settings_ack, 4),
+      CreateMockWrite(settings_ack, 7), CreateMockWrite(goaway, 8)};
+
+  SequencedSocketData data(reads, writes);
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  base::RunLoop().RunUntilIdle();
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+}
+
+TEST_F(SpdySessionTest, AlpsEmpty) {
+  base::HistogramTester histogram_tester;
+
+  ssl_.peer_application_settings = "";
+
+  SequencedSocketData data;
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  histogram_tester.ExpectUniqueSample(
+      "Net.SpdySession.AlpsDecoderStatus",
+      static_cast<int>(AlpsDecoder::Error::kNoError), 1);
+  histogram_tester.ExpectUniqueSample(
+      "Net.SpdySession.AlpsSettingParameterCount", 0, 1);
+  const int kNoEntries = 0;
+  histogram_tester.ExpectUniqueSample("Net.SpdySession.AlpsAcceptChEntries",
+                                      kNoEntries, 1);
+
+  histogram_tester.ExpectTotalCount("Net.SpdySession.AcceptChForOrigin", 0);
+  EXPECT_EQ("", session_->GetAcceptChViaAlpsForOrigin(
+                    url::Origin::Create(GURL("https://www.example.org"))));
+  histogram_tester.ExpectUniqueSample("Net.SpdySession.AcceptChForOrigin",
+                                      false, 1);
+}
+
+TEST_F(SpdySessionTest, AlpsSettings) {
+  base::HistogramTester histogram_tester;
+
+  spdy::SettingsMap settings;
+  settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = 12345;
+  spdy::SpdySerializedFrame settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
+  ssl_.peer_application_settings =
+      std::string(settings_frame.data(), settings_frame.size());
+
+  SequencedSocketData data;
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  EXPECT_EQ(12345u, header_encoder_table_size());
+
+  histogram_tester.ExpectUniqueSample(
+      "Net.SpdySession.AlpsDecoderStatus",
+      static_cast<int>(AlpsDecoder::Error::kNoError), 1);
+  histogram_tester.ExpectUniqueSample(
+      "Net.SpdySession.AlpsSettingParameterCount", 1, 1);
+}
+
+TEST_F(SpdySessionTest, AlpsAcceptCh) {
+  base::HistogramTester histogram_tester;
+
+  ssl_.peer_application_settings = HexDecode(
+      "00001e"                    // length
+      "89"                        // type ACCEPT_CH
+      "00"                        // flags
+      "00000000"                  // stream ID
+      "0017"                      // origin length
+      "68747470733a2f2f7777772e"  //
+      "6578616d706c652e636f6d"    // origin "https://www.example.com"
+      "0003"                      // value length
+      "666f6f");                  // value "foo"
+
+  SequencedSocketData data;
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  histogram_tester.ExpectUniqueSample(
+      "Net.SpdySession.AlpsDecoderStatus",
+      static_cast<int>(AlpsDecoder::Error::kNoError), 1);
+  const int kOnlyValidEntries = 1;
+  histogram_tester.ExpectUniqueSample("Net.SpdySession.AlpsAcceptChEntries",
+                                      kOnlyValidEntries, 1);
+
+  histogram_tester.ExpectTotalCount("Net.SpdySession.AcceptChForOrigin", 0);
+
+  EXPECT_EQ("foo", session_->GetAcceptChViaAlpsForOrigin(
+                       url::Origin::Create(GURL("https://www.example.com"))));
+  histogram_tester.ExpectUniqueSample("Net.SpdySession.AcceptChForOrigin", true,
+                                      1);
+
+  EXPECT_EQ("", session_->GetAcceptChViaAlpsForOrigin(
+                    url::Origin::Create(GURL("https://www.example.org"))));
+  histogram_tester.ExpectTotalCount("Net.SpdySession.AcceptChForOrigin", 2);
+  histogram_tester.ExpectBucketCount("Net.SpdySession.AcceptChForOrigin", true,
+                                     1);
+  histogram_tester.ExpectBucketCount("Net.SpdySession.AcceptChForOrigin", false,
+                                     1);
+}
+
+TEST_F(SpdySessionTest, AlpsAcceptChInvalidOrigin) {
+  base::HistogramTester histogram_tester;
+
+  // "www.example.com" is not a valid origin, because it does not have a scheme.
+  ssl_.peer_application_settings = HexDecode(
+      "000017"                            // length
+      "89"                                // type ACCEPT_CH
+      "00"                                // flags
+      "00000000"                          // stream ID
+      "0010"                              // origin length
+      "2f7777772e6578616d706c652e636f6d"  // origin "www.example.com"
+      "0003"                              // value length
+      "666f6f");                          // value "foo"
+
+  SequencedSocketData data;
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  // Invalid origin error is not considered fatal for the connection.
+  EXPECT_TRUE(session_->IsAvailable());
+
+  histogram_tester.ExpectUniqueSample(
+      "Net.SpdySession.AlpsDecoderStatus",
+      static_cast<int>(AlpsDecoder::Error::kNoError), 1);
+  const int kOnlyInvalidEntries = 2;
+  histogram_tester.ExpectUniqueSample("Net.SpdySession.AlpsAcceptChEntries",
+                                      kOnlyInvalidEntries, 1);
 }
 
 }  // namespace net

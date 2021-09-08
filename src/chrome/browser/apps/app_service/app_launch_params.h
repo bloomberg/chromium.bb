@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
@@ -24,6 +25,14 @@ struct AppLaunchParams {
                   WindowOpenDisposition disposition,
                   apps::mojom::AppLaunchSource source,
                   int64_t display_id = display::kInvalidDisplayId);
+
+  AppLaunchParams(const std::string& app_id,
+                  apps::mojom::LaunchContainer container,
+                  WindowOpenDisposition disposition,
+                  apps::mojom::AppLaunchSource source,
+                  int64_t display_id,
+                  const std::vector<base::FilePath>& files,
+                  const apps::mojom::IntentPtr& intentPtr);
 
   AppLaunchParams(const AppLaunchParams&) = delete;
   AppLaunchParams& operator=(const AppLaunchParams&) = delete;
@@ -55,6 +64,9 @@ struct AppLaunchParams {
   // If non-empty, use override_app_name in place of generating one normally.
   std::string override_app_name;
 
+  // The id from the restore data to restore the browser window.
+  int32_t restore_id = 0;
+
   // If non-empty, information from the command line may be passed on to the
   // application.
   base::CommandLine command_line;
@@ -65,13 +77,9 @@ struct AppLaunchParams {
 
   // Record where the app is launched from for tracking purpose.
   // Different app may have their own enumeration of sources.
-  // TODO(crbug.com/1113502) Remove this in favor of the below field.
+  // TODO(crbug.com/1113502): Reconcile AppLaunchSource vs. LaunchSource vs.
+  // app_runtime::LaunchSource.
   apps::mojom::AppLaunchSource source;
-
-  // Used in the case of SWA installation. We record the launch metrics in a
-  // slightly different place in that case, because the special SWA launch is
-  // also called in code from other places.
-  apps::mojom::LaunchSource launch_source = apps::mojom::LaunchSource::kUnknown;
 
   // The id of the display from which the app is launched.
   // display::kInvalidDisplayId means that the display does not exist or is not
@@ -85,6 +93,15 @@ struct AppLaunchParams {
   // The intent the application was launched with. Empty if the application was
   // not launched with intent.
   apps::mojom::IntentPtr intent;
+
+  // When PWA is launched as a URL handler, the URL that we should launch the
+  // PWA to. Null when it's not a URL handler launch.
+  absl::optional<GURL> url_handler_launch_url;
+
+  // When a PWA is launched as a protocol handler, the protocol URL that we
+  // should translate and then launch the PWA to. Null when it's not a protocol
+  // handler launch.
+  absl::optional<GURL> protocol_handler_launch_url;
 };
 
 }  // namespace apps

@@ -8,9 +8,11 @@
 #include "base/callback_list.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_device_provider.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
+#include "chrome/browser/ui/views/global_media_controls/global_media_controls_types.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_device_entry_ui.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "media/audio/audio_device_description.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 
 namespace {
 class ExpandDeviceSelectorButton;
@@ -29,12 +31,15 @@ class MediaNotificationDeviceSelectorView
       public IconLabelBubbleView::Delegate,
       public media_router::CastDialogController::Observer {
  public:
+  METADATA_HEADER(MediaNotificationDeviceSelectorView);
   MediaNotificationDeviceSelectorView(
       MediaNotificationDeviceSelectorViewDelegate* delegate,
-      std::unique_ptr<media_router::CastDialogController> controller,
+      std::unique_ptr<media_router::CastDialogController> cast_controller,
+      bool has_audio_output,
       const std::string& current_device_id,
       const SkColor& foreground_color,
-      const SkColor& background_color);
+      const SkColor& background_color,
+      GlobalMediaControlsEntryPoint entry_point);
   ~MediaNotificationDeviceSelectorView() override;
 
   // Called when audio output devices are discovered.
@@ -66,6 +71,8 @@ class MediaNotificationDeviceSelectorView
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationDeviceSelectorViewTest,
                            ExpandButtonOpensEntryContainer);
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationDeviceSelectorViewTest,
+                           DeviceEntryContainerVisibility);
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationDeviceSelectorViewTest,
                            AudioDeviceButtonClickNotifiesContainer);
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationDeviceSelectorViewTest,
                            CurrentAudioDeviceHighlighted);
@@ -89,7 +96,10 @@ class MediaNotificationDeviceSelectorView
   void HideDevices();
   void RemoveDevicesOfType(DeviceEntryUIType type);
   void StartCastSession(CastDeviceEntryView* entry);
+  void DoStartCastSession(const media_router::UIMediaSink& sink);
+  void RecordStartCastingMetrics();
   DeviceEntryUI* GetDeviceEntryUI(views::View* view) const;
+  void RegisterAudioDeviceCallbacks();
 
   bool has_expand_button_been_shown_ = false;
   bool have_devices_been_shown_ = false;
@@ -100,18 +110,16 @@ class MediaNotificationDeviceSelectorView
   MediaNotificationDeviceSelectorViewDelegate* const delegate_;
   std::string current_device_id_;
   SkColor foreground_color_, background_color_;
-  AudioDeviceEntryView* current_audio_device_entry_view_ = nullptr;
+  GlobalMediaControlsEntryPoint const entry_point_;
 
   // Child views
+  AudioDeviceEntryView* current_audio_device_entry_view_ = nullptr;
   views::View* expand_button_strip_ = nullptr;
   ExpandDeviceSelectorButton* expand_button_ = nullptr;
   views::View* device_entry_views_container_ = nullptr;
 
-  std::unique_ptr<MediaNotificationDeviceProvider::
-                      GetOutputDevicesCallbackList::Subscription>
-      audio_device_subscription_;
-  std::unique_ptr<base::RepeatingCallbackList<void(bool)>::Subscription>
-      is_device_switching_enabled_subscription_;
+  base::CallbackListSubscription audio_device_subscription_;
+  base::CallbackListSubscription is_device_switching_enabled_subscription_;
 
   std::unique_ptr<media_router::CastDialogController> cast_controller_;
 

@@ -585,6 +585,10 @@ def CheckCallAndFilter(args, print_stdout=False, filter_fn=None,
 
   sleep_interval = RETRY_INITIAL_SLEEP
   run_cwd = kwargs.get('cwd', os.getcwd())
+
+  # Store the output of the command regardless of the value of print_stdout or
+  # filter_fn.
+  command_output = io.BytesIO()
   for attempt in range(RETRY_MAX + 1):
     # If our stdout is a terminal, then pass in a psuedo-tty pipe to our
     # subprocess when filtering its output. This makes the subproc believe
@@ -602,10 +606,6 @@ def CheckCallAndFilter(args, print_stdout=False, filter_fn=None,
     os.close(pipe_writer)
 
     GClientChildren.add(kid)
-
-    # Store the output of the command regardless of the value of print_stdout or
-    # filter_fn.
-    command_output = io.BytesIO()
 
     # Passed as a list for "by ref" semantics.
     needs_header = [show_header]
@@ -667,11 +667,12 @@ def CheckCallAndFilter(args, print_stdout=False, filter_fn=None,
 
     print("WARNING: subprocess '%s' in %s failed; will retry after a short "
           'nap...' % (' '.join('"%s"' % x for x in args), run_cwd))
+    command_output = io.BytesIO()
     time.sleep(sleep_interval)
     sleep_interval *= 2
 
   raise subprocess2.CalledProcessError(
-      rv, args, kwargs.get('cwd', None), None, None)
+      rv, args, kwargs.get('cwd', None), command_output.getvalue(), None)
 
 
 class GitFilter(object):

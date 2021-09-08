@@ -11,8 +11,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/auth.h"
 #include "net/base/completion_once_callback.h"
@@ -20,6 +18,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -65,13 +64,13 @@ class NET_EXPORT NetworkDelegate {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& remote_endpoint,
-      base::Optional<GURL>* preserve_fragment_on_redirect_url);
+      absl::optional<GURL>* preserve_fragment_on_redirect_url);
   void NotifyBeforeRedirect(URLRequest* request,
                             const GURL& new_location);
   void NotifyResponseStarted(URLRequest* request, int net_error);
   void NotifyCompleted(URLRequest* request, bool started, int net_error);
   void NotifyURLRequestDestroyed(URLRequest* request);
-  void NotifyPACScriptError(int line_number, const base::string16& error);
+  void NotifyPACScriptError(int line_number, const std::u16string& error);
   bool CanGetCookies(const URLRequest& request,
                      bool allowed_from_caller);
   bool CanSetCookie(const URLRequest& request,
@@ -81,7 +80,7 @@ class NET_EXPORT NetworkDelegate {
   bool ForcePrivacyMode(
       const GURL& url,
       const SiteForCookies& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin) const;
+      const absl::optional<url::Origin>& top_frame_origin) const;
 
   bool CancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
@@ -172,7 +171,7 @@ class NET_EXPORT NetworkDelegate {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& remote_endpoint,
-      base::Optional<GURL>* preserve_fragment_on_redirect_url) = 0;
+      absl::optional<GURL>* preserve_fragment_on_redirect_url) = 0;
 
   // Called right after a redirect response code was received. |new_location| is
   // only valid for the duration of the call.
@@ -196,7 +195,7 @@ class NET_EXPORT NetworkDelegate {
 
   // Corresponds to ProxyResolverJSBindings::OnError.
   virtual void OnPACScriptError(int line_number,
-                                const base::string16& error) = 0;
+                                const std::u16string& error) = 0;
 
   // Called when reading cookies to allow the network delegate to block access
   // to the cookie. This method will never be invoked when
@@ -224,7 +223,7 @@ class NET_EXPORT NetworkDelegate {
   virtual bool OnForcePrivacyMode(
       const GURL& url,
       const SiteForCookies& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin) const = 0;
+      const absl::optional<url::Origin>& top_frame_origin) const = 0;
 
   // Called when the |referrer_url| for requesting |target_url| during handling
   // of the |request| is does not comply with the referrer policy (e.g. a

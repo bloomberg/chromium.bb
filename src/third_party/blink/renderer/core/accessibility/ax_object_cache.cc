@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -51,9 +50,10 @@ void AXObjectCache::Init(AXObjectCacheCreateFunction function) {
   create_function_ = function;
 }
 
-AXObjectCache* AXObjectCache::Create(Document& document) {
+AXObjectCache* AXObjectCache::Create(Document& document,
+                                     const ui::AXMode& ax_mode) {
   DCHECK(create_function_);
-  return create_function_(document);
+  return create_function_(document, ax_mode);
 }
 
 namespace {

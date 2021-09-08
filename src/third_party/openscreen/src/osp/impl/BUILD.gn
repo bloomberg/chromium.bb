@@ -8,6 +8,7 @@ source_set("impl") {
   sources = [
     "mdns_platform_service.cc",
     "mdns_platform_service.h",
+    "message_demuxer.cc",
     "network_service_manager.cc",
     "presentation/presentation_common.cc",
     "presentation/presentation_common.h",
@@ -38,8 +39,8 @@ source_set("impl") {
   }
 
   public_deps = [
-    "../../osp/msgs",
-    "../../osp/public",
+    "../msgs",
+    "../public",
   ]
   deps = [
     "../../platform",
@@ -63,11 +64,11 @@ if (use_chromium_quic) {
     public_configs = [ "../../third_party/chromium_quic:chromium_quic_config" ]
 
     deps = [
-      "../../osp/msgs",
       "../../platform",
       "../../third_party/abseil",
       "../../third_party/chromium_quic",
       "../../util",
+      "../msgs",
       "quic",
     ]
   }

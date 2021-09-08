@@ -6,15 +6,21 @@
 
 #include "base/bind.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/feature_engagement/public/event_constants.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -24,6 +30,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/label.h"
 
 using content::WebContents;
@@ -32,8 +39,12 @@ using security_state::SecurityLevel;
 LocationIconView::LocationIconView(
     const gfx::FontList& font_list,
     IconLabelBubbleView::Delegate* parent_delegate,
-    Delegate* delegate)
-    : IconLabelBubbleView(font_list, parent_delegate), delegate_(delegate) {
+    Delegate* delegate,
+    Profile* profile)
+    : IconLabelBubbleView(font_list, parent_delegate),
+      delegate_(delegate),
+      feature_engagement_tracker_(
+          feature_engagement::TrackerFactory::GetForBrowserContext(profile)) {
   DCHECK(delegate_);
 
   SetID(VIEW_ID_LOCATION_ICON);
@@ -76,10 +87,9 @@ bool LocationIconView::IsBubbleShowing() const {
 }
 
 bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
-  IconLabelBubbleView::OnMousePressed(event);
   delegate_->OnLocationIconPressed(event);
-  // Since OnLocationIconPressed() runs a nested message loop on Linux, |this|
-  // may be deleted by now.
+
+  IconLabelBubbleView::OnMousePressed(event);
   return true;
 }
 
@@ -114,7 +124,7 @@ void LocationIconView::OnThemeChanged() {
 int LocationIconView::GetMinimumLabelTextWidth() const {
   int width = 0;
 
-  base::string16 text = GetText();
+  std::u16string text = GetText();
   if (text == label()->GetText()) {
     // Optimize this common case by not creating a new label.
     // GetPreferredSize is not dependent on the label's current
@@ -127,7 +137,7 @@ int LocationIconView::GetMinimumLabelTextWidth() const {
   return GetMinimumSizeForPreferredSize(GetSizeForLabelWidth(width)).width();
 }
 
-bool LocationIconView::ShouldShowText() const {
+bool LocationIconView::GetShowText() const {
   if (delegate_->IsEditingOrEmpty())
     return false;
 
@@ -144,12 +154,12 @@ bool LocationIconView::ShouldShowText() const {
 }
 
 const views::InkDrop* LocationIconView::get_ink_drop_for_testing() {
-  return GetInkDrop();
+  return ink_drop()->GetInkDrop();
 }
 
-base::string16 LocationIconView::GetText() const {
+std::u16string LocationIconView::GetText() const {
   if (delegate_->IsEditingOrEmpty())
-    return base::string16();
+    return std::u16string();
 
   if (delegate_->GetLocationBarModel()->GetURL().SchemeIs(
           content::kChromeUIScheme))
@@ -169,7 +179,7 @@ base::string16 LocationIconView::GetText() const {
     // TODO(crbug.com/680329) Remove the null check and make
     // SimpleWebViewDialog::GetWebContents return the proper web contents
     // instead.
-    const base::string16 extension_name =
+    const std::u16string extension_name =
         extensions::ui_util::GetEnabledExtensionNameForUrl(
             delegate_->GetLocationBarModel()->GetURL(),
             delegate_->GetWebContents()->GetBrowserContext());
@@ -180,7 +190,7 @@ base::string16 LocationIconView::GetText() const {
   return delegate_->GetLocationBarModel()->GetSecureDisplayText();
 }
 
-bool LocationIconView::ShouldAnimateTextVisibilityChange() const {
+bool LocationIconView::GetAnimateTextVisibilityChange() const {
   if (delegate_->IsEditingOrEmpty())
     return false;
 
@@ -196,11 +206,11 @@ bool LocationIconView::ShouldAnimateTextVisibilityChange() const {
 void LocationIconView::UpdateTextVisibility(bool suppress_animations) {
   SetLabel(GetText());
 
-  bool should_show = ShouldShowText();
-  if (!ShouldAnimateTextVisibilityChange() || suppress_animations)
+  bool should_show = GetShowText();
+  if (!GetAnimateTextVisibilityChange() || suppress_animations)
     ResetSlideAnimation(should_show);
   else if (should_show)
-    AnimateIn(base::nullopt);
+    AnimateIn(absl::nullopt);
   else
     AnimateOut();
 }
@@ -232,22 +242,23 @@ void LocationIconView::Update(bool suppress_animations) {
   bool is_editing_or_empty = delegate_->IsEditingOrEmpty();
   // The tooltip should be shown if we are not editing or empty.
   SetTooltipText(is_editing_or_empty
-                     ? base::string16()
+                     ? std::u16string()
                      : l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
 
   // We should only enable/disable the InkDrop if the editing state has changed,
-  // as the drop gets recreated when SetInkDropMode is called. This can result
-  // in strange behaviour, like the the InkDrop disappearing mid animation.
+  // as the drop gets recreated when ink_drop()->SetMode() is called.
+  // This can result in strange behaviour, like the the InkDrop disappearing mid
+  // animation.
   if (is_editing_or_empty != was_editing_or_empty_) {
     // If the omnibox is empty or editing, the user should not be able to left
     // click on the icon. As such, the icon should not show a highlight or be
     // focusable. Note: using the middle mouse to copy-and-paste should still
     // work on the icon.
     if (is_editing_or_empty) {
-      SetInkDropMode(InkDropMode::OFF);
+      ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
       SetFocusBehavior(FocusBehavior::NEVER);
     } else {
-      SetInkDropMode(InkDropMode::ON);
+      ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
 
 #if defined(OS_MAC)
       SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -261,7 +272,23 @@ void LocationIconView::Update(bool suppress_animations) {
   if (!is_editing_or_empty) {
     last_update_security_level_ =
         delegate_->GetLocationBarModel()->GetSecurityLevel();
+
+    // Show in-product help for the updated connection security icon.
+    if (last_update_security_level_ == security_state::SECURE &&
+        base::FeatureList::IsEnabled(
+            omnibox::kUpdatedConnectionSecurityIndicators)) {
+      feature_engagement_tracker_->NotifyEvent(
+          feature_engagement::events::
+              kUpdatedConnectionSecurityIndicatorDisplayed);
+      FeaturePromoControllerViews* controller =
+          FeaturePromoControllerViews::GetForView(this);
+      if (controller) {
+        controller->MaybeShowPromo(
+            feature_engagement::kIPHUpdatedConnectionSecurityIndicatorsFeature);
+      }
+    }
   }
+
   was_editing_or_empty_ = is_editing_or_empty;
 }
 
@@ -286,3 +313,10 @@ gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
       GetSizeForLabelWidth(font_list().GetExpectedTextWidth(kMinCharacters)));
   return size;
 }
+
+BEGIN_METADATA(LocationIconView, IconLabelBubbleView)
+ADD_READONLY_PROPERTY_METADATA(int, MinimumLabelTextWidth)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, Text)
+ADD_READONLY_PROPERTY_METADATA(bool, ShowText)
+ADD_READONLY_PROPERTY_METADATA(bool, AnimateTextVisibilityChange)
+END_METADATA

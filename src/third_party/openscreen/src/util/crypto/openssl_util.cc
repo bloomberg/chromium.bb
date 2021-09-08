@@ -92,10 +92,6 @@ Error GetSSLError(const SSL* ssl, int return_code) {
     case SSL_ERROR_SSL:
       return Error(Error::Code::kFatalSSLError, std::move(message));
   }
-
-  OSP_NOTREACHED() << "Unknown SSL error occurred. All error cases should "
-                      "be covered in the above switch statement. Error code: "
-                   << error_code << ", message: " << message;
-  return Error(Error::Code::kUnknownError, std::move(message));
+  OSP_NOTREACHED();
 }
 }  // namespace openscreen

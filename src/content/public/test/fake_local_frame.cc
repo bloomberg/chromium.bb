@@ -23,7 +23,7 @@ void FakeLocalFrame::Init(blink::AssociatedInterfaceProvider* provider) {
 void FakeLocalFrame::GetTextSurroundingSelection(
     uint32_t max_length,
     GetTextSurroundingSelectionCallback callback) {
-  std::move(callback).Run(base::string16(), 0, 0);
+  std::move(callback).Run(std::u16string(), 0, 0);
 }
 
 void FakeLocalFrame::SendInterventionReport(const std::string& id,
@@ -44,6 +44,8 @@ void FakeLocalFrame::AddMessageToConsole(
 
 void FakeLocalFrame::AddInspectorIssue(
     blink::mojom::InspectorIssueInfoPtr info) {}
+
+void FakeLocalFrame::SwapInImmediately() {}
 
 void FakeLocalFrame::CheckCompleted() {}
 
@@ -70,6 +72,10 @@ void FakeLocalFrame::ReportBlinkFeatureUsage(
 
 void FakeLocalFrame::RenderFallbackContent() {}
 
+void FakeLocalFrame::RenderFallbackContentWithResourceTiming(
+    blink::mojom::ResourceTimingInfoPtr,
+    const std::string& server_timing_value) {}
+
 void FakeLocalFrame::BeforeUnload(bool is_reload,
                                   BeforeUnloadCallback callback) {
   base::TimeTicks now = base::TimeTicks::Now();
@@ -82,7 +88,7 @@ void FakeLocalFrame::MediaPlayerActionAt(
 
 void FakeLocalFrame::AdvanceFocusInFrame(
     blink::mojom::FocusType focus_type,
-    const base::Optional<base::UnguessableToken>& source_frame_token) {}
+    const absl::optional<blink::RemoteFrameToken>& source_frame_token) {}
 
 void FakeLocalFrame::AdvanceFocusInForm(blink::mojom::FocusType focus_type) {}
 
@@ -95,10 +101,35 @@ void FakeLocalFrame::DidUpdateFramePolicy(
 void FakeLocalFrame::OnScreensChange() {}
 
 void FakeLocalFrame::PostMessageEvent(
-    const base::Optional<base::UnguessableToken>& source_frame_token,
-    const base::string16& source_origin,
-    const base::string16& target_origin,
+    const absl::optional<blink::RemoteFrameToken>& source_frame_token,
+    const std::u16string& source_origin,
+    const std::u16string& target_origin,
     blink::TransferableMessage message) {}
+
+void FakeLocalFrame::JavaScriptMethodExecuteRequest(
+    const std::u16string& object_name,
+    const std::u16string& method_name,
+    base::Value arguments,
+    bool wants_result,
+    JavaScriptMethodExecuteRequestCallback callback) {}
+
+void FakeLocalFrame::JavaScriptExecuteRequest(
+    const std::u16string& javascript,
+    bool wants_result,
+    JavaScriptExecuteRequestCallback callback) {}
+
+void FakeLocalFrame::JavaScriptExecuteRequestForTests(
+    const std::u16string& javascript,
+    bool wants_result,
+    bool has_user_gesture,
+    int32_t world_id,
+    JavaScriptExecuteRequestForTestsCallback callback) {}
+
+void FakeLocalFrame::JavaScriptExecuteRequestInIsolatedWorld(
+    const std::u16string& javascript,
+    bool wants_result,
+    int32_t world_id,
+    JavaScriptExecuteRequestInIsolatedWorldCallback callback) {}
 
 void FakeLocalFrame::GetSavableResourceLinks(
     GetSavableResourceLinksCallback callback) {}
@@ -116,7 +147,7 @@ void FakeLocalFrame::BindReportingObserver(
     mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver) {}
 
 void FakeLocalFrame::UpdateOpener(
-    const base::Optional<base::UnguessableToken>& opener_frame_token) {}
+    const absl::optional<blink::FrameToken>& opener_frame_token) {}
 
 void FakeLocalFrame::MixedContentFound(
     const GURL& main_resource_url,
@@ -126,6 +157,25 @@ void FakeLocalFrame::MixedContentFound(
     const GURL& url_before_redirects,
     bool had_redirect,
     network::mojom::SourceLocationPtr source_location) {}
+
+void FakeLocalFrame::ActivateForPrerendering() {}
+
+void FakeLocalFrame::BindDevToolsAgent(
+    mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {}
+
+#if defined(OS_ANDROID)
+void FakeLocalFrame::ExtractSmartClipData(
+    const gfx::Rect& rect,
+    ExtractSmartClipDataCallback callback) {
+  std::move(callback).Run(std::u16string(), std::u16string(), gfx::Rect());
+}
+#endif
+
+void FakeLocalFrame::HandleRendererDebugURL(const GURL& url) {}
+
+void FakeLocalFrame::GetCanonicalUrlForSharing(
+    GetCanonicalUrlForSharingCallback callback) {}
 
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

@@ -14,8 +14,7 @@
 #include "chrome/browser/android/feed/v2/refresh_task_scheduler_impl.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/chrome_version.h"
 #include "components/background_task_scheduler/background_task_scheduler_factory.h"
 #include "components/feed/buildflags.h"
+#include "components/feed/core/proto/v2/keyvalue_store.pb.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/public/feed_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -33,7 +33,6 @@
 #include "google_apis/google_api_keys.h"
 
 namespace feed {
-namespace {
 const char kFeedv2Folder[] = "feedv2";
 
 class FeedServiceDelegateImpl : public FeedService::Delegate {
@@ -45,13 +44,23 @@ class FeedServiceDelegateImpl : public FeedService::Delegate {
   DisplayMetrics GetDisplayMetrics() override {
     return FeedServiceBridge::GetDisplayMetrics();
   }
+  bool IsAutoplayEnabled() override {
+    return FeedServiceBridge::IsAutoplayEnabled();
+  }
   void ClearAll() override { FeedServiceBridge::ClearAll(); }
   void PrefetchImage(const GURL& url) override {
     FeedServiceBridge::PrefetchImage(url);
   }
+  void RegisterExperiments(const Experiments& experiments) override {
+    // Note that this does not affect the contents of the X-Client-Data
+    // by design. We do not provide the variations IDs from the backend
+    // and do not attach them to the X-Client-Data header.
+    for (const auto& exp : experiments) {
+      ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(exp.first,
+                                                                exp.second);
+    }
+  }
 };
-
-}  // namespace
 
 // static
 FeedService* FeedServiceFactory::GetForBrowserContext(
@@ -81,8 +90,6 @@ FeedServiceFactory::FeedServiceFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(background_task::BackgroundTaskSchedulerFactory::GetInstance());
-  DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
-  DependsOn(offline_pages::OfflinePageModelFactory::GetInstance());
 }
 
 FeedServiceFactory::~FeedServiceFactory() = default;
@@ -92,7 +99,7 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(context);
+      context->GetDefaultStoragePartition();
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
@@ -114,12 +121,6 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
   chrome_info.version = base::Version({CHROME_VERSION});
   chrome_info.channel = chrome::GetChannel();
 
-  offline_pages::PrefetchService* prefetch_service = nullptr;
-  if (offline_pages::IsPrefetchingOfflinePagesEnabled()) {
-    prefetch_service = offline_pages::PrefetchServiceFactory::GetForKey(
-        profile->GetProfileKey());
-  }
-
   return new FeedService(
       std::make_unique<FeedServiceDelegateImpl>(),
       std::make_unique<RefreshTaskSchedulerImpl>(
@@ -129,12 +130,12 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
       storage_partition->GetProtoDatabaseProvider()->GetDB<feedstore::Record>(
           leveldb_proto::ProtoDbType::FEED_STREAM_DATABASE,
           feed_dir.AppendASCII("streamdb"), background_task_runner),
+      storage_partition->GetProtoDatabaseProvider()->GetDB<feedkvstore::Entry>(
+          leveldb_proto::ProtoDbType::FEED_KEY_VALUE_DATABASE,
+          feed_dir.AppendASCII("keyvaldb"), background_task_runner),
       identity_manager,
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
-      prefetch_service,
-      offline_pages::OfflinePageModelFactory::GetForKey(
-          profile->GetProfileKey()),
       storage_partition->GetURLLoaderFactoryForBrowserProcess(),
       background_task_runner, api_key, chrome_info);
 }

@@ -4,6 +4,7 @@
 
 #include "net/cert/cert_verify_proc.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -16,6 +17,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -34,6 +36,7 @@
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/signature_algorithm.h"
+#include "net/cert/internal/system_trust_store.h"
 #include "net/cert/pem.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
@@ -198,9 +201,8 @@ scoped_refptr<CertVerifyProc> CreateCertVerifyProc(
       return new CertVerifyProcWin();
 #endif
     case CERT_VERIFY_PROC_BUILTIN:
-      return CreateCertVerifyProcBuiltin(
-          std::move(cert_net_fetcher),
-          SystemTrustStoreProvider::CreateDefaultForSSL());
+      return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher),
+                                         CreateSslSystemTrustStore());
     default:
       return nullptr;
   }
@@ -1484,7 +1486,6 @@ TEST(CertVerifyProcTest, TestHasTooLongValidity) {
     const char* const file;
     bool is_valid_too_long;
   } tests[] = {
-      {"daltonridgeapts.com-chain.pem", false},
       {"start_after_expiry.pem", true},
       {"pre_br_validity_ok.pem", false},
       {"pre_br_validity_bad_121.pem", true},
@@ -1520,16 +1521,16 @@ TEST(CertVerifyProcTest, TestHasTooLongValidity) {
 TEST_P(CertVerifyProcInternalTest, TestKnownRoot) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert_chain = CreateCertificateChainFromFile(
-      certs_dir, "daltonridgeapts.com-chain.pem", X509Certificate::FORMAT_AUTO);
+      certs_dir, "cert-manager.com-chain.pem", X509Certificate::FORMAT_AUTO);
   ASSERT_TRUE(cert_chain);
 
   int flags = 0;
   CertVerifyResult verify_result;
   int error =
-      Verify(cert_chain.get(), "daltonridgeapts.com", flags,
+      Verify(cert_chain.get(), "ov-validation.cert-manager.com", flags,
              CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
   EXPECT_THAT(error, IsOk()) << "This test relies on a real certificate that "
-                             << "expires on May 28, 2021. If failing on/after "
+                             << "expires on June 2, 2022. If failing on/after "
                              << "that date, please disable and file a bug "
                              << "against rsleevi.";
   EXPECT_TRUE(verify_result.is_issued_by_known_root);
@@ -2797,7 +2798,7 @@ class CertVerifyProcNameNormalizationTest : public CertVerifyProcInternalTest {
     scoped_refptr<X509Certificate> root_cert =
         ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
     ASSERT_TRUE(root_cert);
-    test_root_.reset(new ScopedTestRoot(root_cert.get()));
+    test_root_ = std::make_unique<ScopedTestRoot>(root_cert.get());
   }
 
   std::string HistogramName() const {
@@ -2946,7 +2947,7 @@ class CertVerifyProcInternalWithNetFetchingTest
     // initialization to complete on that thread.
     base::Thread::Options options(base::MessagePumpType::IO, 0);
     network_thread_ = std::make_unique<base::Thread>("network_thread");
-    CHECK(network_thread_->StartWithOptions(options));
+    CHECK(network_thread_->StartWithOptions(std::move(options)));
 
     base::WaitableEvent initialization_complete_event(
         base::WaitableEvent::ResetPolicy::MANUAL,
@@ -3003,7 +3004,7 @@ class CertVerifyProcInternalWithNetFetchingTest
 
   // Returns a random URL path (starting with /) that has the given suffix.
   static std::string MakeRandomPath(base::StringPiece suffix) {
-    return "/" + MakeRandomHexString(12) + suffix.as_string();
+    return "/" + MakeRandomHexString(12) + std::string(suffix);
   }
 
   // Returns a URL to |path| for the current test server.
@@ -3206,7 +3207,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   // Setup the test server to reply with the correct intermediate.
   RegisterSimpleTestServerHandler(
       ca_issuers_path, HTTP_OK, "application/pkix-cert",
-      x509_util::CryptoBufferAsStringPiece(intermediate.get()).as_string());
+      std::string(x509_util::CryptoBufferAsStringPiece(intermediate.get())));
 
   // Trust the root certificate.
   ScopedTestRoot scoped_root(root.get());
@@ -3365,7 +3366,9 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   leaf.SetSubjectAltName(kHostname);
 
   // Make two versions of the intermediate - one that is SHA256 signed, and one
-  // that is SHA1 signed.
+  // that is SHA1 signed. Note that the subjectKeyIdentifier for `intermediate`
+  // is intentionally not changed, so that path building will consider both
+  // certificate paths.
   intermediate.SetSignatureAlgorithmRsaPkca1(DigestAlgorithm::Sha256);
   intermediate.SetRandomSerialNumber();
   auto intermediate_sha256 = intermediate.DupCertBuffer();
@@ -3381,8 +3384,8 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   // Setup the test server to reply with the SHA256 intermediate.
   RegisterSimpleTestServerHandler(
       ca_issuers_path, HTTP_OK, "application/pkix-cert",
-      x509_util::CryptoBufferAsStringPiece(intermediate_sha256.get())
-          .as_string());
+      std::string(
+          x509_util::CryptoBufferAsStringPiece(intermediate_sha256.get())));
 
   // Build a chain to verify that includes the SHA1 intermediate.
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;

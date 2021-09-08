@@ -46,6 +46,17 @@ class AlertGroup(ndb.Model):
     closed = 4
 
   status = ndb.IntegerProperty(indexed=False)
+
+  class Type(object):
+    test_suite = 0
+    logical = 1
+    reserved = 2
+
+  group_type = ndb.IntegerProperty(
+      indexed=False,
+      choices=[Type.test_suite, Type.logical, Type.reserved],
+      default=Type.test_suite,
+  )
   active = ndb.BooleanProperty(indexed=True)
   revision = ndb.LocalStructuredProperty(RevisionRange)
   bug = ndb.LocalStructuredProperty(BugInfo)
@@ -57,7 +68,14 @@ class AlertGroup(ndb.Model):
     return (self.name == b.name and self.domain == b.domain
             and self.subscription_name == b.subscription_name
             and self.project_id == b.project_id
+            and self.group_type == b.group_type
             and self.revision.IsOverlapping(b.revision))
+
+  @classmethod
+  def GetType(cls, anomaly_entity):
+    if anomaly_entity.alert_grouping:
+      return cls.Type.logical
+    return cls.Type.test_suite
 
   @classmethod
   def GenerateAllGroupsForAnomaly(cls,
@@ -65,66 +83,66 @@ class AlertGroup(ndb.Model):
                                   sheriff_config=None,
                                   subscriptions=None):
     if subscriptions is None:
-      sheriff_config = (
-          sheriff_config or sheriff_config_client.GetSheriffConfigClient())
-      subscriptions, _ = sheriff_config.Match(
-          anomaly_entity.test.string_id(), check=True)
+      sheriff_config = (sheriff_config
+                        or sheriff_config_client.GetSheriffConfigClient())
+      subscriptions, _ = sheriff_config.Match(anomaly_entity.test.string_id(),
+                                              check=True)
+    names = anomaly_entity.alert_grouping or [anomaly_entity.benchmark_name]
 
     return [
-        # TODO(fancl): Support multiple group name
         cls(
             id=str(uuid.uuid4()),
-            name=anomaly_entity.benchmark_name,
+            name=group_name,
             domain=anomaly_entity.master_name,
             subscription_name=s.name,
             project_id=s.monorail_project_id,
             status=cls.Status.untriaged,
+            group_type=cls.GetType(anomaly_entity),
             active=True,
             revision=RevisionRange(
                 repository='chromium',
                 start=anomaly_entity.start_revision,
                 end=anomaly_entity.end_revision,
             ),
-        ) for s in subscriptions
+        ) for s in subscriptions for group_name in names
     ]
 
   @classmethod
   def GetGroupsForAnomaly(cls, anomaly_entity, subscriptions):
-    # TODO(fancl): Support multiple group name
-    name = anomaly_entity.benchmark_name
-    revision = RevisionRange(
-        repository='chromium',
-        start=anomaly_entity.start_revision,
-        end=anomaly_entity.end_revision,
+    names = anomaly_entity.alert_grouping or [anomaly_entity.benchmark_name]
+    group_type = cls.GetType(anomaly_entity)
+    # all_possible_groups including all groups for the anomaly. Some of groups
+    # may havn't been created yet.
+    all_possible_groups = cls.GenerateAllGroupsForAnomaly(
+        anomaly_entity,
+        subscriptions=subscriptions,
     )
-    subscription_names = [s.name for s in subscriptions]
-    groups = [
-        g for g in cls.Get(name, revision)
-        if g.subscription_name in subscription_names
-    ]
-    all_groups = cls.GenerateAllGroupsForAnomaly(
-        anomaly_entity, subscriptions=subscriptions)
-    if not groups or not all(
-        any(g1.IsOverlapping(g2) for g2 in groups) for g1 in all_groups):
-      groups += cls.Get('Ungrouped', None)
-    return [g.key for g in groups]
+    # existing_groups are groups which have been created and overlaped with at
+    # least one of the possible group.
+    existing_groups = [
+        g1 for name in names
+        for g1 in cls.Get(name, group_type)
+        if any(g1.IsOverlapping(g2) for g2 in all_possible_groups)]
+    # If any of the group in the all_possible_groups doesn't overlap with any
+    # of the existing group, we put it into a special group for creating the
+    # non-existent group in next iteration.
+    if not existing_groups or not all(
+        any(g1.IsOverlapping(g2) for g2 in existing_groups)
+        for g1 in all_possible_groups):
+      existing_groups += cls.Get('Ungrouped', cls.Type.reserved)
+    return [g.key for g in existing_groups]
 
   @classmethod
   def GetByID(cls, group_id):
     return ndb.Key('AlertGroup', group_id).get()
 
   @classmethod
-  def Get(cls, group_name, revision_info, active=True):
+  def Get(cls, group_name, group_type, active=True):
     query = cls.query(
         cls.active == active,
         cls.name == group_name,
     )
-    if not revision_info:
-      return list(query.fetch())
-    return [
-        group for group in query.fetch()
-        if revision_info.IsOverlapping(group.revision)
-    ]
+    return [g for g in query.fetch() if g.group_type == group_type]
 
   @classmethod
   def GetAll(cls, active=True):

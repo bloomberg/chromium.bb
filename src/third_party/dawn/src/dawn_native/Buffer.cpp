@@ -14,6 +14,7 @@
 
 #include "dawn_native/Buffer.h"
 
+#include "common/Alloc.h"
 #include "common/Assert.h"
 #include "dawn_native/Commands.h"
 #include "dawn_native/Device.h"
@@ -34,7 +35,10 @@ namespace dawn_native {
                 : buffer(std::move(buffer)), id(id) {
             }
             void Finish() override {
-                buffer->OnMapRequestCompleted(id);
+                buffer->OnMapRequestCompleted(id, WGPUBufferMapAsyncStatus_Success);
+            }
+            void HandleDeviceLoss() override {
+                buffer->OnMapRequestCompleted(id, WGPUBufferMapAsyncStatus_DeviceLost);
             }
             ~MapRequestTask() override = default;
 
@@ -56,8 +60,8 @@ namespace dawn_native {
                         descriptor->size < uint64_t(std::numeric_limits<size_t>::max());
 
                     if (isValidSize) {
-                        mFakeMappedData = std::unique_ptr<uint8_t[]>(new (std::nothrow)
-                                                                         uint8_t[descriptor->size]);
+                        mFakeMappedData =
+                            std::unique_ptr<uint8_t[]>(AllocNoThrow<uint8_t>(descriptor->size));
                     }
                 }
             }
@@ -129,10 +133,17 @@ namespace dawn_native {
           mUsage(descriptor->usage),
           mState(BufferState::Unmapped) {
         // Add readonly storage usage if the buffer has a storage usage. The validation rules in
-        // ValidatePassResourceUsage will make sure we don't use both at the same
-        // time.
+        // ValidateSyncScopeResourceUsage will make sure we don't use both at the same time.
         if (mUsage & wgpu::BufferUsage::Storage) {
             mUsage |= kReadOnlyStorageBuffer;
+        }
+
+        // TODO(hao.x.li@intel.com): This is just a workaround to make QueryResolve buffer pass the
+        // binding group validation when used as an internal resource. Instead the buffer made with
+        // QueryResolve usage would implicitly get StorageInternal usage which is only compatible
+        // with StorageBufferInternal binding type in BGL, not StorageBuffer binding type.
+        if (mUsage & wgpu::BufferUsage::QueryResolve) {
+            mUsage |= wgpu::BufferUsage::Storage;
         }
     }
 
@@ -240,11 +251,11 @@ namespace dawn_native {
         }
     }
 
-    void BufferBase::MapAsync(wgpu::MapMode mode,
-                              size_t offset,
-                              size_t size,
-                              WGPUBufferMapCallback callback,
-                              void* userdata) {
+    void BufferBase::APIMapAsync(wgpu::MapMode mode,
+                                 size_t offset,
+                                 size_t size,
+                                 WGPUBufferMapCallback callback,
+                                 void* userdata) {
         // Handle the defaulting of size required by WebGPU, even if in webgpu_cpp.h it is not
         // possible to default the function argument (because there is the callback later in the
         // argument list)
@@ -275,19 +286,19 @@ namespace dawn_native {
         }
         std::unique_ptr<MapRequestTask> request =
             std::make_unique<MapRequestTask>(this, mLastMapID);
-        GetDevice()->GetDefaultQueue()->TrackTask(std::move(request),
-                                                  GetDevice()->GetPendingCommandSerial());
+        GetDevice()->GetQueue()->TrackTask(std::move(request),
+                                           GetDevice()->GetPendingCommandSerial());
     }
 
-    void* BufferBase::GetMappedRange(size_t offset, size_t size) {
-        return GetMappedRangeInternal(true, offset, size);
+    void* BufferBase::APIGetMappedRange(size_t offset, size_t size) {
+        return GetMappedRange(offset, size, true);
     }
 
-    const void* BufferBase::GetConstMappedRange(size_t offset, size_t size) {
-        return GetMappedRangeInternal(false, offset, size);
+    const void* BufferBase::APIGetConstMappedRange(size_t offset, size_t size) {
+        return GetMappedRange(offset, size, false);
     }
 
-    void* BufferBase::GetMappedRangeInternal(bool writable, size_t offset, size_t size) {
+    void* BufferBase::GetMappedRange(size_t offset, size_t size, bool writable) {
         if (!CanGetMappedRange(writable, offset, size)) {
             return nullptr;
         }
@@ -298,10 +309,11 @@ namespace dawn_native {
         if (mSize == 0) {
             return reinterpret_cast<uint8_t*>(intptr_t(0xCAFED00D));
         }
-        return static_cast<uint8_t*>(GetMappedPointerImpl()) + offset;
+        uint8_t* start = static_cast<uint8_t*>(GetMappedPointerImpl());
+        return start == nullptr ? nullptr : start + offset;
     }
 
-    void BufferBase::Destroy() {
+    void BufferBase::APIDestroy() {
         if (IsError()) {
             // It is an error to call Destroy() on an ErrorBuffer, but we still need to reclaim the
             // fake mapped staging data.
@@ -339,6 +351,10 @@ namespace dawn_native {
         uploader->ReleaseStagingBuffer(std::move(mStagingBuffer));
 
         return {};
+    }
+
+    void BufferBase::APIUnmap() {
+        Unmap();
     }
 
     void BufferBase::Unmap() {
@@ -527,8 +543,8 @@ namespace dawn_native {
         mState = BufferState::Destroyed;
     }
 
-    void BufferBase::OnMapRequestCompleted(MapRequestID mapID) {
-        CallMapCallback(mapID, WGPUBufferMapAsyncStatus_Success);
+    void BufferBase::OnMapRequestCompleted(MapRequestID mapID, WGPUBufferMapAsyncStatus status) {
+        CallMapCallback(mapID, status);
     }
 
     bool BufferBase::IsDataInitialized() const {

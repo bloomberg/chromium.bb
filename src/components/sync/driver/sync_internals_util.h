@@ -6,10 +6,10 @@
 #define COMPONENTS_SYNC_DRIVER_SYNC_INTERNALS_UTIL_H_
 
 #include <memory>
+#include <string>
 
-#include "base/util/type_safety/strong_alias.h"
+#include "base/types/strong_alias.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/version_info/version_info.h"
 
 namespace base {
 class DictionaryValue;
@@ -43,19 +43,15 @@ extern const char kInvalidationsJS[];
 
 // Message handlers.
 // Must match the constants used in the resource files.
-extern const char kDispatchEvent[];
 extern const char kGetAllNodes[];
-extern const char kGetAllNodesCallback[];
 extern const char kRequestDataAndRegisterForUpdates[];
 extern const char kRequestIncludeSpecificsInitialState[];
 extern const char kRequestListOfTypes[];
 extern const char kRequestStart[];
 extern const char kRequestStopKeepData[];
 extern const char kRequestStopClearData[];
-extern const char kRequestUserEventsVisibility[];
 extern const char kSetIncludeSpecifics[];
 extern const char kTriggerRefresh[];
-extern const char kUserEventsVisibilityCallback[];
 extern const char kWriteUserEvent[];
 
 // Other strings.
@@ -74,7 +70,7 @@ extern const char kTypes[];
 extern const char kOnInvalidationReceived[];
 
 using IncludeSensitiveData =
-    util::StrongAlias<class IncludeSensitiveDataTag, bool>;
+    base::StrongAlias<class IncludeSensitiveDataTag, bool>;
 // This function returns a DictionaryValue which contains all the information
 // required to populate the 'About' tab of chrome://sync-internals.
 // Note that |service| may be null.
@@ -83,7 +79,7 @@ using IncludeSensitiveData =
 std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     IncludeSensitiveData include_sensitive_data,
     SyncService* service,
-    version_info::Channel channel);
+    const std::string& channel);
 
 }  // namespace sync_ui_util
 

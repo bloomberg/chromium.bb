@@ -93,6 +93,19 @@ DnsResourceRecord BuildTestDnsRecord(std::string name,
   return record;
 }
 
+DnsResourceRecord BuildTestCnameRecord(std::string name,
+                                       base::StringPiece canonical_name,
+                                       base::TimeDelta ttl) {
+  DCHECK(!name.empty());
+  DCHECK(!canonical_name.empty());
+
+  std::string rdata;
+  CHECK(DNSDomainFromDot(canonical_name, &rdata));
+
+  return BuildTestDnsRecord(std::move(name), dns_protocol::kTypeCNAME,
+                            std::move(rdata), ttl);
+}
+
 DnsResourceRecord BuildTestAddressRecord(std::string name,
                                          const IPAddress& ip,
                                          base::TimeDelta ttl) {
@@ -119,7 +132,7 @@ DnsResourceRecord BuildTestTextRecord(std::string name,
   }
 
   return BuildTestDnsRecord(std::move(name), dns_protocol::kTypeTXT,
-                            std::move(rdata));
+                            std::move(rdata), ttl);
 }
 
 DnsResourceRecord BuildTestHttpsAliasRecord(std::string name,
@@ -176,18 +189,18 @@ DnsResponse BuildTestDnsResponse(
     uint16_t type,
     const std::vector<DnsResourceRecord>& answers,
     const std::vector<DnsResourceRecord>& authority,
-    const std::vector<DnsResourceRecord>& additional) {
+    const std::vector<DnsResourceRecord>& additional,
+    uint8_t rcode) {
   DCHECK(!name.empty());
 
   std::string dns_name;
   CHECK(DNSDomainFromDot(name, &dns_name));
 
-  base::Optional<DnsQuery> query(base::in_place, 0, std::move(dns_name), type);
+  absl::optional<DnsQuery> query(absl::in_place, 0, std::move(dns_name), type);
   return DnsResponse(0, true /* is_authoritative */, answers,
                      authority /* authority_records */,
-                     additional /* additional_records */, query,
-                     dns_protocol::kRcodeNOERROR /* rcode */,
-                     false /* validate_answers_match_query */);
+                     additional /* additional_records */, query, rcode,
+                     false /* validate_records */);
 }
 
 DnsResponse BuildTestDnsAddressResponse(std::string name,
@@ -292,7 +305,7 @@ DnsResponse BuildTestDnsServiceResponse(
 }
 
 MockDnsClientRule::Result::Result(ResultType type,
-                                  base::Optional<DnsResponse> response)
+                                  absl::optional<DnsResponse> response)
     : type(type), response(std::move(response)) {}
 
 MockDnsClientRule::Result::Result(DnsResponse response)
@@ -363,7 +376,7 @@ class MockDnsTransactionFactory::MockTransaction
           std::vector<DnsResourceRecord> authority_records;
           std::string dns_name;
           CHECK(DNSDomainFromDot(hostname_, &dns_name));
-          base::Optional<DnsQuery> query(base::in_place, 22 /* id */, dns_name,
+          absl::optional<DnsQuery> query(absl::in_place, 22 /* id */, dns_name,
                                          qtype_);
           switch (result->type) {
             case MockDnsClientRule::NODOMAIN:
@@ -457,27 +470,27 @@ class MockDnsTransactionFactory::MockTransaction
         std::move(callback_).Run(
             this, ERR_NAME_NOT_RESOLVED,
             result_.response ? &result_.response.value() : nullptr,
-            base::nullopt);
+            absl::nullopt);
         break;
       case MockDnsClientRule::EMPTY:
       case MockDnsClientRule::OK:
       case MockDnsClientRule::MALFORMED:
         std::move(callback_).Run(
             this, OK, result_.response ? &result_.response.value() : nullptr,
-            base::nullopt);
+            absl::nullopt);
         break;
       case MockDnsClientRule::TIMEOUT:
         std::move(callback_).Run(this, ERR_DNS_TIMED_OUT, nullptr,
-                                 base::nullopt);
+                                 absl::nullopt);
         break;
       case MockDnsClientRule::SLOW:
         if (result_.response) {
           std::move(callback_).Run(
               this, OK, result_.response ? &result_.response.value() : nullptr,
-              base::nullopt);
+              absl::nullopt);
         } else {
           std::move(callback_).Run(this, ERR_DNS_TIMED_OUT, nullptr,
-                                   base::nullopt);
+                                   absl::nullopt);
         }
     }
   }
@@ -595,8 +608,15 @@ bool MockDnsClient::CanUseInsecureDnsTransactions() const {
          !config->dns_over_tls_active;
 }
 
-void MockDnsClient::SetInsecureEnabled(bool enabled) {
+bool MockDnsClient::CanQueryAdditionalTypesViaInsecureDns() const {
+  DCHECK(CanUseInsecureDnsTransactions());
+  return additional_types_enabled_;
+}
+
+void MockDnsClient::SetInsecureEnabled(bool enabled,
+                                       bool additional_types_enabled) {
   insecure_enabled_ = enabled;
+  additional_types_enabled_ = additional_types_enabled;
 }
 
 bool MockDnsClient::FallbackFromSecureTransactionPreferred(
@@ -612,11 +632,11 @@ bool MockDnsClient::FallbackFromInsecureTransactionPreferred() const {
          fallback_failures_ >= max_fallback_failures_;
 }
 
-bool MockDnsClient::SetSystemConfig(base::Optional<DnsConfig> system_config) {
+bool MockDnsClient::SetSystemConfig(absl::optional<DnsConfig> system_config) {
   if (ignore_system_config_changes_)
     return false;
 
-  base::Optional<DnsConfig> before = effective_config_;
+  absl::optional<DnsConfig> before = effective_config_;
   config_ = std::move(system_config);
   effective_config_ = BuildEffectiveConfig();
   session_ = BuildSession();
@@ -624,7 +644,7 @@ bool MockDnsClient::SetSystemConfig(base::Optional<DnsConfig> system_config) {
 }
 
 bool MockDnsClient::SetConfigOverrides(DnsConfigOverrides config_overrides) {
-  base::Optional<DnsConfig> before = effective_config_;
+  absl::optional<DnsConfig> before = effective_config_;
   overrides_ = std::move(config_overrides);
   effective_config_ = BuildEffectiveConfig();
   session_ = BuildSession();
@@ -668,7 +688,7 @@ void MockDnsClient::ClearInsecureFallbackFailures() {
   fallback_failures_ = 0;
 }
 
-base::Optional<DnsConfig> MockDnsClient::GetSystemConfigForTesting() const {
+absl::optional<DnsConfig> MockDnsClient::GetSystemConfigForTesting() const {
   return config_;
 }
 
@@ -694,11 +714,11 @@ void MockDnsClient::SetForceDohServerAvailable(bool available) {
   factory_->set_force_doh_server_available(available);
 }
 
-base::Optional<DnsConfig> MockDnsClient::BuildEffectiveConfig() {
+absl::optional<DnsConfig> MockDnsClient::BuildEffectiveConfig() {
   if (overrides_.OverridesEverything())
     return overrides_.ApplyOverrides(DnsConfig());
   if (!config_ || !config_.value().IsValid())
-    return base::nullopt;
+    return absl::nullopt;
 
   return overrides_.ApplyOverrides(config_.value());
 }

@@ -7,6 +7,13 @@ include_rules = [
   "+third_party/harfbuzz-ng",
   "+third_party/skia",
   "+ui/ios",
+  "+ui/ozone/buildflags.h",
 
   "-testing/gmock",
 ]
+
+specific_include_rules = {
+  "delegated_ink_point\.h" : [
+    "+mojo/public/cpp/bindings/struct_traits.h",
+  ],
+}

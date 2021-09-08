@@ -6,8 +6,18 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace features {
+
+// Enable recognizing "aria-virtualcontent" as a valid aria property.
+const base::Feature kEnableAccessibilityAriaVirtualContent{
+    "AccessibilityAriaVirtualContent", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAccessibilityAriaVirtualContentEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kEnableAccessibilityAriaVirtualContent);
+}
 
 // Enable exposing "display: none" nodes to the browser process AXTree
 const base::Feature kEnableAccessibilityExposeDisplayNone{
@@ -67,6 +77,13 @@ bool IsAccessibilityFocusHighlightEnabled() {
   return base::FeatureList::IsEnabled(::features::kAccessibilityFocusHighlight);
 }
 
+const base::Feature kAutoDisableAccessibility{
+    "AutoDisableAccessibility", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAutoDisableAccessibilityEnabled() {
+  return base::FeatureList::IsEnabled(::features::kAutoDisableAccessibility);
+}
+
 #if defined(OS_WIN)
 const base::Feature kIChromeAccessible{"IChromeAccessible",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
@@ -76,21 +93,41 @@ bool IsIChromeAccessibleEnabled() {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
-const base::Feature kAccessibilityCursorColor{"AccessibilityCursorColor",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const base::Feature kMagnifierPanningImprovements{
+    "MagnifierPanningImprovements", base::FEATURE_ENABLED_BY_DEFAULT};
 
-bool IsAccessibilityCursorColorEnabled() {
-  return base::FeatureList::IsEnabled(::features::kAccessibilityCursorColor);
+bool IsMagnifierPanningImprovementsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kMagnifierPanningImprovements);
 }
 
-const base::Feature kMagnifierNewFocusFollowing{
-    "MagnifierNewFocusFollowing", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kMagnifierContinuousMouseFollowingModeSetting{
+    "MagnifierContinuousMouseFollowingModeSetting",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsMagnifierNewFocusFollowingEnabled() {
-  return base::FeatureList::IsEnabled(::features::kMagnifierNewFocusFollowing);
+bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kMagnifierContinuousMouseFollowingModeSetting);
 }
-#endif  // defined(OS_CHROMEOS)
+
+const base::Feature kEnableSwitchAccessPointScanning{
+    "EnableSwitchAccessPointScanning", base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool IsSwitchAccessPointScanningEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kEnableSwitchAccessPointScanning);
+}
+
+const base::Feature kExperimentalAccessibilityDictationListening{
+    "ExperimentalAccessibilityDictationListening",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool IsExperimentalAccessibilityDictationListeningEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilityDictationListening);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 const base::Feature kAugmentExistingImageLabels{
     "AugmentExistingImageLabels", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -107,14 +144,30 @@ bool IsUseAXPositionForDocumentMarkersEnabled() {
       ::features::kUseAXPositionForDocumentMarkers);
 }
 
-#if defined(OS_CHROMEOS)
+const base::Feature kEnableAriaElementReflection{
+    "EnableAriaElementReflection", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAriaElementReflectionEnabled() {
+  return base::FeatureList::IsEnabled(::features::kEnableAriaElementReflection);
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kSelectToSpeakNavigationControl{
-    "SelectToSpeakNavigationControl", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SelectToSpeakNavigationControl", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsSelectToSpeakNavigationControlEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kSelectToSpeakNavigationControl);
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_ANDROID)
+const base::Feature kComputeAXMode{"ComputeAXMode",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsComputeAXModeEnabled() {
+  return base::FeatureList::IsEnabled(::features::kComputeAXMode);
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace features

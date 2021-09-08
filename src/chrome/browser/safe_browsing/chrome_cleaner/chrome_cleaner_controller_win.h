@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
@@ -17,10 +16,6 @@
 #include "components/prefs/pref_registry_simple.h"
 
 class Profile;
-
-namespace extensions {
-class ExtensionService;
-}
 
 namespace safe_browsing {
 
@@ -194,7 +189,6 @@ class ChromeCleanerController {
   // "Cleanup" button multiple times.
   virtual void ReplyWithUserResponse(
       Profile* profile,
-      extensions::ExtensionService* extension_service,
       UserResponse user_response) = 0;
 
   // If the controller is in the kRebootRequired state, initiates a reboot of

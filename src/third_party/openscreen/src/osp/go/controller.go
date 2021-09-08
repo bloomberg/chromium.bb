@@ -4,7 +4,7 @@
 
 package osp
 
-// TODO(pthatcher):
+// TODO(jophba):
 // - Read and check the response message
 // - Make a nice object API with methods that can do more than one thing per connection
 // - Make it possible to have a presentation controller that is a server

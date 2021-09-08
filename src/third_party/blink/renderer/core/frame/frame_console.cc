@@ -77,8 +77,9 @@ void FrameConsole::ReportMessageToClient(mojom::ConsoleMessageSource source,
     if (!frame_->GetPage())
       return;
     if (level >= mojom::ConsoleMessageLevel::kError ||
-        frame_->GetChromeClient().ShouldReportDetailedMessageForSource(*frame_,
-                                                                       url)) {
+        frame_->GetChromeClient()
+            .ShouldReportDetailedMessageForSourceAndSeverity(*frame_, level,
+                                                             url)) {
       std::unique_ptr<SourceLocation> full_location =
           SourceLocation::CaptureWithFullStackTrace();
       if (!full_location->IsUnknown())
@@ -87,8 +88,9 @@ void FrameConsole::ReportMessageToClient(mojom::ConsoleMessageSource source,
   } else {
     if (!location->IsUnknown() &&
         (level >= mojom::ConsoleMessageLevel::kError ||
-        frame_->GetChromeClient().ShouldReportDetailedMessageForSource(*frame_,
-                                                                       url)))
+        frame_->GetChromeClient()
+            .ShouldReportDetailedMessageForSourceAndSeverity(*frame_, level,
+                                                             url)))
       stack_trace = location->ToString();
   }
 
@@ -103,8 +105,6 @@ void FrameConsole::ReportResourceResponseReceived(
   if (!loader)
     return;
   if (response.HttpStatusCode() < 400)
-    return;
-  if (response.WasFallbackRequiredByServiceWorker())
     return;
   String message =
       "Failed to load resource: the server responded with a status of " +

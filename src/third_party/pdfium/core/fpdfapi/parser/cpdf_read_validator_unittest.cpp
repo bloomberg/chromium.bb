@@ -23,7 +23,7 @@ std::pair<FX_FILESIZE, FX_FILESIZE> MakeRange(uint32_t start, uint32_t end) {
 class MockFileAvail final : public CPDF_DataAvail::FileAvail {
  public:
   MockFileAvail() : available_range_(0, 0) {}
-  ~MockFileAvail() override {}
+  ~MockFileAvail() override = default;
 
   bool IsDataAvail(FX_FILESIZE offset, size_t size) override {
     return available_range_.first <= offset &&
@@ -45,7 +45,7 @@ class MockFileAvail final : public CPDF_DataAvail::FileAvail {
 class MockDownloadHints final : public CPDF_DataAvail::DownloadHints {
  public:
   MockDownloadHints() : last_requested_range_(0, 0) {}
-  ~MockDownloadHints() override {}
+  ~MockDownloadHints() override = default;
 
   void AddSegment(FX_FILESIZE offset, size_t size) override {
     last_requested_range_.first = offset;
@@ -169,7 +169,7 @@ TEST(CPDF_ReadValidatorTest, Session) {
   auto validator = pdfium::MakeRetain<CPDF_ReadValidator>(file, &file_avail);
   validator->SetDownloadHints(&hints);
 
-  const CPDF_ReadValidator::Session read_session(validator);
+  CPDF_ReadValidator::ScopedSession read_session(validator);
   ASSERT_FALSE(validator->has_read_problems());
 
   // Data is unavailable
@@ -180,7 +180,7 @@ TEST(CPDF_ReadValidatorTest, Session) {
   EXPECT_FALSE(validator->read_error());
 
   {
-    const CPDF_ReadValidator::Session read_subsession(validator);
+    CPDF_ReadValidator::ScopedSession read_subsession(validator);
     // The read problems should be hidden.
     EXPECT_FALSE(validator->has_read_problems());
 
@@ -207,7 +207,7 @@ TEST(CPDF_ReadValidatorTest, SessionReset) {
   auto validator = pdfium::MakeRetain<CPDF_ReadValidator>(file, &file_avail);
   validator->SetDownloadHints(&hints);
 
-  const CPDF_ReadValidator::Session read_session(validator);
+  CPDF_ReadValidator::ScopedSession read_session(validator);
   ASSERT_FALSE(validator->has_read_problems());
 
   // Data is unavailable
@@ -218,7 +218,7 @@ TEST(CPDF_ReadValidatorTest, SessionReset) {
   EXPECT_FALSE(validator->read_error());
 
   {
-    const CPDF_ReadValidator::Session read_subsession(validator);
+    CPDF_ReadValidator::ScopedSession read_subsession(validator);
     // The read problems should be hidden.
     EXPECT_FALSE(validator->has_read_problems());
 

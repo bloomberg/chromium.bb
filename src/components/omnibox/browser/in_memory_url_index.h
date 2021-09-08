@@ -17,11 +17,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/history/core/browser/history_db_task.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -42,7 +44,6 @@ class BookmarkModel;
 
 namespace history {
 class HistoryDatabase;
-class HistoryService;
 class HQPPerfTestOnePopularURL;
 }
 
@@ -106,7 +107,7 @@ class InMemoryURLIndex : public KeyedService,
                    history::HistoryService* history_service,
                    TemplateURLService* template_url_service,
                    const base::FilePath& history_dir,
-                   const SchemeSet& client_schemes_to_whitelist);
+                   const SchemeSet& client_schemes_to_allowlist);
   ~InMemoryURLIndex() override;
   InMemoryURLIndex(const InMemoryURLIndex&) = delete;
   InMemoryURLIndex& operator=(const InMemoryURLIndex&) = delete;
@@ -119,11 +120,11 @@ class InMemoryURLIndex : public KeyedService,
   // Scans the history index and returns a vector with all scored, matching
   // history items. This entry point simply forwards the call on to the
   // URLIndexPrivateData class. For a complete description of this function
-  // refer to that class.  If |cursor_position| is base::string16::npos, the
+  // refer to that class.  If |cursor_position| is std::u16string::npos, the
   // function doesn't do anything special with the cursor; this is equivalent
   // to the cursor being at the end.  In total, |max_matches| of items will be
   // returned in the |ScoredHistoryMatches| vector.
-  ScoredHistoryMatches HistoryItemsForTerms(const base::string16& term_string,
+  ScoredHistoryMatches HistoryItemsForTerms(const std::u16string& term_string,
                                             size_t cursor_position,
                                             size_t max_matches);
 
@@ -159,7 +160,8 @@ class InMemoryURLIndex : public KeyedService,
   class RebuildPrivateDataFromHistoryDBTask : public history::HistoryDBTask {
    public:
     explicit RebuildPrivateDataFromHistoryDBTask(
-        InMemoryURLIndex* index, const SchemeSet& scheme_whitelist);
+        InMemoryURLIndex* index,
+        const SchemeSet& scheme_allowlist);
     RebuildPrivateDataFromHistoryDBTask(
         const RebuildPrivateDataFromHistoryDBTask&) = delete;
     RebuildPrivateDataFromHistoryDBTask& operator=(
@@ -173,9 +175,12 @@ class InMemoryURLIndex : public KeyedService,
     ~RebuildPrivateDataFromHistoryDBTask() override;
 
     InMemoryURLIndex* index_;  // Call back to this index at completion.
-    SchemeSet scheme_whitelist_;  // Schemes to be indexed.
+    SchemeSet scheme_allowlist_;  // Schemes to be indexed.
     bool succeeded_;  // Indicates if the rebuild was successful.
     scoped_refptr<URLIndexPrivateData> data_;  // The rebuilt private data.
+    // When the task was first requested from the main thread. This is the same
+    // time as when this task object is constructed.
+    const base::TimeTicks task_creation_time_;
   };
 
   // Initializes all index data members in preparation for restoring the index
@@ -272,8 +277,8 @@ class InMemoryURLIndex : public KeyedService,
     return &private_data_tracker_;
   }
 
-  // Returns the set of whitelisted schemes. For unit testing only.
-  const SchemeSet& scheme_whitelist() { return scheme_whitelist_; }
+  // Returns the set of allowlisted schemes. For unit testing only.
+  const SchemeSet& scheme_allowlist() { return scheme_allowlist_; }
 
   // The BookmarkModel; may be null when testing.
   bookmarks::BookmarkModel* bookmark_model_;
@@ -290,8 +295,8 @@ class InMemoryURLIndex : public KeyedService,
   // be empty.
   base::FilePath history_dir_;
 
-  // Only URLs with a whitelisted scheme are indexed.
-  SchemeSet scheme_whitelist_;
+  // Only URLs with a allowlisted scheme are indexed.
+  SchemeSet scheme_allowlist_;
 
   // The index's durable private data.
   scoped_refptr<URLIndexPrivateData> private_data_;
@@ -321,6 +326,10 @@ class InMemoryURLIndex : public KeyedService,
   // This flag is set to true if we want to listen to the
   // HistoryServiceLoaded Notification.
   bool listen_to_history_service_loaded_;
+
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      history_service_observation_{this};
 
   base::ThreadChecker thread_checker_;
 };

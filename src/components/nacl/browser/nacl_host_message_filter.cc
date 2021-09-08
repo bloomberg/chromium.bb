@@ -12,6 +12,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/nacl/browser/bad_message.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_file_host.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "url/gurl.h"
@@ -52,15 +54,12 @@ ppapi::PpapiPermissions GetNaClPermissions(
   return ppapi::PpapiPermissions::GetForCommandLine(nacl_permissions);
 }
 
-ppapi::PpapiPermissions GetPpapiPermissions(uint32_t permission_bits,
-                                            int render_process_id,
-                                            int render_view_id) {
+ppapi::PpapiPermissions GetPpapiPermissions(
+    uint32_t permission_bits,
+    content::RenderFrameHost* frame_host) {
   // We get the URL from WebContents from the RenderViewHost, since we don't
   // have a BrowserPpapiHost yet.
-  content::RenderProcessHost* host =
-      content::RenderProcessHost::FromID(render_process_id);
-  content::RenderViewHost* view_host =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  content::RenderViewHost* view_host = frame_host->GetRenderViewHost();
   if (!view_host)
     return ppapi::PpapiPermissions();
   GURL document_url;
@@ -68,9 +67,12 @@ ppapi::PpapiPermissions GetPpapiPermissions(uint32_t permission_bits,
       content::WebContents::FromRenderViewHost(view_host);
   if (contents)
     document_url = contents->GetLastCommittedURL();
-  return GetNaClPermissions(permission_bits,
-                            host->GetBrowserContext(),
+  return GetNaClPermissions(permission_bits, frame_host->GetBrowserContext(),
                             document_url);
+}
+
+void CallPnaclHostRendererClosing(int render_process_id) {
+  pnacl::PnaclHost::GetInstance()->RendererClosing(render_process_id);
 }
 
 }  // namespace
@@ -88,15 +90,28 @@ NaClHostMessageFilter::~NaClHostMessageFilter() {
 }
 
 void NaClHostMessageFilter::OnChannelClosing() {
-  pnacl::PnaclHost::GetInstance()->RendererClosing(render_process_id_);
+  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(CallPnaclHostRendererClosing, render_process_id_));
+    return;
+  }
+  CallPnaclHostRendererClosing(render_process_id_);
 }
 
 void NaClHostMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     content::BrowserThread::ID* thread) {
 #if BUILDFLAG(ENABLE_NACL)
-  if (message.type() == NaClHostMsg_LaunchNaCl::ID)
+  if (message.type() == NaClHostMsg_LaunchNaCl::ID) {
     *thread = content::BrowserThread::UI;
+  } else if (base::FeatureList::IsEnabled(features::kProcessHostOnUI) &&
+             (message.type() == NaClHostMsg_GetReadonlyPnaclFD::ID ||
+              message.type() == NaClHostMsg_NaClCreateTemporaryFile::ID ||
+              message.type() == NaClHostMsg_NexeTempFileRequest::ID ||
+              message.type() == NaClHostMsg_ReportTranslationFinished::ID)) {
+    *thread = content::BrowserThread::UI;
+  }
 #endif
 }
 
@@ -134,7 +149,7 @@ void NaClHostMessageFilter::OnLaunchNaCl(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   bool nonsfi_mode_allowed = false;
-#if defined(OS_CHROMEOS) && \
+#if BUILDFLAG(IS_CHROMEOS_ASH) && \
     (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
   nonsfi_mode_allowed = NaClBrowser::GetDelegate()->IsNonSfiModeAllowed(
       profile_directory_, GURL(launch_params.manifest_url));
@@ -146,16 +161,19 @@ void NaClHostMessageFilter::OnLaunchNaCl(
 
   // If we're running llc or ld for the PNaCl translator, we don't need to look
   // up permissions, and we don't have the right browser state to look up some
-  // of the whitelisting parameters anyway.
+  // of the allowed parameters anyway.
   if (launch_params.process_type == kPNaClTranslatorProcessType) {
     uint32_t perms = launch_params.permission_bits & ppapi::PERMISSION_DEV;
-    content::GetIOThreadTaskRunner({})->PostTask(
+    auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                           ? content::GetUIThreadTaskRunner({})
+                           : content::GetIOThreadTaskRunner({});
+    task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuationOnIOThread,
-                       this, launch_params, reply_msg,
-                       std::vector<NaClResourcePrefetchResult>(),
-                       ppapi::PpapiPermissions(perms), nonsfi_mode_allowed,
-                       map_url_callback));
+        base::BindOnce(
+            &NaClHostMessageFilter::LaunchNaClContinuationOnProcessThread, this,
+            launch_params, reply_msg, std::vector<NaClResourcePrefetchResult>(),
+            ppapi::PpapiPermissions(perms), nonsfi_mode_allowed,
+            map_url_callback));
     return;
   }
   LaunchNaClContinuation(launch_params, reply_msg, nonsfi_mode_allowed,
@@ -169,19 +187,17 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
     NaClBrowserDelegate::MapUrlToLocalFilePathCallback map_url_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  ppapi::PpapiPermissions permissions =
-      GetPpapiPermissions(launch_params.permission_bits,
-                          render_process_id_,
-                          launch_params.render_view_id);
-
-  content::RenderViewHost* rvh = content::RenderViewHost::FromID(
-      render_process_id(), launch_params.render_view_id);
-  if (!rvh) {
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      render_process_id(), launch_params.render_frame_id);
+  if (!rfh) {
     bad_message::ReceivedBadMessage(
         this, bad_message::NHMF_LAUNCH_CONTINUATION_BAD_ROUTING_ID);
     delete reply_msg;
     return;
   }
+
+  ppapi::PpapiPermissions permissions =
+      GetPpapiPermissions(launch_params.permission_bits, rfh);
 
   nacl::NaClLaunchParams safe_launch_params(launch_params);
   safe_launch_params.resource_prefetch_request_list.clear();
@@ -191,15 +207,15 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
 #if !defined(OS_WIN)
   const std::vector<NaClResourcePrefetchRequest>& original_request_list =
       launch_params.resource_prefetch_request_list;
-  content::SiteInstance* site_instance = rvh->GetSiteInstance();
-  for (size_t i = 0; i < original_request_list.size(); ++i) {
-    GURL gurl(original_request_list[i].resource_url);
+  content::SiteInstance* site_instance = rfh->GetSiteInstance();
+  for (const auto& original_request : original_request_list) {
+    GURL gurl(original_request.resource_url);
     // Important security check: Do the same check as OpenNaClExecutable()
     // in nacl_file_host.cc.
     if (!site_instance->IsSameSiteWithURL(gurl))
       continue;
     safe_launch_params.resource_prefetch_request_list.push_back(
-        original_request_list[i]);
+        original_request);
   }
 #endif
 
@@ -244,21 +260,27 @@ void NaClHostMessageFilter::BatchOpenResourceFiles(
       break;
   }
 
-  content::GetIOThreadTaskRunner({})->PostTask(
+  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                         ? content::GetUIThreadTaskRunner({})
+                         : content::GetIOThreadTaskRunner({});
+  task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuationOnIOThread,
-                     this, launch_params, reply_msg, prefetched_resource_files,
-                     permissions, nonsfi_mode_allowed, map_url_callback));
+      base::BindOnce(
+          &NaClHostMessageFilter::LaunchNaClContinuationOnProcessThread, this,
+          launch_params, reply_msg, prefetched_resource_files, permissions,
+          nonsfi_mode_allowed, map_url_callback));
 }
 
-void NaClHostMessageFilter::LaunchNaClContinuationOnIOThread(
+void NaClHostMessageFilter::LaunchNaClContinuationOnProcessThread(
     const nacl::NaClLaunchParams& launch_params,
     IPC::Message* reply_msg,
     const std::vector<NaClResourcePrefetchResult>& prefetched_resource_files,
     ppapi::PpapiPermissions permissions,
     bool nonsfi_mode_allowed,
     NaClBrowserDelegate::MapUrlToLocalFilePathCallback map_url_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? content::BrowserThread::UI
+                          : content::BrowserThread::IO);
 
   NaClFileToken nexe_token = {
       launch_params.nexe_token_lo,  // lo
@@ -361,16 +383,12 @@ void NaClHostMessageFilter::OnMissingArchError(int render_view_id) {
       ShowMissingArchInfobar(render_process_id_, render_view_id);
 }
 
-void NaClHostMessageFilter::OnOpenNaClExecutable(
-    int render_view_id,
-    const GURL& file_url,
-    bool enable_validation_caching,
-    IPC::Message* reply_msg) {
-  nacl_file_host::OpenNaClExecutable(this,
-                                     render_view_id,
-                                     file_url,
-                                     enable_validation_caching,
-                                     reply_msg);
+void NaClHostMessageFilter::OnOpenNaClExecutable(int render_frame_id,
+                                                 const GURL& file_url,
+                                                 bool enable_validation_caching,
+                                                 IPC::Message* reply_msg) {
+  nacl_file_host::OpenNaClExecutable(this, render_frame_id, file_url,
+                                     enable_validation_caching, reply_msg);
 }
 
 void NaClHostMessageFilter::OnNaClDebugEnabledForURL(const GURL& nmf_url,

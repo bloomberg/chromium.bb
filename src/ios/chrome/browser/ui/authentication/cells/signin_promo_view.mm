@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 
 #include "base/check_op.h"
-#include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #include "base/notreached.h"
 #include "build/branding_buildflags.h"
@@ -13,7 +12,6 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -114,15 +112,11 @@ const CGFloat kImageViewWidthHeight = 32;
                        action:@selector(onPrimaryButtonAction:)
              forControlEvents:UIControlEventTouchUpInside];
     _primaryButton.contentEdgeInsets = primaryButtonInsets;
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
         _primaryButton.pointerInteractionEnabled = YES;
         _primaryButton.pointerStyleProvider =
             CreateOpaqueButtonPointerStyleProvider();
-      }
     }
-#endif  // defined(__IPHONE_13_4)
 
     // Create and setup seconday button.
     UIButton* secondaryButton;
@@ -138,13 +132,9 @@ const CGFloat kImageViewWidthHeight = 32;
     [_secondaryButton addTarget:self
                          action:@selector(onSecondaryButtonAction:)
                forControlEvents:UIControlEventTouchUpInside];
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
         _secondaryButton.pointerInteractionEnabled = YES;
-      }
     }
-#endif  // defined(__IPHONE_13_4)
 
     // Vertical stackView containing all previous view.
     UIStackView* verticalStackView =
@@ -167,13 +157,9 @@ const CGFloat kImageViewWidthHeight = 32;
     [_closeButton setImage:[UIImage imageNamed:@"signin_promo_close_gray"]
                   forState:UIControlStateNormal];
     _closeButton.hidden = YES;
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
         _closeButton.pointerInteractionEnabled = YES;
-      }
     }
-#endif  // defined(__IPHONE_13_4)
     [self addSubview:_closeButton];
 
     [NSLayoutConstraint activateConstraints:@[
@@ -202,8 +188,8 @@ const CGFloat kImageViewWidthHeight = 32;
           constraintEqualToConstant:kCloseButtonWidthHeight],
     ]];
     // Default mode.
-    _mode = SigninPromoViewModeColdState;
-    [self activateColdMode];
+    _mode = SigninPromoViewModeNoAccounts;
+    [self activateNoAccountsMode];
   }
   return self;
 }
@@ -218,18 +204,21 @@ const CGFloat kImageViewWidthHeight = 32;
   }
   _mode = mode;
   switch (_mode) {
-    case SigninPromoViewModeColdState:
-      [self activateColdMode];
+    case SigninPromoViewModeNoAccounts:
+      [self activateNoAccountsMode];
       return;
-    case SigninPromoViewModeWarmState:
-      [self activateWarmMode];
+    case SigninPromoViewModeSigninWithAccount:
+      [self activateSigninWithAccountMode];
+      return;
+    case SigninPromoViewModeSyncWithPrimaryAccount:
+      [self activateSyncWithPrimaryAccountMode];
       return;
   }
   NOTREACHED();
 }
 
-- (void)activateColdMode {
-  DCHECK_EQ(_mode, SigninPromoViewModeColdState);
+- (void)activateNoAccountsMode {
+  DCHECK_EQ(_mode, SigninPromoViewModeNoAccounts);
   UIImage* logo = nil;
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   logo = [UIImage imageNamed:@"signin_promo_logo_chrome_color"];
@@ -241,13 +230,18 @@ const CGFloat kImageViewWidthHeight = 32;
   _secondaryButton.hidden = YES;
 }
 
-- (void)activateWarmMode {
-  DCHECK_EQ(_mode, SigninPromoViewModeWarmState);
+- (void)activateSigninWithAccountMode {
+  DCHECK_EQ(_mode, SigninPromoViewModeSigninWithAccount);
   _secondaryButton.hidden = NO;
 }
 
+- (void)activateSyncWithPrimaryAccountMode {
+  DCHECK_EQ(_mode, SigninPromoViewModeSyncWithPrimaryAccount);
+  _secondaryButton.hidden = YES;
+}
+
 - (void)setProfileImage:(UIImage*)image {
-  DCHECK_EQ(SigninPromoViewModeWarmState, _mode);
+  DCHECK_NE(_mode, SigninPromoViewModeNoAccounts);
   self.imageView.image = CircularImageFromImage(image, kProfileImageFixedSize);
 }
 
@@ -270,10 +264,11 @@ const CGFloat kImageViewWidthHeight = 32;
 
 - (void)onPrimaryButtonAction:(id)unused {
   switch (_mode) {
-    case SigninPromoViewModeColdState:
+    case SigninPromoViewModeNoAccounts:
       [_delegate signinPromoViewDidTapSigninWithNewAccount:self];
       break;
-    case SigninPromoViewModeWarmState:
+    case SigninPromoViewModeSigninWithAccount:
+    case SigninPromoViewModeSyncWithPrimaryAccount:
       [_delegate signinPromoViewDidTapSigninWithDefaultAccount:self];
       break;
   }
@@ -297,7 +292,7 @@ const CGFloat kImageViewWidthHeight = 32;
 - (NSArray<UIAccessibilityCustomAction*>*)accessibilityCustomActions {
   NSMutableArray* actions = [NSMutableArray array];
 
-  if (_mode == SigninPromoViewModeWarmState) {
+  if (_mode == SigninPromoViewModeSigninWithAccount) {
     NSString* secondaryActionName =
         [self.secondaryButton titleForState:UIControlStateNormal];
     UIAccessibilityCustomAction* secondaryCustomAction =

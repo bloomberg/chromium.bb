@@ -105,10 +105,15 @@ const char kTimeout[] = "timeout";
 // rendering.
 const char kUseGL[] = "use-gl";
 
+// Sets the ANGLE implementation to use. Only relevant if "use-gl" is set to
+// "angle"
+const char kUseANGLE[] = "use-angle";
+
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[] = "user-agent";
 
-// Directory where the browser stores the user profile.
+// Directory where the browser stores the user profile. Note that if this switch
+// is added, the session will no longer be Incognito.
 const char kUserDataDir[] = "user-data-dir";
 
 // If set the system waits the specified number of virtual milliseconds before
@@ -123,7 +128,8 @@ const char kVirtualTimeBudget[] = "virtual-time-budget";
 const char kWindowSize[] = "window-size";
 
 // Allowlist for Negotiate Auth servers.
-const char kAuthServerAllowlist[] = "auth-server-whitelist";
+const char kAuthServerAllowlist[] = "auth-server-allowlist";
+const char kAuthServerAllowlistDeprecated[] = "auth-server-whitelist";
 
 // Sets font render hinting when running headless, affects Skia rendering and
 // whether glyph subpixel positioning is enabled.

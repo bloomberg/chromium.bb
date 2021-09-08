@@ -7,10 +7,12 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/common/lite_video_service.mojom.h"
+#include "chrome/common/previews_resource_loading_hints.mojom.h"
 #include "chrome/renderer/lite_video/lite_video_url_loader_throttle.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "url/gurl.h"
 
 namespace lite_video {
@@ -40,7 +42,7 @@ class LiteVideoHintAgent
 
   // Updates the LiteVideo throttling parameters for calculating
   // the latency to add to media requests.
-  void SetLiteVideoHint(blink::mojom::LiteVideoHintPtr lite_video_hint);
+  void SetLiteVideoHint(previews::mojom::LiteVideoHintPtr lite_video_hint);
 
   // Returns whether |this| has been provided a LiteVideoHint and
   // has the parameters needed for calculating the throttling latency.
@@ -59,6 +61,9 @@ class LiteVideoHintAgent
   // new requests.
   void StopThrottlingAndClearHints();
 
+  // Notifies the response bytes that were throttled by LiteVideo.
+  void NotifyThrottledDataUse(uint64_t response_bytes);
+
  private:
   friend class LiteVideoHintAgentTest;
 
@@ -67,19 +72,19 @@ class LiteVideoHintAgent
 
   // The network downlink bandwidth target in kilobytes per second used to
   // calculate the throttling delay on media requests
-  base::Optional<int> target_downlink_bandwidth_kbps_;
+  absl::optional<int> target_downlink_bandwidth_kbps_;
 
   // The network downlink rtt target latency used to calculate the
   // throttling delay on media requests
-  base::Optional<base::TimeDelta> target_downlink_rtt_latency_;
+  absl::optional<base::TimeDelta> target_downlink_rtt_latency_;
 
   // The number of kilobytes for media to be observed before starting to
   // throttle requests.
-  base::Optional<int> kilobytes_to_buffer_before_throttle_;
+  absl::optional<int> kilobytes_to_buffer_before_throttle_;
 
   // The maximum delay a throttle can introduce for a media request in
   // milliseconds.
-  base::Optional<base::TimeDelta> max_throttling_delay_;
+  absl::optional<base::TimeDelta> max_throttling_delay_;
 
   // The number of media KB that have been left unthrottled before starting
   // to introduce a throttling delay.
@@ -88,6 +93,8 @@ class LiteVideoHintAgent
   // Set of media requests that are throttled currently. These are maintained
   // here to resume them immediately upon StopThrottling()
   std::set<LiteVideoURLLoaderThrottle*> active_throttles_;
+
+  mojo::AssociatedRemote<mojom::LiteVideoService> lite_video_service_remote_;
 };
 
 }  // namespace lite_video

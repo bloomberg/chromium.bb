@@ -5,9 +5,7 @@
 #ifndef CHROME_BROWSER_VIDEO_TUTORIALS_PREFS_H_
 #define CHROME_BROWSER_VIDEO_TUTORIALS_PREFS_H_
 
-#include <string>
-#include "base/optional.h"
-#include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefRegistrySimple;
 

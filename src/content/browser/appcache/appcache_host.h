@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/appcache_storage.h"
@@ -29,6 +28,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -131,7 +131,8 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   std::unique_ptr<AppCacheRequestHandler> CreateRequestHandler(
       std::unique_ptr<AppCacheRequest> request,
       network::mojom::RequestDestination request_destination,
-      bool should_reset_appcache);
+      bool should_reset_appcache,
+      int frame_tree_node_id);
 
   // Support for devtools inspecting appcache resources.
   void GetResourceListSync(
@@ -232,7 +233,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
     site_for_cookies_initialized_ = true;
   }
 
-  const base::Optional<url::Origin>& top_frame_origin() const {
+  const absl::optional<url::Origin>& top_frame_origin() const {
     return top_frame_origin_;
   }
 
@@ -420,7 +421,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // To be used in policy checks.
   net::SiteForCookies site_for_cookies_;
   bool site_for_cookies_initialized_ = false;
-  base::Optional<url::Origin> top_frame_origin_;
+  absl::optional<url::Origin> top_frame_origin_;
 
   bool is_origin_trial_required_ = false;
 

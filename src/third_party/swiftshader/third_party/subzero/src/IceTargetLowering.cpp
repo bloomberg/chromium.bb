@@ -365,27 +365,14 @@ void TargetLowering::doAddressOpt() {
   else if (llvm::isa<InstStore>(*Context.getCur()))
     doAddressOptStore();
   else if (auto *Intrinsic =
-               llvm::dyn_cast<InstIntrinsicCall>(&*Context.getCur())) {
-    if (Intrinsic->getIntrinsicInfo().ID == Intrinsics::LoadSubVector)
+               llvm::dyn_cast<InstIntrinsic>(&*Context.getCur())) {
+    if (Intrinsic->getIntrinsicID() == Intrinsics::LoadSubVector)
       doAddressOptLoadSubVector();
-    else if (Intrinsic->getIntrinsicInfo().ID == Intrinsics::StoreSubVector)
+    else if (Intrinsic->getIntrinsicID() == Intrinsics::StoreSubVector)
       doAddressOptStoreSubVector();
   }
   Context.advanceCur();
   Context.advanceNext();
-}
-
-void TargetLowering::doNopInsertion(RandomNumberGenerator &RNG) {
-  Inst *I = iteratorToInst(Context.getCur());
-  bool ShouldSkip = llvm::isa<InstFakeUse>(I) || llvm::isa<InstFakeDef>(I) ||
-                    llvm::isa<InstFakeKill>(I) || I->isRedundantAssign() ||
-                    I->isDeleted();
-  if (!ShouldSkip) {
-    int Probability = getFlags().getNopProbabilityAsPercentage();
-    for (int I = 0; I < getFlags().getMaxNopsPerInstruction(); ++I) {
-      randomlyInsertNop(Probability / 100.0, RNG);
-    }
-  }
 }
 
 // Lowers a single instruction according to the information in Context, by
@@ -444,11 +431,11 @@ void TargetLowering::lower() {
     case Inst::InsertElement:
       lowerInsertElement(llvm::cast<InstInsertElement>(Instr));
       break;
-    case Inst::IntrinsicCall: {
-      auto *Call = llvm::cast<InstIntrinsicCall>(Instr);
-      if (Call->getIntrinsicInfo().ReturnsTwice)
+    case Inst::Intrinsic: {
+      auto *Intrinsic = llvm::cast<InstIntrinsic>(Instr);
+      if (Intrinsic->getIntrinsicInfo().ReturnsTwice)
         setCallsReturnsTwice(true);
-      lowerIntrinsicCall(Call);
+      lowerIntrinsic(Intrinsic);
       break;
     }
     case Inst::Load:
@@ -524,7 +511,7 @@ void TargetLowering::regAlloc(RegAllocKind Kind) {
   CfgSet<Variable *> EmptySet;
   do {
     LinearScan.init(Kind, EmptySet);
-    LinearScan.scan(RegMask, getFlags().getRandomizeRegisterAllocation());
+    LinearScan.scan(RegMask);
     if (!LinearScan.hasEvictions())
       Repeat = false;
     Kind = RAK_SecondChance;
@@ -653,7 +640,7 @@ void TargetLowering::postRegallocSplitting(const SmallBitVector &RegMask) {
   // Run the register allocator with all these new variables included
   LinearScan RegAlloc(Func);
   RegAlloc.init(RAK_Global, SplitCandidates);
-  RegAlloc.scan(RegMask, getFlags().getRandomizeRegisterAllocation());
+  RegAlloc.scan(RegMask);
 
   // Modify the Cfg to use the new variables that now have registers.
   for (auto *ExtraVar : ExtraVars) {

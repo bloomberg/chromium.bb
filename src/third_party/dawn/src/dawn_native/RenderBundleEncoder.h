@@ -15,7 +15,6 @@
 #ifndef DAWNNATIVE_RENDERBUNDLEENCODER_H_
 #define DAWNNATIVE_RENDERBUNDLEENCODER_H_
 
-#include "dawn_native/AttachmentState.h"
 #include "dawn_native/EncodingContext.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/RenderBundle.h"
@@ -29,23 +28,22 @@ namespace dawn_native {
 
     class RenderBundleEncoder final : public RenderEncoderBase {
       public:
-        RenderBundleEncoder(DeviceBase* device, const RenderBundleEncoderDescriptor* descriptor);
-
+        static Ref<RenderBundleEncoder> Create(DeviceBase* device,
+                                               const RenderBundleEncoderDescriptor* descriptor);
         static RenderBundleEncoder* MakeError(DeviceBase* device);
 
-        const AttachmentState* GetAttachmentState() const;
-
-        RenderBundleBase* Finish(const RenderBundleDescriptor* descriptor);
+        RenderBundleBase* APIFinish(const RenderBundleDescriptor* descriptor);
 
         CommandIterator AcquireCommands();
 
       private:
+        RenderBundleEncoder(DeviceBase* device, const RenderBundleEncoderDescriptor* descriptor);
         RenderBundleEncoder(DeviceBase* device, ErrorTag errorTag);
 
-        MaybeError ValidateFinish(CommandIterator* commands, const PassResourceUsage& usages) const;
+        ResultOrError<RenderBundleBase*> FinishImpl(const RenderBundleDescriptor* descriptor);
+        MaybeError ValidateFinish(const RenderPassResourceUsage& usages) const;
 
         EncodingContext mBundleEncodingContext;
-        Ref<AttachmentState> mAttachmentState;
     };
 }  // namespace dawn_native
 

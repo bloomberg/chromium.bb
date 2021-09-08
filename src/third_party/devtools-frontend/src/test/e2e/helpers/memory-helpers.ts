@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 
 import {$, platform, waitForElementWithTextContent} from '../../shared/helper.js';
 import {$$, click, getBrowserAndPages, pasteText, waitFor, waitForFunction, waitForNone} from '../../shared/helper.js';
@@ -19,6 +19,16 @@ export async function navigateToMemoryTab() {
   await click(MEMORY_TAB_ID);
   await waitFor(MEMORY_PANEL_CONTENT);
   await waitFor(PROFILE_TREE_SIDEBAR);
+}
+
+export async function takeAllocationProfile(frontend: puppeteer.Page) {
+  const [radioButton] = await frontend.$x('//label[text()="Allocation sampling"]');
+  await click(radioButton);
+  await click('button[aria-label="Start heap profiling"');
+  await new Promise(r => setTimeout(r, 200));
+  await click('button[aria-label="Stop heap profiling"');
+  await waitForNone('.heap-snapshot-sidebar-tree-item.wait');
+  await waitFor('.heap-snapshot-sidebar-tree-item.selected');
 }
 
 export async function takeHeapSnapshot() {
@@ -218,5 +228,16 @@ export async function changeViewViaDropdown(newPerspective: string) {
   if (!optionValue) {
     throw new Error(`Could not find heap snapshot perspective option: ${newPerspective}`);
   }
-  dropdown.select(optionValue);
+  await dropdown.select(optionValue);
+}
+
+export async function changeAllocationSampleViewViaDropdown(newPerspective: string) {
+  const perspectiveDropdownSelector = 'select[aria-label="Profile view mode"]';
+  const dropdown = await waitFor(perspectiveDropdownSelector) as puppeteer.ElementHandle<HTMLSelectElement>;
+  const optionToSelect = await waitForElementWithTextContent(newPerspective, dropdown);
+  const optionValue = await optionToSelect.evaluate(opt => opt.getAttribute('value'));
+  if (!optionValue) {
+    throw new Error(`Could not find heap snapshot perspective option: ${newPerspective}`);
+  }
+  await dropdown.select(optionValue);
 }

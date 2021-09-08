@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "net/base/features.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
@@ -25,6 +26,8 @@
 #include "net/test/test_with_task_environment.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 namespace {
@@ -58,7 +61,7 @@ void CheckUpload(const test_server::HttpRequest& request) {
 std::unique_ptr<test_server::HttpResponse> AllowPreflight(
     const test_server::HttpRequest& request) {
   if (request.method_string != "OPTIONS") {
-    return std::unique_ptr<test_server::HttpResponse>();
+    return nullptr;
   }
   auto it = request.headers.find("Origin");
   EXPECT_TRUE(it != request.headers.end());
@@ -199,7 +202,7 @@ std::unique_ptr<test_server::HttpResponse> VerifyPreflight(
     bool* preflight_received_out,
     const test_server::HttpRequest& request) {
   if (request.method_string != "OPTIONS") {
-    return std::unique_ptr<test_server::HttpResponse>();
+    return nullptr;
   }
   *preflight_received_out = true;
   return AllowPreflight(request);
@@ -242,7 +245,7 @@ TEST_F(ReportingUploaderTest, SkipPreflightForSameOrigin) {
 std::unique_ptr<test_server::HttpResponse> ReturnPreflightError(
     const test_server::HttpRequest& request) {
   if (request.method_string != "OPTIONS") {
-    return std::unique_ptr<test_server::HttpResponse>();
+    return nullptr;
   }
   auto response = std::make_unique<test_server::BasicHttpResponse>();
   response->set_code(HTTP_FORBIDDEN);
@@ -267,7 +270,7 @@ TEST_F(ReportingUploaderTest, FailedCorsPreflight) {
 std::unique_ptr<test_server::HttpResponse> ReturnPreflightWithoutOrigin(
     const test_server::HttpRequest& request) {
   if (request.method_string != "OPTIONS") {
-    return std::unique_ptr<test_server::HttpResponse>();
+    return nullptr;
   }
   auto it = request.headers.find("Origin");
   EXPECT_TRUE(it != request.headers.end());
@@ -297,7 +300,7 @@ TEST_F(ReportingUploaderTest, CorsPreflightWithoutOrigin) {
 std::unique_ptr<test_server::HttpResponse> ReturnPreflightWithoutMethods(
     const test_server::HttpRequest& request) {
   if (request.method_string != "OPTIONS") {
-    return std::unique_ptr<test_server::HttpResponse>();
+    return nullptr;
   }
   auto it = request.headers.find("Origin");
   EXPECT_TRUE(it != request.headers.end());
@@ -327,7 +330,7 @@ TEST_F(ReportingUploaderTest, CorsPreflightWithoutMethods) {
 std::unique_ptr<test_server::HttpResponse> ReturnPreflightWithoutHeaders(
     const test_server::HttpRequest& request) {
   if (request.method_string != "OPTIONS") {
-    return std::unique_ptr<test_server::HttpResponse>();
+    return nullptr;
   }
   auto it = request.headers.find("Origin");
   EXPECT_TRUE(it != request.headers.end());
@@ -374,7 +377,7 @@ std::unique_ptr<test_server::HttpResponse> ReturnRedirect(
     const std::string& location,
     const test_server::HttpRequest& request) {
   if (request.relative_url != "/")
-    return std::unique_ptr<test_server::HttpResponse>();
+    return nullptr;
 
   auto response = std::make_unique<test_server::BasicHttpResponse>();
   response->set_code(HTTP_FOUND);
@@ -389,7 +392,7 @@ std::unique_ptr<test_server::HttpResponse> CheckRedirect(
     bool* redirect_followed_out,
     const test_server::HttpRequest& request) {
   if (request.relative_url != kRedirectPath)
-    return std::unique_ptr<test_server::HttpResponse>();
+    return nullptr;
 
   *redirect_followed_out = true;
   return ReturnResponse(HTTP_OK, request);
@@ -450,7 +453,7 @@ TEST_F(ReportingUploaderTest, DontSendCookies) {
   ResultSavingCookieCallback<CookieAccessResult> cookie_callback;
   GURL url = server_.GetURL("/");
   auto cookie = CanonicalCookie::Create(url, "foo=bar", base::Time::Now(),
-                                        base::nullopt /* server_time */);
+                                        absl::nullopt /* server_time */);
   context_.cookie_store()->SetCanonicalCookieAsync(
       std::move(cookie), url, CookieOptions::MakeAllInclusive(),
       cookie_callback.MakeCallback());
@@ -546,10 +549,11 @@ TEST_F(ReportingUploaderTest, RespectsNetworkIsolationKey) {
   feature_list.InitAndEnableFeature(
       features::kPartitionConnectionsByNetworkIsolationKey);
 
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://origin2/"));
-  ASSERT_NE(kOrigin, kOrigin2);
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin, kOrigin);
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1 = SchemefulSite(kOrigin);
+  const SchemefulSite kSite2(GURL("https://origin2/"));
+  ASSERT_NE(kSite1, kSite2);
+  const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
   MockClientSocketFactory socket_factory;
   TestURLRequestContext context(true /* delay_initialization */);

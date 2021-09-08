@@ -543,7 +543,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     avcodec_string(buf, sizeof(buf), avctx, is_output);
     avcodec_free_context(&avctx);
 
-    av_log(NULL, AV_LOG_INFO, "    Stream #%d:%d", index, i);
+    av_log(NULL, AV_LOG_INFO, "  Stream #%d:%d", index, i);
 
     /* the pid is an important information, so we display it */
     /* XXX: add a generic system */
@@ -686,6 +686,8 @@ void av_dump_format(AVFormatContext *ic, int index,
         av_log(NULL, AV_LOG_INFO, "\n");
     }
 
+    if (ic->nb_chapters)
+        av_log(NULL, AV_LOG_INFO, "  Chapters:\n");
     for (i = 0; i < ic->nb_chapters; i++) {
         const AVChapter *ch = ic->chapters[i];
         av_log(NULL, AV_LOG_INFO, "    Chapter #%d:%d: ", index, i);
@@ -694,7 +696,7 @@ void av_dump_format(AVFormatContext *ic, int index,
         av_log(NULL, AV_LOG_INFO,
                "end %f\n", ch->end * av_q2d(ch->time_base));
 
-        dump_metadata(NULL, ch->metadata, "    ");
+        dump_metadata(NULL, ch->metadata, "      ");
     }
 
     if (ic->nb_programs) {

@@ -31,7 +31,8 @@ struct MessageHeader : internal::StructHeader {
   uint32_t interface_id;
   // Message name, which is scoped to the interface that the message belongs to.
   uint32_t name;
-  // 0 or either of the enum values defined above.
+  // A combination of zero or more of the flag constants defined within the
+  // Message class.
   uint32_t flags;
   // A unique (hopefully) id for a message. Used in tracing to match trace
   // events for sending and receiving a message.
@@ -69,11 +70,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) MessageDispatchContext {
   Message* message_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageDispatchContext);
-};
-
-class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) SyncMessageResponseSetup {
- public:
-  static void SetCurrentSyncResponseMessage(Message* message);
 };
 
 COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)

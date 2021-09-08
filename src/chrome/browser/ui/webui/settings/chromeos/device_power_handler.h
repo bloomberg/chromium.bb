@@ -10,12 +10,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefChangeRegistrar;
 class PrefService;
@@ -85,7 +84,7 @@ class PowerHandler : public ::settings::SettingsPageUIHandler,
   void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
   void PowerManagerRestarted() override;
   void LidEventReceived(PowerManagerClient::LidState state,
-                        const base::TimeTicks& timestamp) override;
+                        base::TimeTicks timestamp) override;
 
  private:
   enum class PowerSource { kAc, kBattery };
@@ -142,7 +141,7 @@ class PowerHandler : public ::settings::SettingsPageUIHandler,
 
   // Callback used to receive switch states from PowerManagerClient.
   void OnGotSwitchStates(
-      base::Optional<PowerManagerClient::SwitchStates> result);
+      absl::optional<PowerManagerClient::SwitchStates> result);
 
   // Returns all possible idle behaviors (that a user can choose from) and
   // current idle behavior based on enterprise policy and other factors when on
@@ -158,8 +157,8 @@ class PowerHandler : public ::settings::SettingsPageUIHandler,
   // Used to watch power management prefs for changes so the UI can be notified.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  ScopedObserver<PowerManagerClient, PowerManagerClient::Observer>
-      power_manager_client_observer_{this};
+  base::ScopedObservation<PowerManagerClient, PowerManagerClient::Observer>
+      power_manager_client_observation_{this};
 
   // Last lid state received from powerd.
   PowerManagerClient::LidState lid_state_ = PowerManagerClient::LidState::OPEN;

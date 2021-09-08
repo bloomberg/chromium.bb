@@ -332,6 +332,7 @@ NGOffsetMapping::UnitVector NGOffsetMapping::GetMappingUnitsForDOMRange(
                        });
 
   UnitVector result;
+  result.ReserveCapacity(result_end - result_begin);
   for (const auto& unit : base::make_span(result_begin, result_end)) {
     // If the unit isn't fully within the range, create a new unit that's
     // within the range.
@@ -368,7 +369,7 @@ NGOffsetMapping::GetMappingUnitsForLayoutObject(
                    [&layout_object](const NGOffsetMappingUnit& unit) {
                      return unit.GetLayoutObject() == layout_object;
                    });
-  DCHECK_NE(begin, units_.end());
+  CHECK_NE(begin, units_.end());
   const auto* end =
       std::find_if(std::next(begin), units_.end(),
                    [&layout_object](const NGOffsetMappingUnit& unit) {
@@ -404,12 +405,12 @@ NGOffsetMapping::GetMappingUnitsForTextContentOffsetRange(unsigned start,
   return base::make_span(result_begin, result_end);
 }
 
-base::Optional<unsigned> NGOffsetMapping::GetTextContentOffset(
+absl::optional<unsigned> NGOffsetMapping::GetTextContentOffset(
     const Position& position) const {
   DCHECK(NGOffsetMapping::AcceptsPosition(position)) << position;
   const NGOffsetMappingUnit* unit = GetMappingUnitForPosition(position);
   if (!unit)
-    return base::nullopt;
+    return absl::nullopt;
   return unit->ConvertDOMOffsetToTextContent(ToNodeOffsetPair(position).second);
 }
 
@@ -482,12 +483,12 @@ bool NGOffsetMapping::IsAfterNonCollapsedContent(
          unit->GetType() != NGOffsetMappingUnitType::kCollapsed;
 }
 
-base::Optional<UChar> NGOffsetMapping::GetCharacterBefore(
+absl::optional<UChar> NGOffsetMapping::GetCharacterBefore(
     const Position& position) const {
   DCHECK(NGOffsetMapping::AcceptsPosition(position));
-  base::Optional<unsigned> text_content_offset = GetTextContentOffset(position);
+  absl::optional<unsigned> text_content_offset = GetTextContentOffset(position);
   if (!text_content_offset || !*text_content_offset)
-    return base::nullopt;
+    return absl::nullopt;
   return text_[*text_content_offset - 1];
 }
 
@@ -500,7 +501,7 @@ Position NGOffsetMapping::GetFirstPosition(unsigned offset) const {
                        [](const NGOffsetMappingUnit& unit, unsigned offset) {
                          return unit.TextContentEnd() < offset;
                        });
-  DCHECK_NE(result, units_.end());
+  CHECK_NE(result, units_.end());
   // Skip CSS generated content, e.g. "content" property in ::before/::after.
   while (!result->AssociatedNode()) {
     result = std::next(result);
@@ -552,7 +553,7 @@ const NGOffsetMappingUnit* NGOffsetMapping::GetLastMappingUnit(
                        [](unsigned offset, const NGOffsetMappingUnit& unit) {
                          return offset < unit.TextContentStart();
                        });
-  DCHECK_NE(result, units_.begin());
+  CHECK_NE(result, units_.begin());
   result = std::prev(result);
   if (result->TextContentEnd() < offset)
     return nullptr;

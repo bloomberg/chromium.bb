@@ -23,7 +23,6 @@ import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ItemBehavior} from './item_behavior.js';
@@ -166,15 +165,6 @@ Polymer({
   /** @return {?HTMLElement} The "Errors" button, if it exists. */
   getErrorsButton() {
     return /** @type {?HTMLElement} */ (this.$$('#errors-button'));
-  },
-
-  /** @private string */
-  a11yAssociation_() {
-    // Don't use I18nBehavior.i18n because of additional checks it performs.
-    // Polymer ensures that this string is not stamped into arbitrary HTML.
-    // |this.data.name| can contain any data including html tags.
-    // ex: "My <video> download extension!"
-    return loadTimeData.getStringF('extensionA11yAssociation', this.data.name);
   },
 
   /** @private */
@@ -442,17 +432,31 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasWarnings_() {
+  hasSevereWarnings_() {
     return this.data.disableReasons.corruptInstall ||
         this.data.disableReasons.suspiciousInstall ||
         this.data.runtimeWarnings.length > 0 || !!this.data.blacklistText;
   },
 
   /**
-   * @return {string}
+   * @return {boolean}
    * @private
    */
-  computeWarningsClasses_() {
-    return this.data.blacklistText ? 'severe' : 'mild';
+  showDescription_() {
+    return !this.hasSevereWarnings_() &&
+        !this.data.showSafeBrowsingAllowlistWarning;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showAllowlistWarning_() {
+    // Only show the allowlist warning if there are no other warnings. The item
+    // card has a fixed height and the content might get cropped if too many
+    // warnings are displayed. This should be a rare edge case and the allowlist
+    // warning will still be shown in the item detail view.
+    return this.data.showSafeBrowsingAllowlistWarning &&
+        !this.hasSevereWarnings_();
   },
 });

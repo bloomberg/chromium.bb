@@ -8,14 +8,17 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/hud_display/hud_display.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/public/cpp/autotest_private_api_utils.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/session_state_notification_blocker.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/wm/overview/overview_animation_state_waiter.h"
@@ -28,6 +31,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
@@ -114,12 +118,21 @@ void ShellTestApi::SetTabletControllerUseScreenshotForTest(
   TabletModeController::SetUseScreenshotForTest(use_screenshot);
 }
 
-MessageCenterController* ShellTestApi::message_center_controller() {
-  return shell_->message_center_controller_.get();
+// static
+void ShellTestApi::SetUseLoginNotificationDelayForTest(bool use_delay) {
+  SessionStateNotificationBlocker::SetUseLoginNotificationDelayForTest(
+      use_delay);
 }
 
-SystemGestureEventFilter* ShellTestApi::system_gesture_event_filter() {
-  return shell_->system_gesture_filter_.get();
+// static
+void ShellTestApi::SetShouldShowShortcutNotificationForTest(
+    bool show_notification) {
+  AcceleratorControllerImpl::SetShouldShowShortcutNotificationForTest(
+      show_notification);
+}
+
+MessageCenterController* ShellTestApi::message_center_controller() {
+  return shell_->message_center_controller_.get();
 }
 
 WorkspaceController* ShellTestApi::workspace_controller() {
@@ -161,8 +174,7 @@ bool ShellTestApi::IsSystemModalWindowOpen() {
   return Shell::IsSystemModalWindowOpen();
 }
 
-void ShellTestApi::SetTabletModeEnabledForTest(bool enable,
-                                               bool wait_for_completion) {
+void ShellTestApi::SetTabletModeEnabledForTest(bool enable) {
   // Detach mouse devices, so we can enter tablet mode.
   // Calling RunUntilIdle() here is necessary before setting the mouse devices
   // to prevent the callback from evdev thread from overwriting whatever we set
@@ -183,10 +195,6 @@ void ShellTestApi::EnableVirtualKeyboard() {
 
 void ShellTestApi::ToggleFullscreen() {
   accelerators::ToggleFullscreen();
-}
-
-bool ShellTestApi::IsOverviewSelecting() {
-  return shell_->overview_controller()->InOverviewSession();
 }
 
 void ShellTestApi::AddRemoveDisplay() {
@@ -260,10 +268,23 @@ PaginationModel* ShellTestApi::GetAppListPaginationModel() {
   return view->GetAppsPaginationModel();
 }
 
-std::vector<aura::Window*> ShellTestApi::GetItemWindowListInOverviewGrids() {
-  return Shell::Get()
-      ->overview_controller()
-      ->GetItemWindowListInOverviewGridsForTest();
+bool ShellTestApi::IsContextMenuShown() const {
+  return Shell::GetPrimaryRootWindowController()->IsContextMenuShown();
+}
+
+bool ShellTestApi::IsActionForAcceleratorEnabled(
+    const ui::Accelerator& accelerator) const {
+  return Shell::Get()->accelerator_controller()->IsActionForAcceleratorEnabled(
+      accelerator);
+}
+
+bool ShellTestApi::PressAccelerator(const ui::Accelerator& accelerator) {
+  return Shell::Get()->accelerator_controller()->AcceleratorPressed(
+      accelerator);
+}
+
+bool ShellTestApi::IsHUDShown() {
+  return hud_display::HUDDisplayView::IsShown();
 }
 
 }  // namespace ash

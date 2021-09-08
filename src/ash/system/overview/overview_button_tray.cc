@@ -22,6 +22,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
@@ -51,6 +52,8 @@ OverviewButtonTray::OverviewButtonTray(Shelf* shelf)
   // horizontal shelf, no separator is required.
   set_separator_visibility(false);
 
+  set_use_bounce_in_animation(false);
+
   Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->shelf_config()->AddObserver(this);
@@ -69,7 +72,7 @@ void OverviewButtonTray::UpdateAfterLoginStatusChange() {
 }
 
 void OverviewButtonTray::SnapRippleToActivated() {
-  GetInkDrop()->SnapToActivated();
+  ink_drop()->GetInkDrop()->SnapToActivated();
 }
 
 void OverviewButtonTray::OnGestureEvent(ui::GestureEvent* event) {
@@ -127,9 +130,9 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
         }
       }
 
-      AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+      ink_drop()->AnimateToState(views::InkDropState::DEACTIVATED, nullptr);
       wm::ActivateWindow(new_active_window);
-      last_press_event_time_ = base::nullopt;
+      last_press_event_time_ = absl::nullopt;
       return true;
     }
   }
@@ -137,8 +140,8 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   // If not in overview mode record the time of this tap. A subsequent tap will
   // be checked against this to see if we should quick switch.
   last_press_event_time_ = overview_controller->InOverviewSession()
-                               ? base::nullopt
-                               : base::make_optional(event.time_stamp());
+                               ? absl::nullopt
+                               : absl::make_optional(event.time_stamp());
 
   if (overview_controller->InOverviewSession())
     overview_controller->EndOverview();
@@ -177,7 +180,7 @@ void OverviewButtonTray::OnOverviewModeEnded() {
 
 void OverviewButtonTray::ClickedOutsideBubble() {}
 
-base::string16 OverviewButtonTray::GetAccessibleNameForTray() {
+std::u16string OverviewButtonTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_BUTTON_ACCESSIBLE_NAME);
 }
 
@@ -185,10 +188,6 @@ void OverviewButtonTray::HandleLocaleChange() {}
 
 void OverviewButtonTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   // This class has no bubbles to hide.
-}
-
-const char* OverviewButtonTray::GetClassName() const {
-  return "OverviewButtonTray";
 }
 
 void OverviewButtonTray::UpdateIconVisibility() {
@@ -210,5 +209,8 @@ void OverviewButtonTray::UpdateIconVisibility() {
   SetVisiblePreferred(should_show && active_session && shelf_controls_shown &&
                       !app_mode);
 }
+
+BEGIN_METADATA(OverviewButtonTray, TrayBackgroundView)
+END_METADATA
 
 }  // namespace ash

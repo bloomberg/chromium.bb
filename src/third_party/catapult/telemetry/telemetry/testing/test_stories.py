@@ -16,8 +16,10 @@ This module also provides helpers to easily create story sets and other related
 classes to work with these kinds of stories.
 """
 
+from __future__ import absolute_import
 import posixpath
-import urlparse
+import six
+import six.moves.urllib.parse # pylint: disable=import-error
 
 import mock
 
@@ -37,8 +39,8 @@ class DummyStoryTest(story_test.StoryTest):
   def __init__(self, options=None):
     del options  # Unused.
 
-  def WillRunStory(self, platform):
-    del platform  # Unused.
+  def WillRunStory(self, platform, story=None):
+    del platform, story  # Unused.
 
   def Measure(self, platform, results):
     del platform, results  # Unused.
@@ -153,7 +155,7 @@ class DummyStorySet(story_module.StorySet):
     self._abridging_tag = abridging_tag
     assert stories, 'There should be at least one story.'
     for story in stories:
-      if isinstance(story, basestring):
+      if isinstance(story, six.string_types):
         story = DummyStory(story)
       self.AddStory(story)
 
@@ -208,6 +210,6 @@ class TestSharedState(story_module.SharedState):
 def _StoryNameFromUrl(url):
   """Turns e.g. 'file://path/to/name.html' into just 'name'."""
   # Strip off URI scheme, params and query; keep only netloc and path.
-  uri = urlparse.urlparse(url)
+  uri = six.moves.urllib.parse.urlparse(url)
   filepath = posixpath.basename(uri.netloc + uri.path)
   return posixpath.splitext(posixpath.basename(filepath))[0]

@@ -145,6 +145,7 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8InspectorImpl* inspector,
 }
 
 V8InspectorSessionImpl::~V8InspectorSessionImpl() {
+  v8::Isolate::Scope scope(m_inspector->isolate());
   discardInjectedScripts();
   m_consoleAgent->disable();
   m_profilerAgent->disable();
@@ -152,6 +153,20 @@ V8InspectorSessionImpl::~V8InspectorSessionImpl() {
   m_debuggerAgent->disable();
   m_runtimeAgent->disable();
   m_inspector->disconnect(this);
+}
+
+std::unique_ptr<V8InspectorSession::CommandLineAPIScope>
+V8InspectorSessionImpl::initializeCommandLineAPIScope(int executionContextId) {
+  auto scope =
+      std::make_unique<InjectedScript::ContextScope>(this, executionContextId);
+  auto result = scope->initialize();
+  if (!result.IsSuccess()) {
+    return nullptr;
+  }
+
+  scope->installCommandLineAPI();
+
+  return scope;
 }
 
 protocol::DictionaryValue* V8InspectorSessionImpl::agentState(

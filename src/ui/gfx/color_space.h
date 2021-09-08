@@ -7,17 +7,19 @@
 
 #include <stdint.h>
 
-#include <ostream>
+#include <iosfwd>
 #include <string>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "build/build_config.h"
-#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/color_space_export.h"
+
+struct skcms_Matrix3x3;
+struct skcms_TransferFunction;
+class SkColorSpace;
+class SkMatrix44;
 
 // These forward declarations are used to give IPC code friend access to private
 // fields of gfx::ColorSpace for the purpose of serialization and
@@ -327,8 +329,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // CreatePiecewiseHDR for parameter meanings.
   bool GetPiecewiseHDRParams(float* sdr_point, float* hdr_level) const;
 
-  // For most formats, this is the RGB to YUV matrix.
-  void GetTransferMatrix(SkMatrix44* matrix) const;
+  // Returns the transfer matrix for |bit_depth|. For most formats, this is the
+  // RGB to YUV matrix.
+  void GetTransferMatrix(int bit_depth, SkMatrix44* matrix) const;
 
   // Returns the range adjust matrix that converts from |range_| to full range
   // for |bit_depth|.

@@ -549,13 +549,14 @@ describe('Canvas Behavior', () => {
     });
 
     gm('drawpoints_canvas', (canvas) => {
+        canvas.clear(CanvasKit.WHITE);
         const paint = new CanvasKit.Paint();
         paint.setAntiAlias(true);
         paint.setStyle(CanvasKit.PaintStyle.Stroke);
         paint.setStrokeWidth(10);
         paint.setColor(CanvasKit.Color(153, 204, 162, 0.82));
 
-        const points = [[32, 16], [48, 48], [16, 32]];
+        const points = [32, 16, 48, 48, 16, 32];
 
         const caps = [CanvasKit.StrokeCap.Round, CanvasKit.StrokeCap.Square,
                       CanvasKit.StrokeCap.Butt];
@@ -587,6 +588,49 @@ describe('Canvas Behavior', () => {
         paint.delete();
     });
 
+    gm('drawPoints in different modes', (canvas) => {
+        canvas.clear(CanvasKit.WHITE);
+        // From https://bugs.chromium.org/p/skia/issues/detail?id=11012
+        const boxPaint = new CanvasKit.Paint();
+        boxPaint.setStyle(CanvasKit.PaintStyle.Stroke);
+        boxPaint.setStrokeWidth(1);
+
+        const paint = new CanvasKit.Paint();
+        paint.setStyle(CanvasKit.PaintStyle.Stroke);
+        paint.setStrokeWidth(5);
+        paint.setStrokeCap(CanvasKit.StrokeCap.Round);
+        paint.setColorInt(0xFF0000FF); // Blue
+        paint.setAntiAlias(true);
+
+        const points = Float32Array.of(40, 40, 80, 40, 120, 80, 160, 80);
+
+        canvas.drawRect(CanvasKit.LTRBRect(35, 35, 165, 85), boxPaint);
+        canvas.drawPoints(CanvasKit.PointMode.Points, points, paint);
+
+        canvas.translate(0, 50);
+        canvas.drawRect(CanvasKit.LTRBRect(35, 35, 165, 85), boxPaint);
+        canvas.drawPoints(CanvasKit.PointMode.Lines, points, paint);
+
+        canvas.translate(0, 50);
+        canvas.drawRect(CanvasKit.LTRBRect(35, 35, 165, 85), boxPaint);
+        canvas.drawPoints(CanvasKit.PointMode.Polygon, points, paint);
+
+        // The control version using drawPath
+        canvas.translate(0, 50);
+        canvas.drawRect(CanvasKit.LTRBRect(35, 35, 165, 85), boxPaint);
+        const path = new CanvasKit.Path();
+        path.moveTo(40, 40);
+        path.lineTo(80, 40);
+        path.lineTo(120, 80);
+        path.lineTo(160, 80);
+        paint.setColorInt(0xFFFF0000); // RED
+        canvas.drawPath(path, paint);
+
+        paint.delete();
+        path.delete();
+        boxPaint.delete();
+    });
+
     gm('drawImageNine_canvas', (canvas, fetchedByteBuffers) => {
         const img = CanvasKit.MakeImageFromEncoded(fetchedByteBuffers[0]);
         expect(img).toBeTruthy();
@@ -595,16 +639,56 @@ describe('Canvas Behavior', () => {
         const paint = new CanvasKit.Paint();
 
         canvas.drawImageNine(img, CanvasKit.LTRBiRect(40, 40, 400, 300),
-            CanvasKit.LTRBRect(5, 5, 300, 650), paint);
+            CanvasKit.LTRBRect(5, 5, 300, 650), CanvasKit.FilterMode.Nearest, paint);
         paint.delete();
         img.delete();
+    }, '/assets/mandrill_512.png');
+
+        // This should be a nice, clear image.
+    gm('makeImageShaderCubic_canvas', (canvas, fetchedByteBuffers) => {
+        const img = CanvasKit.MakeImageFromEncoded(fetchedByteBuffers[0]);
+        expect(img).toBeTruthy();
+
+        canvas.clear(CanvasKit.WHITE);
+        const paint = new CanvasKit.Paint();
+        const shader = img.makeShaderCubic(CanvasKit.TileMode.Decal, CanvasKit.TileMode.Clamp,
+                                           1/3 /*B*/, 1/3 /*C*/,
+                                           CanvasKit.Matrix.rotated(0.1));
+        paint.setShader(shader);
+
+        canvas.drawPaint(paint);
+        paint.delete();
+        shader.delete();
+        img.delete();
+    }, '/assets/mandrill_512.png');
+
+    // This will look more blocky than the version above.
+    gm('makeImageShaderOptions_canvas', (canvas, fetchedByteBuffers) => {
+        const img = CanvasKit.MakeImageFromEncoded(fetchedByteBuffers[0]);
+        expect(img).toBeTruthy();
+        const imgWithMipMap = img.makeCopyWithDefaultMipmaps();
+
+        canvas.clear(CanvasKit.WHITE);
+        const paint = new CanvasKit.Paint();
+        const shader = imgWithMipMap.makeShaderOptions(CanvasKit.TileMode.Decal,
+                                                       CanvasKit.TileMode.Clamp,
+                                                       CanvasKit.FilterMode.Nearest,
+                                                       CanvasKit.MipmapMode.Linear,
+                                                       CanvasKit.Matrix.rotated(0.1));
+        paint.setShader(shader);
+
+        canvas.drawPaint(paint);
+        paint.delete();
+        shader.delete();
+        img.delete();
+        imgWithMipMap.delete();
     }, '/assets/mandrill_512.png');
 
     gm('drawvertices_canvas', (canvas) => {
         const paint = new CanvasKit.Paint();
         paint.setAntiAlias(true);
 
-        const points = [[ 0, 0 ], [ 250, 0 ], [ 100, 100 ], [ 0, 250 ]];
+        const points = [0, 0,  250, 0,  100, 100,  0, 250];
         // 2d float color array
         const colors = [CanvasKit.RED, CanvasKit.BLUE,
                         CanvasKit.YELLOW, CanvasKit.CYAN];
@@ -623,7 +707,7 @@ describe('Canvas Behavior', () => {
         const paint = new CanvasKit.Paint();
         paint.setAntiAlias(true);
 
-        const points = [[ 0, 0 ], [ 250, 0 ], [ 100, 100 ], [ 0, 250 ]];
+        const points = [0, 0,  250, 0,  100, 100,  0, 250];
         // 1d float color array
         const colors = Float32Array.of(...CanvasKit.RED, ...CanvasKit.BLUE,
                                        ...CanvasKit.YELLOW, ...CanvasKit.CYAN);
@@ -645,17 +729,18 @@ describe('Canvas Behavior', () => {
         paint.setAntiAlias(true);
 
         const points = [
-            [ 70, 170 ], [ 40, 90 ], [ 130, 150 ], [ 100, 50 ],
-            [ 225, 150 ], [ 225, 60 ], [ 310, 180 ], [ 330, 100 ]
+             70, 170,   40, 90,  130, 150,  100, 50,
+            225, 150,  225, 60,  310, 180,  330, 100,
         ];
         const textureCoordinates = [
-            [ 0, 240 ], [ 0, 0 ], [ 80, 240 ], [ 80, 0 ],
-            [ 160, 240 ], [ 160, 0 ], [ 240, 240 ], [ 240, 0 ]
+              0, 240,    0, 0,   80, 240,   80, 0,
+            160, 240,  160, 0,  240, 240,  240, 0,
         ];
         const vertices = CanvasKit.MakeVertices(CanvasKit.VertexMode.TrianglesStrip,
             points, textureCoordinates, null /* colors */, false /*isVolatile*/);
 
-        const shader = img.makeShader(CanvasKit.TileMode.Repeat, CanvasKit.TileMode.Mirror);
+        const shader = img.makeShaderCubic(CanvasKit.TileMode.Repeat, CanvasKit.TileMode.Mirror,
+            1/3 /*B*/, 1/3 /*C*/,);
         paint.setShader(shader);
         canvas.drawVertices(vertices, CanvasKit.BlendMode.Src, paint);
 
@@ -808,14 +893,12 @@ describe('Canvas Behavior', () => {
                'Type': 'SkCircleDrawable',
                'Radius': 2
             },
-            'EffectCode': [
-                `void effectSpawn(inout Effect effect) {
+            'Code': [
+               `void effectSpawn(inout Effect effect) {
                   effect.rate = 200;
                   effect.color = float4(1, 0, 0, 1);
-                }`
-            ],
-            'Code': [
-               `void spawn(inout Particle p) {
+                }
+                void spawn(inout Particle p) {
                   p.lifetime = 3 + rand(p.seed);
                   p.vel.y = -50;
                 }
@@ -833,6 +916,7 @@ describe('Canvas Behavior', () => {
 
         const particles = CanvasKit.MakeParticles(JSON.stringify(curveParticles));
         particles.start(0, true);
+        particles.setPosition([0, 0]);
 
         const paint = new CanvasKit.Paint();
         paint.setAntiAlias(true);

@@ -4,7 +4,9 @@
 
 #include "net/dns/host_resolver.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/check.h"
@@ -38,21 +40,28 @@ class FailingRequestImpl : public HostResolver::ResolveHostRequest,
   int Start(CompletionOnceCallback callback) override { return error_; }
   int Start() override { return error_; }
 
-  const base::Optional<AddressList>& GetAddressResults() const override {
-    static base::NoDestructor<base::Optional<AddressList>> nullopt_result;
+  const absl::optional<AddressList>& GetAddressResults() const override {
+    static base::NoDestructor<absl::optional<AddressList>> nullopt_result;
     return *nullopt_result;
   }
 
-  const base::Optional<std::vector<std::string>>& GetTextResults()
+  const absl::optional<std::vector<std::string>>& GetTextResults()
       const override {
-    static const base::NoDestructor<base::Optional<std::vector<std::string>>>
+    static const base::NoDestructor<absl::optional<std::vector<std::string>>>
         nullopt_result;
     return *nullopt_result;
   }
 
-  const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
+  const absl::optional<std::vector<HostPortPair>>& GetHostnameResults()
       const override {
-    static const base::NoDestructor<base::Optional<std::vector<HostPortPair>>>
+    static const base::NoDestructor<absl::optional<std::vector<HostPortPair>>>
+        nullopt_result;
+    return *nullopt_result;
+  }
+
+  const absl::optional<std::vector<std::string>>& GetDnsAliasResults()
+      const override {
+    static const base::NoDestructor<absl::optional<std::vector<std::string>>>
         nullopt_result;
     return *nullopt_result;
   }
@@ -61,9 +70,9 @@ class FailingRequestImpl : public HostResolver::ResolveHostRequest,
     return ResolveErrorInfo(error_);
   }
 
-  const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
+  const absl::optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
-    static const base::NoDestructor<base::Optional<HostCache::EntryStaleness>>
+    static const base::NoDestructor<absl::optional<HostCache::EntryStaleness>>
         nullopt_result;
     return *nullopt_result;
   }
@@ -76,7 +85,7 @@ class FailingRequestImpl : public HostResolver::ResolveHostRequest,
 
 }  // namespace
 
-const base::Optional<std::vector<bool>>&
+const absl::optional<std::vector<bool>>&
 HostResolver::ResolveHostRequest::GetExperimentalResultsForTesting() const {
   IMMEDIATE_CRASH();
 }
@@ -177,7 +186,7 @@ std::unique_ptr<HostResolver> HostResolver::CreateResolver(
 // static
 std::unique_ptr<HostResolver> HostResolver::CreateStandaloneResolver(
     NetLog* net_log,
-    base::Optional<ManagerOptions> options,
+    absl::optional<ManagerOptions> options,
     base::StringPiece host_mapping_rules,
     bool enable_caching) {
   std::unique_ptr<ContextHostResolver> resolver =
@@ -196,7 +205,7 @@ std::unique_ptr<HostResolver> HostResolver::CreateStandaloneResolver(
 std::unique_ptr<ContextHostResolver>
 HostResolver::CreateStandaloneContextResolver(
     NetLog* net_log,
-    base::Optional<ManagerOptions> options,
+    absl::optional<ManagerOptions> options,
     bool enable_caching) {
   auto resolve_context = std::make_unique<ResolveContext>(
       nullptr /* url_request_context */, enable_caching);
@@ -229,12 +238,12 @@ AddressFamily HostResolver::DnsQueryTypeToAddressFamily(
 HostResolverFlags HostResolver::ParametersToHostResolverFlags(
     const ResolveHostParameters& parameters) {
   HostResolverFlags flags = 0;
-  if (parameters.source == HostResolverSource::SYSTEM)
-    flags |= HOST_RESOLVER_SYSTEM_ONLY;
   if (parameters.include_canonical_name)
     flags |= HOST_RESOLVER_CANONNAME;
   if (parameters.loopback_only)
     flags |= HOST_RESOLVER_LOOPBACK_ONLY;
+  if (parameters.avoid_multicast_resolution)
+    flags |= HOST_RESOLVER_AVOID_MULTICAST;
   return flags;
 }
 

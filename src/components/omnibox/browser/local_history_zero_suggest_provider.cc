@@ -39,17 +39,23 @@
 
 using metrics::OmniboxEventProto;
 
-namespace {
+// Default relevance for the LocalHistoryZeroSuggestProvider query suggestions
+// for authenticated and unauthenticated scenarios respectively. These values
+// are chosen to place local history zero-prefix suggestions below server
+// provided zps when the user is signed in (e.g., pSuggest) and above server
+// provided zps when the user is signed out (e.g., trending).
+// Server provided relevance for zps is expected to range from 550-1400.
+const int kLocalHistoryZPSAuthenticatedRelevance = 500;
+const int kLocalHistoryZPSUnauthenticatedRelevance = 1450;
 
-// Default relevance for the LocalHistoryZeroSuggestProvider query suggestions.
-const int kLocalHistoryZeroSuggestRelevance = 500;
+namespace {
 
 // Extracts the search terms from |url|. Collapses whitespaces, converts them to
 // lowercase and returns them. |template_url_service| must not be null.
-base::string16 GetSearchTermsFromURL(const GURL& url,
+std::u16string GetSearchTermsFromURL(const GURL& url,
                                      TemplateURLService* template_url_service) {
   DCHECK(template_url_service);
-  base::string16 search_terms;
+  std::u16string search_terms;
   template_url_service->GetDefaultSearchProvider()->ExtractSearchTermsFromURL(
       url, template_url_service->search_terms_data(), &search_terms);
   return base::i18n::ToLower(base::CollapseWhitespace(search_terms, false));
@@ -58,37 +64,8 @@ base::string16 GetSearchTermsFromURL(const GURL& url,
 // Whether zero suggest suggestions are allowed in the given context.
 // Invoked early, confirms all the conditions for zero suggestions are met.
 bool AllowLocalHistoryZeroSuggestSuggestions(const AutocompleteInput& input) {
-  // TODO: The default-enabling on Android predated the
-  // omnibox::kNewSearchFeatures flag, so Android is not gated by it. Because
-  // of that, the new kLocalHistoryZeroSuggest flag can't control Android
-  // behavior. Once the kNewSearchFeatures flag is removed,
-  // kLocalHistoryZeroSuggest can control the feature on all plattforms.
-#if defined(OS_ANDROID)  // Default-enabled on Android.
-  return true;
-#else
-  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
-    return false;
-
   // Flag is default-enabled on Android and Desktop.
-  if (base::FeatureList::IsEnabled(omnibox::kLocalHistoryZeroSuggest)) {
-    return true;
-  }
-
-  const auto current_page_classification = input.current_page_classification();
-  // Reactive Zero-Prefix Suggestions (rZPS) and basically all remote ZPS on the
-  // NTP are expected to be displayed alongside local history zero-prefix
-  // suggestions. Enable local history ZPS if rZPS is enabled.
-  // NTP Omnibox.
-  if ((current_page_classification == OmniboxEventProto::NTP ||
-       current_page_classification ==
-           OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS) &&
-      base::FeatureList::IsEnabled(
-          omnibox::kReactiveZeroSuggestionsOnNTPOmnibox)) {
-    return true;
-  }
-
-  return false;
-#endif
+  return base::FeatureList::IsEnabled(omnibox::kLocalHistoryZeroSuggest);
 }
 
 }  // namespace
@@ -106,12 +83,6 @@ void LocalHistoryZeroSuggestProvider::Start(const AutocompleteInput& input,
 
   done_ = true;
   matches_.clear();
-
-  if (!base::FeatureList::IsEnabled(
-          omnibox::kOmniboxLocalZeroSuggestForAuthenticatedUsers) &&
-      client_->IsAuthenticated()) {
-    return;
-  }
 
   // Allow local history query suggestions only when the user is not in an
   // off-the-record context.
@@ -230,21 +201,18 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
       template_url_service->GetDefaultSearchProvider()->id(),
       OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold());
 
-  bool frecency_ranking = base::FeatureList::IsEnabled(
-      omnibox::kOmniboxLocalZeroSuggestFrecencyRanking);
   const base::Time now = base::Time::Now();
   const int kRecencyDecayUnitSec = 60;
   const double kFrequencyExponent = 1.15;
   auto CompareByFrecency = [&](const auto& a, const auto& b) {
-    return frecency_ranking
-               ? a.GetFrecency(now, kRecencyDecayUnitSec, kFrequencyExponent) >
-                     b.GetFrecency(now, kRecencyDecayUnitSec,
-                                   kFrequencyExponent)
-               : a.most_recent_visit_time > b.most_recent_visit_time;
+    return a.GetFrecency(now, kRecencyDecayUnitSec, kFrequencyExponent) >
+           b.GetFrecency(now, kRecencyDecayUnitSec, kFrequencyExponent);
   };
   std::sort(results.begin(), results.end(), CompareByFrecency);
 
-  int relevance = kLocalHistoryZeroSuggestRelevance;
+  int relevance = client_->IsAuthenticated()
+                      ? kLocalHistoryZPSAuthenticatedRelevance
+                      : kLocalHistoryZPSUnauthenticatedRelevance;
   for (const auto& result : results) {
     SearchSuggestionParser::SuggestResult suggestion(
         /*suggestion=*/result.normalized_term,
@@ -277,7 +245,7 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
 }
 
 void LocalHistoryZeroSuggestProvider::OnHistoryQueryResults(
-    const base::string16& suggestion,
+    const std::u16string& suggestion,
     const base::TimeTicks& query_time,
     history::QueryResults results) {
   history::HistoryService* history_service = client_->GetHistoryService();
@@ -293,7 +261,7 @@ void LocalHistoryZeroSuggestProvider::OnHistoryQueryResults(
   // Delete the matching URLs that would generate |suggestion|.
   std::vector<GURL> urls_to_delete;
   for (const auto& result : results) {
-    base::string16 search_terms =
+    std::u16string search_terms =
         GetSearchTermsFromURL(result.url(), template_url_service);
     if (search_terms == suggestion)
       urls_to_delete.push_back(result.url());

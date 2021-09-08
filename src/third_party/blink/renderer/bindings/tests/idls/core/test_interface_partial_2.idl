@@ -41,4 +41,8 @@
 
     [SecureContext] void partial2SecureContextMethod();
     [SecureContext] attribute boolean partial2SecureContextAttribute;
+    [CrossOriginIsolated] void partial2CrossOriginIsolatedMethod();
+    [CrossOriginIsolated] attribute boolean partial2CrossOriginIsolatedAttribute;
+    [DirectSocketEnabled] void partial2DirectSocketEnabledMethod();
+    [DirectSocketEnabled] attribute boolean partial2DirectSocketEnabledAttribute;
 };

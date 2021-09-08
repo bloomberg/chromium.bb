@@ -42,11 +42,12 @@ embedder.setUp_ = function(config) {
   embedder.closeSocketURL = embedder.baseGuestURL + '/close-socket';
   embedder.testImageBaseURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/';
-  embedder.virtualURL = 'http://virtualurl/';
   embedder.pluginURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/embed.html';
   embedder.mailtoTestURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/mailto.html';
+  embedder.safeBrowsingDangerousURL = 'http://evil.com:' +
+      config.testServer.port + '/title1.html';
 };
 
 window.runTest = function(testName) {
@@ -2226,7 +2227,36 @@ function testLoadAbortNonWebSafeScheme() {
   });
   webview.src = chromeGuestURL;
   document.body.appendChild(webview);
-};
+}
+
+// Test that Safe Browsing is active inside webviews and that the embedder is
+// notified of blocked loads. Furthermore, we ensure that the embedder itself
+// is not disrupted by Safe Browsing for something that happened inside the
+// webview.
+function testLoadAbortSafeBrowsing() {
+  let webview = document.createElement('webview');
+  webview.addEventListener('loadabort', (e) => {
+    embedder.test.assertEq(-20, e.code);
+    embedder.test.assertEq('ERR_BLOCKED_BY_CLIENT', e.reason);
+
+    // Safe Browsing prevented the load in the webview, but we also want to
+    // ensure that Safe Browsing doesn't interfere with the webview's
+    // embedder. So we'll wait for something safe to load in the webview to
+    // confirm that it still works and the embedder doesn't get replaced by an
+    // interstitial in the meantime.
+    webview.src = embedder.emptyGuestURL;
+  });
+  webview.addEventListener('loadcommit', (e) => {
+    if (e.url == embedder.safeBrowsingDangerousURL) {
+      console.log('Committed dangerous URL in webview');
+      embedder.test.fail();
+    } else if (e.url == embedder.emptyGuestURL) {
+      embedder.test.succeed();
+    }
+  });
+  webview.src = embedder.safeBrowsingDangerousURL;
+  document.body.appendChild(webview);
+}
 
 // This test verifies that the reload method on webview functions as expected.
 function testReload() {
@@ -2823,9 +2853,11 @@ function testLoadDataAPI() {
   var webview = new WebView();
   webview.src = 'about:blank';
 
+  const virtualURL = 'http://virtualurl/';
+
   var loadstopListener2 = function(e) {
     // Test the virtual URL.
-    embedder.test.assertEq(webview.src, embedder.virtualURL);
+    embedder.test.assertEq(webview.src, virtualURL);
 
     // Test that the image was loaded from the right source.
     webview.executeScript(
@@ -2846,10 +2878,11 @@ function testLoadDataAPI() {
 
     // Load a data URL containing a relatively linked image, with the
     // image's base URL specified, and a virtual URL provided.
-    webview.loadDataWithBaseUrl("data:text/html;base64,PGh0bWw+CiAgVGhpcyBpcy" +
-        "BhIHRlc3QuPGJyPgogIDxpbWcgc3JjPSJ0ZXN0LmJtcCI+PGJyPgo8L2h0bWw+Cg==",
+    let encodedData =
+        window.btoa('<html>This is a test.<br><img src="test.bmp"><br></html>');
+    webview.loadDataWithBaseUrl("data:text/html;base64," + encodedData,
                                 embedder.testImageBaseURL,
-                                embedder.virtualURL);
+                                virtualURL);
   };
 
   webview.addEventListener('loadstop', loadstopListener1);
@@ -3150,6 +3183,21 @@ function testNavigateToPDFInWebview() {
   document.body.appendChild(webview);
 }
 
+// Test that when a PDF loaded in a webview triggers a JS dialog, the webview's
+// embedder receives the request.
+function testDialogInPdf() {
+  let webview = document.createElement('webview');
+  let pdfUrl = 'pdf_with_dialog.pdf';
+  // Partition 'foobar' has access to local resource |pdfUrl|.
+  webview.partition = 'foobar';
+  webview.src = pdfUrl;
+  webview.addEventListener('dialog', (e) => {
+    e.dialog.ok();
+    embedder.test.succeed();
+  });
+  document.body.appendChild(webview);
+}
+
 // This test verifies that mailto links are enabled.
 function testMailtoLink() {
   var webview = new WebView();
@@ -3435,6 +3483,7 @@ embedder.test.testList = {
   'testLoadAbortIllegalJavaScriptURL': testLoadAbortIllegalJavaScriptURL,
   'testLoadAbortInvalidNavigation': testLoadAbortInvalidNavigation,
   'testLoadAbortNonWebSafeScheme': testLoadAbortNonWebSafeScheme,
+  'testLoadAbortSafeBrowsing': testLoadAbortSafeBrowsing,
   'testNavigateAfterResize': testNavigateAfterResize,
   'testNavigationToExternalProtocol': testNavigationToExternalProtocol,
   'testReload': testReload,
@@ -3463,6 +3512,7 @@ embedder.test.testList = {
   'testFocusWhileFocused': testFocusWhileFocused,
   'testPDFInWebview': testPDFInWebview,
   'testNavigateToPDFInWebview': testNavigateToPDFInWebview,
+  'testDialogInPdf': testDialogInPdf,
   'testMailtoLink': testMailtoLink,
   'testRendererNavigationRedirectWhileUnattached':
        testRendererNavigationRedirectWhileUnattached,

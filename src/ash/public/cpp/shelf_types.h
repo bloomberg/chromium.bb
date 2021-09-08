@@ -157,7 +157,14 @@ enum ShelfItemType {
   // - Extension "V1" (legacy packaged and hosted) apps,
   // - Extension "V2" (platform) apps,
   // - ARC (App Runtime for Chrome - Android Play Store) apps.
+  // - Lacros.
   TYPE_APP,
+
+  // Similar to TYPE_BROWSER_SHORTCUT, but not pinned.
+  // This is for the Lacros migration.
+  // After Lacros is completely made, TYPE_BROWSER_SHORTCUT and
+  // TYPE_UNPINNED_BROWSER_SHORTCUT will be removed, eventually.
+  TYPE_UNPINNED_BROWSER_SHORTCUT,
 
   // Represents an open dialog.
   TYPE_DIALOG,
@@ -185,6 +192,16 @@ enum ShelfItemStatus {
   STATUS_RUNNING,
   // A shelf item that needs user's attention.
   STATUS_ATTENTION,
+};
+
+// Represents the app status in the shelf or app_list.
+enum AppStatus {
+  // The app is ready.
+  kReady,
+  // The app is blocked.
+  kBlocked,
+  // The app is paused.
+  kPaused,
 };
 
 // A unique shelf item id composed of an |app_id| and a |launch_id|.

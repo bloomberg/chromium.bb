@@ -14,7 +14,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/time/clock.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/signatures.h"
@@ -22,6 +21,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -64,7 +64,7 @@ class PasswordFormMetricsRecorder
   enum ManagerAction {
     kManagerActionNone = 0,
     kManagerActionAutofilled,
-    kManagerActionBlacklisted_Obsolete,
+    kManagerActionBlocklisted_Obsolete,
     kManagerActionMax
   };
 
@@ -229,7 +229,9 @@ class PasswordFormMetricsRecorder
     kReauthRequired = 7,
     // Password is already filled
     kPasswordPrefilled = 8,
-    kMaxValue = kPasswordPrefilled,
+    // A credential exists for affiliated website.
+    kAffiliatedWebsite = 9,
+    kMaxValue = kAffiliatedWebsite,
   };
 
   // This metric records the user experience with the passwords filling. The
@@ -255,12 +257,12 @@ class PasswordFormMetricsRecorder
     kNoSavedCredentials = 5,
     // Neither user input nor filling.
     kNoUserInputNoFillingInPasswordFields = 6,
-    // Domain is blacklisted and no other credentials exist.
-    kNoSavedCredentialsAndBlacklisted = 7,
+    // Domain is blocklisted and no other credentials exist.
+    kNoSavedCredentialsAndBlocklisted = 7,
     // No credentials exist and the user has ignored the save bubble too often,
     // meaning that they won't be asked to save credentials anymore.
-    kNoSavedCredentialsAndBlacklistedBySmartBubble = 8,
-    kMaxValue = kNoSavedCredentialsAndBlacklistedBySmartBubble,
+    kNoSavedCredentialsAndBlocklistedBySmartBubble = 8,
+    kMaxValue = kNoSavedCredentialsAndBlocklistedBySmartBubble,
   };
 
   // Records which store(s) a filled password came from.
@@ -375,11 +377,11 @@ class PasswordFormMetricsRecorder
   // the successful submission is detected.
   void CalculateFillingAssistanceMetric(
       const autofill::FormData& submitted_form,
-      const std::set<std::pair<base::string16, PasswordForm::Store>>&
+      const std::set<std::pair<std::u16string, PasswordForm::Store>>&
           saved_usernames,
-      const std::set<std::pair<base::string16, PasswordForm::Store>>&
+      const std::set<std::pair<std::u16string, PasswordForm::Store>>&
           saved_passwords,
-      bool is_blacklisted,
+      bool is_blocklisted,
       const std::vector<InteractionsStats>& interactions_stats,
       metrics_util::PasswordAccountStorageUsageLevel
           account_storage_usage_level);
@@ -437,7 +439,7 @@ class PasswordFormMetricsRecorder
 
   // Contains the generated password's status, which resulted from a user
   // action.
-  base::Optional<GeneratedPasswordStatus> generated_password_status_;
+  absl::optional<GeneratedPasswordStatus> generated_password_status_;
 
   // Tracks which bubble is currently being displayed to the user.
   CurrentBubbleOfInterest current_bubble_ = CurrentBubbleOfInterest::kNone;
@@ -480,9 +482,9 @@ class PasswordFormMetricsRecorder
   // 1 = the fallback was shown.
   // 2 = the password was generated.
   // 4 = this was an update prompt.
-  base::Optional<uint32_t> showed_manual_fallback_for_saving_;
+  absl::optional<uint32_t> showed_manual_fallback_for_saving_;
 
-  base::Optional<uint32_t> form_changes_bitmask_;
+  absl::optional<uint32_t> form_changes_bitmask_;
 
   bool recorded_first_filling_result_ = false;
 
@@ -491,15 +493,15 @@ class PasswordFormMetricsRecorder
   bool user_typed_password_on_chrome_sign_in_page_ = false;
   bool password_hash_saved_on_chrome_sing_in_page_ = false;
 
-  base::Optional<FillingAssistance> filling_assistance_;
-  base::Optional<FillingSource> filling_source_;
-  base::Optional<metrics_util::PasswordAccountStorageUsageLevel>
+  absl::optional<FillingAssistance> filling_assistance_;
+  absl::optional<FillingSource> filling_source_;
+  absl::optional<metrics_util::PasswordAccountStorageUsageLevel>
       account_storage_usage_level_;
 
   bool possible_username_used_ = false;
   bool username_updated_in_bubble_ = false;
 
-  base::Optional<JsOnlyInput> js_only_input_;
+  absl::optional<JsOnlyInput> js_only_input_;
 
   bool is_mixed_content_form_ = false;
 

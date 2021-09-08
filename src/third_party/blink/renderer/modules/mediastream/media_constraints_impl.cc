@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -368,15 +367,16 @@ static void ParseOldStyleNames(
       }
       result.enable_dtls_srtp.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kEnableRtpDataChannels)) {
+      // This constraint does not turn on RTP data channels, but we do not
+      // want it to cause an error, so we parse it and ignore it.
       bool value = ToBoolean(constraint.value_);
       if (value) {
         Deprecation::CountDeprecation(
             context, WebFeature::kRTCConstraintEnableRtpDataChannelsTrue);
       } else {
-        UseCounter::Count(context,
-                          WebFeature::kRTCConstraintEnableRtpDataChannelsFalse);
+        Deprecation::CountDeprecation(
+            context, WebFeature::kRTCConstraintEnableRtpDataChannelsFalse);
       }
-      result.enable_rtp_data_channels.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kEnableDscp)) {
       result.enable_dscp.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kEnableIPv6)) {
@@ -395,21 +395,6 @@ static void ParseOldStyleNames(
           atoi(constraint.value_.Utf8().c_str()));
     } else if (constraint.name_.Equals(kCpuOveruseDetection)) {
       result.goog_cpu_overuse_detection.SetExact(ToBoolean(constraint.value_));
-    } else if (constraint.name_.Equals(kCpuUnderuseThreshold)) {
-      result.goog_cpu_underuse_threshold.SetExact(
-          atoi(constraint.value_.Utf8().c_str()));
-    } else if (constraint.name_.Equals(kCpuOveruseThreshold)) {
-      result.goog_cpu_overuse_threshold.SetExact(
-          atoi(constraint.value_.Utf8().c_str()));
-    } else if (constraint.name_.Equals(kCpuUnderuseEncodeRsdThreshold)) {
-      result.goog_cpu_underuse_encode_rsd_threshold.SetExact(
-          atoi(constraint.value_.Utf8().c_str()));
-    } else if (constraint.name_.Equals(kCpuOveruseEncodeRsdThreshold)) {
-      result.goog_cpu_overuse_encode_rsd_threshold.SetExact(
-          atoi(constraint.value_.Utf8().c_str()));
-    } else if (constraint.name_.Equals(kCpuOveruseEncodeUsage)) {
-      result.goog_cpu_overuse_encode_usage.SetExact(
-          ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kHighStartBitrate)) {
       result.goog_high_start_bitrate.SetExact(
           atoi(constraint.value_.Utf8().c_str()));
@@ -417,7 +402,12 @@ static void ParseOldStyleNames(
       result.goog_payload_padding.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kAudioLatency)) {
       result.goog_latency_ms.SetExact(atoi(constraint.value_.Utf8().c_str()));
-    } else if (constraint.name_.Equals(kGoogLeakyBucket) ||
+    } else if (constraint.name_.Equals(kCpuUnderuseThreshold) ||
+               constraint.name_.Equals(kCpuOveruseThreshold) ||
+               constraint.name_.Equals(kCpuUnderuseEncodeRsdThreshold) ||
+               constraint.name_.Equals(kCpuOveruseEncodeRsdThreshold) ||
+               constraint.name_.Equals(kCpuOveruseEncodeUsage) ||
+               constraint.name_.Equals(kGoogLeakyBucket) ||
                constraint.name_.Equals(kGoogBeamforming) ||
                constraint.name_.Equals(kGoogArrayGeometry) ||
                constraint.name_.Equals(kPowerLineFrequency) ||

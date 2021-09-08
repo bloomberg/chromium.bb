@@ -8,32 +8,38 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/esim_manager.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/net/network_health/network_health_localized_strings.h"
 #include "chrome/browser/chromeos/net/network_health/network_health_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.h"
+#include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_logs_message_handler.h"
 #include "chrome/browser/ui/webui/chromeos/onc_import_message_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/connectivity_diagnostics/network_diagnostics_resource_provider.h"
+#include "chrome/grit/network_ui_resources.h"
+#include "chrome/grit/network_ui_resources_map.h"
+#include "chromeos/components/network_ui/network_diagnostics_resource_provider.h"
+#include "chromeos/components/network_ui/network_health_resource_provider.h"
+#include "chromeos/network/cellular_esim_profile_handler_impl.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
@@ -57,6 +63,7 @@ constexpr char kGetNetworkProperties[] = "getShillNetworkProperties";
 constexpr char kGetDeviceProperties[] = "getShillDeviceProperties";
 constexpr char kGetEthernetEAP[] = "getShillEthernetEAP";
 constexpr char kOpenCellularActivationUi[] = "openCellularActivationUi";
+constexpr char kResetESimCache[] = "resetESimCache";
 constexpr char kShowNetworkDetails[] = "showNetworkDetails";
 constexpr char kShowNetworkConfig[] = "showNetworkConfig";
 constexpr char kShowAddNewWifiNetworkDialog[] = "showAddNewWifi";
@@ -84,7 +91,7 @@ void SetDeviceProperties(base::Value* dictionary) {
     return;
 
   base::Value device_dictionary(device_state->properties().Clone());
-  if (!device_state->ip_configs().empty()) {
+  if (!device_state->ip_configs().DictEmpty()) {
     // Convert IPConfig dictionary to a ListValue.
     base::Value ip_configs(base::Value::Type::LIST);
     for (auto iter : device_state->ip_configs().DictItems()) {
@@ -95,6 +102,31 @@ void SetDeviceProperties(base::Value* dictionary) {
   if (!device_dictionary.DictEmpty())
     dictionary->SetKey(shill::kDeviceProperty, std::move(device_dictionary));
 }
+
+class NetworkDiagnosticsMessageHandler : public content::WebUIMessageHandler {
+ public:
+  NetworkDiagnosticsMessageHandler() = default;
+  ~NetworkDiagnosticsMessageHandler() override = default;
+
+  void RegisterMessages() override {
+    web_ui()->RegisterMessageCallback(
+        "OpenFeedbackDialog",
+        base::BindRepeating(
+            &NetworkDiagnosticsMessageHandler::OpenFeedbackDialog,
+            base::Unretained(this)));
+  }
+
+ private:
+  void OpenFeedbackDialog(const base::ListValue* value) {
+    const std::string result = value->GetList()[0].GetString();
+    chrome::ShowFeedbackPage(nullptr, chrome::kFeedbackSourceNetworkHealthPage,
+                             "" /*description_template*/,
+                             "" /*description_template_placeholder*/,
+                             "network-health", result);
+  }
+};
+
+}  // namespace
 
 class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
  public:
@@ -126,6 +158,10 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
         base::BindRepeating(
             &NetworkConfigMessageHandler::OpenCellularActivationUi,
             base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        kResetESimCache,
+        base::BindRepeating(&NetworkConfigMessageHandler::ResetESimCache,
+                            base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
         kShowNetworkDetails,
         base::BindRepeating(&NetworkConfigMessageHandler::ShowNetworkDetails,
@@ -176,7 +212,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   void OnGetShillNetworkProperties(const std::string& callback_id,
                                    const std::string& guid,
                                    const std::string& service_path,
-                                   base::Optional<base::Value> result) {
+                                   absl::optional<base::Value> result) {
     if (!result) {
       RunErrorCallback(callback_id, guid, kGetNetworkProperties, "Error.DBus");
       return;
@@ -251,6 +287,17 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     Respond(callback_id, response);
   }
 
+  void ResetESimCache(const base::ListValue* arg_list) {
+    CellularESimProfileHandler* handler =
+        NetworkHandler::Get()->cellular_esim_profile_handler();
+    if (!handler)
+      return;
+
+    CellularESimProfileHandlerImpl* handler_impl =
+        static_cast<CellularESimProfileHandlerImpl*>(handler);
+    handler_impl->ResetESimProfileCache();
+  }
+
   void ShowNetworkDetails(const base::ListValue* arg_list) {
     CHECK_EQ(1u, arg_list->GetSize());
     std::string guid;
@@ -274,7 +321,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   void OnGetShillDeviceProperties(const std::string& callback_id,
                                   const std::string& type,
                                   const std::string& device_path,
-                                  base::Optional<base::Value> result) {
+                                  absl::optional<base::Value> result) {
     if (!result) {
       RunErrorCallback(callback_id, type, kGetDeviceProperties,
                        "GetDeviceProperties failed");
@@ -340,31 +387,6 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigMessageHandler);
 };
-
-class NetworkDiagnosticsMessageHandler : public content::WebUIMessageHandler {
- public:
-  NetworkDiagnosticsMessageHandler() = default;
-  ~NetworkDiagnosticsMessageHandler() override = default;
-
-  void RegisterMessages() override {
-    web_ui()->RegisterMessageCallback(
-        "OpenFeedbackDialog",
-        base::BindRepeating(
-            &NetworkDiagnosticsMessageHandler::OpenFeedbackDialog,
-            base::Unretained(this)));
-  }
-
- private:
-  void OpenFeedbackDialog(const base::ListValue* value) {
-    const std::string result = value->GetList()[0].GetString();
-    chrome::ShowFeedbackPage(nullptr, chrome::kFeedbackSourceNetworkHealthPage,
-                             "" /*description_template*/,
-                             "" /*description_template_placeholder*/,
-                             "network-health", result);
-  }
-};
-
-}  // namespace
 
 // static
 void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
@@ -451,6 +473,15 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_NO_CELLULAR_ERROR_TEXT));
 
   localized_strings->SetString(
+      "resetESimCacheLabel",
+      l10n_util::GetStringUTF16(
+          IDS_NETWORK_UI_RESET_ESIM_PROFILES_BUTTON_TEXT));
+  localized_strings->SetString(
+      "resetESimCacheButtonText",
+      l10n_util::GetStringUTF16(
+          IDS_NETWORK_UI_RESET_ESIM_PROFILES_BUTTON_TEXT));
+
+  localized_strings->SetString(
       "addNewWifiLabel",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_ADD_NEW_WIFI_LABEL));
   localized_strings->SetString(
@@ -533,24 +564,17 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->DisableTrustedTypesCSP();
 
   html->AddLocalizedStrings(localized_strings);
-  network_health::AddLocalizedStrings(html);
+  network_health::AddResources(html);
   network_diagnostics::AddResources(html);
-
+  cellular_setup::AddLocalizedStrings(html);
+  cellular_setup::AddNonStringLoadTimeData(html);
   network_element::AddLocalizedStrings(html);
   network_element::AddOncLocalizedStrings(html);
   html->UseStringsJs();
 
-  html->AddResourcePath("network_ui_browser_proxy.html",
-                        IDR_NETWORK_UI_BROWSER_PROXY_HTML);
-  html->AddResourcePath("network_ui_browser_proxy.js",
-                        IDR_NETWORK_UI_BROWSER_PROXY_JS);
-  html->AddResourcePath("network_ui.html", IDR_NETWORK_UI_HTML);
-  html->AddResourcePath("network_ui.js", IDR_NETWORK_UI_JS);
-  html->AddResourcePath("network_state_ui.html", IDR_NETWORK_STATE_UI_HTML);
-  html->AddResourcePath("network_state_ui.js", IDR_NETWORK_STATE_UI_JS);
-  html->AddResourcePath("network_logs_ui.html", IDR_NETWORK_LOGS_UI_HTML);
-  html->AddResourcePath("network_logs_ui.js", IDR_NETWORK_LOGS_UI_JS);
-  html->SetDefaultResource(IDR_NETWORK_UI_PAGE_HTML);
+  webui::SetupWebUIDataSource(
+      html, base::make_span(kNetworkUiResources, kNetworkUiResourcesSize),
+      IDR_NETWORK_UI_NETWORK_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html);
@@ -575,6 +599,11 @@ void NetworkUI::BindInterface(
         network_diagnostics::mojom::NetworkDiagnosticsRoutines> receiver) {
   network_health::NetworkHealthService::GetInstance()->BindDiagnosticsReceiver(
       std::move(receiver));
+}
+
+void NetworkUI::BindInterface(
+    mojo::PendingReceiver<cellular_setup::mojom::ESimManager> receiver) {
+  ash::GetESimManager(std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(NetworkUI)

@@ -24,6 +24,8 @@ struct SVGContainerLayoutInfo {
 // with additional state related to the children of the container. Used by
 // <svg>, <g> etc.
 class SVGContentContainer {
+  DISALLOW_NEW();
+
  public:
   void Layout(const SVGContainerLayoutInfo&);
   bool HitTest(HitTestResult&, const HitTestLocation&, HitTestAction) const;

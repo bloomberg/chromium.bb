@@ -106,7 +106,7 @@ public class AssistantChipViewHolder extends ViewHolder {
         int iconDescriptionResource = 0;
         switch (chip.getIcon()) {
             case AssistantChip.Icon.CLEAR:
-                iconResource = R.drawable.ic_clear_black_24dp;
+                iconResource = R.drawable.ic_clear_black_chrome_24dp;
                 iconDescriptionResource = R.string.close;
                 break;
             case AssistantChip.Icon.DONE:
@@ -128,7 +128,10 @@ public class AssistantChipViewHolder extends ViewHolder {
 
         mView.setIcon(iconResource, /* tintWithTextColor= */ true);
 
-        if (iconDescriptionResource != 0 && text.isEmpty()) {
+        String contentDescription = chip.getContentDescription();
+        if (contentDescription != null) {
+            mView.setContentDescription(contentDescription);
+        } else if (iconDescriptionResource != 0 && text.isEmpty()) {
             mView.setContentDescription(mView.getContext().getString(iconDescriptionResource));
         } else {
             mView.setContentDescription(text);

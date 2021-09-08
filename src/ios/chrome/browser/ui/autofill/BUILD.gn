@@ -5,8 +5,6 @@
 source_set("autofill") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "autofill_ui_type_util.h",
-    "autofill_ui_type_util.mm",
     "chrome_autofill_client_ios.h",
     "chrome_autofill_client_ios.mm",
   ]
@@ -17,6 +15,7 @@ source_set("autofill") {
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
+    "//components/autofill/ios/browser:util",
     "//components/autofill/ios/form_util",
     "//components/browser_sync",
     "//components/infobars/core",
@@ -100,7 +99,6 @@ source_set("bridges") {
 source_set("autofill_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "autofill_ui_type.h",
     "expiration_date_picker.h",
     "expiration_date_picker.mm",
     "save_card_infobar_controller.h",
@@ -132,6 +130,20 @@ source_set("autofill_ui") {
     "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
+}
+
+source_set("autofill_ui_type") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "autofill_ui_type.h",
+    "autofill_ui_type_util.h",
+    "autofill_ui_type_util.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/autofill/core/browser",
+    "//ios/chrome/app/strings:ios_strings",
+  ]
 }
 
 source_set("autofill_message") {
@@ -167,6 +179,7 @@ source_set("eg2_tests") {
     ":eg_test_support+eg2",
     "//base",
     "//base/test:test_support",
+    "//build:branding_buildflags",
     "//components/autofill/ios/browser:autofill_test_bundle_data",
     "//components/strings:components_strings_grit",
     "//ios/chrome/app/strings:ios_strings_grit",
@@ -207,6 +220,7 @@ source_set("eg_app_support+eg2") {
     "//components/password_manager/core/browser",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/test/app:test_support",
     "//ios/public/provider/chrome/browser",

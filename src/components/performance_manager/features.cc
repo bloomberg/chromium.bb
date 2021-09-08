@@ -7,7 +7,9 @@
 
 #include "components/performance_manager/public/features.h"
 
+#include "base/dcheck_is_on.h"
 #include "base/metrics/field_trial_params.h"
+#include "build/build_config.h"
 
 namespace performance_manager {
 namespace features {
@@ -46,8 +48,41 @@ TabLoadingFrameNavigationThrottlesParams::GetParams() {
   return params;
 }
 
-const base::Feature kServiceWorkerRelationshipsInGraph{
-    "ServiceWorkerRelationshipsInGraph", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kRunOnMainThread{"RunOnMainThread",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if !defined(OS_ANDROID)
+const base::Feature kUrgentDiscardingFromPerformanceManager {
+  "UrgentDiscardingFromPerformanceManager",
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_LINUX)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
+
+UrgentDiscardingParams::UrgentDiscardingParams() = default;
+UrgentDiscardingParams::UrgentDiscardingParams(
+    const UrgentDiscardingParams& rhs) = default;
+UrgentDiscardingParams::~UrgentDiscardingParams() = default;
+
+constexpr base::FeatureParam<int> UrgentDiscardingParams::kDiscardStrategy;
+
+// static
+UrgentDiscardingParams UrgentDiscardingParams::GetParams() {
+  UrgentDiscardingParams params = {};
+  params.discard_strategy_ = static_cast<DiscardStrategy>(
+      UrgentDiscardingParams::kDiscardStrategy.Get());
+  return params;
+}
+
+const base::Feature kBackgroundTabLoadingFromPerformanceManager{
+    "BackgroundTabLoadingFromPerformanceManager",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kHighPMFDiscardPolicy{"HighPMFDiscardPolicy",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 }  // namespace features
 }  // namespace performance_manager

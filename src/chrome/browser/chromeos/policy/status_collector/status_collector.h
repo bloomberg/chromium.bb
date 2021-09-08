@@ -9,22 +9,25 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefRegistrySimple;
 class Profile;
 
-namespace chromeos {
+namespace ash {
 class CrosSettings;
+}  // namespace ash
+
+namespace chromeos {
 namespace system {
 class StatisticsProvider;
-}
+}  // namespace system
 }  // namespace chromeos
 
 namespace policy {
@@ -61,37 +64,36 @@ struct StatusCollectorParams {
 
 // Called in the UI thread after the statuses have been collected
 // asynchronously.
-using StatusCollectorCallback =
-    base::RepeatingCallback<void(StatusCollectorParams)>;
+using StatusCollectorCallback = base::OnceCallback<void(StatusCollectorParams)>;
 
 // Defines the API for a status collector.
 class StatusCollector {
  public:
   // Passed into asynchronous mojo interface for communicating with Android.
   using AndroidStatusReceiver =
-      base::Callback<void(const std::string&, const std::string&)>;
+      base::OnceCallback<void(const std::string&, const std::string&)>;
   // Calls the enterprise reporting mojo interface, passing over the
   // AndroidStatusReceiver. Returns false if the mojo interface isn't available,
   // in which case no asynchronous query is emitted and the android status query
   // fails synchronously. The |AndroidStatusReceiver| is not called in this
   // case.
   using AndroidStatusFetcher =
-      base::Callback<bool(const AndroidStatusReceiver&)>;
+      base::RepeatingCallback<bool(AndroidStatusReceiver)>;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Simplifies filling the boot mode for any of the relevant status report
   // requests.
-  static base::Optional<std::string> GetBootMode(
+  static absl::optional<std::string> GetBootMode(
       chromeos::system::StatisticsProvider* statistics_provider);
 
   StatusCollector(chromeos::system::StatisticsProvider* provider,
-                  chromeos::CrosSettings* cros_settings,
+                  ash::CrosSettings* cros_settings,
                   base::Clock* clock = base::DefaultClock::GetInstance());
   virtual ~StatusCollector();
 
   // Gathers status information and calls the passed response callback.
-  virtual void GetStatusAsync(const StatusCollectorCallback& callback) = 0;
+  virtual void GetStatusAsync(StatusCollectorCallback callback) = 0;
 
   // Called after the status information has successfully been submitted to
   // the server.
@@ -129,22 +131,20 @@ class StatusCollector {
 
   chromeos::system::StatisticsProvider* const statistics_provider_;
 
-  chromeos::CrosSettings* const cros_settings_;
+  ash::CrosSettings* const cros_settings_;
 
   // Cached values of the reporting settings.
   bool report_version_info_ = false;
   bool report_activity_times_ = false;
   bool report_boot_mode_ = false;
 
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      version_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      boot_mode_subscription_;
+  base::CallbackListSubscription version_info_subscription_;
+  base::CallbackListSubscription boot_mode_subscription_;
 
   base::Clock* clock_;
 
   // Task runner in the creation thread where responses are sent to.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_ = nullptr;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   // TODO(crbug.com/827386): check if it is possible to use the SequenceChecker
   // instead.
   base::ThreadChecker thread_checker_;

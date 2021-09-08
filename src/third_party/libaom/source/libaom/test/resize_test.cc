@@ -201,9 +201,17 @@ class ResizeTest
 
   virtual ~ResizeTest() {}
 
-  virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
+  virtual void SetUp() { InitializeConfig(GET_PARAM(1)); }
+
+  virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
+                                  libaom_test::Encoder *encoder) {
+    if (video->frame() == 0) {
+      if (GET_PARAM(1) == ::libaom_test::kRealTime) {
+        encoder->Control(AV1E_SET_AQ_MODE, 3);
+        encoder->Control(AOME_SET_CPUUSED, 5);
+        encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING, 1);
+      }
+    }
   }
 
   virtual void DecompressedFrameHook(const aom_image_t &img,
@@ -244,6 +252,7 @@ TEST_P(ResizeTest, TestExternalResizeWorks) {
 const unsigned int kStepDownFrame = 3;
 const unsigned int kStepUpFrame = 6;
 
+#if !CONFIG_REALTIME_ONLY
 class ResizeInternalTestLarge : public ResizeTest {
  protected:
 #if WRITE_COMPRESSED_STREAM
@@ -365,6 +374,10 @@ TEST_P(ResizeInternalTestLarge, TestInternalResizeChangeConfig) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
+AV1_INSTANTIATE_TEST_SUITE(ResizeInternalTestLarge,
+                           ::testing::Values(::libaom_test::kOnePassGood));
+#endif
+
 class ResizeRealtimeTest
     : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
       public ::libaom_test::EncoderTest {
@@ -409,8 +422,7 @@ class ResizeRealtimeTest
   }
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
+    InitializeConfig(GET_PARAM(1));
     set_cpu_used_ = GET_PARAM(2);
   }
 
@@ -790,6 +802,7 @@ TEST_P(ResizeCspTest, TestResizeCspWorks) {
   }
 }
 
+#if !CONFIG_REALTIME_ONLY
 // This class is used to check if there are any fatal
 // failures while encoding with resize-mode > 0
 class ResizeModeTestLarge
@@ -804,8 +817,7 @@ class ResizeModeTestLarge
   virtual ~ResizeModeTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = AOM_VBR;
@@ -838,16 +850,6 @@ TEST_P(ResizeModeTestLarge, ResizeModeTest) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
-AV1_INSTANTIATE_TEST_SUITE(ResizeTest,
-                           ::testing::Values(::libaom_test::kRealTime));
-AV1_INSTANTIATE_TEST_SUITE(ResizeInternalTestLarge,
-                           ::testing::Values(::libaom_test::kOnePassGood));
-AV1_INSTANTIATE_TEST_SUITE(ResizeRealtimeTest,
-                           ::testing::Values(::libaom_test::kRealTime),
-                           ::testing::Range(5, 10));
-AV1_INSTANTIATE_TEST_SUITE(ResizeCspTest,
-                           ::testing::Values(::libaom_test::kRealTime));
-
 // TODO(anyone): Enable below test once resize issues are fixed
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ResizeModeTestLarge);
 // AV1_INSTANTIATE_TEST_SUITE(
@@ -856,4 +858,14 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ResizeModeTestLarge);
 //    ::libaom_test::kTwoPassGood),
 //    ::testing::Values(1, 2), ::testing::Values(8, 12, 16),
 //    ::testing::Values(8, 12, 16), ::testing::Range(2, 7));
+#endif  // !CONFIG_REALTIME_ONLY
+
+AV1_INSTANTIATE_TEST_SUITE(ResizeTest,
+                           ::testing::Values(::libaom_test::kRealTime));
+AV1_INSTANTIATE_TEST_SUITE(ResizeRealtimeTest,
+                           ::testing::Values(::libaom_test::kRealTime),
+                           ::testing::Range(6, 10));
+AV1_INSTANTIATE_TEST_SUITE(ResizeCspTest,
+                           ::testing::Values(::libaom_test::kRealTime));
+
 }  // namespace

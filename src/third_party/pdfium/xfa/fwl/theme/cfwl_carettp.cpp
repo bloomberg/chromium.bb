@@ -22,8 +22,8 @@ void CFWL_CaretTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
       if (!(pParams.m_dwStates & CFWL_PartState_HightLight))
         return;
 
-      DrawCaretBK(pParams.m_pGraphics.Get(), pParams.m_dwStates,
-                  pParams.m_PartRect, pParams.m_matrix);
+      DrawCaretBK(pParams.GetGraphics(), pParams.m_dwStates, pParams.m_PartRect,
+                  pParams.m_matrix);
       break;
     }
     default:
@@ -38,6 +38,5 @@ void CFWL_CaretTP::DrawCaretBK(CFGAS_GEGraphics* pGraphics,
   CFGAS_GEPath path;
   path.AddRectangle(rect.left, rect.top, rect.width, rect.height);
   pGraphics->SetFillColor(CFGAS_GEColor(ArgbEncode(255, 0, 0, 0)));
-  pGraphics->FillPath(&path, CFX_FillRenderOptions::FillType::kWinding,
-                      &matrix);
+  pGraphics->FillPath(path, CFX_FillRenderOptions::FillType::kWinding, matrix);
 }

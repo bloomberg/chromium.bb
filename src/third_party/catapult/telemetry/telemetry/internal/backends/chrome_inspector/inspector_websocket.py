@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import errno
 import json
 import logging
@@ -169,7 +170,7 @@ class InspectorWebsocket(object):
     while True:
       try:
         data = self._socket.recv()
-      except socket.error, e:
+      except socket.error as e:
         if e.errno == errno.EAGAIN:
           # Resource is temporarily unavailable. Try again.
           # See https://code.google.com/p/chromium/issues/detail?id=545853#c3

@@ -7,6 +7,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_CONTROL_BUTTONS_VIEW_H_
 
 #include "base/macros.h"
+#include "build/chromeos_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/padded_button.h"
@@ -19,10 +20,13 @@ class MessageView;
 class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
     : public views::View {
  public:
-  // String to be returned by GetClassName() method.
-  static const char kViewClassName[];
+  METADATA_HEADER(NotificationControlButtonsView);
 
   explicit NotificationControlButtonsView(MessageView* message_view);
+  NotificationControlButtonsView(const NotificationControlButtonsView&) =
+      delete;
+  NotificationControlButtonsView& operator=(
+      const NotificationControlButtonsView&) = delete;
   ~NotificationControlButtonsView() override;
 
   // Change the visibility of the close button. True to show, false to hide.
@@ -50,9 +54,7 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   PaddedButton* settings_button() { return settings_button_; }
   PaddedButton* snooze_button() { return snooze_button_; }
 
-  // views::View
-  const char* GetClassName() const override;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void OnThemeChanged() override;
 #endif
 
@@ -74,8 +76,6 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   SkColor icon_color_;
   // The background color for readability of the icons.
   SkColor background_color_ = SK_ColorTRANSPARENT;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationControlButtonsView);
 };
 
 }  // namespace message_center

@@ -4,8 +4,8 @@
 
 #include "ash/display/display_highlight_controller.h"
 
+#include "ash/accessibility/magnifier/magnification_controller.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -33,7 +33,7 @@ std::unique_ptr<views::Widget> CreateHighlightWidget(
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
   params.accept_events = false;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
 
@@ -56,7 +56,7 @@ std::unique_ptr<views::Widget> CreateHighlightWidget(
       views::CreateSolidBorder(highlight_thickness, kHighlightColor));
 
   auto* window = highlight_widget->GetNativeWindow();
-  window->set_id(kShellWindowId_DisplayIdentificationHighlightWindow);
+  window->SetId(kShellWindowId_DisplayIdentificationHighlightWindow);
   ::wm::SetWindowVisibilityAnimationTransition(window, ::wm::ANIMATE_NONE);
 
   MagnificationController* magnification_controller =

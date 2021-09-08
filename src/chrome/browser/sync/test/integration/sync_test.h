@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/configuration_refresher.h"
 #include "chrome/browser/sync/test/integration/fake_server_invalidation_sender.h"
@@ -31,9 +32,9 @@
 #include "net/http/http_status_code.h"
 #include "services/network/test/test_url_loader_factory.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_ANDROID)
 #include "chrome/test/base/android/android_browser_test.h"
@@ -77,9 +78,33 @@ namespace syncer {
 class ProfileSyncService;
 }  // namespace syncer
 
+namespace switches {
+
+extern const char kPasswordFileForTest[];
+extern const char kSyncUserForTest[];
+extern const char kSyncPasswordForTest[];
+
+}  // namespace switches
+
 // This is the base class for integration tests for all sync data types. Derived
 // classes must be defined for each sync data type. Individual tests are defined
 // using the IN_PROC_BROWSER_TEST_F macro.
+//
+// The list below shows some command line switches that can customize test
+// behavior. It may become non-exaustive over time.
+// switches::kSyncServiceURL - By default, tests use a fake_server::FakeServer
+//    to emulate the sync server. This switch causes them to run against an
+//    external server instead, pointed by the provided URL. This translates into
+//    the ServerType of the test being EXTERNAL_LIVE_SERVER.
+// switches::kSyncUserForTest - Overrides the username of the syncing account.
+//    Mostly useful for EXTERNAL_LIVE_SERVER tests to use an allowlisted value.
+// switches::kSyncPasswordForTest - Same as above, but for the password.
+// switches::kPasswordFileForTests - Causes the username and password of the
+//    syncing account to be read from the passed file. The username must be on
+//    the first line and the password on the second. The individual switches for
+//    username and password are ignored if this is set.
+// Other switches may modify the behavior of helper classes frequently used in
+// sync integration tests, see StatusChangeChecker for example.
 class SyncTest : public PlatformBrowserTest {
  public:
   // The different types of live sync tests that can be implemented.
@@ -116,7 +141,6 @@ class SyncTest : public PlatformBrowserTest {
     void GetToken(const std::string& authorized_entity,
                   const std::string& scope,
                   base::TimeDelta time_to_live,
-                  const std::map<std::string, std::string>& options,
                   std::set<Flags> flags,
                   GetTokenCallback callback) override;
 
@@ -335,8 +359,6 @@ class SyncTest : public PlatformBrowserTest {
   // GAIA servers.
   void SetupMockGaiaResponsesForProfile(Profile* profile);
 
-  base::test::ScopedFeatureList feature_list_;
-
   // The FakeServer used in tests with server type IN_PROCESS_FAKE_SERVER.
   std::unique_ptr<fake_server::FakeServer> fake_server_;
 
@@ -360,7 +382,7 @@ class SyncTest : public PlatformBrowserTest {
                                     Profile::CreateStatus status);
 
   static std::unique_ptr<KeyedService> CreateProfileInvalidationProvider(
-      std::map<const Profile*, syncer::FCMNetworkHandler*>*
+      std::map<const Profile*, invalidation::FCMNetworkHandler*>*
           profile_to_fcm_network_handler_map,
       std::map<const Profile*, std::unique_ptr<instance_id::InstanceIDDriver>>*
           profile_to_instance_id_driver_map,
@@ -497,7 +519,7 @@ class SyncTest : public PlatformBrowserTest {
   // Maps a profile to the corresponding FCMNetworkHandler. Contains one entry
   // per profile. It is used to simulate an incoming FCM messages to different
   // profiles within the FakeServerInvalidationSender.
-  std::map<const Profile*, syncer::FCMNetworkHandler*>
+  std::map<const Profile*, invalidation::FCMNetworkHandler*>
       profile_to_fcm_network_handler_map_;
 
   std::map<const Profile*, std::unique_ptr<instance_id::InstanceIDDriver>>
@@ -506,9 +528,7 @@ class SyncTest : public PlatformBrowserTest {
   // Triggers a GetUpdates via refresh after a configuration.
   std::unique_ptr<ConfigurationRefresher> configuration_refresher_;
 
-  std::unique_ptr<
-      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
-      create_services_subscription_;
+  base::CallbackListSubscription create_services_subscription_;
 
   // Sync profile against which changes to individual profiles are verified.
   // We don't need a corresponding verifier sync client because the contents
@@ -520,12 +540,15 @@ class SyncTest : public PlatformBrowserTest {
   // Only used for external server tests with two clients.
   bool use_new_user_data_dir_ = false;
 
+  // The feature list to override features for all sync tests.
+  base::test::ScopedFeatureList feature_list_;
+
 #if !defined(OS_ANDROID)
   // Disable extension install verification.
   extensions::ScopedInstallVerifierBypassForTest ignore_install_verification_;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // A factory-like callback to create a model updater for testing, which will
   // take the place of the real updater in AppListSyncableService for testing.
   std::unique_ptr<

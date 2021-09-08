@@ -139,7 +139,7 @@ def runSteps (steps):
 			print("Skip: %s" % step.getName())
 
 COMMON_CFLAGS		= ["-Werror", "-Wno-error=unused-function"]
-COMMON_GCC_CFLAGS	= COMMON_CFLAGS + ["-Wno-implicit-fallthrough", "-Wno-error=array-bounds"]
+COMMON_GCC_CFLAGS	= COMMON_CFLAGS + ["-Wno-error=array-bounds"]
 COMMON_CLANG_CFLAGS	= COMMON_CFLAGS + ["-Wno-error=unused-command-line-argument"]
 GCC_32BIT_CFLAGS	= COMMON_GCC_CFLAGS + ["-m32"]
 CLANG_32BIT_CFLAGS	= COMMON_CLANG_CFLAGS + ["-m32"]
@@ -206,7 +206,8 @@ LATE_SPECIAL_RECIPES	= [
 		]),
 	('spirv-binaries', [
 			RunScript(os.path.join("external", "vulkancts", "scripts", "build_spirv_binaries.py"),
-					  lambda env: ["--build-dir", os.path.join(env.tmpDir, "spirv-binaries"),
+					  lambda env: ["--build-type", "Release",
+									"--build-dir", os.path.join(env.tmpDir, "spirv-binaries"),
 									"--dst-path", os.path.join(env.tmpDir, "spirv-binaries")]),
 		]),
 	('check-all', [

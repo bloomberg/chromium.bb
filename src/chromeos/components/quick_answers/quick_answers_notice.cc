@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
@@ -44,7 +43,7 @@ void QuickAnswersNotice::AcceptNotice(NoticeInteractionType interaction) {
                           GetImpressionDuration());
 
   // Marks the notice as accepted.
-  prefs_->SetBoolean(prefs::kQuickAnswersConsented, true);
+  prefs_->SetBoolean(prefs::kQuickAnswersNoticed, true);
 }
 
 bool QuickAnswersNotice::ShouldShowNotice() const {
@@ -53,7 +52,7 @@ bool QuickAnswersNotice::ShouldShowNotice() const {
 }
 
 bool QuickAnswersNotice::IsAccepted() const {
-  return prefs_->GetBoolean(prefs::kQuickAnswersConsented);
+  return prefs_->GetBoolean(prefs::kQuickAnswersNoticed);
 }
 
 bool QuickAnswersNotice::HasReachedImpressionCap() const {

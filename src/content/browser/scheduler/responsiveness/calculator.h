@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SCHEDULER_RESPONSIVENESS_CALCULATOR_H_
 #define CONTENT_BROWSER_SCHEDULER_RESPONSIVENESS_CALCULATOR_H_
 
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -49,6 +50,13 @@ class CONTENT_EXPORT Calculator {
       base::TimeTicks execution_start_time,
       base::TimeTicks execution_finish_time);
 
+  // Must be invoked once-and-only-once, after the first time the
+  // MainMessageLoopRun() reaches idle (i.e. done running all tasks queued
+  // during startup). This will be used as a signal for the true end of
+  // "startup" and the beginning of recording
+  // Browser.Responsiveness.JankyIntervalsPerThirtySeconds3.
+  void OnFirstIdle();
+
   // Change the Power state of the process. Must be called from the UI thread.
   void SetProcessSuspended(bool suspended);
 
@@ -67,12 +75,41 @@ class CONTENT_EXPORT Calculator {
     kQueueAndExecution,
   };
 
+  // Stages of startup used by this Calculator. Public for testing.
+  enum class StartupStage {
+    // From this Calculator's creation until OnFirstIdle().
+    kMessageLoopStarted,
+    // From OnFirstIdle() to the end of the kMeasurementInterval including it.
+    kPastFirstIdle,
+    // From the first kMeasurementInterval after OnFirstIdle() onward.
+    kRecordingPastFirstIdle,
+  };
+
  protected:
   // Emits an UMA metric for responsiveness of a single measurement interval.
   // Exposed for testing.
   virtual void EmitResponsiveness(JankType jank_type,
                                   size_t janky_slices,
-                                  bool was_process_suspended);
+                                  StartupStage startup_stage);
+
+  // Emits trace events for responsiveness metric. A trace event is emitted for
+  // the whole duration of the metric interval and sub events are emitted for
+  // the specific janky slices.
+  // Exposed for testing.
+  void EmitResponsivenessTraceEvents(JankType jank_type,
+                                     base::TimeTicks start_time,
+                                     base::TimeTicks end_time,
+                                     const std::set<int>& janky_slices);
+
+  // Exposed for testing.
+  virtual void EmitJankyIntervalsMeasurementTraceEvent(
+      base::TimeTicks start_time,
+      base::TimeTicks end_time,
+      size_t amount_of_slices);
+
+  // Exposed for testing.
+  virtual void EmitJankyIntervalsJankTraceEvent(base::TimeTicks start_time,
+                                                base::TimeTicks end_time);
 
   // Exposed for testing.
   base::TimeTicks GetLastCalculationTime();
@@ -114,14 +151,11 @@ class CONTENT_EXPORT Calculator {
   void OnApplicationStateChanged(base::android::ApplicationState state);
 #endif
 
-  // This method:
+  // This helper method:
   //   1) Removes all Janks with Jank.end_time < |end_time| from |janks|.
   //   2) Returns all Janks with Jank.start_time < |end_time|.
-  JankList TakeJanksOlderThanTime(JankList* janks, base::TimeTicks end_time);
-
-  // Used to generate a unique id when emitting Large Jank trace events
-  int g_num_large_ui_janks_ = 0;
-  int g_num_large_io_janks_ = 0;
+  static JankList TakeJanksOlderThanTime(JankList* janks,
+                                         base::TimeTicks end_time);
 
   // Janks from tasks/events with a long execution time on the UI thread. Should
   // only be accessed via the accessor, which checks that the caller is on the
@@ -139,13 +173,7 @@ class CONTENT_EXPORT Calculator {
   bool is_application_visible_ = false;
 #endif
 
-  // Whether or not the process is suspended (Power management). Accessed only
-  // on the UI thread.
-  bool is_process_suspended_ = false;
-
-  // Stores whether to process was suspended since last metric computation.
-  // Accessed only on the UI thread.
-  bool was_process_suspended_ = false;
+  StartupStage startup_stage_ = StartupStage::kMessageLoopStarted;
 
   // We expect there to be low contention and this lock to cause minimal
   // overhead. If performance of this lock proves to be a problem, we can move
