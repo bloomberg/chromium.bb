@@ -29,11 +29,12 @@ from itertools import count
 
 from modulegraph import util
 from modulegraph import zipio
+from six.moves import map
 
 if sys.version_info[0] == 2:
     from StringIO import StringIO as BytesIO
     from StringIO import StringIO
-    from  urllib import pathname2url
+    from  six.moves.urllib.request import pathname2url
     def _Bchr(value):
         return chr(value)
 
@@ -180,7 +181,7 @@ def find_module(name, path=None):
         if importer is None:
             continue
 
-        if sys.version_info[:2] >= (3,3) and hasattr(importer, 'find_loader'):
+        if sys.version_info[:2] >= (3, 3) and hasattr(importer, 'find_loader'):
             loader, portions = importer.find_loader(name)
 
         else:
@@ -476,7 +477,8 @@ class BaseModule(Node):
         self.packagepath = path
 
     def infoTuple(self):
-        return tuple(filter(None, (self.identifier, self.filename, self.packagepath)))
+        return tuple([f for f in
+                      (self.identifier, self.filename, self.packagepath) if f])
 
 class BuiltinModule(BaseModule):
     pass
@@ -707,7 +709,7 @@ class ModuleGraph(ObjectGraph):
             except ImportError:
                 ImpImporter = pkg_resources.ImpWrapper
 
-        if sys.version_info[:2] >= (3,3):
+        if sys.version_info[:2] >= (3, 3):
             import importlib.machinery
             ImpImporter = importlib.machinery.FileFinder
 
@@ -1290,7 +1292,7 @@ class ModuleGraph(ObjectGraph):
             HAVE_ARGUMENT=_Bchr(dis.HAVE_ARGUMENT),
             unpack=struct.unpack):
 
-        extended_import = bool(sys.version_info[:2] >= (2,5))
+        extended_import = bool(sys.version_info[:2] >= (2, 5))
 
         code = co.co_code
         constants = co.co_consts
@@ -1325,7 +1327,7 @@ class ModuleGraph(ObjectGraph):
 
         # Python >=2.5: LOAD_CONST flags, LOAD_CONST names, IMPORT_NAME name
         # Python < 2.5: LOAD_CONST names, IMPORT_NAME name
-        extended_import = bool(sys.version_info[:2] >= (2,5))
+        extended_import = bool(sys.version_info[:2] >= (2, 5))
 
         code = co.co_code
         constants = co.co_consts
@@ -1354,7 +1356,7 @@ class ModuleGraph(ObjectGraph):
                     level = -1
                     fromlist = co.co_consts[arg1]
 
-                assert fromlist is None or type(fromlist) is tuple
+                assert fromlist is None or isinstance(fromlist, tuple)
                 oparg, = unpack('<H', code[i - 2:i])
                 name = co.co_names[oparg]
                 have_star = False
@@ -1476,8 +1478,7 @@ class ModuleGraph(ObjectGraph):
         print(header % {"TITLE": title}, file=out)
 
         def sorted_namelist(mods):
-            lst = [os.path.basename(mod.identifier) for mod in mods if mod]
-            lst.sort()
+            lst = sorted([os.path.basename(mod.identifier) for mod in mods if mod])
             return lst
         for name, m in mods:
             content = ""
@@ -1507,7 +1508,7 @@ class ModuleGraph(ObjectGraph):
 
     def itergraphreport(self, name='G', flatpackages=()):
         # XXX: Can this be implemented using Dot()?
-        nodes = map(self.graph.describe_node, self.graph.iterdfs(self))
+        nodes = list(map(self.graph.describe_node, self.graph.iterdfs(self)))
         describe_edge = self.graph.describe_edge
         edges = deque()
         packagenodes = set()
@@ -1525,8 +1526,8 @@ class ModuleGraph(ObjectGraph):
             #if isinstance(d, (ExcludedModule, MissingModule, BadModule)):
             #    return None
             s = '<f0> ' + type(data).__name__
-            for i,v in enumerate(data.infoTuple()[:1], 1):
-                s += '| <f%d> %s' % (i,v)
+            for i, v in enumerate(data.infoTuple()[:1], 1):
+                s += '| <f%d> %s' % (i, v)
             return {'label':s, 'shape':'record'}
 
 
@@ -1550,7 +1551,7 @@ class ModuleGraph(ObjectGraph):
             nodetoident[node] = getattr(data, 'identifier', None)
             if isinstance(data, Package):
                 packageidents[data.identifier] = node
-                inpackages[node] = set([node])
+                inpackages[node] = {node}
                 packagenodes.add(node)
 
 
@@ -1648,8 +1649,7 @@ class ModuleGraph(ObjectGraph):
         print("%-15s %-25s %s" % ("Class", "Name", "File"))
         print("%-15s %-25s %s" % ("-----", "----", "----"))
         # Print modules found
-        sorted = [(os.path.basename(mod.identifier), mod) for mod in self.flatten()]
-        sorted.sort()
+        sorted = sorted([(os.path.basename(mod.identifier), mod) for mod in self.flatten()])
         for (name, m) in sorted:
             print("%-15s %-25s %s" % (type(m).__name__, name, m.filename or ""))
 

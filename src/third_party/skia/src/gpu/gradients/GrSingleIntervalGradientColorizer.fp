@@ -9,13 +9,11 @@
 // two end points based on t. But it serves as a good test for connecting all of the plumbing into a
 // functional gradient shader.
 
-layout(ctype=SkPMColor4f, tracked) in uniform half4 start;
-layout(ctype=SkPMColor4f, tracked) in uniform half4 end;
+layout(ctype=SkPMColor4f) in uniform half4 start;
+layout(ctype=SkPMColor4f) in uniform half4 end;
 
 half4 main(float2 coord) {
-    half t = half(coord.x);
-
     // Clamping and/or wrapping was already handled by the parent shader so the output color is a
     // simple lerp.
-    return mix(start, end, t);
+    return mix(start, end, half(coord.x));
 }

@@ -20,7 +20,6 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -49,8 +48,13 @@ bool RunCrashReporter(const std::vector<std::string>& args, int stdin_fd) {
 // Runs crash_reporter to save the java crash info provided via the pipe.
 void RunJavaCrashReporter(const std::string& crash_type,
                           base::ScopedFD pipe,
-                          std::vector<std::string> args) {
+                          std::vector<std::string> args,
+                          absl::optional<base::TimeDelta> uptime) {
   args.push_back("--arc_java_crash=" + crash_type);
+  if (uptime) {
+    args.push_back(
+        base::StringPrintf("--arc_uptime=%" PRId64, uptime->InMilliseconds()));
+  }
 
   if (!RunCrashReporter(args, pipe.get()))
     LOG(ERROR) << "Failed to run crash_reporter";
@@ -68,6 +72,15 @@ void RunNativeCrashReporter(const std::string& exec_name,
                "--arc_native"});
 
   if (!RunCrashReporter(args, minidump_fd.get()))
+    LOG(ERROR) << "Failed to run crash_reporter";
+}
+
+// Runs crash_reporter to save the kernel crash info.
+void RunKernelCrashReporter(base::ScopedFD ramoops_fd,
+                            std::vector<std::string> args) {
+  args.push_back("--arc_kernel");
+
+  if (!RunCrashReporter(args, ramoops_fd.get()))
     LOG(ERROR) << "Failed to run crash_reporter";
 }
 
@@ -103,6 +116,14 @@ ArcCrashCollectorBridge* ArcCrashCollectorBridge::GetForBrowserContext(
   return ArcCrashCollectorBridgeFactory::GetForBrowserContext(context);
 }
 
+// static
+ArcCrashCollectorBridge*
+ArcCrashCollectorBridge::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcCrashCollectorBridgeFactory::GetForBrowserContextForTesting(
+      context);
+}
+
 ArcCrashCollectorBridge::ArcCrashCollectorBridge(
     content::BrowserContext* context,
     ArcBridgeService* bridge_service)
@@ -114,13 +135,15 @@ ArcCrashCollectorBridge::~ArcCrashCollectorBridge() {
   arc_bridge_service_->crash_collector()->SetHost(nullptr);
 }
 
-void ArcCrashCollectorBridge::DumpCrash(const std::string& type,
-                                        mojo::ScopedHandle pipe) {
+void ArcCrashCollectorBridge::DumpCrash(
+    const std::string& type,
+    mojo::ScopedHandle pipe,
+    absl::optional<base::TimeDelta> uptime) {
   base::ThreadPool::PostTask(
       FROM_HERE, {base::WithBaseSyncPrimitives()},
       base::BindOnce(&RunJavaCrashReporter, type,
                      mojo::UnwrapPlatformHandle(std::move(pipe)).TakeFD(),
-                     CreateCrashReporterArgs()));
+                     CreateCrashReporterArgs(), uptime));
 }
 
 void ArcCrashCollectorBridge::DumpNativeCrash(const std::string& exec_name,
@@ -135,11 +158,21 @@ void ArcCrashCollectorBridge::DumpNativeCrash(const std::string& exec_name,
           CreateCrashReporterArgs()));
 }
 
+void ArcCrashCollectorBridge::DumpKernelCrash(
+    mojo::ScopedHandle ramoops_handle) {
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::WithBaseSyncPrimitives()},
+      base::BindOnce(
+          &RunKernelCrashReporter,
+          mojo::UnwrapPlatformHandle(std::move(ramoops_handle)).TakeFD(),
+          CreateCrashReporterArgs()));
+}
+
 void ArcCrashCollectorBridge::SetBuildProperties(
     const std::string& device,
     const std::string& board,
     const std::string& cpu_abi,
-    const base::Optional<std::string>& fingerprint) {
+    const absl::optional<std::string>& fingerprint) {
   device_ = device;
   board_ = board;
   cpu_abi_ = cpu_abi;
@@ -155,9 +188,6 @@ std::vector<std::string> ArcCrashCollectorBridge::CreateCrashReporterArgs() {
   };
   if (fingerprint_)
     args.push_back("--arc_fingerprint=" + fingerprint_.value());
-
-  if (arc::IsArcVmEnabled())
-    args.emplace_back("--arc_is_arcvm");
 
   return args;
 }

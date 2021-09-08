@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "build/chromeos_buildflags.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -19,8 +20,6 @@ class SyncUserSettingsMock : public SyncUserSettings {
   ~SyncUserSettingsMock() override;
   MOCK_METHOD(bool, IsSyncRequested, (), (const override));
   MOCK_METHOD(void, SetSyncRequested, (bool), (override));
-  MOCK_METHOD(bool, IsSyncAllowedByPlatform, (), (const override));
-  MOCK_METHOD(void, SetSyncAllowedByPlatform, (bool), (override));
   MOCK_METHOD(bool, IsFirstSetupComplete, (), (const override));
   MOCK_METHOD(void,
               SetFirstSetupComplete,
@@ -37,7 +36,7 @@ class SyncUserSettingsMock : public SyncUserSettings {
               (),
               (const override));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   MOCK_METHOD(bool, IsSyncAllOsTypesEnabled, (), (const override));
   MOCK_METHOD(UserSelectableOsTypeSet,
               GetSelectedOsTypes,
@@ -54,7 +53,7 @@ class SyncUserSettingsMock : public SyncUserSettings {
   MOCK_METHOD(bool, IsOsSyncFeatureEnabled, (), (const override));
   MOCK_METHOD(void, SetOsSyncFeatureEnabled, (bool), (override));
 #endif
-  MOCK_METHOD(bool, IsEncryptEverythingAllowed, (), (const override));
+  MOCK_METHOD(bool, IsCustomPassphraseAllowed, (), (const override));
   MOCK_METHOD(bool, IsEncryptEverythingEnabled, (), (const override));
   MOCK_METHOD(ModelTypeSet, GetEncryptedDataTypes, (), (const override));
   MOCK_METHOD(bool, IsPassphraseRequired, (), (const override));
@@ -62,13 +61,21 @@ class SyncUserSettingsMock : public SyncUserSettings {
               IsPassphraseRequiredForPreferredDataTypes,
               (),
               (const override));
+  MOCK_METHOD(bool,
+              IsPassphrasePromptMutedForCurrentProductVersion,
+              (),
+              (const override));
+  MOCK_METHOD(void,
+              MarkPassphrasePromptMutedForCurrentProductVersion,
+              (),
+              (override));
   MOCK_METHOD(bool, IsTrustedVaultKeyRequired, (), (const override));
   MOCK_METHOD(bool,
               IsTrustedVaultKeyRequiredForPreferredDataTypes,
               (),
               (const override));
   MOCK_METHOD(bool, IsTrustedVaultRecoverabilityDegraded, (), (const override));
-  MOCK_METHOD(bool, IsUsingSecondaryPassphrase, (), (const override));
+  MOCK_METHOD(bool, IsUsingExplicitPassphrase, (), (const override));
   MOCK_METHOD(base::Time, GetExplicitPassphraseTime, (), (const override));
   MOCK_METHOD(PassphraseType, GetPassphraseType, (), (const override));
   MOCK_METHOD(void, SetEncryptionPassphrase, (const std::string&), (override));

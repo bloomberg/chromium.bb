@@ -353,6 +353,82 @@ TEST_F(FrameSequenceTrackerTest, TestNotifyFramePresented) {
   EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
 }
 
+TEST_F(FrameSequenceTrackerTest, TestJankWithZeroIntervalInFeedback) {
+  // Test if jank can be correctly counted if presentation feedback reports
+  // zero frame interval.
+  const uint64_t source = 1;
+  uint64_t sequence = 1;
+  uint64_t frame_token = sequence;
+  const char* histogram_name =
+      "Graphics.Smoothness.Jank.Compositor.TouchScroll";
+  const base::TimeDelta zero_interval = base::TimeDelta::FromMilliseconds(0);
+  base::HistogramTester histogram_tester;
+
+  CreateNewTracker();
+  base::TimeTicks args_timestamp = base::TimeTicks::Now();
+  auto args = CreateBeginFrameArgs(source, sequence, args_timestamp);
+
+  // Frame 1
+  collection_.NotifyBeginImplFrame(args);
+  collection_.NotifySubmitFrame(sequence, false, viz::BeginFrameAck(args, true),
+                                args);
+  collection_.NotifyFrameEnd(args, args);
+
+  collection_.NotifyFramePresented(
+      frame_token,
+      /*feedback=*/{args_timestamp, zero_interval, 0});
+
+  // Frame 2
+  ++sequence;
+  ++frame_token;
+  args_timestamp += base::TimeDelta::FromMillisecondsD(16.67);
+  args = CreateBeginFrameArgs(source, sequence, args_timestamp);
+  collection_.NotifyBeginImplFrame(args);
+  collection_.NotifySubmitFrame(sequence, false, viz::BeginFrameAck(args, true),
+                                args);
+  collection_.NotifyFrameEnd(args, args);
+  collection_.NotifyFramePresented(
+      frame_token,
+      /*feedback=*/{args_timestamp, zero_interval, 0});
+
+  // Frame 3: There is one jank (frame interval incremented from 16.67ms
+  // to 30.0ms)
+  ++sequence;
+  ++frame_token;
+  args_timestamp += base::TimeDelta::FromMillisecondsD(30.0);
+  args = CreateBeginFrameArgs(source, sequence, args_timestamp);
+  collection_.NotifyBeginImplFrame(args);
+  collection_.NotifySubmitFrame(sequence, false, viz::BeginFrameAck(args, true),
+                                args);
+  collection_.NotifyFrameEnd(args, args);
+  collection_.NotifyFramePresented(
+      frame_token,
+      /*feedback=*/{args_timestamp, zero_interval, 0});
+
+  // Frame 4: There is no jank since the increment from 30ms to  31ms is too
+  // small. This tests if |NotifyFramePresented| can correctly handle the
+  // situation when the frame interval reported in presentation feedback is 0.
+  ++sequence;
+  ++frame_token;
+  args_timestamp += base::TimeDelta::FromMillisecondsD(31.0);
+  args = CreateBeginFrameArgs(source, sequence, args_timestamp);
+  collection_.NotifyBeginImplFrame(args);
+  collection_.NotifySubmitFrame(sequence, false, viz::BeginFrameAck(args, true),
+                                args);
+  collection_.NotifyFrameEnd(args, args);
+  collection_.NotifyFramePresented(
+      frame_token,
+      /*feedback=*/{args_timestamp, zero_interval, 0});
+  ImplThroughput().frames_expected = 100u;
+  ReportMetrics();
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.Jank.Compositor.TouchScroll", 1u);
+
+  // There should be only one jank for frame 3.
+  EXPECT_THAT(histogram_tester.GetAllSamples(histogram_name),
+              testing::ElementsAre(base::Bucket(1, 1)));
+}
+
 // Base case for checkerboarding: present a single frame with checkerboarding,
 // followed by a non-checkerboard frame.
 TEST_F(FrameSequenceTrackerTest, CheckerboardingSimple) {
@@ -1641,9 +1717,10 @@ TEST_F(FrameSequenceTrackerTest, CustomTrackers) {
   collection_.StopCustomSequence(2);
   EXPECT_EQ(2u, NumberOfCustomTrackers());
 
-  // Tracker 2 has no data to report.
+  // Tracker 2 has zero expected frames.
   collection_.NotifyFramePresented(frame_token, {});
-  EXPECT_EQ(0u, results.size());
+  EXPECT_EQ(1u, results.size());
+  EXPECT_EQ(0u, results[2].frames_expected);
 
   // Simple sequence of one frame.
   const char sequence[] = "b(1)B(0,1)s(1)S(1)e(1,0)P(1)";
@@ -1656,9 +1733,11 @@ TEST_F(FrameSequenceTrackerTest, CustomTrackers) {
 
   // Tracker 1 and 3 and should report.
   collection_.NotifyFramePresented(frame_token, {});
-  EXPECT_EQ(2u, results.size());
+  EXPECT_EQ(3u, results.size());
   EXPECT_EQ(1u, results[1].frames_produced);
   EXPECT_EQ(1u, results[1].frames_expected);
+  EXPECT_EQ(0u, results[2].frames_produced);
+  EXPECT_EQ(0u, results[2].frames_expected);
   EXPECT_EQ(1u, results[3].frames_produced);
   EXPECT_EQ(1u, results[3].frames_expected);
 }

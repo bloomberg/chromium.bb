@@ -17,6 +17,7 @@ add_executable(securemessage_test
     crypto_ops_test.cc
     public_key_proto_util_test.cc
     secure_message_parser_test.cc
+    secure_message_wrapper_test.cc
 )
 
 target_link_libraries(securemessage_test

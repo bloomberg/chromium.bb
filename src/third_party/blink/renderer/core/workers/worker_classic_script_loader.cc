@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -269,10 +268,10 @@ void WorkerClassicScriptLoader::DidReceiveData(const char* data, unsigned len) {
   source_text_.Append(decoder_->Decode(data, len));
 }
 
-void WorkerClassicScriptLoader::DidReceiveCachedMetadata(const char* data,
-                                                         int size) {
-  cached_metadata_ = std::make_unique<Vector<uint8_t>>(size);
-  memcpy(cached_metadata_->data(), data, size);
+void WorkerClassicScriptLoader::DidReceiveCachedMetadata(
+    mojo_base::BigBuffer data) {
+  cached_metadata_ = std::make_unique<Vector<uint8_t>>(data.size());
+  memcpy(cached_metadata_->data(), data.data(), data.size());
 }
 
 void WorkerClassicScriptLoader::DidFinishLoading(uint64_t identifier) {
@@ -369,10 +368,8 @@ void WorkerClassicScriptLoader::ProcessContentSecurityPolicy(
       !response.CurrentRequestUrl().ProtocolIs("file") &&
       !response.CurrentRequestUrl().ProtocolIs("filesystem")) {
     content_security_policy_ = MakeGarbageCollected<ContentSecurityPolicy>();
-    content_security_policy_->SetOverrideURLForSelf(
-        response.CurrentRequestUrl());
-    content_security_policy_->DidReceiveHeaders(
-        ContentSecurityPolicyResponseHeaders(response));
+    content_security_policy_->AddPolicies(ParseContentSecurityPolicyHeaders(
+        ContentSecurityPolicyResponseHeaders(response)));
   }
 }
 

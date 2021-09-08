@@ -639,11 +639,14 @@ static int set_default_channel_config(AACContext *ac, AVCodecContext *avctx,
      * As actual intended 7.1(wide) streams are very rare, default to assuming a
      * 7.1 layout was intended.
      */
-    if (channel_config == 7 && avctx->strict_std_compliance < FF_COMPLIANCE_STRICT && (!ac || !ac->warned_71_wide++)) {
-        av_log(avctx, AV_LOG_INFO, "Assuming an incorrectly encoded 7.1 channel layout"
-               " instead of a spec-compliant 7.1(wide) layout, use -strict %d to decode"
-               " according to the specification instead.\n", FF_COMPLIANCE_STRICT);
+    if (channel_config == 7 && avctx->strict_std_compliance < FF_COMPLIANCE_STRICT) {
         layout_map[2][2] = AAC_CHANNEL_SIDE;
+
+        if (!ac || !ac->warned_71_wide++) {
+            av_log(avctx, AV_LOG_INFO, "Assuming an incorrectly encoded 7.1 channel layout"
+                   " instead of a spec-compliant 7.1(wide) layout, use -strict %d to decode"
+                   " according to the specification instead.\n", FF_COMPLIANCE_STRICT);
+        }
     }
 
     return 0;
@@ -1195,29 +1198,25 @@ static void reset_predictor_group(PredictorState *ps, int group_num)
         reset_predict_state(&ps[i]);
 }
 
-#define AAC_INIT_VLC_STATIC(num, size)                                     \
-    INIT_VLC_STATIC(&vlc_spectral[num], 8, ff_aac_spectral_sizes[num],     \
-         ff_aac_spectral_bits[num], sizeof(ff_aac_spectral_bits[num][0]),  \
-                                    sizeof(ff_aac_spectral_bits[num][0]),  \
-        ff_aac_spectral_codes[num], sizeof(ff_aac_spectral_codes[num][0]), \
-                                    sizeof(ff_aac_spectral_codes[num][0]), \
-        size);
-
 static void aacdec_init(AACContext *ac);
 
 static av_cold void aac_static_table_init(void)
 {
-    AAC_INIT_VLC_STATIC( 0, 304);
-    AAC_INIT_VLC_STATIC( 1, 270);
-    AAC_INIT_VLC_STATIC( 2, 550);
-    AAC_INIT_VLC_STATIC( 3, 300);
-    AAC_INIT_VLC_STATIC( 4, 328);
-    AAC_INIT_VLC_STATIC( 5, 294);
-    AAC_INIT_VLC_STATIC( 6, 306);
-    AAC_INIT_VLC_STATIC( 7, 268);
-    AAC_INIT_VLC_STATIC( 8, 510);
-    AAC_INIT_VLC_STATIC( 9, 366);
-    AAC_INIT_VLC_STATIC(10, 462);
+    static VLC_TYPE vlc_buf[304 + 270 + 550 + 300 + 328 +
+                            294 + 306 + 268 + 510 + 366 + 462][2];
+    for (unsigned i = 0, offset = 0; i < 11; i++) {
+        vlc_spectral[i].table           = &vlc_buf[offset];
+        vlc_spectral[i].table_allocated = FF_ARRAY_ELEMS(vlc_buf) - offset;
+        ff_init_vlc_sparse(&vlc_spectral[i], 8, ff_aac_spectral_sizes[i],
+                           ff_aac_spectral_bits[i],       sizeof(ff_aac_spectral_bits[i][0]),
+                                                          sizeof(ff_aac_spectral_bits[i][0]),
+                           ff_aac_spectral_codes[i],      sizeof(ff_aac_spectral_codes[i][0]),
+                                                          sizeof(ff_aac_spectral_codes[i][0]),
+                           ff_aac_codebook_vector_idx[i], sizeof(ff_aac_codebook_vector_idx[i][0]),
+                                                          sizeof(ff_aac_codebook_vector_idx[i][0]),
+                 INIT_VLC_STATIC_OVERLONG);
+        offset += vlc_spectral[i].table_size;
+    }
 
     AAC_RENAME(ff_aac_sbr_init)();
 
@@ -1234,17 +1233,18 @@ static av_cold void aac_static_table_init(void)
                     352);
 
     // window initialization
-    AAC_RENAME(ff_kbd_window_init)(AAC_RENAME(ff_aac_kbd_long_1024), 4.0, 1024);
-    AAC_RENAME(ff_kbd_window_init)(AAC_RENAME(ff_aac_kbd_short_128), 6.0, 128);
 #if !USE_FIXED
-    AAC_RENAME(ff_kbd_window_init)(AAC_RENAME(ff_aac_kbd_long_960), 4.0, 960);
-    AAC_RENAME(ff_kbd_window_init)(AAC_RENAME(ff_aac_kbd_short_120), 6.0, 120);
-    AAC_RENAME(ff_sine_window_init)(AAC_RENAME(ff_sine_960), 960);
-    AAC_RENAME(ff_sine_window_init)(AAC_RENAME(ff_sine_120), 120);
+    AAC_RENAME(ff_kbd_window_init)(AAC_RENAME(aac_kbd_long_960), 4.0, 960);
+    AAC_RENAME(ff_kbd_window_init)(AAC_RENAME(aac_kbd_short_120), 6.0, 120);
+    AAC_RENAME(ff_sine_window_init)(AAC_RENAME(sine_960), 960);
+    AAC_RENAME(ff_sine_window_init)(AAC_RENAME(sine_120), 120);
+    AAC_RENAME(ff_init_ff_sine_windows)(9);
+    ff_aac_float_common_init();
+#else
+    AAC_RENAME(ff_kbd_window_init)(AAC_RENAME2(aac_kbd_long_1024), 4.0, 1024);
+    AAC_RENAME(ff_kbd_window_init)(AAC_RENAME2(aac_kbd_short_128), 6.0, 128);
+    init_sine_windows_fixed();
 #endif
-    AAC_RENAME(ff_init_ff_sine_windows)(10);
-    AAC_RENAME(ff_init_ff_sine_windows)( 9);
-    AAC_RENAME(ff_init_ff_sine_windows)( 7);
 
     AAC_RENAME(ff_cbrt_tableinit)();
 }
@@ -1802,7 +1802,6 @@ static int decode_spectrum_and_dequant(AACContext *ac, INTFLOAT coef[1024],
 #if !USE_FIXED
                 const float *vq = ff_aac_codebook_vector_vals[cbt_m1];
 #endif /* !USE_FIXED */
-                const uint16_t *cb_vector_idx = ff_aac_codebook_vector_idx[cbt_m1];
                 VLC_TYPE (*vlc_tab)[2] = vlc_spectral[cbt_m1].table;
                 OPEN_READER(re, gb);
 
@@ -1818,7 +1817,7 @@ static int decode_spectrum_and_dequant(AACContext *ac, INTFLOAT coef[1024],
 
                             UPDATE_CACHE(re, gb);
                             GET_VLC(code, re, gb, vlc_tab, 8, 2);
-                            cb_idx = cb_vector_idx[code];
+                            cb_idx = code;
 #if USE_FIXED
                             cf = DEC_SQUAD(cf, cb_idx);
 #else
@@ -1841,7 +1840,7 @@ static int decode_spectrum_and_dequant(AACContext *ac, INTFLOAT coef[1024],
 
                             UPDATE_CACHE(re, gb);
                             GET_VLC(code, re, gb, vlc_tab, 8, 2);
-                            cb_idx = cb_vector_idx[code];
+                            cb_idx = code;
                             nnz = cb_idx >> 8 & 15;
                             bits = nnz ? GET_CACHE(re, gb) : 0;
                             LAST_SKIP_BITS(re, gb, nnz);
@@ -1865,7 +1864,7 @@ static int decode_spectrum_and_dequant(AACContext *ac, INTFLOAT coef[1024],
 
                             UPDATE_CACHE(re, gb);
                             GET_VLC(code, re, gb, vlc_tab, 8, 2);
-                            cb_idx = cb_vector_idx[code];
+                            cb_idx = code;
 #if USE_FIXED
                             cf = DEC_SPAIR(cf, cb_idx);
 #else
@@ -1889,7 +1888,7 @@ static int decode_spectrum_and_dequant(AACContext *ac, INTFLOAT coef[1024],
 
                             UPDATE_CACHE(re, gb);
                             GET_VLC(code, re, gb, vlc_tab, 8, 2);
-                            cb_idx = cb_vector_idx[code];
+                            cb_idx = code;
                             nnz = cb_idx >> 8 & 15;
                             sign = nnz ? SHOW_UBITS(re, gb, nnz) << (cb_idx >> 12) : 0;
                             LAST_SKIP_BITS(re, gb, nnz);
@@ -1922,14 +1921,14 @@ static int decode_spectrum_and_dequant(AACContext *ac, INTFLOAT coef[1024],
 
                             UPDATE_CACHE(re, gb);
                             GET_VLC(code, re, gb, vlc_tab, 8, 2);
+                            cb_idx = code;
 
-                            if (!code) {
+                            if (cb_idx == 0x0000) {
                                 *icf++ = 0;
                                 *icf++ = 0;
                                 continue;
                             }
 
-                            cb_idx = cb_vector_idx[code];
                             nnz = cb_idx >> 12;
                             nzt = cb_idx >> 8;
                             bits = SHOW_UBITS(re, gb, nnz) << (32-nnz);
@@ -2647,10 +2646,10 @@ static void apply_tns(INTFLOAT coef_param[1024], TemporalNoiseShaping *tns,
 static void windowing_and_mdct_ltp(AACContext *ac, INTFLOAT *out,
                                    INTFLOAT *in, IndividualChannelStream *ics)
 {
-    const INTFLOAT *lwindow      = ics->use_kb_window[0] ? AAC_RENAME(ff_aac_kbd_long_1024) : AAC_RENAME(ff_sine_1024);
-    const INTFLOAT *swindow      = ics->use_kb_window[0] ? AAC_RENAME(ff_aac_kbd_short_128) : AAC_RENAME(ff_sine_128);
-    const INTFLOAT *lwindow_prev = ics->use_kb_window[1] ? AAC_RENAME(ff_aac_kbd_long_1024) : AAC_RENAME(ff_sine_1024);
-    const INTFLOAT *swindow_prev = ics->use_kb_window[1] ? AAC_RENAME(ff_aac_kbd_short_128) : AAC_RENAME(ff_sine_128);
+    const INTFLOAT *lwindow      = ics->use_kb_window[0] ? AAC_RENAME2(aac_kbd_long_1024) : AAC_RENAME2(sine_1024);
+    const INTFLOAT *swindow      = ics->use_kb_window[0] ? AAC_RENAME2(aac_kbd_short_128) : AAC_RENAME2(sine_128);
+    const INTFLOAT *lwindow_prev = ics->use_kb_window[1] ? AAC_RENAME2(aac_kbd_long_1024) : AAC_RENAME2(sine_1024);
+    const INTFLOAT *swindow_prev = ics->use_kb_window[1] ? AAC_RENAME2(aac_kbd_short_128) : AAC_RENAME2(sine_128);
 
     if (ics->window_sequence[0] != LONG_STOP_SEQUENCE) {
         ac->fdsp->vector_fmul(in, in, lwindow_prev, 1024);
@@ -2707,8 +2706,8 @@ static void update_ltp(AACContext *ac, SingleChannelElement *sce)
     IndividualChannelStream *ics = &sce->ics;
     INTFLOAT *saved     = sce->saved;
     INTFLOAT *saved_ltp = sce->coeffs;
-    const INTFLOAT *lwindow = ics->use_kb_window[0] ? AAC_RENAME(ff_aac_kbd_long_1024) : AAC_RENAME(ff_sine_1024);
-    const INTFLOAT *swindow = ics->use_kb_window[0] ? AAC_RENAME(ff_aac_kbd_short_128) : AAC_RENAME(ff_sine_128);
+    const INTFLOAT *lwindow = ics->use_kb_window[0] ? AAC_RENAME2(aac_kbd_long_1024) : AAC_RENAME2(sine_1024);
+    const INTFLOAT *swindow = ics->use_kb_window[0] ? AAC_RENAME2(aac_kbd_short_128) : AAC_RENAME2(sine_128);
     int i;
 
     if (ics->window_sequence[0] == EIGHT_SHORT_SEQUENCE) {
@@ -2746,9 +2745,9 @@ static void imdct_and_windowing(AACContext *ac, SingleChannelElement *sce)
     INTFLOAT *in    = sce->coeffs;
     INTFLOAT *out   = sce->ret;
     INTFLOAT *saved = sce->saved;
-    const INTFLOAT *swindow      = ics->use_kb_window[0] ? AAC_RENAME(ff_aac_kbd_short_128) : AAC_RENAME(ff_sine_128);
-    const INTFLOAT *lwindow_prev = ics->use_kb_window[1] ? AAC_RENAME(ff_aac_kbd_long_1024) : AAC_RENAME(ff_sine_1024);
-    const INTFLOAT *swindow_prev = ics->use_kb_window[1] ? AAC_RENAME(ff_aac_kbd_short_128) : AAC_RENAME(ff_sine_128);
+    const INTFLOAT *swindow      = ics->use_kb_window[0] ? AAC_RENAME2(aac_kbd_short_128) : AAC_RENAME2(sine_128);
+    const INTFLOAT *lwindow_prev = ics->use_kb_window[1] ? AAC_RENAME2(aac_kbd_long_1024) : AAC_RENAME2(sine_1024);
+    const INTFLOAT *swindow_prev = ics->use_kb_window[1] ? AAC_RENAME2(aac_kbd_short_128) : AAC_RENAME2(sine_128);
     INTFLOAT *buf  = ac->buf_mdct;
     INTFLOAT *temp = ac->temp;
     int i;
@@ -2815,9 +2814,9 @@ static void imdct_and_windowing_960(AACContext *ac, SingleChannelElement *sce)
     INTFLOAT *in    = sce->coeffs;
     INTFLOAT *out   = sce->ret;
     INTFLOAT *saved = sce->saved;
-    const INTFLOAT *swindow      = ics->use_kb_window[0] ? AAC_RENAME(ff_aac_kbd_short_120) : AAC_RENAME(ff_sine_120);
-    const INTFLOAT *lwindow_prev = ics->use_kb_window[1] ? AAC_RENAME(ff_aac_kbd_long_960) : AAC_RENAME(ff_sine_960);
-    const INTFLOAT *swindow_prev = ics->use_kb_window[1] ? AAC_RENAME(ff_aac_kbd_short_120) : AAC_RENAME(ff_sine_120);
+    const INTFLOAT *swindow      = ics->use_kb_window[0] ? AAC_RENAME(aac_kbd_short_120) : AAC_RENAME(sine_120);
+    const INTFLOAT *lwindow_prev = ics->use_kb_window[1] ? AAC_RENAME(aac_kbd_long_960) : AAC_RENAME(sine_960);
+    const INTFLOAT *swindow_prev = ics->use_kb_window[1] ? AAC_RENAME(aac_kbd_short_120) : AAC_RENAME(sine_120);
     INTFLOAT *buf  = ac->buf_mdct;
     INTFLOAT *temp = ac->temp;
     int i;
@@ -2894,10 +2893,10 @@ static void imdct_and_windowing_ld(AACContext *ac, SingleChannelElement *sce)
     if (ics->use_kb_window[1]) {
         // AAC LD uses a low overlap sine window instead of a KBD window
         memcpy(out, saved, 192 * sizeof(*out));
-        ac->fdsp->vector_fmul_window(out + 192, saved + 192, buf, AAC_RENAME(ff_sine_128), 64);
+        ac->fdsp->vector_fmul_window(out + 192, saved + 192, buf, AAC_RENAME2(sine_128), 64);
         memcpy(                     out + 320, buf + 64, 192 * sizeof(*out));
     } else {
-        ac->fdsp->vector_fmul_window(out, saved, buf, AAC_RENAME(ff_sine_512), 256);
+        ac->fdsp->vector_fmul_window(out, saved, buf, AAC_RENAME2(sine_512), 256);
     }
 
     // buffer update
@@ -2906,7 +2905,7 @@ static void imdct_and_windowing_ld(AACContext *ac, SingleChannelElement *sce)
 
 static void imdct_and_windowing_eld(AACContext *ac, SingleChannelElement *sce)
 {
-    INTFLOAT *in    = sce->coeffs;
+    UINTFLOAT *in   = sce->coeffs;
     INTFLOAT *out   = sce->ret;
     INTFLOAT *saved = sce->saved;
     INTFLOAT *buf  = ac->buf_mdct;
@@ -3217,7 +3216,8 @@ static int aac_decode_er_frame(AVCodecContext *avctx, void *data,
 }
 
 static int aac_decode_frame_int(AVCodecContext *avctx, void *data,
-                                int *got_frame_ptr, GetBitContext *gb, AVPacket *avpkt)
+                                int *got_frame_ptr, GetBitContext *gb,
+                                const AVPacket *avpkt)
 {
     AACContext *ac = avctx->priv_data;
     ChannelElement *che = NULL, *che_prev = NULL;
@@ -3437,11 +3437,11 @@ static int aac_decode_frame(AVCodecContext *avctx, void *data,
     int buf_consumed;
     int buf_offset;
     int err;
-    int new_extradata_size;
+    buffer_size_t new_extradata_size;
     const uint8_t *new_extradata = av_packet_get_side_data(avpkt,
                                        AV_PKT_DATA_NEW_EXTRADATA,
                                        &new_extradata_size);
-    int jp_dualmono_size;
+    buffer_size_t jp_dualmono_size;
     const uint8_t *jp_dualmono   = av_packet_get_side_data(avpkt,
                                        AV_PKT_DATA_JP_DUALMONO,
                                        &jp_dualmono_size);

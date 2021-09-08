@@ -16,6 +16,8 @@ static_library("browser") {
     "language_model_manager.h",
     "language_prefs.cc",
     "language_prefs.h",
+    "language_usage_metrics.cc",
+    "language_usage_metrics.h",
     "locale_util.cc",
     "locale_util.h",
     "pref_names.cc",
@@ -26,6 +28,7 @@ static_library("browser") {
 
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
     "//components/keyed_service/core",
     "//components/language/core/common",
     "//components/pref_registry",
@@ -42,10 +45,12 @@ source_set("unit_tests") {
     "fluent_language_model_unittest.cc",
     "heuristic_language_model_unittest.cc",
     "language_prefs_unittest.cc",
+    "language_usage_metrics_unittest.cc",
     "url_language_histogram_unittest.cc",
   ]
   deps = [
     ":browser",
+    ":test_support",
     "//base",
     "//components/pref_registry:pref_registry",
     "//components/prefs",
@@ -53,6 +58,22 @@ source_set("unit_tests") {
     "//components/sync_preferences:test_support",
     "//components/translate/core/browser",
     "//net:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "language_prefs_test_util.cc",
+    "language_prefs_test_util.h",
+  ]
+  deps = [
+    ":browser",
+    "//base",
+    "//build:chromeos_buildflags",
+    "//components/prefs",
     "//testing/gmock",
     "//testing/gtest",
   ]

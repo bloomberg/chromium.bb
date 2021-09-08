@@ -4,6 +4,7 @@
 
 #include "gpu/ipc/service/image_transport_surface_overlay_mac.h"
 
+#include <memory>
 #include <sstream>
 
 #include "base/bind.h"
@@ -20,6 +21,7 @@
 #include "ui/accelerated_widget_mac/io_surface_context.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/video_types.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_io_surface.h"
@@ -49,8 +51,8 @@ ImageTransportSurfaceOverlayMacBase<BaseClass>::
            ->workarounds()
            .disable_av_sample_buffer_display_layer;
 
-  ca_layer_tree_coordinator_.reset(new ui::CALayerTreeCoordinator(
-      use_remote_layer_api_, allow_av_sample_buffer_display_layer));
+  ca_layer_tree_coordinator_ = std::make_unique<ui::CALayerTreeCoordinator>(
+      use_remote_layer_api_, allow_av_sample_buffer_display_layer);
 
   // Create the CAContext to send this to the GPU process, and the layer for
   // the context.
@@ -320,12 +322,13 @@ bool ImageTransportSurfaceOverlayMacBase<BaseClass>::ScheduleOverlayPlane(
       gfx::RRectF(),  // rounded_corner_bounds
       0,              // sorting_context_id
       gfx::Transform(), image,
-      crop_rect,            // contents_rect
-      pixel_frame_rect,     // rect
-      SK_ColorTRANSPARENT,  // background_color
-      0,                    // edge_aa_mask
-      1.f,                  // opacity
-      GL_LINEAR);           // filter;
+      crop_rect,                         // contents_rect
+      pixel_frame_rect,                  // rect
+      SK_ColorTRANSPARENT,               // background_color
+      0,                                 // edge_aa_mask
+      1.f,                               // opacity
+      GL_LINEAR,                         // filter
+      gfx::ProtectedVideoType::kClear);  // protected_video_type
   return ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
       ->ScheduleCALayer(overlay_as_calayer_params);
 }

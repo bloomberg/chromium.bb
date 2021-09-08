@@ -37,6 +37,10 @@ std::shared_ptr<WaitableCompileEvent> ShaderVk::compile(const gl::Context *conte
         // Extra initialization in spirv shader may affect performance.
         compileOptions |= SH_INITIALIZE_UNINITIALIZED_LOCALS;
 
+        // WebGL shaders may contain OOB array accesses which in turn cause undefined behavior,
+        // which may result in security issues. See https://crbug.com/1189110.
+        compileOptions |= SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
+
         if (mState.getShaderType() != gl::ShaderType::Compute)
         {
             compileOptions |= SH_INIT_OUTPUT_VARIABLES;
@@ -58,19 +62,25 @@ std::shared_ptr<WaitableCompileEvent> ShaderVk::compile(const gl::Context *conte
         compileOptions |= SH_EMULATE_SEAMFUL_CUBE_MAP_SAMPLING;
     }
 
-    if (contextVk->useOldRewriteStructSamplers())
-    {
-        compileOptions |= SH_USE_OLD_REWRITE_STRUCT_SAMPLERS;
-    }
-
     if (!contextVk->getFeatures().enablePrecisionQualifiers.enabled)
     {
         compileOptions |= SH_IGNORE_PRECISION_QUALIFIERS;
     }
 
+    if (contextVk->getFeatures().forceFragmentShaderPrecisionHighpToMediump.enabled)
+    {
+        compileOptions |= SH_FORCE_SHADER_PRECISION_HIGHP_TO_MEDIUMP;
+    }
+
     // Let compiler detect and emit early fragment test execution mode. We will remove it if
     // context state does not allow it
     compileOptions |= SH_EARLY_FRAGMENT_TESTS_OPTIMIZATION;
+
+    // Let compiler use specialized constant for pre-rotation.
+    if (!contextVk->getFeatures().forceDriverUniformOverSpecConst.enabled)
+    {
+        compileOptions |= SH_USE_SPECIALIZATION_CONSTANT;
+    }
 
     if (contextVk->getFeatures().enablePreRotateSurfaces.enabled ||
         contextVk->getFeatures().emulatedPrerotation90.enabled ||
@@ -81,12 +91,22 @@ std::shared_ptr<WaitableCompileEvent> ShaderVk::compile(const gl::Context *conte
         compileOptions |= SH_ADD_PRE_ROTATION;
     }
 
+    if (contextVk->getFeatures().supportsTransformFeedbackExtension.enabled)
+    {
+        compileOptions |= SH_ADD_VULKAN_XFB_EXTENSION_SUPPORT_CODE;
+    }
+    else if (mState.getShaderType() == gl::ShaderType::Vertex &&
+             contextVk->getFeatures().emulateTransformFeedback.enabled)
+    {
+        compileOptions |= SH_ADD_VULKAN_XFB_EMULATION_SUPPORT_CODE;
+    }
+
     return compileImpl(context, compilerInstance, mState.getSource(), compileOptions | options);
 }
 
 std::string ShaderVk::getDebugInfo() const
 {
-    return mState.getTranslatedSource();
+    return mState.getCompiledBinary().empty() ? "" : "<binary blob>";
 }
 
 }  // namespace rx

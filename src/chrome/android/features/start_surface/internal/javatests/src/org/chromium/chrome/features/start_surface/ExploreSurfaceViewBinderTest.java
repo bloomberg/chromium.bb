@@ -26,14 +26,20 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
+import org.chromium.chrome.browser.ntp.ScrollableContainerDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.UiRestriction;
@@ -51,6 +57,15 @@ public class ExploreSurfaceViewBinderTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
+    @Rule
+    public MockitoRule mMockitoRule = MockitoJUnit.rule();
+
+    @Mock
+    private ScrollableContainerDelegate mScrollableContainerDelegate;
+
+    @Mock
+    private BottomSheetController mBottomSheetController;
+
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityFromLauncher();
@@ -63,10 +78,16 @@ public class ExploreSurfaceViewBinderTest {
             mExploreSurfaceCoordinator =
                     new ExploreSurfaceCoordinator(mActivityTestRule.getActivity(),
                             mActivityTestRule.getActivity().getCompositorViewHolder(),
-                            mPropertyModel, true, null, new ObservableSupplierImpl<>());
+                            mPropertyModel, true, mBottomSheetController,
+                            new ObservableSupplierImpl<>(), mScrollableContainerDelegate,
+                            mActivityTestRule.getActivity().getSnackbarManager(),
+                            mActivityTestRule.getActivity().getShareDelegateSupplier(),
+                            mActivityTestRule.getActivity().getWindowAndroid(),
+                            mActivityTestRule.getActivity().getTabModelSelector());
             mFeedSurfaceCoordinator =
-                    mExploreSurfaceCoordinator.getFeedSurfaceCreator().createFeedSurfaceCoordinator(
-                            false, /* isPlaceholderShown= */ false);
+                    mExploreSurfaceCoordinator.getFeedSurfaceController()
+                            .createFeedSurfaceCoordinator(false, /* isPlaceholderShown= */ false,
+                                    NewTabPageLaunchOrigin.UNKNOWN);
             mFeedSurfaceView = mFeedSurfaceCoordinator.getView();
         });
     }

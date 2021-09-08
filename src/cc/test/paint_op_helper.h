@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/skottie_wrapper.h"
 
 namespace cc {
 
@@ -251,15 +252,14 @@ class PaintOpHelper {
                               rect.rect().width(), rect.rect().height());
   }
 
-  static std::string SkiaTypeToString(const ThreadsafeMatrix& matrix) {
-    return SkiaTypeToString(static_cast<const SkMatrix&>(matrix));
-  }
-
-  static std::string SkiaTypeToString(const SkMatrix& matrix) {
+  static std::string SkiaTypeToString(const SkM44& matrix) {
     return base::StringPrintf(
-        "[%8.4f %8.4f %8.4f][%8.4f %8.4f %8.4f][%8.4f %8.4f %8.4f]", matrix[0],
-        matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], matrix[6],
-        matrix[7], matrix[8]);
+        "[%8.4f %8.4f %8.4f %8.4f][%8.4f %8.4f %8.4f %8.4f][%8.4f %8.4f %8.4f "
+        "%8.4f][%8.4f %8.4f %8.4f %8.4f]]",
+        matrix.rc(0, 0), matrix.rc(0, 1), matrix.rc(0, 2), matrix.rc(0, 3),
+        matrix.rc(1, 0), matrix.rc(1, 1), matrix.rc(1, 2), matrix.rc(1, 3),
+        matrix.rc(2, 0), matrix.rc(2, 1), matrix.rc(2, 2), matrix.rc(2, 3),
+        matrix.rc(3, 0), matrix.rc(3, 1), matrix.rc(3, 2), matrix.rc(3, 3));
   }
 
   static std::string SkiaTypeToString(const SkColor& color) {

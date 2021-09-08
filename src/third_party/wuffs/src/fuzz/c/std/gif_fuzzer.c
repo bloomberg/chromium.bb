@@ -22,7 +22,7 @@
 This fuzzer (the fuzz function) is typically run indirectly, by a framework
 such as https://github.com/google/oss-fuzz calling LLVMFuzzerTestOneInput.
 
-When working on the fuzz implementation, or as a sanity check, defining
+When working on the fuzz implementation, or as a coherence check, defining
 WUFFS_CONFIG__FUZZLIB_MAIN will let you manually run fuzz over a set of files:
 
 gcc -DWUFFS_CONFIG__FUZZLIB_MAIN gif_fuzzer.c
@@ -43,8 +43,8 @@ It should print "PASS", amongst other information, and exit(0).
 #define WUFFS_IMPLEMENTATION
 
 // Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
-// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
-// the entire Wuffs standard library, implementing a variety of codecs and file
+// release/c/etc.c choose which parts of Wuffs to build. That file contains the
+// entire Wuffs standard library, implementing a variety of codecs and file
 // formats. Without this macro definition, an optimizing compiler or linker may
 // very well discard Wuffs code for unused codecs, but listing the Wuffs
 // modules we use makes that process explicit. Preprocessing means that such
@@ -59,112 +59,19 @@ It should print "PASS", amongst other information, and exit(0).
 // program to generate a stand-alone C file.
 #include "../../../release/c/wuffs-unsupported-snapshot.c"
 #include "../fuzzlib/fuzzlib.c"
+#include "../fuzzlib/fuzzlib_image_decoder.c"
 
 const char*  //
 fuzz(wuffs_base__io_buffer* src, uint64_t hash) {
-  const char* ret = NULL;
-  wuffs_base__slice_u8 pixbuf = ((wuffs_base__slice_u8){});
-  wuffs_base__slice_u8 workbuf = ((wuffs_base__slice_u8){});
-
-  // Use a {} code block so that "goto exit" doesn't trigger "jump bypasses
-  // variable initialization" warnings.
-  {
-    wuffs_gif__decoder dec;
-    wuffs_base__status status = wuffs_gif__decoder__initialize(
-        &dec, sizeof dec, WUFFS_VERSION,
-        (hash & 1) ? WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED
-                   : 0);
-    if (!wuffs_base__status__is_ok(&status)) {
-      ret = wuffs_base__status__message(&status);
-      goto exit;
-    }
-
-    wuffs_base__image_config ic = ((wuffs_base__image_config){});
-    status = wuffs_gif__decoder__decode_image_config(&dec, &ic, src);
-    if (!wuffs_base__status__is_ok(&status)) {
-      ret = wuffs_base__status__message(&status);
-      goto exit;
-    }
-    if (!wuffs_base__image_config__is_valid(&ic)) {
-      ret = "invalid image_config";
-      goto exit;
-    }
-
-    // Wuffs allows either statically or dynamically allocated work buffers.
-    // This program exercises dynamic allocation.
-    uint64_t n = wuffs_gif__decoder__workbuf_len(&dec).max_incl;
-    if (n > 64 * 1024 * 1024) {  // Don't allocate more than 64 MiB.
-      ret = "image too large";
-      goto exit;
-    }
-    if (n > 0) {
-      workbuf = wuffs_base__malloc_slice_u8(malloc, n);
-      if (!workbuf.ptr) {
-        ret = "out of memory";
-        goto exit;
-      }
-    }
-
-    n = wuffs_base__pixel_config__pixbuf_len(&ic.pixcfg);
-    if (n > 64 * 1024 * 1024) {  // Don't allocate more than 64 MiB.
-      ret = "image too large";
-      goto exit;
-    }
-    if (n > 0) {
-      pixbuf = wuffs_base__malloc_slice_u8(malloc, n);
-      if (!pixbuf.ptr) {
-        ret = "out of memory";
-        goto exit;
-      }
-    }
-
-    wuffs_base__pixel_buffer pb = ((wuffs_base__pixel_buffer){});
-    status = wuffs_base__pixel_buffer__set_from_slice(&pb, &ic.pixcfg, pixbuf);
-    if (!wuffs_base__status__is_ok(&status)) {
-      ret = wuffs_base__status__message(&status);
-      goto exit;
-    }
-
-    bool seen_ok = false;
-    while (true) {
-      wuffs_base__frame_config fc = ((wuffs_base__frame_config){});
-      status = wuffs_gif__decoder__decode_frame_config(&dec, &fc, src);
-      if (!wuffs_base__status__is_ok(&status)) {
-        if ((status.repr != wuffs_base__note__end_of_data) || !seen_ok) {
-          ret = wuffs_base__status__message(&status);
-        }
-        goto exit;
-      }
-
-      status = wuffs_gif__decoder__decode_frame(
-          &dec, &pb, src, WUFFS_BASE__PIXEL_BLEND__SRC, workbuf, NULL);
-
-      wuffs_base__rect_ie_u32 frame_rect =
-          wuffs_base__frame_config__bounds(&fc);
-      wuffs_base__rect_ie_u32 dirty_rect =
-          wuffs_gif__decoder__frame_dirty_rect(&dec);
-      if (!wuffs_base__rect_ie_u32__contains_rect(&frame_rect, dirty_rect)) {
-        ret = "internal error: frame_rect does not contain dirty_rect";
-        goto exit;
-      }
-
-      if (!wuffs_base__status__is_ok(&status)) {
-        if ((status.repr != wuffs_base__note__end_of_data) || !seen_ok) {
-          ret = wuffs_base__status__message(&status);
-        }
-        goto exit;
-      }
-      seen_ok = true;
-
-      if (!wuffs_base__rect_ie_u32__equals(&frame_rect, dirty_rect)) {
-        ret = "internal error: frame_rect does not equal dirty_rect";
-        goto exit;
-      }
-    }
+  wuffs_gif__decoder dec;
+  wuffs_base__status status = wuffs_gif__decoder__initialize(
+      &dec, sizeof dec, WUFFS_VERSION,
+      (hash & 1) ? WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED : 0);
+  hash >>= 1;
+  if (!wuffs_base__status__is_ok(&status)) {
+    return wuffs_base__status__message(&status);
   }
-
-exit:
-  free(workbuf.ptr);
-  free(pixbuf.ptr);
-  return ret;
+  return fuzz_image_decoder(
+      src, hash,
+      wuffs_gif__decoder__upcast_as__wuffs_base__image_decoder(&dec));
 }

@@ -56,11 +56,9 @@ protected:
     }
 
     void onOnceBeforeDraw() override {
-        fBitmap = ToolUtils::create_checkerboard_bitmap(
+        fBitmapImage = ToolUtils::create_checkerboard_image(
                 kCellSize, kCellSize, SK_ColorBLUE, SK_ColorYELLOW, kCellSize / 10);
-        fBitmap.setImmutable();
 
-        fBitmapShader = fBitmap.makeShader();
         SkPoint pts1[] = {
             { 0, 0 },
             { SkIntToScalar(kCellSize), SkIntToScalar(kCellSize) }
@@ -90,14 +88,12 @@ protected:
         fPath.close();
     }
 
-    void drawRow(SkCanvas* canvas, SkFilterQuality filterQ) {
+    void drawRow(SkCanvas* canvas, const SkSamplingOptions& sampling) {
         SkPaint filterPaint;
-        filterPaint.setFilterQuality(filterQ);
         filterPaint.setAntiAlias(fDoAA);
 
         SkPaint pathPaint;
-        pathPaint.setShader(fBitmapShader);
-        pathPaint.setFilterQuality(filterQ);
+        pathPaint.setShader(fBitmapImage->makeShader(sampling));
         pathPaint.setAntiAlias(fDoAA);
 
         SkPaint gradPaint1;
@@ -113,13 +109,13 @@ protected:
 
         canvas->save();
         canvas->concat(fPerspMatrix);
-        canvas->drawBitmapRect(fBitmap, r, &filterPaint);
+        canvas->drawImageRect(fBitmapImage, r, sampling, &filterPaint);
         canvas->restore();
 
         canvas->translate(SkIntToScalar(kCellSize), 0);
         canvas->save();
         canvas->concat(fPerspMatrix);
-        canvas->drawImage(fImage.get(), 0, 0, &filterPaint);
+        canvas->drawImage(fImage.get(), 0, 0, sampling, &filterPaint);
         canvas->restore();
 
         canvas->translate(SkIntToScalar(kCellSize), 0);
@@ -154,13 +150,14 @@ protected:
             fImage = make_image(canvas, kCellSize, kCellSize);
         }
 
-        this->drawRow(canvas, kNone_SkFilterQuality);
+        this->drawRow(canvas, SkSamplingOptions(SkFilterMode::kNearest));
         canvas->translate(0, SkIntToScalar(kCellSize));
-        this->drawRow(canvas, kLow_SkFilterQuality);
+        this->drawRow(canvas, SkSamplingOptions(SkFilterMode::kLinear));
         canvas->translate(0, SkIntToScalar(kCellSize));
-        this->drawRow(canvas, kMedium_SkFilterQuality);
+        this->drawRow(canvas, SkSamplingOptions(SkFilterMode::kLinear,
+                                                SkMipmapMode::kNearest));
         canvas->translate(0, SkIntToScalar(kCellSize));
-        this->drawRow(canvas, kHigh_SkFilterQuality);
+        this->drawRow(canvas, SkSamplingOptions(SkCubicResampler::Mitchell()));
         canvas->translate(0, SkIntToScalar(kCellSize));
     }
 private:
@@ -170,12 +167,11 @@ private:
 
     bool            fDoAA;
     SkPath          fPath;
-    sk_sp<SkShader> fBitmapShader;
     sk_sp<SkShader> fLinearGrad1;
     sk_sp<SkShader> fLinearGrad2;
     SkMatrix        fPerspMatrix;
     sk_sp<SkImage>  fImage;
-    SkBitmap        fBitmap;
+    sk_sp<SkImage>  fBitmapImage;
 
     using INHERITED = GM;
 };
@@ -209,7 +205,7 @@ static SkPath make_path() {
 DEF_SIMPLE_GM(perspective_clip, canvas, 800, 800) {
     SkPath path = make_path();
     auto shader = GetResourceAsImage("images/mandrill_128.png")
-                                    ->makeShader(SkMatrix::Scale(3, 3));
+                                    ->makeShader(SkSamplingOptions(), SkMatrix::Scale(3, 3));
 
     SkPaint paint;
     paint.setColor({0.75, 0.75, 0.75, 1});

@@ -28,4 +28,12 @@ media_session::MediaSessionService* ShellDelegate::GetMediaSessionService() {
   return nullptr;
 }
 
+bool ShellDelegate::IsUiDevToolsStarted() const {
+  return false;
+}
+
+int ShellDelegate::GetUiDevToolsPort() const {
+  return -1;
+}
+
 }  // namespace ash

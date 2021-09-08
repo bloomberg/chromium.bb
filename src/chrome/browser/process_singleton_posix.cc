@@ -85,6 +85,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/process_singleton_lock_posix.h"
 #include "chrome/grit/chromium_strings.h"
@@ -98,7 +99,8 @@
 #include "chrome/browser/ui/process_singleton_dialog_linux.h"
 #endif
 
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_VIEWS) && \
+    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "ui/views/linux_ui/linux_ui.h"
 #endif
 
@@ -287,7 +289,7 @@ bool SymlinkPath(const base::FilePath& target, const base::FilePath& path) {
 bool DisplayProfileInUseError(const base::FilePath& lock_path,
                               const std::string& hostname,
                               int pid) {
-  base::string16 error = l10n_util::GetStringFUTF16(
+  std::u16string error = l10n_util::GetStringFUTF16(
       IDS_PROFILE_IN_USE_POSIX, base::NumberToString16(pid),
       base::ASCIIToUTF16(hostname));
   LOG(ERROR) << error;
@@ -296,8 +298,8 @@ bool DisplayProfileInUseError(const base::FilePath& lock_path,
     return g_user_opted_unlock_in_use_profile;
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
-  base::string16 relaunch_button_text = l10n_util::GetStringUTF16(
-      IDS_PROFILE_IN_USE_LINUX_RELAUNCH);
+  std::u16string relaunch_button_text =
+      l10n_util::GetStringUTF16(IDS_PROFILE_IN_USE_LINUX_RELAUNCH);
   return ShowProcessSingletonDialog(error, relaunch_button_text);
 #elif defined(OS_MAC)
   // On Mac, always usurp the lock.
@@ -871,7 +873,8 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     SendRemoteProcessInteractionResultHistogram(REMOTE_PROCESS_SHUTTING_DOWN);
     return PROCESS_NONE;
   } else if (strncmp(buf, kACKToken, base::size(kACKToken) - 1) == 0) {
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_VIEWS) && \
+    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
     // Likely NULL in unit tests.
     views::LinuxUI* linux_ui = views::LinuxUI::instance();
     if (linux_ui)

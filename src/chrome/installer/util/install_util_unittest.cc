@@ -22,6 +22,9 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "build/branding_buildflags.h"
+#include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -109,8 +112,8 @@ class InstallUtilTest : public testing::Test {
   void SetUp() override { ASSERT_NO_FATAL_FAILURE(ResetRegistryOverrides()); }
 
   void ResetRegistryOverrides() {
-    registry_override_manager_.reset(
-        new registry_util::RegistryOverrideManager);
+    registry_override_manager_ =
+        std::make_unique<registry_util::RegistryOverrideManager>();
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_->OverrideRegistry(HKEY_CURRENT_USER));
     ASSERT_NO_FATAL_FAILURE(
@@ -435,95 +438,6 @@ TEST_F(InstallUtilTest, ProgramCompare) {
   }
 }
 
-TEST_F(InstallUtilTest, AddDowngradeVersion) {
-  install_static::ScopedInstallDetails system_install(true);
-  const HKEY kRoot = HKEY_LOCAL_MACHINE;
-  RegKey(kRoot, install_static::GetClientStateKeyPath().c_str(),
-         KEY_SET_VALUE | KEY_WOW64_32KEY);
-  std::unique_ptr<WorkItemList> list;
-
-  base::Version current_version("1.1.1.1");
-  base::Version higer_new_version("1.1.1.2");
-  base::Version lower_new_version_1("1.1.1.0");
-  base::Version lower_new_version_2("1.1.0.0");
-
-  ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
-
-  // Upgrade should not create the value.
-  list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
-                                             higer_new_version, list.get());
-  ASSERT_TRUE(list->Do());
-  ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
-
-  // Downgrade should create the value.
-  list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
-                                             lower_new_version_1, list.get());
-  ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
-
-  // Multiple downgrades should not change the value.
-  list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_1,
-                                             lower_new_version_2, list.get());
-  ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
-}
-
-TEST_F(InstallUtilTest, DeleteDowngradeVersion) {
-  install_static::ScopedInstallDetails system_install(true);
-  const HKEY kRoot = HKEY_LOCAL_MACHINE;
-  RegKey(kRoot, install_static::GetClientStateKeyPath().c_str(),
-         KEY_SET_VALUE | KEY_WOW64_32KEY);
-  std::unique_ptr<WorkItemList> list;
-
-  base::Version current_version("1.1.1.1");
-  base::Version higer_new_version("1.1.1.2");
-  base::Version lower_new_version_1("1.1.1.0");
-  base::Version lower_new_version_2("1.1.0.0");
-
-  list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
-                                             lower_new_version_2, list.get());
-  ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
-
-  // Upgrade should not delete the value if it still lower than the version that
-  // downgrade from.
-  list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_2,
-                                             lower_new_version_1, list.get());
-  ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
-
-  // Repair should not delete the value.
-  list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_1,
-                                             lower_new_version_1, list.get());
-  ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
-
-  // Fully upgrade should delete the value.
-  list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_1,
-                                             higer_new_version, list.get());
-  ASSERT_TRUE(list->Do());
-  ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
-
-  // Fresh install should delete the value if it exists.
-  list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
-                                             lower_new_version_2, list.get());
-  ASSERT_TRUE(list->Do());
-  EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
-  list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, base::Version(),
-                                             lower_new_version_1, list.get());
-  ASSERT_TRUE(list->Do());
-  ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
-}
-
 TEST(DeleteRegistryKeyTest, DeleteAccessRightIsEnoughToDelete) {
   registry_util::RegistryOverrideManager registry_override_manager;
   ASSERT_NO_FATAL_FAILURE(
@@ -545,7 +459,7 @@ TEST(DeleteRegistryKeyTest, DeleteAccessRightIsEnoughToDelete) {
 }
 
 TEST_F(InstallUtilTest, GetToastActivatorRegistryPath) {
-  base::string16 toast_activator_reg_path =
+  std::wstring toast_activator_reg_path =
       InstallUtil::GetToastActivatorRegistryPath();
   EXPECT_FALSE(toast_activator_reg_path.empty());
 
@@ -566,3 +480,68 @@ TEST_F(InstallUtilTest, GuidToSquid) {
   ASSERT_EQ(InstallUtil::GuidToSquid(L"EDA620E3-AA98-3846-B81E-3493CB2E0E02"),
             L"3E026ADE89AA64838BE14339BCE2E020");
 }
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// Tests that policy-overrides for channel values are included in generated
+// command lines.
+TEST(AppendModeAndChannelSwitchesTest, ExtendedStable) {
+  static constexpr struct {
+    const wchar_t* channel_override;
+    bool is_extended_stable_channel;
+  } kTestData[] = {
+      {
+          /*channel_override=*/nullptr,
+          /*is_extended_stable_channel=*/false,
+      },
+      {
+          /*channel_override=*/L"",
+          /*is_extended_stable_channel=*/false,
+      },
+      {
+          /*channel_override=*/L"stable",
+          /*is_extended_stable_channel=*/false,
+      },
+      {
+          /*channel_override=*/L"beta",
+          /*is_extended_stable_channel=*/false,
+      },
+      {
+          /*channel_override=*/L"dev",
+          /*is_extended_stable_channel=*/false,
+      },
+      {
+          /*channel_override=*/L"extended",
+          /*is_extended_stable_channel=*/true,
+      },
+  };
+
+  for (const auto& test_data : kTestData) {
+    // Install process-wide InstallDetails for the given test data.
+    auto install_details =
+        std::make_unique<install_static::PrimaryInstallDetails>();
+    install_details->set_mode(
+        &install_static::kInstallModes[install_static::STABLE_INDEX]);
+    install_details->set_channel(L"");
+    if (test_data.channel_override) {
+      install_details->set_channel_origin(
+          install_static::ChannelOrigin::kPolicy);
+      install_details->set_channel_override(test_data.channel_override);
+    }
+    install_details->set_is_extended_stable_channel(
+        test_data.is_extended_stable_channel);
+    install_static::ScopedInstallDetails scoped_details(
+        std::move(install_details));
+
+    // Generate a command line.
+    base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
+    InstallUtil::AppendModeAndChannelSwitches(&cmd_line);
+
+    // Ensure that it has the proper --channel switch.
+    if (test_data.channel_override) {
+      ASSERT_TRUE(cmd_line.HasSwitch(installer::switches::kChannel));
+      ASSERT_EQ(cmd_line.GetSwitchValueNative(installer::switches::kChannel),
+                test_data.channel_override);
+    }
+  }
+}
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)

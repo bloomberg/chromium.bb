@@ -50,10 +50,8 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/dom/shadow_root_v0.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -65,8 +63,6 @@
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
-#include "third_party/blink/renderer/core/html/imports/html_import_child.h"
-#include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/html/portal/portal_contents.h"
@@ -116,7 +112,7 @@ class InspectorRevalidateDOMTask final
 
  private:
   Member<InspectorDOMAgent> dom_agent_;
-  TaskRunnerTimer<InspectorRevalidateDOMTask> timer_;
+  HeapTaskRunnerTimer<InspectorRevalidateDOMTask> timer_;
   HeapHashSet<Member<Element>> style_attr_invalidated_elements_;
 };
 
@@ -148,6 +144,7 @@ void InspectorRevalidateDOMTask::OnTimer(TimerBase*) {
 void InspectorRevalidateDOMTask::Trace(Visitor* visitor) const {
   visitor->Trace(dom_agent_);
   visitor->Trace(style_attr_invalidated_elements_);
+  visitor->Trace(timer_);
 }
 
 Response InspectorDOMAgent::ToResponse(ExceptionState& exception_state) {
@@ -182,6 +179,10 @@ protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
       return protocol::DOM::PseudoTypeEnum::Selection;
     case kPseudoIdTargetText:
       return protocol::DOM::PseudoTypeEnum::TargetText;
+    case kPseudoIdSpellingError:
+      return protocol::DOM::PseudoTypeEnum::SpellingError;
+    case kPseudoIdGrammarError:
+      return protocol::DOM::PseudoTypeEnum::GrammarError;
     case kPseudoIdFirstLineInherited:
       return protocol::DOM::PseudoTypeEnum::FirstLineInherited;
     case kPseudoIdScrollbar:
@@ -201,6 +202,8 @@ protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
     case kPseudoIdInputListButton:
       return protocol::DOM::PseudoTypeEnum::InputListButton;
     case kAfterLastInternalPseudoId:
+    case kPseudoIdHighlight:
+      // TODO(http://crbug.com/1195196)
     case kPseudoIdNone:
       CHECK(false);
       return "";
@@ -343,11 +346,6 @@ void InspectorDOMAgent::Unbind(Node* node) {
       Unbind(element->GetPseudoElement(kPseudoIdAfter));
     if (element->GetPseudoElement(kPseudoIdMarker))
       Unbind(element->GetPseudoElement(kPseudoIdMarker));
-
-    if (auto* link_element = DynamicTo<HTMLLinkElement>(*element)) {
-      if (link_element->IsImport() && link_element->import())
-        Unbind(link_element->import());
-    }
   }
 
   NotifyWillRemoveDOMNode(node);
@@ -555,7 +553,7 @@ Response InspectorDOMAgent::getNodesForSubtreeByStyle(
 
   HashMap<CSSPropertyID, HashSet<String>> properties;
   for (const auto& style : *computed_styles) {
-    base::Optional<CSSPropertyName> property_name = CSSPropertyName::From(
+    absl::optional<CSSPropertyName> property_name = CSSPropertyName::From(
         document_->GetExecutionContext(), style->getName());
     if (!property_name)
       return Response::InvalidParams("Invalid CSS property name");
@@ -601,7 +599,7 @@ Response InspectorDOMAgent::getFlattenedDocument(
   if (sanitized_depth == -1)
     sanitized_depth = INT_MAX;
 
-  nodes->reset(new protocol::Array<protocol::DOM::Node>());
+  *nodes = std::make_unique<protocol::Array<protocol::DOM::Node>>();
   (*nodes)->emplace_back(BuildObjectForNode(
       document_.Get(), sanitized_depth, pierce.fromMaybe(false),
       document_node_to_id_map_.Get(), nodes->get()));
@@ -1540,7 +1538,6 @@ protocol::DOM::ShadowRootType InspectorDOMAgent::GetShadowRootType(
   switch (shadow_root->GetType()) {
     case ShadowRootType::kUserAgent:
       return protocol::DOM::ShadowRootTypeEnum::UserAgent;
-    case ShadowRootType::V0:
     case ShadowRootType::kOpen:
       return protocol::DOM::ShadowRootTypeEnum::Open;
     case ShadowRootType::kClosed:
@@ -1548,6 +1545,21 @@ protocol::DOM::ShadowRootType InspectorDOMAgent::GetShadowRootType(
   }
   NOTREACHED();
   return protocol::DOM::ShadowRootTypeEnum::UserAgent;
+}
+
+// static
+protocol::DOM::CompatibilityMode
+InspectorDOMAgent::GetDocumentCompatibilityMode(Document* document) {
+  switch (document->GetCompatibilityMode()) {
+    case Document::CompatibilityMode::kQuirksMode:
+      return protocol::DOM::CompatibilityModeEnum::QuirksMode;
+    case Document::CompatibilityMode::kLimitedQuirksMode:
+      return protocol::DOM::CompatibilityModeEnum::LimitedQuirksMode;
+    case Document::CompatibilityMode::kNoQuirksMode:
+      return protocol::DOM::CompatibilityModeEnum::NoQuirksMode;
+  }
+  NOTREACHED();
+  return protocol::DOM::CompatibilityModeEnum::NoQuirksMode;
 }
 
 std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
@@ -1621,14 +1633,8 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
       force_push_children = true;
     }
 
-    if (auto* link_element = DynamicTo<HTMLLinkElement>(*element)) {
-      if (link_element->IsImport() && link_element->import() &&
-          InnerParentNode(link_element->import()) == link_element) {
-        value->setImportedDocument(BuildObjectForNode(
-            link_element->import(), 0, pierce, nodes_map, flatten_result));
-      }
+    if (auto* link_element = DynamicTo<HTMLLinkElement>(*element))
       force_push_children = true;
-    }
 
     if (auto* template_element = DynamicTo<HTMLTemplateElement>(*element)) {
       // The inspector should not try to access the .content() property of
@@ -1653,11 +1659,6 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
       force_push_children = true;
     }
 
-    if (auto* insertion_point = DynamicTo<V0InsertionPoint>(element)) {
-      value->setDistributedNodes(
-          BuildArrayForDistributedNodes(insertion_point));
-      force_push_children = true;
-    }
     if (auto* slot = DynamicTo<HTMLSlotElement>(*element)) {
       if (node->IsInShadowTree()) {
         value->setDistributedNodes(BuildDistributedNodesForSlot(slot));
@@ -1668,6 +1669,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     value->setDocumentURL(DocumentURLString(document));
     value->setBaseURL(DocumentBaseURLString(document));
     value->setXmlVersion(document->xmlVersion());
+    value->setCompatibilityMode(GetDocumentCompatibilityMode(document));
   } else if (auto* doc_type = DynamicTo<DocumentType>(node)) {
     value->setPublicId(doc_type->publicId());
     value->setSystemId(doc_type->systemId());
@@ -1779,28 +1781,6 @@ InspectorDOMAgent::BuildArrayForPseudoElements(Element* element,
 }
 
 std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
-InspectorDOMAgent::BuildArrayForDistributedNodes(
-    V0InsertionPoint* insertion_point) {
-  auto distributed_nodes =
-      std::make_unique<protocol::Array<protocol::DOM::BackendNode>>();
-  for (wtf_size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i) {
-    Node* distributed_node = insertion_point->DistributedNodeAt(i);
-    if (IsWhitespace(distributed_node))
-      continue;
-
-    std::unique_ptr<protocol::DOM::BackendNode> backend_node =
-        protocol::DOM::BackendNode::create()
-            .setNodeType(distributed_node->getNodeType())
-            .setNodeName(distributed_node->nodeName())
-            .setBackendNodeId(
-                IdentifiersFactory::IntIdForNode(distributed_node))
-            .build();
-    distributed_nodes->emplace_back(std::move(backend_node));
-  }
-  return distributed_nodes;
-}
-
-std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
 InspectorDOMAgent::BuildDistributedNodesForSlot(HTMLSlotElement* slot_element) {
   // TODO(hayato): In Shadow DOM v1, the concept of distributed nodes should
   // not be used anymore. DistributedNodes should be replaced with
@@ -1861,8 +1841,6 @@ unsigned InspectorDOMAgent::InnerChildNodeCount(Node* node) {
 // static
 Node* InspectorDOMAgent::InnerParentNode(Node* node) {
   if (auto* document = DynamicTo<Document>(node)) {
-    if (HTMLImportLoader* loader = document->ImportLoader())
-      return loader->FirstImport()->Link();
     return document->LocalOwner();
   }
   return node->ParentOrShadowHostNode();
@@ -1900,13 +1878,6 @@ void InspectorDOMAgent::CollectNodes(
     ShadowRoot* root = element->GetShadowRoot();
     if (pierce && root)
       CollectNodes(root, depth, pierce, filter, result);
-
-    if (auto* link_element = DynamicTo<HTMLLinkElement>(*element)) {
-      if (link_element->IsImport() && link_element->import() &&
-          InnerParentNode(link_element->import()) == link_element) {
-        CollectNodes(link_element->import(), depth, pierce, filter, result);
-      }
-    }
   }
 
   for (Node* child = InnerFirstChild(node); child;
@@ -1959,6 +1930,19 @@ void InspectorDOMAgent::DidCommitLoad(LocalFrame*, DocumentLoader* loader) {
   }
 
   SetDocument(inspected_frame->GetDocument());
+}
+
+void InspectorDOMAgent::DidRestoreFromBackForwardCache(LocalFrame* frame) {
+  if (!enabled_.Get())
+    return;
+  DCHECK_EQ(frame, inspected_frames_->Root());
+  Document* document = frame->GetDocument();
+  DCHECK_EQ(document_, document);
+  // We don't load a new document for BFCache navigations, so |document_|
+  // doesn't actually update (the agent is initialized with the restored main
+  // document), but the frontend doesn't know this yet, and we need to notify
+  // it.
+  GetFrontend()->documentUpdated();
 }
 
 void InspectorDOMAgent::DidInsertDOMNode(Node* node) {
@@ -2121,25 +2105,6 @@ void InspectorDOMAgent::WillPopShadowRoot(Element* host, ShadowRoot* root) {
   int root_id = document_node_to_id_map_->at(root);
   if (host_id && root_id)
     GetFrontend()->shadowRootPopped(host_id, root_id);
-}
-
-void InspectorDOMAgent::DidPerformElementShadowDistribution(
-    Element* shadow_host) {
-  int shadow_host_id = document_node_to_id_map_->at(shadow_host);
-  if (!shadow_host_id)
-    return;
-
-  if (ShadowRoot* root = shadow_host->GetShadowRoot()) {
-    const HeapVector<Member<V0InsertionPoint>>& insertion_points =
-        root->V0().DescendantInsertionPoints();
-    for (const auto& it : insertion_points) {
-      V0InsertionPoint* insertion_point = it.Get();
-      int insertion_point_id = document_node_to_id_map_->at(insertion_point);
-      if (insertion_point_id)
-        GetFrontend()->distributedNodesUpdated(
-            insertion_point_id, BuildArrayForDistributedNodes(insertion_point));
-    }
-  }
 }
 
 void InspectorDOMAgent::DidPerformSlotDistribution(

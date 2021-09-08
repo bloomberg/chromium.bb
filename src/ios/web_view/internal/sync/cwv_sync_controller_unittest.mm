@@ -87,7 +87,7 @@ TEST_F(CWVSyncControllerTest, StartSyncWithIdentity) {
   // Preconfigure TestSyncService as if it was enabled in transport mode.
   sync_service_.SetFirstSetupComplete(false);
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  sync_service_.SetIsUsingSecondaryPassphrase(false);
+  sync_service_.SetIsUsingExplicitPassphrase(false);
   sync_service_.SetAuthenticatedAccountInfo(account_info);
 
   CWVSyncController* sync_controller = [[CWVSyncController alloc]
@@ -98,7 +98,8 @@ TEST_F(CWVSyncControllerTest, StartSyncWithIdentity) {
   EXPECT_NSEQ(sync_controller.currentIdentity.gaiaID, identity.gaiaID);
 
   CoreAccountInfo primary_account_info =
-      identity_test_environment_.identity_manager()->GetPrimaryAccountInfo();
+      identity_test_environment_.identity_manager()->GetPrimaryAccountInfo(
+          signin::ConsentLevel::kSync);
   EXPECT_EQ(primary_account_info, account_info);
 
   // Ensure opt-ins for transport only sync data is flipped to true.

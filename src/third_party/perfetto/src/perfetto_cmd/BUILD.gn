@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import("../../gn/perfetto.gni")
+import("../../gn/perfetto_cc_proto_descriptor.gni")
 import("../../gn/proto_library.gni")
 import("../../gn/test.gni")
 
@@ -40,10 +41,6 @@ executable("trigger_perfetto") {
   sources = [ "trigger_perfetto_main.cc" ]
 }
 
-source_set("perfetto_atoms") {
-  sources = [ "perfetto_atoms.h" ]
-}
-
 # Contains all the implementation but not the main() entry point. This target
 # is shared both by the executable and tests.
 source_set("perfetto_cmd") {
@@ -52,13 +49,13 @@ source_set("perfetto_cmd") {
     "../../include/perfetto/ext/traced",
   ]
   deps = [
-    ":perfetto_atoms",
+    ":gen_cc_config_descriptor",
     ":trigger_producer",
     "../../gn:default_deps",
     "../../protos/perfetto/common:cpp",
     "../../protos/perfetto/config:cpp",
     "../../protos/perfetto/config/ftrace:cpp",
-    "../android_internal:lazy_library_loader",
+    "../android_stats",
     "../base",
     "../protozero",
     "../tracing/ipc/consumer",
@@ -75,13 +72,18 @@ source_set("perfetto_cmd") {
     "pbtxt_to_pb.h",
     "perfetto_cmd.cc",
     "perfetto_cmd.h",
-    "perfetto_config.descriptor.h",
     "rate_limiter.cc",
     "rate_limiter.h",
   ]
   if (is_android) {
+    deps += [ "../android_internal:lazy_library_loader" ]
     sources += [ "perfetto_cmd_android.cc" ]
   }
+}
+
+perfetto_cc_proto_descriptor("gen_cc_config_descriptor") {
+  descriptor_name = "perfetto_config.descriptor"
+  descriptor_target = "../../protos/perfetto/config:perfetto_config_descriptor"
 }
 
 source_set("trigger_perfetto_cmd") {
@@ -92,6 +94,7 @@ source_set("trigger_perfetto_cmd") {
   deps = [
     ":trigger_producer",
     "../../gn:default_deps",
+    "../android_stats",
     "../base",
     "../tracing/ipc/producer",
   ]

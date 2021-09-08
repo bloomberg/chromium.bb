@@ -4,7 +4,7 @@
 
 const {assert} = chai;
 
-import * as UI from '../../../../front_end/ui/ui.js';
+import * as UI from '../../../../front_end/ui/legacy/legacy.js';
 
 describe('ListModel', () => {
   it('can be instantiated correctly without a list of items', () => {
@@ -63,7 +63,7 @@ describe('ListModel', () => {
 
   it('fires an event when elements are replaced', () => {
     const model = new UI.ListModel.ListModel([0, 1, 2]);
-    let eventData!: {index: number, removed: number[], inserted: number};
+    let eventData!: {index: number, removed: number[], inserted: number, keepSelectedIndex: boolean|undefined};
     model.addEventListener(UI.ListModel.Events.ItemsReplaced, (event: {data: typeof eventData}) => {
       eventData = event.data;
     });
@@ -73,6 +73,7 @@ describe('ListModel', () => {
       index: 0,
       removed: [0],
       inserted: 3,
+      keepSelectedIndex: undefined,
     });
   });
 });

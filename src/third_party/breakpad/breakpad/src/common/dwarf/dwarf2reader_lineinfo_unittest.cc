@@ -169,7 +169,7 @@ TEST_F(LineProgram, ReadLinesDwarf4) {
   // dwarf4 line info headers don't encode the address size.
   byte_reader.SetAddressSize(8);
   LineInfo line_reader(dwarf4_line_program,
-                       sizeof(dwarf5_line_program),
+                       sizeof(dwarf4_line_program),
                        &byte_reader,
                        // dwarf4 line tables can't access the string sections
                        // so pass values likely to make assertions fail if

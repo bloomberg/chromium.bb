@@ -36,10 +36,6 @@ class NetworkIsolationKey;
 class SSLInfo;
 class X509Certificate;
 
-// Controls whether or not Certificate Transparency should be enforced for
-// newly-issued certificates.
-extern const NET_EXPORT_PRIVATE base::Feature kEnforceCTForNewCerts;
-
 void NET_EXPORT_PRIVATE SetTransportSecurityStateSourceForTesting(
     const TransportSecurityStateSource* source);
 
@@ -579,6 +575,9 @@ class NET_EXPORT TransportSecurityState {
 
   // The number of cached ExpectCTState entries.
   size_t num_expect_ct_entries() const;
+
+  // The number of cached STSState entries.
+  size_t num_sts_entries() const;
 
  private:
   friend class TransportSecurityStateTest;

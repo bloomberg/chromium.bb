@@ -28,6 +28,9 @@ class PictureInPictureWindowController {
   // Shows the Picture-in-Picture window.
   virtual void Show() = 0;
 
+  // Called to notify the controller that initiator should be focused.
+  virtual void FocusInitiator() = 0;
+
   // Called to notify the controller that the window was requested to be closed
   // by the user or the content.
   virtual void Close(bool should_pause_video) = 0;
@@ -38,7 +41,7 @@ class PictureInPictureWindowController {
 
   // Called by the window implementation to notify the controller that the
   // window was requested to be closed and destroyed by the system.
-  virtual void OnWindowDestroyed() = 0;
+  virtual void OnWindowDestroyed(bool should_pause_video) = 0;
 
   virtual OverlayWindow* GetWindowForTesting() = 0;
   virtual void UpdateLayerBounds() = 0;
@@ -60,6 +63,15 @@ class PictureInPictureWindowController {
   // Returns true if the player is active (i.e. currently playing) after this
   // call.
   virtual bool TogglePlayPause() = 0;
+
+  // Called when the user interacts with the "Toggle Microphone" control.
+  virtual void ToggleMicrophone() = 0;
+
+  // Called when the user interacts with the "Toggle Camera" control.
+  virtual void ToggleCamera() = 0;
+
+  // Called when the user interacts with the "Hang Up" control.
+  virtual void HangUp() = 0;
 
  protected:
   // Use PictureInPictureWindowController::GetOrCreateForWebContents() to

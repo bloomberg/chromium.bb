@@ -1,0 +1,33 @@
+int return_loop_0()
+{
+	for (int i = 0;i < 10; ++i) 
+	{
+		if (i == 5) 
+		{
+			return i;
+		}
+	}
+	return 0;
+}
+half4 main(float2 xy)
+{
+	int _0_sum = 0;
+	for (int _1_i = 0;_1_i < 10; ++_1_i) 
+	{
+		if (_1_i < 5) 
+		{
+			continue;
+		}
+		_0_sum += _1_i;
+	}
+	int _2_sum = 0;
+	for (int _3_i = 0;_3_i < 10; ++_3_i) 
+	{
+		if (_3_i > 5) 
+		{
+			break;
+		}
+		_2_sum += _3_i;
+	}
+	return half4(half4(half(return_loop_0()), half(_0_sum), half(_2_sum), 1.0));
+}

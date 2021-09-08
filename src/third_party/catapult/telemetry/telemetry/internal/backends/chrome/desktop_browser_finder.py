@@ -3,11 +3,13 @@
 # found in the LICENSE file.
 """Finds desktop browsers that can be started and controlled by telemetry."""
 
+from __future__ import absolute_import
 import logging
 import os
 import shutil
 import sys
 import tempfile
+import six
 
 import dependency_manager  # pylint: disable=import-error
 
@@ -61,6 +63,7 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
     self._is_content_shell = is_content_shell
     self._browser_directory = browser_directory
     self._profile_directory = None
+    self._download_directory = None
     self._extra_browser_args = set()
     self.is_local_build = is_local_build
     # If the browser was locally built, then the chosen browser directory
@@ -118,6 +121,7 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
       raise RuntimeError('Profiles cannot be used with content shell')
 
     self._profile_directory = tempfile.mkdtemp()
+    self._download_directory = tempfile.mkdtemp()
     if source_profile:
       logging.info('Seeding profile directory from: %s', source_profile)
       # copytree requires the directory to not exist, so just delete the empty
@@ -145,6 +149,10 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
       # Remove the profile directory, which was hosted on a temp dir.
       shutil.rmtree(self._profile_directory, ignore_errors=True)
       self._profile_directory = None
+    if self._download_directory and os.path.exists(self._download_directory):
+      # Remove the download directory, which was hosted on a temp dir.
+      shutil.rmtree(self._download_directory, ignore_errors=True)
+      self._download_directory = None
 
   def Create(self):
     # Init the LocalFirstBinaryManager if this is the first time we're creating
@@ -175,8 +183,11 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
             self._browser_directory, self._profile_directory,
             self._local_executable, self._flash_path, self._is_content_shell,
             build_dir=self._build_dir)
-        return browser.Browser(
+        new_browser = browser.Browser(
             browser_backend, self._platform_backend, startup_args)
+        browser_backend.SetDownloadBehavior(
+            'allow', self._download_directory, 30)
+        return new_browser
       except Exception: # pylint: disable=broad-except
         retry = x < _BROWSER_STARTUP_TRIES - 1
         retry_message = 'retrying' if retry else 'giving up'
@@ -411,7 +422,7 @@ def FindAllAvailableBrowsers(finder_options, device):
         'dev': '/opt/google/chrome-unstable'
     }
 
-    for version, root in versions.iteritems():
+    for version, root in six.iteritems(versions):
       browser_path = os.path.join(root, 'chrome')
       if path_module.IsExecutable(browser_path):
         browsers.append(PossibleDesktopBrowser(version, finder_options,

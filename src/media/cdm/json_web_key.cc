@@ -32,9 +32,6 @@ const char kKeyIdsTag[] = "kids";
 const char kTypeTag[] = "type";
 const char kTemporarySession[] = "temporary";
 const char kPersistentLicenseSession[] = "persistent-license";
-const char kPersistentUsageRecordSession[] = "persistent-usage-record";
-const char kPersistentUsageRecordFirstTime[] = "firstTime";
-const char kPersistentUsageRecordLatestTime[] = "latestTime";
 
 static std::string ShortenTo64Characters(const std::string& input) {
   // Convert |input| into a string with escaped characters replacing any
@@ -69,12 +66,6 @@ static std::unique_ptr<base::DictionaryValue> CreateJSONDictionary(
   jwk->SetString(kKeyTag, key_string);
   jwk->SetString(kKeyIdTag, key_id_string);
   return jwk;
-}
-
-// base::DictionaryValue::Set() does not accept nullptr. A 'null' Value must
-// be used instead if we want to add a key to a JSON with a 'null' value.
-static std::unique_ptr<base::Value> GetNullValue() {
-  return std::make_unique<base::Value>(base::Value::Type::NONE);
 }
 
 std::string GenerateJWKSet(const uint8_t* key,
@@ -113,9 +104,6 @@ std::string GenerateJWKSet(const KeyIdAndKeyPairs& keys,
       break;
     case CdmSessionType::kPersistentLicense:
       jwk_set.SetString(kTypeTag, kPersistentLicenseSession);
-      break;
-    case CdmSessionType::kPersistentUsageRecord:
-      jwk_set.SetString(kTypeTag, kPersistentUsageRecordSession);
       break;
   }
 
@@ -180,7 +168,7 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set,
     return false;
   }
 
-  base::Optional<base::Value> root = base::JSONReader::Read(jwk_set);
+  absl::optional<base::Value> root = base::JSONReader::Read(jwk_set);
   if (!root || root->type() != base::Value::Type::DICTIONARY) {
     DVLOG(1) << "Not valid JSON: " << jwk_set;
     return false;
@@ -228,8 +216,6 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set,
     *session_type = CdmSessionType::kTemporary;
   } else if (session_type_id == kPersistentLicenseSession) {
     *session_type = CdmSessionType::kPersistentLicense;
-  } else if (session_type_id == kPersistentUsageRecordSession) {
-    *session_type = CdmSessionType::kPersistentUsageRecord;
   } else {
     DVLOG(1) << "Invalid '" << kTypeTag << "' value: " << session_type_id;
     return false;
@@ -249,7 +235,7 @@ bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
     return false;
   }
 
-  base::Optional<base::Value> root = base::JSONReader::Read(input);
+  absl::optional<base::Value> root = base::JSONReader::Read(input);
   if (!root || root->type() != base::Value::Type::DICTIONARY) {
     error_message->assign("Not valid JSON: ");
     error_message->append(ShortenTo64Characters(input));
@@ -311,8 +297,8 @@ void CreateLicenseRequest(const KeyIdList& key_ids,
                           CdmSessionType session_type,
                           std::vector<uint8_t>* license) {
   // Create the license request.
-  auto request = std::make_unique<base::DictionaryValue>();
-  auto list = std::make_unique<base::ListValue>();
+  base::Value request(base::Value::Type::DICTIONARY);
+  base::Value list(base::Value::Type::LIST);
   for (const auto& key_id : key_ids) {
     std::string key_id_string;
     base::Base64UrlEncode(
@@ -320,35 +306,32 @@ void CreateLicenseRequest(const KeyIdList& key_ids,
                           key_id.size()),
         base::Base64UrlEncodePolicy::OMIT_PADDING, &key_id_string);
 
-    list->AppendString(key_id_string);
+    list.Append(key_id_string);
   }
-  request->Set(kKeyIdsTag, std::move(list));
+  request.SetKey(kKeyIdsTag, std::move(list));
 
   switch (session_type) {
     case CdmSessionType::kTemporary:
-      request->SetString(kTypeTag, kTemporarySession);
+      request.SetStringKey(kTypeTag, kTemporarySession);
       break;
     case CdmSessionType::kPersistentLicense:
-      request->SetString(kTypeTag, kPersistentLicenseSession);
-      break;
-    case CdmSessionType::kPersistentUsageRecord:
-      request->SetString(kTypeTag, kPersistentUsageRecordSession);
+      request.SetStringKey(kTypeTag, kPersistentLicenseSession);
       break;
   }
 
   // Serialize the license request as a string.
   std::string json;
   JSONStringValueSerializer serializer(&json);
-  serializer.Serialize(*request);
+  serializer.Serialize(request);
 
   // Convert the serialized license request into std::vector and return it.
   std::vector<uint8_t> result(json.begin(), json.end());
   license->swap(result);
 }
 
-void AddKeyIdsToDictionary(const KeyIdList& key_ids,
-                           base::DictionaryValue* dictionary) {
-  auto list = std::make_unique<base::ListValue>();
+base::Value MakeKeyIdsDictionary(const KeyIdList& key_ids) {
+  base::Value dictionary(base::Value::Type::DICTIONARY);
+  base::Value list(base::Value::Type::LIST);
   for (const auto& key_id : key_ids) {
     std::string key_id_string;
     base::Base64UrlEncode(
@@ -356,17 +339,18 @@ void AddKeyIdsToDictionary(const KeyIdList& key_ids,
                           key_id.size()),
         base::Base64UrlEncodePolicy::OMIT_PADDING, &key_id_string);
 
-    list->AppendString(key_id_string);
+    list.Append(key_id_string);
   }
-  dictionary->Set(kKeyIdsTag, std::move(list));
+  dictionary.SetKey(kKeyIdsTag, std::move(list));
+  return dictionary;
 }
 
 std::vector<uint8_t> SerializeDictionaryToVector(
-    const base::DictionaryValue* dictionary) {
+    const base::Value& dictionary) {
   // Serialize the dictionary as a string.
   std::string json;
   JSONStringValueSerializer serializer(&json);
-  serializer.Serialize(*dictionary);
+  serializer.Serialize(dictionary);
 
   // Convert the serialized data into std::vector and return it.
   return std::vector<uint8_t>(json.begin(), json.end());
@@ -375,61 +359,21 @@ std::vector<uint8_t> SerializeDictionaryToVector(
 void CreateKeyIdsInitData(const KeyIdList& key_ids,
                           std::vector<uint8_t>* init_data) {
   // Create the init_data.
-  auto dictionary = std::make_unique<base::DictionaryValue>();
-  AddKeyIdsToDictionary(key_ids, dictionary.get());
+  auto dictionary = MakeKeyIdsDictionary(key_ids);
 
-  auto data = SerializeDictionaryToVector(dictionary.get());
+  auto data = SerializeDictionaryToVector(dictionary);
   init_data->swap(data);
 }
 
-// The format is a JSON object. For sessions of type "persistent-license" and
-// "persistent-usage-record", the object shall contain the following member:
-//
+// The format is a JSON object. For sessions of type "persistent-license", the
+// object shall contain the following member:
 //    "kids"
 //      An array of key IDs. Each element of the array is the base64url encoding
 //      of the octet sequence containing the key ID value.
 std::vector<uint8_t> CreateLicenseReleaseMessage(const KeyIdList& key_ids) {
   // Create the init_data.
-  auto dictionary = std::make_unique<base::DictionaryValue>();
-  AddKeyIdsToDictionary(key_ids, dictionary.get());
-  return SerializeDictionaryToVector(dictionary.get());
-}
-
-// For sessions of type "persistent-usage-record" the object shall also contain
-// the following members:
-//
-//    "firstTime"
-//      The first decryption time expressed as a number giving the time, in
-//      milliseconds since 01 January, 1970 UTC.
-//    "latestTime"
-//      The latest decryption time expressed as a number giving the time, in
-//      milliseconds since 01 January,
-// 1970 UTC. https://w3c.github.io/encrypted-media/#clear-key-release-format
-std::vector<uint8_t> CreateLicenseReleaseMessage(
-    const KeyIdList& key_ids,
-    const base::Time first_decrypt_time,
-    const base::Time latest_decrypt_time) {
-  // Create the init_data.
-  auto dictionary = std::make_unique<base::DictionaryValue>();
-  AddKeyIdsToDictionary(key_ids, dictionary.get());
-
-  if (!first_decrypt_time.is_null()) {
-    // Persistent-Usage-Record
-    // Time need to be millisecond since 01 January, 1970 UTC
-    dictionary->SetDouble(kPersistentUsageRecordFirstTime,
-                          first_decrypt_time.ToJsTimeIgnoringNull());
-  } else {
-    dictionary->Set(kPersistentUsageRecordFirstTime, GetNullValue());
-  }
-
-  if (!latest_decrypt_time.is_null()) {
-    dictionary->SetDouble(kPersistentUsageRecordLatestTime,
-                          latest_decrypt_time.ToJsTimeIgnoringNull());
-  } else {
-    dictionary->Set(kPersistentUsageRecordLatestTime, GetNullValue());
-  }
-
-  return SerializeDictionaryToVector(dictionary.get());
+  auto dictionary = MakeKeyIdsDictionary(key_ids);
+  return SerializeDictionaryToVector(dictionary);
 }
 
 bool ExtractFirstKeyIdFromLicenseRequest(const std::vector<uint8_t>& license,
@@ -442,7 +386,7 @@ bool ExtractFirstKeyIdFromLicenseRequest(const std::vector<uint8_t>& license,
     return false;
   }
 
-  base::Optional<base::Value> root = base::JSONReader::Read(license_as_str);
+  absl::optional<base::Value> root = base::JSONReader::Read(license_as_str);
   if (!root || root->type() != base::Value::Type::DICTIONARY) {
     DVLOG(1) << "Not valid JSON: " << license_as_str;
     return false;

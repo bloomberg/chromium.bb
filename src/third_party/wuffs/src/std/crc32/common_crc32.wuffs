@@ -24,6 +24,18 @@ pub func ieee_hasher.set_quirk_enabled!(quirk: base.u32, enabled: base.bool) {
 // to signal "initializer not called"? Should the return type, in the generated
 // C code, be "struct{ uint32_t checksum; wuffs_crc32__status status }"?
 pub func ieee_hasher.update_u32!(x: slice base.u8) base.u32 {
+	if this.state == 0 {
+		choose up = [
+			up_arm_crc32,
+			up_x86_sse42]
+	}
+	this.up!(x: args.x)
+	return this.state
+}
+
+pri func ieee_hasher.up!(x: slice base.u8),
+	choosy,
+{
 	var s : base.u32
 	var p : slice base.u8
 
@@ -31,7 +43,7 @@ pub func ieee_hasher.update_u32!(x: slice base.u8) base.u32 {
 
 	// See "Multi-Byte Lookup Tables" in std/crc32/README.md for more detail on
 	// the slicing-by-M algorithm. We use an M of 16.
-	iterate (p = args.x)(length: 16, unroll: 2) {
+	iterate (p = args.x)(length: 16, advance: 16, unroll: 2) {
 		s ^= ((p[0x00] as base.u32) << 0) |
 			((p[0x01] as base.u32) << 8) |
 			((p[0x02] as base.u32) << 16) |
@@ -52,12 +64,11 @@ pub func ieee_hasher.update_u32!(x: slice base.u8) base.u32 {
 			IEEE_TABLE[0x0D][0xFF & (s >> 16)] ^
 			IEEE_TABLE[0x0E][0xFF & (s >> 8)] ^
 			IEEE_TABLE[0x0F][0xFF & (s >> 0)]
-	} else (length: 1, unroll: 1) {
+	} else (length: 1, advance: 1, unroll: 1) {
 		s = IEEE_TABLE[0][((s & 0xFF) as base.u8) ^ p[0]] ^ (s >> 8)
 	}
 
 	this.state = 0xFFFF_FFFF ^ s
-	return this.state
 }
 
 // The table below was created by script/print-crc32-magic-numbers.go.

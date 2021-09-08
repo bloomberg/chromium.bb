@@ -24,8 +24,10 @@
 #include "perfetto/base/compiler.h"
 #include "perfetto/base/export.h"
 
+#if defined(__GNUC__) || defined(__clang__)
 // Ignore GCC warning about a missing argument for a variadic macro parameter.
 #pragma GCC system_header
+#endif
 
 // TODO(primiano): move this to base/build_config.h, turn into
 // PERFETTO_BUILDFLAG(DCHECK_IS_ON) and update call sites to use that instead.
@@ -78,6 +80,19 @@ constexpr const char* Basename(const char* str) {
 
 enum LogLev { kLogDebug = 0, kLogInfo, kLogImportant, kLogError };
 
+struct LogMessageCallbackArgs {
+  LogLev level;
+  int line;
+  const char* filename;
+  const char* message;
+};
+
+using LogMessageCallback = void (*)(LogMessageCallbackArgs);
+
+// This is not thread safe and must be called before using tracing from other
+// threads.
+PERFETTO_EXPORT void SetLogMessageCallback(LogMessageCallback callback);
+
 PERFETTO_EXPORT void LogMessage(LogLev,
                                 const char* fname,
                                 int line,
@@ -99,11 +114,19 @@ PERFETTO_EXPORT void LogMessage(LogLev,
                                __LINE__, fmt, ##__VA_ARGS__)
 #endif
 
+#if defined(_MSC_VER)
+#define PERFETTO_IMMEDIATE_CRASH() \
+  do {                             \
+    __debugbreak();                \
+    __assume(0);                   \
+  } while (0)
+#else
 #define PERFETTO_IMMEDIATE_CRASH() \
   do {                             \
     __builtin_trap();              \
     __builtin_unreachable();       \
   } while (0)
+#endif
 
 #if PERFETTO_BUILDFLAG(PERFETTO_VERBOSE_LOGS)
 #define PERFETTO_LOG(fmt, ...) \
@@ -122,8 +145,13 @@ PERFETTO_EXPORT void LogMessage(LogLev,
     PERFETTO_IMMEDIATE_CRASH();        \
   } while (0)
 
+#if defined(__GNUC__) || defined(__clang__)
 #define PERFETTO_PLOG(x, ...) \
   PERFETTO_ELOG(x " (errno: %d, %s)", ##__VA_ARGS__, errno, strerror(errno))
+#else
+// MSVC expands __VA_ARGS__ in a different order. Give up, not worth it.
+#define PERFETTO_PLOG PERFETTO_ELOG
+#endif
 
 #define PERFETTO_CHECK(x)                            \
   do {                                               \
@@ -138,8 +166,13 @@ PERFETTO_EXPORT void LogMessage(LogLev,
 #define PERFETTO_DLOG(fmt, ...) \
   PERFETTO_XLOG(::perfetto::base::kLogDebug, fmt, ##__VA_ARGS__)
 
+#if defined(__GNUC__) || defined(__clang__)
 #define PERFETTO_DPLOG(x, ...) \
   PERFETTO_DLOG(x " (errno: %d, %s)", ##__VA_ARGS__, errno, strerror(errno))
+#else
+// MSVC expands __VA_ARGS__ in a different order. Give up, not worth it.
+#define PERFETTO_DPLOG PERFETTO_DLOG
+#endif
 
 #else  // PERFETTO_DLOG_IS_ON()
 

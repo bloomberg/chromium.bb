@@ -29,9 +29,14 @@ source_set("unit_tests") {
     "//chromeos/services/multidevice_setup:unit_tests",
     "//chromeos/services/network_config:unit_tests",
     "//chromeos/services/secure_channel:unit_tests",
+    "//chromeos/services/tts:services_unittests",
   ]
   if (is_cfm) {
     deps +=
         [ "//chromeos/services/chromebox_for_meetings/public/cpp:unit_tests" ]
+  }
+
+  if (enable_cros_libassistant) {
+    deps += [ "//chromeos/services/libassistant:unit_tests" ]
   }
 }

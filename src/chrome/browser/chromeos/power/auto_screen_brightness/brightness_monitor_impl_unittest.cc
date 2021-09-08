@@ -4,13 +4,13 @@
 
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor_impl.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,7 +28,7 @@ class TestObserver : public BrightnessMonitor::Observer {
 
   // BrightnessMonitor::Observer overrides:
   void OnBrightnessMonitorInitialized(bool success) override {
-    status_ = base::Optional<BrightnessMonitor::Status>(
+    status_ = absl::optional<BrightnessMonitor::Status>(
         success ? BrightnessMonitor::Status::kSuccess
                 : BrightnessMonitor::Status::kDisabled);
   }
@@ -61,7 +61,7 @@ class TestObserver : public BrightnessMonitor::Observer {
   double new_brightness_percent_ = -1;
   int num_brightness_changes_ = 0;
   int num_user_brightness_change_requested_ = 0;
-  base::Optional<BrightnessMonitor::Status> status_;
+  absl::optional<BrightnessMonitor::Status> status_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };

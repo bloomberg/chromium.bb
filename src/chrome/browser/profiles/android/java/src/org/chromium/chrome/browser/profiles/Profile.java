@@ -13,6 +13,7 @@ import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
+import org.chromium.components.profile_metrics.BrowserProfileType;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -64,6 +65,29 @@ public class Profile implements BrowserContextHandle {
     }
 
     /**
+     * Handles type conversion of Java side {@link BrowserContextHandle} to {@link Profile}.
+     * @param browserContextHandle Java reference to native BrowserContext.
+     * @return A strongly typed reference the {@link Profile}.
+     */
+    public static Profile fromBrowserContextHandle(BrowserContextHandle browserContextHandle) {
+        return (Profile) browserContextHandle;
+    }
+
+    /**
+     * Returns the {@link BrowserProfileType} for the corresponding profile.
+     *
+     * Please note {@link BrowserProfileType} is generated from native so, it also contains other
+     * types of Profile like Guest, System, EphemeralGuest that we don't support in Android.
+     */
+    public static @BrowserProfileType int getBrowserProfileTypeFromProfile(Profile profile) {
+        assert profile != null;
+
+        if (!profile.isOffTheRecord()) return BrowserProfileType.REGULAR;
+        if (profile.isPrimaryOTRProfile()) return BrowserProfileType.INCOGNITO;
+        return BrowserProfileType.OTHER_OFF_THE_RECORD_PROFILE;
+    }
+
+    /**
      * Destroys the Profile.  Destruction is delayed until all associated
      * renderers have been killed, so the profile might not be destroyed upon returning from
      * this call.
@@ -77,21 +101,29 @@ public class Profile implements BrowserContextHandle {
     }
 
     /**
-     * Returns the OffTheRecord profile with given OTRProfileiD.
+     * Returns the OffTheRecord profile with given OTRProfileiD. If the profile
+     * does not exist and createIfNeeded is true, a new profile is created,
+     * otherwise returns null.
      *
      * @param profileID {@link OTRProfileID} object.
+     * @param createIfNeeded Boolean indicating the profile should be created if doesn't exist.
      */
-    public Profile getOffTheRecordProfile(OTRProfileID profileID) {
+    public Profile getOffTheRecordProfile(OTRProfileID profileID, boolean createIfNeeded) {
         assert profileID != null;
         return (Profile) ProfileJni.get().getOffTheRecordProfile(
-                mNativeProfileAndroid, Profile.this, profileID);
+                mNativeProfileAndroid, Profile.this, profileID, createIfNeeded);
     }
 
     /**
-     * Returns the OffTheRecord profile for incognito tabs.
+     * Returns the OffTheRecord profile for incognito tabs.  If the profile
+     * does not exist and createIfNeeded is true, a new profile is created,
+     * otherwise returns null.
+     *
+     * @param createIfNeeded Boolean indicating the profile should be created if doesn't exist.
      */
-    public Profile getPrimaryOTRProfile() {
-        return (Profile) ProfileJni.get().getPrimaryOTRProfile(mNativeProfileAndroid, Profile.this);
+    public Profile getPrimaryOTRProfile(boolean createIfNeeded) {
+        return (Profile) ProfileJni.get().getPrimaryOTRProfile(
+                mNativeProfileAndroid, Profile.this, createIfNeeded);
     }
 
     /**
@@ -198,9 +230,10 @@ public class Profile implements BrowserContextHandle {
         Object fromWebContents(WebContents webContents);
         void destroyWhenAppropriate(long nativeProfileAndroid, Profile caller);
         Object getOriginalProfile(long nativeProfileAndroid, Profile caller);
-        Object getOffTheRecordProfile(
-                long nativeProfileAndroid, Profile caller, OTRProfileID otrProfileID);
-        Object getPrimaryOTRProfile(long nativeProfileAndroid, Profile caller);
+        Object getOffTheRecordProfile(long nativeProfileAndroid, Profile caller,
+                OTRProfileID otrProfileID, boolean createIfNeeded);
+        Object getPrimaryOTRProfile(
+                long nativeProfileAndroid, Profile caller, boolean createIfNeeded);
         boolean hasOffTheRecordProfile(
                 long nativeProfileAndroid, Profile caller, OTRProfileID otrProfileID);
         boolean hasPrimaryOTRProfile(long nativeProfileAndroid, Profile caller);

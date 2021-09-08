@@ -85,12 +85,54 @@ wuffs_base__status__ensure_not_a_suspension(wuffs_base__status z) {
   return z;
 }
 
+// --------
+
+// wuffs_base__iterate_total_advance returns the exclusive pointer-offset at
+// which iteration should stop. The overall slice has length total_len, each
+// iteration's sub-slice has length iter_len and are placed iter_advance apart.
+//
+// The iter_advance may not be larger than iter_len. The iter_advance may be
+// smaller than iter_len, in which case the sub-slices will overlap.
+//
+// The return value r satisfies ((0 <= r) && (r <= total_len)).
+//
+// For example, if total_len = 15, iter_len = 5 and iter_advance = 3, there are
+// four iterations at offsets 0, 3, 6 and 9. This function returns 12.
+//
+// 0123456789012345
+// [....]
+//    [....]
+//       [....]
+//          [....]
+//             $
+// 0123456789012345
+//
+// For example, if total_len = 15, iter_len = 5 and iter_advance = 5, there are
+// three iterations at offsets 0, 5 and 10. This function returns 15.
+//
+// 0123456789012345
+// [....]
+//      [....]
+//           [....]
+//                $
+// 0123456789012345
+static inline size_t  //
+wuffs_base__iterate_total_advance(size_t total_len,
+                                  size_t iter_len,
+                                  size_t iter_advance) {
+  if (total_len >= iter_len) {
+    size_t n = total_len - iter_len;
+    return ((n / iter_advance) * iter_advance) + iter_advance;
+  }
+  return 0;
+}
+
 // ---------------- Numeric Types
 
-extern const uint8_t wuffs_base__low_bits_mask__u8[9];
-extern const uint16_t wuffs_base__low_bits_mask__u16[17];
-extern const uint32_t wuffs_base__low_bits_mask__u32[33];
-extern const uint64_t wuffs_base__low_bits_mask__u64[65];
+extern const uint8_t wuffs_base__low_bits_mask__u8[8];
+extern const uint16_t wuffs_base__low_bits_mask__u16[16];
+extern const uint32_t wuffs_base__low_bits_mask__u32[32];
+extern const uint64_t wuffs_base__low_bits_mask__u64[64];
 
 #define WUFFS_BASE__LOW_BITS_MASK__U8(n) (wuffs_base__low_bits_mask__u8[n])
 #define WUFFS_BASE__LOW_BITS_MASK__U16(n) (wuffs_base__low_bits_mask__u16[n])
@@ -144,8 +186,8 @@ wuffs_base__u64__sat_sub_indirect(uint64_t* x, uint64_t y) {
 // wuffs_base__slice_u8__prefix returns up to the first up_to bytes of s.
 static inline wuffs_base__slice_u8  //
 wuffs_base__slice_u8__prefix(wuffs_base__slice_u8 s, uint64_t up_to) {
-  if ((uint64_t)(s.len) > up_to) {
-    s.len = up_to;
+  if (((uint64_t)(s.len)) > up_to) {
+    s.len = ((size_t)up_to);
   }
   return s;
 }
@@ -153,9 +195,9 @@ wuffs_base__slice_u8__prefix(wuffs_base__slice_u8 s, uint64_t up_to) {
 // wuffs_base__slice_u8__suffix returns up to the last up_to bytes of s.
 static inline wuffs_base__slice_u8  //
 wuffs_base__slice_u8__suffix(wuffs_base__slice_u8 s, uint64_t up_to) {
-  if ((uint64_t)(s.len) > up_to) {
-    s.ptr += (uint64_t)(s.len) - up_to;
-    s.len = up_to;
+  if (((uint64_t)(s.len)) > up_to) {
+    s.ptr += ((uint64_t)(s.len)) - up_to;
+    s.len = ((size_t)up_to);
   }
   return s;
 }

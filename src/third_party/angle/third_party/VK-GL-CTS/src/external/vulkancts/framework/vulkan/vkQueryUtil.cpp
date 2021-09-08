@@ -104,7 +104,7 @@ vector<VkPhysicalDeviceGroupProperties> enumeratePhysicalDeviceGroups(const Inst
 		properties.resize(numDeviceGroups);
 		for (deUint32 i = 0; i < numDeviceGroups; i++)
 		{
-			properties[i].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES_KHR;
+			properties[i].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES;
 			properties[i].pNext = DE_NULL;
 		}
 		VK_CHECK(vk.enumeratePhysicalDeviceGroups(instance, &numDeviceGroups, &properties[0]));
@@ -331,14 +331,14 @@ VkMemoryRequirements getImagePlaneMemoryRequirements (const DeviceInterface&	vkd
 	deMemset(&planeInfo,	0, sizeof(planeInfo));
 	deMemset(&reqs,			0, sizeof(reqs));
 
-	coreInfo.sType			= VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2_KHR;
+	coreInfo.sType			= VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2;
 	coreInfo.pNext			= &planeInfo;
 	coreInfo.image			= image;
 
-	planeInfo.sType			= VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO_KHR;
+	planeInfo.sType			= VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO;
 	planeInfo.planeAspect	= planeAspect;
 
-	reqs.sType				= VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2_KHR;
+	reqs.sType				= VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2;
 
 	vkd.getImageMemoryRequirements2(device, &coreInfo, &reqs);
 
@@ -523,6 +523,24 @@ const void* findStructureInChain (const void* first, VkStructureType type)
 void* findStructureInChain (void* first, VkStructureType type)
 {
 	return const_cast<void*>(findStructureInChain(const_cast<const void*>(first), type));
+}
+
+void appendStructurePtrToVulkanChain (const void**	chainHead, const void*	structurePtr)
+{
+	struct StructureBase
+	{
+		VkStructureType		sType;
+		const void*			pNext;
+	};
+
+	while (*chainHead != DE_NULL)
+	{
+		StructureBase* ptr = (StructureBase*)(*chainHead);
+
+		chainHead = &(ptr->pNext);
+	}
+
+	(*chainHead) = structurePtr;
 }
 
 // getStructureType<T> implementations

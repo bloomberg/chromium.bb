@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
 
 from telemetry.core import exceptions
@@ -109,12 +110,8 @@ class Oobe(web_contents.WebContents):
       self.ExecuteJavaScript('Oobe.showAddUserForTesting()')
 
     py_utils.WaitFor(self._GaiaWebviewContext, 20)
-    if enterprise_enroll:
-      # TOOD(https://crbug.com/1050551): Migrate enrollment to
-      # GaiaActionButtons.
-      self._NavigateWebviewLoginLegacy(username, password, wait_for_close=False)
-    else:
-      self._NavigateWebviewLogin(username, password, wait_for_close=True)
+    self._NavigateWebviewLogin(username, password,
+                               wait_for_close=not enterprise_enroll)
 
     if enterprise_enroll:
       self.WaitForJavaScriptCondition(
@@ -164,15 +161,7 @@ class Oobe(web_contents.WebContents):
     if wait_for_close:
       py_utils.WaitFor(lambda: not self._GaiaWebviewContext(), 60)
 
-  def _NavigateWebviewLoginLegacy(self, username, password, wait_for_close):
-    """Logs into the webview-based GAIA screen. Needed for Gaia screens which
-    are not yet migrated to GaiaActionButtons"""
-    self._NavigateWebviewEntry('identifierId', username, 'identifierNext')
-    self._NavigateWebviewEntry('password', password, 'passwordNext')
-    if wait_for_close:
-      py_utils.WaitFor(lambda: not self._GaiaWebviewContext(), 60)
-
-  def _NavigateWebviewEntry(self, field, value, next_field=None):
+  def _NavigateWebviewEntry(self, field, value):
     """Navigate a username/password GAIA screen."""
     self._WaitForField(field)
     # This code supports both ChromeOS Gaia v1 and v2.
@@ -189,13 +178,6 @@ class Oobe(web_contents.WebContents):
         field.value= {{ value }};""",
         field=field,
         value=value)
-
-    if next_field:
-      self._WaitForField(next_field)
-      self._GaiaWebviewContext().ExecuteJavaScript(
-          """document.getElementById({{ next_field }}).click();""",
-          next_field=next_field)
-
 
   def _WaitForField(self, field):
     """Wait for username/password field to become available."""

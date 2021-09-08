@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/task/thread_pool.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -15,7 +16,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -41,10 +42,22 @@ void AuthenticationServiceFake::SignIn(ChromeIdentity* identity) {
   authenticated_identity_ = identity;
 }
 
+void AuthenticationServiceFake::GrantSyncConsent(ChromeIdentity* identity) {}
+
 void AuthenticationServiceFake::SignOut(
     signin_metrics::ProfileSignout signout_source,
     bool force_clear_browsing_data,
     ProceduralBlock completion) {
+  if (force_clear_browsing_data || IsAuthenticatedIdentityManaged()) {
+    base::ThreadPool::PostTask(
+        base::BindOnce(&AuthenticationServiceFake::SignOutInternal,
+                       base::Unretained(this), completion));
+  } else {
+    SignOutInternal(completion);
+  }
+}
+
+void AuthenticationServiceFake::SignOutInternal(ProceduralBlock completion) {
   authenticated_identity_ = nil;
   if (completion)
     completion();

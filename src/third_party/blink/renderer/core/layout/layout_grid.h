@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/layout/grid_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/grid_track_sizing_algorithm.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid_interface.h"
 #include "third_party/blink/renderer/core/layout/order_iterator.h"
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 
@@ -52,7 +53,7 @@ struct ContentAlignmentData {
 
 enum GridAxisPosition { kGridAxisStart, kGridAxisEnd, kGridAxisCenter };
 
-class LayoutGrid final : public LayoutBlock {
+class LayoutGrid final : public LayoutBlock, public LayoutNGGridInterface {
  public:
   explicit LayoutGrid(Element*);
   ~LayoutGrid() override;
@@ -67,15 +68,21 @@ class LayoutGrid final : public LayoutBlock {
 
   void DirtyGrid();
 
-  Vector<LayoutUnit> TrackSizesForComputedStyle(GridTrackSizingDirection) const;
+  const LayoutNGGridInterface* ToLayoutNGGridInterface() const final {
+    NOT_DESTROYED();
+    return this;
+  }
 
-  const Vector<LayoutUnit>& ColumnPositions() const {
+  Vector<LayoutUnit> TrackSizesForComputedStyle(
+      GridTrackSizingDirection) const final;
+
+  Vector<LayoutUnit> ColumnPositions() const final {
     NOT_DESTROYED();
     DCHECK(!grid_->NeedsItemsPlacement());
     return column_positions_;
   }
 
-  const Vector<LayoutUnit>& RowPositions() const {
+  Vector<LayoutUnit> RowPositions() const final {
     NOT_DESTROYED();
     DCHECK(!grid_->NeedsItemsPlacement());
     return row_positions_;
@@ -89,12 +96,13 @@ class LayoutGrid final : public LayoutBlock {
     return grid_->Cell(row, column);
   }
 
-  size_t AutoRepeatCountForDirection(GridTrackSizingDirection direction) const {
+  size_t AutoRepeatCountForDirection(
+      GridTrackSizingDirection direction) const final {
     return grid_->AutoRepeatTracks(direction);
   }
 
   size_t ExplicitGridStartForDirection(
-      GridTrackSizingDirection direction) const {
+      GridTrackSizingDirection direction) const final {
     return grid_->ExplicitGridStart(direction);
   }
 
@@ -109,7 +117,7 @@ class LayoutGrid final : public LayoutBlock {
                          GridTrackSizingDirection,
                          size_t start_line,
                          size_t span,
-                         base::Optional<LayoutUnit> available_size) const;
+                         absl::optional<LayoutUnit> available_size) const;
   bool CachedHasDefiniteLogicalHeight() const;
   bool IsBaselineAlignmentForChild(const LayoutBox& child) const;
   bool IsBaselineAlignmentForChild(const LayoutBox& child, GridAxis) const;
@@ -119,14 +127,14 @@ class LayoutGrid final : public LayoutBlock {
       const LayoutBox& child,
       const ComputedStyle* = nullptr) const;
 
-  LayoutUnit GridGap(GridTrackSizingDirection) const;
-  LayoutUnit GridItemOffset(GridTrackSizingDirection) const;
+  LayoutUnit GridGap(GridTrackSizingDirection) const final;
+  LayoutUnit GridItemOffset(GridTrackSizingDirection) const final;
 
   void UpdateGridAreaLogicalSize(LayoutBox&, LayoutSize) const;
 
   StyleContentAlignmentData ContentAlignment(GridTrackSizingDirection) const;
 
-  size_t ExplicitGridEndForDirection(GridTrackSizingDirection) const;
+  size_t ExplicitGridEndForDirection(GridTrackSizingDirection) const final;
 
   // Exposed for testing *ONLY*.
   Grid* InternalGrid() const {
@@ -168,7 +176,7 @@ class LayoutGrid final : public LayoutBlock {
 
   size_t ComputeAutoRepeatTracksCount(
       GridTrackSizingDirection,
-      base::Optional<LayoutUnit> available_size) const;
+      absl::optional<LayoutUnit> available_size) const;
   size_t ClampAutoRepeatTracks(GridTrackSizingDirection,
                                size_t auto_repeat_tracks) const;
 
@@ -180,7 +188,7 @@ class LayoutGrid final : public LayoutBlock {
 
   void PlaceItemsOnGrid(
       GridTrackSizingAlgorithm&,
-      base::Optional<LayoutUnit> available_logical_width) const;
+      absl::optional<LayoutUnit> available_logical_width) const;
   void PopulateExplicitGridAndOrderIterator(Grid&) const;
   std::unique_ptr<GridArea> CreateEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
       const Grid&,
@@ -197,7 +205,7 @@ class LayoutGrid final : public LayoutBlock {
   GridTrackSizingDirection AutoPlacementMajorAxisDirection() const;
   GridTrackSizingDirection AutoPlacementMinorAxisDirection() const;
 
-  base::Optional<LayoutUnit> OverrideIntrinsicContentLogicalSize(
+  absl::optional<LayoutUnit> OverrideIntrinsicContentLogicalSize(
       GridTrackSizingDirection) const;
 
   void ComputeTrackSizesForIndefiniteSize(GridTrackSizingAlgorithm&,
@@ -299,7 +307,7 @@ class LayoutGrid final : public LayoutBlock {
   LayoutUnit RowAxisBaselineOffsetForChild(const LayoutBox&) const;
 
   LayoutUnit GridGap(GridTrackSizingDirection,
-                     base::Optional<LayoutUnit> available_size) const;
+                     absl::optional<LayoutUnit> available_size) const;
 
   size_t GridItemSpan(const LayoutBox&, GridTrackSizingDirection);
 
@@ -321,17 +329,22 @@ class LayoutGrid final : public LayoutBlock {
   ContentAlignmentData offset_between_columns_;
   ContentAlignmentData offset_between_rows_;
 
-  typedef HashMap<const LayoutBox*, base::Optional<size_t>>
+  typedef HashMap<const LayoutBox*, absl::optional<size_t>>
       OutOfFlowPositionsMap;
   OutOfFlowPositionsMap column_of_positioned_item_;
   OutOfFlowPositionsMap row_of_positioned_item_;
 
   bool has_any_orthogonal_item_{false};
   bool baseline_items_cached_{false};
-  base::Optional<bool> has_definite_logical_height_;
+  absl::optional<bool> has_definite_logical_height_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutGrid, IsLayoutGrid());
+template <>
+struct DowncastTraits<LayoutGrid> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsLayoutGrid();
+  }
+};
 
 }  // namespace blink
 

@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 
 /**
+ * @type {!number}
+ * @private
+ */
+const DEFAULT_HIGH_VISIBILITY_TIMEOUT_S = 300;
+
+/**
  * @fileoverview
  * 'settings-nearby-share-subpage' is the settings subpage for managing the
  * Nearby Share feature.
@@ -59,6 +65,18 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    manageContactsUrl_: {
+      type: String,
+      value: () => loadTimeData.getString('nearbyShareManageContactsUrl')
+    },
+
+    /** @private {boolean} */
+    inHighVisibility_: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Used by DeepLinkingBehavior to focus this page's deep links.
      * @type {!Set<!chromeos.settings.mojom.Setting>}
@@ -67,9 +85,18 @@ Polymer({
       type: Object,
       value: () => new Set([
         chromeos.settings.mojom.Setting.kNearbyShareOnOff,
+        chromeos.settings.mojom.Setting.kNearbyShareDeviceName,
+        chromeos.settings.mojom.Setting.kNearbyShareDeviceVisibility,
+        chromeos.settings.mojom.Setting.kNearbyShareContacts,
+        chromeos.settings.mojom.Setting.kNearbyShareDataUsage,
       ]),
     },
   },
+
+  listeners: {'onboarding-cancelled': 'onOnboardingCancelled_'},
+
+  /** @private {?nearbyShare.mojom.ReceiveObserverReceiver} */
+  receiveObserver_: null,
 
   attached() {
     // TODO(b/166779043): Check whether the Account Manager is enabled and fall
@@ -85,17 +112,13 @@ Polymer({
           this.profileName_ = accounts[0].fullName;
           this.profileLabel_ = accounts[0].email;
         });
-  },
+    this.receiveObserver_ = nearby_share.observeReceiveManager(
+        /** @type {!nearbyShare.mojom.ReceiveObserverInterface} */ (this));
 
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  onEnableTap_(event) {
-    this.setPrefValue(
-        'nearby_sharing.enabled',
-        !this.getPref('nearby_sharing.enabled').value);
-    event.stopPropagation();
+    // Trigger a contact sync whenever the Nearby subpage is opened to improve
+    // consistency. This should help avoid scenarios where a share is attempted
+    // and contacts are stale on the receiver.
+    nearby_share.getContactManager().downloadContacts();
   },
 
   /** @private */
@@ -146,6 +169,62 @@ Polymer({
    */
   onReceiveDialogClose_(event) {
     this.showReceiveDialog_ = false;
+    this.inHighVisibility_ = false;
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onManageContactsTap_(event) {
+    window.open(this.manageContactsUrl_);
+  },
+
+  /**
+   * @private
+   * @return {string} Sublabel for manage contacts row.
+   */
+  getManageContactsSubLabel_() {
+    // Remove the protocol part of the contacts url.
+    return this.manageContactsUrl_.replace(/(^\w+:|^)\/\//, '');
+  },
+
+  /**
+   * Mojo callback when high visibility changes.
+   * @param {boolean} inHighVisibility
+   */
+  onHighVisibilityChanged(inHighVisibility) {
+    this.inHighVisibility_ = inHighVisibility;
+  },
+
+  /**
+   * Mojo callback when transfer status changes.
+   * @param {!nearbyShare.mojom.ShareTarget} shareTarget
+   * @param {!nearbyShare.mojom.TransferMetadata} metadata
+   */
+  onTransferUpdate(shareTarget, metadata) {
+    // Note: Intentionally left empty.
+  },
+
+  /**
+   * Mojo callback when the Nearby utility process stops.
+   */
+  onNearbyProcessStopped() {
+    this.inHighVisibility_ = false;
+  },
+
+  /**
+   * Mojo callback when advertising fails to start.
+   */
+  onStartAdvertisingFailure() {
+    this.inHighVisibility_ = false;
+  },
+
+  /** @private */
+  onInHighVisibilityToggledByUser_() {
+    if (this.inHighVisibility_) {
+      this.showHighVisibilityPage_();
+    }
   },
 
   /**
@@ -206,6 +285,18 @@ Polymer({
       default:
         return '';  // Make closure happy.
     }
+  },
+
+  /**
+   * @param {boolean} inHighVisibility
+   */
+  getHighVisibilityToggleText_(inHighVisibility) {
+    // TODO(crbug.com/1154830): Add logic to show how much time the user
+    // actually has left.
+    return inHighVisibility ?
+        this.i18n('nearbyShareHighVisibilityOn', 5) :
+        this.i18nAdvanced(
+            'nearbyShareHighVisibilityOff', {substitutions: ['5']});
   },
 
   /**
@@ -276,9 +367,7 @@ Polymer({
     }
 
     if (queryParams.has('receive')) {
-      this.showReceiveDialog_ = true;
-      Polymer.dom.flush();
-      this.$$('#receiveDialog').showHighVisibilityPage();
+      this.showHighVisibilityPage_(Number(queryParams.get('timeout')));
     }
 
     if (queryParams.has('confirm')) {
@@ -297,6 +386,18 @@ Polymer({
   },
 
   /**
+   * @param {number=} timeoutInSeconds
+   * @private
+   */
+  showHighVisibilityPage_(timeoutInSeconds) {
+    const shutoffTimeoutInSeconds =
+        timeoutInSeconds || DEFAULT_HIGH_VISIBILITY_TIMEOUT_S;
+    this.showReceiveDialog_ = true;
+    Polymer.dom.flush();
+    this.$$('#receiveDialog').showHighVisibilityPage(shutoffTimeoutInSeconds);
+  },
+
+  /**
    * @param {string} profileName The user's full name.
    * @param {string} profileLabel The user's email.
    * @return {string} Localized label.
@@ -304,5 +405,19 @@ Polymer({
    */
   getAccountRowLabel(profileName, profileLabel) {
     return this.i18n('nearbyShareAccountRowLabel', profileName, profileLabel);
+  },
+
+  /** @private */
+  getEnabledToggleClassName_() {
+    if (this.getPref('nearby_sharing.enabled').value) {
+      return 'enabled-toggle-on';
+    }
+    return 'enabled-toggle-off';
+  },
+
+  /** @private */
+  onOnboardingCancelled_() {
+    // Return to main settings page multidevice section
+    settings.Router.getInstance().navigateTo(settings.routes.MULTIDEVICE);
   },
 });

@@ -30,7 +30,7 @@ class AudioFocusDelegateAndroid : public AudioFocusDelegate {
   AudioFocusResult RequestAudioFocus(
       media_session::mojom::AudioFocusType audio_focus_type) override;
   void AbandonAudioFocus() override;
-  base::Optional<media_session::mojom::AudioFocusType> GetCurrentFocusType()
+  absl::optional<media_session::mojom::AudioFocusType> GetCurrentFocusType()
       const override;
   const base::UnguessableToken& request_id() const override;
 
@@ -57,7 +57,7 @@ class AudioFocusDelegateAndroid : public AudioFocusDelegate {
 
   // This is not used by this delegate.
   void MediaSessionInfoChanged(
-      media_session::mojom::MediaSessionInfoPtr) override {}
+      const media_session::mojom::MediaSessionInfoPtr&) override {}
 
  private:
   // Weak pointer because |this| is owned by |media_session_|.

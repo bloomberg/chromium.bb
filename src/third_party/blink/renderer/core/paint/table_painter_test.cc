@@ -15,7 +15,13 @@ using testing::ElementsAre;
 
 namespace blink {
 
-using TablePainterTest = PaintControllerPaintTest;
+class TablePainterTest : public PaintControllerPaintTest,
+                         private ScopedLayoutNGTableForTest {
+ protected:
+  TablePainterTest() : ScopedLayoutNGTableForTest(false) {}
+};
+
+// using TablePainterTest = PaintControllerPaintTest;
 INSTANTIATE_PAINT_TEST_SUITE_P(TablePainterTest);
 
 TEST_P(TablePainterTest, Background) {
@@ -109,11 +115,9 @@ TEST_P(TablePainterTest, BackgroundInSelfPaintingRow) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0 }
-      td { width: 200px; height: 200px; border: 0; background-color: green;
-    }
+      td { width: 200px; height: 200px; border: 0; background-color: green; }
       tr { background-color: blue; opacity: 0.5; }
-      table { border: none; border-spacing: 100px; border-collapse:
-    separate; }
+      table { border: none; border-spacing: 100px; border-collapse: separate; }
     </style>
     <table>
       <tr id='row'><td id='cell1'><td id='cell2'></td></tr>

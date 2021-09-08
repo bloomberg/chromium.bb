@@ -39,7 +39,7 @@ class ErrorConsoleUnitTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    profile_.reset(new TestingProfile);
+    profile_ = std::make_unique<TestingProfile>();
     profile_->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
     error_console_ = ErrorConsole::Get(profile_.get());
   }
@@ -201,7 +201,7 @@ TEST_F(ErrorConsoleUnitTest, TestDefaultStoringPrefs) {
                            .Set("version", "0.0.1")
                            .Set("manifest_version", 2)
                            .Build())
-          .SetLocation(Manifest::UNPACKED)
+          .SetLocation(mojom::ManifestLocation::kUnpacked)
           .SetID(crx_file::id_util::GenerateId("unpacked"))
           .Build();
   scoped_refptr<const Extension> packed_extension =
@@ -211,7 +211,7 @@ TEST_F(ErrorConsoleUnitTest, TestDefaultStoringPrefs) {
                            .Set("version", "0.0.1")
                            .Set("manifest_version", 2)
                            .Build())
-          .SetLocation(Manifest::INTERNAL)
+          .SetLocation(mojom::ManifestLocation::kInternal)
           .SetID(crx_file::id_util::GenerateId("packed"))
           .Build();
 

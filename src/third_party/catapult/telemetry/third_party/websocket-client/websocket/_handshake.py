@@ -19,6 +19,7 @@ Copyright (C) 2010 Hiroki Ohtani(liris)
     Boston, MA  02110-1335  USA
 
 """
+from __future__ import absolute_import
 import hashlib
 import hmac
 import os
@@ -29,6 +30,7 @@ from ._exceptions import *
 from ._http import *
 from ._logging import *
 from ._socket import *
+from six.moves import map
 
 if six.PY3:
     from base64 import encodebytes as base64encode
@@ -102,7 +104,7 @@ def _get_handshake_headers(resource, host, port, options):
     if "header" in options:
         header = options["header"]
         if isinstance(header, dict):
-            header = map(": ".join, header.items())
+            header = list(map(": ".join, list(header.items())))
         headers.extend(header)
 
     cookie = options.get("cookie", None)

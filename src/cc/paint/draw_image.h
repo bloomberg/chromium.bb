@@ -5,12 +5,12 @@
 #ifndef CC_PAINT_DRAW_IMAGE_H_
 #define CC_PAINT_DRAW_IMAGE_H_
 
-#include "base/optional.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkM44.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/color_space.h"
@@ -30,9 +30,9 @@ class CC_PAINT_EXPORT DrawImage {
             bool use_dark_mode,
             const SkIRect& src_rect,
             SkFilterQuality filter_quality,
-            const SkMatrix& matrix,
-            base::Optional<size_t> frame_index = base::nullopt,
-            const base::Optional<gfx::ColorSpace>& color_space = base::nullopt,
+            const SkM44& matrix,
+            absl::optional<size_t> frame_index = absl::nullopt,
+            const absl::optional<gfx::ColorSpace>& color_space = absl::nullopt,
             float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
   // Constructs a DrawImage from |other| by adjusting its scale and setting a
   // new color_space.
@@ -76,8 +76,8 @@ class CC_PAINT_EXPORT DrawImage {
   SkFilterQuality filter_quality_;
   SkSize scale_;
   bool matrix_is_decomposable_;
-  base::Optional<size_t> frame_index_;
-  base::Optional<gfx::ColorSpace> target_color_space_;
+  absl::optional<size_t> frame_index_;
+  absl::optional<gfx::ColorSpace> target_color_space_;
 
   // The SDR white level in nits for the display. Only if |target_color_space_|
   // is HDR will this have a value other than kDefaultSDRWhiteLevel. Used by the

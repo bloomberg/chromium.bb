@@ -9,11 +9,12 @@
 #include <string>
 #include <vector>
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/frames/quic_ack_frequency_frame.h"
-#include "net/third_party/quiche/src/quic/core/quic_framer.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream_sequencer.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/frames/quic_ack_frequency_frame.h"
+#include "quic/core/quic_framer.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_stream_sequencer.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -74,7 +75,8 @@ class QUIC_NO_EXPORT TlsChloExtractor
   bool OnUnauthenticatedHeader(const QuicPacketHeader& /*header*/) override {
     return true;
   }
-  void OnDecryptedPacket(EncryptionLevel /*level*/) override {}
+  void OnDecryptedPacket(size_t /*packet_length*/,
+                         EncryptionLevel /*level*/) override {}
   bool OnPacketHeader(const QuicPacketHeader& /*header*/) override {
     return true;
   }
@@ -155,7 +157,8 @@ class QUIC_NO_EXPORT TlsChloExtractor
     return true;
   }
   void OnPacketComplete() override {}
-  bool IsValidStatelessResetToken(QuicUint128 /*token*/) const override {
+  bool IsValidStatelessResetToken(
+      const StatelessResetToken& /*token*/) const override {
     return true;
   }
   void OnAuthenticatedIetfStatelessResetPacket(
@@ -177,7 +180,11 @@ class QUIC_NO_EXPORT TlsChloExtractor
   void Reset(QuicRstStreamErrorCode /*error*/) override {}
   void OnUnrecoverableError(QuicErrorCode error,
                             const std::string& details) override;
+  void OnUnrecoverableError(QuicErrorCode error,
+                            QuicIetfTransportErrorCodes ietf_error,
+                            const std::string& details) override;
   QuicStreamId id() const override { return 0; }
+  ParsedQuicVersion version() const override { return framer_->version(); }
 
  private:
   // Parses the length of the CHLO message by looking at the first four bytes.

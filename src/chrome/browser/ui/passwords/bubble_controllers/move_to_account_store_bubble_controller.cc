@@ -59,7 +59,7 @@ void MoveToAccountStoreBubbleController::OnFaviconReady(
   std::move(favicon_ready_callback).Run(result.image);
 }
 
-base::string16 MoveToAccountStoreBubbleController::GetTitle() const {
+std::u16string MoveToAccountStoreBubbleController::GetTitle() const {
   return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_TITLE);
 }
 
@@ -85,10 +85,10 @@ gfx::Image MoveToAccountStoreBubbleController::GetProfileIcon(int size) {
       IdentityManagerFactory::GetForProfile(GetProfile());
   if (!identity_manager)
     return gfx::Image();
-  base::Optional<AccountInfo> primary_account_info =
+  absl::optional<AccountInfo> primary_account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           identity_manager->GetPrimaryAccountInfo(
-              signin::ConsentLevel::kNotRequired));
+              signin::ConsentLevel::kSignin));
   DCHECK(primary_account_info.has_value());
 
   gfx::Image account_icon = primary_account_info->account_image;

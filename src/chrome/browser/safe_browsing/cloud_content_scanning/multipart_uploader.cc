@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/core/features.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -75,9 +76,9 @@ void MultipartUploadRequest::Start() {
 std::string MultipartUploadRequest::GenerateRequestBody(
     const std::string& metadata,
     const std::string& data) {
-  return "--" + boundary_ + "\r\n" + kDataContentType + "\r\n\r\n" + metadata +
-         "\r\n--" + boundary_ + "\r\n" + kDataContentType + "\r\n\r\n" + data +
-         "\r\n--" + boundary_ + "--\r\n";
+  return base::StrCat({"--", boundary_, "\r\n", kDataContentType, "\r\n\r\n",
+                       metadata, "\r\n--", boundary_, "\r\n", kDataContentType,
+                       "\r\n\r\n", data, "\r\n--", boundary_, "--\r\n"});
 }
 
 void MultipartUploadRequest::SendRequest() {
@@ -132,13 +133,15 @@ void MultipartUploadRequest::RetryOrFinish(
     base::UmaHistogramMediumTimes(
         "SBMultipartUploader.SuccessfulUploadDuration",
         base::Time::Now() - start_time_);
-    std::move(callback_).Run(/*success=*/true, *response_body.get());
+    std::move(callback_).Run(/*success=*/true, response_code,
+                             *response_body.get());
   } else {
     if (response_code < 500 || retry_count_ >= kMaxRetryAttempts) {
       RecordUploadSuccessHistogram(/*success=*/false);
       base::UmaHistogramMediumTimes("SBMultipartUploader.FailedUploadDuration",
                                     base::Time::Now() - start_time_);
-      std::move(callback_).Run(/*success=*/false, *response_body.get());
+      std::move(callback_).Run(/*success=*/false, response_code,
+                               *response_body.get());
     } else {
       content::GetUIThreadTaskRunner({})->PostDelayedTask(
           FROM_HERE,

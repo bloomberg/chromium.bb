@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """String constants for commonly used browser arguments."""
 
+from __future__ import print_function
+
 AUTOPLAY_POLICY_NO_USER_GESTURE_REQUIRED =\
     '--autoplay-policy=no-user-gesture-required'
 DISABLE_ACCELERATED_2D_CANVAS = '--disable-accelerated-2d-canvas'
@@ -28,8 +30,9 @@ ENABLE_DIRECT_COMPOSITION_VP_SCALING = '--disable_vp_scaling=0'
 ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES =\
     '--enable-experimental-web-platform-features'
 ENABLE_GPU_BENCHMARKING = '--enable-gpu-benchmarking'
+ENABLE_GPU_RASTERIZATION = '--enable-gpu-rasterization'
 ENABLE_LOGGING = '--enable-logging'
 ENSURE_FORCED_COLOR_PROFILE = '--ensure-forced-color-profile'
+FORCE_BROWSER_CRASH_ON_GPU_CRASH = '--force-browser-crash-on-gpu-crash'
 FORCE_COLOR_PROFILE_SRGB = '--force-color-profile=srgb'
-ENABLE_GPU_RASTERIZATION = '--enable-gpu-rasterization'
 TEST_TYPE_GPU = '--test-type=gpu'

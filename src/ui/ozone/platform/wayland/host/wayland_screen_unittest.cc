@@ -23,6 +23,8 @@
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
+using ::testing::Values;
+
 namespace ui {
 
 namespace {
@@ -88,7 +90,7 @@ class WaylandScreenTest : public WaylandTest {
     ASSERT_TRUE(output_manager_);
 
     EXPECT_TRUE(output_manager_->IsOutputReady());
-    platform_screen_ = output_manager_->CreateWaylandScreen(connection_.get());
+    platform_screen_ = output_manager_->CreateWaylandScreen();
   }
 
  protected:
@@ -232,9 +234,13 @@ TEST_P(WaylandScreenTest, OutputPropertyChanges) {
 
   Sync();
 
-  changed_values = display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
+  changed_values =
+      display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+      display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
+      display::DisplayObserver::DISPLAY_METRIC_BOUNDS;
   EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
   EXPECT_EQ(observer.GetDisplay().device_scale_factor(), new_scale_value);
+  EXPECT_EQ(observer.GetDisplay().bounds(), gfx::Rect(50, 50));
 
   platform_screen_->RemoveObserver(&observer);
 }
@@ -266,7 +272,7 @@ TEST_P(WaylandScreenTest, GetAcceleratedWidgetAtScreenPoint) {
       CreateWaylandWindowWithProperties(
           gfx::Rect(window_->GetBounds().width() - 10,
                     window_->GetBounds().height() - 10, 100, 100),
-          PlatformWindowType::kPopup, window_->GetWidget(), &delegate);
+          PlatformWindowType::kMenu, window_->GetWidget(), &delegate);
 
   Sync();
 
@@ -534,7 +540,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
       CreateWaylandWindowWithProperties(
           gfx::Rect(second_window_bounds.width() - 10,
                     second_window_bounds.height() - 10, 10, 20),
-          PlatformWindowType::kPopup, second_window->GetWidget(), &delegate);
+          PlatformWindowType::kMenu, second_window->GetWidget(), &delegate);
 
   Sync();
 
@@ -581,7 +587,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
       CreateWaylandWindowWithProperties(
           gfx::Rect(menu_window_bounds.x() + menu_window_bounds.width(),
                     menu_window_bounds.y() + 2, 10, 20),
-          PlatformWindowType::kPopup, second_window->GetWidget(), &delegate);
+          PlatformWindowType::kMenu, second_window->GetWidget(), &delegate);
 
   Sync();
 
@@ -733,15 +739,19 @@ TEST_P(LazilyConfiguredScreenTest, DualOutput) {
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandScreenTest,
-                         ::testing::Values(kXdgShellStable));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kStable}));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandScreenTest,
-                         ::testing::Values(kXdgShellV6));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kV6}));
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          LazilyConfiguredScreenTest,
-                         ::testing::Values(kXdgShellStable));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kStable}));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          LazilyConfiguredScreenTest,
-                         ::testing::Values(kXdgShellV6));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kV6}));
 
 }  // namespace ui

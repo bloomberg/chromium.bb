@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/format_macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -33,9 +32,8 @@ const char kTestURL[] = "/window_open.html";
 id<GREYMatcher> PopupBlocker() {
   return grey_allOf(
       grey_accessibilityID(kInfobarBannerViewIdentifier),
-      grey_accessibilityLabel(
-          base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
-              IDS_IOS_POPUPS_BLOCKED_MOBILE, base::UTF8ToUTF16("1")))),
+      grey_accessibilityLabel(base::SysUTF16ToNSString(
+          l10n_util::GetStringFUTF16(IDS_IOS_POPUPS_BLOCKED_MOBILE, u"1"))),
       nil);
 }
 

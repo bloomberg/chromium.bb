@@ -197,7 +197,7 @@ void BrowserFrameMac::ValidateUserInterfaceItem(
       // or if the page is distillable.
       content::WebContents* web_contents =
           browser->tab_strip_model()->GetActiveWebContents();
-      base::Optional<dom_distiller::DistillabilityResult> distillability =
+      absl::optional<dom_distiller::DistillabilityResult> distillability =
           dom_distiller::GetLatestResult(web_contents);
       bool distillable =
           distillability && distillability.value().is_distillable;
@@ -315,8 +315,7 @@ void BrowserFrameMac::PopulateCreateWindowParams(
                        NSMiniaturizableWindowMask | NSResizableWindowMask;
 
   base::scoped_nsobject<NativeWidgetMacNSWindow> ns_window;
-  if (browser_view_->IsBrowserTypeNormal() ||
-      browser_view_->IsBrowserTypeWebApp()) {
+  if (browser_view_->GetIsNormalType() || browser_view_->GetIsWebAppType()) {
     params->window_class = remote_cocoa::mojom::WindowClass::kBrowser;
     params->style_mask |= NSFullSizeContentViewWindowMask;
 
@@ -324,7 +323,7 @@ void BrowserFrameMac::PopulateCreateWindowParams(
     params->titlebar_appears_transparent = true;
 
     // Hosted apps draw their own window title.
-    if (browser_view_->IsBrowserTypeWebApp())
+    if (browser_view_->GetIsWebAppType())
       params->window_title_hidden = true;
   } else {
     params->window_class = remote_cocoa::mojom::WindowClass::kDefault;
@@ -431,4 +430,8 @@ bool BrowserFrameMac::HandleKeyboardEvent(
   // Redispatch the event. If it's a keyEquivalent:, this gives
   // CommandDispatcher the opportunity to finish passing the event to consumers.
   return GetNSWindowHost()->RedispatchKeyEvent(event.os_event);
+}
+
+bool BrowserFrameMac::ShouldRestorePreviousBrowserWidgetState() const {
+  return true;
 }

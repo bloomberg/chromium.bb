@@ -10,9 +10,9 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/optional.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace network_handler {
@@ -27,15 +27,15 @@ COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kDbusErrorMessage[];
 // On success, |result| contains the result. On failure, |result| is nullopt.
 using ResultCallback =
     base::OnceCallback<void(const std::string& service_path,
-                            base::Optional<base::Value> result)>;
+                            absl::optional<base::Value> result)>;
 
 // On success, |properties| contains the resulting properties and |error| is
 // nullopt. On failure, |result| is nullopt and |error| may contain an error
 // identifier.
 using PropertiesCallback =
     base::OnceCallback<void(const std::string& service_path,
-                            base::Optional<base::Value> properties,
-                            base::Optional<std::string> error)>;
+                            absl::optional<base::Value> properties,
+                            absl::optional<std::string> error)>;
 
 // An error callback used by both the configuration handler and the state
 // handler to receive error results from the API.
@@ -83,5 +83,10 @@ void ShillErrorCallbackFunction(const std::string& error_name,
 
 }  // namespace network_handler
 }  // namespace chromeos
+
+namespace ash {
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace network_handler = ::chromeos::network_handler;
+}
 
 #endif  // CHROMEOS_NETWORK_NETWORK_HANDLER_CALLBACKS_H_

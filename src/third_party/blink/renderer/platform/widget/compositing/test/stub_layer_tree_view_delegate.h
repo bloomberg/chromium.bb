@@ -23,12 +23,8 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
       LayerTreeFrameSinkCallback callback) override {}
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override {
   }
-  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override {}
-  void SendOverscrollEventFromImplSide(
-      const gfx::Vector2dF& overscroll_delta,
-      cc::ElementId scroll_latched_element_id) override {}
-  void SendScrollEndEventFromImplSide(
-      cc::ElementId scroll_latched_element_id) override {}
+  void UpdateCompositorScrollState(
+      const cc::CompositorCommitData& commit_data) override {}
   void BeginMainFrame(base::TimeTicks frame_time) override {}
   void OnDeferMainFrameUpdatesChanged(bool) override {}
   void OnDeferCommitsChanged(bool) override {}
@@ -48,12 +44,18 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
       override {
     return nullptr;
   }
+  std::unique_ptr<cc::WebVitalMetrics> GetWebVitalMetrics() override {
+    return nullptr;
+  }
   void BeginUpdateLayers() override {}
   void EndUpdateLayers() override {}
   void UpdateVisualState() override {}
   void WillBeginMainFrame() override {}
+  void RunPaintBenchmark(int repeat_count,
+                         cc::PaintBenchmarkResult& result) override {}
+  void ScheduleAnimationForWebTests() override {}
 };
 
 }  // namespace blink
 
-#endif  // _THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_COMPOSITING_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_COMPOSITING_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_

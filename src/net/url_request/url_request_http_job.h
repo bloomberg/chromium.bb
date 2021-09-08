@@ -16,7 +16,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
 #include "net/base/ip_endpoint.h"
@@ -27,6 +26,7 @@
 #include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_throttler_entry_interface.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -50,6 +50,8 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   static std::unique_ptr<URLRequestJob> Create(URLRequest* request);
 
   void SetRequestHeadersCallback(RequestHeadersCallback callback) override;
+  void SetEarlyResponseHeadersCallback(
+      ResponseHeadersCallback callback) override;
   void SetResponseHeadersCallback(ResponseHeadersCallback callback) override;
 
  protected:
@@ -63,6 +65,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void Start() override;
   void Kill() override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
+  void CloseConnectionOnDestruction() override;
   std::unique_ptr<SourceStream> SetUpSourceStream() override;
 
   RequestPriority priority() const {
@@ -124,7 +127,8 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // This just forwards the call to URLRequestJob::NotifyConnected().
   // We need it because that method is protected and cannot be bound in a
   // callback in this class.
-  int NotifyConnectedCallback(const TransportInfo& info);
+  int NotifyConnectedCallback(const TransportInfo& info,
+                              CompletionOnceCallback callback);
 
   void RestartTransactionWithAuth(const AuthCredentials& credentials);
 
@@ -169,7 +173,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void MaybeStartTransactionInternal(int result);
   void StartTransactionInternal();
 
-  void RecordPerfHistograms(CompletionCause reason);
+  void RecordCompletionHistograms(CompletionCause reason);
   void DoneWithRequest(CompletionCause reason);
 
   // Callback functions for Cookie Monster
@@ -179,7 +183,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
 
   // Another Cookie Monster callback
   void OnSetCookieResult(const CookieOptions& options,
-                         base::Optional<CanonicalCookie> cookie,
+                         absl::optional<CanonicalCookie> cookie,
                          std::string cookie_string,
                          CookieAccessResult access_result);
   int num_cookie_lines_left_;
@@ -233,12 +237,12 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // Ordinarily the original URL's fragment is copied during redirects, unless
   // the destination URL already has one. However, the NetworkDelegate can
   // override this behavior by setting |preserve_fragment_on_redirect_url_|:
-  // * If set to base::nullopt, the default behavior is used.
+  // * If set to absl::nullopt, the default behavior is used.
   // * If the final URL in the redirect chain matches
   //     |preserve_fragment_on_redirect_url_|, its fragment unchanged. So this
   //     is basically a way for the embedder to force a redirect not to copy the
   //     original URL's fragment when the original URL had one.
-  base::Optional<GURL> preserve_fragment_on_redirect_url_;
+  absl::optional<GURL> preserve_fragment_on_redirect_url_;
 
   // Flag used to verify that |this| is not deleted while we are awaiting
   // a callback from the NetworkDelegate. Used as a fail-fast mechanism.
@@ -257,6 +261,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   int64_t total_sent_bytes_from_previous_transactions_;
 
   RequestHeadersCallback request_headers_callback_;
+  ResponseHeadersCallback early_response_headers_callback_;
   ResponseHeadersCallback response_headers_callback_;
 
   base::WeakPtrFactory<URLRequestHttpJob> weak_factory_{this};

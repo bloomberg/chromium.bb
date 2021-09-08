@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_MEDIA_ROUTER_MOJO_MEDIA_ROUTER_MOJO_METRICS_H_
 
 #include "base/gtest_prod_util.h"
-#include "base/time/time.h"
 #include "components/media_router/common/media_route_provider_helper.h"
 #include "components/media_router/common/media_source.h"
 #include "components/media_router/common/route_request_result.h"
@@ -101,24 +100,6 @@ class MediaRouterMojoMetrics {
   // Records the outcome of an attempt to wake the Media Router component event
   // page.
   static void RecordMediaRouteProviderWakeup(MediaRouteProviderWakeup wakeup);
-
-  // Records the outcome of a create route request to a Media Route Provider.
-  // This and the following methods that record ResultCode use per-provider
-  // histograms.
-  static void RecordCreateRouteResultCode(
-      MediaRouteProviderId provider_id,
-      RouteRequestResult::ResultCode result_code);
-
-  // Records the outcome of a join route request to a Media Route Provider.
-  static void RecordJoinRouteResultCode(
-      MediaRouteProviderId provider_id,
-      RouteRequestResult::ResultCode result_code);
-
-  // Records the outcome of a call to terminateRoute() on a Media Route
-  // Provider.
-  static void RecordMediaRouteProviderTerminateRoute(
-      MediaRouteProviderId provider_id,
-      RouteRequestResult::ResultCode result_code);
 
   // Records whether the Media Route Provider succeeded or failed to create a
   // controller for a media route.

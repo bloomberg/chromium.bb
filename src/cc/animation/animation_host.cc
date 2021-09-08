@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/animation/animation.h"
@@ -20,12 +20,13 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
+#include "cc/animation/keyframe_effect.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/scroll_offset_animations.h"
 #include "cc/animation/scroll_offset_animations_impl.h"
 #include "cc/animation/scroll_timeline.h"
-#include "cc/animation/timing_function.h"
 #include "cc/animation/worklet_animation.h"
+#include "ui/gfx/animation/keyframe/timing_function.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
@@ -57,16 +58,12 @@ std::unique_ptr<AnimationHost> AnimationHost::CreateForTesting(
     ThreadInstance thread_instance) {
   auto animation_host = base::WrapUnique(new AnimationHost(thread_instance));
 
-  if (thread_instance == ThreadInstance::IMPL)
-    animation_host->SetSupportsScrollAnimations(true);
-
   return animation_host;
 }
 
 AnimationHost::AnimationHost(ThreadInstance thread_instance)
     : mutator_host_client_(nullptr),
       thread_instance_(thread_instance),
-      supports_scroll_animations_(false),
       needs_push_properties_(false),
       mutator_(nullptr) {
   if (thread_instance_ == ThreadInstance::IMPL) {
@@ -85,13 +82,10 @@ AnimationHost::~AnimationHost() {
   DCHECK(element_to_animations_map_.empty());
 }
 
-std::unique_ptr<MutatorHost> AnimationHost::CreateImplInstance(
-    bool supports_impl_scrolling) const {
+std::unique_ptr<MutatorHost> AnimationHost::CreateImplInstance() const {
   DCHECK_EQ(thread_instance_, ThreadInstance::MAIN);
-
   auto mutator_host_impl =
       base::WrapUnique<MutatorHost>(new AnimationHost(ThreadInstance::IMPL));
-  mutator_host_impl->SetSupportsScrollAnimations(supports_impl_scrolling);
   return mutator_host_impl;
 }
 
@@ -104,6 +98,20 @@ void AnimationHost::ClearMutators() {
   for (auto& kv : id_to_timeline_map_)
     EraseTimeline(kv.second);
   id_to_timeline_map_.clear();
+}
+
+base::TimeDelta AnimationHost::MinimumTickInterval() const {
+  base::TimeDelta min_interval = base::TimeDelta::Max();
+  for (const auto& animation : ticking_animations_) {
+    DCHECK(animation->keyframe_effect());
+    base::TimeDelta interval =
+        animation->keyframe_effect()->MinimumTickInterval();
+    if (interval.is_zero())
+      return interval;
+    if (interval < min_interval)
+      min_interval = interval;
+  }
+  return min_interval;
 }
 
 void AnimationHost::EraseTimeline(scoped_refptr<AnimationTimeline> timeline) {
@@ -144,9 +152,33 @@ void AnimationHost::SetHasInlineStyleMutation(bool has_inline_style_mutation) {
   has_inline_style_mutation_ = has_inline_style_mutation;
 }
 
+bool AnimationHost::HasSmilAnimation() const {
+  return has_smil_animation_;
+}
+
+void AnimationHost::SetHasSmilAnimation(bool has_smil_animation) {
+  has_smil_animation_ = has_smil_animation;
+}
+
+void AnimationHost::SetCurrentFrameHadRaf(bool current_frame_had_raf) {
+  current_frame_had_raf_ = current_frame_had_raf;
+}
+
+bool AnimationHost::CurrentFrameHadRAF() const {
+  return current_frame_had_raf_;
+}
+
+void AnimationHost::SetNextFrameHasPendingRaf(bool next_frame_has_pending_raf) {
+  next_frame_has_pending_raf_ = next_frame_has_pending_raf;
+}
+
+bool AnimationHost::NextFrameHasPendingRAF() const {
+  return next_frame_has_pending_raf_;
+}
+
 void AnimationHost::UpdateRegisteredElementIds(ElementListType changed_list) {
   for (auto map_entry : element_to_animations_map_) {
-    // kReservedElementId is reserved for an paint worklet element that animates
+    // kReservedElementId is reserved for a paint worklet element that animates
     // a custom property. This element is assumed to always be present as no
     // element is needed to tick this animation.
     if (mutator_host_client()->IsElementInPropertyTrees(map_entry.first,
@@ -260,6 +292,7 @@ void AnimationHost::PushPropertiesTo(MutatorHost* mutator_host_impl) {
   host_impl->next_frame_has_pending_raf_ = next_frame_has_pending_raf_;
   host_impl->has_canvas_invalidation_ = has_canvas_invalidation_;
   host_impl->has_inline_style_mutation_ = has_inline_style_mutation_;
+  host_impl->has_smil_animation_ = has_smil_animation_;
 
   if (needs_push_properties_) {
     needs_push_properties_ = false;
@@ -339,18 +372,9 @@ AnimationHost::GetElementAnimationsForElementId(ElementId element_id) const {
   return iter == element_to_animations_map_.end() ? nullptr : iter->second;
 }
 
-void AnimationHost::SetSupportsScrollAnimations(
-    bool supports_scroll_animations) {
-  supports_scroll_animations_ = supports_scroll_animations;
-}
-
 void AnimationHost::SetScrollAnimationDurationForTesting(
     base::TimeDelta duration) {
   ScrollOffsetAnimationCurve::SetAnimationDurationForTesting(duration);
-}
-
-bool AnimationHost::SupportsScrollAnimations() const {
-  return supports_scroll_animations_;
 }
 
 bool AnimationHost::NeedsTickAnimations() const {
@@ -646,17 +670,11 @@ bool AnimationHost::AnimationsPreserveAxisAlignment(
              : true;
 }
 
-void AnimationHost::GetAnimationScales(ElementId element_id,
-                                       ElementListType list_type,
-                                       float* maximum_scale,
-                                       float* starting_scale) const {
-  if (auto element_animations = GetElementAnimationsForElementId(element_id)) {
-    element_animations->GetAnimationScales(list_type, maximum_scale,
-                                           starting_scale);
-    return;
-  }
-  *maximum_scale = kNotScaled;
-  *starting_scale = kNotScaled;
+float AnimationHost::MaximumScale(ElementId element_id,
+                                  ElementListType list_type) const {
+  if (auto element_animations = GetElementAnimationsForElementId(element_id))
+    return element_animations->MaximumScale(list_type);
+  return kInvalidScale;
 }
 
 bool AnimationHost::IsElementAnimating(ElementId element_id) const {
@@ -783,10 +801,7 @@ void AnimationHost::SetMutationUpdate(
   }
 }
 
-void AnimationHost::SetAnimationCounts(
-    size_t total_animations_count,
-    bool current_frame_had_raf,
-    bool next_frame_has_pending_raf) {
+void AnimationHost::SetAnimationCounts(size_t total_animations_count) {
   // Though these changes are pushed as part of AnimationHost::PushPropertiesTo
   // we don't SetNeedsPushProperties as pushing the values requires a commit.
   // Instead we allow them to be pushed whenever the next required commit
@@ -800,8 +815,6 @@ void AnimationHost::SetAnimationCounts(
   main_thread_animations_count_ =
       total_animations_count - ticking_animations_count;
   DCHECK_GE(main_thread_animations_count_, 0u);
-  current_frame_had_raf_ = current_frame_had_raf;
-  next_frame_has_pending_raf_ = next_frame_has_pending_raf;
 }
 
 size_t AnimationHost::MainThreadAnimationsCount() const {
@@ -813,14 +826,6 @@ bool AnimationHost::HasCustomPropertyAnimations() const {
     if (it->AffectsCustomProperty())
       return true;
   return false;
-}
-
-bool AnimationHost::CurrentFrameHadRAF() const {
-  return current_frame_had_raf_;
-}
-
-bool AnimationHost::NextFrameHasPendingRAF() const {
-  return next_frame_has_pending_raf_;
 }
 
 AnimationHost::PendingThroughputTrackerInfos

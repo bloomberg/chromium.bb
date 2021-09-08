@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "services/data_decoder/image_decoder_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -60,7 +61,7 @@ class Request {
 
   void DecodeImage(const std::vector<unsigned char>& image, bool shrink) {
     decoder_->DecodeImage(
-        image, mojom::ImageCodec::DEFAULT, shrink, kTestMaxImageSize,
+        image, mojom::ImageCodec::kDefault, shrink, kTestMaxImageSize,
         gfx::Size(),  // Take the smallest frame (there's only one frame).
         base::BindOnce(&Request::OnRequestDone, base::Unretained(this)));
   }
@@ -87,7 +88,7 @@ class BlinkInitializer : public blink::Platform {
     blink::CreateMainThreadAndInitialize(this, &binders);
   }
 
-  ~BlinkInitializer() override {}
+  ~BlinkInitializer() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlinkInitializer);
@@ -118,7 +119,7 @@ TEST_F(ImageDecoderImplTest, DecodeImageSizeLimit) {
   // Approx max height for 3:2 image that will fit in the allotted space.
   // 1.5 for width/height ratio, 4 for bytes/pixel.
   int max_height_for_msg = sqrt(kTestMaxImageSize / (1.5 * 4));
-  int base_msg_size = sizeof(skia::mojom::Bitmap::Data_);
+  int base_msg_size = sizeof(skia::mojom::BitmapN32::Data_);
 
   // Sizes which should trigger dimension-halving 0, 1 and 2 times
   int heights[] = {max_height_for_msg - 10, max_height_for_msg + 10,

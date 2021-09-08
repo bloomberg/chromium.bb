@@ -25,41 +25,63 @@ void ClassicScript::Trace(Visitor* visitor) const {
   visitor->Trace(script_source_code_);
 }
 
+ScriptEvaluationResult ClassicScript::RunScriptOnScriptStateAndReturnValue(
+    ScriptState* script_state,
+    ExecuteScriptPolicy policy,
+    V8ScriptRunner::RethrowErrorsOption rethrow_errors) {
+  return V8ScriptRunner::CompileAndRunScript(script_state, this, policy,
+                                             std::move(rethrow_errors));
+}
+
 void ClassicScript::RunScript(LocalDOMWindow* window) {
   return RunScript(window,
-                   ScriptController::kDoNotExecuteScriptWhenScriptsDisabled);
+                   ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled);
 }
 
 void ClassicScript::RunScript(LocalDOMWindow* window,
-                              ScriptController::ExecuteScriptPolicy policy) {
+                              ExecuteScriptPolicy policy) {
   v8::HandleScope handle_scope(window->GetIsolate());
   RunScriptAndReturnValue(window, policy);
 }
 
 v8::Local<v8::Value> ClassicScript::RunScriptAndReturnValue(
     LocalDOMWindow* window,
-    ScriptController::ExecuteScriptPolicy policy) {
-  return window->GetScriptController().EvaluateScriptInMainWorld(
-      GetScriptSourceCode(), BaseURL(), sanitize_script_errors_, FetchOptions(),
-      policy);
+    ExecuteScriptPolicy policy) {
+  ScriptEvaluationResult result = RunScriptOnScriptStateAndReturnValue(
+      ToScriptStateForMainWorld(window->GetFrame()), policy);
+
+  if (result.GetResultType() == ScriptEvaluationResult::ResultType::kSuccess)
+    return result.GetSuccessValue();
+  return v8::Local<v8::Value>();
 }
 
 v8::Local<v8::Value> ClassicScript::RunScriptInIsolatedWorldAndReturnValue(
     LocalDOMWindow* window,
     int32_t world_id) {
-  return window->GetScriptController().ExecuteScriptInIsolatedWorld(
-      world_id, GetScriptSourceCode(), BaseURL(), sanitize_script_errors_);
+  DCHECK_GT(world_id, 0);
+
+  // Unlike other methods, RunScriptInIsolatedWorldAndReturnValue()'s
+  // default policy is kExecuteScriptWhenScriptsDisabled, to keep existing
+  // behavior.
+  ScriptEvaluationResult result = RunScriptOnScriptStateAndReturnValue(
+      ToScriptState(window->GetFrame(),
+                    *DOMWrapperWorld::EnsureIsolatedWorld(
+                        ToIsolate(window->GetFrame()), world_id)),
+      ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
+
+  if (result.GetResultType() == ScriptEvaluationResult::ResultType::kSuccess)
+    return result.GetSuccessValue();
+  return v8::Local<v8::Value>();
 }
 
 bool ClassicScript::RunScriptOnWorkerOrWorklet(
     WorkerOrWorkletGlobalScope& global_scope) {
   DCHECK(global_scope.IsContextThread());
 
-  ScriptState::Scope scope(global_scope.ScriptController()->GetScriptState());
-  ScriptEvaluationResult result =
-      global_scope.ScriptController()->EvaluateAndReturnValue(
-          GetScriptSourceCode(), sanitize_script_errors_,
-          global_scope.GetV8CacheOptions());
+  v8::HandleScope handle_scope(
+      global_scope.ScriptController()->GetScriptState()->GetIsolate());
+  ScriptEvaluationResult result = RunScriptOnScriptStateAndReturnValue(
+      global_scope.ScriptController()->GetScriptState());
   return result.GetResultType() == ScriptEvaluationResult::ResultType::kSuccess;
 }
 

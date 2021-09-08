@@ -21,6 +21,7 @@
 #include "content/browser/utility_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_service.mojom.h"
@@ -40,9 +41,15 @@ class MojoSandboxTest : public ContentBrowserTest {
 
   using BeforeStartCallback = base::OnceCallback<void(UtilityProcessHost*)>;
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetProcessTaskRunner() {
+    return base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+               ? GetUIThreadTaskRunner({})
+               : GetIOThreadTaskRunner({});
+  }
+
   void StartProcess(BeforeStartCallback callback = BeforeStartCallback()) {
     base::RunLoop run_loop;
-    GetIOThreadTaskRunner({})->PostTaskAndReply(
+    GetProcessTaskRunner()->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&MojoSandboxTest::StartUtilityProcessOnIoThread,
                        base::Unretained(this), std::move(callback)),
@@ -52,7 +59,7 @@ class MojoSandboxTest : public ContentBrowserTest {
 
   mojo::Remote<mojom::TestService> BindTestService() {
     mojo::Remote<mojom::TestService> test_service;
-    GetIOThreadTaskRunner({})->PostTask(
+    GetProcessTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&MojoSandboxTest::BindTestServiceOnIoThread,
                                   base::Unretained(this),
                                   test_service.BindNewPipeAndPassReceiver()));
@@ -61,7 +68,7 @@ class MojoSandboxTest : public ContentBrowserTest {
 
   void TearDownOnMainThread() override {
     base::RunLoop run_loop;
-    GetIOThreadTaskRunner({})->PostTaskAndReply(
+    GetProcessTaskRunner()->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&MojoSandboxTest::StopUtilityProcessOnIoThread,
                        base::Unretained(this)),
@@ -74,7 +81,7 @@ class MojoSandboxTest : public ContentBrowserTest {
 
  private:
   void StartUtilityProcessOnIoThread(BeforeStartCallback callback) {
-    host_.reset(new UtilityProcessHost());
+    host_ = std::make_unique<UtilityProcessHost>();
     host_->SetMetricsName("mojo_sandbox_test_process");
     if (callback)
       std::move(callback).Run(host_.get());
@@ -171,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, IsProcessSandboxed) {
   // The browser should not be considered sandboxed.
   EXPECT_FALSE(sandbox::policy::Sandbox::IsProcessSandboxed());
 
-  base::Optional<bool> maybe_is_sandboxed;
+  absl::optional<bool> maybe_is_sandboxed;
   base::RunLoop run_loop;
   test_service.set_disconnect_handler(run_loop.QuitClosure());
   test_service->IsProcessSandboxed(
@@ -193,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, NotIsProcessSandboxed) {
   // The browser should not be considered sandboxed.
   EXPECT_FALSE(sandbox::policy::Sandbox::IsProcessSandboxed());
 
-  base::Optional<bool> maybe_is_sandboxed;
+  absl::optional<bool> maybe_is_sandboxed;
   base::RunLoop run_loop;
   test_service.set_disconnect_handler(run_loop.QuitClosure());
   test_service->IsProcessSandboxed(

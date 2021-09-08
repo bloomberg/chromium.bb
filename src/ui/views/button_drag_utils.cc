@@ -9,6 +9,7 @@
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/canvas_painter.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -29,7 +30,7 @@ namespace button_drag_utils {
 static constexpr int kLinkDragImageMaxWidth = 150;
 
 void SetURLAndDragImage(const GURL& url,
-                        const base::string16& title,
+                        const std::u16string& title,
                         const gfx::ImageSkia& icon,
                         const gfx::Point* press_pt,
                         const views::Widget& widget,
@@ -41,7 +42,7 @@ void SetURLAndDragImage(const GURL& url,
 }
 
 void SetDragImage(const GURL& url,
-                  const base::string16& title,
+                  const std::u16string& title,
                   const gfx::ImageSkia& icon,
                   const gfx::Point* press_pt,
                   const views::Widget& widget,
@@ -91,7 +92,7 @@ void SetDragImage(const GURL& url,
                         widget.GetCompositor()->is_pixel_canvas())
           .context(),
       size));
-  gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, raster_scale));
+  gfx::ImageSkia image = gfx::ImageSkia::CreateFromBitmap(bitmap, raster_scale);
   data->provider().SetDragImage(image, press_point);
 }
 

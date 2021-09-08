@@ -12,7 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/ui/whats_new/default_browser_utils.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/x_callback_url.h"
 #include "ios/components/webui/web_ui_url_constants.h"
@@ -123,6 +123,33 @@ enum class WidgetKitExtensionAction {
 // Histogram helper to log the UMA IOS.WidgetKit.Action histogram.
 void LogWidgetKitAction(WidgetKitExtensionAction action) {
   UmaHistogramEnumeration("IOS.WidgetKit.Action", action);
+  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeMadeForIOS);
+}
+
+bool CallerAppIsFirstParty(MobileSessionCallerApp callerApp) {
+  switch (callerApp) {
+    case CALLER_APP_GOOGLE_SEARCH:
+    case CALLER_APP_GOOGLE_GMAIL:
+    case CALLER_APP_GOOGLE_PLUS:
+    case CALLER_APP_GOOGLE_DRIVE:
+    case CALLER_APP_GOOGLE_EARTH:
+    case CALLER_APP_GOOGLE_OTHER:
+    case CALLER_APP_GOOGLE_YOUTUBE:
+    case CALLER_APP_GOOGLE_MAPS:
+    case CALLER_APP_GOOGLE_CHROME_TODAY_EXTENSION:
+    case CALLER_APP_GOOGLE_CHROME_SEARCH_EXTENSION:
+    case CALLER_APP_GOOGLE_CHROME_CONTENT_EXTENSION:
+    case CALLER_APP_GOOGLE_CHROME_SHARE_EXTENSION:
+    case CALLER_APP_GOOGLE_CHROME:
+      return true;
+    case CALLER_APP_OTHER:
+    case CALLER_APP_APPLE_MOBILESAFARI:
+    case CALLER_APP_APPLE_OTHER:
+    case CALLER_APP_THIRD_PARTY:
+    case CALLER_APP_NOT_AVAILABLE:
+    case MOBILE_SESSION_CALLER_APP_COUNT:
+      return false;
+  }
 }
 
 }  // namespace
@@ -171,7 +198,7 @@ void LogWidgetKitAction(WidgetKitExtensionAction action) {
     } else if ([completeURL.path isEqual:kWidgetKitActionGame]) {
       LogWidgetKitAction(WidgetKitExtensionAction::ACTION_DINO_WIDGET_GAME);
 
-      LogLikelyInterestedDefaultBrowserUserActivity();
+      LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeGeneral);
 
       GURL URL(
           base::StringPrintf("%s://%s", kChromeUIScheme, kChromeUIDinoHost));
@@ -253,6 +280,7 @@ void LogWidgetKitAction(WidgetKitExtensionAction action) {
                                                        completeURL:completeURL];
   } else {
     GURL externalURL = gurl;
+    BOOL openedViaSpecificScheme = NO;
     MobileSessionStartAction action = START_ACTION_OTHER;
     if (gurl.SchemeIs(url::kHttpScheme)) {
       action = START_ACTION_OPEN_HTTP_FROM_OS;
@@ -275,6 +303,7 @@ void LogWidgetKitAction(WidgetKitExtensionAction action) {
       else
         replace_scheme.SetSchemeStr(url::kHttpScheme);
       externalURL = gurl.ReplaceComponents(replace_scheme);
+      openedViaSpecificScheme = YES;
     }
     UMA_HISTOGRAM_ENUMERATION(kUMAMobileSessionStartActionHistogram, action,
                               MOBILE_SESSION_START_ACTION_COUNT);
@@ -282,7 +311,7 @@ void LogWidgetKitAction(WidgetKitExtensionAction action) {
     // be logged as siginficnat activity for a potential user that would want
     // Chrome as their default browser in case the user changes away from
     // Chrome. This will leave a trace of this activity for re-prompting.
-    LogLikelyInterestedDefaultBrowserUserActivity();
+    LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeGeneral);
 
     if (action == START_ACTION_OPEN_HTTP_FROM_OS ||
         action == START_ACTION_OPEN_HTTPS_FROM_OS) {
@@ -292,10 +321,14 @@ void LogWidgetKitAction(WidgetKitExtensionAction action) {
 
     if (!externalURL.is_valid())
       return nil;
-    return [[ChromeAppStartupParameters alloc] initWithExternalURL:externalURL
-                                                 declaredSourceApp:appId
-                                                   secureSourceApp:nil
-                                                       completeURL:completeURL];
+    ChromeAppStartupParameters* params =
+        [[ChromeAppStartupParameters alloc] initWithExternalURL:externalURL
+                                              declaredSourceApp:appId
+                                                secureSourceApp:nil
+                                                    completeURL:completeURL];
+    params.openedViaFirstPartyScheme =
+        openedViaSpecificScheme && CallerAppIsFirstParty(params.callerApp);
+    return params;
   }
 }
 
@@ -493,7 +526,7 @@ void LogWidgetKitAction(WidgetKitExtensionAction action) {
     // An external action that opened Chrome (i.e. GrowthKit link open, open
     // Search, search clipboard content) is activity that should indicate a user
     // that would be interested in setting Chrome as the default browser.
-    LogLikelyInterestedDefaultBrowserUserActivity();
+    LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeGeneral);
   }
 
   if ([secureSourceApp
@@ -556,7 +589,7 @@ void LogWidgetKitAction(WidgetKitExtensionAction action) {
 
   if (![_declaredSourceApp length]) {
     if (self.completeURL.SchemeIs(url::kHttpScheme) ||
-        self.completeURL.SchemeIs(url::kHttpScheme)) {
+        self.completeURL.SchemeIs(url::kHttpsScheme)) {
       // If Chrome is opened via the system default browser mechanism, the
       // action should be differentiated from the case where the source is
       // unknown.

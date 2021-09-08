@@ -7,26 +7,20 @@
 
 #include <memory>
 
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/command_buffer/service/shared_image_backing_android.h"
 #include "gpu/gpu_gles2_export.h"
-
-namespace base {
-namespace android {
-class ScopedHardwareBufferFenceSync;
-}  // namespace android
-}  // namespace base
+#include "ui/gfx/gpu_fence_handle.h"
 
 namespace gpu {
-class SharedImageRepresentationGLTexture;
 class SharedImageRepresentationGLTextureScopedHardwareBufferFenceSync;
-class SharedImageRepresentationSkia;
-struct Mailbox;
+class
+    SharedImageRepresentationGLTexturePassthroughScopedHardwareBufferFenceSync;
 
 // Backing which wraps ScopedHardwareBufferFenceSync object and allows
 // producing/using different representations from it. This backing is not thread
 // safe.
-// TODO(vikassoni): Add support for passthrough textures.
 class GPU_GLES2_EXPORT SharedImageBackingScopedHardwareBufferFenceSync
     : public SharedImageBackingAndroid {
  public:
@@ -50,6 +44,9 @@ class GPU_GLES2_EXPORT SharedImageBackingScopedHardwareBufferFenceSync
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   size_t EstimatedSizeForMemTracking() const override;
 
+  AHardwareBuffer* BeginOverlayAccess(gfx::GpuFenceHandle& begin_read_fence);
+  void EndOverlayAccess(gfx::GpuFenceHandle release_fence);
+
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
       SharedImageManager* manager,
@@ -64,14 +61,24 @@ class GPU_GLES2_EXPORT SharedImageBackingScopedHardwareBufferFenceSync
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
 
+  std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) override;
+
  private:
   friend class SharedImageRepresentationGLTextureScopedHardwareBufferFenceSync;
+  friend class
+      SharedImageRepresentationGLTexturePassthroughScopedHardwareBufferFenceSync;
   friend class SharedImageRepresentationSkiaVkScopedHardwareBufferFenceSync;
 
   std::unique_ptr<
       SharedImageRepresentationGLTextureScopedHardwareBufferFenceSync>
   GenGLTextureRepresentation(SharedImageManager* manager,
                              MemoryTypeTracker* tracker);
+  std::unique_ptr<
+      SharedImageRepresentationGLTexturePassthroughScopedHardwareBufferFenceSync>
+  GenGLTexturePassthroughRepresentation(SharedImageManager* manager,
+                                        MemoryTypeTracker* tracker);
   bool BeginGLReadAccess();
   void EndGLReadAccess();
   void EndSkiaReadAccess();

@@ -19,6 +19,10 @@ if (is_android) {
 # This target is for dependency tracking for the command ID header.
 source_set("command_ids") {
   sources = [ "chrome_command_ids.h" ]
+  deps = [
+    "//build:branding_buildflags",
+    "//build:chromeos_buildflags",
+  ]
 }
 
 # TODO: put back in chrome/browser if necessary. http://crbug.com/771801.
@@ -64,15 +68,12 @@ if (is_android) {
 }
 
 grit("generated_resources") {
-  # TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
-  run_under_python2 = true
-
   source = "generated_resources.grd"
   defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
   outputs =
       [ "grit/generated_resources.h" ] +
-      process_file_template(locales_with_fake_bidi,
+      process_file_template(locales_with_pseudolocales,
                             [ "generated_resources_{{source_name_part}}.pak" ])
   if (is_android) {
     outputs += android_generated_java_resources
@@ -94,7 +95,7 @@ grit("google_chrome_strings") {
   output_dir = "$root_gen_dir/chrome"
   outputs = [ "grit/google_chrome_strings.h" ] +
             process_file_template(
-                locales_with_fake_bidi,
+                locales_with_pseudolocales,
                 [ "google_chrome_strings_{{source_name_part}}.pak" ])
 }
 
@@ -104,7 +105,7 @@ grit("chromium_strings") {
   output_dir = "$root_gen_dir/chrome"
   outputs =
       [ "grit/chromium_strings.h" ] +
-      process_file_template(locales_with_fake_bidi,
+      process_file_template(locales_with_pseudolocales,
                             [ "chromium_strings_{{source_name_part}}.pak" ])
 }
 
@@ -131,10 +132,10 @@ static_library("test_support") {
     "//components/gwp_asan/buildflags",
     "//components/heap_profiling/in_process",
     "//components/nacl/common:buildflags",
+    "//components/power_scheduler",
     "//components/startup_metric_utils/browser",
     "//content/public/app",
     "//content/public/common",
-    "//content/public/common:service_names",
     "//pdf:pdf_ppapi",
     "//ppapi/buildflags",
     "//printing/buildflags",
@@ -166,15 +167,17 @@ static_library("test_support") {
     ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     deps += [
+      "//ash/constants",
       "//chrome/browser/chromeos",
       "//chromeos",
+      "//chromeos/dbus/constants",
       "//chromeos/memory:memory",
     ]
   }
 
-  if (chromeos_is_browser_only) {
+  if (is_chromeos_lacros) {
     deps += [ "//chromeos/lacros" ]
   }
 

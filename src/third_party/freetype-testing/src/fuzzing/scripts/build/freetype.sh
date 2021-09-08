@@ -39,6 +39,12 @@ if [[ "${#}" == "0" || "${1}" != "--no-init" ]]; then
     export BROTLI_CFLAGS="-I../brotli/c/include"
     export BROTLI_LIBS="-l../brotli/build/libbrotlidec-static.a"
 
+    export ZLIB_CFLAGS="-I../zlib/usr/include"
+    export ZLIB_LIBS="-l../zlib/usr/lib-asan/libz.a"
+
+    export LIBPNG_CFLAGS="-I../libpng/usr/include"
+    export LIBPNG_LIBS="-l../libpng/usr/lib-asan/libpng.a"
+
     # Having additional libraries is pain since they have to be linked
     # statically for OSS-Fuzz.  Should additional libraries be required, they
     # have to be linked properly in `fuzzing/src/fuzzers/CMakeLists.txt'.
@@ -48,9 +54,9 @@ if [[ "${#}" == "0" || "${1}" != "--no-init" ]]; then
        --disable-shared   \
        --with-brotli      \
        --with-bzip2       \
-       --without-harfbuzz \
-       --without-png      \
-       --without-zlib
+       --with-zlib        \
+       --with-png         \
+       --without-harfbuzz
 fi
 
 cd "${path_to_freetype}"

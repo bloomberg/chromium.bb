@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/printing/usb_printer_notification.h"
 
 #include "ash/public/cpp/notification_utils.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -45,8 +44,8 @@ UsbPrinterNotification::UsbPrinterNotification(
 
   notification_ = std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
-      base::string16(),  // title
-      base::string16(),  // body
+      std::u16string(),  // title
+      std::u16string(),  // body
       gfx::Image(),      // icon
       l10n_util::GetStringUTF16(IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE),
       GURL(),  // origin_url
@@ -75,8 +74,8 @@ void UsbPrinterNotification::Close(bool by_user) {
 }
 
 void UsbPrinterNotification::Click(
-    const base::Optional<int>& button_index,
-    const base::Optional<base::string16>& reply) {
+    const absl::optional<int>& button_index,
+    const absl::optional<std::u16string>& reply) {
   if (!button_index) {
     // Body of notification clicked.
     visible_ = false;
@@ -85,8 +84,9 @@ void UsbPrinterNotification::Click(
       // open the Settings page. There is a check in Browser::Browser that only
       // OffTheRecord profiles can open browser windows in guest mode.
       chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-          profile_->IsGuestSession() ? profile_->GetPrimaryOTRProfile()
-                                     : profile_,
+          profile_->IsGuestSession()
+              ? profile_->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+              : profile_,
           chromeos::settings::mojom::kPrintingDetailsSubpagePath);
     }
     return;

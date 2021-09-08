@@ -6,9 +6,11 @@
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/views/controls/menu/menu_controller.h"
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include "ui/views/controls/menu/menu_closure_animation_mac.h"
 #endif
 
@@ -39,11 +41,12 @@ void TestMenuDelegate::OnMenuClosed(MenuItemView* menu) {
   on_menu_closed_menu_ = menu;
 }
 
-int TestMenuDelegate::OnPerformDrop(MenuItemView* menu,
-                                    DropPosition position,
-                                    const ui::DropTargetEvent& event) {
+ui::mojom::DragOperation TestMenuDelegate::OnPerformDrop(
+    MenuItemView* menu,
+    DropPosition position,
+    const ui::DropTargetEvent& event) {
   on_perform_drop_called_ = true;
-  return ui::DragDropTypes::DRAG_COPY;
+  return ui::mojom::DragOperation::kCopy;
 }
 
 int TestMenuDelegate::GetDragOperations(MenuItemView* sender) {
@@ -78,13 +81,13 @@ void MenuControllerTestApi::SetShowing(bool showing) {
 }
 
 void DisableMenuClosureAnimations() {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   MenuClosureAnimationMac::DisableAnimationsForTesting();
 #endif
 }
 
 void WaitForMenuClosureAnimation() {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // TODO(https://crbug.com/982815): Replace this with Quit+Run.
   base::RunLoop().RunUntilIdle();
 #endif
