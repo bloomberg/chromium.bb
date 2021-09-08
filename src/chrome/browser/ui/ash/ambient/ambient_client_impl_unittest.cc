@@ -7,8 +7,7 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 constexpr char kTestProfileName[] = "user@gmail.com";
+constexpr char16_t kTestProfileName16[] = u"user@gmail.com";
 constexpr char kTestGaiaId[] = "1234567890";
 
 class AmbientClientImplTest : public testing::Test {
@@ -33,14 +33,14 @@ class AmbientClientImplTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
 
     profile_ = profile_manager_->CreateTestingProfile(
-        kTestProfileName, /*prefs=*/{}, base::UTF8ToUTF16(kTestProfileName),
+        kTestProfileName, /*prefs=*/{}, kTestProfileName16,
         /*avatar_id=*/0, /*supervised_user_id=*/{},
         IdentityTestEnvironmentProfileAdaptor::
             GetIdentityTestEnvironmentFactories());
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_);
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
-        std::make_unique<chromeos::FakeChromeUserManager>());
+        std::make_unique<ash::FakeChromeUserManager>());
   }
 
   void TearDown() override {
@@ -55,8 +55,8 @@ class AmbientClientImplTest : public testing::Test {
  protected:
   TestingProfile* profile() { return profile_; }
 
-  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
-    return static_cast<chromeos::FakeChromeUserManager*>(
+  ash::FakeChromeUserManager* GetFakeUserManager() const {
+    return static_cast<ash::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 
@@ -74,7 +74,7 @@ class AmbientClientImplTest : public testing::Test {
 
   void MaybeMakeAccountAsPrimaryAccount(const AccountId& account_id) {
     if (!identity_test_env()->identity_manager()->HasPrimaryAccount(
-            signin::ConsentLevel::kNotRequired)) {
+            signin::ConsentLevel::kSignin)) {
       identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(
           account_id.GetUserEmail());
     }

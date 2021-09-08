@@ -7,14 +7,15 @@
 
 #include <string>
 
-#include "base/optional.h"
 #include "net/base/idempotency.h"
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_request_headers.h"
 #include "net/socket/socket_tag.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -53,8 +54,8 @@ struct NET_EXPORT HttpRequestInfo {
   // tracked by the server (e.g. without channel id).
   PrivacyMode privacy_mode;
 
-  // Whether secure DNS should be disabled for the request.
-  bool disable_secure_dns;
+  // Secure DNS Tag for the request.
+  SecureDnsPolicy secure_dns_policy;
 
   // Tag applied to all sockets used to service request.
   SocketTag socket_tag;
@@ -76,7 +77,7 @@ struct NET_EXPORT HttpRequestInfo {
   // TODO(https://crbug.com/1136054): Investigate migrating the one consumer of
   // this to NetworkIsolationKey::TopFrameSite().  That gives more consistent
   /// behavior, and may still provide useful metrics.
-  base::Optional<url::Origin> possibly_top_frame_origin;
+  absl::optional<url::Origin> possibly_top_frame_origin;
 
   // Idempotency of the request, which determines that if it is safe to enable
   // 0-RTT for the request. By default, 0-RTT is only enabled for safe

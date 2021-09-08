@@ -25,7 +25,7 @@
 
 static void draw(SkCanvas* canvas, const SkImage* image, SkColor4f paintColor) {
     SkPaint paint(paintColor);
-    canvas->drawImage(image, 0, 0, &paint);
+    canvas->drawImage(image, 0, 0, SkSamplingOptions(), &paint);
 }
 
 static SkBitmap to_bitmap(const SkImage* image) {
@@ -49,7 +49,7 @@ static void draw_bitmap_matrix(SkCanvas* canvas, const SkBitmap& bm,
     SkAutoCanvasRestore acr(canvas, true);
     canvas->concat(matrix);
     SkPaint paint(paintColor);
-    canvas->drawBitmap(bm, 0, 0, &paint);
+    canvas->drawImage(bm.asImage(), 0, 0, SkSamplingOptions(), &paint);
 }
 
 static void fill_color_from_bitmap(SkCanvas* canvas,

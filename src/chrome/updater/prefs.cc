@@ -8,16 +8,17 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "chrome/updater/prefs_impl.h"
-#include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/update_client/update_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 
@@ -71,13 +72,14 @@ std::unique_ptr<GlobalPrefs> CreateGlobalPrefs() {
   if (!lock)
     return nullptr;
 
-  base::FilePath global_prefs_dir;
-  if (!GetBaseDirectory(&global_prefs_dir))
+  absl::optional<base::FilePath> global_prefs_dir = GetBaseDirectory();
+  if (!global_prefs_dir)
     return nullptr;
+  VLOG(1) << "global_prefs_dir: " << global_prefs_dir;
 
   PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(
-      global_prefs_dir.Append(FILE_PATH_LITERAL("prefs.json"))));
+      global_prefs_dir->Append(FILE_PATH_LITERAL("prefs.json"))));
 
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
   update_client::RegisterPrefs(pref_registry.get());
@@ -90,13 +92,13 @@ std::unique_ptr<GlobalPrefs> CreateGlobalPrefs() {
 }
 
 std::unique_ptr<LocalPrefs> CreateLocalPrefs() {
-  base::FilePath local_prefs_dir;
-  if (!GetVersionedDirectory(&local_prefs_dir))
+  absl::optional<base::FilePath> local_prefs_dir = GetVersionedDirectory();
+  if (!local_prefs_dir)
     return nullptr;
 
   PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(
-      local_prefs_dir.Append(FILE_PATH_LITERAL("prefs.json"))));
+      local_prefs_dir->Append(FILE_PATH_LITERAL("prefs.json"))));
 
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
   update_client::RegisterPrefs(pref_registry.get());

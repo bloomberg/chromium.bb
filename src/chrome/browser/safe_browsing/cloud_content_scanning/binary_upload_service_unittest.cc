@@ -6,11 +6,12 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -20,6 +21,8 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -60,7 +63,8 @@ class FakeMultipartUploadRequest : public MultipartUploadRequest {
   void Start() override {
     std::string serialized_response;
     response_.SerializeToString(&serialized_response);
-    std::move(callback_).Run(should_succeed_, serialized_response);
+    std::move(callback_).Run(should_succeed_, should_succeed_ ? 200 : 401,
+                             serialized_response);
   }
 
  private:
@@ -128,14 +132,16 @@ class BinaryUploadServiceTest : public testing::Test {
     fake_factory_ = FakeMultipartUploadRequestFactory(should_succeed, response);
   }
 
-  void ExpectInstanceID(std::string id) {
+  void ExpectInstanceID(std::string id, int times = 1) {
     EXPECT_CALL(*fcm_service_, GetInstanceID(_))
-        .WillOnce(
+        .Times(times)
+        .WillRepeatedly(
             Invoke([id](BinaryFCMService::GetInstanceIDCallback callback) {
               std::move(callback).Run(id);
             }));
     EXPECT_CALL(*fcm_service_, UnregisterInstanceID(id, _))
-        .WillOnce(
+        .Times(times)
+        .WillRepeatedly(
             Invoke([](const std::string& token,
                       BinaryFCMService::UnregisterInstanceIDCallback callback) {
               std::move(callback).Run(true);
@@ -145,7 +151,7 @@ class BinaryUploadServiceTest : public testing::Test {
   void UploadForDeepScanning(
       std::unique_ptr<BinaryUploadService::Request> request,
       bool authorized_for_enterprise = true) {
-    service_->SetAuthForTesting(authorized_for_enterprise);
+    service_->SetAuthForTesting("fake_device_token", authorized_for_enterprise);
     service_->MaybeUploadForDeepScanning(std::move(request));
   }
 
@@ -158,7 +164,7 @@ class BinaryUploadServiceTest : public testing::Test {
   void ReceiveResponseFromUpload(BinaryUploadService::Request* request,
                                  bool success,
                                  const std::string& response) {
-    service_->OnUploadComplete(request, success, response);
+    service_->OnUploadComplete(request, success, success ? 200 : 401, response);
   }
 
   void ServiceWithNoFCMConnection() {
@@ -486,9 +492,30 @@ TEST_F(BinaryUploadServiceTest, IsAuthorizedValidTimer) {
   // The 24 hours timer should be started on the first IsAuthorized call.
   ValidateAuthorizationTimerIdle();
   service_->IsAuthorized(
-      GURL(), base::DoNothing(),
+      GURL(), base::DoNothing(), "fake_device_token",
       enterprise_connectors::AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED);
   ValidateAuthorizationTimerStarted();
+}
+
+TEST_F(BinaryUploadServiceTest, IsAuthorizedMultipleDMTokens) {
+  service_->SetAuthForTesting("valid_dm_token", true);
+  service_->SetAuthForTesting("invalid_dm_token", false);
+
+  for (auto connector :
+       {enterprise_connectors::AnalysisConnector::
+            ANALYSIS_CONNECTOR_UNSPECIFIED,
+        enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY,
+        enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
+        enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED}) {
+    service_->IsAuthorized(GURL(), base::BindOnce([](bool authorized) {
+                             EXPECT_TRUE(authorized);
+                           }),
+                           "valid_dm_token", connector);
+    service_->IsAuthorized(GURL(), base::BindOnce([](bool authorized) {
+                             EXPECT_FALSE(authorized);
+                           }),
+                           "invalid_dm_token", connector);
+  }
 }
 
 TEST_F(BinaryUploadServiceTest, AdvancedProtectionMalwareRequestAuthorized) {
@@ -556,6 +583,72 @@ TEST_F(BinaryUploadServiceTest, AdvancedProtectionDlpRequestUnauthorized) {
 
   // The result is set synchronously on unauthorized requests, so it is
   // UNAUTHORIZED before and after waiting.
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNAUTHORIZED);
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNAUTHORIZED);
+}
+
+TEST_F(BinaryUploadServiceTest,
+       DeepScanESBEnabledEnhancedProtectionMalwareRequestAuthorized) {
+  safe_browsing::SetEnhancedProtectionPrefForTests(profile_.GetPrefs(),
+                                                   /*value*/ true);
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      safe_browsing::kPromptEsbForDeepScanning);
+  BinaryUploadService::Result scanning_result =
+      BinaryUploadService::Result::UNKNOWN;
+  enterprise_connectors::ContentAnalysisResponse scanning_response;
+  std::unique_ptr<MockRequest> request =
+      MakeRequest(&scanning_result, &scanning_response, /*is_app*/ true);
+  request->add_tag("malware");
+
+  ExpectInstanceID("valid id");
+
+  enterprise_connectors::ContentAnalysisResponse simulated_response;
+
+  auto* malware_result = simulated_response.add_results();
+  malware_result->set_status(
+      enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
+  malware_result->set_tag("malware");
+  ExpectNetworkResponse(true, simulated_response);
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNKNOWN);
+
+  UploadForDeepScanning(std::move(request),
+                        /*authorized_for_enterprise=*/false);
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::SUCCESS);
+}
+
+TEST_F(BinaryUploadServiceTest, EnhancedProtectionMalwareRequestUnauthorized) {
+  safe_browsing::SetEnhancedProtectionPrefForTests(profile_.GetPrefs(),
+                                                   /*value*/ true);
+
+  BinaryUploadService::Result scanning_result =
+      BinaryUploadService::Result::UNKNOWN;
+  enterprise_connectors::ContentAnalysisResponse scanning_response;
+  std::unique_ptr<MockRequest> request =
+      MakeRequest(&scanning_result, &scanning_response, /*is_app*/ true);
+  request->add_tag("malware");
+
+  enterprise_connectors::ContentAnalysisResponse simulated_response;
+
+  auto* malware_result = simulated_response.add_results();
+  malware_result->set_status(
+      enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
+  malware_result->set_tag("malware");
+  ExpectNetworkResponse(true, simulated_response);
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNKNOWN);
+
+  UploadForDeepScanning(std::move(request),
+                        /*authorized_for_enterprise=*/false);
+
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNAUTHORIZED);
 
   content::RunAllTasksUntilIdle();
@@ -653,6 +746,70 @@ TEST_F(BinaryUploadServiceTest, UrlOverride) {
                  "scan?device_token=fake_token&connector=OnFileAttached&tag="
                  "dlp&tag=malware"),
             request.GetUrlWithParams());
+}
+
+TEST_F(BinaryUploadServiceTest, GetUploadUrl) {
+  // testing enterprise scenario
+  ASSERT_EQ(safe_browsing::BinaryUploadService::GetUploadUrl(
+                /*is_consumer_scan_eligible */ false),
+            GURL("https://safebrowsing.google.com/safebrowsing/uploads/scan"));
+
+  // testing APP scenario without Deep Scanning for ESB Feature enabled
+  AdvancedProtectionStatusManagerFactory::GetForProfile(&profile_)
+      ->SetAdvancedProtectionStatusForTesting(/*enrolled=*/true);
+  ASSERT_EQ(safe_browsing::BinaryUploadService::GetUploadUrl(
+                /*is_consumer_scan_eligible */ true),
+            GURL("https://safebrowsing.google.com/safebrowsing/uploads/app"));
+
+  // testing APP scenario with Deep Scanning for ESB Feature enabled
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      safe_browsing::kPromptEsbForDeepScanning);
+  ASSERT_EQ(
+      safe_browsing::BinaryUploadService::GetUploadUrl(
+          /*is_consumer_scan_eligible */ true),
+      GURL("https://safebrowsing.google.com/safebrowsing/uploads/consumer"));
+}
+
+TEST_F(BinaryUploadServiceTest, RequestQueue) {
+  BinaryUploadService::Result scanning_result =
+      BinaryUploadService::Result::UNKNOWN;
+  enterprise_connectors::ContentAnalysisResponse scanning_response;
+  std::vector<MockRequest*> requests;
+
+  ExpectInstanceID("valid id",
+                   2 * BinaryUploadService::kParallelActiveRequestsMax);
+  ExpectNetworkResponse(true, enterprise_connectors::ContentAnalysisResponse());
+
+  // Uploading 2*max requests before any response is received ensures that the
+  // queue is populated and processed correctly.
+  for (size_t i = 0; i < 2 * BinaryUploadService::kParallelActiveRequestsMax;
+       ++i) {
+    std::unique_ptr<MockRequest> request =
+        MakeRequest(&scanning_result, &scanning_response, /*is_app*/ false);
+    request->add_tag("dlp");
+    request->add_tag("malware");
+    requests.push_back(request.get());
+    UploadForDeepScanning(std::move(request));
+  }
+
+  content::RunAllTasksUntilIdle();
+
+  for (MockRequest* request : requests) {
+    enterprise_connectors::ContentAnalysisResponse simulated_response;
+    auto* dlp_result = simulated_response.add_results();
+    dlp_result->set_status(
+        enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
+    dlp_result->set_tag("dlp");
+    auto* malware_result = simulated_response.add_results();
+    malware_result->set_status(
+        enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
+    malware_result->set_tag("malware");
+    ReceiveMessageForRequest(request, simulated_response);
+  }
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::SUCCESS);
 }
 
 }  // namespace safe_browsing

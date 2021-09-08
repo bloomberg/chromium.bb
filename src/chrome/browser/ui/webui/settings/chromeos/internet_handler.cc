@@ -9,7 +9,9 @@
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -35,6 +37,7 @@ namespace {
 
 const char kAddThirdPartyVpnMessage[] = "addThirdPartyVpn";
 const char kConfigureThirdPartyVpnMessage[] = "configureThirdPartyVpn";
+const char kShowCarrierAccountDetail[] = "showCarrierAccountDetail";
 const char kShowCellularSetupUI[] = "showCellularSetupUI";
 const char kRequestGmsCoreNotificationsDisabledDeviceNames[] =
     "requestGmsCoreNotificationsDisabledDeviceNames";
@@ -81,6 +84,10 @@ void InternetHandler::RegisterMessages() {
           &InternetHandler::RequestGmsCoreNotificationsDisabledDeviceNames,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      kShowCarrierAccountDetail,
+      base::BindRepeating(&InternetHandler::ShowCarrierAccountDetail,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       kShowCellularSetupUI,
       base::BindRepeating(&InternetHandler::ShowCellularSetupUI,
                           base::Unretained(this)));
@@ -113,8 +120,10 @@ void InternetHandler::AddThirdPartyVpn(const base::ListValue* args) {
   // Request to launch Arc VPN provider.
   const auto* arc_app_list_prefs = ArcAppListPrefs::Get(profile_);
   if (arc_app_list_prefs && arc_app_list_prefs->GetApp(app_id)) {
-    arc::LaunchApp(profile_, app_id, ui::EF_NONE,
-                   arc::UserInteractionType::APP_STARTED_FROM_SETTINGS);
+    DCHECK(apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+        profile_));
+    apps::AppServiceProxyFactory::GetForProfile(profile_)->Launch(
+        app_id, ui::EF_NONE, apps::mojom::LaunchSource::kFromParentalControls);
     return;
   }
 
@@ -180,6 +189,15 @@ void InternetHandler::RequestGmsCoreNotificationsDisabledDeviceNames(
   SetGmsCoreNotificationsDisabledDeviceNames();
 }
 
+void InternetHandler::ShowCarrierAccountDetail(const base::ListValue* args) {
+  std::string guid;
+  if (args->GetSize() < 1 || !args->GetString(0, &guid)) {
+    NOTREACHED() << "Invalid args for: " << kShowCarrierAccountDetail;
+    return;
+  }
+  chromeos::NetworkConnect::Get()->ShowCarrierAccountDetail(guid);
+}
+
 void InternetHandler::ShowCellularSetupUI(const base::ListValue* args) {
   std::string guid;
   if (args->GetSize() < 1 || !args->GetString(0, &guid)) {
@@ -221,7 +239,7 @@ void InternetHandler::SendGmsCoreNotificationsDisabledDeviceNames() {
                     device_names_value);
 }
 
-gfx::NativeWindow InternetHandler::GetNativeWindow() const {
+gfx::NativeWindow InternetHandler::GetNativeWindow() {
   return web_ui()->GetWebContents()->GetTopLevelNativeWindow();
 }
 

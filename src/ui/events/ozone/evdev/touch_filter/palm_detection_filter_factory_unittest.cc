@@ -6,8 +6,10 @@
 
 #include <linux/input.h>
 
-#include "base/system/sys_info.h"
+#include "base/test/gtest_util.h"
+#include "base/test/scoped_chromeos_version_info.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/event_device_test_util.h"
@@ -51,22 +53,28 @@ class PalmDetectionFilterFactoryTest : public testing::Test {
 class PalmDetectionFilterFactoryDeathTest
     : public PalmDetectionFilterFactoryTest {};
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PalmDetectionFilterFactoryTest, RadiusesFromLSBRelease) {
-  std::string lsb_release = "CHROMEOS_RELEASE_BOARD=hatch\n";
-  base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time());
-  EXPECT_EQ("0.1010944, 3.51837568", internal::FetchNeuralPalmRadiusPolynomial(
-                                         kohaku_touchscreen_info_, ""));
-
-  lsb_release = "CHROMEOS_RELEASE_BOARD=reef\n";
-  base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time());
-  EXPECT_EQ("0.17889799, 4.22584412", internal::FetchNeuralPalmRadiusPolynomial(
-                                          kohaku_touchscreen_info_, ""));
-
-  lsb_release = "CHROMEOS_RELEASE_BOARD=octopus\n";
-  base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time());
-  EXPECT_EQ("", internal::FetchNeuralPalmRadiusPolynomial(
-                    kohaku_touchscreen_info_, ""));
+  {
+    base::test::ScopedChromeOSVersionInfo version(
+        "CHROMEOS_RELEASE_BOARD=hatch\n", base::Time());
+    EXPECT_EQ("0.1010944, 3.51837568",
+              internal::FetchNeuralPalmRadiusPolynomial(
+                  kohaku_touchscreen_info_, ""));
+  }
+  {
+    base::test::ScopedChromeOSVersionInfo version(
+        "CHROMEOS_RELEASE_BOARD=reef\n", base::Time());
+    EXPECT_EQ("0.17889799, 4.22584412",
+              internal::FetchNeuralPalmRadiusPolynomial(
+                  kohaku_touchscreen_info_, ""));
+  }
+  {
+    base::test::ScopedChromeOSVersionInfo version(
+        "CHROMEOS_RELEASE_BOARD=octopus\n", base::Time());
+    EXPECT_EQ("", internal::FetchNeuralPalmRadiusPolynomial(
+                      kohaku_touchscreen_info_, ""));
+  }
 }
 #endif
 
@@ -186,10 +194,10 @@ TEST_F(PalmDetectionFilterFactoryTest, ParseTest) {
 }
 
 TEST_F(PalmDetectionFilterFactoryDeathTest, BadParseRecovery) {
-  // in debug, die. In non debug, expect {}
-  EXPECT_DEBUG_DEATH(EXPECT_EQ(std::vector<float>(),
-                               internal::ParseRadiusPolynomial("cheese")),
-                     "Unable to parse.*cheese");
+  // In DCHECK builds, die. Otherwise, expect {}
+  EXPECT_DCHECK_DEATH_WITH(EXPECT_EQ(std::vector<float>(),
+                                     internal::ParseRadiusPolynomial("cheese")),
+                           "Unable to parse.*cheese");
 }
 
 TEST_F(PalmDetectionFilterFactoryDeathTest, BadNeuralParamParse) {
@@ -200,9 +208,9 @@ TEST_F(PalmDetectionFilterFactoryDeathTest, BadNeuralParamParse) {
               {"neural_palm_radius_polynomial", "1.0,chicken"},
           })},
       {ui::kEnableHeuristicPalmDetectionFilter});
-  EXPECT_DEBUG_DEATH(CreatePalmDetectionFilter(nocturne_touchscreen_info_,
-                                               &shared_palm_state_),
-                     "Unable to parse.*chicken");
+  EXPECT_DCHECK_DEATH_WITH(CreatePalmDetectionFilter(nocturne_touchscreen_info_,
+                                                     &shared_palm_state_),
+                           "Unable to parse.*chicken");
 }
 
 }  // namespace ui

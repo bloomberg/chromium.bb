@@ -30,9 +30,11 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
                                            public WebUIDataSource {
  public:
   // WebUIDataSource:
-  void AddString(base::StringPiece name, const base::string16& value) override;
+  void AddString(base::StringPiece name, const std::u16string& value) override;
   void AddString(base::StringPiece name, const std::string& value) override;
   void AddLocalizedString(base::StringPiece name, int ids) override;
+  void AddLocalizedStrings(
+      base::span<const webui::LocalizedString> strings) override;
   void AddLocalizedStrings(
       const base::DictionaryValue& localized_strings) override;
   void AddBoolean(base::StringPiece name, bool value) override;
@@ -40,6 +42,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void AddDouble(base::StringPiece name, double value) override;
   void UseStringsJs() override;
   void AddResourcePath(base::StringPiece path, int resource_id) override;
+  void AddResourcePaths(base::span<const webui::ResourcePath> paths) override;
   void SetDefaultResource(int resource_id) override;
   void SetRequestFilter(const WebUIDataSource::ShouldHandleRequestCallback&
                             should_handle_request_callback,
@@ -49,6 +52,9 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void DisableContentSecurityPolicy() override;
   void OverrideContentSecurityPolicy(network::mojom::CSPDirectiveName directive,
                                      const std::string& value) override;
+  void OverrideCrossOriginOpenerPolicy(const std::string& value) override;
+  void OverrideCrossOriginEmbedderPolicy(const std::string& value) override;
+  void OverrideCrossOriginResourcePolicy(const std::string& value) override;
   void DisableTrustedTypesCSP() override;
   void DisableDenyXFrameOptions() override;
   void EnableReplaceI18nInJS() override;
@@ -114,6 +120,9 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   bool add_csp_ = true;
 
   base::flat_map<network::mojom::CSPDirectiveName, std::string> csp_overrides_;
+  std::string coop_value_;
+  std::string coep_value_;
+  std::string corp_value_;
   bool deny_xframe_options_ = true;
   bool add_load_time_data_defaults_ = true;
   bool replace_existing_source_ = true;

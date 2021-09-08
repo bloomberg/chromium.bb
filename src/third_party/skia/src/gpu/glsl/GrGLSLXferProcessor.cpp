@@ -151,30 +151,15 @@ void GrGLSLXferProcessor::DefaultCoverageModulation(GrGLSLXPFragmentBuilder* fra
                                                     const char* outColor,
                                                     const char* outColorSecondary,
                                                     const GrXferProcessor& proc) {
-    if (proc.dstReadUsesMixedSamples()) {
-        if (srcCoverage) {
-            // TODO: Once we are no longer using legacy mesh ops, it will not be possible to even
-            // create a mixed sample with lcd so we can uncomment the below assert. In practice
-            // today this never happens except for GLPrograms test which can make one. skia:6661
-            // SkASSERT(!proc.isLCD());
-            fragBuilder->codeAppendf("%s *= %s;", outColor, srcCoverage);
-            fragBuilder->codeAppendf("%s = %s;", outColorSecondary, srcCoverage);
-        } else {
-            fragBuilder->codeAppendf("%s = half4(1.0);", outColorSecondary);
-        }
-    } else if (srcCoverage) {
+    if (srcCoverage) {
         if (proc.isLCD()) {
-            fragBuilder->codeAppendf("half lerpRed = mix(%s.a, %s.a, %s.r);",
-                                     dstColor, outColor, srcCoverage);
-            fragBuilder->codeAppendf("half lerpBlue = mix(%s.a, %s.a, %s.g);",
-                                     dstColor, outColor, srcCoverage);
-            fragBuilder->codeAppendf("half lerpGreen = mix(%s.a, %s.a, %s.b);",
+            fragBuilder->codeAppendf("half3 lerpRGB = mix(%s.aaa, %s.aaa, %s.rgb);",
                                      dstColor, outColor, srcCoverage);
         }
         fragBuilder->codeAppendf("%s = %s * %s + (half4(1.0) - %s) * %s;",
                                  outColor, srcCoverage, outColor, srcCoverage, dstColor);
         if (proc.isLCD()) {
-            fragBuilder->codeAppendf("%s.a = max(max(lerpRed, lerpBlue), lerpGreen);", outColor);
+            fragBuilder->codeAppendf("%s.a = max(max(lerpRGB.r, lerpRGB.b), lerpRGB.g);", outColor);
         }
     }
 }

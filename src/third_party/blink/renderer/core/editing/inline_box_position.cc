@@ -197,6 +197,7 @@ template <typename Strategy>
 PositionWithAffinityTemplate<Strategy> AdjustBlockFlowPositionToInline(
     const PositionTemplate<Strategy>& position,
     int recursion_depth) {
+  DCHECK(position.IsNotNull());
   if (recursion_depth >= kBlockFlowAdjustmentMaxRecursionDepth) {
     // TODO(editing-dev): This function enters infinite recursion in some cases.
     // Find the root cause and fix it. See https://crbug.com/857266
@@ -209,7 +210,9 @@ PositionWithAffinityTemplate<Strategy> AdjustBlockFlowPositionToInline(
   // |LayoutObject::CreatePositionWithAffinity()|.
   const PositionTemplate<Strategy>& downstream_equivalent =
       DownstreamIgnoringEditingBoundaries(position);
-  if (downstream_equivalent != position) {
+  DCHECK(downstream_equivalent.IsNotNull());
+  if (downstream_equivalent != position &&
+      downstream_equivalent.AnchorNode()->GetLayoutObject()) {
     return ComputeInlineAdjustedPositionAlgorithm(
         PositionWithAffinityTemplate<Strategy>(downstream_equivalent,
                                                TextAffinity::kUpstream),
@@ -217,7 +220,9 @@ PositionWithAffinityTemplate<Strategy> AdjustBlockFlowPositionToInline(
   }
   const PositionTemplate<Strategy>& upstream_equivalent =
       UpstreamIgnoringEditingBoundaries(position);
-  if (upstream_equivalent == position)
+  DCHECK(upstream_equivalent.IsNotNull());
+  if (upstream_equivalent == position ||
+      !upstream_equivalent.AnchorNode()->GetLayoutObject())
     return PositionWithAffinityTemplate<Strategy>();
 
   return ComputeInlineAdjustedPositionAlgorithm(
@@ -232,6 +237,7 @@ PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPositionAlgorithm(
     int recursion_depth) {
   // TODO(yoichio): We don't assume |position| is canonicalized no longer and
   // there are few cases failing to compute. Fix it: crbug.com/812535.
+  DCHECK(position.IsNotNull());
   DCHECK(!position.AnchorNode()->IsShadowRoot()) << position;
   DCHECK(position.GetPosition().AnchorNode()->GetLayoutObject()) << position;
   const LayoutObject& layout_object =
@@ -324,20 +330,23 @@ InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(
   const PositionTemplate<Strategy>& position = adjusted.GetPosition();
   DCHECK(!position.AnchorNode()->IsShadowRoot()) << adjusted;
   DCHECK(position.AnchorNode()->GetLayoutObject()) << adjusted;
-  const LayoutObject& layout_object = *position.AnchorNode()->GetLayoutObject();
+  LayoutObject& layout_object = *position.AnchorNode()->GetLayoutObject();
   const int caret_offset = position.ComputeEditingOffset();
-  const int round_offset =
-      std::min(caret_offset, layout_object.CaretMaxOffset());
 
   if (layout_object.IsText()) {
     // TODO(yoichio): Consider |ToLayoutText(layout_object)->TextStartOffset()|
     // for first-letter tested with LocalCaretRectTest::FloatFirstLetter.
-    return ComputeInlineBoxPositionForTextNode(
-        &To<LayoutText>(layout_object), round_offset, adjusted.Affinity());
+    const LayoutText& layout_text = To<LayoutText>(layout_object);
+    const int round_offset =
+        std::min(caret_offset, layout_text.CaretMaxOffset());
+    return ComputeInlineBoxPositionForTextNode(&layout_text, round_offset,
+                                               adjusted.Affinity());
   }
 
   DCHECK(layout_object.IsAtomicInlineLevel());
   DCHECK(layout_object.IsInline());
+  const int round_offset =
+      std::min(caret_offset, LineLayoutItem(&layout_object).CaretMaxOffset());
   return ComputeInlineBoxPositionForAtomicInline(&layout_object, round_offset);
 }
 
@@ -366,11 +375,6 @@ InlineBoxPosition ComputeInlineBoxPosition(
   return ComputeInlineBoxPositionTemplate<EditingInFlatTreeStrategy>(position);
 }
 
-InlineBoxPosition ComputeInlineBoxPosition(const VisiblePosition& position) {
-  DCHECK(position.IsValid()) << position;
-  return ComputeInlineBoxPosition(position.ToPositionWithAffinity());
-}
-
 PositionWithAffinity ComputeInlineAdjustedPosition(
     const PositionWithAffinity& position) {
   return ComputeInlineAdjustedPositionAlgorithm(position, 0);
@@ -379,13 +383,6 @@ PositionWithAffinity ComputeInlineAdjustedPosition(
 PositionInFlatTreeWithAffinity ComputeInlineAdjustedPosition(
     const PositionInFlatTreeWithAffinity& position) {
   return ComputeInlineAdjustedPositionAlgorithm(position, 0);
-}
-
-PositionWithAffinity ComputeInlineAdjustedPosition(
-    const VisiblePosition& position) {
-  DCHECK(position.IsValid()) << position;
-  return ComputeInlineAdjustedPositionAlgorithm(
-      position.ToPositionWithAffinity(), 0);
 }
 
 InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(

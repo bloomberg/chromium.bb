@@ -11,9 +11,9 @@
 #include <set>
 #include <string>
 
+#include "base/guid.h"
 #include "base/hash/md5.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 
 namespace base {
@@ -161,7 +161,7 @@ class BookmarkCodec {
 
   // Updates the check-sum with the given string.
   void UpdateChecksum(const std::string& str);
-  void UpdateChecksum(const base::string16& str);
+  void UpdateChecksum(const std::u16string& str);
 
   // Updates the check-sum with the given contents of URL/folder bookmark node.
   // NOTE: These functions take in individual properties of a bookmark node
@@ -170,10 +170,10 @@ class BookmarkCodec {
   // and once for computing the check-sum.
   // The url parameter should be a valid UTF8 string.
   void UpdateChecksumWithUrlNode(const std::string& id,
-                                 const base::string16& title,
+                                 const std::u16string& title,
                                  const std::string& url);
   void UpdateChecksumWithFolderNode(const std::string& id,
-                                    const base::string16& title);
+                                    const std::u16string& title);
 
   // Initializes/Finalizes the checksum.
   void InitializeChecksum();
@@ -195,7 +195,7 @@ class BookmarkCodec {
 
   // Contains the GUID of each of the nodes found in the file. Used to determine
   // if we have duplicates.
-  std::set<std::string> guids_;
+  std::set<base::GUID> guids_;
 
   // MD5 context used to compute MD5 hash of all bookmark data.
   base::MD5Context md5_context_;

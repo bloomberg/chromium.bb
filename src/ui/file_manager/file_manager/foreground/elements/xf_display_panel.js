@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {PanelItem} from './xf_panel_item.m.js';
+// #import {util} from '../../common/js/util.m.js';
+
 /**
  * A panel to display a collection of PanelItem.
  * @extends HTMLElement
  */
-class DisplayPanel extends HTMLElement {
+/* #export */ class DisplayPanel extends HTMLElement {
   constructor() {
     super();
     this.createElement_();
@@ -308,11 +311,10 @@ class DisplayPanel extends HTMLElement {
       if (button) {
         button.removeEventListener('click', this.toggleSummary);
       }
-      if (util.isTransferDetailsEnabled()) {
-        const textDiv = summaryPanel.textDiv;
-        if (textDiv) {
-          textDiv.removeEventListener('click', this.toggleSummary);
-        }
+      // For transfer summary details.
+      const textDiv = summaryPanel.textDiv;
+      if (textDiv) {
+        textDiv.removeEventListener('click', this.toggleSummary);
       }
       summaryPanel.remove();
       this.panels_.hidden = false;
@@ -325,20 +327,16 @@ class DisplayPanel extends HTMLElement {
       summaryPanel = document.createElement('xf-panel-item');
       summaryPanel.setAttribute('panel-type', 1);
       summaryPanel.id = 'summary-panel';
-      if (util.isTransferDetailsEnabled()) {
-        summaryPanel.setAttribute('detailed-summary', '');
-      }
+      summaryPanel.setAttribute('detailed-summary', '');
       const button = summaryPanel.primaryButton;
       if (button) {
         button.parent = this;
         button.addEventListener('click', this.toggleSummary);
       }
-      if (util.isTransferDetailsEnabled()) {
-        const textDiv = summaryPanel.textDiv;
-        if (textDiv) {
-          textDiv.parent = this;
-          textDiv.addEventListener('click', this.toggleSummary);
-        }
+      const textDiv = summaryPanel.textDiv;
+      if (textDiv) {
+        textDiv.parent = this;
+        textDiv.addEventListener('click', this.toggleSummary);
       }
       summaryHost.appendChild(summaryPanel);
       // Setup the panels based on expand/collapse state of the summary panel.
@@ -371,9 +369,7 @@ class DisplayPanel extends HTMLElement {
     panel.setAttribute('indicator', 'progress');
     this.items_.push(/** @type {!PanelItem} */ (panel));
     this.setAriaHidden_();
-    if (util.isTransferDetailsEnabled()) {
-      this.setAttribute('detailed-panel', 'detailed-panel');
-    }
+    this.setAttribute('detailed-panel', 'detailed-panel');
     return /** @type {!PanelItem} */ (panel);
   }
 

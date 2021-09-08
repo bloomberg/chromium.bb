@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,8 +22,10 @@ namespace {
 
 void LogBadMessage(BadMessageReason reason) {
   static auto* bad_message_reason = base::debug::AllocateCrashKeyString(
-      "bad_message_reason", base::debug::CrashKeySize::Size32);
+      "bad_message_reason", base::debug::CrashKeySize::Size64);
 
+  TRACE_EVENT_INSTANT1("ipc,security", "content::ReceivedBadMessage",
+                       TRACE_EVENT_SCOPE_THREAD, "reason", reason);
   LOG(ERROR) << "Terminating renderer for bad IPC message, reason " << reason;
   base::UmaHistogramSparse("Stability.BadMessageTerminated.Content", reason);
   base::debug::SetCrashKeyString(bad_message_reason,

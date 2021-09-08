@@ -35,6 +35,7 @@ int main(int argc, char * argv[])
     // * avifImageSetMetadataXMP()
     // * yuvRange
     // * alphaRange
+    // * alphaPremultiplied
     // * transforms (transformFlags, pasp, clap, irot, imir)
 
     if (encodeYUVDirectly) {
@@ -53,7 +54,7 @@ int main(int argc, char * argv[])
         printf("Encoding from converted RGBA\n");
 
         avifRGBImageSetDefaults(&rgb, image);
-        // Override RGB(A)->YUV(A) defaults here: depth, format, chromaUpsampling, ignoreAlpha, libYUVUsage, etc
+        // Override RGB(A)->YUV(A) defaults here: depth, format, chromaUpsampling, ignoreAlpha, alphaPremultiplied, libYUVUsage, etc
 
         // Alternative: set rgb.pixels and rgb.rowBytes yourself, which should match your chosen rgb.format
         // Be sure to use uint16_t* instead of uint8_t* for rgb.pixels/rgb.rowBytes if (rgb.depth > 8)
@@ -84,6 +85,7 @@ int main(int argc, char * argv[])
 
     // Call avifEncoderAddImage() for each image in your sequence
     // Only set AVIF_ADD_IMAGE_FLAG_SINGLE if you're not encoding a sequence
+    // Use avifEncoderAddImageGrid() instead with an array of avifImage* to make a grid image
     avifResult addImageResult = avifEncoderAddImage(encoder, image, 1, AVIF_ADD_IMAGE_FLAG_SINGLE);
     if (addImageResult != AVIF_RESULT_OK) {
         fprintf(stderr, "Failed to add image to encoder: %s\n", avifResultToString(addImageResult));

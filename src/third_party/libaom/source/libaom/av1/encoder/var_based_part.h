@@ -46,14 +46,14 @@ extern "C" {
  * \callgraph
  * \callergraph
  *
- * \param[in]       cpi               Top level encoder structure
- * \param[in]       q                 q index
- * \param[in]       content_state     Content state of superblock
+ * \param[in]      cpi                Top level encoder structure
+ * \param[in]      q                  q index
+ * \param[in]      content_lowsumdiff Low sumdiff flag for superblock
  *
  * \return Returns the set of thresholds in \c cpi->vbp_info.thresholds.
  */
 void av1_set_variance_partition_thresholds(AV1_COMP *cpi, int q,
-                                           int content_state);
+                                           int content_lowsumdiff);
 
 /*!\brief Variance based partition selection.
  *

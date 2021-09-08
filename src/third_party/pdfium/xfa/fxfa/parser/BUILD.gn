@@ -673,8 +673,6 @@ source_set("parser") {
     "xfa_basic_data.h",
     "xfa_document_datamerger_imp.cpp",
     "xfa_document_datamerger_imp.h",
-    "xfa_resolvenode_rs.cpp",
-    "xfa_resolvenode_rs.h",
     "xfa_utils.cpp",
     "xfa_utils.h",
   ]
@@ -691,7 +689,7 @@ source_set("parser") {
   ]
   allow_circular_includes_from = [ "../../../fxjs" ]
   configs += [
-    "../../../:pdfium_core_config",
+    "../../../:pdfium_strict_config",
     "../../:xfa_warnings",
   ]
   visibility = [ "../../../*" ]
@@ -704,6 +702,7 @@ pdfium_unittest_source_set("unittests") {
     "cxfa_measurement_unittest.cpp",
     "cxfa_node_unittest.cpp",
     "cxfa_nodeiteratortemplate_unittest.cpp",
+    "cxfa_timezoneprovider_unittest.cpp",
     "cxfa_xmllocale_unittest.cpp",
     "xfa_basic_data_unittest.cpp",
     "xfa_utils_unittest.cpp",

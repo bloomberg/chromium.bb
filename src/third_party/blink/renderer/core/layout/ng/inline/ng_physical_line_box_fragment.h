@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_PHYSICAL_LINE_BOX_FRAGMENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/platform/fonts/font_height.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -15,8 +15,7 @@ namespace blink {
 class NGFragmentItem;
 class NGLineBoxFragmentBuilder;
 
-class CORE_EXPORT NGPhysicalLineBoxFragment final
-    : public NGPhysicalContainerFragment {
+class CORE_EXPORT NGPhysicalLineBoxFragment final : public NGPhysicalFragment {
  public:
   enum NGLineBoxType {
     kNormalLineBox,
@@ -31,7 +30,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   static scoped_refptr<const NGPhysicalLineBoxFragment> Create(
       NGLineBoxFragmentBuilder* builder);
 
-  using PassKey = util::PassKey<NGPhysicalLineBoxFragment>;
+  using PassKey = base::PassKey<NGPhysicalLineBoxFragment>;
   NGPhysicalLineBoxFragment(PassKey, NGLineBoxFragmentBuilder* builder);
 
   ~NGPhysicalLineBoxFragment() {
@@ -84,7 +83,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
 
  private:
   FontHeight metrics_;
-  NGLink children_[];
 };
 
 template <>

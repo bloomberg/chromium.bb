@@ -25,7 +25,9 @@
         android:id="@+id/location_bar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="top" />
+        android:layout_gravity="top"
+        android:paddingStart="@dimen/location_bar_lateral_padding"
+        android:paddingEnd="@dimen/location_bar_lateral_padding"/>
 
     <LinearLayout android:id="@+id/toolbar_buttons"
         android:orientation="horizontal"
@@ -38,7 +40,7 @@
             android:inflatedId="@+id/optional_toolbar_button"
             android:layout="@layout/optional_toolbar_button"
             style="@style/ToolbarButton"
-            android:paddingStart="12dp"
+            android:paddingStart="@dimen/toolbar_phone_optional_button_padding"
             android:visibility="gone" />
 
         <org.chromium.chrome.browser.toolbar.top.ToggleTabStackButton

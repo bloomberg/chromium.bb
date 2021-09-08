@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/tools/quic_tcp_like_trace_converter.h"
+#include "quic/tools/quic_tcp_like_trace_converter.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
+#include "quic/core/quic_constants.h"
+#include "quic/platform/api/quic_bug_tracker.h"
 
 namespace quic {
 
@@ -30,7 +30,7 @@ QuicIntervalSet<uint64_t> QuicTcpLikeTraceConverter::OnCryptoFrameSent(
     QuicStreamOffset offset,
     QuicByteCount data_length) {
   if (level >= NUM_ENCRYPTION_LEVELS) {
-    QUIC_BUG << "Invalid encryption level";
+    QUIC_BUG(quic_bug_10907_1) << "Invalid encryption level";
     return {};
   }
   return OnFrameSent(offset, data_length, /*fin=*/false,

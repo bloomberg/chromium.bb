@@ -63,7 +63,9 @@ class CORE_EXPORT NinePieceImageGrid {
 
  public:
   NinePieceImageGrid(const NinePieceImage&,
-                     IntSize image_size,
+                     FloatSize image_size,
+                     const FloatSize& slice_scale,
+                     float zoom,
                      IntRect border_image_area,
                      const IntRectOutsets& border_widths,
                      PhysicalBoxSides sides_to_include = PhysicalBoxSides());
@@ -85,13 +87,13 @@ class CORE_EXPORT NinePieceImageGrid {
       ENinePieceImageRule vertical;
     } tile_rule;
   };
-  NinePieceDrawInfo GetNinePieceDrawInfo(NinePiece, float) const;
+  NinePieceDrawInfo GetNinePieceDrawInfo(NinePiece) const;
 
   struct Edge {
     DISALLOW_NEW();
     bool IsDrawable() const { return slice > 0 && width > 0; }
-    float Scale() const { return IsDrawable() ? (float)width / slice : 1; }
-    int slice;
+    float Scale() const { return IsDrawable() ? width / slice : 1; }
+    float slice;
     int width;
   };
 
@@ -101,7 +103,7 @@ class CORE_EXPORT NinePieceImageGrid {
   void SetDrawInfoMiddle(NinePieceDrawInfo&) const;
 
   IntRect border_image_area_;
-  IntSize image_size_;
+  FloatSize image_size_;
   ENinePieceImageRule horizontal_tile_rule_;
   ENinePieceImageRule vertical_tile_rule_;
   bool fill_;

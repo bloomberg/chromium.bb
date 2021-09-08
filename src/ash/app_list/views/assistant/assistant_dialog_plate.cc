@@ -13,7 +13,6 @@
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/base/assistant_button.h"
 #include "ash/assistant/ui/dialog_plate/mic_view.h"
-#include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
@@ -22,14 +21,17 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -103,7 +105,7 @@ AssistantDialogPlate::AssistantDialogPlate(AssistantViewDelegate* delegate)
   SetID(AssistantViewID::kDialogPlate);
   InitLayout();
 
-  assistant_controller_observer_.Add(AssistantController::Get());
+  assistant_controller_observation_.Observe(AssistantController::Get());
   AssistantInteractionController::Get()->GetModel()->AddObserver(this);
   AssistantUiController::Get()->GetModel()->AddObserver(this);
 }
@@ -126,7 +128,7 @@ gfx::Size AssistantDialogPlate::CalculatePreferredSize() const {
 
 void AssistantDialogPlate::OnButtonPressed(AssistantButtonId button_id) {
   delegate_->OnDialogPlateButtonPressed(button_id);
-  textfield_->SetText(base::string16());
+  textfield_->SetText(std::u16string());
 }
 
 bool AssistantDialogPlate::HandleKeyEvent(views::Textfield* textfield,
@@ -152,7 +154,7 @@ bool AssistantDialogPlate::HandleKeyEvent(views::Textfield* textfield,
             base::UTF16ToUTF8(trimmed_text));
       }
 
-      textfield_->SetText(base::string16());
+      textfield_->SetText(std::u16string());
 
       return true;
     }
@@ -173,7 +175,9 @@ bool AssistantDialogPlate::HandleKeyEvent(views::Textfield* textfield,
 void AssistantDialogPlate::OnAssistantControllerDestroying() {
   AssistantUiController::Get()->GetModel()->RemoveObserver(this);
   AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
-  assistant_controller_observer_.Remove(AssistantController::Get());
+  DCHECK(assistant_controller_observation_.IsObservingSource(
+      AssistantController::Get()));
+  assistant_controller_observation_.Reset();
 }
 
 void AssistantDialogPlate::OnInputModalityChanged(
@@ -270,15 +274,15 @@ void AssistantDialogPlate::OnCommittedQueryChanged(
 void AssistantDialogPlate::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    base::Optional<AssistantEntryPoint> entry_point,
-    base::Optional<AssistantExitPoint> exit_point) {
+    absl::optional<AssistantEntryPoint> entry_point,
+    absl::optional<AssistantExitPoint> exit_point) {
   if (new_visibility == AssistantVisibility::kVisible) {
     UpdateModalityVisibility();
     UpdateKeyboardVisibility();
   } else {
     // When the Assistant UI is no longer visible we need to clear the dialog
     // plate so that text does not persist across Assistant launches.
-    textfield_->SetText(base::string16());
+    textfield_->SetText(std::u16string());
 
     HideKeyboardIfEnabled();
   }
@@ -296,7 +300,7 @@ views::View* AssistantDialogPlate::FindFirstFocusableView() {
     case InputModality::kKeyboard:
       return textfield_;
     case InputModality::kVoice:
-      return voice_layout_container_;
+      return animated_voice_input_toggle_;
   }
 }
 
@@ -311,11 +315,11 @@ void AssistantDialogPlate::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Molecule icon.
-  molecule_icon_ = AddChildView(LogoView::Create());
+  molecule_icon_ = AddChildView(std::make_unique<views::ImageView>());
   molecule_icon_->SetID(AssistantViewID::kModuleIcon);
   molecule_icon_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  molecule_icon_->SetState(LogoView::State::kMoleculeWavy,
-                           /*animate=*/false);
+  molecule_icon_->SetImage(gfx::CreateVectorIcon(
+      chromeos::kAssistantIcon, kIconSizeDip, gfx::kPlaceholderColor));
 
   // Input modality layout container.
   input_modality_layout_container_ =

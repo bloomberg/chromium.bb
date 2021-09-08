@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -28,6 +29,7 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer.h"
+#include "cc/metrics/web_vital_metrics.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/render_frame_metadata_observer.h"
@@ -36,7 +38,9 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
-#include "components/viz/common/resources/single_release_callback.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_filter.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings_builder.h"
@@ -48,6 +52,27 @@ class Layer;
 }
 
 namespace blink {
+
+namespace {
+// This factory is used to defer binding of the InterfacePtr to the compositor
+// thread.
+class UkmRecorderFactoryImpl : public cc::UkmRecorderFactory {
+ public:
+  UkmRecorderFactoryImpl() = default;
+  ~UkmRecorderFactoryImpl() override = default;
+
+  // This method gets called on the compositor thread.
+  std::unique_ptr<ukm::UkmRecorder> CreateRecorder() override {
+    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+
+    // Calling these methods on the compositor thread are thread safe.
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+        recorder.InitWithNewPipeAndPassReceiver());
+    return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
+  }
+};
+
+}  // namespace
 
 LayerTreeView::LayerTreeView(LayerTreeViewDelegate* delegate,
                              scheduler::WebThreadScheduler* scheduler)
@@ -64,7 +89,8 @@ void LayerTreeView::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
     cc::TaskGraphRunner* task_graph_runner,
-    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+    gfx::RenderingPipeline* main_thread_pipeline,
+    gfx::RenderingPipeline* compositor_thread_pipeline) {
   DCHECK(delegate_);
   const bool is_threaded = !!compositor_thread;
 
@@ -76,7 +102,9 @@ void LayerTreeView::Initialize(
   params.main_task_runner = std::move(main_thread);
   params.mutator_host = animation_host_.get();
   params.dark_mode_filter = dark_mode_filter_.get();
-  params.ukm_recorder_factory = std::move(ukm_recorder_factory);
+  params.ukm_recorder_factory = std::make_unique<UkmRecorderFactoryImpl>();
+  params.main_thread_pipeline = main_thread_pipeline;
+  params.compositor_thread_pipeline = compositor_thread_pipeline;
   if (base::ThreadPoolInstance::Get()) {
     // The image worker thread needs to allow waiting since it makes discardable
     // shared memory allocations which need to make synchronous calls to the
@@ -205,26 +233,11 @@ void LayerTreeView::ApplyViewportChanges(
   delegate_->ApplyViewportChanges(args);
 }
 
-void LayerTreeView::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
+void LayerTreeView::UpdateCompositorScrollState(
+    const cc::CompositorCommitData& commit_data) {
   if (!delegate_)
     return;
-  delegate_->RecordManipulationTypeCounts(info);
-}
-
-void LayerTreeView::SendOverscrollEventFromImplSide(
-    const gfx::Vector2dF& overscroll_delta,
-    cc::ElementId scroll_latched_element_id) {
-  if (!delegate_)
-    return;
-  delegate_->SendOverscrollEventFromImplSide(overscroll_delta,
-                                             scroll_latched_element_id);
-}
-
-void LayerTreeView::SendScrollEndEventFromImplSide(
-    cc::ElementId scroll_latched_element_id) {
-  if (!delegate_)
-    return;
-  delegate_->SendScrollEndEventFromImplSide(scroll_latched_element_id);
+  delegate_->UpdateCompositorScrollState(commit_data);
 }
 
 void LayerTreeView::RequestNewLayerTreeFrameSink() {
@@ -327,6 +340,12 @@ LayerTreeView::GetBeginMainFrameMetrics() {
   return delegate_->GetBeginMainFrameMetrics();
 }
 
+std::unique_ptr<cc::WebVitalMetrics> LayerTreeView::GetWebVitalMetrics() {
+  if (!delegate_)
+    return nullptr;
+  return delegate_->GetWebVitalMetrics();
+}
+
 void LayerTreeView::NotifyThroughputTrackerResults(
     cc::CustomTrackerResults results) {
   NOTREACHED();
@@ -363,6 +382,13 @@ void LayerTreeView::DidRunBeginMainFrame() {
 void LayerTreeView::DidSubmitCompositorFrame() {}
 
 void LayerTreeView::DidLoseLayerTreeFrameSink() {}
+
+void LayerTreeView::ScheduleAnimationForWebTests() {
+  if (!delegate_)
+    return;
+
+  delegate_->ScheduleAnimationForWebTests();
+}
 
 void LayerTreeView::AddPresentationCallback(
     uint32_t frame_token,

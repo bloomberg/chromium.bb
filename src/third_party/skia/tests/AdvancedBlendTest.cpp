@@ -40,11 +40,10 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(AdvancedBlendTest, reporter, ctxInfo) {
         GrPaint paint;
         paint.setXPFactory(xpf);
         GrProcessorSet procs(std::move(paint));
-        bool hasMixedSampledCoverage = false;
         SkPMColor4f overrideColor;
         GrProcessorSet::Analysis processorAnalysis = procs.finalize(
-                opaque, coverage, nullptr, &GrUserStencilSettings::kUnused, hasMixedSampledCoverage,
-                caps, GrClampType::kAuto, &overrideColor);
+                opaque, coverage, nullptr, &GrUserStencilSettings::kUnused, caps,
+                GrClampType::kAuto, &overrideColor);
 
         if (caps.advancedBlendEquationSupport() &&
                 !caps.isAdvancedBlendEquationDisabled(blendEquation)) {

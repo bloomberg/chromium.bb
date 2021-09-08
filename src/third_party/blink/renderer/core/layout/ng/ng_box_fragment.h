@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -20,10 +19,10 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
                 const NGPhysicalBoxFragment& physical_fragment)
       : NGFragment(writing_direction, physical_fragment) {}
 
-  base::Optional<LayoutUnit> FirstBaseline() const {
+  absl::optional<LayoutUnit> FirstBaseline() const {
     if (writing_direction_.GetWritingMode() !=
         physical_fragment_.Style().GetWritingMode())
-      return base::nullopt;
+      return absl::nullopt;
 
     return To<NGPhysicalBoxFragment>(physical_fragment_).Baseline();
   }
@@ -36,10 +35,10 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
   // return a null baseline if:
   //  - The fragment has no baseline.
   //  - The writing modes differ.
-  base::Optional<LayoutUnit> Baseline() const {
+  absl::optional<LayoutUnit> Baseline() const {
     if (writing_direction_.GetWritingMode() !=
         physical_fragment_.Style().GetWritingMode())
-      return base::nullopt;
+      return absl::nullopt;
 
     if (auto last_baseline =
             To<NGPhysicalBoxFragment>(physical_fragment_).LastBaseline())
@@ -67,6 +66,12 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
     const NGPhysicalBoxFragment& physical_box_fragment =
         To<NGPhysicalBoxFragment>(physical_fragment_);
     return physical_box_fragment.Padding().ConvertToLogical(writing_direction_);
+  }
+
+  bool HasDescendantsForTablePart() const {
+    const NGPhysicalBoxFragment& box_fragment =
+        To<NGPhysicalBoxFragment>(physical_fragment_);
+    return box_fragment.HasDescendantsForTablePart();
   }
 };
 

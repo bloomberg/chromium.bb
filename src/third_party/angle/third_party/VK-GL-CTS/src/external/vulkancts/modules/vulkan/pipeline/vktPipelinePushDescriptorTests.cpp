@@ -67,12 +67,21 @@ typedef de::SharedPtr<Unique<VkRenderPass> >	VkRenderPassSp;
 typedef de::SharedPtr<Unique<VkFramebuffer> >	VkFramebufferSp;
 typedef de::SharedPtr<Unique<VkPipeline> >		VkPipelineSp;
 
+constexpr VkDeviceSize kSizeofVec4 = static_cast<VkDeviceSize>(sizeof(tcu::Vec4));
+
 struct TestParams
 {
 	VkDescriptorType	descriptorType;
 	deUint32			binding;
 	deUint32			numCalls; // Number of draw or dispatch calls
 };
+
+VkDeviceSize calcItemSize (const InstanceInterface& vki, VkPhysicalDevice physicalDevice, deUint32 numElements = 1u)
+{
+	const auto minAlignment	= getPhysicalDeviceProperties(vki, physicalDevice).limits.minStorageBufferOffsetAlignment;
+	const auto lcm			= de::lcm(de::max(VkDeviceSize{1}, minAlignment), kSizeofVec4);
+	return de::roundUp(kSizeofVec4 * numElements, lcm);
+}
 
 void checkAllSupported (const Extensions& supportedExtensions, const vector<string>& requiredExtensions)
 {
@@ -399,7 +408,7 @@ void PushDescriptorBufferGraphicsTestInstance::init (void)
 				VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,	// VkStructureType		sType;
 				DE_NULL,								// const void*			pNext;
 				0u,										// VkBufferCreateFlags	flags
-				16u,									// VkDeviceSize			size;
+				kSizeofVec4,							// VkDeviceSize			size;
 				usageFlags,								// VkBufferUsageFlags	usage;
 				VK_SHARING_MODE_EXCLUSIVE,				// VkSharingMode		sharingMode;
 				1u,										// deUint32				queueFamilyCount;
@@ -410,7 +419,7 @@ void PushDescriptorBufferGraphicsTestInstance::init (void)
 			m_bufferAllocs.push_back(AllocationSp(m_allocator.allocate(getBufferMemoryRequirements(m_vkd, *m_device, **m_buffers[bufIdx]), MemoryRequirement::HostVisible).release()));
 			VK_CHECK(m_vkd.bindBufferMemory(*m_device, **m_buffers[bufIdx], m_bufferAllocs[bufIdx]->getMemory(), m_bufferAllocs[bufIdx]->getOffset()));
 
-			deMemcpy(m_bufferAllocs[bufIdx]->getHostPtr(), &defaultTestColors[bufIdx], 16u);
+			deMemcpy(m_bufferAllocs[bufIdx]->getHostPtr(), &defaultTestColors[bufIdx], static_cast<size_t>(kSizeofVec4));
 			flushAlloc(m_vkd, *m_device, *m_bufferAllocs[bufIdx]);
 		}
 	}
@@ -524,7 +533,7 @@ void PushDescriptorBufferGraphicsTestInstance::init (void)
 			{
 				**m_buffers[quadNdx],	// VkBuffer			buffer;
 				0u,						// VkDeviceSize		offset;
-				16u						// VkDeviceSize		range;
+				kSizeofVec4,			// VkDeviceSize		range;
 			};
 
 			VkWriteDescriptorSet writeDescriptorSet =
@@ -693,6 +702,7 @@ private:
 	const Unique<VkDevice>		m_device;
 	const DeviceDriver			m_vkd;
 	const VkQueue				m_queue;
+	const VkDeviceSize			m_itemSize;
 	SimpleAllocator				m_allocator;
 	Move<VkShaderModule>		m_computeShaderModule;
 	vector<VkBufferSp>			m_buffers;
@@ -720,6 +730,7 @@ PushDescriptorBufferComputeTestInstance::PushDescriptorBufferComputeTestInstance
 	, m_device				(createDeviceWithPushDescriptor(context, m_vkp, m_instance, m_vki, m_physicalDevice, m_deviceExtensions, m_queueFamilyIndex))
 	, m_vkd					(m_vkp, m_instance, *m_device)
 	, m_queue				(getDeviceQueue(m_vkd, *m_device, m_queueFamilyIndex, 0u))
+	, m_itemSize			(calcItemSize(m_vki, m_physicalDevice))
 	, m_allocator			(m_vkd, *m_device, getPhysicalDeviceMemoryProperties(m_vki, m_physicalDevice))
 {
 }
@@ -800,7 +811,7 @@ void PushDescriptorBufferComputeTestInstance::init (void)
 				VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,	// VkStructureType		sType;
 				DE_NULL,								// const void*			pNext;
 				0u,										// VkBufferCreateFlags	flags
-				16u,									// VkDeviceSize			size;
+				kSizeofVec4,							// VkDeviceSize			size;
 				usageFlags,								// VkBufferUsageFlags	usage;
 				VK_SHARING_MODE_EXCLUSIVE,				// VkSharingMode		sharingMode;
 				1u,										// deUint32				queueFamilyCount;
@@ -811,7 +822,7 @@ void PushDescriptorBufferComputeTestInstance::init (void)
 			m_bufferAllocs.push_back(AllocationSp(m_allocator.allocate(getBufferMemoryRequirements(m_vkd, *m_device, **m_buffers[bufIdx]), MemoryRequirement::HostVisible).release()));
 			VK_CHECK(m_vkd.bindBufferMemory(*m_device, **m_buffers[bufIdx], m_bufferAllocs[bufIdx]->getMemory(), m_bufferAllocs[bufIdx]->getOffset()));
 
-			deMemcpy(m_bufferAllocs[bufIdx]->getHostPtr(), &m_testColors[bufIdx], 16u);
+			deMemcpy(m_bufferAllocs[bufIdx]->getHostPtr(), &m_testColors[bufIdx], static_cast<size_t>(kSizeofVec4));
 			flushAlloc(m_vkd, *m_device, *m_bufferAllocs[bufIdx]);
 		}
 	}
@@ -823,7 +834,7 @@ void PushDescriptorBufferComputeTestInstance::init (void)
 			VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
 			0u,										// VkBufferCreateFlags	flags
-			16u * m_params.numCalls,				// VkDeviceSize			size;
+			m_itemSize * m_params.numCalls,			// VkDeviceSize			size;
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,		// VkBufferUsageFlags	usage;
 			VK_SHARING_MODE_EXCLUSIVE,				// VkSharingMode		sharingMode;
 			1u,										// deUint32				queueFamilyCount;
@@ -884,14 +895,14 @@ void PushDescriptorBufferComputeTestInstance::init (void)
 			{
 				**m_buffers[dispatchNdx],	// VkBuffer			buffer;
 				0u,							// VkDeviceSize		offset;
-				16u							// VkDeviceSize		range;
+				kSizeofVec4,				// VkDeviceSize		range;
 			};
 
 			VkDescriptorBufferInfo descriptorBufferInfoOutput	=
 			{
-				*m_outputBuffer,	// VkBuffer			buffer;
-				16u * dispatchNdx,	// VkDeviceSize		offset;
-				16u					// VkDeviceSize		range;
+				*m_outputBuffer,			// VkBuffer			buffer;
+				m_itemSize * dispatchNdx,	// VkDeviceSize		offset;
+				kSizeofVec4,				// VkDeviceSize		range;
 			};
 
 			VkWriteDescriptorSet writeDescriptorSets[] =
@@ -948,10 +959,13 @@ tcu::TestStatus PushDescriptorBufferComputeTestInstance::verifyOutput (void)
 	invalidateAlloc(m_vkd, *m_device, *m_outputBufferAlloc);
 
 	// Verify result
-	if (deMemCmp((void*)&m_testColors[0], m_outputBufferAlloc->getHostPtr(), (size_t)(16u * m_params.numCalls)))
+	auto bufferPtr = reinterpret_cast<const char*>(m_outputBufferAlloc->getHostPtr());
+	for (deUint32 i = 0; i < m_params.numCalls; ++i)
 	{
-		return tcu::TestStatus::fail("Output mismatch");
+		if (deMemCmp(&m_testColors[i], bufferPtr + (i * m_itemSize), static_cast<size_t>(kSizeofVec4)) != 0)
+			TCU_FAIL("Output mismatch at output item " + de::toString(i));
 	}
+
 	return tcu::TestStatus::pass("Output matches expected values");
 }
 
@@ -1884,6 +1898,8 @@ private:
 	const Unique<VkDevice>		m_device;
 	const DeviceDriver			m_vkd;
 	const VkQueue				m_queue;
+	const VkDeviceSize			m_itemSize;
+	const VkDeviceSize			m_blockSize;
 	SimpleAllocator				m_allocator;
 	const tcu::UVec2			m_textureSize;
 	const VkFormat				m_colorFormat;
@@ -1916,6 +1932,8 @@ PushDescriptorImageComputeTestInstance::PushDescriptorImageComputeTestInstance (
 	, m_device				(createDeviceWithPushDescriptor(context, m_vkp, m_instance, m_vki, m_physicalDevice, m_deviceExtensions, m_queueFamilyIndex))
 	, m_vkd					(m_vkp, m_instance, *m_device)
 	, m_queue				(getDeviceQueue(m_vkd, *m_device, m_queueFamilyIndex, 0u))
+	, m_itemSize			(calcItemSize(m_vki, m_physicalDevice, 2u))
+	, m_blockSize			(kSizeofVec4 * 2u)
 	, m_allocator			(m_vkd, *m_device, getPhysicalDeviceMemoryProperties(m_vki, m_physicalDevice))
 	, m_textureSize			(32, 32)
 	, m_colorFormat			(VK_FORMAT_R8G8B8A8_UNORM)
@@ -2219,12 +2237,14 @@ void PushDescriptorImageComputeTestInstance::init (void)
 
 	// Create output buffer
 	{
+		DE_ASSERT(m_params.numCalls <= 2u);
+
 		const VkBufferCreateInfo bufferCreateInfo =
 		{
 			VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
 			0u,										// VkBufferCreateFlags	flags
-			64u,									// VkDeviceSize			size;
+			m_itemSize * 2u,						// VkDeviceSize			size;
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,		// VkBufferUsageFlags	usage;
 			VK_SHARING_MODE_EXCLUSIVE,				// VkSharingMode		sharingMode;
 			1u,										// deUint32				queueFamilyCount;
@@ -2349,9 +2369,9 @@ void PushDescriptorImageComputeTestInstance::init (void)
 
 			const VkDescriptorBufferInfo descriptorBufferInfoOutput	=
 			{
-				*m_outputBuffer,	// VkBuffer		buffer;
-				32u * dispatchNdx,	// VkDeviceSize	offset;
-				32u					// VkDeviceSize	range;
+				*m_outputBuffer,			// VkBuffer		buffer;
+				m_itemSize * dispatchNdx,	// VkDeviceSize	offset;
+				m_blockSize,				// VkDeviceSize	range;
 			};
 
 			// Write output buffer descriptor set
@@ -2394,7 +2414,9 @@ tcu::TestStatus PushDescriptorImageComputeTestInstance::iterate (void)
 
 tcu::TestStatus PushDescriptorImageComputeTestInstance::verifyOutput (void)
 {
-	float ref[16];
+	const auto			floatsPerDispatch	= 8u; // 8 floats (2 vec4s) per dispatch.
+	std::vector<float>	ref					(floatsPerDispatch * 2u);
+
 	invalidateAlloc(m_vkd, *m_device, *m_outputBufferAlloc);
 
 	switch(m_params.descriptorType)
@@ -2491,17 +2513,36 @@ tcu::TestStatus PushDescriptorImageComputeTestInstance::verifyOutput (void)
 	};
 
 	// Verify result
-	if (deMemCmp((void*)ref, m_outputBufferAlloc->getHostPtr(), (size_t)(32u * m_params.numCalls)))
+	const auto			bufferDataPtr		= reinterpret_cast<const char*>(m_outputBufferAlloc->getHostPtr());
+	const auto			blockSize			= static_cast<size_t>(m_blockSize);
+
+	for (deUint32 dispatchNdx = 0u; dispatchNdx < m_params.numCalls; ++dispatchNdx)
 	{
-		const float* ptr = (float*)m_outputBufferAlloc->getHostPtr();
-		std::string debugMsg = "Output buffer contents:\n";
+		const auto refIdx		= floatsPerDispatch * dispatchNdx;
+		const auto bufferOffset	= m_itemSize * dispatchNdx;	// Each dispatch uses m_itemSize bytes in the buffer to meet alignment reqs.
 
-		for (deUint32 i = 0; i < m_params.numCalls * 8; i++)
-			debugMsg += de::toString(ptr[i]) + " vs " + de::toString(ref[i]) + "\n";
+		if (deMemCmp(&ref[refIdx], bufferDataPtr + bufferOffset, blockSize) != 0)
+		{
+			std::vector<float> buffferValues	(floatsPerDispatch);
+			std::vector<float> refValues		(floatsPerDispatch);
 
-		m_context.getTestContext().getLog() << tcu::TestLog::Message << debugMsg << tcu::TestLog::EndMessage;
-		return tcu::TestStatus::fail("Output mismatch");
+			deMemcpy(refValues.data(), &ref[refIdx], blockSize);
+			deMemcpy(buffferValues.data(), bufferDataPtr + bufferOffset, blockSize);
+
+			std::ostringstream msg;
+			msg << "Output mismatch at dispatch " << dispatchNdx << ": Reference ";
+			for (deUint32 i = 0; i < floatsPerDispatch; ++i)
+				msg << ((i == 0) ? "[" : ", ") << refValues[i];
+			msg << "]; Buffer ";
+			for (deUint32 i = 0; i < floatsPerDispatch; ++i)
+				msg << ((i == 0) ? "[" : ", ") << buffferValues[i];
+			msg << "]";
+
+			m_context.getTestContext().getLog() << tcu::TestLog::Message << msg.str() << tcu::TestLog::EndMessage;
+			return tcu::TestStatus::fail("Output mismatch");
+		}
 	}
+
 	return tcu::TestStatus::pass("Output matches expected values");
 }
 
@@ -2750,7 +2791,7 @@ void PushDescriptorTexelBufferGraphicsTestInstance::init (void)
 			VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
 			0u,										// VkBufferCreateFlags	flags
-			16u,									// VkDeviceSize			size;
+			kSizeofVec4,							// VkDeviceSize			size;
 			usageFlags,								// VkBufferUsageFlags	usage;
 			VK_SHARING_MODE_EXCLUSIVE,				// VkSharingMode		sharingMode;
 			1u,										// deUint32				queueFamilyCount;
@@ -2761,7 +2802,7 @@ void PushDescriptorTexelBufferGraphicsTestInstance::init (void)
 		m_bufferAllocs.push_back(AllocationSp(m_allocator.allocate(getBufferMemoryRequirements(m_vkd, *m_device, **m_buffers[bufIdx]), MemoryRequirement::HostVisible).release()));
 		VK_CHECK(m_vkd.bindBufferMemory(*m_device, **m_buffers[bufIdx], m_bufferAllocs[bufIdx]->getMemory(), m_bufferAllocs[bufIdx]->getOffset()));
 
-		deMemcpy(m_bufferAllocs[bufIdx]->getHostPtr(), &defaultTestColors[bufIdx], 16u);
+		deMemcpy(m_bufferAllocs[bufIdx]->getHostPtr(), &defaultTestColors[bufIdx], static_cast<size_t>(kSizeofVec4));
 		flushAlloc(m_vkd, *m_device, *m_bufferAllocs[bufIdx]);
 	}
 
@@ -3131,6 +3172,7 @@ private:
 	const Unique<VkDevice>		m_device;
 	const DeviceDriver			m_vkd;
 	const VkQueue				m_queue;
+	const VkDeviceSize			m_itemSize;
 	SimpleAllocator				m_allocator;
 	vector<VkBufferSp>			m_buffers;
 	vector<AllocationSp>		m_bufferAllocs;
@@ -3159,6 +3201,7 @@ PushDescriptorTexelBufferComputeTestInstance::PushDescriptorTexelBufferComputeTe
 	, m_device				(createDeviceWithPushDescriptor(context, m_vkp, m_instance, m_vki, m_physicalDevice, m_deviceExtensions, m_queueFamilyIndex))
 	, m_vkd					(m_vkp, m_instance, *m_device)
 	, m_queue				(getDeviceQueue(m_vkd, *m_device, m_queueFamilyIndex, 0u))
+	, m_itemSize			(calcItemSize(m_vki, m_physicalDevice))
 	, m_allocator			(m_vkd, *m_device, getPhysicalDeviceMemoryProperties(m_vki, m_physicalDevice))
 	, m_bufferFormat		(VK_FORMAT_R32G32B32A32_SFLOAT)
 {
@@ -3176,7 +3219,7 @@ void PushDescriptorTexelBufferComputeTestInstance::init (void)
 			VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
 			0u,										// VkBufferCreateFlags	flags
-			16u,									// VkDeviceSize			size;
+			kSizeofVec4,							// VkDeviceSize			size;
 			usageFlags,								// VkBufferUsageFlags	usage;
 			VK_SHARING_MODE_EXCLUSIVE,				// VkSharingMode		sharingMode;
 			1u,										// deUint32				queueFamilyCount;
@@ -3187,7 +3230,7 @@ void PushDescriptorTexelBufferComputeTestInstance::init (void)
 		m_bufferAllocs.push_back(AllocationSp(m_allocator.allocate(getBufferMemoryRequirements(m_vkd, *m_device, **m_buffers[bufIdx]), MemoryRequirement::HostVisible).release()));
 		VK_CHECK(m_vkd.bindBufferMemory(*m_device, **m_buffers[bufIdx], m_bufferAllocs[bufIdx]->getMemory(), m_bufferAllocs[bufIdx]->getOffset()));
 
-		deMemcpy(m_bufferAllocs[bufIdx]->getHostPtr(), &defaultTestColors[bufIdx], 16u);
+		deMemcpy(m_bufferAllocs[bufIdx]->getHostPtr(), &defaultTestColors[bufIdx], static_cast<size_t>(kSizeofVec4));
 		flushAlloc(m_vkd, *m_device, *m_bufferAllocs[bufIdx]);
 	}
 
@@ -3257,12 +3300,14 @@ void PushDescriptorTexelBufferComputeTestInstance::init (void)
 
 	// Create output buffer
 	{
+		DE_ASSERT(m_params.numCalls <= 2u);
+
 		const VkBufferCreateInfo bufferCreateInfo =
 		{
 			VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
 			0u,										// VkBufferCreateFlags	flags
-			32u,									// VkDeviceSize			size;
+			m_itemSize * m_params.numCalls,			// VkDeviceSize			size;
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,		// VkBufferUsageFlags	usage;
 			VK_SHARING_MODE_EXCLUSIVE,				// VkSharingMode		sharingMode;
 			1u,										// deUint32				queueFamilyCount;
@@ -3338,9 +3383,9 @@ void PushDescriptorTexelBufferComputeTestInstance::init (void)
 
 			const VkDescriptorBufferInfo descriptorBufferInfoOutput	=
 			{
-				*m_outputBuffer,	// VkBuffer			buffer;
-				16u * dispatchNdx,	// VkDeviceSize		offset;
-				16u					// VkDeviceSize		range;
+				*m_outputBuffer,			// VkBuffer			buffer;
+				m_itemSize * dispatchNdx,	// VkDeviceSize		offset;
+				kSizeofVec4,				// VkDeviceSize		range;
 			};
 
 			// Write output buffer descriptor set
@@ -3383,21 +3428,26 @@ tcu::TestStatus PushDescriptorTexelBufferComputeTestInstance::iterate (void)
 
 tcu::TestStatus PushDescriptorTexelBufferComputeTestInstance::verifyOutput (void)
 {
-	const float ref[8] = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f };
+	const tcu::Vec4 ref[2] = { { 1.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } };
 	invalidateAlloc(m_vkd, *m_device, *m_outputBufferAlloc);
 
 	// Verify result
-	if (deMemCmp((void*)ref, m_outputBufferAlloc->getHostPtr(), (size_t)(16u * m_params.numCalls)))
+	DE_ASSERT(m_params.numCalls <= 2u);
+
+	auto bufferPtr = reinterpret_cast<const char*>(m_outputBufferAlloc->getHostPtr());
+	for (deUint32 i = 0; i < m_params.numCalls; ++i)
 	{
-		const float* ptr = (float*)m_outputBufferAlloc->getHostPtr();
-		std::string debugMsg = "Output buffer contents:\n";
+		tcu::Vec4 bufferColor;
+		deMemcpy(&bufferColor, bufferPtr + (i * m_itemSize), static_cast<size_t>(kSizeofVec4));
 
-		for (deUint32 i = 0; i < m_params.numCalls * 4; i++)
-			debugMsg += de::toString(ptr[i]) + " vs " + de::toString(ref[i]) + "\n";
-
-		m_context.getTestContext().getLog() << tcu::TestLog::Message << debugMsg << tcu::TestLog::EndMessage;
-		return tcu::TestStatus::fail("Output mismatch");
+		if (bufferColor != ref[i])
+		{
+			std::ostringstream msg;
+			msg << "Output mismatch at item " << i << ": expected " << ref[i] << " but found " << bufferColor;
+			TCU_FAIL(msg.str());
+		}
 	}
+
 	return tcu::TestStatus::pass("Output matches expected values");
 }
 
@@ -3730,7 +3780,7 @@ void PushDescriptorInputAttachmentGraphicsTestInstance::init (void)
 
 		const VkImageLayout				initialLayouts[]			=
 		{
-			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 		};
 
@@ -3985,9 +4035,9 @@ void PushDescriptorInputAttachmentGraphicsTestInstance::init (void)
 
 			VkDescriptorImageInfo	descriptorImageInfo	=
 			{
-				0,								// VkSampler		sampler;
-				**m_inputImageViews[quadNdx],	// VkImageView		imageView;
-				VK_IMAGE_LAYOUT_GENERAL			// VkImageLayout	imageLayout;
+				0,											// VkSampler		sampler;
+				**m_inputImageViews[quadNdx],				// VkImageView		imageView;
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL	// VkImageLayout	imageLayout;
 			};
 
 			VkWriteDescriptorSet	writeDescriptorSet	=

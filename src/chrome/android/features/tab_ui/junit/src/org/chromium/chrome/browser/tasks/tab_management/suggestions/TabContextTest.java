@@ -9,6 +9,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,6 +36,7 @@ import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.url.GURL;
+import org.chromium.url.JUnitTestGURLs;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,9 +54,10 @@ public class TabContextTest {
     private static final int NEW_TAB_1_ID = 3;
     private static final int NEW_TAB_2_ID = 4;
     private static final int LAST_COMMITTED_INDEX = 1;
-    private static final String TAB_CONTEXT_TAB_0_JSON = "[{\"id\":0,\"url\":"
-            + "\"mock_url_tab_0\",\"title\":\"mock_title_tab_0\",\"timestamp\":100,"
-            + "\"referrer\":\"mock_referrer_url_tab_0\"}]";
+    private static final String TAB_CONTEXT_TAB_0_JSON =
+            "[{\"id\":0,\"url\":" + JSONObject.quote(JUnitTestGURLs.URL_1)
+            + ",\"title\":\"mock_title_tab_0\",\"timestamp\":100,"
+            + "\"referrer\":" + JSONObject.quote(JUnitTestGURLs.EXAMPLE_URL) + "}]";
 
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -74,14 +77,18 @@ public class TabContextTest {
     @Mock
     private TabModelFilter mTabModelFilter;
 
-    private Tab mTab0 = mockTab(TAB_0_ID, 6, "mock_title_tab_0", "mock_url_tab_0",
-            "mock_original_url_tab_0", "mock_referrer_url_tab_0", 100);
-    private Tab mRelatedTab0 =
-            mockTab(RELATED_TAB_0_ID, 6, "mock_title_related_tab_0", "mock_url_related_tab_0",
-                    "mock_original_url_related_tab_0", "mock_referrer_url_related_tab_0", 200);
-    private Tab mRelatedTab1 =
-            mockTab(RELATED_TAB_1_ID, 6, "mock_title_related_tab_1", "mock_url_related_tab_1",
-                    "mock_original_url_related_tab_1", "mock_referrer_url_related_tab_1", 300);
+    private Tab mTab0 =
+            mockTab(TAB_0_ID, 6, "mock_title_tab_0", JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1),
+                    JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1),
+                    JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), 100);
+    private Tab mRelatedTab0 = mockTab(RELATED_TAB_0_ID, 6, "mock_title_related_tab_0",
+            JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_2),
+            JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_2),
+            JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), 200);
+    private Tab mRelatedTab1 = mockTab(RELATED_TAB_1_ID, 6, "mock_title_related_tab_1",
+            JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_3),
+            JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_3),
+            JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), 300);
 
     @Before
     public void setUp() {
@@ -91,8 +98,8 @@ public class TabContextTest {
         doReturn(mTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
     }
 
-    private static TabImpl mockTab(int id, int rootId, String title, String url, String originalUrl,
-            String referrerUrl, long timestampMillis) {
+    private static TabImpl mockTab(int id, int rootId, String title, GURL url, GURL originalUrl,
+            GURL referrerUrl, long timestampMillis) {
         TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
         UserDataHost userDataHost = new UserDataHost();
@@ -101,12 +108,10 @@ public class TabContextTest {
         userDataHost.setUserData(CriticalPersistedTabData.class, criticalPersistedTabData);
         doReturn(rootId).when(criticalPersistedTabData).getRootId();
         doReturn(title).when(tab).getTitle();
-        doReturn(url).when(tab).getUrlString();
+        doReturn(url).when(tab).getUrl();
         doReturn(originalUrl).when(tab).getOriginalUrl();
         WebContents webContents = mock(WebContents.class);
-        GURL gurl = mock(GURL.class);
-        doReturn("").when(gurl).getSpec();
-        doReturn(gurl).when(webContents).getVisibleUrl();
+        doReturn(GURL.emptyGURL()).when(webContents).getVisibleUrl();
         doReturn(webContents).when(tab).getWebContents();
         NavigationController navigationController = mock(NavigationController.class);
         doReturn(navigationController).when(webContents).getNavigationController();
@@ -160,8 +165,10 @@ public class TabContextTest {
 
     @Test
     public void testExcludeClosingTabs() {
-        Tab newTab1 = mockTab(NEW_TAB_1_ID, NEW_TAB_1_ID, "", "", "", "", 0);
-        Tab newTab2 = mockTab(NEW_TAB_2_ID, NEW_TAB_2_ID, "", "", "", "", 0);
+        Tab newTab1 = mockTab(NEW_TAB_1_ID, NEW_TAB_1_ID, "", GURL.emptyGURL(), GURL.emptyGURL(),
+                GURL.emptyGURL(), 0);
+        Tab newTab2 = mockTab(NEW_TAB_2_ID, NEW_TAB_2_ID, "", GURL.emptyGURL(), GURL.emptyGURL(),
+                GURL.emptyGURL(), 0);
         doReturn(mTab0).when(mTabModelFilter).getTabAt(eq(TAB_0_ID));
         doReturn(newTab1).when(mTabModelFilter).getTabAt(eq(TAB_0_ID + 1));
         doReturn(newTab2).when(mTabModelFilter).getTabAt(eq(TAB_0_ID + 2));
@@ -207,7 +214,7 @@ public class TabContextTest {
         TabContext.TabInfo tabInfo = tabs.get(0);
         Assert.assertNotNull(tabInfo);
         Assert.assertEquals(mTab0.getId(), tabInfo.id);
-        Assert.assertEquals(mTab0.getUrlString(), tabInfo.url);
+        Assert.assertEquals(mTab0.getUrl().getSpec(), tabInfo.url);
         Assert.assertEquals(
                 CriticalPersistedTabData.from(mTab0).getTimestampMillis(), tabInfo.timestampMillis);
         Assert.assertEquals(mTab0.getTitle(), tabInfo.title);
@@ -216,6 +223,6 @@ public class TabContextTest {
                         mTab0.getWebContents()
                                 .getNavigationController()
                                 .getLastCommittedEntryIndex());
-        Assert.assertEquals(lastCommittedEntry.getReferrerUrl(), tabInfo.referrerUrl);
+        Assert.assertEquals(tabInfo.referrerUrl, lastCommittedEntry.getReferrerUrl().getSpec());
     }
 }

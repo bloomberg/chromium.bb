@@ -7,17 +7,18 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <ostream>
 #include <vector>
 
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_number.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_packet_number.h"
+#include "quic/core/quic_time.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_flags.h"
 
 namespace quic {
 
@@ -42,6 +43,12 @@ using QuicPublicResetNonceProof = uint64_t;
 using QuicStreamOffset = uint64_t;
 using DiversificationNonce = std::array<char, 32>;
 using PacketTimeVector = std::vector<std::pair<QuicPacketNumber, QuicTime>>;
+
+enum : size_t { kStatelessResetTokenLength = 16 };
+using StatelessResetToken = std::array<char, kStatelessResetTokenLength>;
+
+// WebTransport session IDs are stream IDs.
+using WebTransportSessionId = uint64_t;
 
 enum : size_t { kQuicPathFrameBufferSize = 8 };
 using QuicPathFrameBuffer = std::array<uint8_t, kQuicPathFrameBufferSize>;
@@ -173,7 +180,11 @@ enum TransmissionType : int8_t {
   TLP_RETRANSMISSION,           // Tail loss probes.
   PTO_RETRANSMISSION,           // Retransmission due to probe timeout.
   PROBING_RETRANSMISSION,       // Retransmission in order to probe bandwidth.
-  LAST_TRANSMISSION_TYPE = PROBING_RETRANSMISSION,
+  PATH_RETRANSMISSION,          // Retransmission proactively due to underlying
+                                // network change.
+  ALL_INITIAL_RETRANSMISSION,   // Retransmit all packets encrypted with INITIAL
+                                // key.
+  LAST_TRANSMISSION_TYPE = ALL_INITIAL_RETRANSMISSION,
 };
 
 QUIC_EXPORT_PRIVATE std::string TransmissionTypeToString(
@@ -274,7 +285,7 @@ QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
 // byte, with the two most significant bits being 0. Thus, the following
 // enumerations are valid as both the numeric values of frame types AND their
 // encodings.
-enum QuicIetfFrameType : uint8_t {
+enum QuicIetfFrameType : uint64_t {
   IETF_PADDING = 0x00,
   IETF_PING = 0x01,
   IETF_ACK = 0x02,
@@ -530,10 +541,11 @@ enum SentPacketState : uint8_t {
   PTO_RETRANSMITTED,
   // This packet has been retransmitted for probing purpose.
   PROBE_RETRANSMITTED,
-  // Do not collect RTT sample if this packet is the largest_acked of an
-  // incoming ACK.
+  // This packet is sent on a different path or is a PING only packet.
+  // Do not update RTT stats and congestion control if the packet is the
+  // largest_acked of an incoming ACK.
   NOT_CONTRIBUTING_RTT,
-  LAST_PACKET_STATE = PROBE_RETRANSMITTED,
+  LAST_PACKET_STATE = NOT_CONTRIBUTING_RTT,
 };
 
 enum PacketHeaderFormat : uint8_t {
@@ -703,10 +715,10 @@ enum AckResult {
 
 // Indicates the fate of a serialized packet in WritePacket().
 enum SerializedPacketFate : uint8_t {
-  DISCARD,         // Discard the packet.
-  COALESCE,        // Try to coalesce packet.
-  BUFFER,          // Buffer packet in buffered_packets_.
-  SEND_TO_WRITER,  // Send packet to writer.
+  DISCARD,                     // Discard the packet.
+  COALESCE,                    // Try to coalesce packet.
+  BUFFER,                      // Buffer packet in buffered_packets_.
+  SEND_TO_WRITER,              // Send packet to writer.
   LEGACY_VERSION_ENCAPSULATE,  // Perform Legacy Version Encapsulation on this
                                // packet.
 };

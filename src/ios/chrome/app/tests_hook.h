@@ -20,6 +20,10 @@ bool DisableAppGroupAccess();
 // run unimpeded.
 bool DisableContentSuggestions();
 
+// Returns true if Discover feed should be disabled to allow tests to run
+// without it.
+bool DisableDiscoverFeed();
+
 // Returns true if the first_run path should be disabled to allow other tests to
 // run unimpeded.
 bool DisableFirstRun();
@@ -40,12 +44,6 @@ bool DisableUpdateService();
 // synchronization.
 // Return true if it should be disabled.
 bool DisableMainThreadFreezeDetection();
-
-// Returns true if drag-and-drop should be disabled in native table views (e.g.
-// Bookmarks, History).
-// TODO(crbug.com/1129058): Clean this up when EarlGrey allows interacting with
-// context menus that can be dragged.
-bool DisableTableDragAndDrop();
 
 // Returns a policy provider that should be installed as the platform policy
 // provider when testing. May return nullptr.

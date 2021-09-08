@@ -7,6 +7,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_occlusion_tracker.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
@@ -23,7 +24,7 @@ TEST_F(WindowMirrorViewTest, LocalWindowOcclusionMadeVisible) {
   aura::Window* widget_window = widget->GetNativeWindow();
   widget_window->TrackOcclusionState();
   EXPECT_EQ(aura::Window::OcclusionState::HIDDEN,
-            widget_window->occlusion_state());
+            widget_window->GetOcclusionState());
 
   auto mirror_widget = CreateTestWidget();
   auto mirror_view = std::make_unique<WindowMirrorView>(
@@ -34,7 +35,7 @@ TEST_F(WindowMirrorViewTest, LocalWindowOcclusionMadeVisible) {
   // Even though the widget is hidden, the occlusion state is considered
   // visible. This is to ensure renderers still produce content.
   EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
-            widget_window->occlusion_state());
+            widget_window->GetOcclusionState());
 }
 
 // Tests that a mirror view that mirrors a window with an existing transform

@@ -19,6 +19,7 @@
 #include "testing/embedder_test_timer_handling_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
 #include "third_party/base/stl_util.h"
 
@@ -30,6 +31,14 @@ using testing::NiceMock;
 using testing::StrEq;
 
 using FPDFFormFillEmbedderTest = EmbedderTest;
+
+namespace {
+
+int TranslateOnCharToModifierOnChar(int keychar) {
+  return keychar - FWL_VKEY_A + 1;
+}
+
+}  // namespace
 
 // A base class for many related tests that involve clicking and typing into
 // form fields.
@@ -85,7 +94,7 @@ class FPDFFormFillInteractiveEmbedderTest : public FPDFFormFillEmbedderTest {
 
     // Type text starting with 'A' to as many chars as specified by |num_chars|.
     for (int i = 0; i < num_chars; ++i) {
-      FORM_OnChar(form_handle(), page_, 'A' + i, 0);
+      FORM_OnChar(form_handle(), page_, FWL_VKEY_A + i, 0);
     }
   }
 
@@ -110,7 +119,7 @@ class FPDFFormFillInteractiveEmbedderTest : public FPDFFormFillEmbedderTest {
 
   // Uses the mouse to navigate to text field and select text.
   void SelectTextWithMouse(const CFX_PointF& start, const CFX_PointF& end) {
-    ASSERT(start.y == end.y);
+    DCHECK_EQ(start.y, end.y);
 
     // Navigate to starting position and click mouse.
     FORM_OnMouseMove(form_handle(), page_, 0, start.x, start.y);
@@ -238,14 +247,14 @@ class FPDFFormFillTextFormEmbedderTest
   }
 
   static CFX_PointF CharLimitFormAtX(float x) {
-    ASSERT(x >= kFormBeginX);
-    ASSERT(x <= kFormEndX);
+    DCHECK(x >= kFormBeginX);
+    DCHECK(x <= kFormEndX);
     return CFX_PointF(x, kCharLimitFormY);
   }
 
   static CFX_PointF RegularFormAtX(float x) {
-    ASSERT(x >= kFormBeginX);
-    ASSERT(x <= kFormEndX);
+    DCHECK(x >= kFormBeginX);
+    DCHECK(x <= kFormEndX);
     return CFX_PointF(x, kRegularFormY);
   }
 
@@ -282,14 +291,14 @@ class FPDFFormFillComboBoxFormEmbedderTest
   }
 
   void SelectEditableFormOption(int item_index) {
-    ASSERT(item_index >= 0);
-    ASSERT(item_index < 3);
+    DCHECK(item_index >= 0);
+    DCHECK(item_index < 3);
     SelectOption(item_index, EditableFormDropDown());
   }
 
   void SelectNonEditableFormOption(int item_index) {
-    ASSERT(item_index >= 0);
-    ASSERT(item_index < 26);
+    DCHECK(item_index >= 0);
+    DCHECK(item_index < 26);
     SelectOption(item_index, NonEditableFormDropDown());
   }
 
@@ -332,14 +341,14 @@ class FPDFFormFillComboBoxFormEmbedderTest
   }
 
   static CFX_PointF EditableFormAtX(float x) {
-    ASSERT(x >= kFormBeginX);
-    ASSERT(x <= kFormEndX);
+    DCHECK(x >= kFormBeginX);
+    DCHECK(x <= kFormEndX);
     return CFX_PointF(x, kEditableFormY);
   }
 
   static CFX_PointF NonEditableFormAtX(float x) {
-    ASSERT(x >= kFormBeginX);
-    ASSERT(x <= kFormEndX);
+    DCHECK(x >= kFormBeginX);
+    DCHECK(x <= kFormEndX);
     return CFX_PointF(x, kNonEditableFormY);
   }
 
@@ -428,8 +437,8 @@ class FPDFFormFillListBoxFormEmbedderTest
   void ClickOnSingleSelectFormOption(int item_index) {
     // Only the first two indices are visible so can only click on those
     // without scrolling.
-    ASSERT(item_index >= 0);
-    ASSERT(item_index < 2);
+    DCHECK(item_index >= 0);
+    DCHECK(item_index < 2);
     if (item_index == 0) {
       ClickOnFormFieldAtPoint(SingleSelectFirstVisibleOption());
     } else {
@@ -440,8 +449,8 @@ class FPDFFormFillListBoxFormEmbedderTest
   void ClickOnMultiSelectFormOption(int item_index) {
     // Only the first two indices are visible so can only click on those
     // without scrolling.
-    ASSERT(item_index >= 0);
-    ASSERT(item_index < 2);
+    DCHECK(item_index >= 0);
+    DCHECK(item_index < 2);
     if (item_index == 0) {
       ClickOnFormFieldAtPoint(MultiSelectFirstVisibleOption());
     } else {
@@ -452,8 +461,8 @@ class FPDFFormFillListBoxFormEmbedderTest
   void ClickOnMultiSelectMultipleValuesFormOption(int item_index) {
     // Only two indices are visible so can only click on those
     // without scrolling.
-    ASSERT(item_index >= 0);
-    ASSERT(item_index < 2);
+    DCHECK(item_index >= 0);
+    DCHECK(item_index < 2);
     if (item_index == 0) {
       ClickOnFormFieldAtPoint(MultiSelectMultipleValuesFirstVisibleOption());
     } else {
@@ -464,8 +473,8 @@ class FPDFFormFillListBoxFormEmbedderTest
   void ClickOnSingleSelectLastSelectedFormOption(int item_index) {
     // Only two indices are visible so can only click on those
     // without scrolling.
-    ASSERT(item_index >= 0);
-    ASSERT(item_index < 2);
+    DCHECK(item_index >= 0);
+    DCHECK(item_index < 2);
     if (item_index == 0) {
       ClickOnFormFieldAtPoint(SingleSelectLastSelectedFirstVisibleOption());
     } else {
@@ -1317,26 +1326,12 @@ TEST_F(FPDFFormFillEmbedderTest, BUG_765384) {
 }
 #endif  // PDF_ENABLE_V8
 
-// TODO(crbug.com/pdfium/1500): Fix this test on Windows and enable.
-#if defined(OS_WIN) && \
-    (defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_))
-#define MAYBE_FormText DISABLED_FormText
-#else
-#define MAYBE_FormText FormText
-#endif
-TEST_F(FPDFFormFillEmbedderTest, MAYBE_FormText) {
+TEST_F(FPDFFormFillEmbedderTest, FormText) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#if defined(OS_APPLE)
   const char kFocusedTextFormWithAbcChecksum[] =
-      "7f4d3e883301c08b3ca2f53cb78adc58";
+      "42af2135e20deb09cbdbfb6418d86382";
   const char kUnfocusedTextFormWithAbcChecksum[] =
-      "92aa287f6208ad0c78210e68e2a731a3";
-#else
-  const char kFocusedTextFormWithAbcChecksum[] =
-      "e2e2b4e4c7ebd6485a2c0745e41c0115";
-  const char kUnfocusedTextFormWithAbcChecksum[] =
-      "84e808922efcceb82f36d55ed4b2752e";
-#endif  // defined(OS_APPLE)
+      "4a961599a512a08468b26b89d389c30a";
 #else
 #if defined(OS_WIN)
   const char kFocusedTextFormWithAbcChecksum[] =
@@ -1372,9 +1367,9 @@ TEST_F(FPDFFormFillEmbedderTest, MAYBE_FormText) {
     FORM_OnLButtonUp(form_handle(), page, 0, 120.0, 120.0);
 
     // Write "ABC"
-    FORM_OnChar(form_handle(), page, 65, 0);
-    FORM_OnChar(form_handle(), page, 66, 0);
-    FORM_OnChar(form_handle(), page, 67, 0);
+    FORM_OnChar(form_handle(), page, FWL_VKEY_A, 0);
+    FORM_OnChar(form_handle(), page, FWL_VKEY_B, 0);
+    FORM_OnChar(form_handle(), page, FWL_VKEY_C, 0);
     ScopedFPDFBitmap bitmap2 = RenderLoadedPage(page);
     CompareBitmap(bitmap2.get(), 300, 300, kFocusedTextFormWithAbcChecksum);
 
@@ -3137,6 +3132,37 @@ TEST_F(FPDFFormFillTextFormEmbedderTest, ReplaceSelection) {
   CheckFocusedFieldText(L"XYZB");
   CheckCanUndo(true);
   CheckCanRedo(false);
+}
+
+TEST_F(FPDFFormFillTextFormEmbedderTest, SelectAllWithKeyboardShortcut) {
+  // Start with a couple of letters in the text form.
+  TypeTextIntoTextField(2, RegularFormBegin());
+  CheckFocusedFieldText(L"AB");
+  CheckSelection(L"");
+
+  // Select all with the keyboard shortcut.
+#if defined(OS_APPLE)
+  constexpr int kCorrectModifier = FWL_EVENTFLAG_MetaKey;
+#else
+  constexpr int kCorrectModifier = FWL_EVENTFLAG_ControlKey;
+#endif
+  FORM_OnChar(form_handle(), page(),
+              TranslateOnCharToModifierOnChar(FWL_VKEY_A), kCorrectModifier);
+  CheckSelection(L"AB");
+
+  // Reset the selection again.
+  ClickOnFormFieldAtPoint(RegularFormBegin());
+  CheckSelection(L"");
+
+  // Select all with the keyboard shortcut using the wrong modifier key.
+#if defined(OS_APPLE)
+  constexpr int kWrongModifier = FWL_EVENTFLAG_ControlKey;
+#else
+  constexpr int kWrongModifier = FWL_EVENTFLAG_MetaKey;
+#endif
+  FORM_OnChar(form_handle(), page(),
+              TranslateOnCharToModifierOnChar(FWL_VKEY_A), kWrongModifier);
+  CheckSelection(L"");
 }
 
 class FPDFXFAFormBug1055869EmbedderTest

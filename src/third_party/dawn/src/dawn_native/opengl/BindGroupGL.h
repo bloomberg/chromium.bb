@@ -20,16 +20,15 @@
 
 namespace dawn_native { namespace opengl {
 
-    class BindGroupLayout;
     class Device;
 
     MaybeError ValidateGLBindGroupDescriptor(const BindGroupDescriptor* descriptor);
 
     class BindGroup final : public BindGroupBase, public PlacementAllocated {
       public:
-        BindGroup(Device* device, const BindGroupDescriptor* descriptor);
+        static Ref<BindGroup> Create(Device* device, const BindGroupDescriptor* descriptor);
 
-        static BindGroup* Create(Device* device, const BindGroupDescriptor* descriptor);
+        BindGroup(Device* device, const BindGroupDescriptor* descriptor);
 
       private:
         ~BindGroup() override;

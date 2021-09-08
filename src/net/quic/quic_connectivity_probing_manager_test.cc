@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_connectivity_probing_manager.h"
 
+#include <memory>
+
 #include "base/stl_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "net/log/test_net_log.h"
@@ -45,7 +47,7 @@ class MockQuicChromiumClientSession
   ~MockQuicChromiumClientSession() override {}
 
   // QuicChromiumPacketReader::Visitor interface.
-  MOCK_METHOD(void,
+  MOCK_METHOD(bool,
               OnReadError,
               (int result, const DatagramClientSocket* socket),
               (override));
@@ -122,13 +124,13 @@ class QuicConnectivityProbingManagerTest : public ::testing::Test {
     socket_->GetLocalAddress(&self_address);
     self_address_ = ToQuicSocketAddress(self_address);
     // Create packet writer and reader for probing.
-    writer_.reset(
-        new QuicChromiumPacketWriter(socket_.get(), test_task_runner_.get()));
-    reader_.reset(new QuicChromiumPacketReader(
+    writer_ = std::make_unique<QuicChromiumPacketWriter>(
+        socket_.get(), test_task_runner_.get());
+    reader_ = std::make_unique<QuicChromiumPacketReader>(
         socket_.get(), &clock_, &session_, kQuicYieldAfterPacketsRead,
         quic::QuicTime::Delta::FromMilliseconds(
             kQuicYieldAfterDurationMilliseconds),
-        bound_test_net_log_.bound()));
+        bound_test_net_log_.bound());
   }
 
  protected:

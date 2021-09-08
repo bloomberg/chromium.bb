@@ -4,6 +4,7 @@
 
 #include "content/public/test/text_input_test_utils.h"
 
+#include <memory>
 #include <unordered_set>
 
 #include "base/strings/utf_string_conversions.h"
@@ -15,7 +16,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/input_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -113,7 +113,8 @@ class TextInputManagerTester::InternalObserver
     const gfx::Range* range =
         text_input_manager_->GetCompositionRangeForTesting();
     DCHECK(range);
-    last_composition_range_.reset(new gfx::Range(range->start(), range->end()));
+    last_composition_range_ =
+        std::make_unique<gfx::Range>(range->start(), range->end());
     if (!on_ime_composition_range_changed_callback_.is_null())
       on_ime_composition_range_changed_callback_.Run();
   }
@@ -274,7 +275,7 @@ bool DoesFrameHaveFocusedEditableElement(RenderFrameHost* frame) {
 
 void SendImeCommitTextToWidget(
     RenderWidgetHost* rwh,
-    const base::string16& text,
+    const std::u16string& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int relative_cursor_pos) {
@@ -284,7 +285,7 @@ void SendImeCommitTextToWidget(
 
 void SendImeSetCompositionTextToWidget(
     RenderWidgetHost* rwh,
-    const base::string16& text,
+    const std::u16string& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int selection_start,
@@ -569,7 +570,7 @@ std::unique_ptr<TestInputMethodObserver> TestInputMethodObserver::Create(
 #if defined(USE_AURA)
   RenderWidgetHostViewAura* view = static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView());
-  observer.reset(new InputMethodObserverAura(view->GetInputMethod()));
+  observer = std::make_unique<InputMethodObserverAura>(view->GetInputMethod());
 #endif
   return observer;
 }

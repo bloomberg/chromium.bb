@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import {join} from 'path';
 
 export const storeGeneratedResults = (file: string, content: string) => {
-  const directory = join(__dirname, '..', '..', 'perf', '.generated');
+  const directory = join(__dirname, '..', '..', '..', '..', '..', '..', 'perf-data');
   fs.mkdirSync(directory, {recursive: true});
 
   const filePath = join(directory, file);
@@ -18,7 +18,7 @@ export const percentile = (values: number[], position: number) => {
     return 0;
   }
 
-  values = Array.from(values).sort();
+  values = Array.from(values).sort((a, b) => a - b);
   const idx = Math.floor(values.length * position);
   if (values.length % 2 === 1) {
     return values[idx];

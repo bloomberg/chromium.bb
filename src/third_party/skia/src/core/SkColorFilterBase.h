@@ -9,6 +9,8 @@
 #define SkColorFilterBase_DEFINED
 
 #include "include/core/SkColorFilter.h"
+#include "include/private/SkColorData.h"
+#include "src/core/SkVM_fwd.h"
 
 class GrColorInfo;
 class GrFragmentProcessor;
@@ -18,13 +20,6 @@ class SkBitmap;
 class SkColorSpace;
 struct SkStageRec;
 using GrFPResult = std::tuple<bool, std::unique_ptr<GrFragmentProcessor>>;
-
-namespace skvm {
-    class Builder;
-    struct F32;
-    struct Uniforms;
-    struct Color;
-}  // namespace skvm
 
 class SkColorFilterBase : public SkColorFilter {
 public:
@@ -37,7 +32,7 @@ public:
 
     /** Returns the flags for this filter. Override in subclasses to return custom flags.
     */
-    virtual uint32_t onGetFlags() const { return 0; }
+    virtual bool onIsAlphaUnchanged() const { return false; }
 
 #if SK_SUPPORT_GPU
     /**
@@ -74,6 +69,8 @@ public:
                                   SkFlattenable::Deserialize(
                                   kSkColorFilter_Type, data, size, procs).release()));
     }
+
+    virtual SkPMColor4f onFilterColor4f(const SkPMColor4f& color, SkColorSpace* dstCS) const;
 
 protected:
     SkColorFilterBase() {}

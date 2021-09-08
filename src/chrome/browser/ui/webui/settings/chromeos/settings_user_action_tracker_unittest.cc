@@ -39,6 +39,10 @@ class SettingsUserActionTrackerTest : public testing::Test {
                                        mojom::Setting::kTouchpadSpeed);
     fake_hierarchy_.AddSettingMetadata(mojom::Section::kPeople,
                                        mojom::Setting::kAddAccount);
+    fake_hierarchy_.AddSettingMetadata(mojom::Section::kPrinting,
+                                       mojom::Setting::kScanningApp);
+    fake_hierarchy_.AddSettingMetadata(mojom::Section::kNetwork,
+                                       mojom::Setting::kWifiAddNetwork);
   }
 
   base::HistogramTester histogram_tester_;
@@ -67,6 +71,28 @@ TEST_F(SettingsUserActionTrackerTest, TestRecordSettingChangedBool) {
           fake_sections_.GetSection(mojom::Section::kBluetooth));
   EXPECT_TRUE(bluetooth_section->logged_metrics().back() ==
               mojom::Setting::kBluetoothOnOff);
+}
+
+TEST_F(SettingsUserActionTrackerTest, TestRecordSettingChangedString) {
+  // Record that the user tried to add a 3rd account.
+  tracker_.RecordSettingChangeWithDetails(
+      mojom::Setting::kWifiAddNetwork,
+      mojom::SettingChangeValue::NewStringValue("guid"));
+
+  // The umbrella metric for which setting was changed should be updated. Note
+  // that kWifiAddNetwork has enum value of 8.
+  histogram_tester_.ExpectTotalCount("ChromeOS.Settings.SettingChanged",
+                                     /*count=*/1);
+  histogram_tester_.ExpectBucketCount("ChromeOS.Settings.SettingChanged",
+                                      /*sample=*/8,
+                                      /*count=*/1);
+
+  // The LogMetric fn in the People section should have been called.
+  const FakeOsSettingsSection* network_section =
+      static_cast<const FakeOsSettingsSection*>(
+          fake_sections_.GetSection(mojom::Section::kNetwork));
+  EXPECT_TRUE(network_section->logged_metrics().back() ==
+              mojom::Setting::kWifiAddNetwork);
 }
 
 TEST_F(SettingsUserActionTrackerTest, TestRecordSettingChangedInt) {
@@ -136,6 +162,27 @@ TEST_F(SettingsUserActionTrackerTest, TestRecordSettingChangedIntPref) {
           fake_sections_.GetSection(mojom::Section::kDevice));
   EXPECT_TRUE(device_section->logged_metrics().back() ==
               mojom::Setting::kTouchpadSpeed);
+}
+
+TEST_F(SettingsUserActionTrackerTest, TestRecordSettingChangedNullValue) {
+  // Record that the Scan app is opened.
+  tracker_.RecordSettingChangeWithDetails(mojom::Setting::kScanningApp,
+                                          nullptr);
+
+  // The umbrella metric for which setting was changed should be updated. Note
+  // that kScanningApp has enum value of 1403.
+  histogram_tester_.ExpectTotalCount("ChromeOS.Settings.SettingChanged",
+                                     /*count=*/1);
+  histogram_tester_.ExpectBucketCount("ChromeOS.Settings.SettingChanged",
+                                      /*sample=*/1403,
+                                      /*count=*/1);
+
+  // The LogMetric fn in the Printing section should have been called.
+  const FakeOsSettingsSection* printing_section =
+      static_cast<const FakeOsSettingsSection*>(
+          fake_sections_.GetSection(mojom::Section::kPrinting));
+  EXPECT_TRUE(printing_section->logged_metrics().back() ==
+              mojom::Setting::kScanningApp);
 }
 
 }  // namespace settings.

@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
@@ -70,7 +69,8 @@ class TabbedNavigationBarColorController implements VrModeObserver {
         mWindow = window;
         mRootView = (ViewGroup) mWindow.getDecorView().getRootView();
         mResources = mRootView.getResources();
-        mDefaultScrimColor = ApiCompatibilityUtils.getColor(mResources, R.color.black_alpha_65);
+        mDefaultScrimColor =
+                ApiCompatibilityUtils.getColor(mResources, R.color.default_scrim_color);
 
         // If we're not using a light navigation bar, it will always be the same dark color so
         // there's no need to register observers and manipulate coloring.
@@ -81,7 +81,7 @@ class TabbedNavigationBarColorController implements VrModeObserver {
         }
 
         mTabModelSelector = tabModelSelector;
-        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+        mTabModelSelectorObserver = new TabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 updateNavigationBarColor();
@@ -164,7 +164,7 @@ class TabbedNavigationBarColorController implements VrModeObserver {
 
         boolean forceDarkNavigation;
         if (DeviceClassManager.enableAccessibilityLayout()
-                || TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
+                || TabUiFeatureUtilities.isGridTabSwitcherEnabled(mRootView.getContext())) {
             forceDarkNavigation = mTabModelSelector.isIncognitoSelected();
         } else {
             forceDarkNavigation = mTabModelSelector.isIncognitoSelected() && !overviewVisible;

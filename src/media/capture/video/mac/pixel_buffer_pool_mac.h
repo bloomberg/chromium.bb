@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/optional.h"
 #include "media/capture/capture_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -26,11 +26,14 @@ class CAPTURE_EXPORT PixelBufferPool {
       OSType format,
       int width,
       int height,
-      base::Optional<size_t> max_buffers);
+      absl::optional<size_t> max_buffers);
   ~PixelBufferPool();
 
-  // Creates a new buffer from the pool, or returns null if |max_buffers_| would
-  // be exceeded. The underlying buffers may be recycled.
+  // Creates a new buffer from the pool, if possible. The underlying buffers are
+  // recycled by the pool when no longer referenced. Buffer creation fails if
+  // |max_buffers_| would be exceeded, but CVReturn error codes can also result
+  // under unknown conditions in the wild. On error, we log the reason and
+  // return null.
   //
   // Freeing all buffer references returns the underlying buffer to the pool. In
   // order to free memory, you must both release all buffers and call Flush() or
@@ -52,13 +55,14 @@ class CAPTURE_EXPORT PixelBufferPool {
  private:
   friend std::unique_ptr<PixelBufferPool> std::make_unique<PixelBufferPool>(
       base::ScopedCFTypeRef<CVPixelBufferPoolRef>&& buffer_pool,
-      base::Optional<size_t>&& max_buffers);
+      absl::optional<size_t>&& max_buffers);
 
   PixelBufferPool(base::ScopedCFTypeRef<CVPixelBufferPoolRef> buffer_pool,
-                  base::Optional<size_t> max_buffers);
+                  absl::optional<size_t> max_buffers);
 
   base::ScopedCFTypeRef<CVPixelBufferPoolRef> buffer_pool_;
-  const base::Optional<size_t> max_buffers_;
+  const absl::optional<size_t> max_buffers_;
+  size_t num_consecutive_errors_;
 };
 
 }  // namespace media

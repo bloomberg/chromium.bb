@@ -12,7 +12,6 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
-#include "base/time/time.h"
 #include "components/content_settings/common/content_settings_agent.mojom.h"
 #include "components/content_settings/common/content_settings_manager.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -52,10 +51,10 @@ class ContentSettingsAgentImpl
 
     // Allows the delegate to override logic for various
     // blink::WebContentSettingsClient methods. If an optional value is
-    // returned, return base::nullopt to use the default logic.
-    virtual base::Optional<bool> AllowReadFromClipboard();
-    virtual base::Optional<bool> AllowWriteToClipboard();
-    virtual base::Optional<bool> AllowMutationEvents();
+    // returned, return absl::nullopt to use the default logic.
+    virtual absl::optional<bool> AllowReadFromClipboard();
+    virtual absl::optional<bool> AllowWriteToClipboard();
+    virtual absl::optional<bool> AllowMutationEvents();
     virtual void PassiveInsecureContentFound(const blink::WebURL& resource_url);
   };
 
@@ -92,7 +91,6 @@ class ContentSettingsAgentImpl
   bool AllowReadFromClipboard(bool default_value) override;
   bool AllowWriteToClipboard(bool default_value) override;
   bool AllowMutationEvents(bool default_value) override;
-  void DidNotAllowPlugins() override;
   void DidNotAllowScript() override;
   bool AllowRunningInsecureContent(bool allowed_per_settings,
                                    const blink::WebURL& url) override;

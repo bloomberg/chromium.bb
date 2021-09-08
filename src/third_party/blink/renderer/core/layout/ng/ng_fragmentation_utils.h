@@ -12,12 +12,13 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 
 namespace blink {
 
+class NGEarlyBreak;
 class NGLayoutResult;
 
 // Join two adjacent break values specified on break-before and/or break-
@@ -47,6 +48,17 @@ inline bool IsResumingLayout(const NGBlockBreakToken* token) {
   return token && !token->IsBreakBefore();
 }
 
+// Return true if the node may break into multiple fragments (or has already
+// broken). In some situations we'll disable block fragmentation while in the
+// middle of layout of a node (to prevent superfluous empty fragments, if
+// overflow is clipped). In some cases it's not enough to just check if we're
+// currently performing block fragmentation; we also need to know if it has
+// already been fragmented (to resume layout correctly, but not break again).
+inline bool InvolvedInBlockFragmentation(const NGBoxFragmentBuilder& builder) {
+  return builder.ConstraintSpace()->HasBlockFragmentation() ||
+         builder.PreviousBreakToken();
+}
+
 // Calculate the final "break-between" value at a class A or C breakpoint. This
 // is the combination of all break-before and break-after values that met at the
 // breakpoint.
@@ -66,6 +78,25 @@ NGBreakAppeal CalculateBreakAppealInside(const NGConstraintSpace& space,
                                          NGBlockNode child,
                                          const NGLayoutResult&);
 
+// To ensure content progression, we need fragmentainers to hold something
+// larger than 0. The spec says that fragmentainers have to accept at least 1px
+// of content. See https://www.w3.org/TR/css-break-3/#breaking-rules
+inline LayoutUnit ClampedToValidFragmentainerCapacity(LayoutUnit length) {
+  return std::max(length, LayoutUnit(1));
+}
+
+// Return the fragmentainer block-size to use during layout. This is normally
+// the same as the block-size we'll give to the fragment itself, but in order to
+// ensure content progression, we need fragmentainers to hold something larger
+// than 0 (even if the final fragentainer size may very well be 0). The spec
+// says that fragmentainers have to accept at least 1px of content. See
+// https://www.w3.org/TR/css-break-3/#breaking-rules
+inline LayoutUnit FragmentainerCapacity(const NGConstraintSpace& space) {
+  if (!space.HasKnownFragmentainerBlockSize())
+    return kIndefiniteSize;
+  return ClampedToValidFragmentainerCapacity(space.FragmentainerBlockSize());
+}
+
 // Return the block space that was available in the current fragmentainer at the
 // start of the current block formatting context. Note that if the start of the
 // current block formatting context is in a previous fragmentainer, the size of
@@ -75,7 +106,7 @@ NGBreakAppeal CalculateBreakAppealInside(const NGConstraintSpace& space,
 inline LayoutUnit FragmentainerSpaceAtBfcStart(const NGConstraintSpace& space) {
   if (!space.HasKnownFragmentainerBlockSize())
     return kIndefiniteSize;
-  return space.FragmentainerBlockSize() - space.FragmentainerOffsetAtBfc();
+  return FragmentainerCapacity(space) - space.FragmentainerOffsetAtBfc();
 }
 
 // Adjust margins to take fragmentation into account. Leading/trailing block
@@ -132,6 +163,33 @@ bool IsNodeFullyGrown(NGBlockNode,
                       const NGBoxStrut& border_padding,
                       LayoutUnit inline_size);
 
+// Outcome of considering (and possibly attempting) breaking before or inside a
+// child.
+enum class NGBreakStatus {
+  // Continue layout. No break was inserted in this operation.
+  kContinue,
+
+  // A break was inserted before the child. Discard the child fragment and
+  // finish layout of the container. If there was a break inside the child, it
+  // will be discarded along with the child fragment.
+  kBrokeBefore,
+
+  // The fragment couldn't fit here, but no break was inserted before/inside the
+  // child, as it was an unappealing place to break, and we have a better
+  // earlier breakpoint. We now need to abort the current layout, and go back
+  // and re-layout to said earlier breakpoint.
+  kNeedsEarlierBreak,
+
+  // The node broke inside when it's not allowed to generate more fragments
+  // (than the one we're working on right now). This happens when a child inside
+  // an overflow:clip box breaks, and we're past the block-end edge of the
+  // overflow:clip box. The fragmentation engine has one job: to insert breaks
+  // in order to prevent content from overflowing the fragmentainers, but if
+  // we're past the block-end edge of a clipped box, there'll be no
+  // fragmentainer overflow, and therefore no need for breaks.
+  kDisableFragmentation,
+};
+
 // Update and write fragmentation information to the fragment builder after
 // layout. This will update the block-size stored in the builder. When
 // calculating the block-size, a layout algorithm will include the accumulated
@@ -141,34 +199,18 @@ bool IsNodeFullyGrown(NGBlockNode,
 // regardless of fragmentation. This function will update the block-size to the
 // actual fragment size, by examining possible breakpoints, if necessary.
 //
-// Return true if successful. If false is returned, it means that we ran out of
-// space at a less-than-ideal location - in this case between the last child and
-// the block-end padding / border. Furthermore, this also means that we know
-// that we have a better earlier breakpoint, so the correct response to 'false'
-// is to abort layout, then relayout and break earlier.
-bool FinishFragmentation(NGBlockNode node,
-                         const NGConstraintSpace&,
-                         LayoutUnit trailing_border_padding,
-                         LayoutUnit space_left,
-                         NGBoxFragmentBuilder*);
-
-// Outcome of considering (and possibly attempting) breaking before a child.
-enum class NGBreakStatus {
-  // Continue layout. No break was inserted before the child (but there may be
-  // a break inside).
-  kContinue,
-
-  // A break was inserted before the child. Discard the child fragment and
-  // finish layout of the container. If there was a break inside the child, it
-  // will be discarded along with the child fragment.
-  kBrokeBefore,
-
-  // The child couldn't fit here, but no break was inserted before the child,
-  // as it was an unappealing place to break, and we have a better earlier
-  // breakpoint. We now need to abort the current layout, and go back and
-  // re-layout to said earlier breakpoint.
-  kNeedsEarlierBreak
-};
+// Return kContinue if we're allowed to generate a fragment. Otherwise, it means
+// that we need to abort and relayout, either because we ran out of space at a
+// less-than-ideal location (kNeedsEarlierBreak) - in this case between the last
+// child and the block-end padding / border, or, because we need to disable
+// fragmentation (kDisableFragmentation). kBrokeBefore is never returned here
+// (if we need a break before the node, that's something that will be determined
+// by the parent algorithm).
+NGBreakStatus FinishFragmentation(NGBlockNode node,
+                                  const NGConstraintSpace&,
+                                  LayoutUnit trailing_border_padding,
+                                  LayoutUnit space_left,
+                                  NGBoxFragmentBuilder*);
 
 // Insert a fragmentainer break before the child if necessary. In that case, the
 // previous in-flow position will be updated, we'll return |kBrokeBefore|. If we
@@ -177,7 +219,9 @@ enum class NGBreakStatus {
 // might have to go back and break here. Return |kContinue| if we're to continue
 // laying out. If |kNeedsEarlierBreak| is returned, it means that we ran out of
 // space, but shouldn't break before the child, but rather abort layout, and
-// re-layout to a previously found good breakpoint.  If
+// re-layout to a previously found good breakpoint. |kDisableFragmentation| will
+// never be returned from this function (we need to finish layout of the
+// container before we can tell whether we reached the end). If
 // |has_container_separation| is true, it means that we're at a valid
 // breakpoint. We obviously prefer valid breakpoints, but sometimes we need to
 // break at undesirable locations. Class A breakpoints occur between block
@@ -199,7 +243,7 @@ void BreakBeforeChild(const NGConstraintSpace&,
                       NGLayoutInputNode child,
                       const NGLayoutResult&,
                       LayoutUnit fragmentainer_block_offset,
-                      base::Optional<NGBreakAppeal> appeal,
+                      absl::optional<NGBreakAppeal> appeal,
                       bool is_forced_break,
                       NGBoxFragmentBuilder*);
 
@@ -258,6 +302,19 @@ bool AttemptSoftBreak(const NGConstraintSpace&,
                       NGBreakAppeal appeal_before,
                       NGBoxFragmentBuilder*);
 
+// If we have an previously found break point, and we're entering an ancestor of
+// the node we're going to break before, return the early break inside. This can
+// then be passed to child layout, so that child layout eventually can tell
+// where to insert the break.
+const NGEarlyBreak* EnterEarlyBreakInChild(const NGBlockNode& child,
+                                           const NGEarlyBreak&);
+
+// Return true if this is the child that we had previously determined to break
+// before.
+bool IsEarlyBreakTarget(const NGEarlyBreak&,
+                        const NGBoxFragmentBuilder&,
+                        const NGLayoutInputNode& child);
+
 // Calculate the constraint space for columns of a multi-column layout.
 NGConstraintSpace CreateConstraintSpaceForColumns(
     const NGConstraintSpace& parent_space,
@@ -265,6 +322,13 @@ NGConstraintSpace CreateConstraintSpaceForColumns(
     LogicalSize percentage_resolution_size,
     bool allow_discard_start_margin,
     bool balance_columns);
+
+// Calculate the container builder and constraint space for a multicol.
+NGBoxFragmentBuilder CreateContainerBuilderForMulticol(
+    const NGBlockNode& multicol,
+    const NGConstraintSpace& space,
+    const NGFragmentGeometry& fragment_geometry);
+NGConstraintSpace CreateConstraintSpaceForMulticol(const NGBlockNode& multicol);
 
 // Return the adjusted child margin to be applied at the end of a fragment.
 // Margins should collapse with the fragmentainer boundary. |bfc_block_offset|

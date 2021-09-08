@@ -85,14 +85,14 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   web::WebState* web_state_ = nullptr;
 
   // |YES| if the current tab helper is active.
-  BOOL active_;
+  BOOL active_ = NO;
 
   // |YES| if the NTP's underlying ios/web page is still loading.
   BOOL ignore_load_requests_ = NO;
 
   // Ensure the ignore_load_requests_ flag is never set to NO for more than
   // |kMaximumIgnoreLoadRequestsTime| seconds.
-  std::unique_ptr<base::OneShotTimer> ignore_load_requests_timer_ = nullptr;
+  std::unique_ptr<base::OneShotTimer> ignore_load_requests_timer_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
 

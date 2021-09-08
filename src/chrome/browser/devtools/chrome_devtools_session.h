@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_SESSION_H_
 
 #include <memory>
-#include <string>
-#include <utility>
 
-#include "base/values.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/span.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/devtools/protocol/forward.h"
 #include "chrome/browser/devtools/protocol/protocol.h"
 #include "content/public/browser/devtools_manager_delegate.h"
@@ -58,7 +58,7 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
   std::unique_ptr<PageHandler> page_handler_;
   std::unique_ptr<SecurityHandler> security_handler_;
   std::unique_ptr<TargetHandler> target_handler_;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<WindowManagerHandler> window_manager_handler_;
 #endif
   content::DevToolsAgentHostClientChannel* client_channel_;

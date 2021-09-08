@@ -29,7 +29,8 @@
 
 #include "third_party/blink/renderer/core/inspector/dev_tools_host.h"
 
-#include "third_party/blink/public/web/web_menu_item_info.h"
+#include "base/json/json_reader.h"
+#include "third_party/blink/public/common/context_menu_data/menu_item_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
@@ -62,7 +63,7 @@ namespace blink {
 class FrontendMenuProvider final : public ContextMenuProvider {
  public:
   FrontendMenuProvider(DevToolsHost* devtools_host,
-                       WebVector<WebMenuItemInfo> items)
+                       WebVector<MenuItemInfo> items)
       : devtools_host_(devtools_host), items_(std::move(items)) {}
   ~FrontendMenuProvider() override {
     // Verify that this menu provider has been detached.
@@ -85,7 +86,7 @@ class FrontendMenuProvider final : public ContextMenuProvider {
     items_.Clear();
   }
 
-  WebVector<WebMenuItemInfo> PopulateContextMenu() override {
+  WebVector<MenuItemInfo> PopulateContextMenu() override {
     return std::move(items_);
   }
 
@@ -98,7 +99,7 @@ class FrontendMenuProvider final : public ContextMenuProvider {
 
  private:
   Member<DevToolsHost> devtools_host_;
-  WebVector<WebMenuItemInfo> items_;
+  WebVector<MenuItemInfo> items_;
 };
 
 DevToolsHost::DevToolsHost(InspectorFrontendClient* client,
@@ -128,7 +129,8 @@ void DevToolsHost::EvaluateScript(const String& expression) {
   v8::MicrotasksScope microtasks(script_state->GetIsolate(),
                                  v8::MicrotasksScope::kRunMicrotasks);
   ScriptSourceCode source_code(expression, ScriptSourceLocationType::kInternal,
-                               nullptr, KURL(), TextPosition());
+                               nullptr, KURL(),
+                               TextPosition::MinimumPosition());
   V8ScriptRunner::CompileAndRunInternalScript(script_state->GetIsolate(),
                                               script_state, source_code);
 }
@@ -160,39 +162,34 @@ void DevToolsHost::copyText(const String& text) {
   frontend_frame_->GetSystemClipboard()->CommitWrite();
 }
 
-static String EscapeUnicodeNonCharacters(const String& str) {
-  const UChar kNonChar = 0xD800;
-
-  unsigned i = 0;
-  while (i < str.length() && str[i] < kNonChar)
-    ++i;
-  if (i == str.length())
-    return str;
-
-  StringBuilder dst;
-  dst.Append(str, 0, i);
-  for (; i < str.length(); ++i) {
-    UChar c = str[i];
-    if (c >= kNonChar) {
-      unsigned symbol = static_cast<unsigned>(c);
-      String symbol_code = String::Format("\\u%04X", symbol);
-      dst.Append(symbol_code);
-    } else {
-      dst.Append(c);
+void DevToolsHost::sendMessageToEmbedder(const String& message) {
+  if (client_) {
+    // Strictly convert, as we expect message to be serialized JSON.
+    auto value = base::JSONReader::Read(
+        message.Utf8(WTF::UTF8ConversionMode::kStrictUTF8Conversion));
+    if (!value || !value->is_dict()) {
+      ScriptState* script_state = ToScriptStateForMainWorld(frontend_frame_);
+      if (!script_state)
+        return;
+      V8ThrowException::ThrowTypeError(
+          script_state->GetIsolate(),
+          value ? "Message to embedder must deserialize to a dictionary value"
+                : "Message to embedder couldn't be JSON-deserialized");
+      return;
     }
+    client_->SendMessageToEmbedder(std::move(*value));
   }
-  return dst.ToString();
 }
 
-void DevToolsHost::sendMessageToEmbedder(const String& message) {
+void DevToolsHost::sendMessageToEmbedder(base::Value message) {
   if (client_)
-    client_->SendMessageToEmbedder(EscapeUnicodeNonCharacters(message));
+    client_->SendMessageToEmbedder(std::move(message));
 }
 
 void DevToolsHost::ShowContextMenu(LocalFrame* target_frame,
                                    float x,
                                    float y,
-                                   WebVector<WebMenuItemInfo> items) {
+                                   WebVector<MenuItemInfo> items) {
   DCHECK(frontend_frame_);
   auto* menu_provider =
       MakeGarbageCollected<FrontendMenuProvider>(this, std::move(items));

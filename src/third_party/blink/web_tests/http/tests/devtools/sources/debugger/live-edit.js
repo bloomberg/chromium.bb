@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(`Tests live edit feature.\n`);
-  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('sources'); await TestRunner.loadTestModule('sources_test_runner');
   await TestRunner.showPanel('sources');
   await TestRunner.addScriptTag('resources/edit-me.js');
   await TestRunner.addScriptTag('resources/edit-me-2.js');
@@ -42,53 +42,6 @@
             sourceFrame, ',"I\'m good"', '"I\'m good"');
         SourcesTestRunner.dumpSourceFrameContents(panel.visibleView);
         next();
-      }
-    },
-
-    function testLiveEditWhenPaused(next) {
-      SourcesTestRunner.showScriptSource(
-          'edit-me-when-paused.js', didShowScriptSource);
-
-      async function didShowScriptSource(sourceFrame) {
-        SourcesTestRunner.waitUntilPaused(paused);
-        var result = await TestRunner.evaluateInPageRemoteObject('f1()');
-        TestRunner.assertEquals(
-            '3', result.description, 'edited function returns wrong result');
-        next();
-      }
-
-      function paused(callFrames) {
-        replaceInSource(
-            panel.visibleView, 'return 1;', 'return 2;\n\n\n\n',
-            didEditScriptSource);
-      }
-
-      function didEditScriptSource() {
-        SourcesTestRunner.resumeExecution();
-      }
-    },
-
-    function testNoCrashWhenOnlyOneFunctionOnStack(next) {
-      SourcesTestRunner.showScriptSource(
-          'edit-me-when-paused.js', didShowScriptSource);
-
-      function didShowScriptSource(sourceFrame) {
-        SourcesTestRunner.waitUntilPaused(paused);
-        TestRunner.evaluateInPage('setTimeout(f1, 0)');
-      }
-
-      async function paused(callFrames) {
-        await SourcesTestRunner.captureStackTrace(callFrames);
-        replaceInSource(
-            panel.visibleView, 'debugger;', 'debugger;\n', didEditScriptSource);
-      }
-
-      function didEditScriptSource() {
-        SourcesTestRunner.resumeExecution(
-            SourcesTestRunner.waitUntilPaused.bind(
-                SourcesTestRunner,
-                SourcesTestRunner.resumeExecution.bind(
-                    SourcesTestRunner, next)));
       }
     },
 

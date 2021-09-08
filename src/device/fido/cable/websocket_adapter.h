@@ -10,10 +10,10 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "device/fido/cable/v2_handshake.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 namespace cablev2 {
@@ -25,10 +25,19 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WebSocketAdapter
     : public network::mojom::WebSocketHandshakeClient,
       network::mojom::WebSocketClient {
  public:
+  // Result enumerates the possible results of attempting to connect a tunnel.
+  enum class Result {
+    OK,
+    FAILED,
+    // GONE indicates that the tunnel failed and that the contact ID used is
+    // permanently inactive and should be forgotten.
+    GONE,
+  };
+
   using TunnelReadyCallback = base::OnceCallback<
-      void(bool, base::Optional<std::array<uint8_t, kRoutingIdSize>>)>;
+      void(Result, absl::optional<std::array<uint8_t, kRoutingIdSize>>)>;
   using TunnelDataCallback =
-      base::RepeatingCallback<void(base::Optional<base::span<const uint8_t>>)>;
+      base::RepeatingCallback<void(absl::optional<base::span<const uint8_t>>)>;
   WebSocketAdapter(
       // on_tunnel_ready is called once with a boolean that indicates whether
       // the WebSocket successfully connected and an optional routing ID.

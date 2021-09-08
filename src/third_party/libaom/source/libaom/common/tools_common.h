@@ -116,6 +116,7 @@ struct AvxInputContext {
 #if CONFIG_AV1_ENCODER
   y4m_input y4m;
 #endif
+  aom_color_range_t color_range;
 };
 
 #ifdef __cplusplus

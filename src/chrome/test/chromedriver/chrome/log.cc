@@ -48,13 +48,14 @@ std::unique_ptr<base::Value> SmartDeepCopy(const base::Value* value) {
         new base::DictionaryValue());
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
-      if (dict_copy->size() >= kMaxChildren - 1) {
+      if (dict_copy->DictSize() >= kMaxChildren - 1) {
         dict_copy->SetKey("~~~", base::Value("..."));
         break;
       }
       const base::Value* child = NULL;
       dict->GetWithoutPathExpansion(it.key(), &child);
-      dict_copy->SetWithoutPathExpansion(it.key(), SmartDeepCopy(child));
+      dict_copy->SetKey(it.key(),
+                        base::Value::FromUniquePtrValue(SmartDeepCopy(child)));
     }
     return std::move(dict_copy);
   } else if (value->GetAsList(&list)) {
@@ -72,9 +73,9 @@ std::unique_ptr<base::Value> SmartDeepCopy(const base::Value* value) {
     return std::move(list_copy);
   } else if (value->GetAsString(&data)) {
     TruncateString(&data);
-    return std::unique_ptr<base::Value>(new base::Value(data));
+    return std::make_unique<base::Value>(data);
   }
-  return std::unique_ptr<base::Value>(value->DeepCopy());
+  return base::Value::ToUniquePtrValue(value->Clone());
 }
 
 }  // namespace
@@ -106,6 +107,6 @@ std::string FormatValueForDisplay(const base::Value& value) {
 std::string FormatJsonForDisplay(const std::string& json) {
   std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   if (!value)
-    value.reset(new base::Value(json));
+    value = std::make_unique<base::Value>(json);
   return FormatValueForDisplay(*value);
 }

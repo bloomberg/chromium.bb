@@ -10,15 +10,25 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/camera_mic/vm_camera_mic_manager.h"
+#include "base/time/time.h"
+#include "chrome/browser/ash/camera_mic/vm_camera_mic_manager.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
+#include "media/capture/video/chromeos/mojom/cros_camera_service.mojom.h"
 #include "ui/base/accelerators/media_keys_listener.h"
 
+namespace apps {
+class AppCapabilityAccessCache;
+class AppRegistryCache;
+}  // namespace apps
+
 class MediaClientImpl : public ash::MediaClient,
+                        public ash::VmCameraMicManager::Observer,
                         public BrowserListObserver,
-                        public chromeos::VmCameraMicManager::Observer,
-                        public MediaCaptureDevicesDispatcher::Observer {
+                        public MediaCaptureDevicesDispatcher::Observer,
+                        public media::CameraPrivacySwitchObserver,
+                        public media::CameraActiveClientObserver {
  public:
   MediaClientImpl();
   ~MediaClientImpl() override;
@@ -53,9 +63,16 @@ class MediaClientImpl : public ash::MediaClient,
   // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
 
-  // chromeos::VmCameraMicManager::Observer
-  void OnVmCameraMicActiveChanged(
-      chromeos::VmCameraMicManager* manager) override;
+  // ash::VmCameraMicManager::Observer
+  void OnVmCameraMicActiveChanged(ash::VmCameraMicManager* manager) override;
+
+  // media::CameraPrivacySwitchObserver:
+  void OnCameraPrivacySwitchStatusChanged(
+      cros::mojom::CameraPrivacySwitchState state) override;
+
+  // media::CameraActiveClientObserver:
+  void OnActiveClientChange(cros::mojom::CameraClientType type,
+                            bool is_active) override;
 
   // Enables/disables custom media key handling when |context| is the active
   // browser. Media keys will be forwarded to |delegate|.
@@ -63,6 +80,13 @@ class MediaClientImpl : public ash::MediaClient,
                                    ui::MediaKeysListener::Delegate* delegate);
   void DisableCustomMediaKeyHandler(content::BrowserContext* context,
                                     ui::MediaKeysListener::Delegate* delegate);
+
+  // Returns the (short) name of the app attempting to use the camera, or an
+  // empty string if the short name is not available.  Publicly visible for
+  // testing.
+  static std::u16string GetNameOfAppAccessingCamera(
+      apps::AppCapabilityAccessCache* capability_cache,
+      apps::AppRegistryCache* registry_cache);
 
  private:
   // Sets |is_forcing_media_client_key_handling_| to true if
@@ -86,6 +110,10 @@ class MediaClientImpl : public ash::MediaClient,
   // delegate. Otherwise, we will forward the action to the extensions API.
   void HandleMediaAction(ui::KeyboardCode code);
 
+  // Shows a notification informing the user that an app is trying to use the
+  // camera while the camera privacy switch is turned on.
+  void ShowCameraOffNotification();
+
   ash::MediaController* media_controller_ = nullptr;
 
   base::flat_map<content::BrowserContext*, ui::MediaKeysListener::Delegate*>
@@ -99,6 +127,16 @@ class MediaClientImpl : public ash::MediaClient,
 
   ash::MediaCaptureState vm_media_capture_state_ =
       ash::MediaCaptureState::kNone;
+
+  // The most recent observed camera privacy switch state.
+  cros::mojom::CameraPrivacySwitchState camera_privacy_switch_state_ =
+      cros::mojom::CameraPrivacySwitchState::UNKNOWN;
+
+  bool is_camera_active_ = false;
+
+  // Most recent time the notification that the camera privacy switch is on was
+  // shown.
+  base::TimeTicks camera_switch_notification_shown_timestamp_;
 
   base::WeakPtrFactory<MediaClientImpl> weak_ptr_factory_{this};
 

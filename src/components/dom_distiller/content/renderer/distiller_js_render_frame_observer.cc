@@ -25,7 +25,7 @@ DistillerJsRenderFrameObserver::~DistillerJsRenderFrameObserver() {}
 
 void DistillerJsRenderFrameObserver::DidStartNavigation(
     const GURL& url,
-    base::Optional<blink::WebNavigationType> navigation_type) {
+    absl::optional<blink::WebNavigationType> navigation_type) {
   is_distiller_page_ = url_utils::IsDistilledPage(url);
 }
 
@@ -35,8 +35,8 @@ void DistillerJsRenderFrameObserver::DidCreateScriptContext(
   if (world_id != distiller_isolated_world_id_ || !is_distiller_page_)
     return;
 
-  native_javascript_handle_.reset(
-      new DistillerNativeJavaScript(render_frame()));
+  native_javascript_handle_ =
+      std::make_unique<DistillerNativeJavaScript>(render_frame());
   native_javascript_handle_->AddJavaScriptObjectToFrame(context);
 }
 

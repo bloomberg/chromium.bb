@@ -17,10 +17,12 @@
 #include "src/profiling/memory/java_hprof_producer.h"
 
 #include <signal.h>
+#include <limits>
 
 #include "perfetto/ext/base/optional.h"
 #include "perfetto/ext/tracing/core/trace_writer.h"
 #include "src/profiling/common/proc_utils.h"
+#include "src/profiling/common/producer_support.h"
 
 namespace perfetto {
 namespace profiling {
@@ -54,9 +56,32 @@ void JavaHprofProducer::DoContinuousDump(DataSourceInstanceID id,
 void JavaHprofProducer::SignalDataSource(const DataSource& ds) {
   const std::set<pid_t>& pids = ds.pids;
   for (pid_t pid : pids) {
+    auto opt_status = ReadStatus(pid);
+    if (!opt_status) {
+      PERFETTO_PLOG("Failed to read /proc/%d/status. Not signalling.", pid);
+      continue;
+    }
+    auto uids = GetUids(*opt_status);
+    if (!uids) {
+      PERFETTO_ELOG(
+          "Failed to read Uid from /proc/%d/status. "
+          "Not signalling.",
+          pid);
+      continue;
+    }
+    if (!CanProfile(ds.ds_config, uids->effective,
+                    ds.config.target_installed_by())) {
+      PERFETTO_ELOG("%d (UID %" PRIu64 ") not profileable.", pid,
+                    uids->effective);
+      continue;
+    }
     PERFETTO_DLOG("Sending %d to %d", kJavaHeapprofdSignal, pid);
-    if (kill(pid, kJavaHeapprofdSignal) != 0) {
-      PERFETTO_DPLOG("kill");
+    union sigval signal_value;
+    signal_value.sival_int =
+        static_cast<int32_t>(ds.ds_config.tracing_session_id() %
+                             std::numeric_limits<int32_t>::max());
+    if (sigqueue(pid, kJavaHeapprofdSignal, signal_value) != 0) {
+      PERFETTO_DPLOG("sigqueue");
     }
   }
 }
@@ -94,6 +119,7 @@ void JavaHprofProducer::SetupDataSource(DataSourceInstanceID id,
     RemoveUnderAnonThreshold(config.min_anonymous_memory_kb(), &ds.pids);
 
   ds.config = std::move(config);
+  ds.ds_config = std::move(ds_config);
   data_sources_.emplace(id, std::move(ds));
 }
 

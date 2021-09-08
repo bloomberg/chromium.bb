@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/shell_browser_context.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -58,7 +59,7 @@ ShellBrowserContext::ShellBrowserContext(bool off_the_record,
 }
 
 ShellBrowserContext::~ShellBrowserContext() {
-  NotifyWillBeDestroyed(this);
+  NotifyWillBeDestroyed();
 
   // The SimpleDependencyManager should always be passed after the
   // BrowserContextDependencyManager. This is because the KeyedService instances
@@ -138,7 +139,7 @@ void ShellBrowserContext::FinishInitWhileIOAllowed() {
 #if !defined(OS_ANDROID)
 std::unique_ptr<ZoomLevelDelegate> ShellBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath&) {
-  return std::unique_ptr<ZoomLevelDelegate>();
+  return nullptr;
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -152,9 +153,9 @@ bool ShellBrowserContext::IsOffTheRecord() {
 
 DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {
   if (!download_manager_delegate_.get()) {
-    download_manager_delegate_.reset(new ShellDownloadManagerDelegate());
-    download_manager_delegate_->SetDownloadManager(
-        BrowserContext::GetDownloadManager(this));
+    download_manager_delegate_ =
+        std::make_unique<ShellDownloadManagerDelegate>();
+    download_manager_delegate_->SetDownloadManager(GetDownloadManager());
   }
 
   return download_manager_delegate_.get();
@@ -188,7 +189,7 @@ SSLHostStateDelegate* ShellBrowserContext::GetSSLHostStateDelegate() {
 PermissionControllerDelegate*
 ShellBrowserContext::GetPermissionControllerDelegate() {
   if (!permission_manager_.get())
-    permission_manager_.reset(new ShellPermissionManager());
+    permission_manager_ = std::make_unique<ShellPermissionManager>();
   return permission_manager_.get();
 }
 
@@ -202,8 +203,10 @@ BackgroundFetchDelegate* ShellBrowserContext::GetBackgroundFetchDelegate() {
 }
 
 BackgroundSyncController* ShellBrowserContext::GetBackgroundSyncController() {
-  if (!background_sync_controller_)
-    background_sync_controller_.reset(new MockBackgroundSyncController());
+  if (!background_sync_controller_) {
+    background_sync_controller_ =
+        std::make_unique<MockBackgroundSyncController>();
+  }
   return background_sync_controller_.get();
 }
 

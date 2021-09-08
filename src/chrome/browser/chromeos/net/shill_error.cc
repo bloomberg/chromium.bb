@@ -26,10 +26,10 @@ const NetworkState* GetNetworkState(const std::string& network_id) {
 
 namespace shill_error {
 
-base::string16 GetShillErrorString(const std::string& error,
+std::u16string GetShillErrorString(const std::string& error,
                                    const std::string& network_id) {
   if (error.empty())
-    return base::string16();
+    return std::u16string();
   if (error == shill::kErrorOutOfRange)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE);
   if (error == shill::kErrorPinMissing)
@@ -101,6 +101,22 @@ base::string16 GetShillErrorString(const std::string& error,
   if (error == shill::kErrorPppAuthFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED);
+  }
+  if (error == shill::kErrorResultNotOnHomeNetwork) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_NOT_ON_HOME_NETWORK);
+  }
+  if (error == shill::kErrorNotAuthenticated) {
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE);
+  }
+  if (error == shill::kErrorSimLocked) {
+    return l10n_util::GetStringUTF16(IDS_NETWORK_LIST_SIM_CARD_LOCKED);
+  }
+  if (error == shill::kErrorNotRegistered) {
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_NOT_REGISTERED);
+  }
+  if (error == shill::kErrorResultWrongState) {
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_WRONG_STATE);
   }
 
   if (base::ToLowerASCII(error) == base::ToLowerASCII(shill::kUnknownString)) {

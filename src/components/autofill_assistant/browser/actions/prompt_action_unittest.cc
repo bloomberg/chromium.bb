@@ -15,6 +15,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/timer.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
+#include "components/autofill_assistant/browser/wait_for_dom_observer.h"
 #include "components/autofill_assistant/browser/web/mock_web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -44,7 +45,7 @@ class PromptActionTest : public testing::Test {
     ON_CALL(mock_web_controller_, OnFindElement(_, _))
         .WillByDefault(RunOnceCallback<1>(
             ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
-    EXPECT_CALL(mock_action_delegate_, OnWaitForDom(_, _, _, _))
+    EXPECT_CALL(mock_action_delegate_, WaitForDom(_, _, _, _, _))
         .WillRepeatedly(Invoke(this, &PromptActionTest::FakeWaitForDom));
     ON_CALL(mock_action_delegate_, Prompt(_, _, _, _, _))
         .WillByDefault(
@@ -65,10 +66,11 @@ class PromptActionTest : public testing::Test {
   void FakeWaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
+      WaitForDomObserver* observer,
       base::RepeatingCallback<
           void(BatchElementChecker*,
-               base::OnceCallback<void(const ClientStatus&)>)>& check_elements,
-      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>&
+               base::OnceCallback<void(const ClientStatus&)>)> check_elements,
+      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>
           done_waiting_callback) {
     fake_wait_for_dom_done_ = std::move(done_waiting_callback);
     RunFakeWaitForDom(check_elements);
@@ -186,7 +188,7 @@ TEST_F(PromptActionTest, SelectButtons) {
           Property(&ProcessedActionProto::prompt_choice,
                    Property(&PromptProto::Result::server_payload, "ok"))))));
   EXPECT_TRUE((*user_actions_)[0].HasCallback());
-  (*user_actions_)[0].Call(TriggerContext::CreateEmpty());
+  (*user_actions_)[0].Call(std::make_unique<TriggerContext>());
 }
 
 TEST_F(PromptActionTest, ReportDirectAction) {
@@ -274,7 +276,7 @@ TEST_F(PromptActionTest, TimingStatsUserAction) {
   ProcessedActionProto capture;
   EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&capture));
   EXPECT_TRUE((*user_actions_)[0].HasCallback());
-  (*user_actions_)[0].Call(TriggerContext::CreateEmpty());
+  (*user_actions_)[0].Call(std::make_unique<TriggerContext>());
   EXPECT_EQ(capture.timing_stats().active_time_ms(), 700);
   EXPECT_EQ(capture.timing_stats().wait_time_ms(), 2500);
 }
@@ -403,7 +405,7 @@ TEST_F(PromptActionTest, Terminate) {
   // Chips pointing to a deleted action do nothing.
   ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
   EXPECT_TRUE((*user_actions_)[0].HasCallback());
-  (*user_actions_)[0].Call(TriggerContext::CreateEmpty());
+  (*user_actions_)[0].Call(std::make_unique<TriggerContext>());
 }
 
 TEST_F(PromptActionTest, NoMessageSet) {
@@ -572,7 +574,7 @@ TEST_F(PromptActionTest, TimingStatsEndActionOnNavigation) {
   EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&capture));
   action.ProcessAction(callback_.Get());
   EXPECT_TRUE(task_env_.NextTaskIsDelayed());
-  task_env_.DescribePendingMainThreadTasks();
+  task_env_.DescribeCurrentTasks();
   task_env_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(capture.timing_stats().wait_time_ms(), 1000);
 }

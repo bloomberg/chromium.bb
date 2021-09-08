@@ -5,16 +5,17 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_ALTERNATIVE_STATE_NAME_MAP_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_ALTERNATIVE_STATE_NAME_MAP_H_
 
-#include "components/autofill/core/browser/proto/states.pb.h"
+#include <string>
 
 #include "base/i18n/case_conversion.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string16.h"
-#include "base/util/type_safety/strong_alias.h"
+#include "base/types/strong_alias.h"
+#include "components/autofill/core/browser/proto/states.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill {
+
 // AlternativeStateNameMap encapsulates mappings from state names in the
 // profiles to their localized and the abbreviated names.
 //
@@ -62,65 +63,68 @@ namespace autofill {
 //               b. ("US", "CA") -> "California"
 //               c. ("US", "TheGoldenState") -> "California"
 //
-// Example: Assuming the user creates an unknown state in the profile
-//          "Random State".
-//          1. Entries added to the |localized_state_names_map_| are:
-//              ("RandomState", Empty StateEntry object)
-//          2. Nothing is added to the
-//              |localized_state_names_reverse_lookup_map_| in this case
+// In case, the user has an unknown state in the profile, nothing is added to
+// the AlternativeStateNameMap;
 class AlternativeStateNameMap {
  public:
   // Represents ISO 3166-1 alpha-2 codes (always uppercase ASCII).
-  using CountryCode = util::StrongAlias<class CountryCodeTag, std::string>;
+  using CountryCode = base::StrongAlias<class CountryCodeTag, std::string>;
 
   // Represents either a canonical state name, or an abbreviation, or an
   // alternative name or normalized state name from the profile.
-  using StateName = util::StrongAlias<class StateNameTag, base::string16>;
+  using StateName = base::StrongAlias<class StateNameTag, std::u16string>;
 
   // States can be represented as different strings (different spellings,
   // translations, abbreviations). All representations of a single state in a
   // single country are mapped to the same canonical name.
   using CanonicalStateName =
-      util::StrongAlias<class CanonicalStateNameTag, base::string16>;
+      base::StrongAlias<class CanonicalStateNameTag, std::u16string>;
 
   static AlternativeStateNameMap* GetInstance();
+
+  // Removes |kCharsToStrip| from |text| and returns the normalized text.
+  static StateName NormalizeStateName(const StateName& text);
+
+  // Calls |GetCanonicalStateName()| member method of AlternativeStateNameMap
+  // and returns the canonical state name corresponding to |country_code| and
+  // |state_name| if present.
+  static absl::optional<AlternativeStateNameMap::CanonicalStateName>
+  GetCanonicalStateName(const std::string& country_code,
+                        const std::u16string& state_name);
 
   ~AlternativeStateNameMap() = delete;
   AlternativeStateNameMap(const AlternativeStateNameMap&) = delete;
   AlternativeStateNameMap& operator=(const AlternativeStateNameMap&) = delete;
 
-  // Removes |kCharsToStrip| from |text| and returns the normalized text.
-  static StateName NormalizeStateName(const StateName& text);
-
   // Returns the canonical name (StateEntry::canonical_name) from the
   // |localized_state_names_map_| based on
   // (|country_code|, |state_name|).
-  base::Optional<CanonicalStateName> GetCanonicalStateName(
+  // |is_state_name_normalized| denotes whether the |state_name| has been
+  // normalized or not.
+  absl::optional<CanonicalStateName> GetCanonicalStateName(
       const CountryCode& country_code,
       const StateName& state_name,
       bool is_state_name_normalized = false) const;
 
   // Returns the value present in |localized_state_names_map_| corresponding
   // to (|country_code|, |state_string_from_profile|). In case, the entry does
-  // not exist in the map, base::nullopt is returned.
-  base::Optional<StateEntry> GetEntry(
+  // not exist in the map, absl::nullopt is returned.
+  absl::optional<StateEntry> GetEntry(
       const CountryCode& country_code,
       const StateName& state_string_from_profile) const;
 
   // Adds ((|country_code|, state key), |state_entry|) to the
   // |localized_state_names_map_|, where state key corresponds to
-  // |normalized_canonical_state_name| if it is not null, or to
-  // |normalized_state_value_from_profile| otherwise.
-  // If |normalized_canonical_state_name| is not null, each entry from
-  // |normalized_alternative_state_names| is added as a tuple
-  // ((|country_code|, entry), |normalized_canonical_state_name|) to the
+  // |normalized_canonical_state_name|.
+  // Also, each entry from |normalized_alternative_state_names| is added as a
+  // tuple ((|country_code|, |entry|), |normalized_canonical_state_name|) to the
   // |localized_state_names_reverse_lookup_map_|.
   void AddEntry(
       const CountryCode& country_code,
       const StateName& normalized_state_value_from_profile,
       const StateEntry& state_entry,
       const std::vector<StateName>& normalized_alternative_state_names,
-      CanonicalStateName* normalized_canonical_state_name);
+      const CanonicalStateName& normalized_canonical_state_name);
 
   // Returns true if the |localized_state_names_map_| is empty.
   bool IsLocalisedStateNamesMapEmpty() const;

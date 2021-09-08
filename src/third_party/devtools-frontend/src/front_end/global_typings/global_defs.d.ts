@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// eslint-disable-next-line spaced-comment
-/// <reference path="./resize_observer.d.ts" />
-
+/// <reference path="./request_idle_callback.d.ts" />
+/// <reference path="./intl_display_names.d.ts" />
 
 interface CSSStyleSheet {
   replaceSync(content: string): void;
@@ -12,4 +11,8 @@ interface CSSStyleSheet {
 
 interface ShadowRoot {
   adoptedStyleSheets: CSSStyleSheet[]
+}
+
+interface ImportMeta {
+  url: string;
 }

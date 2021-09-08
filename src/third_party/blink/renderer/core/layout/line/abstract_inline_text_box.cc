@@ -112,10 +112,8 @@ LegacyAbstractInlineTextBox::~LegacyAbstractInlineTextBox() {
 
 void AbstractInlineTextBox::Detach() {
   DCHECK(GetLineLayoutItem());
-  if (Node* node = GetNode()) {
-    if (AXObjectCache* cache = node->GetDocument().ExistingAXObjectCache())
-      cache->Remove(this);
-  }
+  if (AXObjectCache* cache = ExistingAXObjectCache())
+    cache->Remove(this);
 
   line_layout_item_ = LineLayoutText(nullptr);
 }
@@ -227,6 +225,18 @@ Node* AbstractInlineTextBox::GetNode() const {
   return GetLineLayoutItem().GetNode();
 }
 
+LayoutObject* AbstractInlineTextBox::GetLayoutObject() const {
+  if (!GetLineLayoutItem())
+    return nullptr;
+  return GetLineLayoutItem().GetLayoutObject();
+}
+
+AXObjectCache* AbstractInlineTextBox::ExistingAXObjectCache() const {
+  if (LayoutObject* layout_object = GetLayoutObject())
+    return layout_object->GetDocument().ExistingAXObjectCache();
+  return nullptr;
+}
+
 void LegacyAbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
   if (!inline_text_box_)
     return;
@@ -243,7 +253,7 @@ void AbstractInlineTextBox::GetWordBoundaries(
     return;
 
   TextBreakIterator* it = WordBreakIterator(text, 0, text.length());
-  base::Optional<int> word_start;
+  absl::optional<int> word_start;
   for (int offset = 0; offset != kTextBreakDone && offset < int{text.length()};
        offset = it->following(offset)) {
     // Unlike in ICU's WordBreakIterator, a word boundary is valid only if it is
@@ -290,7 +300,7 @@ void AbstractInlineTextBox::GetWordBoundaries(
           prev_character == kCarriageReturnCharacter) {
         if (word_start) {
           words.emplace_back(*word_start, offset);
-          word_start = base::nullopt;
+          word_start = absl::nullopt;
         }
       }
     }
@@ -302,7 +312,7 @@ void AbstractInlineTextBox::GetWordBoundaries(
   // boundary which should be at |text|'s length.
   if (word_start) {
     words.emplace_back(*word_start, text.length());
-    word_start = base::nullopt;
+    word_start = absl::nullopt;
   }
 }
 

@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 
+#include "url/gurl.h"
+
 namespace password_manager {
 
 StubPasswordManagerDriver::StubPasswordManagerDriver() = default;
@@ -18,17 +20,15 @@ void StubPasswordManagerDriver::FillPasswordForm(
 }
 
 void StubPasswordManagerDriver::GeneratedPasswordAccepted(
-    const base::string16& password) {
-}
+    const std::u16string& password) {}
 
-void StubPasswordManagerDriver::FillSuggestion(const base::string16& username,
-                                               const base::string16& password) {
+void StubPasswordManagerDriver::FillSuggestion(const std::u16string& username,
+                                               const std::u16string& password) {
 }
 
 void StubPasswordManagerDriver::PreviewSuggestion(
-    const base::string16& username,
-    const base::string16& password) {
-}
+    const std::u16string& username,
+    const std::u16string& password) {}
 
 void StubPasswordManagerDriver::ClearPreviewedForm() {
 }

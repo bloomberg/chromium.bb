@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/extensions/api/context_menus.h"
 #include "content/public/browser/browser_context.h"
@@ -47,7 +48,7 @@ ContextMenuMatcher::ContextMenuMatcher(
     content::BrowserContext* browser_context,
     ui::SimpleMenuModel::Delegate* delegate,
     ui::SimpleMenuModel* menu_model,
-    const base::Callback<bool(const MenuItem*)>& filter)
+    base::RepeatingCallback<bool(const MenuItem*)> filter)
     : browser_context_(browser_context),
       menu_model_(menu_model),
       delegate_(delegate),
@@ -56,7 +57,7 @@ ContextMenuMatcher::ContextMenuMatcher(
 
 void ContextMenuMatcher::AppendExtensionItems(
     const MenuItem::ExtensionKey& extension_key,
-    const base::string16& selection_text,
+    const std::u16string& selection_text,
     int* index,
     bool is_action_menu) {
   DCHECK_GE(*index, 0);
@@ -77,7 +78,7 @@ void ContextMenuMatcher::AppendExtensionItems(
 
   bool prepend_separator = false;
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   // If this is the first extension-provided menu item, and there are other
   // items in the menu, and the last item is not a separator add a separator.
   // Also, don't add separators when Smart Text Selection is enabled. Smart
@@ -106,7 +107,7 @@ void ContextMenuMatcher::AppendExtensionItems(
   } else {
     int menu_id = ConvertToExtensionsCustomCommandId(*index);
     (*index)++;
-    base::string16 title;
+    std::u16string title;
     MenuItem::List submenu_items;
 
     if (items.size() > 1 || items[0]->type() != MenuItem::NORMAL) {
@@ -169,16 +170,16 @@ void ContextMenuMatcher::Clear() {
   extension_menu_models_.clear();
 }
 
-base::string16 ContextMenuMatcher::GetTopLevelContextMenuTitle(
+std::u16string ContextMenuMatcher::GetTopLevelContextMenuTitle(
     const MenuItem::ExtensionKey& extension_key,
-    const base::string16& selection_text) {
+    const std::u16string& selection_text) {
   const Extension* extension = NULL;
   MenuItem::List items;
   bool can_cross_incognito;
   GetRelevantExtensionTopLevelItems(
       extension_key, &extension, &can_cross_incognito, &items);
 
-  base::string16 title;
+  std::u16string title;
 
   if (items.empty() ||
       items.size() > 1 ||
@@ -290,7 +291,7 @@ MenuItem::List ContextMenuMatcher::GetRelevantExtensionItems(
 void ContextMenuMatcher::RecursivelyAppendExtensionItems(
     const MenuItem::List& items,
     bool can_cross_incognito,
-    const base::string16& selection_text,
+    const std::u16string& selection_text,
     ui::SimpleMenuModel* menu_model,
     int* index,
     bool is_action_menu_top_level) {
@@ -300,7 +301,7 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
 
   bool enable_separators = false;
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   enable_separators = true;
 #endif
 
@@ -329,8 +330,8 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
       ++num_visible_items;
 
     extension_item_map_[menu_id] = item->id();
-    base::string16 title = item->TitleWithReplacement(selection_text,
-                                                kMaxExtensionItemTitleLength);
+    std::u16string title = item->TitleWithReplacement(
+        selection_text, kMaxExtensionItemTitleLength);
     if (item->type() == MenuItem::NORMAL) {
       MenuItem::List children =
           GetRelevantExtensionItems(item->children(), can_cross_incognito);

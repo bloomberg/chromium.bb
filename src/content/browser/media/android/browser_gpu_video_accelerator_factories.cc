@@ -177,7 +177,7 @@ BrowserGpuVideoAcceleratorFactories::GetTaskRunner() {
   return nullptr;
 }
 
-base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
+absl::optional<media::VideoEncodeAccelerator::SupportedProfiles>
 BrowserGpuVideoAcceleratorFactories::
     GetVideoEncodeAcceleratorSupportedProfiles() {
   return media::VideoEncodeAccelerator::SupportedProfiles();
@@ -200,5 +200,11 @@ BrowserGpuVideoAcceleratorFactories::GetMediaContextProvider() {
 
 void BrowserGpuVideoAcceleratorFactories::SetRenderingColorSpace(
     const gfx::ColorSpace& color_space) {}
+
+const gfx::ColorSpace&
+BrowserGpuVideoAcceleratorFactories::GetRenderingColorSpace() const {
+  static constexpr gfx::ColorSpace cs = gfx::ColorSpace::CreateSRGB();
+  return cs;
+}
 
 }  // namespace content

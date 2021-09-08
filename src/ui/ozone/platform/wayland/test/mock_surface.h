@@ -5,8 +5,6 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_SURFACE_H_
 #define UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_SURFACE_H_
 
-#include <memory>
-#include <utility>
 
 #include <wayland-server-protocol.h>
 
@@ -56,6 +54,9 @@ class MockSurface : public ServerObject {
   void set_viewport(TestViewport* viewport) { viewport_ = viewport; }
   TestViewport* viewport() { return viewport_; }
 
+  gfx::Rect opaque_region() const { return opaque_region_; }
+  gfx::Rect input_region() const { return input_region_; }
+
   void set_frame_callback(wl_resource* callback_resource) {
     DCHECK(!frame_callback_);
     frame_callback_ = callback_resource;
@@ -66,6 +67,8 @@ class MockSurface : public ServerObject {
 
   bool has_role() const { return !!xdg_surface_ || !!sub_surface_; }
 
+  void SetOpaqueRegionImpl(wl_resource* region);
+  void SetInputRegionImpl(wl_resource* region);
   void AttachNewBuffer(wl_resource* buffer_resource, int32_t x, int32_t y);
   void DestroyPrevAttachedBuffer();
   void ReleaseBuffer(wl_resource* buffer);
@@ -75,6 +78,8 @@ class MockSurface : public ServerObject {
   MockXdgSurface* xdg_surface_ = nullptr;
   TestSubSurface* sub_surface_ = nullptr;
   TestViewport* viewport_ = nullptr;
+  gfx::Rect opaque_region_ = {-1, -1, 0, 0};
+  gfx::Rect input_region_ = {-1, -1, 0, 0};
 
   wl_resource* frame_callback_ = nullptr;
 

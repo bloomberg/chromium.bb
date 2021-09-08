@@ -6,6 +6,8 @@ import {$$, click, getBrowserAndPages, platform, typeText, waitFor} from '../../
 
 export const QUICK_OPEN_SELECTOR = '[aria-label="Quick open"]';
 const QUICK_OPEN_ITEMS_SELECTOR = '.filtered-list-widget-item';
+const QUICK_OPEN_ITEM_TITLE_SELECTOR = '.filtered-list-widget-title';
+
 const QUICK_OPEN_SELECTED_ITEM_SELECTOR = `${QUICK_OPEN_ITEMS_SELECTOR}.selected`;
 
 export const openCommandMenu = async () => {
@@ -42,6 +44,15 @@ export const openCommandMenu = async () => {
   await waitFor(QUICK_OPEN_SELECTOR);
 };
 
+export const openFileQuickOpen = async () => {
+  const {frontend} = getBrowserAndPages();
+  const modifierKey = platform === 'mac' ? 'Meta' : 'Control';
+  await frontend.keyboard.down(modifierKey);
+  await frontend.keyboard.press('P');
+  await frontend.keyboard.up(modifierKey);
+  await waitFor(QUICK_OPEN_SELECTOR);
+};
+
 export const showSnippetsAutocompletion = async () => {
   const {frontend} = getBrowserAndPages();
 
@@ -58,6 +69,18 @@ export async function getAvailableSnippets() {
   return snippets;
 }
 
+export async function getMenuItemTitleAtPosition(position: number) {
+  const quickOpenElement = await waitFor(QUICK_OPEN_SELECTOR);
+  await waitFor(QUICK_OPEN_ITEM_TITLE_SELECTOR);
+  const itemsHandles = await $$(QUICK_OPEN_ITEM_TITLE_SELECTOR, quickOpenElement);
+  const item = itemsHandles[position];
+  if (!item) {
+    assert.fail(`Quick open: could not find item at position: ${position}.`);
+  }
+  const title = await item.evaluate(elem => elem.textContent);
+  return title;
+}
+
 export const closeDrawer = async () => {
   const closeButtonSelector = '[aria-label="Close drawer"]';
   await waitFor(closeButtonSelector);
@@ -67,5 +90,9 @@ export const closeDrawer = async () => {
 export const getSelectedItemText = async () => {
   const quickOpenElement = await waitFor(QUICK_OPEN_SELECTOR);
   const selectedRow = await waitFor(QUICK_OPEN_SELECTED_ITEM_SELECTOR, quickOpenElement);
-  return await (await selectedRow.getProperty('textContent')).jsonValue();
+  const textContent = await selectedRow.getProperty('textContent');
+  if (!textContent) {
+    assert.fail('Quick open: could not get selected item textContent');
+  }
+  return await textContent.jsonValue<string>();
 };

@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.media.MediaCrypto;
 import android.media.MediaDrm;
-import android.media.MediaDrm.MediaDrmStateException;
 import android.os.Build;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -210,7 +209,6 @@ public class MediaDrmBridge {
     /**
      *  An equivalent of MediaDrm.KeyStatus, which is only available on M+.
      */
-    @MainDex
     private static class KeyStatus {
         private final byte[] mKeyId;
         private final int mStatusCode;
@@ -731,9 +729,11 @@ public class MediaDrmBridge {
                     keyType == MediaDrm.KEY_TYPE_RELEASE ? sessionId.keySetId() : sessionId.drmId();
             assert scopeId != null;
             request = mMediaDrm.getKeyRequest(scopeId, data, mime, keyType, optionalParameters);
-        } catch (MediaDrmStateException e) {
-            // See b/21307186 for details.
-            Log.e(TAG, "MediaDrmStateException fired during getKeyRequest().", e);
+        } catch (java.lang.IllegalStateException e) {
+            // We've seen both MediaDrmStateException and MediaDrmResetException happening.
+            // Since both are IllegalStateExceptions, so they will be handled here.
+            // See b/21307186 and crbug.com/1169050 for details.
+            Log.e(TAG, "Failed to getKeyRequest().", e);
         }
 
         String result = (request != null) ? "successed" : "failed";
@@ -1393,7 +1393,6 @@ public class MediaDrmBridge {
         }
     }
 
-    @MainDex
     private class EventListener implements MediaDrm.OnEventListener {
         @Override
         public void onEvent(
@@ -1455,7 +1454,6 @@ public class MediaDrmBridge {
     }
 
     @TargetApi(Build.VERSION_CODES.M)
-    @MainDex
     private class KeyStatusChangeListener implements MediaDrm.OnKeyStatusChangeListener {
         private List<KeyStatus> getKeysInfo(List<MediaDrm.KeyStatus> keyInformation) {
             List<KeyStatus> keysInfo = new ArrayList<KeyStatus>();
@@ -1490,7 +1488,6 @@ public class MediaDrmBridge {
     }
 
     @TargetApi(Build.VERSION_CODES.M)
-    @MainDex
     private class ExpirationUpdateListener implements MediaDrm.OnExpirationUpdateListener {
         @Override
         public void onExpirationUpdate(
@@ -1510,7 +1507,6 @@ public class MediaDrmBridge {
         }
     }
 
-    @MainDex
     private class KeyUpdatedCallback implements Callback<Boolean> {
         private final SessionId mSessionId;
         private final long mPromiseId;

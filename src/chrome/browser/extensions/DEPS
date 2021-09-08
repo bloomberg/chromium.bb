@@ -1,8 +1,8 @@
 include_rules = [
   "+components/crash/content/browser/error_reporting",
+  "+components/live_caption",
   "+extensions/strings/grit/extensions_strings.h",
   "+services/network/public",
-  "+third_party/ink/grit",
   "+ui/base",
 
   # For access to testing command line switches.
@@ -21,6 +21,9 @@ specific_include_rules = {
     "+chrome/browser/apps/platform_apps/app_browsertest_util.h",
   ],
 
+  "content_script_apitest.cc": [
+    "+components/web_package/test_support",
+  ],
   "extension_protocols_unittest\.cc": [
     "+services/network/test",
   ],

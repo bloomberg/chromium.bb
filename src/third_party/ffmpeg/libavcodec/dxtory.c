@@ -264,8 +264,8 @@ static int dxtory_decode_v1_420(AVCodecContext *avctx, AVFrame *pic,
             V[huvborder] = src[3] + 0x80;
             src += 4;
         }
-        Y1 += pic->linesize[0] << 1;
-        Y2 += pic->linesize[0] << 1;
+        Y1 += pic->linesize[0] * 2;
+        Y2 += pic->linesize[0] * 2;
         U  += pic->linesize[1];
         V  += pic->linesize[2];
     }
@@ -717,7 +717,7 @@ static int dx2_decode_slice_420(GetBitContext *gb, AVFrame *frame,
             V[huvborder] = decode_sym(gb, lru[2]) ^ 0x80;
         }
 
-        Y += ystride << 1;
+        Y += ystride * 2;
         U += ustride;
         V += vstride;
     }

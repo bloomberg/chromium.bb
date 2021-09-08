@@ -17,6 +17,7 @@
 #include "src/IceCfg.h"
 #include "src/IceCfgNode.h"
 
+#include <unordered_map>
 #include <vector>
 
 namespace {
@@ -24,28 +25,36 @@ namespace {
 class Optimizer
 {
 public:
+	Optimizer(rr::Nucleus::OptimizerReport *report)
+	    : report(report)
+	{
+	}
+
 	void run(Ice::Cfg *function);
 
 private:
 	void analyzeUses(Ice::Cfg *function);
+
 	void eliminateDeadCode();
 	void eliminateUnitializedLoads();
-	void eliminateLoadsFollowingSingleStore();
-	void optimizeStoresInSingleBasicBlock();
+	void propagateAlloca();
+	void performScalarReplacementOfAggregates();
+	void optimizeSingleBasicBlockLoadsStores();
 
 	void replace(Ice::Inst *instruction, Ice::Operand *newValue);
 	void deleteInstruction(Ice::Inst *instruction);
 	bool isDead(Ice::Inst *instruction);
+	bool isStaticallyIndexedArray(Ice::Operand *allocaAddress);
+	Ice::InstAlloca *allocaOf(Ice::Operand *address);
 
-	static const Ice::InstIntrinsicCall *asLoadSubVector(const Ice::Inst *instruction);
-	static const Ice::InstIntrinsicCall *asStoreSubVector(const Ice::Inst *instruction);
+	static const Ice::InstIntrinsic *asLoadSubVector(const Ice::Inst *instruction);
+	static const Ice::InstIntrinsic *asStoreSubVector(const Ice::Inst *instruction);
 	static bool isLoad(const Ice::Inst &instruction);
 	static bool isStore(const Ice::Inst &instruction);
-	static Ice::Operand *storeAddress(const Ice::Inst *instruction);
-	static Ice::Operand *loadAddress(const Ice::Inst *instruction);
-	static Ice::Operand *storeData(const Ice::Inst *instruction);
-	static std::size_t storeSize(const Ice::Inst *instruction);
 	static bool loadTypeMatchesStore(const Ice::Inst *load, const Ice::Inst *store);
+	static bool storeTypeMatchesStore(const Ice::Inst *store1, const Ice::Inst *store2);
+
+	void collectDiagnostics();
 
 	Ice::Cfg *function;
 	Ice::GlobalContext *context;
@@ -64,7 +73,7 @@ private:
 	{
 		LoadStoreInst(Ice::Inst *inst, bool isStore)
 		    : inst(inst)
-		    , address(isStore ? storeAddress(inst) : loadAddress(inst))
+		    , address(isStore ? inst->getStoreAddress() : inst->getLoadAddress())
 		    , isStore(isStore)
 		{
 		}
@@ -78,17 +87,12 @@ private:
 	void setUses(Ice::Operand *, Optimizer::Uses *);
 	bool hasUses(Ice::Operand *) const;
 
-	Ice::CfgNode *getNode(Ice::Inst *);
-	void setNode(Ice::Inst *, Ice::CfgNode *);
-
 	Ice::Inst *getDefinition(Ice::Variable *);
 	void setDefinition(Ice::Variable *, Ice::Inst *);
 
-	const std::vector<LoadStoreInst> &getLoadStoreInsts(Ice::CfgNode *);
-	void setLoadStoreInsts(Ice::CfgNode *, std::vector<LoadStoreInst> *);
-	bool hasLoadStoreInsts(Ice::CfgNode *node) const;
-
 	std::vector<Ice::Operand *> operandsWithUses;
+
+	rr::Nucleus::OptimizerReport *report = nullptr;
 };
 
 void Optimizer::run(Ice::Cfg *function)
@@ -98,11 +102,19 @@ void Optimizer::run(Ice::Cfg *function)
 
 	analyzeUses(function);
 
+	// Start by eliminating any dead code, to avoid redundant work for the
+	// subsequent optimization passes.
 	eliminateDeadCode();
 	eliminateUnitializedLoads();
-	eliminateLoadsFollowingSingleStore();
-	optimizeStoresInSingleBasicBlock();
-	eliminateDeadCode();
+
+	// Eliminate allocas which store the address of other allocas.
+	propagateAlloca();
+
+	// Replace arrays with individual elements if only statically indexed.
+	performScalarReplacementOfAggregates();
+
+	// Iterate through basic blocks to propagate loads following stores.
+	optimizeSingleBasicBlockLoadsStores();
 
 	for(auto operand : operandsWithUses)
 	{
@@ -110,6 +122,176 @@ void Optimizer::run(Ice::Cfg *function)
 		setUses(operand, nullptr);
 	}
 	operandsWithUses.clear();
+
+	collectDiagnostics();
+}
+
+// Eliminates allocas which store the address of other allocas.
+void Optimizer::propagateAlloca()
+{
+	Ice::CfgNode *entryBlock = function->getEntryNode();
+	Ice::InstList &instList = entryBlock->getInsts();
+
+	for(Ice::Inst &inst : instList)
+	{
+		if(inst.isDeleted())
+		{
+			continue;
+		}
+
+		auto *alloca = llvm::dyn_cast<Ice::InstAlloca>(&inst);
+
+		if(!alloca)
+		{
+			break;  // Allocas are all at the top
+		}
+
+		// Look for stores of this alloca's address.
+		Ice::Operand *address = alloca->getDest();
+		Uses uses = *getUses(address);  // Hard copy
+
+		for(auto *store : uses)
+		{
+			if(isStore(*store) && store->getData() == address)
+			{
+				Ice::Operand *dest = store->getStoreAddress();
+				Ice::Variable *destVar = llvm::dyn_cast<Ice::Variable>(dest);
+				Ice::Inst *def = destVar ? getDefinition(destVar) : nullptr;
+
+				// If the address is stored into another stack variable, eliminate the latter.
+				if(def && def->getKind() == Ice::Inst::Alloca)
+				{
+					Uses destUses = *getUses(dest);  // Hard copy
+
+					// Make sure the only store into the stack variable is this address, and that all of its other uses are loads.
+					// This prevents dynamic array loads/stores to be replaced by a scalar.
+					if((destUses.stores.size() == 1) && (destUses.loads.size() == destUses.size() - 1))
+					{
+						for(auto *load : destUses.loads)
+						{
+							replace(load, address);
+						}
+
+						// The address is now only stored, never loaded, so the store can be eliminated, together with its alloca.
+						assert(getUses(dest)->size() == 1);
+						deleteInstruction(store);
+						assert(def->isDeleted());
+					}
+				}
+			}
+		}
+	}
+}
+
+Ice::Type pointerType()
+{
+	if(sizeof(void *) == 8)
+	{
+		return Ice::IceType_i64;
+	}
+	else
+	{
+		return Ice::IceType_i32;
+	}
+}
+
+// Replace arrays with individual elements if only statically indexed.
+void Optimizer::performScalarReplacementOfAggregates()
+{
+	std::vector<Ice::InstAlloca *> newAllocas;
+
+	Ice::CfgNode *entryBlock = function->getEntryNode();
+	Ice::InstList &instList = entryBlock->getInsts();
+
+	for(Ice::Inst &inst : instList)
+	{
+		if(inst.isDeleted())
+		{
+			continue;
+		}
+
+		auto *alloca = llvm::dyn_cast<Ice::InstAlloca>(&inst);
+
+		if(!alloca)
+		{
+			break;  // Allocas are all at the top
+		}
+
+		uint32_t sizeInBytes = llvm::cast<Ice::ConstantInteger32>(alloca->getSizeInBytes())->getValue();
+		uint32_t alignInBytes = alloca->getAlignInBytes();
+
+		// This pass relies on array elements to be naturally aligned (i.e. matches the type size).
+		assert(sizeInBytes >= alignInBytes);
+		assert(sizeInBytes % alignInBytes == 0);
+		uint32_t elementCount = sizeInBytes / alignInBytes;
+
+		Ice::Operand *address = alloca->getDest();
+
+		if(isStaticallyIndexedArray(address))
+		{
+			// Delete the old array.
+			alloca->setDeleted();
+
+			// Allocate new stack slots for each element.
+			std::vector<Ice::Variable *> newAddress(elementCount);
+			auto *bytes = Ice::ConstantInteger32::create(context, Ice::IceType_i32, alignInBytes);
+
+			for(uint32_t i = 0; i < elementCount; i++)
+			{
+				newAddress[i] = function->makeVariable(pointerType());
+				auto *alloca = Ice::InstAlloca::create(function, newAddress[i], bytes, alignInBytes);
+				setDefinition(newAddress[i], alloca);
+
+				newAllocas.push_back(alloca);
+			}
+
+			Uses uses = *getUses(address);  // Hard copy
+
+			for(auto *use : uses)
+			{
+				assert(!use->isDeleted());
+
+				if(isLoad(*use))  // Direct use of base address
+				{
+					use->replaceSource(asLoadSubVector(use) ? 1 : 0, newAddress[0]);
+					getUses(newAddress[0])->insert(newAddress[0], use);
+				}
+				else if(isStore(*use))  // Direct use of base address
+				{
+					use->replaceSource(asStoreSubVector(use) ? 2 : 1, newAddress[0]);
+					getUses(newAddress[0])->insert(newAddress[0], use);
+				}
+				else  // Statically indexed use
+				{
+					auto *arithmetic = llvm::cast<Ice::InstArithmetic>(use);
+
+					if(arithmetic->getOp() == Ice::InstArithmetic::Add)
+					{
+						auto *rhs = arithmetic->getSrc(1);
+						int32_t offset = llvm::cast<Ice::ConstantInteger32>(rhs)->getValue();
+
+						assert(offset % alignInBytes == 0);
+						int32_t index = offset / alignInBytes;
+						assert(static_cast<uint32_t>(index) < elementCount);
+
+						replace(arithmetic, newAddress[index]);
+					}
+					else
+						assert(false && "Mismatch between isStaticallyIndexedArray() and scalarReplacementOfAggregates()");
+				}
+			}
+		}
+	}
+
+	// After looping over all the old allocas, add any new ones that replace them.
+	// They're added to the front in reverse order, to retain their original order.
+	for(size_t i = newAllocas.size(); i-- != 0;)
+	{
+		if(!isDead(newAllocas[i]))
+		{
+			instList.push_front(newAllocas[i]);
+		}
+	}
 }
 
 void Optimizer::eliminateDeadCode()
@@ -200,248 +382,82 @@ void Optimizer::eliminateUnitializedLoads()
 	}
 }
 
-void Optimizer::eliminateLoadsFollowingSingleStore()
+// Iterate through basic blocks to propagate stores to subsequent loads.
+void Optimizer::optimizeSingleBasicBlockLoadsStores()
 {
-	Ice::CfgNode *entryBlock = function->getEntryNode();
-
-	for(Ice::Inst &alloca : entryBlock->getInsts())
+	for(Ice::CfgNode *block : function->getNodes())
 	{
-		if(alloca.isDeleted())
+		// For each stack variable keep track of the last store instruction.
+		// To eliminate a store followed by another store to the same alloca address
+		// we must also know whether all loads have been replaced by the store value.
+		struct LastStore
 		{
-			continue;
-		}
+			Ice::Inst *store;
+			bool allLoadsReplaced = true;
+		};
 
-		if(!llvm::isa<Ice::InstAlloca>(alloca))
+		std::unordered_map<const Ice::InstAlloca *, LastStore> lastStoreTo;
+
+		for(Ice::Inst &inst : block->getInsts())
 		{
-			break;  // Allocas are all at the top
-		}
-
-		Ice::Operand *address = alloca.getDest();
-
-		if(!hasUses(address))
-		{
-			continue;
-		}
-
-		auto &addressUses = *getUses(address);
-
-		if(!addressUses.areOnlyLoadStore())
-		{
-			continue;
-		}
-
-		if(addressUses.stores.size() == 1)
-		{
-			Ice::Inst *store = addressUses.stores[0];
-			Ice::Operand *storeValue = storeData(store);
-
-			for(Ice::Inst *load = &*++store->getIterator(), *next = nullptr; load != next; next = load, load = &*++store->getIterator())
+			if(inst.isDeleted())
 			{
-				if(load->isDeleted() || !isLoad(*load))
-				{
-					continue;
-				}
+				continue;
+			}
 
-				if(loadAddress(load) != address)
-				{
-					continue;
-				}
+			if(isStore(inst))
+			{
+				Ice::Operand *address = inst.getStoreAddress();
 
-				if(!loadTypeMatchesStore(load, store))
+				if(Ice::InstAlloca *alloca = allocaOf(address))
 				{
-					continue;
-				}
-
-				// TODO(b/148272103): InstLoad assumes that a constant ptr is an offset, rather than an
-				// absolute address. We need to make sure we don't replace a variable with a constant
-				// on this load.
-				if(llvm::isa<Ice::Constant>(storeValue))
-				{
-					continue;
-				}
-
-				replace(load, storeValue);
-
-				for(size_t i = 0; i < addressUses.loads.size(); i++)
-				{
-					if(addressUses.loads[i] == load)
+					// Only consider this store for propagation if its address is not used as
+					// a pointer which could be used for indirect stores.
+					if(getUses(address)->areOnlyLoadStore())
 					{
-						addressUses.loads[i] = addressUses.loads.back();
-						addressUses.loads.pop_back();
-						break;
-					}
-				}
-
-				for(size_t i = 0; i < addressUses.size(); i++)
-				{
-					if(addressUses[i] == load)
-					{
-						addressUses[i] = addressUses.back();
-						addressUses.pop_back();
-						break;
-					}
-				}
-
-				if(addressUses.size() == 1)
-				{
-					assert(addressUses[0] == store);
-
-					alloca.setDeleted();
-					store->setDeleted();
-					setUses(address, nullptr);
-
-					if(hasUses(storeValue))
-					{
-						auto &valueUses = *getUses(storeValue);
-
-						for(size_t i = 0; i < valueUses.size(); i++)
+						// If there was a previous store to this address, and it was propagated
+						// to all subsequent loads, it can be eliminated.
+						if(auto entry = lastStoreTo.find(alloca); entry != lastStoreTo.end())
 						{
-							if(valueUses[i] == store)
+							Ice::Inst *previousStore = entry->second.store;
+
+							if(storeTypeMatchesStore(&inst, previousStore) &&
+							   entry->second.allLoadsReplaced)
 							{
-								valueUses[i] = valueUses.back();
-								valueUses.pop_back();
-								break;
+								deleteInstruction(previousStore);
 							}
 						}
 
-						if(valueUses.empty())
+						lastStoreTo[alloca] = { &inst };
+					}
+				}
+			}
+			else if(isLoad(inst))
+			{
+				if(Ice::InstAlloca *alloca = allocaOf(inst.getLoadAddress()))
+				{
+					auto entry = lastStoreTo.find(alloca);
+					if(entry != lastStoreTo.end())
+					{
+						const Ice::Inst *store = entry->second.store;
+
+						if(loadTypeMatchesStore(&inst, store))
 						{
-							setUses(storeValue, nullptr);
+							replace(&inst, store->getData());
+						}
+						else
+						{
+							entry->second.allLoadsReplaced = false;
 						}
 					}
-
-					break;
-				}
-			}
-		}
-	}
-}
-
-void Optimizer::optimizeStoresInSingleBasicBlock()
-{
-	Ice::CfgNode *entryBlock = function->getEntryNode();
-
-	std::vector<std::vector<LoadStoreInst> *> allocatedVectors;
-
-	for(Ice::Inst &alloca : entryBlock->getInsts())
-	{
-		if(alloca.isDeleted())
-		{
-			continue;
-		}
-
-		if(!llvm::isa<Ice::InstAlloca>(alloca))
-		{
-			break;  // Allocas are all at the top
-		}
-
-		Ice::Operand *address = alloca.getDest();
-
-		if(!hasUses(address))
-		{
-			continue;
-		}
-
-		const auto &addressUses = *getUses(address);
-
-		if(!addressUses.areOnlyLoadStore())
-		{
-			continue;
-		}
-
-		Ice::CfgNode *singleBasicBlock = getNode(addressUses.stores[0]);
-
-		for(size_t i = 1; i < addressUses.stores.size(); i++)
-		{
-			Ice::Inst *store = addressUses.stores[i];
-			if(getNode(store) != singleBasicBlock)
-			{
-				singleBasicBlock = nullptr;
-				break;
-			}
-		}
-
-		if(singleBasicBlock)
-		{
-			if(!hasLoadStoreInsts(singleBasicBlock))
-			{
-				std::vector<LoadStoreInst> *loadStoreInstVector = new std::vector<LoadStoreInst>();
-				setLoadStoreInsts(singleBasicBlock, loadStoreInstVector);
-				allocatedVectors.push_back(loadStoreInstVector);
-				for(Ice::Inst &inst : singleBasicBlock->getInsts())
-				{
-					if(inst.isDeleted())
-					{
-						continue;
-					}
-
-					bool isStoreInst = isStore(inst);
-					bool isLoadInst = isLoad(inst);
-
-					if(isStoreInst || isLoadInst)
-					{
-						loadStoreInstVector->push_back(LoadStoreInst(&inst, isStoreInst));
-					}
-				}
-			}
-
-			Ice::Inst *store = nullptr;
-			Ice::Operand *storeValue = nullptr;
-			bool unmatchedLoads = false;
-
-			for(auto &loadStoreInst : getLoadStoreInsts(singleBasicBlock))
-			{
-				Ice::Inst *inst = loadStoreInst.inst;
-
-				if((loadStoreInst.address != address) || inst->isDeleted())
-				{
-					continue;
-				}
-
-				if(loadStoreInst.isStore)
-				{
-					// New store found. If we had a previous one, try to eliminate it.
-					if(store && !unmatchedLoads)
-					{
-						// If the previous store is wider than the new one, we can't eliminate it
-						// because there could be a wide load reading its non-overwritten data.
-						if(storeSize(inst) >= storeSize(store))
-						{
-							deleteInstruction(store);
-						}
-					}
-
-					store = inst;
-					storeValue = storeData(store);
-					unmatchedLoads = false;
-				}
-				else
-				{
-					if(!loadTypeMatchesStore(inst, store))
-					{
-						unmatchedLoads = true;
-						continue;
-					}
-
-					// TODO(b/148272103): InstLoad assumes that a constant ptr is an offset, rather than an
-					// absolute address. We need to make sure we don't replace a variable with a constant
-					// on this load.
-					if(llvm::isa<Ice::Constant>(storeValue))
-					{
-						unmatchedLoads = true;
-						continue;
-					}
-
-					replace(inst, storeValue);
 				}
 			}
 		}
 	}
 
-	for(auto loadStoreInstVector : allocatedVectors)
-	{
-		delete loadStoreInstVector;
-	}
+	// This can leave some dead instructions. Specifically stores.
+	// TODO(b/179668593): Check just for dead stores by iterating over allocas?
+	eliminateDeadCode();
 }
 
 void Optimizer::analyzeUses(Ice::Cfg *function)
@@ -455,7 +471,6 @@ void Optimizer::analyzeUses(Ice::Cfg *function)
 				continue;
 			}
 
-			setNode(&instruction, basicBlock);
 			if(instruction.getDest())
 			{
 				setDefinition(instruction.getDest(), &instruction);
@@ -521,6 +536,7 @@ void Optimizer::deleteInstruction(Ice::Inst *instruction)
 		return;
 	}
 
+	assert(!instruction->getDest() || getUses(instruction->getDest())->empty());
 	instruction->setDeleted();
 
 	for(Ice::SizeT i = 0; i < instruction->getSrcSize(); i++)
@@ -556,7 +572,7 @@ bool Optimizer::isDead(Ice::Inst *instruction)
 	}
 	else if(isStore(*instruction))
 	{
-		if(Ice::Variable *address = llvm::dyn_cast<Ice::Variable>(storeAddress(instruction)))
+		if(Ice::Variable *address = llvm::dyn_cast<Ice::Variable>(instruction->getStoreAddress()))
 		{
 			Ice::Inst *def = getDefinition(address);
 
@@ -578,11 +594,66 @@ bool Optimizer::isDead(Ice::Inst *instruction)
 	return false;
 }
 
-const Ice::InstIntrinsicCall *Optimizer::asLoadSubVector(const Ice::Inst *instruction)
+bool Optimizer::isStaticallyIndexedArray(Ice::Operand *allocaAddress)
 {
-	if(auto *instrinsic = llvm::dyn_cast<Ice::InstIntrinsicCall>(instruction))
+	auto &uses = *getUses(allocaAddress);
+
+	for(auto *use : uses)
 	{
-		if(instrinsic->getIntrinsicInfo().ID == Ice::Intrinsics::LoadSubVector)
+		// Direct load from base address.
+		if(isLoad(*use) && use->getLoadAddress() == allocaAddress)
+		{
+			continue;  // This is fine.
+		}
+
+		if(isStore(*use))
+		{
+			// Can either be the address we're storing to, or the data we're storing.
+			if(use->getStoreAddress() == allocaAddress)
+			{
+				continue;
+			}
+			else
+			{
+				// propagateAlloca() eliminates most of the stores of the address itself.
+				// For the cases it doesn't handle, assume SRoA is not feasible.
+				return false;
+			}
+		}
+
+		// Pointer arithmetic is fine if it only uses constants.
+		auto *arithmetic = llvm::dyn_cast<Ice::InstArithmetic>(use);
+		if(arithmetic && arithmetic->getOp() == Ice::InstArithmetic::Add)
+		{
+			auto *rhs = arithmetic->getSrc(1);
+
+			if(llvm::isa<Ice::Constant>(rhs))
+			{
+				continue;
+			}
+		}
+
+		// If there's any other type of use, bail out.
+		return false;
+	}
+
+	return true;
+}
+
+Ice::InstAlloca *Optimizer::allocaOf(Ice::Operand *address)
+{
+	Ice::Variable *addressVar = llvm::dyn_cast<Ice::Variable>(address);
+	Ice::Inst *def = addressVar ? getDefinition(addressVar) : nullptr;
+	Ice::InstAlloca *alloca = def ? llvm::dyn_cast<Ice::InstAlloca>(def) : nullptr;
+
+	return alloca;
+}
+
+const Ice::InstIntrinsic *Optimizer::asLoadSubVector(const Ice::Inst *instruction)
+{
+	if(auto *instrinsic = llvm::dyn_cast<Ice::InstIntrinsic>(instruction))
+	{
+		if(instrinsic->getIntrinsicID() == Ice::Intrinsics::LoadSubVector)
 		{
 			return instrinsic;
 		}
@@ -591,11 +662,11 @@ const Ice::InstIntrinsicCall *Optimizer::asLoadSubVector(const Ice::Inst *instru
 	return nullptr;
 }
 
-const Ice::InstIntrinsicCall *Optimizer::asStoreSubVector(const Ice::Inst *instruction)
+const Ice::InstIntrinsic *Optimizer::asStoreSubVector(const Ice::Inst *instruction)
 {
-	if(auto *instrinsic = llvm::dyn_cast<Ice::InstIntrinsicCall>(instruction))
+	if(auto *instrinsic = llvm::dyn_cast<Ice::InstIntrinsic>(instruction))
 	{
-		if(instrinsic->getIntrinsicInfo().ID == Ice::Intrinsics::StoreSubVector)
+		if(instrinsic->getIntrinsicID() == Ice::Intrinsics::StoreSubVector)
 		{
 			return instrinsic;
 		}
@@ -624,74 +695,6 @@ bool Optimizer::isStore(const Ice::Inst &instruction)
 	return asStoreSubVector(&instruction) != nullptr;
 }
 
-Ice::Operand *Optimizer::storeAddress(const Ice::Inst *instruction)
-{
-	assert(isStore(*instruction));
-
-	if(auto *store = llvm::dyn_cast<Ice::InstStore>(instruction))
-	{
-		return store->getAddr();
-	}
-
-	if(auto *storeSubVector = asStoreSubVector(instruction))
-	{
-		return storeSubVector->getSrc(2);
-	}
-
-	return nullptr;
-}
-
-Ice::Operand *Optimizer::loadAddress(const Ice::Inst *instruction)
-{
-	assert(isLoad(*instruction));
-
-	if(auto *load = llvm::dyn_cast<Ice::InstLoad>(instruction))
-	{
-		return load->getSourceAddress();
-	}
-
-	if(auto *loadSubVector = asLoadSubVector(instruction))
-	{
-		return loadSubVector->getSrc(1);
-	}
-
-	return nullptr;
-}
-
-Ice::Operand *Optimizer::storeData(const Ice::Inst *instruction)
-{
-	assert(isStore(*instruction));
-
-	if(auto *store = llvm::dyn_cast<Ice::InstStore>(instruction))
-	{
-		return store->getData();
-	}
-
-	if(auto *storeSubVector = asStoreSubVector(instruction))
-	{
-		return storeSubVector->getSrc(1);
-	}
-
-	return nullptr;
-}
-
-std::size_t Optimizer::storeSize(const Ice::Inst *store)
-{
-	assert(isStore(*store));
-
-	if(auto *instStore = llvm::dyn_cast<Ice::InstStore>(store))
-	{
-		return Ice::typeWidthInBytes(instStore->getData()->getType());
-	}
-
-	if(auto *storeSubVector = asStoreSubVector(store))
-	{
-		return llvm::cast<Ice::ConstantInteger32>(storeSubVector->getSrc(3))->getValue();
-	}
-
-	return 0;
-}
-
 bool Optimizer::loadTypeMatchesStore(const Ice::Inst *load, const Ice::Inst *store)
 {
 	if(!load || !store)
@@ -700,28 +703,79 @@ bool Optimizer::loadTypeMatchesStore(const Ice::Inst *load, const Ice::Inst *sto
 	}
 
 	assert(isLoad(*load) && isStore(*store));
-	assert(loadAddress(load) == storeAddress(store));
+	assert(load->getLoadAddress() == store->getStoreAddress());
 
-	if(auto *instStore = llvm::dyn_cast<Ice::InstStore>(store))
+	if(store->getData()->getType() != load->getDest()->getType())
 	{
-		if(auto *instLoad = llvm::dyn_cast<Ice::InstLoad>(load))
-		{
-			return instStore->getData()->getType() == instLoad->getDest()->getType();
-		}
+		return false;
 	}
 
 	if(auto *storeSubVector = asStoreSubVector(store))
 	{
 		if(auto *loadSubVector = asLoadSubVector(load))
 		{
-			// Check for matching type and sub-vector width.
-			return storeSubVector->getSrc(1)->getType() == loadSubVector->getDest()->getType() &&
-			       llvm::cast<Ice::ConstantInteger32>(storeSubVector->getSrc(3))->getValue() ==
-			           llvm::cast<Ice::ConstantInteger32>(loadSubVector->getSrc(2))->getValue();
+			// Check for matching sub-vector width.
+			return llvm::cast<Ice::ConstantInteger32>(storeSubVector->getSrc(2))->getValue() ==
+			       llvm::cast<Ice::ConstantInteger32>(loadSubVector->getSrc(1))->getValue();
 		}
 	}
 
-	return false;
+	return true;
+}
+
+bool Optimizer::storeTypeMatchesStore(const Ice::Inst *store1, const Ice::Inst *store2)
+{
+	assert(isStore(*store1) && isStore(*store2));
+	assert(store1->getStoreAddress() == store2->getStoreAddress());
+
+	if(store1->getData()->getType() != store2->getData()->getType())
+	{
+		return false;
+	}
+
+	if(auto *storeSubVector1 = asStoreSubVector(store1))
+	{
+		if(auto *storeSubVector2 = asStoreSubVector(store2))
+		{
+			// Check for matching sub-vector width.
+			return llvm::cast<Ice::ConstantInteger32>(storeSubVector1->getSrc(2))->getValue() ==
+			       llvm::cast<Ice::ConstantInteger32>(storeSubVector2->getSrc(2))->getValue();
+		}
+	}
+
+	return true;
+}
+
+void Optimizer::collectDiagnostics()
+{
+	if(report)
+	{
+		*report = {};
+
+		for(auto *basicBlock : function->getNodes())
+		{
+			for(auto &inst : basicBlock->getInsts())
+			{
+				if(inst.isDeleted())
+				{
+					continue;
+				}
+
+				if(llvm::isa<Ice::InstAlloca>(inst))
+				{
+					report->allocas++;
+				}
+				else if(isLoad(inst))
+				{
+					report->loads++;
+				}
+				else if(isStore(inst))
+				{
+					report->stores++;
+				}
+			}
+		}
+	}
 }
 
 Optimizer::Uses *Optimizer::getUses(Ice::Operand *operand)
@@ -751,16 +805,6 @@ bool Optimizer::hasUses(Ice::Operand *operand) const
 	return operand->Ice::Operand::getExternalData() != nullptr;
 }
 
-Ice::CfgNode *Optimizer::getNode(Ice::Inst *inst)
-{
-	return (Ice::CfgNode *)inst->Ice::Inst::getExternalData();
-}
-
-void Optimizer::setNode(Ice::Inst *inst, Ice::CfgNode *node)
-{
-	inst->Ice::Inst::setExternalData(node);
-}
-
 Ice::Inst *Optimizer::getDefinition(Ice::Variable *var)
 {
 	return (Ice::Inst *)var->Ice::Variable::getExternalData();
@@ -769,21 +813,6 @@ Ice::Inst *Optimizer::getDefinition(Ice::Variable *var)
 void Optimizer::setDefinition(Ice::Variable *var, Ice::Inst *inst)
 {
 	var->Ice::Variable::setExternalData(inst);
-}
-
-const std::vector<Optimizer::LoadStoreInst> &Optimizer::getLoadStoreInsts(Ice::CfgNode *node)
-{
-	return *((const std::vector<LoadStoreInst> *)node->Ice::CfgNode::getExternalData());
-}
-
-void Optimizer::setLoadStoreInsts(Ice::CfgNode *node, std::vector<LoadStoreInst> *insts)
-{
-	node->Ice::CfgNode::setExternalData(insts);
-}
-
-bool Optimizer::hasLoadStoreInsts(Ice::CfgNode *node) const
-{
-	return node->Ice::CfgNode::getExternalData() != nullptr;
 }
 
 bool Optimizer::Uses::areOnlyLoadStore() const
@@ -797,14 +826,14 @@ void Optimizer::Uses::insert(Ice::Operand *value, Ice::Inst *instruction)
 
 	if(isLoad(*instruction))
 	{
-		if(value == loadAddress(instruction))
+		if(value == instruction->getLoadAddress())
 		{
 			loads.push_back(instruction);
 		}
 	}
 	else if(isStore(*instruction))
 	{
-		if(value == storeAddress(instruction))
+		if(value == instruction->getStoreAddress())
 		{
 			stores.push_back(instruction);
 		}
@@ -851,9 +880,9 @@ void Optimizer::Uses::erase(Ice::Inst *instruction)
 
 namespace rr {
 
-void optimize(Ice::Cfg *function)
+void optimize(Ice::Cfg *function, Nucleus::OptimizerReport *report)
 {
-	Optimizer optimizer;
+	Optimizer optimizer(report);
 
 	optimizer.run(function);
 }

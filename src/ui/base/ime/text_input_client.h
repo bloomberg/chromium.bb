@@ -9,16 +9,18 @@
 #include <stdint.h>
 
 #if defined(OS_WIN)
+#include <string>
 #include <vector>
 #endif
 
 #include "base/component_export.h"
 #include "base/i18n/rtl.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/grammar_fragment.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -35,6 +37,8 @@ class KeyEvent;
 enum class TextEditCommand;
 
 // An interface implemented by a View that needs text input support.
+// All strings related to IME operations should be UTF-16 encoded and all
+// indices/ranges relative to those strings should be UTF-16 code units.
 class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
  public:
   // The reason the control was focused, used by the virtual keyboard to detect
@@ -52,7 +56,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
     FOCUS_REASON_OTHER,
   };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   enum SubClass {
     kRenderWidgetHostViewAura = 0,
     kArcImeService = 1,
@@ -82,10 +86,20 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // Removes current composition text.
   virtual void ClearCompositionText() = 0;
 
+  enum class InsertTextCursorBehavior {
+    // Move cursor to the position after the last character in the text.
+    // e.g. for "hello", the cursor will be right after "o".
+    kMoveCursorAfterText,
+    // Move cursor to the position before the first character in the text.
+    // e.g. for "hello", the cursor will be right before "h".
+    kMoveCursorBeforeText,
+  };
+
   // Inserts a given text at the insertion point. Current composition text or
   // selection will be removed. This method should never be called when the
   // current text input type is TEXT_INPUT_TYPE_NONE.
-  virtual void InsertText(const base::string16& text) = 0;
+  virtual void InsertText(const std::u16string& text,
+                          InsertTextCursorBehavior cursor_behavior) = 0;
 
   // Inserts a single char at the insertion point. Unlike above InsertText()
   // method, this method takes an |event| parameter indicating
@@ -122,6 +136,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // coordinates in DIP (Density Independent Pixel).
   // If there is selection, then the selection bounds will be returned.
   virtual gfx::Rect GetCaretBounds() const = 0;
+
+  // Returns the bounds of the rectangle which encloses the selection region.
+  // Bounds are in the screen coordinates. An empty value should be returned if
+  // there is not any selection or this function is not implemented.
+  virtual gfx::Rect GetSelectionBoundingBox() const = 0;
 
   // Retrieves the composition character boundary rectangle in the universal
   // screen coordinates in DIP (Density Independent Pixel).
@@ -174,7 +193,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // Returns false if the operation is not supported or the specified range
   // is out of the text range returned by GetTextRange().
   virtual bool GetTextFromRange(const gfx::Range& range,
-                                base::string16* text) const = 0;
+                                std::u16string* text) const = 0;
 
   // Miscellaneous ------------------------------------------------------------
 
@@ -220,7 +239,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // fields that are considered 'private' (e.g. in incognito tabs).
   virtual bool ShouldDoLearning() = 0;
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
   // Start composition over a given UTF-16 code range from existing text. This
   // should only be used for composition scenario when IME wants to start
   // composition on existing text. Returns whether the operation was successful.
@@ -230,7 +249,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) = 0;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Return the start and end index of the autocorrect range. If non-existent,
   // return an empty Range.
   virtual gfx::Range GetAutocorrectRange() const = 0;
@@ -241,15 +260,27 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // These bounds are in screen coordinates.
   virtual gfx::Rect GetAutocorrectCharacterBounds() const = 0;
 
-  // Set the autocorrect range and return if it has been set correctly as a
-  // boolean value. If text or range is empty, existing autocorrect range is
-  // cleared. Out of range results in failure and no modification will be made.
-  virtual bool SetAutocorrectRange(const base::string16& autocorrect_text,
-                                   const gfx::Range& range) = 0;
+  // Sets the autocorrect range to |range|. Clients should show some visual
+  // indication of the range, such as flashing or underlining. If |range| is
+  // empty, then the autocorrect range is cleared.
+  // Returns true if the operation was successful. If |range| is invalid, then
+  // no modifications are made and this function returns false.
+  virtual bool SetAutocorrectRange(const gfx::Range& range) = 0;
 
-  // Clear the autocorrect range and remove the underline under the
-  // autocorrect text.
-  virtual void ClearAutocorrectRange() = 0;
+  // Returns the grammar fragment which contains |range|. If non-existent,
+  // returns an empty Fragment.
+  virtual absl::optional<GrammarFragment> GetGrammarFragment(
+      const gfx::Range& range);
+
+  // Clears all the grammar fragments in |range|, returns whether the operation
+  // is successful. Should return true if the there is no fragment in the range.
+  virtual bool ClearGrammarFragments(const gfx::Range& range);
+
+  // Adds new grammar markers according to |fragments|. Clients should show
+  // some visual indications such as underlining. Returns whether the operation
+  // is successful.
+  virtual bool AddGrammarFragments(
+      const std::vector<GrammarFragment>& fragments);
 #endif
 
 #if defined(OS_WIN)
@@ -259,8 +290,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // editable element. This is used to report the layout bounds of the text
   // input control to TSF on Windows.
   virtual void GetActiveTextInputControlLayoutBounds(
-      base::Optional<gfx::Rect>* control_bounds,
-      base::Optional<gfx::Rect>* selection_bounds) = 0;
+      absl::optional<gfx::Rect>* control_bounds,
+      absl::optional<gfx::Rect>* selection_bounds) = 0;
   // Notifies accessibility about active composition. This API is currently
   // only defined for TSF which is available only on Windows
   // https://docs.microsoft.com/en-us/windows/desktop/api/UIAutomationCore/
@@ -269,7 +300,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // composition has been committed or not.
   virtual void SetActiveCompositionForAccessibility(
       const gfx::Range& range,
-      const base::string16& active_composition_text,
+      const std::u16string& active_composition_text,
       bool is_composition_committed) = 0;
 #endif
 

@@ -90,11 +90,15 @@ WebString WebString::FromUTF8(const char* data, size_t length) {
   return String::FromUTF8(data, length);
 }
 
-WebString WebString::FromUTF16(const base::string16& s) {
+WebString WebString::FromUTF16(const char16_t* s) {
+  return WebString(s, std::char_traits<char16_t>::length(s));
+}
+
+WebString WebString::FromUTF16(const std::u16string& s) {
   return WebString(s.data(), s.length());
 }
 
-WebString WebString::FromUTF16(const base::Optional<base::string16>& s) {
+WebString WebString::FromUTF16(const absl::optional<std::u16string>& s) {
   if (!s.has_value())
     return WebString();
   return WebString(s->data(), s->length());
@@ -130,6 +134,12 @@ bool WebString::ContainsOnlyASCII() const {
 WebString WebString::FromASCII(const std::string& s) {
   DCHECK(base::IsStringASCII(s));
   return FromLatin1(s);
+}
+
+WebString WebString::IsolatedCopy() const {
+  if (!impl_)
+    return WebString();
+  return String(impl_).IsolatedCopy();
 }
 
 bool WebString::Equals(const WebString& s) const {

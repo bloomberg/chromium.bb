@@ -5,6 +5,7 @@
 import {click, getBrowserAndPages, typeText, waitFor, waitForNone} from '../../shared/helper.js';
 import {beforeEach, describe, it} from '../../shared/mocha-extensions.js';
 import {CONSOLE_TAB_SELECTOR, focusConsolePrompt} from '../helpers/console-helpers.js';
+import {openSourcesPanel} from '../helpers/sources-helpers.js';
 
 describe('The Console Tab', async () => {
   beforeEach(async () => {
@@ -22,6 +23,12 @@ describe('The Console Tab', async () => {
     });
   });
 
+  afterEach(async () => {
+    // Make sure we don't close DevTools while there is an outstanding
+    // Runtime.evaluate CDP request, which causes an error. crbug.com/1134579.
+    await openSourcesPanel();
+  });
+
   // See the comments in console-repl-mode_test to see why this is necessary.
   async function objectAutocompleteTest(textAfterObject: string) {
     const {frontend} = getBrowserAndPages();
@@ -37,20 +44,22 @@ describe('The Console Tab', async () => {
     const appearPromise2 = waitFor('.suggest-box');
     await typeText(textAfterObject);
     await appearPromise2;
+
+    // The first auto-suggest result is evaluated and generates a preview, which
+    // we wait for so that we don't end the test/navigate with an open
+    // Runtime.evaluate CDP request, which causes an error. crbug.com/1134579.
+    await waitFor('.console-eager-inner-preview > span');
   }
 
-  // Flaky test
-  it.skip('[crbug.com/1134579] triggers autocompletion for `object.`', async () => {
+  it('triggers autocompletion for `object.`', async () => {
     await objectAutocompleteTest('.');
   });
 
-  // Flaky test
-  it.skip('[crbug.com/1134579] triggers autocompletion for `object?.`', async () => {
+  it('triggers autocompletion for `object?.`', async () => {
     await objectAutocompleteTest('?.');
   });
 
-  // Flaky test
-  it.skip('[crbug.com/1134579] triggers autocompletion for `object[`', async () => {
+  it('triggers autocompletion for `object[`', async () => {
     await objectAutocompleteTest('[');
   });
 });

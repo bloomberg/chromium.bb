@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,9 +15,10 @@
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/live_caption/pref_names.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/ash_pref_names.h"
 #endif
 
@@ -55,7 +57,7 @@ const char* const kWebPrefsToObserve[] = {
     prefs::kWebkitTabsToLinks,
     prefs::kWebKitTextAreasAreResizable,
     prefs::kWebKitWebSecurityEnabled,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     ash::prefs::kAccessibilityFocusHighlightEnabled,
 #else
     prefs::kAccessibilityFocusHighlightEnabled,
@@ -109,6 +111,8 @@ PrefWatcher::PrefWatcher(Profile* profile) : profile_(profile) {
     local_state_pref_change_registrar_.Init(g_browser_process->local_state());
     local_state_pref_change_registrar_.Add(prefs::kAllowCrossOriginAuthPrompt,
                                            renderer_callback);
+    local_state_pref_change_registrar_.Add(
+        prefs::kExplicitlyAllowedNetworkPorts, renderer_callback);
   }
 }
 

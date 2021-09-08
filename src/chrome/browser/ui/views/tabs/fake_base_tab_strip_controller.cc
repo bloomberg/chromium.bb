@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "components/tab_groups/tab_group_color.h"
@@ -13,6 +14,7 @@
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/range/range.h"
 
 FakeBaseTabStripController::FakeBaseTabStripController() {}
 
@@ -21,7 +23,7 @@ FakeBaseTabStripController::~FakeBaseTabStripController() {
 
 void FakeBaseTabStripController::AddTab(int index, bool is_active) {
   num_tabs_++;
-  tab_groups_.insert(tab_groups_.begin() + index, base::nullopt);
+  tab_groups_.insert(tab_groups_.begin() + index, absl::nullopt);
 
   tab_strip_->AddTabAt(index, TabRendererData(), is_active);
   if (is_active) {
@@ -33,7 +35,7 @@ void FakeBaseTabStripController::AddTab(int index, bool is_active) {
 
 void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
   num_tabs_++;
-  tab_groups_.insert(tab_groups_.begin() + index, base::nullopt);
+  tab_groups_.insert(tab_groups_.begin() + index, absl::nullopt);
 
   TabRendererData data;
   data.pinned = true;
@@ -43,7 +45,7 @@ void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
 }
 
 void FakeBaseTabStripController::MoveTab(int from_index, int to_index) {
-  base::Optional<tab_groups::TabGroupId> prev_group = tab_groups_[from_index];
+  absl::optional<tab_groups::TabGroupId> prev_group = tab_groups_[from_index];
   tab_groups_.erase(tab_groups_.begin() + from_index);
   tab_groups_.insert(tab_groups_.begin() + to_index, prev_group);
   tab_strip_->MoveTab(from_index, to_index, TabRendererData());
@@ -77,14 +79,14 @@ void FakeBaseTabStripController::RemoveTab(int index) {
     tab_strip_->SetSelection(selection_model_);
 }
 
-base::string16 FakeBaseTabStripController::GetGroupTitle(
+std::u16string FakeBaseTabStripController::GetGroupTitle(
     const tab_groups::TabGroupId& group_id) const {
   return fake_group_data_.title();
 }
 
-base::string16 FakeBaseTabStripController::GetGroupContentString(
+std::u16string FakeBaseTabStripController::GetGroupContentString(
     const tab_groups::TabGroupId& group_id) const {
-  return base::string16();
+  return std::u16string();
 }
 
 tab_groups::TabGroupColorId FakeBaseTabStripController::GetGroupColorId(
@@ -110,19 +112,19 @@ void FakeBaseTabStripController::AddTabToGroup(
 }
 
 void FakeBaseTabStripController::RemoveTabFromGroup(int model_index) {
-  MoveTabIntoGroup(model_index, base::nullopt);
+  MoveTabIntoGroup(model_index, absl::nullopt);
 }
 
 void FakeBaseTabStripController::MoveTabIntoGroup(
     int index,
-    base::Optional<tab_groups::TabGroupId> new_group) {
+    absl::optional<tab_groups::TabGroupId> new_group) {
   bool group_exists = base::Contains(tab_groups_, new_group);
-  base::Optional<tab_groups::TabGroupId> old_group = tab_groups_[index];
+  absl::optional<tab_groups::TabGroupId> old_group = tab_groups_[index];
 
   tab_groups_[index] = new_group;
 
   if (old_group.has_value()) {
-    tab_strip_->AddTabToGroup(base::nullopt, index);
+    tab_strip_->AddTabToGroup(absl::nullopt, index);
     if (!base::Contains(tab_groups_, old_group))
       tab_strip_->OnGroupClosed(old_group.value());
     else
@@ -136,14 +138,45 @@ void FakeBaseTabStripController::MoveTabIntoGroup(
   }
 }
 
-std::vector<int> FakeBaseTabStripController::ListTabsInGroup(
+absl::optional<int> FakeBaseTabStripController::GetFirstTabInGroup(
     const tab_groups::TabGroupId& group) const {
-  std::vector<int> result;
-  for (size_t i = 0; i < tab_groups_.size(); i++) {
+  for (size_t i = 0; i < tab_groups_.size(); ++i) {
     if (tab_groups_[i] == group)
-      result.push_back(i);
+      return i;
   }
-  return result;
+
+  return absl::nullopt;
+}
+
+absl::optional<int> FakeBaseTabStripController::GetLastTabInGroup(
+    const tab_groups::TabGroupId& group) const {
+  for (size_t i = tab_groups_.size(); i > 0; --i) {
+    if (tab_groups_[i - 1] == group)
+      return i - 1;
+  }
+
+  return absl::nullopt;
+}
+
+gfx::Range FakeBaseTabStripController::ListTabsInGroup(
+    const tab_groups::TabGroupId& group) const {
+  int first_tab = -1;
+  int last_tab = -1;
+  for (size_t i = 0; i < tab_groups_.size(); i++) {
+    if (tab_groups_[i] != group)
+      continue;
+
+    if (first_tab == -1) {
+      first_tab = i;
+      last_tab = i + 1;
+      continue;
+    }
+
+    DCHECK_EQ(static_cast<int>(i), last_tab) << "group is not contiguous";
+    last_tab = i + 1;
+  }
+
+  return first_tab > -1 ? gfx::Range(first_tab, last_tab) : gfx::Range();
 }
 
 const ui::ListSelectionModel&
@@ -221,8 +254,7 @@ void FakeBaseTabStripController::CreateNewTab() {
 }
 
 void FakeBaseTabStripController::CreateNewTabWithLocation(
-    const base::string16& location) {
-}
+    const std::u16string& location) {}
 
 void FakeBaseTabStripController::StackedLayoutMaybeChanged() {
 }
@@ -232,7 +264,7 @@ void FakeBaseTabStripController::OnStartedDragging(bool dragging_window) {}
 void FakeBaseTabStripController::OnStoppedDragging() {}
 
 void FakeBaseTabStripController::OnKeyboardFocusedTabChanged(
-    base::Optional<int> index) {}
+    absl::optional<int> index) {}
 
 bool FakeBaseTabStripController::IsFrameCondensed() const {
   return false;
@@ -263,14 +295,14 @@ SkColor FakeBaseTabStripController::GetToolbarTopSeparatorColor() const {
   return gfx::kPlaceholderColor;
 }
 
-base::Optional<int> FakeBaseTabStripController::GetCustomBackgroundId(
+absl::optional<int> FakeBaseTabStripController::GetCustomBackgroundId(
     BrowserFrameActiveState active_state) const {
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::string16 FakeBaseTabStripController::GetAccessibleTabName(
+std::u16string FakeBaseTabStripController::GetAccessibleTabName(
     const Tab* tab) const {
-  return base::string16();
+  return std::u16string();
 }
 
 Profile* FakeBaseTabStripController::GetProfile() const {

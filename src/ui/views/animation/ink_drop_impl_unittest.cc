@@ -6,11 +6,13 @@
 
 #include "ui/views/animation/ink_drop_impl.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/animation_test_api.h"
@@ -24,7 +26,8 @@ namespace views {
 // NOTE: The InkDropImpl class is also tested by the InkDropFactoryTest tests.
 class InkDropImplTest : public testing::Test {
  public:
-  InkDropImplTest();
+  explicit InkDropImplTest(InkDropImpl::AutoHighlightMode auto_highlight_mode =
+                               InkDropImpl::AutoHighlightMode::NONE);
   ~InkDropImplTest() override;
 
  protected:
@@ -32,7 +35,7 @@ class InkDropImplTest : public testing::Test {
   const TestInkDropHost* ink_drop_host() const { return &ink_drop_host_; }
 
   InkDropImpl* ink_drop() {
-    return static_cast<InkDropImpl*>(ink_drop_host()->GetInkDrop());
+    return static_cast<InkDropImpl*>(ink_drop_host()->ink_drop()->GetInkDrop());
   }
 
   InkDropRipple* ink_drop_ripple() {
@@ -77,8 +80,10 @@ class InkDropImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(InkDropImplTest);
 };
 
-InkDropImplTest::InkDropImplTest() {
-  ink_drop_host()->SetInkDropMode(InkDropHostView::InkDropMode::ON);
+InkDropImplTest::InkDropImplTest(
+    InkDropImpl::AutoHighlightMode auto_highlight_mode)
+    : ink_drop_host_(auto_highlight_mode) {
+  ink_drop_host()->ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   test_api_ = std::make_unique<test::InkDropImplTestApi>(ink_drop());
   ink_drop_host()->set_disable_timers_for_test(true);
 }
@@ -96,7 +101,7 @@ bool InkDropImplTest::AreLayersAddedToHost() const {
 
 void InkDropImplTest::DestroyInkDrop() {
   test_api_.reset();
-  ink_drop_host()->SetInkDropMode(InkDropHostView::InkDropMode::OFF);
+  ink_drop_host()->ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
 }
 
 // AutoHighlightMode parameterized test fixture.
@@ -108,23 +113,14 @@ class InkDropImplAutoHighlightTest
   InkDropImplAutoHighlightTest();
   ~InkDropImplAutoHighlightTest() override;
 
-  InkDropImpl::AutoHighlightMode GetAutoHighlightMode() const;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropImplAutoHighlightTest);
 };
 
 InkDropImplAutoHighlightTest::InkDropImplAutoHighlightTest()
-    : InkDropImplTest() {
-  ink_drop()->SetAutoHighlightMode(GetAutoHighlightMode());
-}
+    : InkDropImplTest(testing::get<0>(GetParam())) {}
 
 InkDropImplAutoHighlightTest::~InkDropImplAutoHighlightTest() = default;
-
-InkDropImpl::AutoHighlightMode
-InkDropImplAutoHighlightTest::GetAutoHighlightMode() const {
-  return testing::get<0>(GetParam());
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -315,18 +311,19 @@ TEST_F(InkDropImplTest, RippleAndHighlightRecreatedOnSizeChange) {
 TEST_F(InkDropImplTest, HostTracksHighlightState) {
   bool callback_called = false;
   auto subscription =
-      ink_drop_host()->AddHighlightedChangedCallback(base::BindRepeating(
-          [](bool* called) { *called = true; }, &callback_called));
-  EXPECT_FALSE(ink_drop_host()->GetHighlighted());
+      ink_drop_host()->ink_drop()->AddHighlightedChangedCallback(
+          base::BindRepeating([](bool* called) { *called = true; },
+                              &callback_called));
+  EXPECT_FALSE(ink_drop_host()->ink_drop()->GetHighlighted());
 
   test_api()->SetShouldHighlight(true);
   EXPECT_TRUE(callback_called);
-  EXPECT_TRUE(ink_drop_host()->GetHighlighted());
+  EXPECT_TRUE(ink_drop_host()->ink_drop()->GetHighlighted());
   callback_called = false;
 
   test_api()->SetShouldHighlight(false);
   EXPECT_TRUE(callback_called);
-  EXPECT_FALSE(ink_drop_host()->GetHighlighted());
+  EXPECT_FALSE(ink_drop_host()->ink_drop()->GetHighlighted());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

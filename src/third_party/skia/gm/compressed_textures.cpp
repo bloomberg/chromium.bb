@@ -31,8 +31,9 @@
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkImage_GpuBase.h"
 #include "third_party/etc1/etc1.h"
+#include "tools/gpu/ProxyUtils.h"
 
-class GrRenderTargetContext;
+class GrSurfaceDrawContext;
 
 static SkPoint gen_pt(float angle, const SkVector& scale) {
     SkScalar s = SkScalarSin(angle);
@@ -270,14 +271,13 @@ private:
         int numMipLevels = SkMipmap::ComputeLevelCount(levelDimensions.width(),
                                                        levelDimensions.height()) + 1;
 
-        SkPaint imagePaint;
-        imagePaint.setFilterQuality(kHigh_SkFilterQuality); // to force mipmapping
+        SkSamplingOptions sampling(SkCubicResampler::Mitchell());
 
         bool isCompressed = false;
         if (image->isTextureBacked()) {
             const GrCaps* caps = as_IB(image)->context()->priv().caps();
-
-            GrTextureProxy* proxy = as_IB(image)->peekProxy();
+            GrTextureProxy* proxy = sk_gpu_test::GetTextureImageProxy(image,
+                                                                      canvas->recordingContext());
             isCompressed = caps->isFormatCompressed(proxy->backendFormat());
         }
 
@@ -289,7 +289,7 @@ private:
             SkRect r = SkRect::MakeXYWH(offset.fX, offset.fY,
                                         levelDimensions.width(), levelDimensions.height());
 
-            canvas->drawImageRect(image, r, &imagePaint);
+            canvas->drawImageRect(image, r, sampling);
             if (!isCompressed) {
                 // Make it obvious which drawImages used decompressed images
                 canvas->drawRect(r, redStrokePaint);

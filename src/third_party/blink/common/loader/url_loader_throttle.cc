@@ -58,6 +58,10 @@ void URLLoaderThrottle::DetachFromCurrentSequence() {
 void URLLoaderThrottle::WillStartRequest(network::ResourceRequest* request,
                                          bool* defer) {}
 
+const char* URLLoaderThrottle::NameForLoggingWillStartRequest() {
+  return nullptr;
+}
+
 void URLLoaderThrottle::WillRedirectRequest(
     net::RedirectInfo* redirect_info,
     const network::mojom::URLResponseHead& response_head,
@@ -71,6 +75,10 @@ void URLLoaderThrottle::WillProcessResponse(
     network::mojom::URLResponseHead* response_head,
     bool* defer) {}
 
+const char* URLLoaderThrottle::NameForLoggingWillProcessResponse() {
+  return nullptr;
+}
+
 void URLLoaderThrottle::BeforeWillProcessResponse(
     const GURL& response_url,
     const network::mojom::URLResponseHead& response_head,
@@ -79,6 +87,10 @@ void URLLoaderThrottle::BeforeWillProcessResponse(
 void URLLoaderThrottle::WillOnCompleteWithError(
     const network::URLLoaderCompletionStatus& status,
     bool* defer) {}
+
+void URLLoaderThrottle::HandleAcceptCHFrameReceived(
+    const GURL& url,
+    const std::vector<network::mojom::WebClientHintsType>& accept_ch_frame) {}
 
 bool URLLoaderThrottle::makes_unsafe_redirect() {
   return false;
