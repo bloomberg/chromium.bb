@@ -7,13 +7,13 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "base/scoped_observation.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/vm_starting_observer.h"
-#include "chromeos/dbus/concierge_client.h"
-#include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "components/user_manager/user_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace policy {
 
@@ -48,6 +48,10 @@ class LockToSingleUserManager final
   // chromeos::VmStartingObserver:
   void OnVmStarting() override;
 
+  // On affiliation established of the active user.
+  void OnUserAffiliationEstablished(user_manager::User* user,
+                                    bool is_affiliated);
+
   // Add observers for VM starting events
   void AddVmStartingObservers(user_manager::User* user);
 
@@ -56,7 +60,8 @@ class LockToSingleUserManager final
 
   // Processes the response from D-Bus call.
   void OnLockToSingleUserMountUntilRebootDone(
-      base::Optional<cryptohome::BaseReply> reply);
+      absl::optional<user_data_auth::LockToSingleUserMountUntilRebootReply>
+          reply);
 
   // true if locking is required when DbusNotifyVmStarting() is called
   bool lock_to_single_user_on_dbus_call_ = false;
@@ -64,8 +69,9 @@ class LockToSingleUserManager final
   // true if it is expected that the device is already locked to a single user
   bool expect_to_be_locked_ = false;
 
-  ScopedObserver<arc::ArcSessionManager, arc::ArcSessionManagerObserver>
-      arc_session_observer_{this};
+  base::ScopedObservation<arc::ArcSessionManager,
+                          arc::ArcSessionManagerObserver>
+      arc_session_observation_{this};
 
   base::WeakPtrFactory<LockToSingleUserManager> weak_factory_{this};
 

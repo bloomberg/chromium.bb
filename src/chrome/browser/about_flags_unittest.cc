@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_version.h"
 #include "components/flags_ui/feature_entry.h"
+#include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_test_helpers.h"
 #include "components/flags_ui/flags_ui_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,6 +127,31 @@ TEST(AboutFlagsTest, RecentUnexpireFlagsArePresent) {
       base::make_span(entries, count), CHROME_VERSION_MAJOR);
 }
 
+// Test that ScopedFeatureEntries restores existing feature entries on
+// destruction.
+TEST(AboutFlagsTest, ScopedFeatureEntriesRestoresFeatureEntries) {
+  size_t orig_num_features;
+  const flags_ui::FeatureEntry* cur_entries =
+      testing::GetFeatureEntries(&orig_num_features);
+  EXPECT_GT(orig_num_features, 0U);
+  const char* first_feature_name = cur_entries[0].internal_name;
+  {
+    const base::Feature kTestFeature1{"FeatureName1",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
+    testing::ScopedFeatureEntries feature_entries(
+        {{"feature-1", "", "", flags_ui::FlagsState::GetCurrentPlatform(),
+          FEATURE_VALUE_TYPE(kTestFeature1)}});
+    size_t num_features;
+    testing::GetFeatureEntries(&num_features);
+    EXPECT_EQ(num_features, 1U);
+  }
+  size_t new_num_features;
+  cur_entries = testing::GetFeatureEntries(&new_num_features);
+  EXPECT_EQ(orig_num_features, new_num_features);
+  EXPECT_TRUE(about_flags::GetCurrentFlagsState()->FindFeatureEntryByName(
+      first_feature_name));
+}
+
 class AboutFlagsHistogramTest : public ::testing::Test {
  protected:
   // This is a helper function to check that all IDs in enum LoginCustomFlags in
@@ -138,7 +164,8 @@ class AboutFlagsHistogramTest : public ::testing::Test {
     if (!status.second) {
       EXPECT_TRUE(status.first->second == switch_histogram_id)
           << "Duplicate switch '" << switch_name
-          << "' found in enum 'LoginCustomFlags' in histograms.xml.";
+          << "' found in enum 'LoginCustomFlags' in "
+             "tools/metrics/histograms/enums.xml.";
     }
   }
 
@@ -152,10 +179,11 @@ class AboutFlagsHistogramTest : public ::testing::Test {
 };
 
 TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
-  base::Optional<base::HistogramEnumEntryMap> login_custom_flags =
+  absl::optional<base::HistogramEnumEntryMap> login_custom_flags =
       base::ReadEnumFromEnumsXml("LoginCustomFlags");
   ASSERT_TRUE(login_custom_flags)
-      << "Error reading enum 'LoginCustomFlags' from enums.xml.";
+      << "Error reading enum 'LoginCustomFlags' from "
+         "tools/metrics/histograms/enums.xml.";
 
   // Build reverse map {switch_name => id} from login_custom_flags.
   SwitchToIdMap histograms_xml_switches_ids;
@@ -163,7 +191,7 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
   EXPECT_TRUE(
       login_custom_flags->count(flags_ui::testing::kBadSwitchFormatHistogramId))
       << "Entry for UMA ID of incorrect command-line flag is not found in "
-         "enums.xml enum LoginCustomFlags. "
+         "tools/metrics/histograms/enums.xml enum LoginCustomFlags. "
          "Consider adding entry:\n"
       << "  " << GetHistogramEnumEntryText("BAD_FLAG_FORMAT", 0);
   // Check that all LoginCustomFlags entries have correct values.
@@ -176,7 +204,7 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
     }
     const Sample uma_id = flags_ui::GetSwitchUMAId(entry.second);
     EXPECT_EQ(uma_id, entry.first)
-        << "enums.xml enum LoginCustomFlags "
+        << "tools/metrics/histograms/enums.xml enum LoginCustomFlags "
            "entry '"
         << entry.second << "' has incorrect value=" << entry.first << ", but "
         << uma_id << " is expected. Consider changing entry to:\n"
@@ -204,8 +232,10 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
     // reported in the previous loop.
     EXPECT_TRUE(enum_entry != histograms_xml_switches_ids.end() &&
                 enum_entry->first == flag)
-        << "enums.xml enum LoginCustomFlags doesn't contain switch '" << flag
-        << "' (value=" << uma_id << " expected). Consider adding entry:\n"
+        << "tools/metrics/histograms/enums.xml enum LoginCustomFlags doesn't "
+           "contain switch '"
+        << flag << "' (value=" << uma_id
+        << " expected). Consider adding entry:\n"
         << "  " << GetHistogramEnumEntryText(flag, uma_id);
   }
 }

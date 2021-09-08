@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -142,11 +143,11 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
     base::ListValue* values;
     ASSERT_TRUE(parsed_json.value->GetAsList(&values));
 
-    for (auto it = values->begin(); it != values->end(); ++it) {
+    for (const auto& entry : values->GetList()) {
       const base::DictionaryValue* dict;
       std::string kind;
       std::string device_id;
-      ASSERT_TRUE(it->GetAsDictionary(&dict));
+      ASSERT_TRUE(entry.GetAsDictionary(&dict));
       ASSERT_TRUE(dict->GetString("kind", &kind));
       ASSERT_TRUE(dict->GetString("id", &device_id));
       ASSERT_FALSE(device_id.empty());
@@ -582,8 +583,17 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 // This test calls getUserMedia in an iframe and immediately close the iframe
 // in the scope of the failure callback.
-IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       VideoWithBadConstraintsInIFrameAndCloseInFailureCb) {
+// Flaky on lacros-chrome and mac bots. http://crbug.com/1196389
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_MAC)
+#define MAYBE_VideoWithBadConstraintsInIFrameAndCloseInFailureCb \
+  DISABLED_VideoWithBadConstraintsInIFrameAndCloseInFailureCb
+#else
+#define MAYBE_VideoWithBadConstraintsInIFrameAndCloseInFailureCb \
+  VideoWithBadConstraintsInIFrameAndCloseInFailureCb
+#endif
+IN_PROC_BROWSER_TEST_F(
+    WebRtcGetUserMediaBrowserTest,
+    MAYBE_VideoWithBadConstraintsInIFrameAndCloseInFailureCb) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -602,8 +612,17 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk(call);
 }
 
+// TODO(http://crbug.com/1205560): This test is flaky on mac bots. Re-enable the
+// test after fixing the issue.
+#if defined(OS_MAC)
+#define MAYBE_InvalidSourceIdInIFrameAndCloseInFailureCb \
+  DISABLED_InvalidSourceIdInIFrameAndCloseInFailureCb
+#else
+#define MAYBE_InvalidSourceIdInIFrameAndCloseInFailureCb \
+  InvalidSourceIdInIFrameAndCloseInFailureCb
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       InvalidSourceIdInIFrameAndCloseInFailureCb) {
+                       MAYBE_InvalidSourceIdInIFrameAndCloseInFailureCb) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -760,8 +779,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("concurrentGetUserMediaStop()");
 }
 
+// TODO(crbug.com/1087081) : Flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       GetUserMediaAfterStopElementCapture) {
+                       DISABLED_GetUserMediaAfterStopElementCapture) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -776,8 +796,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("getUserMediaEchoCancellationOnAndOff()");
 }
 
+// TODO(crbug.com/1087081) : Flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       GetUserMediaEchoCancellationOnAndOffAndVideo) {
+                       DISABLED_GetUserMediaEchoCancellationOnAndOffAndVideo) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));

@@ -10,6 +10,7 @@
 
 #include "include/private/SkTArray.h"
 #include "include/private/SkTemplates.h"
+#include "include/utils/SkParsePath.h"
 #include "src/core/SkClipStackDevice.h"
 
 class SkXMLWriter;
@@ -25,7 +26,8 @@ protected:
     void drawPoints(SkCanvas::PointMode mode, size_t count,
                     const SkPoint[], const SkPaint& paint) override;
     void drawImageRect(const SkImage* image, const SkRect* src, const SkRect& dst,
-                       const SkPaint& paint, SkCanvas::SrcRectConstraint constraint) override;
+                       const SkSamplingOptions&, const SkPaint& paint,
+                       SkCanvas::SrcRectConstraint constraint) override;
     void drawRect(const SkRect& r, const SkPaint& paint) override;
     void drawOval(const SkRect& oval, const SkPaint& paint) override;
     void drawRRect(const SkRRect& rr, const SkPaint& paint) override;
@@ -33,7 +35,7 @@ protected:
                   const SkPaint& paint,
                   bool pathIsMutable = false) override;
 
-    void drawGlyphRunList(const SkGlyphRunList& glyphRunList) override;
+    void onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) override;
     void drawVertices(const SkVertices*, SkBlendMode, const SkPaint&) override;
 
 private:
@@ -44,6 +46,8 @@ private:
     void drawBitmapCommon(const MxCp&, const SkBitmap& bm, const SkPaint& paint);
 
     void syncClipStack(const SkClipStack&);
+
+    SkParsePath::PathEncoding pathEncoding() const;
 
     class AutoElement;
     class ResourceBucket;

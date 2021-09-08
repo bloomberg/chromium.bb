@@ -5,13 +5,14 @@
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -200,8 +201,8 @@ bool RemoteCommandsService::FetchRemoteCommands() {
   if (has_finished_command_) {
     // Acknowledges |lastest_finished_command_id_|, and removes it and every
     // command before it from |fetched_command_ids_|.
-    id_to_acknowledge.reset(
-        new RemoteCommandJob::UniqueIDType(lastest_finished_command_id_));
+    id_to_acknowledge = std::make_unique<RemoteCommandJob::UniqueIDType>(
+        lastest_finished_command_id_);
     // It's safe to remove these IDs from |fetched_command_ids_| here, since
     // it is guaranteed that there is no earlier fetch request in progress
     // anymore that could have returned these IDs.

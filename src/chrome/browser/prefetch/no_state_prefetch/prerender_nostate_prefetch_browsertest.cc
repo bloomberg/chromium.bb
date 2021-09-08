@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -19,12 +20,12 @@
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
-#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
@@ -39,8 +40,8 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/switches.h"
-#include "components/no_state_prefetch/browser/prerender_handle.h"
-#include "components/no_state_prefetch/browser/prerender_manager.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_handle.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
@@ -54,6 +55,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
@@ -72,6 +74,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
@@ -271,6 +274,8 @@ class NoStatePrefetchBrowserTest
         command_line);
     command_line->AppendSwitchASCII(embedder_support::kOriginTrialPublicKey,
                                     kOriginTrialPublicKeyForTesting);
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "SpeculationRulesPrefetchProxy");
   }
 
   void SetUpOnMainThread() override {
@@ -278,18 +283,19 @@ class NoStatePrefetchBrowserTest
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  void OverridePrerenderManagerTimeTicks() {
+  void OverrideNoStatePrefetchManagerTimeTicks() {
     // The default zero time causes the prerender manager to do strange things.
     clock_.Advance(base::TimeDelta::FromSeconds(1));
-    GetPrerenderManager()->SetTickClockForTesting(&clock_);
+    GetNoStatePrefetchManager()->SetTickClockForTesting(&clock_);
   }
 
   // Block until an AppCache exists for |manifest_url|.
   void WaitForAppcache(const GURL& manifest_url) {
     bool found_manifest = false;
     content::AppCacheService* appcache_service =
-        content::BrowserContext::GetDefaultStoragePartition(
-            current_browser()->profile())
+        current_browser()
+            ->profile()
+            ->GetDefaultStoragePartition()
             ->GetAppCacheService();
     do {
       base::RunLoop wait_loop;
@@ -325,30 +331,19 @@ class NoStatePrefetchBrowserTest
         NavigateWithPrerenders(loader_url, expected_final_status_queue);
     prerenders[0]->WaitForLoads(0);
 
-    // Ensure that the referring page receives the right start and load events.
-    WaitForPrerenderStartEventForLinkNumber(0);
-    if (check_load_events_) {
-      WaitForPrerenderEventCount(0, "webkitprerenderload",
-                                 expected_number_of_loads);
-    }
-
     if (ShouldAbortPrerenderBeforeSwap(expected_final_status_queue.front())) {
-      // The prerender will abort on its own. Assert it does so correctly.
+      // The prefetcher will abort on its own. Assert it does so correctly.
       prerenders[0]->WaitForStop();
       EXPECT_FALSE(prerenders[0]->contents());
-      WaitForPrerenderStopEventForLinkNumber(0);
     } else {
-      // Otherwise, check that it prerendered correctly.
-      test_utils::TestPrerenderContents* prerender_contents =
+      // Otherwise, check that it prefetched correctly.
+      test_utils::TestNoStatePrefetchContents* no_state_prefetch_contents =
           prerenders[0]->contents();
-      if (prerender_contents) {
-        EXPECT_EQ(FINAL_STATUS_UNKNOWN, prerender_contents->final_status());
-        EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+      if (no_state_prefetch_contents) {
+        EXPECT_EQ(FINAL_STATUS_UNKNOWN,
+                  no_state_prefetch_contents->final_status());
       }
     }
-
-    // Test for proper event ordering.
-    EXPECT_FALSE(HadPrerenderEventErrors());
 
     return std::move(prerenders[0]);
   }
@@ -370,8 +365,6 @@ class NoStatePrefetchBrowserTest
     }
   }
 
-  void DisableLoadEventCheck() { check_load_events_ = false; }
-
   std::unique_ptr<TestPrerender> PrefetchFromFile(
       const std::string& html_file,
       FinalStatus expected_final_status,
@@ -380,10 +373,11 @@ class NoStatePrefetchBrowserTest
                            expected_final_status, expected_number_of_loads);
   }
 
-  // Returns length of |prerender_manager_|'s history, or SIZE_MAX on failure.
+  // Returns length of |no_state_prefetch_manager_|'s history, or SIZE_MAX on
+  // failure.
   size_t GetHistoryLength() const {
     std::unique_ptr<base::DictionaryValue> prerender_dict =
-        GetPrerenderManager()->CopyAsValue();
+        GetNoStatePrefetchManager()->CopyAsValue();
     if (!prerender_dict)
       return std::numeric_limits<size_t>::max();
     base::ListValue* history_list;
@@ -395,75 +389,13 @@ class NoStatePrefetchBrowserTest
   // Clears the specified data using BrowsingDataRemover.
   void ClearBrowsingData(Browser* browser, uint64_t remove_mask) {
     content::BrowsingDataRemover* remover =
-        content::BrowserContext::GetBrowsingDataRemover(browser->profile());
+        browser->profile()->GetBrowsingDataRemover();
     content::BrowsingDataRemoverCompletionObserver observer(remover);
     remover->RemoveAndReply(
         base::Time(), base::Time::Max(), remove_mask,
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &observer);
     observer.BlockUntilCompletion();
     // BrowsingDataRemover deletes itself.
-  }
-
-  // Synchronization note: The IPCs used to communicate DOM events back to the
-  // referring web page (see blink::mojom::PrerenderProcessorClient) may race w/
-  // the IPCs used here to inject script. The WaitFor* variants should be used
-  // when an event was expected to happen or to happen soon.
-
-  int GetPrerenderEventCount(int index, const std::string& type) const {
-    int event_count;
-    std::string expression = base::StringPrintf(
-        "window.domAutomationController.send("
-        "    GetPrerenderEventCount(%d, '%s'))",
-        index, type.c_str());
-
-    CHECK(content::ExecuteScriptAndExtractInt(GetActiveWebContents(),
-                                              expression, &event_count));
-    return event_count;
-  }
-
-  bool DidReceivePrerenderStartEventForLinkNumber(int index) const {
-    return GetPrerenderEventCount(index, "webkitprerenderstart") > 0;
-  }
-
-  int GetPrerenderLoadEventCountForLinkNumber(int index) const {
-    return GetPrerenderEventCount(index, "webkitprerenderload");
-  }
-
-  bool DidReceivePrerenderStopEventForLinkNumber(int index) const {
-    return GetPrerenderEventCount(index, "webkitprerenderstop") > 0;
-  }
-
-  void WaitForPrerenderEventCount(int index,
-                                  const std::string& type,
-                                  int count) const {
-    int dummy;
-    std::string expression = base::StringPrintf(
-        "WaitForPrerenderEventCount(%d, '%s', %d,"
-        "    window.domAutomationController.send.bind("
-        "        window.domAutomationController, 0))",
-        index, type.c_str(), count);
-
-    CHECK(content::ExecuteScriptAndExtractInt(GetActiveWebContents(),
-                                              expression, &dummy));
-    CHECK_EQ(0, dummy);
-  }
-
-  void WaitForPrerenderStartEventForLinkNumber(int index) const {
-    WaitForPrerenderEventCount(index, "webkitprerenderstart", 1);
-  }
-
-  void WaitForPrerenderStopEventForLinkNumber(int index) const {
-    WaitForPrerenderEventCount(index, "webkitprerenderstart", 1);
-  }
-
-  bool HadPrerenderEventErrors() const {
-    bool had_prerender_event_errors;
-    CHECK(content::ExecuteScriptAndExtractBool(
-        GetActiveWebContents(),
-        "window.domAutomationController.send(Boolean("
-        "    hadPrerenderEventErrors))",
-        &had_prerender_event_errors));
-    return had_prerender_event_errors;
   }
 
   // Opens the prerendered page using javascript functions in the loader
@@ -507,7 +439,6 @@ class NoStatePrefetchBrowserTest
 #endif
   }
 
-  bool check_load_events_ = true;
   base::SimpleTestTickClock clock_;
 
  private:
@@ -517,13 +448,13 @@ class NoStatePrefetchBrowserTest
   // manifest exists.
   static void WaitForAppcache(const GURL& manifest_url,
                               content::AppCacheService* appcache_service,
-                              base::Closure callback,
+                              base::OnceClosure callback,
                               bool* found_manifest) {
     scoped_refptr<content::AppCacheInfoCollection> info_collection =
         new content::AppCacheInfoCollection();
     appcache_service->GetAllAppCacheInfo(
         info_collection.get(),
-        base::BindOnce(ProcessAppCacheInfo, manifest_url, callback,
+        base::BindOnce(ProcessAppCacheInfo, manifest_url, std::move(callback),
                        found_manifest, info_collection));
   }
 
@@ -532,7 +463,7 @@ class NoStatePrefetchBrowserTest
   // the UI thread.
   static void ProcessAppCacheInfo(
       const GURL& target_manifest,
-      base::Closure callback,
+      base::OnceClosure callback,
       bool* found_manifest,
       scoped_refptr<content::AppCacheInfoCollection> info_collection,
       int status) {
@@ -546,7 +477,8 @@ class NoStatePrefetchBrowserTest
         }
       }
     }
-    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(callback));
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -556,23 +488,18 @@ class NoStatePrefetchBrowserTest
 
 class NoStatePrefetchBrowserTestHttpCache
     : public NoStatePrefetchBrowserTest,
-      public testing::WithParamInterface<std::tuple<bool, bool>> {
+      public testing::WithParamInterface<bool> {
  protected:
   void SetUp() override {
-    bool split_cache_by_network_isolation_key;
-    bool append_frame_origin_to_network_isolation_key;
-    std::tie(split_cache_by_network_isolation_key,
-             append_frame_origin_to_network_isolation_key) = GetParam();
+    bool split_cache_by_network_isolation_key = GetParam();
+    if (split_cache_by_network_isolation_key) {
+      feature_list_.InitAndEnableFeature(
+          net::features::kSplitCacheByNetworkIsolationKey);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          net::features::kSplitCacheByNetworkIsolationKey);
+    }
 
-    std::vector<base::Feature> disabled_and_enabled_features[2];
-
-    disabled_and_enabled_features[split_cache_by_network_isolation_key]
-        .push_back(net::features::kSplitCacheByNetworkIsolationKey);
-    disabled_and_enabled_features[append_frame_origin_to_network_isolation_key]
-        .push_back(net::features::kAppendFrameOriginToNetworkIsolationKey);
-
-    feature_list_.InitWithFeatures(disabled_and_enabled_features[true],
-                                   disabled_and_enabled_features[false]);
     NoStatePrefetchBrowserTest::SetUp();
   }
 
@@ -583,16 +510,10 @@ class NoStatePrefetchBrowserTestHttpCache
 using NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin =
     NoStatePrefetchBrowserTestHttpCache;
 
-// Test that the network isolation key is correctly populated during a prefetch,
-// with feature kAppendFrameOriginToNetworkIsolationKey disabled and enabled
-// respectively.
+// Test that the network isolation key is correctly populated during a prefetch.
 IN_PROC_BROWSER_TEST_P(
     NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin,
     PrefetchTwoCrossOriginFrames) {
-  bool append_frame_origin_to_network_isolation_key;
-  std::tie(std::ignore, append_frame_origin_to_network_isolation_key) =
-      GetParam();
-
   GURL image_src =
       embedded_test_server()->GetURL("/prerender/cacheable_image.png");
   base::StringPairs replacement_text_img_src;
@@ -614,14 +535,13 @@ IN_PROC_BROWSER_TEST_P(
   ui_test_utils::NavigateToURL(current_browser(),
                                src_server()->GetURL(prerender_path));
 
-  WaitForRequestCount(image_src,
-                      append_frame_origin_to_network_isolation_key ? 2 : 1);
+  WaitForRequestCount(image_src, 2);
 }
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin,
-    ::testing::Combine(::testing::Values(true), ::testing::Bool()));
+    ::testing::Values(true));
 
 // Checks that a page is correctly prefetched in the case of a
 // <link rel=prerender> tag and the JavaScript on the page is not executed.
@@ -700,7 +620,7 @@ IN_PROC_BROWSER_TEST_P(
 INSTANTIATE_TEST_SUITE_P(
     All,
     NoStatePrefetchBrowserTestHttpCache_DefaultAndDoubleKeyedHttpCache,
-    ::testing::Combine(::testing::Bool(), ::testing::Values(false)));
+    ::testing::Bool());
 
 // Checks that the expected resource types are fetched via NoState Prefetch.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchAllResourceTypes) {
@@ -919,8 +839,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookie) {
       PrefetchFromURL(url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
 
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartitionForSite(
-          current_browser()->profile(), url, false);
+      current_browser()->profile()->GetStoragePartitionForUrl(url, false);
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
   storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
@@ -941,8 +860,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookieCrossDomain) {
   // While the request is cross-site, it's permitted to set (implicitly) lax
   // cookies on a cross-site navigation.
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartitionForSite(
-          current_browser()->profile(), cross_domain_url, false);
+      current_browser()->profile()->GetStoragePartitionForUrl(cross_domain_url,
+                                                              false);
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
   storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
@@ -1027,10 +946,10 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
   test_prerender->WaitForLoads(0);
   monitor.WaitForUrls();
 
-  base::Optional<network::ResourceRequest> page_request =
+  absl::optional<network::ResourceRequest> page_request =
       monitor.GetRequestInfo(prefetch_page);
   EXPECT_TRUE(page_request->load_flags & net::LOAD_PREFETCH);
-  base::Optional<network::ResourceRequest> script_request =
+  absl::optional<network::ResourceRequest> script_request =
       monitor.GetRequestInfo(prefetch_script);
   EXPECT_TRUE(script_request->load_flags & net::LOAD_PREFETCH);
 }
@@ -1049,7 +968,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PurposeHeaderIsSet) {
   WaitForRequestCount(prefetch_script, 1);
   monitor.WaitForUrls();
   for (const GURL& url : {prefetch_page, prefetch_script}) {
-    base::Optional<network::ResourceRequest> request =
+    absl::optional<network::ResourceRequest> request =
         monitor.GetRequestInfo(url);
     EXPECT_TRUE(request->load_flags & net::LOAD_PREFETCH);
     EXPECT_FALSE(request->headers.HasHeader(kExpectedPurposeHeaderOnPrefetch));
@@ -1078,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
   WaitForRequestCount(prefetch_script2, 1);
   monitor.WaitForUrls();
   for (const GURL& url : {prefetch_page, prefetch_script, prefetch_script2}) {
-    base::Optional<network::ResourceRequest> request =
+    absl::optional<network::ResourceRequest> request =
         monitor.GetRequestInfo(url);
     EXPECT_FALSE(request->load_flags & net::LOAD_PREFETCH);
     EXPECT_FALSE(request->headers.HasHeader(kExpectedPurposeHeaderOnPrefetch));
@@ -1206,9 +1125,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, NoPrefetchRecursive) {
   WaitForRequestCount(src_server()->GetURL(kPrefetchNostorePage), 0);
 
   // When the first page is loaded, the image page should be prefetched. The
-  // test may finish before the prerender is torn down, so
-  // IgnorePrerenderContents() is called to skip the final status check.
-  prerender_contents_factory()->IgnorePrerenderContents();
+  // test may finish before the prefetcher is torn down, so
+  // IgnoreNoStatePrefetchContents() is called to skip the final status check.
+  no_state_prefetch_contents_factory()->IgnoreNoStatePrefetchContents();
   ui_test_utils::NavigateToURL(current_browser(),
                                src_server()->GetURL(kPrefetchRecursePage));
   WaitForRequestCount(src_server()->GetURL(kPrefetchNostorePage), 1);
@@ -1255,7 +1174,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
   WaitForRequestCount(page_url, 1);
   monitor.WaitForUrls();
 
-  base::Optional<network::ResourceRequest> request =
+  absl::optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(redirect_url);
   EXPECT_TRUE(request->load_flags & net::LOAD_PREFETCH);
 }
@@ -1379,14 +1298,14 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, RendererCrash) {
   // URLs are ignored in renderers, and the test server has no support for them.
   const gfx::Size kSize(640, 480);
   std::unique_ptr<TestPrerender> test_prerender =
-      prerender_contents_factory()->ExpectPrerenderContents(
+      no_state_prefetch_contents_factory()->ExpectNoStatePrefetchContents(
           FINAL_STATUS_RENDERER_CRASHED);
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
-  std::unique_ptr<PrerenderHandle> prerender_handle(
-      GetPrerenderManager()->AddPrerenderFromExternalRequest(
-          GURL(content::kChromeUICrashURL), content::Referrer(),
+  std::unique_ptr<NoStatePrefetchHandle> no_state_prefetch_handle(
+      GetNoStatePrefetchManager()->AddPrerenderFromExternalRequest(
+          GURL(blink::kChromeUICrashURL), content::Referrer(),
           storage_namespace, gfx::Rect(kSize)));
-  ASSERT_EQ(prerender_handle->contents(), test_prerender->contents());
+  ASSERT_EQ(no_state_prefetch_handle->contents(), test_prerender->contents());
   test_prerender->WaitForStop();
 }
 
@@ -1406,7 +1325,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Jpeg) {
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
                        PrerenderSafeBrowsingTopLevel) {
   GURL url = src_server()->GetURL(kPrefetchPage);
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
+  GetFakeSafeBrowsingDatabaseManager()->AddDangerousUrl(
       url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
 
   std::unique_ptr<TestPrerender> prerender =
@@ -1424,7 +1343,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
 // Ensures that server redirects to a malware page will cancel prerenders.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ServerRedirect) {
   GURL url = src_server()->GetURL("/prerender/prerender_page.html");
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
+  GetFakeSafeBrowsingDatabaseManager()->AddDangerousUrl(
       url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
   PrefetchFromURL(src_server()->GetURL(
                       CreateServerRedirect("/prerender/prerender_page.html")),
@@ -1435,7 +1354,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ServerRedirect) {
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
                        PrerenderSafeBrowsingSubresource) {
   GURL url = src_server()->GetURL(kPrefetchScript);
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
+  GetFakeSafeBrowsingDatabaseManager()->AddDangerousUrl(
       url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
 
   constexpr char kPrefetchCanceledHistogram[] =
@@ -1443,16 +1362,17 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
 
   base::RunLoop run_loop;
   bool prefetch_canceled_histogram_added = false;
-  EXPECT_TRUE(base::StatisticsRecorder::SetCallback(
-      kPrefetchCanceledHistogram,
-      base::Bind(
-          [](const base::Closure& quit_closure, bool* called,
-             const char* histogram_name, uint64_t name_hash,
-             base::HistogramBase::Sample sample) {
-            *called = true;
-            quit_closure.Run();
-          },
-          run_loop.QuitClosure(), &prefetch_canceled_histogram_added)));
+  auto histogram_observer =
+      std::make_unique<base::StatisticsRecorder::ScopedHistogramSampleObserver>(
+          kPrefetchCanceledHistogram,
+          base::BindRepeating(
+              [](base::RepeatingClosure quit_closure, bool* called,
+                 const char* histogram_name, uint64_t name_hash,
+                 base::HistogramBase::Sample sample) {
+                *called = true;
+                quit_closure.Run();
+              },
+              run_loop.QuitClosure(), &prefetch_canceled_histogram_added));
 
   std::unique_ptr<TestPrerender> prerender =
       PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
@@ -1464,8 +1384,6 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
   // unsafe prefetch, which corresponded to the subresource.
   run_loop.Run();
   EXPECT_TRUE(prefetch_canceled_histogram_added);
-
-  base::StatisticsRecorder::ClearCallback(kPrefetchCanceledHistogram);
 }
 
 // Checks that prefetching a page does not add it to browsing history.
@@ -1517,7 +1435,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
 #else
   constexpr net::RequestPriority kExpectedPriority = net::IDLE;
 #endif
-  base::Optional<network::ResourceRequest> request =
+  absl::optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(script_url);
   EXPECT_EQ(kExpectedPriority, request->priority);
 }
@@ -1526,7 +1444,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
 // will intercepts a prefetch request.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ServiceWorkerIntercept) {
   // Register and launch a SW.
-  base::string16 expected_title = base::ASCIIToUTF16("SW READY");
+  std::u16string expected_title = u"SW READY";
   content::TitleWatcher title_watcher(GetActiveWebContents(), expected_title);
   ui_test_utils::NavigateToURL(current_browser(),
                                src_server()->GetURL(kServiceWorkerLoader));
@@ -1576,8 +1494,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, AppCacheHtmlUninitialized) {
 // Checks that prefetching does not if an initialized appcache is mentioned in
 // the html tag.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, AppCacheHtmlInitialized) {
-  base::TimeTicks current_time = GetPrerenderManager()->GetCurrentTimeTicks();
-  OverridePrerenderManagerTimeTicks();
+  base::TimeTicks current_time =
+      GetNoStatePrefetchManager()->GetCurrentTimeTicks();
+  OverrideNoStatePrefetchManagerTimeTicks();
   // Some navigations have already occurred in test setup. In order to track
   // duplicate prefetches correctly the test clock needs to be beyond those
   // navigations.
@@ -1621,8 +1540,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, AppCacheHtmlInitialized) {
 // If a page has been cached by another AppCache, the prefetch should be
 // canceled.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, AppCacheRegistered) {
-  base::TimeTicks current_time = GetPrerenderManager()->GetCurrentTimeTicks();
-  OverridePrerenderManagerTimeTicks();
+  base::TimeTicks current_time =
+      GetNoStatePrefetchManager()->GetCurrentTimeTicks();
+  OverrideNoStatePrefetchManagerTimeTicks();
   // Some navigations have already occurred in test setup. In order to track
   // duplicate prefetches correctly the test clock needs to be beyond those
   // navigations.
@@ -1698,9 +1618,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchIncognitoBrowserTest,
 }
 
 // Checks that prerenders are aborted when an incognito profile is closed.
-// ToDo(crbug.com/994068): The test is crashing on multiple platforms.
+// TODO(crbug.com/994068): The test is crashing on multiple platforms.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchIncognitoBrowserTest,
-                       PrerenderIncognitoClosed) {
+                       DISABLED_PrerenderIncognitoClosed) {
   std::unique_ptr<TestPrerender> test_prerender =
       PrefetchFromFile(kHungPrerenderPage, FINAL_STATUS_PROFILE_DESTROYED);
   current_browser()->window()->Close();
@@ -1713,7 +1633,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ClearHistory) {
       kHungPrerenderPage, FINAL_STATUS_CACHE_OR_HISTORY_CLEARED);
 
   ClearBrowsingData(current_browser(),
-                    ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY);
+                    chrome_browsing_data_remover::DATA_TYPE_HISTORY);
   test_prerender->WaitForStop();
 
   // Make sure prerender history was cleared.
@@ -1740,7 +1660,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, CancelAll) {
   std::unique_ptr<TestPrerender> prerender =
       PrefetchFromURL(url, FINAL_STATUS_CANCELLED, 0);
 
-  GetPrerenderManager()->CancelAllPrerenders();
+  GetNoStatePrefetchManager()->CancelAllPrerenders();
   prerender->WaitForStop();
 
   EXPECT_FALSE(prerender->contents());
@@ -1755,7 +1675,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
   std::unique_ptr<TestPrerender> prerender =
       PrefetchFromURL(url, FINAL_STATUS_CANCELLED);
 
-  GetPrerenderManager()->CancelAllPrerenders();
+  GetNoStatePrefetchManager()->CancelAllPrerenders();
   prerender->WaitForStop();
 
   EXPECT_FALSE(prerender->contents());
@@ -1763,7 +1683,6 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
 
 // Checks shutdown code while a prerender is active.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrerenderQuickQuit) {
-  DisableLoadEventCheck();
   GURL url = src_server()->GetURL(kHungPrerenderPage);
   std::unique_ptr<TestPrerender> prerender =
       PrefetchFromURL(url, FINAL_STATUS_APP_TERMINATING);
@@ -1787,14 +1706,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
 
 // Checks that renderers using excessive memory will be terminated.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrerenderExcessiveMemory) {
-  ASSERT_TRUE(GetPrerenderManager());
-  GetPrerenderManager()->mutable_config().max_bytes = 100;
-  // The excessive memory kill may happen before or after the load event as it
-  // happens asynchronously with IPC calls. Even if the test does not start
-  // allocating until after load, the browser process might notice before the
-  // message gets through. This happens on XP debug bots because they're so
-  // slow. Instead, don't bother checking the load event count.
-  DisableLoadEventCheck();
+  ASSERT_TRUE(GetNoStatePrefetchManager());
+  GetNoStatePrefetchManager()->mutable_config().max_bytes = 100;
   PrefetchFromURL(
       src_server()->GetURL("/prerender/prerender_excessive_memory.html"),
       FINAL_STATUS_MEMORY_LIMIT_EXCEEDED);
@@ -1816,7 +1729,7 @@ class NoStatePrefetchOmniboxBrowserTest : public NoStatePrefetchBrowserTest {
 
   std::unique_ptr<TestPrerender> ExpectPrerender(
       FinalStatus expected_final_status) {
-    return prerender_contents_factory()->ExpectPrerenderContents(
+    return no_state_prefetch_contents_factory()->ExpectNoStatePrefetchContents(
         expected_final_status);
   }
 
@@ -1847,9 +1760,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchOmniboxBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, OpenTaskManager) {
-  const base::string16 any_tab = MatchTaskManagerTab("*");
-  const base::string16 original = MatchTaskManagerTab("Prefetch Loader");
-  const base::string16 prefetch_page = MatchTaskManagerTab("Prefetch Page");
+  const std::u16string any_tab = MatchTaskManagerTab("*");
+  const std::u16string original = MatchTaskManagerTab("Prefetch Loader");
+  const std::u16string prefetch_page = MatchTaskManagerTab("Prefetch Page");
 
   // Show the task manager. This populates the model.
   chrome::OpenTaskManager(current_browser());
@@ -1902,6 +1815,98 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrerenderNoSSLReferrer) {
   const std::string referrer =
       EvalJs(web_contents, "document.referrer").ExtractString();
   EXPECT_TRUE(referrer.empty());
+}
+
+// Test class to verify speculation hints for non-private same origin no state
+// prefetches.
+class SpeculationNoStatePrefetchBrowserTest
+    : public NoStatePrefetchBrowserTest {
+ public:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        blink::features::kSpeculationRulesPrefetchProxy);
+    NoStatePrefetchBrowserTest::SetUp();
+  }
+
+  void InsertSpeculation(const GURL& prefetch_url,
+                         FinalStatus expected_final_status,
+                         bool should_navigate_away = false) {
+    std::string speculation_script = R"(
+      var script = document.createElement('script');
+      script.type = 'speculationrules';
+      script.text = `{)";
+    speculation_script.append(R"("prefetch_with_subresources": [{)");
+    speculation_script.append(R"("source": "list",
+          "urls": [)");
+
+    speculation_script.append("\"").append(prefetch_url.spec()).append("\"");
+
+    speculation_script.append(R"(]
+        }]
+      }`;
+      document.head.appendChild(script);)");
+    std::unique_ptr<TestPrerender> test_prerender =
+        no_state_prefetch_contents_factory()->ExpectNoStatePrefetchContents(
+            expected_final_status);
+    EXPECT_TRUE(ExecuteScript(GetActiveWebContents(), speculation_script));
+    if (should_navigate_away) {
+      ui_test_utils::NavigateToURL(
+          current_browser(), src_server()->GetURL("/defaultresponse?page"));
+    }
+    test_prerender->WaitForStop();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
+                       SpeculationPrefetch) {
+  UseHttpsSrcServer();
+  ui_test_utils::NavigateToURL(
+      current_browser(), src_server()->GetURL("/defaultresponse?landing"));
+  InsertSpeculation(src_server()->GetURL(kPrefetchPage),
+                    FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPage), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
+                       SpeculationDisallowsCrossOriginRedirect) {
+  UseHttpsSrcServer();
+  ui_test_utils::NavigateToURL(
+      current_browser(), src_server()->GetURL("/defaultresponse?landing"));
+  InsertSpeculation(
+      src_server()->GetURL("/server-redirect-307?" +
+                           src_server()->GetURL(kPrefetchPage).spec()),
+      FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPage), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
+                       SpeculationAllowsSameOriginRedirectBlocked) {
+  UseHttpsSrcServer();
+  ui_test_utils::NavigateToURL(
+      current_browser(), src_server()->GetURL("/defaultresponse?landing"));
+  InsertSpeculation(src_server()->GetURL(
+                        "/server-redirect-307?" +
+                        embedded_test_server()->GetURL(kPrefetchPage).spec()),
+                    FINAL_STATUS_UNSUPPORTED_SCHEME);
+  EXPECT_EQ(0u, GetRequestCount(embedded_test_server()->GetURL(kPrefetchPage)));
+  EXPECT_EQ(0u,
+            GetRequestCount(embedded_test_server()->GetURL(kPrefetchScript)));
+}
+
+IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
+                       HungSpeculationTimedOutByNavigation) {
+  UseHttpsSrcServer();
+  GetNoStatePrefetchManager()->mutable_config().abandon_time_to_live =
+      base::TimeDelta::FromMilliseconds(500);
+  ui_test_utils::NavigateToURL(
+      current_browser(), src_server()->GetURL("/defaultresponse?landing"));
+  InsertSpeculation(src_server()->GetURL("/hung"), FINAL_STATUS_TIMED_OUT,
+                    /*should_navigate_away=*/true);
 }
 
 }  // namespace prerender

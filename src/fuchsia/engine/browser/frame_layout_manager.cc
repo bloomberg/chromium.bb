@@ -5,6 +5,7 @@
 #include "fuchsia/engine/browser/frame_layout_manager.h"
 
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
@@ -30,9 +31,8 @@ float ProportionalScale(gfx::Size inset, gfx::Size container) {
 
 }  // namespace
 
-FrameLayoutManager::FrameLayoutManager() {}
-
-FrameLayoutManager::~FrameLayoutManager() {}
+FrameLayoutManager::FrameLayoutManager() = default;
+FrameLayoutManager::~FrameLayoutManager() = default;
 
 void FrameLayoutManager::ForceContentDimensions(gfx::Size size) {
   render_size_override_ = size;
@@ -45,7 +45,7 @@ void FrameLayoutManager::OnWindowResized() {
 }
 
 void FrameLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  if (child->type() == aura::client::WINDOW_TYPE_CONTROL) {
+  if (child->GetType() == aura::client::WINDOW_TYPE_CONTROL) {
     DCHECK(!main_child_);
     main_child_ = child;
     SetChildBoundsDirect(main_child_,
@@ -61,7 +61,7 @@ void FrameLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 }
 
 void FrameLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
-  if (child->type() == aura::client::WINDOW_TYPE_CONTROL) {
+  if (child->GetType() == aura::client::WINDOW_TYPE_CONTROL) {
     DCHECK_EQ(child, main_child_);
     main_child_ = nullptr;
   }

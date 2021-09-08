@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
@@ -42,6 +43,7 @@
 
 namespace blink {
 
+class WebBackForwardCacheLoaderHelper;
 class WebURLRequest;
 
 // This interface allows the Blink embedder to implement loading functionality
@@ -66,7 +68,9 @@ class WebServiceWorkerNetworkProvider {
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest& request,
       std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>,
-      std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>) = 0;
+      std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>,
+      CrossVariantMojoRemote<blink::mojom::KeepAliveHandleInterfaceBase>,
+      WebBackForwardCacheLoaderHelper) = 0;
 
   // For service worker clients.
   virtual blink::mojom::ControllerServiceWorkerMode

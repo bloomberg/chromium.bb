@@ -14,36 +14,8 @@
 
 namespace http2 {
 
-template <typename... Args>
-inline void Http2StrAppend(std::string* output, const Args&... args) {
-  Http2StrAppendImpl(output, std::forward<const Args&>(args)...);
-}
-
-template <typename... Args>
-inline std::string Http2StringPrintf(const Args&... args) {
-  return Http2StringPrintfImpl(std::forward<const Args&>(args)...);
-}
-
-inline std::string Http2HexEncode(const void* bytes, size_t size) {
-  return Http2HexEncodeImpl(bytes, size);
-}
-
-inline std::string Http2HexDecode(absl::string_view data) {
-  return Http2HexDecodeImpl(data);
-}
-
 inline std::string Http2HexDump(absl::string_view data) {
   return Http2HexDumpImpl(data);
-}
-
-inline std::string Http2HexEscape(absl::string_view data) {
-  return Http2HexEscapeImpl(data);
-}
-
-template <typename Number>
-inline std::string Http2Hex(Number number) {
-  static_assert(std::is_integral<Number>::value, "Number has to be an int");
-  return Http2HexImpl(number);
 }
 
 }  // namespace http2

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/token.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -23,6 +22,7 @@
 #include "components/sessions/core/sessions_export.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
@@ -34,10 +34,12 @@ class PlatformSpecificTabData;
 class TabRestoreServiceObserver;
 
 // TabRestoreService is responsible for maintaining the most recently closed
-// tabs and windows. When a tab is closed
-// TabRestoreService::CreateHistoricalTab is invoked and a Tab is created to
-// represent the tab. Similarly, when a browser is closed, BrowserClosing is
-// invoked and a Window is created to represent the window.
+// tabs and windows. When a tab is closed TabRestoreService::CreateHistoricalTab
+// is invoked and a Tab is created to represent the tab. Similarly, when a
+// browser is closed, BrowserClosing is invoked and a Window is created to
+// represent the window. Similarly, when a group is closed,
+// CreateHistoricalGroup is invoked and a Group is created to represent the
+// group.
 //
 // To restore a tab/window from the TabRestoreService invoke RestoreEntryById
 // or RestoreMostRecentEntry.
@@ -57,6 +59,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   enum Type {
     TAB,
     WINDOW,
+    GROUP,
   };
 
   struct SESSIONS_EXPORT Entry {
@@ -69,15 +72,10 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     // The type of the entry.
     const Type type;
 
-    // The time when the window or tab was closed. Not always set - can be
-    // nullptr or 0 in cases where a timestamp isn't available at entry
+    // The time when the window, tab, or group was closed. Not always set - can
+    // be nullptr or 0 in cases where a timestamp isn't available at entry
     // creation.
     base::Time timestamp;
-
-    // Is this entry from the last session? This is set to true for entries that
-    // were closed during the last session, and false for entries that were
-    // closed during this session.
-    bool from_last_session = false;
 
     // Estimates memory usage. By default returns 0.
     virtual size_t EstimateMemoryUsage() const;
@@ -125,10 +123,10 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     SerializedUserAgentOverride user_agent_override;
 
     // The group the tab belonged to, if any.
-    base::Optional<tab_groups::TabGroupId> group;
+    absl::optional<tab_groups::TabGroupId> group;
 
     // The group metadata for the tab, if any.
-    base::Optional<tab_groups::TabGroupVisualData> group_visual_data;
+    absl::optional<tab_groups::TabGroupVisualData> group_visual_data;
   };
 
   // Represents a previously open window.
@@ -162,6 +160,28 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     std::string workspace;
   };
 
+  // Represents a previously open group.
+  // If you add a new field that can allocate memory, please also add
+  // it to the EstimatedMemoryUsage() implementation.
+  struct SESSIONS_EXPORT Group : public Entry {
+    Group();
+    ~Group() override;
+
+    // Entry:
+    size_t EstimateMemoryUsage() const override;
+
+    // The tabs that comprised the group, in order.
+    std::vector<std::unique_ptr<Tab>> tabs;
+
+    // Group metadata.
+    tab_groups::TabGroupId group_id = tab_groups::TabGroupId::CreateEmpty();
+    tab_groups::TabGroupVisualData visual_data;
+
+    // The ID of the browser to which this group belonged, so it can be restored
+    // there.
+    SessionID::id_type browser_id = 0;
+  };
+
   typedef std::list<std::unique_ptr<Entry>> Entries;
   typedef base::RepeatingCallback<bool(const SerializedNavigationEntry& entry)>
       DeletionPredicate;
@@ -174,8 +194,22 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   virtual void RemoveObserver(TabRestoreServiceObserver* observer) = 0;
 
   // Creates a Tab to represent |live_tab| and notifies observers the list of
-  // entries has changed.
-  virtual void CreateHistoricalTab(LiveTab* live_tab, int index) = 0;
+  // entries has changed. If successful, returns the unique SessionID associated
+  // with the Tab.
+  virtual absl::optional<SessionID> CreateHistoricalTab(LiveTab* live_tab,
+                                                        int index) = 0;
+
+  // Creates a Group to represent a tab group with ID |id|, containing group
+  // metadata and all tabs within the group.
+  virtual void CreateHistoricalGroup(LiveTabContext* context,
+                                     const tab_groups::TabGroupId& id) = 0;
+
+  // Invoked when the group is done closing.
+  virtual void GroupClosed(const tab_groups::TabGroupId& group) = 0;
+
+  // Invoked when the group is did not fully close, e.g. because one of the tabs
+  // had a beforeunload handler.
+  virtual void GroupCloseStopped(const tab_groups::TabGroupId& group) = 0;
 
   // TODO(blundell): Rename and fix comment.
   // Invoked when a browser is closing. If |context| is a tabbed browser with

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -44,7 +43,7 @@ class TestBrowserClient : public ContentBrowserClient {
     DCHECK(browser_context);
     auto partition_num = std::to_string(++partition_count_);
     return StoragePartitionConfig::Create(
-        std::string("PartitionDomain") + partition_num,
+        browser_context, std::string("PartitionDomain") + partition_num,
         std::string("Partition") + partition_num, false /* in_memory */);
   }
 
@@ -65,8 +64,8 @@ class BackgroundSyncLauncherTest : public testing::Test {
     DCHECK(!urls.empty());
 
     for (const auto& url : urls) {
-      auto* storage_partition = BrowserContext::GetStoragePartitionForSite(
-          &test_browser_context_, url);
+      auto* storage_partition =
+          test_browser_context_.GetStoragePartitionForUrl(url);
 
       auto iter = wakeup_deltas.find(url);
       if (iter == wakeup_deltas.end())
@@ -87,15 +86,8 @@ class BackgroundSyncLauncherTest : public testing::Test {
 
   base::TimeDelta GetSoonestWakeupDelta(
       blink::mojom::BackgroundSyncType sync_type) {
-    base::TimeDelta to_return;
-    BackgroundSyncLauncher::GetSoonestWakeupDelta(
-        sync_type, &test_browser_context_,
-        base::BindLambdaForTesting(
-            [&to_return](base::TimeDelta soonest_wakeup_delta) {
-              to_return = soonest_wakeup_delta;
-            }));
-    task_environment_.RunUntilIdle();
-    return to_return;
+    return BackgroundSyncLauncher::GetSoonestWakeupDelta(
+        sync_type, &test_browser_context_);
   }
 
 #if defined(OS_ANDROID)
@@ -105,8 +97,7 @@ class BackgroundSyncLauncherTest : public testing::Test {
     auto done_closure = base::BindLambdaForTesting(
         [&]() { num_invocations_fire_background_sync_events_++; });
 
-    BrowserContext::ForEachStoragePartition(
-        &test_browser_context_,
+    test_browser_context_.ForEachStoragePartition(
         base::BindRepeating(
             [](base::OnceClosure done_closure,
                StoragePartition* storage_partition) {

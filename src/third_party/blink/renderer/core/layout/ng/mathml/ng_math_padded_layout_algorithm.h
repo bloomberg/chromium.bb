@@ -18,13 +18,14 @@ class CORE_EXPORT NGMathPaddedLayoutAlgorithm
 
   scoped_refptr<const NGLayoutResult> Layout() final;
 
-  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const final;
+  MinMaxSizesResult ComputeMinMaxSizes(
+      const MinMaxSizesFloatInput&) const final;
 
  private:
   LayoutUnit RequestedLSpace() const;
   LayoutUnit RequestedVOffset() const;
-  base::Optional<LayoutUnit> RequestedAscent(LayoutUnit content_ascent) const;
-  base::Optional<LayoutUnit> RequestedDescent(LayoutUnit content_descent) const;
+  absl::optional<LayoutUnit> RequestedAscent(LayoutUnit content_ascent) const;
+  absl::optional<LayoutUnit> RequestedDescent(LayoutUnit content_descent) const;
 
   void GatherChildren(NGBlockNode* base, NGBoxFragmentBuilder* = nullptr) const;
 };

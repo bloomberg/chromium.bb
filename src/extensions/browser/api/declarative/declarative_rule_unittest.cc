@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative/declarative_rule.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "components/url_matcher/url_matcher_constants.h"
@@ -51,7 +52,7 @@ struct RecordingCondition {
     const base::DictionaryValue* dict = nullptr;
     if (condition.GetAsDictionary(&dict) && dict->HasKey("bad_key")) {
       *error = "Found error key";
-      return std::unique_ptr<RecordingCondition>();
+      return nullptr;
     }
 
     std::unique_ptr<RecordingCondition> result(new RecordingCondition());
@@ -394,7 +395,7 @@ TEST(DeclarativeRuleTest, CheckConsistency) {
                                        &json_rule));
   std::unique_ptr<Rule> rule(Rule::Create(
       matcher.condition_factory(), nullptr, extension.get(), base::Time(),
-      json_rule, base::Bind(AtLeastOneCondition), &error));
+      json_rule, base::BindOnce(AtLeastOneCondition), &error));
   EXPECT_TRUE(rule);
   EXPECT_EQ("", error);
 
@@ -411,8 +412,8 @@ TEST(DeclarativeRuleTest, CheckConsistency) {
                                                  })"),
                                        &json_rule));
   rule = Rule::Create(matcher.condition_factory(), nullptr, extension.get(),
-                      base::Time(), json_rule, base::Bind(AtLeastOneCondition),
-                      &error);
+                      base::Time(), json_rule,
+                      base::BindOnce(AtLeastOneCondition), &error);
   EXPECT_FALSE(rule);
   EXPECT_EQ("No conditions", error);
 }

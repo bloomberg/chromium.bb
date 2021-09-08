@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/bindings/lib/binding_state.h"
+
+#include <memory>
+
 #include "mojo/public/cpp/bindings/lib/task_runner_helper.h"
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 
@@ -119,14 +122,14 @@ void BindingStateBase::BindInternal(
           : (has_sync_methods
                  ? MultiplexRouter::SINGLE_INTERFACE_WITH_SYNC_METHODS
                  : MultiplexRouter::SINGLE_INTERFACE);
-  router_ = new MultiplexRouter(std::move(receiver_state->pipe), config, false,
-                                sequenced_runner, interface_name);
+  router_ = MultiplexRouter::Create(std::move(receiver_state->pipe), config,
+                                    false, sequenced_runner, interface_name);
   router_->SetConnectionGroup(std::move(receiver_state->connection_group));
 
-  endpoint_client_.reset(new InterfaceEndpointClient(
+  endpoint_client_ = std::make_unique<InterfaceEndpointClient>(
       router_->CreateLocalEndpointHandle(kPrimaryInterfaceId), stub,
       std::move(request_validator), has_sync_methods,
-      std::move(sequenced_runner), interface_version, interface_name));
+      std::move(sequenced_runner), interface_version, interface_name);
   endpoint_client_->SetIdleTrackingEnabledCallback(
       base::BindOnce(&MultiplexRouter::SetConnectionGroup, router_));
 

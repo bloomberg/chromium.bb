@@ -15,7 +15,7 @@
 #include <fstream>
 #include <string>
 
-#include "gflags/gflags.h"
+#include "absl/flags/parse.h"
 #include "google/protobuf/util/json_util.h"
 #include "tools/render/trace_program.h"
 
@@ -36,7 +36,7 @@ InputFormat GuessInputFileFormat(const std::string& filename) {
 
 // render_trace renders the specified trace file using an OpenGL-based viewer.
 int main(int argc, char* argv[]) {
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  absl::ParseCommandLine(argc, argv);
   google::InitGoogleLogging(argv[0]);
 
   CHECK_GE(argc, 2) << "Specify file path";

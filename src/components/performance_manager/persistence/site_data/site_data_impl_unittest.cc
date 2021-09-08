@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/bind.h"
-#include "base/test/task_environment.h"
 #include "components/performance_manager/persistence/site_data/unittest_utils.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -121,7 +121,7 @@ class SiteDataImplTest : public ::testing::Test {
   const url::Origin kDummyOrigin = url::Origin::Create(GURL("foo.com"));
   const url::Origin kDummyOrigin2 = url::Origin::Create(GURL("bar.com"));
 
-  base::test::TaskEnvironment task_environment_{
+  content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   // Use a NiceMock as there's no need to add expectations in these tests,
@@ -415,7 +415,7 @@ TEST_F(SiteDataImplTest, OnInitCallbackMergePreviousObservations) {
   // Initialize a fake protobuf that indicates that this site updates its title
   // while in background and set a fake last loaded time (this should be
   // overridden once the callback runs).
-  base::Optional<SiteDataProto> test_proto = SiteDataProto();
+  absl::optional<SiteDataProto> test_proto = SiteDataProto();
   SiteDataFeatureProto unused_feature_proto = GetUnusedFeatureProto();
   test_proto->mutable_updates_title_in_background()->CopyFrom(
       GetUsedFeatureProto());
@@ -590,7 +590,7 @@ TEST_F(SiteDataImplTest, OptionalFieldsNotPopulatedWhenClean) {
   EXPECT_EQ(0u, local_site_data->cpu_usage_estimate().num_datums());
   EXPECT_EQ(0u, local_site_data->private_footprint_kb_estimate().num_datums());
 
-  base::Optional<SiteDataProto> test_proto = SiteDataProto();
+  absl::optional<SiteDataProto> test_proto = SiteDataProto();
 
   // Run the callback to indicate that the initialization has completed.
   std::move(read_cb).Run(test_proto);
@@ -672,7 +672,7 @@ TEST_F(SiteDataImplTest, DataLoadedCallbackInvoked) {
       base::BindLambdaForTesting([&]() { callback_invoked = true; }));
 
   // Run the callback to indicate that the initialization has completed.
-  base::Optional<SiteDataProto> test_proto = SiteDataProto();
+  absl::optional<SiteDataProto> test_proto = SiteDataProto();
   std::move(read_cb).Run(test_proto);
 
   EXPECT_TRUE(callback_invoked);

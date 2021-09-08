@@ -5,9 +5,9 @@
 #ifndef QUICHE_QUIC_CORE_QUIC_TIME_ACCUMULATOR_H_
 #define QUICHE_QUIC_CORE_QUIC_TIME_ACCUMULATOR_H_
 
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/quic_time.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -23,18 +23,18 @@ class QUIC_EXPORT_PRIVATE QuicTimeAccumulator {
   bool IsRunning() const { return last_start_time_ != NotRunningSentinel(); }
 
   void Start(QuicTime now) {
-    DCHECK(!IsRunning());
+    QUICHE_DCHECK(!IsRunning());
     last_start_time_ = now;
-    DCHECK(IsRunning());
+    QUICHE_DCHECK(IsRunning());
   }
 
   void Stop(QuicTime now) {
-    DCHECK(IsRunning());
+    QUICHE_DCHECK(IsRunning());
     if (now > last_start_time_) {
       total_elapsed_ = total_elapsed_ + (now - last_start_time_);
     }
     last_start_time_ = NotRunningSentinel();
-    DCHECK(!IsRunning());
+    QUICHE_DCHECK(!IsRunning());
   }
 
   // Get total elapsed time between COMPLETED Start/Stop pairs.

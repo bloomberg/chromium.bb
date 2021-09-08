@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "net/third_party/quiche/src/http2/http2_structures.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
-#include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
-#include "net/third_party/quiche/src/http2/tools/http2_frame_builder.h"
+#include "http2/http2_structures.h"
+#include "http2/platform/api/http2_test_helpers.h"
+#include "http2/test_tools/http2_random.h"
+#include "http2/tools/http2_frame_builder.h"
 
 namespace http2 {
 namespace test {
@@ -34,6 +34,7 @@ void Randomize(Http2PingFields* out, Http2Random* rng);
 void Randomize(Http2GoAwayFields* out, Http2Random* rng);
 void Randomize(Http2WindowUpdateFields* out, Http2Random* rng);
 void Randomize(Http2AltSvcFields* out, Http2Random* rng);
+void Randomize(Http2PriorityUpdateFields* out, Http2Random* rng);
 
 // Clear bits of header->flags that are known to be invalid for the
 // type. For unknown frame types, no change is made.

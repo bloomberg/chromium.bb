@@ -7,9 +7,7 @@
 #import <WebKit/WebKit.h>
 
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "components/infobars/core/infobar_feature.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
@@ -21,7 +19,6 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_confirm_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_password_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #import "ios/chrome/browser/ui/infobars/test/test_infobar_password_delegate.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
@@ -29,8 +26,8 @@
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/web/common/crw_web_view_content_view.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,16 +72,11 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
         content_view_([[CRWWebViewContentView alloc]
             initWithWebView:web_view_
                  scrollView:web_view_.scrollView]) {
-    // Enable kIOSInfobarUIReboot flag.
-    feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
-                                   {kInfobarUIRebootOnlyiOS13});
 
     // Setup WebstateList, Webstate and NavigationManager (Needed for
     // InfobarManager).
-    std::unique_ptr<web::TestWebState> web_state =
-        std::make_unique<web::TestWebState>();
-    std::unique_ptr<web::TestNavigationManager> navigation_manager =
-        std::make_unique<web::TestNavigationManager>();
+    auto web_state = std::make_unique<web::FakeWebState>();
+    auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
     navigation_manager->SetBrowserState(browser_->GetBrowserState());
     navigation_manager_ = navigation_manager.get();
     web_state->SetNavigationManager(std::move(navigation_manager));
@@ -189,8 +181,7 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
   }
 
   void AddSecondWebstate() {
-    std::unique_ptr<web::TestWebState> second_web_state =
-        std::make_unique<web::TestWebState>();
+    auto second_web_state = std::make_unique<web::FakeWebState>();
     second_web_state->SetView(content_view_);
     CRWWebViewScrollViewProxy* scroll_view_proxy =
         [[CRWWebViewScrollViewProxy alloc] init];
@@ -214,9 +205,8 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
 
   base::test::TaskEnvironment environment_;
   InfobarContainerCoordinator* infobar_container_coordinator_;
-  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<Browser> browser_;
-  web::TestNavigationManager* navigation_manager_;
+  web::FakeNavigationManager* navigation_manager_;
   ScopedKeyWindow scoped_key_window_;
   FakeBaseViewController* base_view_controller_;
   TestContainerCoordinatorPositioner* positioner_;

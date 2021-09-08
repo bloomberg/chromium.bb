@@ -124,12 +124,14 @@ class ChromeDownloadManagerDelegate
       const content::WebContents::Getter& web_contents_getter,
       const GURL& url,
       const std::string& request_method,
-      base::Optional<url::Origin> request_initiator,
+      absl::optional<url::Origin> request_initiator,
       bool from_download_cross_origin_redirect,
       bool content_initiated,
       content::CheckDownloadAllowedCallback check_download_allowed_cb) override;
   download::QuarantineConnectionCallback GetQuarantineConnectionCallback()
       override;
+  std::unique_ptr<download::DownloadItemRenameHandler>
+  GetRenameHandlerForDownload(download::DownloadItem* download_item) override;
 
   // Opens a download using the platform handler. DownloadItem::OpenDownload,
   // which ends up being handled by OpenDownload(), will open a download in the
@@ -171,16 +173,15 @@ class ChromeDownloadManagerDelegate
   virtual void ShowFilePickerForDownload(
       download::DownloadItem* download,
       const base::FilePath& suggested_path,
-      const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback);
+      DownloadTargetDeterminerDelegate::ConfirmationCallback callback);
 
   // DownloadTargetDeterminerDelegate. Protected for testing.
-  void GetMixedContentStatus(
-      download::DownloadItem* download,
-      const base::FilePath& virtual_path,
-      const GetMixedContentStatusCallback& callback) override;
+  void GetMixedContentStatus(download::DownloadItem* download,
+                             const base::FilePath& virtual_path,
+                             GetMixedContentStatusCallback callback) override;
   void NotifyExtensions(download::DownloadItem* download,
                         const base::FilePath& suggested_virtual_path,
-                        const NotifyExtensionsCallback& callback) override;
+                        NotifyExtensionsCallback callback) override;
   void ReserveVirtualPath(
       download::DownloadItem* download,
       const base::FilePath& virtual_path,
@@ -191,15 +192,15 @@ class ChromeDownloadManagerDelegate
   void RequestConfirmation(download::DownloadItem* download,
                            const base::FilePath& suggested_virtual_path,
                            DownloadConfirmationReason reason,
-                           const ConfirmationCallback& callback) override;
+                           ConfirmationCallback callback) override;
   void DetermineLocalPath(download::DownloadItem* download,
                           const base::FilePath& virtual_path,
-                          const LocalPathCallback& callback) override;
+                          LocalPathCallback callback) override;
   void CheckDownloadUrl(download::DownloadItem* download,
                         const base::FilePath& suggested_virtual_path,
-                        const CheckDownloadUrlCallback& callback) override;
+                        CheckDownloadUrlCallback callback) override;
   void GetFileMimeType(const base::FilePath& path,
-                       const GetFileMimeTypeCallback& callback) override;
+                       GetFileMimeTypeCallback callback) override;
 
 #if defined(OS_ANDROID)
   virtual void OnDownloadCanceled(download::DownloadItem* download,
@@ -208,7 +209,7 @@ class ChromeDownloadManagerDelegate
 
   // Called when the file picker returns the confirmation result.
   void OnConfirmationCallbackComplete(
-      const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
+      DownloadTargetDeterminerDelegate::ConfirmationCallback callback,
       DownloadConfirmationResult result,
       const base::FilePath& virtual_path);
 
@@ -220,6 +221,7 @@ class ChromeDownloadManagerDelegate
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
   FRIEND_TEST_ALL_PREFIXES(ChromeDownloadManagerDelegateTest,
                            RequestConfirmation_Android);
+  FRIEND_TEST_ALL_PREFIXES(DownloadLaterTriggerTest, DownloadLaterTrigger);
 
   using IdCallbackVector = std::vector<content::DownloadIdCallback>;
 
@@ -227,7 +229,7 @@ class ChromeDownloadManagerDelegate
   void ShowFilePicker(
       const std::string& guid,
       const base::FilePath& suggested_path,
-      const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback);
+      DownloadTargetDeterminerDelegate::ConfirmationCallback callback);
 
   // content::NotificationObserver implementation.
   void Observe(int type,
@@ -278,13 +280,15 @@ class ChromeDownloadManagerDelegate
   // TARGET_CONFLICT and the new file name should be displayed to the user.
   void GenerateUniqueFileNameDone(
       gfx::NativeWindow native_window,
-      const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
+      bool show_download_later_dialog,
+      DownloadTargetDeterminerDelegate::ConfirmationCallback callback,
       download::PathValidationResult result,
       const base::FilePath& target_path);
-#endif
 
   // Returns whether to show download later dialog.
-  bool ShouldShowDownloadLaterDialog() const;
+  bool ShouldShowDownloadLaterDialog(
+      const download::DownloadItem* download) const;
+#endif
 
   Profile* profile_;
 

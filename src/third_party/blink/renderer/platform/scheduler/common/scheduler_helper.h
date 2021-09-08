@@ -6,11 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_SCHEDULER_HELPER_H_
 
 #include <stddef.h>
-#include <memory>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/simple_task_executor.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -33,6 +34,10 @@ class PLATFORM_EXPORT SchedulerHelper
   explicit SchedulerHelper(
       base::sequence_manager::SequenceManager* sequence_manager);
   ~SchedulerHelper() override;
+
+  // Must be invoked before running any task from the scheduler, on the thread
+  // that will run these tasks. Setups the ThreadChecker and the TaskExecutor.
+  void AttachToCurrentThread();
 
   // SequenceManager::Observer implementation:
   void OnBeginNestedRunLoop() override;
@@ -72,7 +77,7 @@ class PLATFORM_EXPORT SchedulerHelper
   bool IsShutdown() const { return !sequence_manager_; }
 
   inline void CheckOnValidThread() const {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   }
 
   class PLATFORM_EXPORT Observer {
@@ -121,7 +126,11 @@ class PLATFORM_EXPORT SchedulerHelper
 
   virtual void ShutdownAllQueues() {}
 
-  base::ThreadChecker thread_checker_;
+  const scoped_refptr<base::SingleThreadTaskRunner>& default_task_runner() {
+    return default_task_runner_;
+  }
+
+  THREAD_CHECKER(thread_checker_);
   base::sequence_manager::SequenceManager* sequence_manager_;  // NOT OWNED
 
  private:
@@ -132,7 +141,7 @@ class PLATFORM_EXPORT SchedulerHelper
   Observer* observer_;  // NOT OWNED
 
   UkmTaskSampler ukm_task_sampler_;
-  base::Optional<base::SimpleTaskExecutor> simple_task_executor_;
+  absl::optional<base::SimpleTaskExecutor> simple_task_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerHelper);
 };

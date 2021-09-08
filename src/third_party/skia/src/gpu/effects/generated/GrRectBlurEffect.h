@@ -21,11 +21,11 @@
 #include "src/core/SkBlurMask.h"
 #include "src/core/SkGpuBlurUtils.h"
 #include "src/core/SkMathPriv.h"
-#include "src/gpu/GrBitmapTextureMaker.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrThreadSafeCache.h"
+#include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrTextureEffect.h"
 
 #include "src/gpu/GrFragmentProcessor.h"
@@ -51,8 +51,8 @@ public:
 
         if (view) {
             SkASSERT(view.origin() == kTopLeft_GrSurfaceOrigin);
-            return GrTextureEffect::Make(std::move(view), kPremul_SkAlphaType, m,
-                                         GrSamplerState::Filter::kLinear);
+            return GrTextureEffect::Make(
+                    std::move(view), kPremul_SkAlphaType, m, GrSamplerState::Filter::kLinear);
         }
 
         SkBitmap bitmap;
@@ -60,8 +60,7 @@ public:
             return {};
         }
 
-        GrBitmapTextureMaker maker(rContext, bitmap, GrImageTexGenPolicy::kNew_Uncached_Budgeted);
-        view = maker.view(GrMipmapped::kNo);
+        view = std::get<0>(GrMakeUncachedBitmapProxyView(rContext, bitmap));
         if (!view) {
             return {};
         }
@@ -69,8 +68,8 @@ public:
         view = threadSafeCache->add(key, view);
 
         SkASSERT(view.origin() == kTopLeft_GrSurfaceOrigin);
-        return GrTextureEffect::Make(std::move(view), kPremul_SkAlphaType, m,
-                                     GrSamplerState::Filter::kLinear);
+        return GrTextureEffect::Make(
+                std::move(view), kPremul_SkAlphaType, m, GrSamplerState::Filter::kLinear);
     }
 
     static std::unique_ptr<GrFragmentProcessor> Make(std::unique_ptr<GrFragmentProcessor> inputFP,
@@ -109,8 +108,10 @@ public:
             if (!m.invert(&invM)) {
                 return nullptr;
             }
-            rect = {srcRect.left() * scale.width(), srcRect.top() * scale.height(),
-                    srcRect.right() * scale.width(), srcRect.bottom() * scale.height()};
+            rect = {srcRect.left() * scale.width(),
+                    srcRect.top() * scale.height(),
+                    srcRect.right() * scale.width(),
+                    srcRect.bottom() * scale.height()};
         }
 
         if (!caps.floatIs32Bits()) {
@@ -134,8 +135,10 @@ public:
         // inset the rect so that the edge of the inset rect corresponds to t = 0 in the texture.
         // It actually simplifies things a bit in the !isFast case, too.
         float threeSigma = sixSigma / 2;
-        SkRect insetRect = {rect.left() + threeSigma, rect.top() + threeSigma,
-                            rect.right() - threeSigma, rect.bottom() - threeSigma};
+        SkRect insetRect = {rect.left() + threeSigma,
+                            rect.top() + threeSigma,
+                            rect.right() - threeSigma,
+                            rect.bottom() - threeSigma};
 
         // In our fast variant we find the nearest horizontal and vertical edges and for each
         // do a lookup in the integral texture for each and multiply them. When the rect is
@@ -152,7 +155,6 @@ public:
     GrRectBlurEffect(const GrRectBlurEffect& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "RectBlurEffect"; }
-    bool usesExplicitReturn() const override;
     SkRect rect;
     bool applyInvVM;
     SkMatrix invVM;
@@ -166,18 +168,16 @@ private:
                      std::unique_ptr<GrFragmentProcessor> integral,
                      bool isFast)
             : INHERITED(kGrRectBlurEffect_ClassID,
-                        (OptimizationFlags)(inputFP ? ProcessorOptimizationFlags(inputFP.get())
-                                                    : kAll_OptimizationFlags) &
+                        (OptimizationFlags)ProcessorOptimizationFlags(inputFP.get()) &
                                 kCompatibleWithCoverageAsAlpha_OptimizationFlag)
             , rect(rect)
             , applyInvVM(applyInvVM)
             , invVM(invVM)
             , isFast(isFast) {
         this->registerChild(std::move(inputFP), SkSL::SampleUsage::PassThrough());
-        SkASSERT(integral);
         this->registerChild(std::move(integral), SkSL::SampleUsage::Explicit());
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

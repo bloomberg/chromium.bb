@@ -32,9 +32,11 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_H_
 
 #include "base/time/time.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
@@ -50,7 +52,6 @@
 
 namespace cc {
 class PaintCanvas;
-struct BrowserControlsParams;
 }
 
 namespace gfx {
@@ -67,8 +68,8 @@ class WebFrame;
 class WebFrameWidget;
 class WebHitTestResult;
 class WebLocalFrame;
+class WebNoStatePrefetchClient;
 class WebPagePopup;
-class WebPrerendererClient;
 class WebRemoteFrame;
 class WebSettings;
 class WebString;
@@ -105,22 +106,29 @@ class WebView {
   // their output.
   // |page_handle| is only set for views that are part of a WebContents' frame
   // tree.
+  // |widgets_never_composited| is an indication that all WebWidgets associated
+  // with this WebView will never be user-visible and thus never need to produce
+  // pixels for display. This is separate from page visibility, as background
+  // pages can be marked visible in blink even though they are not user-visible.
+  // Page visibility controls blink behaviour for javascript, timers, and such
+  // to inform blink it is in the foreground or background. Whereas this bit
+  // refers to user-visibility and whether the tab needs to produce pixels to
+  // put on the screen at some point or not.
   // TODO(yuzus): Remove |is_hidden| and start using |PageVisibilityState|.
   BLINK_EXPORT static WebView* Create(
       WebViewClient*,
       bool is_hidden,
       bool is_inside_portal,
       bool compositing_enabled,
+      bool widgets_never_composited,
       WebView* opener,
       CrossVariantMojoAssociatedReceiver<mojom::PageBroadcastInterfaceBase>
           page_handle,
-      scheduler::WebAgentGroupScheduler& agent_group_scheduler);
+      scheduler::WebAgentGroupScheduler& agent_group_scheduler,
+      const SessionStorageNamespaceId& session_storage_namespace_id);
 
   // Destroys the WebView.
   virtual void Close() = 0;
-
-  // Sets whether the WebView is focused.
-  virtual void SetFocus(bool enable) = 0;
 
   // Called to inform WebViewImpl that a local main frame has been attached.
   // After this call MainFrameImpl() will return a valid frame until it is
@@ -132,13 +140,20 @@ class WebView {
   virtual void DidDetachLocalMainFrame() = 0;
 
   // Called to inform WebViewImpl that a remote main frame has been attached.
-  virtual void DidAttachRemoteMainFrame() = 0;
+  // Associated channels should be passed and bound.
+  virtual void DidAttachRemoteMainFrame(
+      CrossVariantMojoAssociatedRemote<mojom::RemoteMainFrameHostInterfaceBase>
+          main_frame_host,
+      CrossVariantMojoAssociatedReceiver<mojom::RemoteMainFrameInterfaceBase>
+          main_frame) = 0;
 
   // Called to inform WebViewImpl that a remote main frame has been detached.
   virtual void DidDetachRemoteMainFrame() = 0;
 
-  // Initializes the various client interfaces.
-  virtual void SetPrerendererClient(WebPrerendererClient*) = 0;
+  virtual void SetNoStatePrefetchClient(WebNoStatePrefetchClient*) = 0;
+
+  // Returns the session storage namespace id associated with this WebView.
+  virtual const SessionStorageNamespaceId& GetSessionStorageNamespaceId() = 0;
 
   // Options -------------------------------------------------------------
 
@@ -170,6 +185,7 @@ class WebView {
   // Frames --------------------------------------------------------------
 
   virtual WebFrame* MainFrame() = 0;
+  virtual const WebFrame* MainFrame() const = 0;
 
   // Focus ---------------------------------------------------------------
 
@@ -265,30 +281,9 @@ class WebView {
 
   virtual float ZoomFactorForDeviceScaleFactor() = 0;
 
-  // This method is used for testing.
-  // Resize the view at the same time as changing the state of the top
-  // controls. If |browser_controls_shrink_layout| is true, the embedder shrunk
-  // the WebView size by the browser controls height.
-  virtual void ResizeWithBrowserControls(
-      const gfx::Size& main_frame_widget_size,
-      float top_controls_height,
-      float bottom_controls_height,
-      bool browser_controls_shrink_layout) = 0;
-
-  // Same as ResizeWithBrowserControls(const gfx::Size&,float,float,bool), but
-  // includes all browser controls params such as the min heights.
-  virtual void ResizeWithBrowserControls(
-      const gfx::Size& main_frame_widget_size,
-      const gfx::Size& visible_viewport_size,
-      cc::BrowserControlsParams browser_controls_params) = 0;
-
-  // Same as ResizeWithBrowserControls, but keeps the same BrowserControl
-  // settings.
-  virtual void Resize(const gfx::Size&) = 0;
-
   // Override the screen orientation override.
   virtual void SetScreenOrientationOverrideForTesting(
-      base::Optional<blink::mojom::ScreenOrientation> orientation) = 0;
+      absl::optional<blink::mojom::ScreenOrientation> orientation) = 0;
 
   // Enable/Disable synchronous resize mode that is used for web tests.
   virtual void UseSynchronousResizeModeForTesting(bool enable) = 0;
@@ -392,13 +387,6 @@ class WebView {
       mojom::PageVisibilityState visibility,
       mojom::PagehideDispatch pagehide_dispatch) = 0;
 
-  // i18n -----------------------------------------------------------------
-
-  // Inform the WebView that the accept languages have changed.
-  // If the WebView wants to get the accept languages value, it will have
-  // to call the WebViewClient::acceptLanguages().
-  virtual void AcceptLanguagesChanged() = 0;
-
   // Lifecycle state ------------------------------------------------------
 
   // Freezes or unfreezes the page and all the local frames.
@@ -445,7 +433,7 @@ class WebView {
 
   virtual void SetRendererPreferences(
       const RendererPreferences& preferences) = 0;
-  virtual const RendererPreferences& GetRendererPreferences() = 0;
+  virtual const RendererPreferences& GetRendererPreferences() const = 0;
 
   // Web preferences ---------------------------------------------------
 
@@ -462,6 +450,18 @@ class WebView {
   // completed.
   virtual WebFrameWidget* MainFrameWidget() = 0;
 
+  // History list ---------------------------------------------------------
+  virtual void SetHistoryListFromNavigation(
+      int32_t history_offset,
+      absl::optional<int32_t> history_length) = 0;
+  virtual void IncreaseHistoryListFromNavigation() = 0;
+
+  // Session history -----------------------------------------------------
+  // Returns the number of history items before/after the current
+  // history item.
+  virtual int32_t HistoryBackListCount() const = 0;
+  virtual int32_t HistoryForwardListCount() const = 0;
+
   // Portals --------------------------------------------------------------
 
  protected:
@@ -470,4 +470,4 @@ class WebView {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_H_

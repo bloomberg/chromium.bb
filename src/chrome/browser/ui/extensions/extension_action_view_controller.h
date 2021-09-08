@@ -7,12 +7,14 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_host_observer.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "ui/gfx/image/image.h"
 
 class Browser;
@@ -43,11 +45,11 @@ class ExtensionActionViewController
   // The different options for showing a popup.
   enum PopupShowAction { SHOW_POPUP, SHOW_POPUP_AND_INSPECT };
 
-  ExtensionActionViewController(const extensions::Extension* extension,
-                                Browser* browser,
-                                extensions::ExtensionAction* extension_action,
-                                ExtensionsContainer* extensions_container,
-                                bool in_overflow_mode);
+  static std::unique_ptr<ExtensionActionViewController> Create(
+      const extensions::ExtensionId& extension_id,
+      Browser* browser,
+      ExtensionsContainer* extensions_container);
+
   ~ExtensionActionViewController() override;
 
   // ToolbarActionViewController:
@@ -55,14 +57,13 @@ class ExtensionActionViewController
   void SetDelegate(ToolbarActionViewDelegate* delegate) override;
   gfx::Image GetIcon(content::WebContents* web_contents,
                      const gfx::Size& size) override;
-  base::string16 GetActionName() const override;
-  base::string16 GetAccessibleName(content::WebContents* web_contents) const
-      override;
-  base::string16 GetTooltip(content::WebContents* web_contents) const override;
+  std::u16string GetActionName() const override;
+  std::u16string GetAccessibleName(
+      content::WebContents* web_contents) const override;
+  std::u16string GetTooltip(content::WebContents* web_contents) const override;
   PageInteractionStatus GetPageInteractionStatus(
       content::WebContents* web_contents) const override;
   bool IsEnabled(content::WebContents* web_contents) const override;
-  bool HasPopup(content::WebContents* web_contents) const override;
   bool IsShowingPopup() const override;
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;
@@ -73,7 +74,6 @@ class ExtensionActionViewController
   void UpdateState() override;
   void RegisterCommand() override;
   void UnregisterCommand() override;
-  bool DisabledClickOpensMenu() const override;
 
   // ExtensionContextMenuModel::PopupDelegate:
   void InspectPopup() override;
@@ -103,6 +103,14 @@ class ExtensionActionViewController
   bool HasBeenBlockedForTesting(content::WebContents* web_contents) const;
 
  private:
+  // New instances should be instantiated with Create().
+  ExtensionActionViewController(
+      scoped_refptr<const extensions::Extension> extension,
+      Browser* browser,
+      extensions::ExtensionAction* extension_action,
+      extensions::ExtensionRegistry* extension_registry,
+      ExtensionsContainer* extensions_container);
+
   // ExtensionActionIconFactory::Observer:
   void OnIconUpdated() override;
 
@@ -150,10 +158,6 @@ class ExtensionActionViewController
       content::WebContents* web_contents,
       const gfx::Size& size);
 
-  // Returns true if this extension has a page action and that page action wants
-  // to run on the given |web_contents|.
-  bool PageActionWantsToRun(content::WebContents* web_contents) const;
-
   // Returns true if this extension uses the activeTab permission and would
   // probably be able to to access the given |url|. The actual checks when an
   // activeTab extension tries to run are a little more complicated and can be
@@ -172,10 +176,6 @@ class ExtensionActionViewController
 
   // The corresponding browser.
   Browser* const browser_;
-
-  // Whether we are displayed in the 3-dot menu or not.
-  // TODO(pbos): Remove when 3-dot menu no longer contains extensions.
-  const bool in_overflow_mode_;
 
   // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
@@ -205,8 +205,9 @@ class ExtensionActionViewController
   // The associated ExtensionRegistry; cached for quick checking.
   extensions::ExtensionRegistry* extension_registry_;
 
-  ScopedObserver<extensions::ExtensionHost, extensions::ExtensionHostObserver>
-      popup_host_observer_{this};
+  base::ScopedObservation<extensions::ExtensionHost,
+                          extensions::ExtensionHostObserver>
+      popup_host_observation_{this};
 
   base::WeakPtrFactory<ExtensionActionViewController> weak_factory_{this};
 

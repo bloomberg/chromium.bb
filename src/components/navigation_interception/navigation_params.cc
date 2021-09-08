@@ -9,6 +9,7 @@ namespace navigation_interception {
 NavigationParams::NavigationParams(
     const GURL& url,
     const content::Referrer& referrer,
+    int64_t navigation_id,
     bool has_user_gesture,
     bool is_post,
     ui::PageTransition transition_type,
@@ -17,9 +18,10 @@ NavigationParams::NavigationParams(
     bool is_main_frame,
     bool is_renderer_initiated,
     const GURL& base_url_for_data_url,
-    const base::Optional<url::Origin>& initiator_origin)
+    const absl::optional<url::Origin>& initiator_origin)
     : url_(url),
       referrer_(referrer),
+      navigation_id_(navigation_id),
       has_user_gesture_(has_user_gesture),
       is_post_(is_post),
       transition_type_(transition_type),

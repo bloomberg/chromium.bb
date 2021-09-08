@@ -14,12 +14,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/modules/xr/xr_plane_detection_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_system.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewport.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
-#include "third_party/blink/renderer/modules/xr/xr_world_tracking_state.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_frame_transport.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -107,9 +105,8 @@ void XRFrameProvider::OnSessionStarted(
       return;
     }
 
-    HeapMojoRemote<device::mojom::blink::XRFrameDataProvider,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
-        data_provider(xr_->GetExecutionContext());
+    HeapMojoRemote<device::mojom::blink::XRFrameDataProvider> data_provider(
+        xr_->GetExecutionContext());
     data_provider.Bind(
         std::move(session_ptr->data_provider),
         xr_->GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
@@ -157,8 +154,8 @@ void XRFrameProvider::OnSessionEnded(XRSession* session) {
     immersive_data_provider_.reset();
     immersive_frame_pose_ = nullptr;
     is_immersive_frame_position_emulated_ = false;
-    first_immersive_frame_time_ = base::nullopt;
-    first_immersive_frame_time_delta_ = base::nullopt;
+    first_immersive_frame_time_ = absl::nullopt;
+    first_immersive_frame_time_delta_ = absl::nullopt;
 
     frame_transport_ = MakeGarbageCollected<XRFrameTransport>(
         session->GetExecutionContext(),
@@ -264,38 +261,43 @@ void XRFrameProvider::ScheduleNonImmersiveFrame(
 void XRFrameProvider::OnImmersiveFrameData(
     device::mojom::blink::XRFrameDataPtr data) {
   TRACE_EVENT0("gpu", __FUNCTION__);
-  DVLOG(2) << __FUNCTION__;
-  if (!data) {
-    return;
-  }
+  DVLOG(2) << __FUNCTION__ << ": data.is_null()=" << data.is_null();
 
   // We may have lost the immersive session since the last VSync request.
   if (!immersive_session_) {
+    DVLOG(1) << __func__ << ": immersive session lost";
+    return;
+  }
+
+  if (!data) {
+    DVLOG(3) << __func__ << ": frame data not received, re-requesting frame";
+    // We have not received any frame data from the device. We could try to run
+    // an XR animation frame [1], but that may cause issues with APIs that
+    // receive state updates via XRFrameData (e.g. anchors, planes) for
+    // maintaining their current state - they would behave as if all entities
+    // lost tracking and got removed on the device. Let's behave as if we have
+    // not received anything from the device and request a new frame.
+    //
+    // [1]  https://immersive-web.github.io/webxr/#xr-animation-frame)
+
+    pending_immersive_vsync_ = false;
+    RequestFrame(immersive_session_);
     return;
   }
 
   LocalDOMWindow* window = xr_->DomWindow();
-  if (!window)
+  if (!window) {
+    DVLOG(3) << __func__ << ": unable to get local DOM window!";
     return;
-
-  if (!first_immersive_frame_time_) {
-    DCHECK(!first_immersive_frame_time_delta_);
-
-    first_immersive_frame_time_ = base::TimeTicks::Now();
-    first_immersive_frame_time_delta_ = data->time_delta;
   }
 
-  base::TimeDelta current_frame_time_from_first_frame =
-      data->time_delta - *first_immersive_frame_time_delta_;
-  base::TimeTicks current_frame_time =
-      *first_immersive_frame_time_ + current_frame_time_from_first_frame;
-
-  double high_res_now_ms =
-      window->document()
-          ->Loader()
-          ->GetTiming()
-          .MonotonicTimeToZeroBasedDocumentTime(current_frame_time)
-          .InMillisecondsF();
+  // Note: The |high_res_now_ms| is computed based on frame time returned from
+  // immersive frame and eventually passed in to requestAnimationFrame callback
+  // as `DOMHighResTimeStamp time`. This means that in case of immersive frames,
+  // the `now` is the same as `frameTime` in XR animation frame algorithm [1].
+  //
+  // [1] https://immersive-web.github.io/webxr/#xr-animation-frame
+  double high_res_now_ms = UpdateImmersiveFrameTime(window, *data);
 
   immersive_frame_pose_ = std::move(data->pose);
   if (immersive_frame_pose_) {
@@ -482,9 +484,8 @@ void XRFrameProvider::ProcessScheduledFrame(
       DCHECK(buffer_mailbox_holder_);
     }
 #endif
-    if (frame_data && (frame_data->left_eye || frame_data->right_eye)) {
-      immersive_session_->UpdateEyeParameters(frame_data->left_eye,
-                                              frame_data->right_eye);
+    if (frame_data && !frame_data->views.IsEmpty()) {
+      immersive_session_->UpdateViews(frame_data->views);
     }
 
     if (frame_data) {
@@ -559,7 +560,7 @@ void XRFrameProvider::ProcessScheduledFrame(
               FROM_HERE,
               WTF::Bind(&XRFrameProvider::OnPreDispatchInlineFrame,
                         WrapWeakPersistent(this), WrapWeakPersistent(session),
-                        high_res_now_ms, base::nullopt, base::nullopt));
+                        high_res_now_ms, absl::nullopt, absl::nullopt));
     }
   }
 }
@@ -567,8 +568,8 @@ void XRFrameProvider::ProcessScheduledFrame(
 void XRFrameProvider::OnPreDispatchInlineFrame(
     XRSession* session,
     double timestamp,
-    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-    const base::Optional<gpu::MailboxHolder>& camera_image_mailbox_holder) {
+    const absl::optional<gpu::MailboxHolder>& output_mailbox_holder,
+    const absl::optional<gpu::MailboxHolder>& camera_image_mailbox_holder) {
   // Do nothing if the session was cleaned up or ended before we were schedueld.
   if (!session || session->ended())
     return;
@@ -585,6 +586,44 @@ void XRFrameProvider::OnPreDispatchInlineFrame(
   // should serve the frame.
   session->OnFrame(timestamp, output_mailbox_holder,
                    camera_image_mailbox_holder);
+}
+
+double XRFrameProvider::UpdateImmersiveFrameTime(
+    LocalDOMWindow* window,
+    const device::mojom::blink::XRFrameData& data) {
+  DVLOG(3) << __func__;
+
+  // `data.time_delta` is in unspecified base. Because of that, we capture the
+  // `time_delta` of the first frame we see (this gives us device_t_0), along
+  // with the time we saw it (renderer_t_0). That allows us to translate from
+  // device time to renderer time, so when we see frame N, we perform:
+  // renderer_t_N = renderer_t_0 + (device_t_N - device_t_0)
+
+  if (!first_immersive_frame_time_) {
+    DCHECK(!first_immersive_frame_time_delta_);
+
+    // This is the first time we got a frame data from an immersive session.
+    // Let's capture device_t_0 and renderer_t_0.
+
+    first_immersive_frame_time_ = base::TimeTicks::Now();
+    first_immersive_frame_time_delta_ = data.time_delta;
+  }
+
+  // (device_t_N - device_t_0) is:
+  base::TimeDelta current_frame_time_from_first_frame =
+      data.time_delta - *first_immersive_frame_time_delta_;
+  // renderer_t_N is then:
+  base::TimeTicks current_frame_time =
+      *first_immersive_frame_time_ + current_frame_time_from_first_frame;
+
+  double high_res_now_ms =
+      window->document()
+          ->Loader()
+          ->GetTiming()
+          .MonotonicTimeToZeroBasedDocumentTime(current_frame_time)
+          .InMillisecondsF();
+
+  return high_res_now_ms;
 }
 
 void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
@@ -620,7 +659,7 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
   if (frame_transport_->DrawingIntoSharedBuffer()) {
     // Image is written to shared buffer already. Just submit with a
     // placeholder.
-    scoped_refptr<Image> image_ref = nullptr;
+    scoped_refptr<Image> image_ref;
     DVLOG(3) << __FUNCTION__ << ": FrameSubmit for SharedBuffer mode";
     frame_transport_->FrameSubmit(immersive_presentation_provider_.get(),
                                   webgl_context->ContextGL(), webgl_context,
@@ -656,8 +695,10 @@ void XRFrameProvider::UpdateWebGLLayerViewports(XRWebGLLayer* layer) {
   DCHECK(layer->session() == immersive_session_);
   DCHECK(immersive_presentation_provider_.is_bound());
 
-  XRViewport* left = layer->GetViewportForEye(XRView::kEyeLeft);
-  XRViewport* right = layer->GetViewportForEye(XRView::kEyeRight);
+  XRViewport* left =
+      layer->GetViewportForEye(device::mojom::blink::XREye::kLeft);
+  XRViewport* right =
+      layer->GetViewportForEye(device::mojom::blink::XREye::kRight);
   float width = layer->framebufferWidth();
   float height = layer->framebufferHeight();
 

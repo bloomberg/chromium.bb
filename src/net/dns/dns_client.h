@@ -7,13 +7,12 @@
 
 #include <memory>
 
-#include "base/optional.h"
-#include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/base/rand_callback.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_hosts.h"
 #include "net/dns/public/dns_config_overrides.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -42,7 +41,9 @@ class NET_EXPORT DnsClient {
   // transactions. If false, insecure transactions should not be created. Will
   // always be false unless SetInsecureEnabled(true) has been called.
   virtual bool CanUseInsecureDnsTransactions() const = 0;
-  virtual void SetInsecureEnabled(bool enabled) = 0;
+  virtual bool CanQueryAdditionalTypesViaInsecureDns() const = 0;
+  virtual void SetInsecureEnabled(bool enabled,
+                                  bool additional_types_enabled) = 0;
 
   // When true, DoH should not be used in AUTOMATIC mode since no DoH servers
   // have a successful probe state.
@@ -58,7 +59,7 @@ class NET_EXPORT DnsClient {
   // config, unless it is invalid or has |unhandled_options|.
   //
   // Returns whether or not the effective config changed.
-  virtual bool SetSystemConfig(base::Optional<DnsConfig> system_config) = 0;
+  virtual bool SetSystemConfig(absl::optional<DnsConfig> system_config) = 0;
   virtual bool SetConfigOverrides(DnsConfigOverrides config_overrides) = 0;
 
   // If there is a current session, forces replacement with a new current
@@ -87,7 +88,7 @@ class NET_EXPORT DnsClient {
   virtual void IncrementInsecureFallbackFailures() = 0;
   virtual void ClearInsecureFallbackFailures() = 0;
 
-  virtual base::Optional<DnsConfig> GetSystemConfigForTesting() const = 0;
+  virtual absl::optional<DnsConfig> GetSystemConfigForTesting() const = 0;
   virtual DnsConfigOverrides GetConfigOverridesForTesting() const = 0;
 
   virtual void SetTransactionFactoryForTesting(

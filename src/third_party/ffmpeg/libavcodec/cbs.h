@@ -196,7 +196,7 @@ typedef struct CodedBitstreamContext {
      * Types not in this list will be available in bitstream form only.
      * If NULL, all supported types will be decomposed.
      */
-    CodedBitstreamUnitType *decompose_unit_types;
+    const CodedBitstreamUnitType *decompose_unit_types;
     /**
      * Length of the decompose_unit_types array.
      */
@@ -261,6 +261,17 @@ void ff_cbs_close(CodedBitstreamContext **ctx);
 int ff_cbs_read_extradata(CodedBitstreamContext *ctx,
                           CodedBitstreamFragment *frag,
                           const AVCodecParameters *par);
+
+/**
+ * Read the extradata bitstream found in a codec context into a
+ * fragment, then split into units and decompose.
+ *
+ * This acts identical to ff_cbs_read_extradata() for the case where
+ * you already have a codec context.
+ */
+int ff_cbs_read_extradata_from_codec(CodedBitstreamContext *ctx,
+                                     CodedBitstreamFragment *frag,
+                                     const AVCodecContext *avctx);
 
 /**
  * Read the data bitstream from a packet into a fragment, then

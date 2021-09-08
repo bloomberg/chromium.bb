@@ -8,9 +8,14 @@
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
+
+#if defined(OS_ANDROID)
+#include "ui/base/clipboard/clipboard_android.h"
+#endif
 
 namespace {
 // Schemes appropriate for suggestion by ClipboardRecentContent.
@@ -26,11 +31,29 @@ void OnGetRecentImageFromClipboard(
     ClipboardRecentContent::GetRecentImageCallback callback,
     const SkBitmap& sk_bitmap) {
   if (sk_bitmap.empty()) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
   std::move(callback).Run(gfx::Image::CreateFrom1xBitmap(sk_bitmap));
+}
+
+bool HasRecentURLFromClipboard() {
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
+      ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
+  return clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetUrlType(),
+                                      ui::ClipboardBuffer::kCopyPaste,
+                                      &data_dst);
+}
+
+bool HasRecentTextFromClipboard() {
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
+      ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
+  return clipboard->IsFormatAvailable(
+      ui::ClipboardFormatType::GetPlainTextType(),
+      ui::ClipboardBuffer::kCopyPaste, &data_dst);
 }
 
 }  // namespace
@@ -38,18 +61,22 @@ void OnGetRecentImageFromClipboard(
 ClipboardRecentContentGeneric::ClipboardRecentContentGeneric() = default;
 ClipboardRecentContentGeneric::~ClipboardRecentContentGeneric() = default;
 
-base::Optional<GURL>
+absl::optional<GURL>
 ClipboardRecentContentGeneric::GetRecentURLFromClipboard() {
   if (GetClipboardContentAge() > MaximumAgeOfClipboard())
-    return base::nullopt;
+    return absl::nullopt;
 
   // Get and clean up the clipboard before processing.
   std::string gurl_string;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
       ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
+#if defined(OS_ANDROID)
+  clipboard->ReadBookmark(&data_dst, nullptr, &gurl_string);
+#else
   clipboard->ReadAsciiText(ui::ClipboardBuffer::kCopyPaste, &data_dst,
                            &gurl_string);
+#endif  // #if defined(OS_ANDROID)
   base::TrimWhitespaceASCII(gurl_string, base::TrimPositions::TRIM_ALL,
                             &gurl_string);
 
@@ -60,35 +87,35 @@ ClipboardRecentContentGeneric::GetRecentURLFromClipboard() {
   // "http://example.com extra words" into "http://example.com%20extra%20words",
   // which is not likely to be a useful or intended destination.)
   if (gurl_string.find_first_of(base::kWhitespaceASCII) != std::string::npos)
-    return base::nullopt;
+    return absl::nullopt;
   if (!gurl_string.empty()) {
     url = GURL(gurl_string);
   } else {
     // Fall back to unicode / UTF16, as some URLs may use international domain
     // names, not punycode.
-    base::string16 gurl_string16;
+    std::u16string gurl_string16;
     clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &data_dst,
                         &gurl_string16);
     base::TrimWhitespace(gurl_string16, base::TrimPositions::TRIM_ALL,
                          &gurl_string16);
     if (gurl_string16.find_first_of(base::kWhitespaceUTF16) !=
         std::string::npos)
-      return base::nullopt;
+      return absl::nullopt;
     if (!gurl_string16.empty())
       url = GURL(gurl_string16);
   }
   if (!url.is_valid() || !IsAppropriateSuggestion(url)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return url;
 }
 
-base::Optional<base::string16>
+absl::optional<std::u16string>
 ClipboardRecentContentGeneric::GetRecentTextFromClipboard() {
   if (GetClipboardContentAge() > MaximumAgeOfClipboard())
-    return base::nullopt;
+    return absl::nullopt;
 
-  base::string16 text_from_clipboard;
+  std::u16string text_from_clipboard;
   ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
       ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
   ui::Clipboard::GetForCurrentThread()->ReadText(
@@ -96,7 +123,7 @@ ClipboardRecentContentGeneric::GetRecentTextFromClipboard() {
   base::TrimWhitespace(text_from_clipboard, base::TrimPositions::TRIM_ALL,
                        &text_from_clipboard);
   if (text_from_clipboard.empty()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return text_from_clipboard;
@@ -129,15 +156,20 @@ void ClipboardRecentContentGeneric::HasRecentContentFromClipboard(
     std::set<ClipboardContentType> types,
     HasDataCallback callback) {
   std::set<ClipboardContentType> matching_types;
+  if (GetClipboardContentAge() > MaximumAgeOfClipboard()) {
+    std::move(callback).Run(matching_types);
+    return;
+  }
+
   for (ClipboardContentType type : types) {
     switch (type) {
       case ClipboardContentType::URL:
-        if (GetRecentURLFromClipboard()) {
+        if (HasRecentURLFromClipboard()) {
           matching_types.insert(ClipboardContentType::URL);
         }
         break;
       case ClipboardContentType::Text:
-        if (GetRecentTextFromClipboard()) {
+        if (HasRecentTextFromClipboard()) {
           matching_types.insert(ClipboardContentType::Text);
         }
         break;

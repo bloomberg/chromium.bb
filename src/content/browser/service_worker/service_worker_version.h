@@ -22,7 +22,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
@@ -50,6 +49,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
@@ -119,7 +119,7 @@ class ServiceWorkerMainResourceLoaderTest;
 // one of them is activated. This class connects the actual script with a
 // running worker.
 //
-// Unless otherwise noted, all methods of this class run on the IO thread.
+// Unless otherwise noted, all methods of this class run on the UI thread.
 class CONTENT_EXPORT ServiceWorkerVersion
     : public blink::mojom::ServiceWorkerHost,
       public base::RefCounted<ServiceWorkerVersion>,
@@ -171,7 +171,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
     virtual void OnVersionStateChanged(ServiceWorkerVersion* version) {}
     virtual void OnDevToolsRoutingIdChanged(ServiceWorkerVersion* version) {}
     virtual void OnErrorReported(ServiceWorkerVersion* version,
-                                 const base::string16& error_message,
+                                 const std::u16string& error_message,
                                  int line_number,
                                  int column_number,
                                  const GURL& source_url) {}
@@ -179,7 +179,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
         ServiceWorkerVersion* version,
         blink::mojom::ConsoleMessageSource source,
         blink::mojom::ConsoleMessageLevel message_level,
-        const base::string16& message,
+        const std::u16string& message,
         int line_number,
         const GURL& source_url) {}
     virtual void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
@@ -394,9 +394,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void RestoreControlleeFromBackForwardCacheMap(const std::string& client_uuid);
   // Called when a back-forward cached controllee is evicted or destroyed.
   void RemoveControlleeFromBackForwardCacheMap(const std::string& client_uuid);
-  // Called when a controllee is destroyed. Remove controllee from whichever
-  // map it belongs to, or do nothing when it is already removed.
-  void OnControlleeDestroyed(const std::string& client_uuid);
+  // Called when this version should no longer be the controller of this client.
+  // Called when the controllee is destroyed or it changes controller. Removes
+  // controllee from whichever map it belongs to, or do nothing when it is
+  // already removed. This function is different from RemoveController(), which
+  // can only be called if the controllee is not in the back-forward cache map.
+  void Uncontrol(const std::string& client_uuid);
 
   // Returns true if this version has a controllee.
   // Note regarding BackForwardCache:
@@ -465,6 +468,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
     initialize_global_scope_after_main_script_loaded_ = true;
   }
 
+  void set_main_script_load_params(
+      blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params) {
+    main_script_load_params_ = std::move(main_script_load_params);
+  }
+
   void set_outside_fetch_client_settings_object(
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object) {
@@ -478,6 +486,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // evaluation doesn't happen in the renderer until the browser calls
   // InitializeGlobalScope() to tell it's ready to proceed.
   void OnMainScriptLoaded();
+
+  // Returns the reason the embedded worker failed to start, using internal
+  // information that may not be available to the caller. Returns
+  // |default_code| if it can't deduce a reason.
+  blink::ServiceWorkerStatusCode DeduceStartWorkerFailureReason(
+      blink::ServiceWorkerStatusCode default_code);
 
   // Returns nullptr if the main script is not loaded yet and:
   //  1) The worker is a new one.
@@ -530,7 +544,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void set_cross_origin_embedder_policy(
       network::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
-  const base::Optional<network::CrossOriginEmbedderPolicy>&
+  const absl::optional<network::CrossOriginEmbedderPolicy>&
   cross_origin_embedder_policy() const {
     return cross_origin_embedder_policy_;
   }
@@ -560,7 +574,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void IncrementPendingUpdateHintCount();
   void DecrementPendingUpdateHintCount();
 
-  // ServiceWorkerImportedScriptUpdateCheck:
   // Called on versions created for an update check. Called if the check
   // determined an update exists before starting the worker for an install
   // event.
@@ -745,13 +758,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnStopped(EmbeddedWorkerStatus old_status) override;
   void OnDetached(EmbeddedWorkerStatus old_status) override;
   void OnRegisteredToDevToolsManager() override;
-  void OnReportException(const base::string16& error_message,
+  void OnReportException(const std::u16string& error_message,
                          int line_number,
                          int column_number,
                          const GURL& source_url) override;
   void OnReportConsoleMessage(blink::mojom::ConsoleMessageSource source,
                               blink::mojom::ConsoleMessageLevel message_level,
-                              const base::string16& message,
+                              const std::u16string& message,
                               int line_number,
                               const GURL& source_url) override;
 
@@ -843,12 +856,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool MaybeTimeoutRequest(const InflightRequestTimeoutInfo& info);
   void SetAllRequestExpirations(const base::TimeTicks& expiration);
 
-  // Returns the reason the embedded worker failed to start, using information
-  // inaccessible to EmbeddedWorkerInstance. Returns |default_code| if it can't
-  // deduce a reason.
-  blink::ServiceWorkerStatusCode DeduceStartWorkerFailureReason(
-      blink::ServiceWorkerStatusCode default_code);
-
   // Sets |stale_time_| if this worker is stale, causing an update to eventually
   // occur once the worker stops or is running too long.
   void MarkIfStale();
@@ -929,9 +936,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // by the renderer process.
   //
   // PlzServiceWorker(https://crbug.com/996511):
-  // Once landed, there is no more need to use an base::Optional here. The COEP
+  // Once landed, there is no more need to use an absl::optional here. The COEP
   // header is going to be known from the beginning and can be mark as 'const'.
-  base::Optional<network::CrossOriginEmbedderPolicy>
+  absl::optional<network::CrossOriginEmbedderPolicy>
       cross_origin_embedder_policy_;
 
   Status status_ = NEW;
@@ -939,6 +946,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // True if endpoint() is ready to dispatch events, which means
   // InitializeGlobalScope() is already called.
   bool is_endpoint_ready_ = false;
+  // True while running `start_callbacks_`. When true, StartWorker() will be
+  // delayed until all `start_callbacks_` are executed. This prevents callbacks
+  // from calling nested StartWorker(). A nested StartWorker() call makes `this`
+  // enter an invalid state (i.e., `start_callbacks_` is empty even when
+  // `running_status()` is STARTING) so it should not happen.
+  // TODO(crbug.com/1161800): Figure out a way to disallow a callback to
+  // re-enter StartWorker().
+  bool is_running_start_callbacks_ = false;
   std::vector<StatusCallback> start_callbacks_;
   std::vector<base::OnceClosure> stop_callbacks_;
   std::vector<base::OnceClosure> status_change_callbacks_;
@@ -1081,12 +1096,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   std::unique_ptr<blink::TrialTokenValidator> const validator_;
 
-  // Stores the result of byte-to-byte update check for each script. Used only
-  // when ServiceWorkerImportedScriptUpdateCheck is enabled.
+  // Stores the result of byte-to-byte update check for each script.
   std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
       compared_script_info_map_;
 
-  // ServiceWorkerImportedScriptUpdateCheck:
   // If this version was created for an update check that found an update,
   // |updated_script_url_| is the URL of the script for which a byte-for-byte
   // change was found. Otherwise, it's the empty GURL.
@@ -1099,6 +1112,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   blink::mojom::FetchClientSettingsObjectPtr
       outside_fetch_client_settings_object_;
+
+  // Parameter used for starting a new worker with the worker script loaded in
+  // the browser process beforehand. This is valid only when it's a new worker
+  // that is going to be registered from now on.
+  blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params_;
 
   // Callback to stop service worker small seconds after all controllees are
   // gone. This callback can be canceled when the service worker starts to

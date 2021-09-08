@@ -35,6 +35,7 @@ TOP = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 def _ConvertPlist(source_plist, output_plist, fmt):
   """Convert |source_plist| to |fmt| and save as |output_plist|."""
+  assert sys.version_info.major == 2, "Use plistlib directly in Python 3"
   return subprocess.call(
       ['plutil', '-convert', fmt, '-o', output_plist, source_plist])
 
@@ -214,6 +215,20 @@ def _RemoveKeystoneKeys(plist):
   _RemoveKeys(plist, *tag_keys)
 
 
+def _AddGTMKeys(plist, platform):
+  """Adds the GTM metadata keys. This must be called AFTER _AddVersionKeys()."""
+  plist['GTMUserAgentID'] = plist['CFBundleName']
+  if platform == 'ios':
+    plist['GTMUserAgentVersion'] = plist['CFBundleVersion']
+  else:
+    plist['GTMUserAgentVersion'] = plist['CFBundleShortVersionString']
+
+
+def _RemoveGTMKeys(plist):
+  """Removes any set GTM metadata keys."""
+  _RemoveKeys(plist, 'GTMUserAgentID', 'GTMUserAgentVersion')
+
+
 def Main(argv):
   parser = optparse.OptionParser('%prog [options]')
   parser.add_option('--plist',
@@ -268,6 +283,12 @@ def Main(argv):
                     choices=('ios', 'mac'),
                     default='mac',
                     help='The target platform of the bundle')
+  parser.add_option('--add-gtm-metadata',
+                    dest='add_gtm_info',
+                    action='store',
+                    type='int',
+                    default=False,
+                    help='Add GTM metadata [1 or 0]')
   # TODO(crbug.com/1140474): Remove once iOS 14.2 reaches mass adoption.
   parser.add_option('--lock-to-version',
                     help='Set CFBundleVersion to given value + @MAJOR@@PATH@')
@@ -278,7 +299,7 @@ def Main(argv):
       'like key=value (can be passed multiple time to configure '
       'more than one override)')
   parser.add_option('--format',
-                    choices=('binary1', 'xml1', 'json'),
+                    choices=('binary1', 'xml1'),
                     default='xml1',
                     help='Format to use when writing property list '
                     '(default: %(default)s)')
@@ -301,10 +322,14 @@ def Main(argv):
   # Read the plist into its parsed format. Convert the file to 'xml1' as
   # plistlib only supports that format in Python 2.7.
   with tempfile.NamedTemporaryFile() as temp_info_plist:
-    retcode = _ConvertPlist(options.plist_path, temp_info_plist.name, 'xml1')
-    if retcode != 0:
-      return retcode
-    plist = plistlib.readPlist(temp_info_plist.name)
+    if sys.version_info.major == 2:
+      retcode = _ConvertPlist(options.plist_path, temp_info_plist.name, 'xml1')
+      if retcode != 0:
+        return retcode
+      plist = plistlib.readPlist(temp_info_plist.name)
+    else:
+      with open(options.plist_path, 'rb') as f:
+        plist = plistlib.load(f)
 
   # Convert overrides.
   overrides = {}
@@ -392,18 +417,31 @@ def Main(argv):
   if not _DoSCMKeys(plist, options.add_scm_info):
     return 3
 
+  # Add GTM metadata keys.
+  if options.add_gtm_info:
+    _AddGTMKeys(plist, options.platform)
+  else:
+    _RemoveGTMKeys(plist)
+
   output_path = options.plist_path
   if options.plist_output is not None:
     output_path = options.plist_output
 
   # Now that all keys have been mutated, rewrite the file.
-  with tempfile.NamedTemporaryFile() as temp_info_plist:
-    plistlib.writePlist(plist, temp_info_plist.name)
-
-    # Convert Info.plist to the format requested by the --format flag. Any
-    # format would work on Mac but iOS requires specific format.
-    return _ConvertPlist(temp_info_plist.name, output_path, options.format)
+  # Convert Info.plist to the format requested by the --format flag. Any
+  # format would work on Mac but iOS requires specific format.
+  if sys.version_info.major == 2:
+    with tempfile.NamedTemporaryFile() as temp_info_plist:
+      plistlib.writePlist(plist, temp_info_plist.name)
+      return _ConvertPlist(temp_info_plist.name, output_path, options.format)
+  with open(output_path, 'wb') as f:
+    plist_format = {'binary1': plistlib.FMT_BINARY, 'xml1': plistlib.FMT_XML}
+    plistlib.dump(plist, f, fmt=plist_format[options.format])
 
 
 if __name__ == '__main__':
+  # TODO(https://crbug.com/941669): Temporary workaround until all scripts use
+  # python3 by default.
+  if sys.version_info[0] < 3:
+    os.execvp('python3', ['python3'] + sys.argv)
   sys.exit(Main(sys.argv[1:]))

@@ -12,12 +12,14 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/test/app_list_test_view_delegate.h"
-#include "ash/app_list/test/test_search_result.h"
+#include "ash/app_list/app_list_test_view_delegate.h"
+#include "ash/app_list/model/search/test_search_result.h"
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/app_list/views/search_result_actions_view_delegate.h"
 #include "ash/app_list/views/search_result_container_view.h"
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "ui/events/event.h"
 
 namespace ash {
@@ -98,7 +100,7 @@ struct TestContainerParams {
 
   // If set, the container will contain TestResultViewWithActions that
   // have |actions_per_result| actions each.
-  base::Optional<int> actions_per_result;
+  absl::optional<int> actions_per_result;
 };
 
 class TestContainer : public TestContainerDelegateHarness,
@@ -120,7 +122,7 @@ class TestContainer : public TestContainerDelegateHarness,
         result_view->GetActionsView()->SetActions(
             std::vector<SearchResult::Action>(
                 params.actions_per_result.value(),
-                SearchResult::Action(gfx::ImageSkia(), base::string16(),
+                SearchResult::Action(gfx::ImageSkia(), std::u16string(),
                                      false)));
         search_result_views_.emplace_back(std::move(result_view));
       } else {
@@ -1284,7 +1286,7 @@ TEST_F(ResultSelectionTest, ActionRemovedWhileSelected) {
   // Remove two trailing actions - the result action is de-selected.
   selected_view->AsResultViewWithActions()->GetActionsView()->SetActions(
       std::vector<SearchResult::Action>(
-          1, SearchResult::Action(gfx::ImageSkia(), base::string16(), false)));
+          1, SearchResult::Action(gfx::ImageSkia(), std::u16string(), false)));
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
 

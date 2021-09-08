@@ -24,10 +24,11 @@ wm::WindowMoveResult WindowMoveClientPlatform::RunMoveLoop(
       move_source == wm::WindowMoveSource::WINDOW_MOVE_SOURCE_MOUSE
           ? Widget::MoveLoopSource::kMouse
           : Widget::MoveLoopSource::kTouch,
-      Widget::MoveLoopEscapeBehavior::MOVE_LOOP_ESCAPE_BEHAVIOR_HIDE);
+      Widget::MoveLoopEscapeBehavior::kHide);
 
-  return move_loop_result == Widget::MOVE_LOOP_SUCCESSFUL ? wm::MOVE_SUCCESSFUL
-                                                          : wm::MOVE_CANCELED;
+  return move_loop_result == Widget::MoveLoopResult::kSuccessful
+             ? wm::MOVE_SUCCESSFUL
+             : wm::MOVE_CANCELED;
 }
 
 void WindowMoveClientPlatform::EndMoveLoop() {

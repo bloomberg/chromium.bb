@@ -30,11 +30,6 @@ class ImageElementBase;
 class ImageDecoder;
 class OffscreenCanvas;
 
-enum ImageBitmapPixelFormat {
-  kImageBitmapPixelFormat_Default,
-  kImageBitmapPixelFormat_Uint8,
-};
-
 class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
                                       public CanvasImageSource,
                                       public ImageBitmapSource {
@@ -44,53 +39,51 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   // Expects the ImageElementBase to return/have an SVGImage.
   static ScriptPromise CreateAsync(
       ImageElementBase*,
-      base::Optional<IntRect>,
+      absl::optional<IntRect>,
       ScriptState*,
       const ImageBitmapOptions* = ImageBitmapOptions::Create());
   static sk_sp<SkImage> GetSkImageFromDecoder(std::unique_ptr<ImageDecoder>);
 
   ImageBitmap(ImageElementBase*,
-              base::Optional<IntRect>,
+              absl::optional<IntRect>,
               const ImageBitmapOptions* = ImageBitmapOptions::Create());
   ImageBitmap(HTMLVideoElement*,
-              base::Optional<IntRect>,
+              absl::optional<IntRect>,
               const ImageBitmapOptions* = ImageBitmapOptions::Create());
   ImageBitmap(HTMLCanvasElement*,
-              base::Optional<IntRect>,
+              absl::optional<IntRect>,
               const ImageBitmapOptions* = ImageBitmapOptions::Create());
   ImageBitmap(OffscreenCanvas*,
-              base::Optional<IntRect>,
+              absl::optional<IntRect>,
               const ImageBitmapOptions* = ImageBitmapOptions::Create());
   ImageBitmap(ImageData*,
-              base::Optional<IntRect>,
+              absl::optional<IntRect>,
               const ImageBitmapOptions* = ImageBitmapOptions::Create());
   ImageBitmap(ImageBitmap*,
-              base::Optional<IntRect>,
+              absl::optional<IntRect>,
               const ImageBitmapOptions* = ImageBitmapOptions::Create());
   ImageBitmap(scoped_refptr<StaticBitmapImage>);
   ImageBitmap(scoped_refptr<StaticBitmapImage>,
-              base::Optional<IntRect>,
+              absl::optional<IntRect>,
               const ImageBitmapOptions* = ImageBitmapOptions::Create());
   // This constructor may called by structured-cloning an ImageBitmap.
-  // isImageBitmapPremultiplied indicates whether the original ImageBitmap is
-  // premultiplied or not.
   // isImageBitmapOriginClean indicates whether the original ImageBitmap is
   // origin clean or not.
-  ImageBitmap(const void* pixel_data,
-              uint32_t width,
-              uint32_t height,
-              bool is_image_bitmap_premultiplied,
-              bool is_image_bitmap_origin_clean,
-              const CanvasColorParams&);
+  ImageBitmap(const SkPixmap& pixmap, bool is_image_bitmap_origin_clean);
 
   // Type and helper function required by CallbackPromiseAdapter:
   using WebType = sk_sp<SkImage>;
   static ImageBitmap* Take(ScriptPromiseResolver*, sk_sp<SkImage>);
 
   scoped_refptr<StaticBitmapImage> BitmapImage() const { return image_; }
-  Vector<uint8_t> CopyBitmapData();
-  Vector<uint8_t> CopyBitmapData(AlphaDisposition,
-                                 DataU8ColorType = kRGBAColorType);
+
+  // Retrieve the SkImageInfo that best represents BitmapImage().
+  SkImageInfo GetBitmapSkImageInfo() const;
+
+  // When apply_orientation is true this method will orient the data according
+  // to the source's EXIF information.
+  Vector<uint8_t> CopyBitmapData(const SkImageInfo& info,
+                                 bool apply_orientation);
   unsigned width() const;
   unsigned height() const;
   IntSize Size() const;
@@ -102,8 +95,6 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   void close();
 
   ~ImageBitmap() override;
-
-  CanvasColorParams GetCanvasColorParams();
 
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
@@ -117,7 +108,7 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   // ImageBitmapSource implementation
   IntSize BitmapSourceSize() const override { return Size(); }
   ScriptPromise CreateImageBitmap(ScriptState*,
-                                  base::Optional<IntRect>,
+                                  absl::optional<IntRect>,
                                   const ImageBitmapOptions*,
                                   ExceptionState&) override;
 
@@ -130,9 +121,7 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
     unsigned resize_width = 0;
     unsigned resize_height = 0;
     IntRect crop_rect;
-    ImageBitmapPixelFormat pixel_format = kImageBitmapPixelFormat_Default;
     SkFilterQuality resize_quality = kLow_SkFilterQuality;
-    CanvasColorParams color_params;
   };
 
  private:

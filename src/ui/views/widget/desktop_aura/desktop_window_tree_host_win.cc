@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/win_util.h"
@@ -22,11 +23,14 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/class_property.h"
-#include "ui/base/cursor/cursor_loader_win.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/platform_cursor.h"
+#include "ui/base/cursor/win/win_cursor.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/win/event_creation_utils.h"
 #include "ui/base/win/shell.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win.h"
@@ -169,7 +173,7 @@ void DesktopWindowTreeHostWin::OnNativeWidgetCreated(
   window()->SetProperty(kDesktopWindowTreeHostKey, this);
 
   should_animate_window_close_ =
-      content_window()->type() != aura::client::WINDOW_TYPE_NORMAL &&
+      content_window()->GetType() != aura::client::WINDOW_TYPE_NORMAL &&
       !wm::WindowAnimationsDisabled(content_window());
 }
 
@@ -189,22 +193,22 @@ std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
 }
 
 std::unique_ptr<aura::client::DragDropClient>
-DesktopWindowTreeHostWin::CreateDragDropClient(
-    DesktopNativeCursorManager* cursor_manager) {
+DesktopWindowTreeHostWin::CreateDragDropClient() {
   drag_drop_client_ = new DesktopDragDropClientWin(window(), GetHWND(), this);
   return base::WrapUnique(drag_drop_client_);
 }
 
 void DesktopWindowTreeHostWin::Close() {
+  // Calling Hide() can detach the content window's layer, so store it
+  // beforehand so we can access it below.
+  auto* window_layer = content_window()->layer();
+
   content_window()->Hide();
   // TODO(beng): Move this entire branch to DNWA so it can be shared with X11.
   if (should_animate_window_close_) {
     pending_close_ = true;
-    const bool is_animating =
-        content_window()->layer()->GetAnimator()->IsAnimatingProperty(
-            ui::LayerAnimationElement::VISIBILITY);
     // Animation may not start for a number of reasons.
-    if (!is_animating)
+    if (!window_layer->GetAnimator()->is_animating())
       message_handler_->Close();
     // else case, OnWindowHidingAnimationCompleted does the actual Close.
   } else {
@@ -408,7 +412,7 @@ bool DesktopWindowTreeHostWin::IsVisibleOnAllWorkspaces() const {
   return false;
 }
 
-bool DesktopWindowTreeHostWin::SetWindowTitle(const base::string16& title) {
+bool DesktopWindowTreeHostWin::SetWindowTitle(const std::u16string& title) {
   return message_handler_->SetTitle(title);
 }
 
@@ -421,10 +425,10 @@ Widget::MoveLoopResult DesktopWindowTreeHostWin::RunMoveLoop(
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
   const bool hide_on_escape =
-      escape_behavior == Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_HIDE;
+      escape_behavior == Widget::MoveLoopEscapeBehavior::kHide;
   return message_handler_->RunMoveLoop(drag_offset, hide_on_escape)
-             ? Widget::MOVE_LOOP_SUCCESSFUL
-             : Widget::MOVE_LOOP_CANCELED;
+             ? Widget::MoveLoopResult::kSuccessful
+             : Widget::MoveLoopResult::kCanceled;
 }
 
 void DesktopWindowTreeHostWin::EndMoveLoop() {
@@ -463,7 +467,10 @@ void DesktopWindowTreeHostWin::FrameTypeChanged() {
 }
 
 void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
+  auto weak_ptr = GetWeakPtr();
   message_handler_->SetFullscreen(fullscreen);
+  if (!weak_ptr)
+    return;
   // TODO(sky): workaround for ScopedFullscreenVisibility showing window
   // directly. Instead of this should listen for visibility changes and then
   // update window.
@@ -603,7 +610,7 @@ void DesktopWindowTreeHostWin::ReleaseCapture() {
 }
 
 bool DesktopWindowTreeHostWin::CaptureSystemKeyEventsImpl(
-    base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
+    absl::optional<base::flat_set<ui::DomCode>> dom_codes) {
   // Only one KeyboardHook should be active at a time, otherwise there will be
   // problems with event routing (i.e. which Hook takes precedence) and
   // destruction ordering.
@@ -632,10 +639,9 @@ DesktopWindowTreeHostWin::GetKeyboardLayoutMap() {
 void DesktopWindowTreeHostWin::SetCursorNative(gfx::NativeCursor cursor) {
   TRACE_EVENT1("ui,input", "DesktopWindowTreeHostWin::SetCursorNative",
                "cursor", cursor.type());
-  ui::CursorLoaderWin cursor_loader;
-  cursor_loader.SetPlatformCursor(&cursor);
 
-  message_handler_->SetCursor(cursor.platform());
+  message_handler_->SetCursor(
+      ui::WinCursor::FromPlatformCursor(cursor.platform()));
 }
 
 void DesktopWindowTreeHostWin::OnCursorVisibilityChangedNative(bool show) {
@@ -747,7 +753,17 @@ int DesktopWindowTreeHostWin::GetNonClientComponent(
 void DesktopWindowTreeHostWin::GetWindowMask(const gfx::Size& size,
                                              SkPath* path) {
   if (GetWidget()->non_client_view()) {
-    GetWidget()->non_client_view()->GetWindowMask(size, path);
+    GetWidget()->non_client_view()->GetWindowMask(
+        display::win::ScreenWin::ScreenToDIPSize(GetHWND(), size), path);
+    // Convert path in DIPs to pixels.
+    if (!path->isEmpty()) {
+      const float scale =
+          display::win::ScreenWin::GetScaleFactorForHWND(GetHWND());
+      SkScalar sk_scale = SkFloatToScalar(scale);
+      SkMatrix matrix;
+      matrix.setScale(sk_scale, sk_scale);
+      path->transform(matrix);
+    }
   } else if (!window_enlargement_.IsZero()) {
     gfx::Rect bounds(WidgetSizeIsClientSize()
                          ? message_handler_->GetClientAreaBoundsInScreen()
@@ -868,7 +884,6 @@ void DesktopWindowTreeHostWin::HandleEndWMSizeMove() {
 
 void DesktopWindowTreeHostWin::HandleMove() {
   CheckForMonitorChange();
-  native_widget_delegate_->OnNativeWidgetMove();
   OnHostMovedInPixels(GetBoundsInPixels().origin());
 }
 

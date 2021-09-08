@@ -64,6 +64,7 @@ class AppServiceFileTasksTest : public testing::Test {
     auto app = apps::mojom::App::New();
     app->app_id = app_id;
     app->app_type = apps::mojom::AppType::kArc;
+    app->readiness = apps::mojom::Readiness::kReady;
     auto intent_filter =
         is_send_multiple
             ? apps_util::CreateIntentFilterForSendMultiple(mime_type,
@@ -71,7 +72,9 @@ class AppServiceFileTasksTest : public testing::Test {
             : apps_util::CreateIntentFilterForSend(mime_type, activity_label);
     app->intent_filters.push_back(std::move(intent_filter));
     apps.push_back(std::move(app));
-    app_service_proxy_->AppRegistryCache().OnApps(std::move(apps));
+    app_service_proxy_->AppRegistryCache().OnApps(
+        std::move(apps), apps::mojom::AppType::kArc,
+        false /* should_notify_initialized */);
     app_service_test_.WaitForAppService();
   }
 
@@ -87,7 +90,7 @@ class AppServiceFileTasksTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
-  apps::AppServiceProxy* app_service_proxy_ = nullptr;
+  apps::AppServiceProxyChromeOs* app_service_proxy_ = nullptr;
   apps::AppServiceTest app_service_test_;
 };
 

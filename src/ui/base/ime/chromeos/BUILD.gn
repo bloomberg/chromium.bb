@@ -2,10 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-assert(is_chromeos)
+import("//build/config/chromeos/ui_mode.gni")
+
+assert(is_chromeos_ash)
 
 source_set("ime_types") {
   sources = [ "ime_keyset.h" ]
+}
+
+source_set("typing_session_manager") {
+  sources = [
+    "typing_session_manager.cc",
+    "typing_session_manager.h",
+  ]
+
+  public_deps = [
+    "//base:base",
+    "//third_party/abseil-cpp:absl",
+  ]
 }
 
 component("chromeos") {
@@ -40,18 +54,10 @@ component("chromeos") {
     "input_method_descriptor.h",
     "input_method_manager.cc",
     "input_method_manager.h",
+    "input_method_ukm.cc",
+    "input_method_ukm.h",
     "input_method_util.cc",
     "input_method_util.h",
-    "mock_component_extension_ime_manager.cc",
-    "mock_component_extension_ime_manager.h",
-    "mock_component_extension_ime_manager_delegate.cc",
-    "mock_component_extension_ime_manager_delegate.h",
-    "mock_ime_candidate_window_handler.cc",
-    "mock_ime_candidate_window_handler.h",
-    "mock_ime_engine_handler.cc",
-    "mock_ime_engine_handler.h",
-    "mock_ime_input_context_handler.cc",
-    "mock_ime_input_context_handler.h",
   ]
 
   defines = [ "IS_UI_BASE_IME_CHROMEOS_IMPL" ]
@@ -63,12 +69,13 @@ component("chromeos") {
 
   deps = [
     ":ime_types",
+    ":typing_session_manager",
     "//build:branding_buildflags",
-    "//chromeos/constants",
-    "//chromeos/ime:gencode",
     "//chromeos/services/ime/public/mojom",
     "//chromeos/system",
+    "//services/metrics/public/cpp:ukm_builders",
     "//third_party/icu",
+    "//ui/base",
     "//ui/base",
     "//ui/chromeos/strings",
     "//ui/ozone:ozone_base",

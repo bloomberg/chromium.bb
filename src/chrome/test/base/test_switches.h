@@ -14,7 +14,13 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kAlsoEmitSuccessLogs[];
 
+extern const char kDevtoolsCodeCoverage[];
+
 extern const char kPerfTestPrintUmaMeans[];
+
+#if defined(OS_WIN)
+extern const char kEnableHighDpiSupport[];
+#endif
 
 }  // namespace switches
 

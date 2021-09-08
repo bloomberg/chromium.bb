@@ -15,15 +15,15 @@
 // ----------------
 
 // manual-test-parse-number-f64.c tests Wuffs' parse_number_f64 function. The
-// https://github.com/nigeltao/parse-number-f64-test-data repository contains
+// https://github.com/nigeltao/parse-number-fxx-test-data repository contains
 // the data files, containing one test case per line, like:
 //
-// 3FF0000000000000 1
-// 3FF4000000000000 1.25
-// 3FF6666666666666 1.4
-// 405EDD2F1A9FBE77 123.456
-// 4088A80000000000 789
-// 7FF0000000000000 123.456e789
+// 3C00 3F800000 3FF0000000000000 1
+// 3D00 3FA00000 3FF4000000000000 1.25
+// 3D9A 3FB33333 3FF6666666666666 1.4
+// 57B7 42F6E979 405EDD2F1A9FBE77 123.456
+// 622A 44454000 4088A80000000000 789
+// 7C00 7F800000 7FF0000000000000 123.456e789
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -38,8 +38,8 @@
 #define WUFFS_IMPLEMENTATION
 
 // Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
-// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
-// the entire Wuffs standard library, implementing a variety of codecs and file
+// release/c/etc.c choose which parts of Wuffs to build. That file contains the
+// entire Wuffs standard library, implementing a variety of codecs and file
 // formats. Without this macro definition, an optimizing compiler or linker may
 // very well discard Wuffs code for unused codecs, but listing the Wuffs
 // modules we use makes that process explicit. Preprocessing means that such
@@ -52,12 +52,19 @@
 // program to generate a stand-alone C++ file.
 #include "../release/c/wuffs-unsupported-snapshot.c"
 
-// Uncomment this to use the github.com/lemire/fast_double_parser library. This
-// header-only library is C++, not C.
+// Uncomment one or all of these to use the
+//  - github.com/lemire/fast_double_parser
+//  - github.com/lemire/fast_float
+// libraries. These header-only libraries are C++, not C.
+//
 // #define USE_LEMIRE_FAST_DOUBLE_PARSER
+// #define USE_LEMIRE_FAST_FLOAT
 
 #ifdef USE_LEMIRE_FAST_DOUBLE_PARSER
 #include "/the/path/to/fast_double_parser/include/fast_double_parser.h"
+#endif
+#ifdef USE_LEMIRE_FAST_FLOAT
+#include "/the/path/to/fast_float/include/fast_float/fast_float.h"
 #endif
 
 const uint8_t hex[256] = {
@@ -74,7 +81,7 @@ const uint8_t hex[256] = {
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // 0x48-0x4F
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // 0x50-0x57
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // 0x58-0x5F
-    0x0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x0,  // 0x60-0x67 A-F
+    0x0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x0,  // 0x60-0x67 a-f
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // 0x68-0x6F
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // 0x70-0x77
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // 0x78-0x7F
@@ -140,13 +147,15 @@ fail(const char* impl, const char* z, uint64_t have, uint64_t want) {
   fprintf(stderr, "main: %s mismatch at %s:%" PRIu64 "\n", impl, g_filename,
           g_line);
   fprintf(stderr, "src:  %s\n", z);
-  fprintf(stderr, "have: %016" PRIX64 "\n", have);
-  fprintf(stderr, "want: %016" PRIX64 "\n", want);
+  fprintf(stderr, "have: 0x%016" PRIX64 " %f\n", have,
+          wuffs_base__ieee_754_bit_representation__from_u64_to_f64(have));
+  fprintf(stderr, "want: 0x%016" PRIX64 " %f\n", want,
+          wuffs_base__ieee_754_bit_representation__from_u64_to_f64(want));
 }
 
 bool  //
 process_line(wuffs_base__slice_u8 s) {
-  if (s.len < 18) {
+  if (s.len < 32) {
     fprintf(stderr, "main: short input at %s:%" PRIu64 "\n", g_filename,
             g_line);
     return false;
@@ -155,11 +164,11 @@ process_line(wuffs_base__slice_u8 s) {
     return false;
   }
   uint64_t want = 0;
-  for (int i = 0; i < 16; i++) {
+  for (int i = 14; i < 30; i++) {
     want = (want << 4) | hex[s.ptr[i]];
   }
-  s.ptr += 17;
-  s.len -= 17;
+  s.ptr += 31;
+  s.len -= 31;
 
   // Convert ".123" to "0.123". Not all parsers like a leading dot.
   if (s.ptr[0] == '.') {
@@ -193,13 +202,34 @@ process_line(wuffs_base__slice_u8 s) {
     double have_f64;
     if (!fast_double_parser::decimal_separator_dot::parse_number(&z[0],
                                                                  &have_f64)) {
-      fail_parse("lemire", z);
+      fail_parse("lemire/fast_double_parser", &z[0]);
       return false;
     }
     uint64_t have =
         wuffs_base__ieee_754_bit_representation__from_f64_to_u64(have_f64);
     if (have != want) {
-      fail("lemire", &z[0], have, want);
+      fail("lemire/fast_double_parser", &z[0], have, want);
+      return false;
+    }
+  }
+#endif
+
+#ifdef USE_LEMIRE_FAST_FLOAT
+  // Check lemire/fast_float's from_chars.
+  {
+    double have_f64;
+    fast_float::from_chars_result result = fast_float::from_chars(
+        static_cast<char*>(static_cast<void*>(s.ptr)),
+        static_cast<char*>(static_cast<void*>(s.ptr + s.len)), have_f64,
+        fast_float::chars_format::general);
+    if (result.ec != std::errc()) {
+      fail_parse("lemire/fast_float", &z[0]);
+      return false;
+    }
+    uint64_t have =
+        wuffs_base__ieee_754_bit_representation__from_f64_to_u64(have_f64);
+    if (have != want) {
+      fail("lemire/fast_float", &z[0], have, want);
       return false;
     }
   }
@@ -210,7 +240,7 @@ process_line(wuffs_base__slice_u8 s) {
     wuffs_base__result_f64 res = wuffs_base__parse_number_f64(
         s, WUFFS_BASE__PARSE_NUMBER_XXX__DEFAULT_OPTIONS);
     if (res.status.repr) {
-      fail_parse("wuffs", z);
+      fail_parse("wuffs", &z[0]);
       return false;
     }
     uint64_t have =

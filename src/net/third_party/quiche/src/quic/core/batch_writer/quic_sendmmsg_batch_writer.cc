@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/batch_writer/quic_sendmmsg_batch_writer.h"
+#include "quic/core/batch_writer/quic_sendmmsg_batch_writer.h"
 
 namespace quic {
 
@@ -32,8 +32,8 @@ QuicSendmmsgBatchWriter::FlushImplResult QuicSendmmsgBatchWriter::FlushImpl() {
 QuicSendmmsgBatchWriter::FlushImplResult
 QuicSendmmsgBatchWriter::InternalFlushImpl(size_t cmsg_space,
                                            const CmsgBuilder& cmsg_builder) {
-  DCHECK(!IsWriteBlocked());
-  DCHECK(!buffered_writes().empty());
+  QUICHE_DCHECK(!IsWriteBlocked());
+  QUICHE_DCHECK(!buffered_writes().empty());
 
   FlushImplResult result = {WriteResult(WRITE_STATUS_OK, 0),
                             /*num_packets_sent=*/0, /*bytes_written=*/0};
@@ -52,10 +52,11 @@ QuicSendmmsgBatchWriter::InternalFlushImpl(size_t cmsg_space,
                   << " packets. WriteResult=" << write_result;
 
     if (write_result.status != WRITE_STATUS_OK) {
-      DCHECK_EQ(0, num_packets_sent);
+      QUICHE_DCHECK_EQ(0, num_packets_sent);
       break;
     } else if (num_packets_sent == 0) {
-      QUIC_BUG << "WriteMultiplePackets returned OK, but no packets were sent.";
+      QUIC_BUG(quic_bug_10825_1)
+          << "WriteMultiplePackets returned OK, but no packets were sent.";
       write_result = WriteResult(WRITE_STATUS_ERROR, EIO);
       break;
     }
@@ -74,7 +75,7 @@ QuicSendmmsgBatchWriter::InternalFlushImpl(size_t cmsg_space,
     return result;
   }
 
-  QUIC_BUG_IF(!buffered_writes().empty())
+  QUIC_BUG_IF(quic_bug_12537_1, !buffered_writes().empty())
       << "All packets should have been written on a successful return";
   write_result.bytes_written = result.bytes_written;
   return result;

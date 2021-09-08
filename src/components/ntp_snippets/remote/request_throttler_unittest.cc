@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/strings/stringprintf.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -23,9 +22,9 @@ class RequestThrottlerTest : public testing::Test {
   RequestThrottlerTest() {
     RequestThrottler::RegisterProfilePrefs(test_prefs_.registry());
     // Use any arbitrary RequestType for this unittest.
-    throttler_.reset(new RequestThrottler(
+    throttler_ = std::make_unique<RequestThrottler>(
         &test_prefs_, RequestThrottler::RequestType::
-                          CONTENT_SUGGESTION_FETCHER_ACTIVE_NTP_USER));
+                          CONTENT_SUGGESTION_FETCHER_ACTIVE_NTP_USER);
     throttler_->quota_ = kCounterQuota;
   }
 

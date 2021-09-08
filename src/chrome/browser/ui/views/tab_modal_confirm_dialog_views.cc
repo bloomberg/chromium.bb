@@ -42,9 +42,10 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
                                    base::Unretained(delegate_.get())));
   SetCloseCallback(base::BindOnce(&TabModalConfirmDialogDelegate::Close,
                                   base::Unretained(delegate_.get())));
+  SetModalType(ui::MODAL_TYPE_CHILD);
   SetOwnedByWidget(true);
 
-  base::Optional<int> default_button = delegate_->GetDefaultDialogButton();
+  absl::optional<int> default_button = delegate_->GetDefaultDialogButton();
   if (bool(default_button))
     SetDefaultButton(*default_button);
 
@@ -53,7 +54,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
-  base::string16 link_text(delegate_->GetLinkText());
+  std::u16string link_text(delegate_->GetLinkText());
   if (!link_text.empty()) {
     message_box_view_->SetLink(
         link_text, base::BindRepeating(&TabModalConfirmDialogViews::LinkClicked,
@@ -65,7 +66,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TAB_MODAL_CONFIRM);
 }
 
-base::string16 TabModalConfirmDialogViews::GetWindowTitle() const {
+std::u16string TabModalConfirmDialogViews::GetWindowTitle() const {
   return delegate_->GetTitle();
 }
 
@@ -80,15 +81,11 @@ views::View* TabModalConfirmDialogViews::GetContentsView() {
 }
 
 views::Widget* TabModalConfirmDialogViews::GetWidget() {
-  return message_box_view_->GetWidget();
+  return message_box_view_ ? message_box_view_->GetWidget() : nullptr;
 }
 
 const views::Widget* TabModalConfirmDialogViews::GetWidget() const {
-  return message_box_view_->GetWidget();
-}
-
-ui::ModalType TabModalConfirmDialogViews::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
+  return message_box_view_ ? message_box_view_->GetWidget() : nullptr;
 }
 
 TabModalConfirmDialogViews::~TabModalConfirmDialogViews() = default;
@@ -110,7 +107,7 @@ void TabModalConfirmDialogViews::LinkClicked(const ui::Event& event) {
 }
 
 views::View* TabModalConfirmDialogViews::GetInitiallyFocusedView() {
-  base::Optional<int> focused_button = delegate_->GetInitiallyFocusedButton();
+  absl::optional<int> focused_button = delegate_->GetInitiallyFocusedButton();
   if (!focused_button) {
     return DialogDelegate::GetInitiallyFocusedView();
   }

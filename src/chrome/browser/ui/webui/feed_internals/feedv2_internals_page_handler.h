@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_FEED_INTERNALS_FEEDV2_INTERNALS_PAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_FEED_INTERNALS_FEEDV2_INTERNALS_PAGE_HANDLER_H_
 
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -17,7 +16,7 @@
 class PrefService;
 namespace feed {
 class FeedService;
-class FeedStreamApi;
+class FeedApi;
 }  // namespace feed
 
 // Concrete implementation of feed_internals::mojom::PageHandler.
@@ -45,16 +44,18 @@ class FeedV2InternalsPageHandler : public feed_internals::mojom::PageHandler {
   void GetFeedProcessScopeDump(GetFeedProcessScopeDumpCallback) override;
   void GetFeedHistograms(GetFeedHistogramsCallback) override;
   void OverrideFeedHost(const GURL& host) override;
-  void OverrideActionUploadEndpoint(const GURL& endpoint_url) override;
+  void OverrideDiscoverApiEndpoint(const GURL& endpoint_url) override;
   void OverrideFeedStreamData(const std::vector<uint8_t>& data) override;
+  void SetWebFeedFollowIntroDebugEnabled(const bool enabled) override;
 
  private:
   bool IsFeedAllowed();
+  bool IsWebFeedFollowIntroDebugEnabled();
 
   mojo::Receiver<feed_internals::mojom::PageHandler> receiver_;
 
   // Services that provide the data and functionality.
-  feed::FeedStreamApi* feed_stream_;
+  feed::FeedApi* feed_stream_;
   PrefService* pref_service_;
 
   base::WeakPtrFactory<FeedV2InternalsPageHandler> weak_ptr_factory_{this};

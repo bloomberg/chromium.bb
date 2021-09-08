@@ -161,9 +161,12 @@ class ExtensionDownloaderDelegate {
   struct FailureData {
     FailureData();
     FailureData(const FailureData& other);
+    static FailureData CreateFromNetworkResponse(int net_error,
+                                                 int response_code,
+                                                 int failure_count);
     FailureData(const int net_error_code, const int fetch_attempts);
     FailureData(const int net_error_code,
-                const base::Optional<int> response,
+                const absl::optional<int> response,
                 const int fetch_attempts);
     explicit FailureData(ManifestInvalidError manifest_invalid_error);
     FailureData(ManifestInvalidError manifest_invalid_error,
@@ -172,23 +175,23 @@ class ExtensionDownloaderDelegate {
     ~FailureData();
 
     // Network error code in case of CRX_FETCH_FAILED or MANIFEST_FETCH_FAILED.
-    const base::Optional<int> network_error_code;
+    const absl::optional<int> network_error_code;
     // Response code in case of CRX_FETCH_FAILED or MANIFEST_FETCH_FAILED.
-    const base::Optional<int> response_code;
+    const absl::optional<int> response_code;
     // Number of fetch attempts made in case of CRX_FETCH_FAILED or
     // MANIFEST_FETCH_FAILED.
-    const base::Optional<int> fetch_tries;
+    const absl::optional<int> fetch_tries;
     // Type of error occurred when fetched manifest was invalid. This includes
     // errors occurred while parsing the update manifest and the errors in the
     // internal details of the parsed manifest.
-    const base::Optional<ManifestInvalidError> manifest_invalid_error;
+    const absl::optional<ManifestInvalidError> manifest_invalid_error;
     // Info field in the update manifest returned by the server. Currently it is
     // only set when no update is available and install fails with the error
     // CRX_FETCH_URL_EMPTY.
-    const base::Optional<std::string> additional_info;
+    const absl::optional<std::string> additional_info;
     // Type of app status error returned by update server on fetching the update
     // manifest.
-    const base::Optional<std::string> app_status_error;
+    const absl::optional<std::string> app_status_error;
   };
 
   // A callback that is called to indicate if ExtensionDownloader should ignore
@@ -228,6 +231,11 @@ class ExtensionDownloaderDelegate {
                                          const std::set<int>& request_ids,
                                          const FailureData& data);
 
+  // Invoked when an manifest or CRX of extension fails to download, but a retry
+  // is triggered.
+  virtual void OnExtensionDownloadRetry(const ExtensionId& id,
+                                        const FailureData& data);
+
   // Invoked if the extension had an update available and its crx was
   // successfully downloaded to |path|. |ownership_passed| is true if delegate
   // should get ownership of the file. The downloader may be able to get the
@@ -262,10 +270,6 @@ class ExtensionDownloaderDelegate {
   // (this is the default).
   virtual bool GetPingDataForExtension(const ExtensionId& id,
                                        ManifestFetchData::PingData* ping);
-
-  // Invoked to get the update url data for this extension's update url, if
-  // there is any. The default implementation returns an empty string.
-  virtual std::string GetUpdateUrlData(const ExtensionId& id);
 
   // Invoked to determine whether extension |id| is currently
   // pending installation.

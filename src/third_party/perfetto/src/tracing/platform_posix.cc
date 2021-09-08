@@ -15,6 +15,11 @@
  */
 
 #include "perfetto/base/build_config.h"
+
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) ||   \
+    PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) || \
+    PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
+
 #include "perfetto/ext/base/file_utils.h"
 #include "perfetto/ext/base/thread_task_runner.h"
 #include "perfetto/tracing/internal/tracing_tls.h"
@@ -34,6 +39,7 @@ class PlatformPosix : public Platform {
   ~PlatformPosix() override;
 
   ThreadLocalObject* GetOrCreateThreadLocalObject() override;
+
   std::unique_ptr<base::TaskRunner> CreateTaskRunner(
       const CreateTaskRunnerArgs&) override;
   std::string GetCurrentProcessName() override;
@@ -42,39 +48,39 @@ class PlatformPosix : public Platform {
   pthread_key_t tls_key_{};
 };
 
-// TODO(primiano): make base::ThreadTaskRunner directly inherit TaskRunner, so
-// we can avoid this boilerplate.
-class TaskRunnerInstance : public base::TaskRunner {
- public:
-  TaskRunnerInstance();
-  ~TaskRunnerInstance() override;
-
-  void PostTask(std::function<void()>) override;
-  void PostDelayedTask(std::function<void()>, uint32_t delay_ms) override;
-  void AddFileDescriptorWatch(int fd, std::function<void()>) override;
-  void RemoveFileDescriptorWatch(int fd) override;
-  bool RunsTasksOnCurrentThread() const override;
-
- private:
-  base::ThreadTaskRunner thread_task_runner_;
-};
+PlatformPosix* g_instance = nullptr;
 
 using ThreadLocalObject = Platform::ThreadLocalObject;
 
 PlatformPosix::PlatformPosix() {
+  PERFETTO_CHECK(!g_instance);
+  g_instance = this;
   auto tls_dtor = [](void* obj) {
+    // The Posix TLS implementation resets the key before calling this dtor.
+    // Here we re-reset it to the object we are about to delete. This is to
+    // handle re-entrant usages of tracing in the PostTask done during the dtor
+    // (see comments in TracingTLS::~TracingTLS()). Chromium's platform
+    // implementation (which does NOT use this platform impl) has a similar
+    // workaround (https://crrev.com/c/2748300).
+    pthread_setspecific(g_instance->tls_key_, obj);
     delete static_cast<ThreadLocalObject*>(obj);
+    pthread_setspecific(g_instance->tls_key_, nullptr);
   };
   PERFETTO_CHECK(pthread_key_create(&tls_key_, tls_dtor) == 0);
 }
 
 PlatformPosix::~PlatformPosix() {
   pthread_key_delete(tls_key_);
+  g_instance = nullptr;
 }
 
 ThreadLocalObject* PlatformPosix::GetOrCreateThreadLocalObject() {
   // In chromium this should be implemented using base::ThreadLocalStorage.
-  auto tls = static_cast<ThreadLocalObject*>(pthread_getspecific(tls_key_));
+  void* tls_ptr = pthread_getspecific(tls_key_);
+
+  // This is needed to handle re-entrant calls during TLS dtor.
+  // See comments in platform.cc and aosp/1712371 .
+  ThreadLocalObject* tls = static_cast<ThreadLocalObject*>(tls_ptr);
   if (!tls) {
     tls = ThreadLocalObject::CreateInstance().release();
     pthread_setspecific(tls_key_, tls);
@@ -84,7 +90,8 @@ ThreadLocalObject* PlatformPosix::GetOrCreateThreadLocalObject() {
 
 std::unique_ptr<base::TaskRunner> PlatformPosix::CreateTaskRunner(
     const CreateTaskRunnerArgs&) {
-  return std::unique_ptr<base::TaskRunner>(new TaskRunnerInstance());
+  return std::unique_ptr<base::TaskRunner>(
+      new base::ThreadTaskRunner(base::ThreadTaskRunner::CreateAndStart()));
 }
 
 std::string PlatformPosix::GetCurrentProcessName() {
@@ -100,31 +107,6 @@ std::string PlatformPosix::GetCurrentProcessName() {
 #endif
 }
 
-TaskRunnerInstance::TaskRunnerInstance()
-    : thread_task_runner_(base::ThreadTaskRunner::CreateAndStart()) {}
-TaskRunnerInstance::~TaskRunnerInstance() = default;
-void TaskRunnerInstance::PostTask(std::function<void()> func) {
-  thread_task_runner_.get()->PostTask(func);
-}
-
-void TaskRunnerInstance::PostDelayedTask(std::function<void()> func,
-                                         uint32_t delay_ms) {
-  thread_task_runner_.get()->PostDelayedTask(func, delay_ms);
-}
-
-void TaskRunnerInstance::AddFileDescriptorWatch(int fd,
-                                                std::function<void()> func) {
-  thread_task_runner_.get()->AddFileDescriptorWatch(fd, func);
-}
-
-void TaskRunnerInstance::RemoveFileDescriptorWatch(int fd) {
-  thread_task_runner_.get()->RemoveFileDescriptorWatch(fd);
-}
-
-bool TaskRunnerInstance::RunsTasksOnCurrentThread() const {
-  return thread_task_runner_.get()->RunsTasksOnCurrentThread();
-}
-
 }  // namespace
 
 // static
@@ -134,3 +116,4 @@ Platform* Platform::GetDefaultPlatform() {
 }
 
 }  // namespace perfetto
+#endif  // OS_LINUX || OS_ANDROID || OS_APPLE

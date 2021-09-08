@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/view.h"
@@ -57,7 +57,11 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   // focus, but the FocusRing sits on the parent instead of the inner view.
   void SetHasFocusPredicate(const ViewPredicate& predicate);
 
-  void SetColor(base::Optional<SkColor> color);
+  void SetColor(absl::optional<SkColor> color);
+
+  // Sets |should_paint_focus_aura_| and repaints the focus ring so that it may
+  // or may not include the focus aura.
+  void SetShouldPaintFocusAura(bool should_paint_focus_aura);
 
   // View:
   void Layout() override;
@@ -72,6 +76,9 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
 
  private:
   FocusRing();
+
+  SkPath GetPath() const;
+  SkRRect GetRingRoundRect() const;
 
   void RefreshLayer();
 
@@ -90,13 +97,18 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   // the focus ring shows an invalid appearance (usually a different color).
   bool invalid_ = false;
 
+  // If true, paint the focus aura (the inside area of the focus ring) with the
+  // color |kColorId_FocusAuraColor|. The focus aura is not painted by default
+  // and can be painted or unpainted by SetShouldSetFocusAura.
+  bool should_paint_focus_aura_ = false;
+
   // Overriding color for the focus ring.
-  base::Optional<SkColor> color_;
+  absl::optional<SkColor> color_;
 
   // The predicate used to determine whether the parent has focus.
-  base::Optional<ViewPredicate> has_focus_predicate_;
+  absl::optional<ViewPredicate> has_focus_predicate_;
 
-  ScopedObserver<View, ViewObserver> view_observer_{this};
+  base::ScopedObservation<View, ViewObserver> view_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FocusRing);
 };

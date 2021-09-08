@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_GESTURE_DETECTION_UI_GESTURE_PROVIDER_H_
-#define UI_EVENTS_GESTURE_DETECTION_UI_GESTURE_PROVIDER_H_
+#ifndef UI_EVENTS_GESTURES_GESTURE_PROVIDER_AURA_H_
+#define UI_EVENTS_GESTURES_GESTURE_PROVIDER_AURA_H_
 
 #include <stdint.h>
 
@@ -51,6 +51,9 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
 
   void ResetGestureHandlingState();
 
+  // Synthesizes gesture end events and sends to the associated consumer.
+  void SendSynthesizedEndEvents();
+
   // GestureProviderClient implementation
   void OnGestureEvent(const GestureEventData& gesture) override;
   bool RequiresDoubleTapGestureEvents() const override;
@@ -71,4 +74,4 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_GESTURE_DETECTION_UI_GESTURE_PROVIDER_H_
+#endif  // UI_EVENTS_GESTURES_GESTURE_PROVIDER_AURA_H_

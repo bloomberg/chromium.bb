@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
@@ -28,6 +28,7 @@
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_client.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_client_registrar.h"
 #include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace notifications {
 namespace {
@@ -360,8 +361,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     auto client_action_data = action_data;
 
     // Attach custom data if the impression is not expired.
-    const auto* impression =
-        context_->impression_tracker()->GetImpression(action_data.guid);
+    const auto* impression = context_->impression_tracker()->GetImpression(
+        action_data.client_type, action_data.guid);
     if (impression) {
       client_action_data.custom_data = impression->custom_data;
     }

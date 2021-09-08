@@ -128,7 +128,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
                                 bool in_forced_colors_mode,
                                 mojom::blink::ColorScheme color_scheme) const;
 
-  virtual Color FocusRingColor() const;
+  virtual Color FocusRingColor(mojom::blink::ColorScheme color_scheme) const;
   virtual Color PlatformFocusRingColor() const { return Color(0, 0, 0); }
   void SetCustomFocusRingColor(const Color&);
   static Color TapHighlightColor();
@@ -184,6 +184,14 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
   // Adjust style as per platform selection.
   virtual void AdjustControlPartStyle(ComputedStyle&);
+
+  virtual bool IsAccentColorCustomized(
+      mojom::blink::ColorScheme color_scheme) const {
+    return false;
+  }
+  virtual Color GetAccentColor(mojom::blink::ColorScheme color_scheme) const {
+    return Color();
+  }
 
  protected:
   // The platform selection color.

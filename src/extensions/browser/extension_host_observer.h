@@ -45,8 +45,11 @@ class ExtensionHostObserver {
   // Called when the network request with |request_id| is done.
   virtual void OnNetworkRequestDone(const ExtensionHost* host,
                                     uint64_t request_id) {}
+
+  // Called when ExtensionHost should be closed.
+  virtual void OnExtensionHostShouldClose(ExtensionHost* host) {}
 };
 
 }  // namespace extensions
 
-#endif /* EXTENSIONS_BROWSER_EXTENSION_HOST_OBSERVER_H_ */
+#endif  // EXTENSIONS_BROWSER_EXTENSION_HOST_OBSERVER_H_

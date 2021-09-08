@@ -5,6 +5,7 @@
 package org.chromium.weblayer.test;
 
 import android.net.Uri;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.SmallTest;
@@ -18,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.weblayer.ContextMenuParams;
@@ -86,26 +88,6 @@ public class TabCallbackTest {
         callback.visibleUriChangedCallback.waitUntilValueObserved(url);
     }
 
-    @Test
-    @SmallTest
-    public void testOnRenderProcessGone() throws TimeoutException {
-        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
-        CallbackHelper callbackHelper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Tab tab = activity.getTab();
-            activity.setIgnoreRendererCrashes();
-            TabCallback callback = new TabCallback() {
-                @Override
-                public void onRenderProcessGone() {
-                    callbackHelper.notifyCalled();
-                }
-            };
-            tab.registerTabCallback(callback);
-            tab.getNavigationController().navigate(Uri.parse("chrome://crash"));
-        });
-        callbackHelper.waitForFirst();
-    }
-
     private ContextMenuParams runContextMenuTest(String file) throws TimeoutException {
         String pageUrl = mActivityTestRule.getTestDataURL(file);
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(pageUrl);
@@ -131,7 +113,6 @@ public class TabCallbackTest {
         return params[0];
     }
 
-    // Requires implementation M82.
     @Test
     @SmallTest
     public void testShowContextMenu() throws TimeoutException {
@@ -141,7 +122,6 @@ public class TabCallbackTest {
         Assert.assertEquals("anchor text", params.linkText);
     }
 
-    // Requires implementation M82.
     @Test
     @SmallTest
     public void testShowContextMenuImg() throws TimeoutException {
@@ -176,6 +156,10 @@ public class TabCallbackTest {
     @MinWebLayerVersion(88)
     @Test
     @SmallTest
+    @DisableIf.
+    Build(supported_abis_includes = "x86",
+          sdk_is_greater_than = Build.VERSION_CODES.P,
+          message = "https://crbug.com/1201813")
     public void testDownloadFromContextMenu() throws TimeoutException {
         ContextMenuParams params = runContextMenuTest("download.html");
         ;
@@ -192,6 +176,10 @@ public class TabCallbackTest {
     @MinWebLayerVersion(88)
     @Test
     @SmallTest
+    @DisableIf.
+    Build(supported_abis_includes = "x86",
+          sdk_is_greater_than = Build.VERSION_CODES.P,
+          message = "https://crbug.com/1201813")
     public void testDownloadFromContextMenuImg() throws TimeoutException {
         ContextMenuParams params = runContextMenuTest("img.html");
         ;
@@ -365,7 +353,6 @@ public class TabCallbackTest {
         CriteriaHelper.pollUiThread(() -> Criteria.checkThat(titles[0], Matchers.is("foobar")));
     }
 
-    @MinWebLayerVersion(85)
     @Test
     @SmallTest
     public void testOnBackgroundColorChanged() throws TimeoutException {
@@ -394,7 +381,6 @@ public class TabCallbackTest {
         Assert.assertEquals(0xffff0000, (int) backgroundColors[0]);
     }
 
-    @MinWebLayerVersion(85)
     @Test
     @SmallTest
     public void testScrollNotificationDirectionChange() throws TimeoutException {

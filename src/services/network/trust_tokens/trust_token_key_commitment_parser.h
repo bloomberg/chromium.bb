@@ -24,6 +24,8 @@ extern const char kTrustTokenKeyCommitmentProtocolVersionField[];
 extern const char kTrustTokenKeyCommitmentIDField[];
 // "Batch size" (number of blinded tokens to provide per issuance request):
 extern const char kTrustTokenKeyCommitmentBatchsizeField[];
+// "keys" (dictionary of keys)
+extern const char kTrustTokenKeyCommitmentKeysField[];
 // Each issuance key's expiry timestamp:
 extern const char kTrustTokenKeyCommitmentExpiryField[];
 // Each issuance key's key material:
@@ -37,10 +39,14 @@ extern const char kTrustTokenKeyCommitmentOsAndroid[];
 // The desired fallback behavior when local issuance isn't available on the
 // requested operating system:
 extern const char
-    kTrustTokenKeyCommitmentUnavailableLocalIssuanceFallbackField[];
-extern const char kTrustTokenLocalIssuanceFallbackWebIssuance[];
-extern const char kTrustTokenLocalIssuanceFallbackReturnWithError[];
+    kTrustTokenKeyCommitmentUnavailableLocalOperationFallbackField[];
+extern const char kTrustTokenLocalOperationFallbackWebIssuance[];
+extern const char kTrustTokenLocalOperationFallbackReturnWithError[];
 
+// WARNING WARNING WARNING: When updating the parser implementation, please make
+// sure the normative source(s) of the key commitment result data structure's
+// format (as of writing, the design doc and perhaps ISSUER_PROTOCOL.md in the
+// WICG repository) have been updated to reflect the change.
 class TrustTokenKeyCommitmentParser
     : public TrustTokenKeyCommitmentController::Parser {
  public:

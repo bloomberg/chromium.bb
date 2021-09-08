@@ -38,16 +38,18 @@ public:
         // Buffers that will only be accessed from the device (large const buffers). Will always be
         // in device local memory.
         kGpuOnly,
-        // Buffers that will be accessed on the host and copied to and from a GPU resource (transfer
-        // buffers). Will always be mappable and coherent memory.
-        kCpuOnly,
         // Buffers that typically will be updated multiple times by the host and read on the gpu
-        // (e.g. uniform or vertex buffers). Will always be mappable memory, and will prefer to be
-        // in device local memory.
+        // (e.g. uniform or vertex buffers). CPU writes will generally be sequential in the buffer
+        // and will try to take advantage of the write-combined nature of the gpu buffers. Thus this
+        // will always be mappable and coherent memory, and it will prefer to be in device local
+        // memory.
         kCpuWritesGpuReads,
+        // Buffers that will be accessed on the host and copied to another GPU resource (transfer
+        // buffers). Will always be mappable and coherent memory.
+        kTransfersFromCpuToGpu,
         // Buffers which are typically writted to by the GPU and then read on the host. Will always
-        // be mappable memory, and will prefer coherent and cached memory.
-        kGpuWritesCpuReads,
+        // be mappable memory, and will prefer cached memory.
+        kTransfersFromGpuToCpu,
     };
 
     // DEPRECATED: Use and implement allocateImageMemory instead

@@ -20,9 +20,10 @@ table tbody tr td:first-child {
 <div id="content">
 <h1>Modern C++ use in Chromium</h1>
 
-<p><i>This document lives at src/styleguide/c++/c++11.html in a Chromium
-checkout and is part of the more general
-<a href="https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/c++.md">
+<p><i>This document lives at
+<a href="https://source.chromium.org/chromium/chromium/src/+/main:styleguide/c++/c++11.html">
+src/styleguide/c++/c++11.html</a> in a Chromium checkout and is part of the more general
+<a href="https://chromium.googlesource.com/chromium/src/+/main/styleguide/c++/c++.md">
 Chromium C++ style guide</a>. It summarizes the supported state of new and
 updated language and library features in recent C++ standards and the
 <a href="https://abseil.io/about/">Abseil</a> library. This guide
@@ -54,6 +55,7 @@ The current status of existing standards and Abseil features is:
 <li><b>Abseil:</b> Initially supported July 31, 2020; see allowed/banned/TBD features below
 <ul>
 <li>absl::StatusOr: Initially supported September 3, 2020</li>
+<li>absl::Cleanup: Initially supported February 4, 2021</li>
 </ul></li>
 </ul></p>
 
@@ -184,7 +186,7 @@ The current status of existing standards and Abseil features is:
 <td><code>std::function</code></td>
 <td>Wraps a standard polymorphic function</td>
 <td><a href="http://en.cppreference.com/w/cpp/utility/functional/function">std::function</a></td>
-<td>Use <code>base::Callback</code> instead. Compared to <code>std::function</code>, <code>base::Callback</code> directly supports Chromium's refcounting classes and weak pointers and deals with additional thread safety concerns. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/SoEj7oIDNuA">Discussion thread</a></td>
+<td>Use <code>base::&lcub;Once,Repeating&rcub;Callback</code> instead. Compared to <code>std::function</code>, <code>base::&lcub;Once,Repeating&rcub;Callback</code> directly supports Chromium's refcounting classes and weak pointers and deals with additional thread safety concerns. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/SoEj7oIDNuA">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -293,6 +295,23 @@ The current status of existing standards and Abseil features is:
 </tr>
 
 <tr>
+<td>Optional</td>
+<td><code>absl::optional</code></td>
+<td>Early adaptation of C++17 std::optional.</td>
+<td><a href="https://en.cppreference.com/w/cpp/utility/optional">std::optional</a></td>
+<td>Replaces <code>base::Optional</code>. <a href="https://groups.google.com/a/chromium.org/g/cxx/c/zUGqagX1NFU">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Status</td>
+<td><code>absl::Status</code></td>
+<td>Type for returning detailed errors.</td>
+<td><a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/abseil-cpp/absl/status/status.h">status.h</a></td>
+<td>Approved for use inside a wrapper type.  Use <a href="https://source.chromium.org/chromium/chromium/src/+/master:base/strings/abseil_string_conversions.h">abseil_string_conversions.h</a> to convert to and from <a href="https://source.chromium.org/chromium/chromium/src/+/master:third_party/abseil-cpp/absl/strings/string_view.h">absl::string_view</a> so the wrapper can expose <a href="https://source.chromium.org/chromium/chromium/src/+/master:base/strings/string_piece.h">base::StringPiece</a>.  Use <a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/abseil-cpp/absl/strings/cord.h">absl::Cord</a> directly as minimally necessary to interface; do not expose in the wrapper type API.<br>
+<a href="https://groups.google.com/a/chromium.org/g/cxx/c/ImdFCSZ-NMA">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Variant</td>
 <td><code>absl::variant</code></td>
 <td>Early adaptation of C++17 std::variant.</td>
@@ -387,9 +406,17 @@ the allowed or banned sections.</p>
 <td>bind_front</td>
 <td><code>absl::bind_front</code></td>
 <td>Binds the first N arguments of an invocable object and stores them by value.</td>
-<td><a href="https://source.chromium.org/chromium/chromium/src/+/master:third_party/abseil-cpp/absl/functional/bind_front.h">bind_front.h</a>
+<td><a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/abseil-cpp/absl/functional/bind_front.h">bind_front.h</a>
 <br><a href="https://abseil.io/tips/108">Avoid std::bind</a></td>
 <td>Overlaps with <code>base::Bind</code>.</td>
+</tr>
+
+<tr>
+<td>Cleanup</td>
+<td><code>FILE* sink_file = fopen(sink_path, "w");<br>auto sink_closer = absl::MakeCleanup([sink_file] { fclose(sink_file); });</code></td>
+<td>Implements the scope guard idiom, invoking the contained callback's `operator()() &&` on scope exit.</td>
+<td><a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/abseil-cpp/absl/cleanup/cleanup.h">cleanup.h</a></td>
+<td>Similar to `defer` in Golang.</td>
 </tr>
 
 <tr>
@@ -407,7 +434,7 @@ absl::InlinedVector, absl::FixedArray</code></td>
 <td>Container utilities</td>
 <td><code>auto it = absl::c_find(container, value);</code></td>
 <td>Container-based versions of algorithmic functions within C++ standard library.</td>
-<td><a href="https://source.chromium.org/chromium/chromium/src/+/master:third_party/abseil-cpp/absl/algorithm/container.h">container.h</a></td>
+<td><a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/abseil-cpp/absl/algorithm/container.h">container.h</a></td>
 <td>Overlaps with <code>base/ranges/algorithm.h</code>.</td>
 </tr>
 
@@ -415,16 +442,8 @@ absl::InlinedVector, absl::FixedArray</code></td>
 <td>FunctionRef</td>
 <td><code>absl::FunctionRef</code></td>
 <td>Type for holding a non-owning reference to an object of any invocable type.</td>
-<td><a href="https://source.chromium.org/chromium/chromium/src/+/master:third_party/abseil-cpp/absl/functional/function_ref.h">function_ref.h</a></td>
+<td><a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/abseil-cpp/absl/functional/function_ref.h">function_ref.h</a></td>
 <td></td>
-</tr>
-
-<tr>
-<td>Optional</td>
-<td><code>absl::optional</code></td>
-<td>Early adaptation of C++17 std::optional.</td>
-<td><a href="https://en.cppreference.com/w/cpp/utility/optional">std::optional</a></td>
-<td>Overlaps with <code>base::Optional</code>.</td>
 </tr>
 
 <tr>
@@ -437,18 +456,10 @@ size_t index = absl::Uniform(bitgen, 0u, elems.size());</code></td>
 </tr>
 
 <tr>
-<td>Status</td>
-<td><code>absl::Status</code></td>
-<td>Type for returning detailed errors.</td>
-<td><a href="https://source.chromium.org/chromium/chromium/src/+/master:third_party/abseil-cpp/absl/status/status.h">status.h</a></td>
-<td></td>
-</tr>
-
-<tr>
 <td>StatusOr</td>
 <td><code>absl::StatusOr&lt;T&gt;</td>
 <td>An object that is either a usable value, or an error Status explaining why such a value is not present.</td>
-<td><a href="https://source.chromium.org/chromium/chromium/src/+/master:third_party/abseil-cpp/absl/status/statusor.h">statusor.h</a></td>
+<td><a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/abseil-cpp/absl/status/statusor.h">statusor.h</a></td>
 <td></td>
 </tr>
 

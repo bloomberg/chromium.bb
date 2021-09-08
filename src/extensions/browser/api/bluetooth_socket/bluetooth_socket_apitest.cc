@@ -51,20 +51,12 @@ class BluetoothSocketApiTest : public extensions::ShellApiTest {
     mock_adapter_ = new testing::StrictMock<MockBluetoothAdapter>();
     BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
 
-    mock_device1_.reset(
-        new testing::NiceMock<MockBluetoothDevice>(mock_adapter_.get(),
-                                                   0,
-                                                   "d1",
-                                                   "11:12:13:14:15:16",
-                                                   true /* paired */,
-                                                   false /* connected */));
-    mock_device2_.reset(
-        new testing::NiceMock<MockBluetoothDevice>(mock_adapter_.get(),
-                                                   0,
-                                                   "d2",
-                                                   "21:22:23:24:25:26",
-                                                   true /* paired */,
-                                                   false /* connected */));
+    mock_device1_ = std::make_unique<testing::NiceMock<MockBluetoothDevice>>(
+        mock_adapter_.get(), 0, "d1", "11:12:13:14:15:16", true /* paired */,
+        false /* connected */);
+    mock_device2_ = std::make_unique<testing::NiceMock<MockBluetoothDevice>>(
+        mock_adapter_.get(), 0, "d2", "21:22:23:24:25:26", true /* paired */,
+        false /* connected */);
   }
 
  protected:
@@ -102,10 +94,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, DISABLED_Connect) {
   // dispatcher. Since there is no data, this will not call its callback.
   EXPECT_CALL(*mock_socket, Receive(testing::_, testing::_, testing::_));
 
-  // The test also cleans up by calling Disconnect and Close.
+  // The test also cleans up by calling Disconnect.
   EXPECT_CALL(*mock_socket, Disconnect(testing::_))
       .WillOnce(base::test::RunOnceCallback<0>());
-  EXPECT_CALL(*mock_socket, Close());
 
   // Run the test.
   ExtensionTestMessageListener listener("ready", true);
@@ -169,11 +160,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Listen) {
   // the existing server and client sockets.
   EXPECT_CALL(*mock_server_socket, Disconnect(testing::_))
       .WillOnce(base::test::RunOnceCallback<0>());
-  EXPECT_CALL(*mock_server_socket, Close());
 
   EXPECT_CALL(*mock_client_socket, Disconnect(testing::_))
       .WillOnce(base::test::RunOnceCallback<0>());
-  EXPECT_CALL(*mock_client_socket, Close());
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   listener.Reply("go");

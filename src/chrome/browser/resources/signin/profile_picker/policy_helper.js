@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import './strings.m.js';
+
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import './strings.js';
 
 /** @return {boolean} */
 export function isGuestModeEnabled() {
@@ -23,14 +23,15 @@ export function isBrowserSigninAllowed() {
 
 /** @return {boolean} */
 export function isForceSigninEnabled() {
-  const enabled = loadTimeData.getBoolean('isForceSigninEnabled');
-  // Force sign in policy is not supported yet. The picker should not be shown
-  // in case this policy exists.
-  assert(!enabled);
-  return enabled;
+  return loadTimeData.getBoolean('isForceSigninEnabled');
 }
 
 /** @return {boolean} */
 export function isSignInProfileCreationSupported() {
   return loadTimeData.getBoolean('signInProfileCreationFlowSupported');
+}
+
+/** @return {boolean} */
+export function isAskOnStartupAllowed() {
+  return loadTimeData.getBoolean('isAskOnStartupAllowed');
 }

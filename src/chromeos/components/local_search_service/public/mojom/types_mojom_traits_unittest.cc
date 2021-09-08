@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chromeos/components/local_search_service/public/mojom/types_mojom_traits.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/local_search_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -14,20 +13,19 @@ namespace chromeos {
 namespace local_search_service {
 
 TEST(LocalSearchMojomTraitsTest, ContentTraits) {
-  Content input("id", base::UTF8ToUTF16("content"), 0.3);
+  Content input("id", u"content", 0.3);
   Content output;
 
   ASSERT_TRUE(
-      mojo::test::SerializeAndDeserialize<mojom::Content>(&input, &output));
+      mojo::test::SerializeAndDeserialize<mojom::Content>(input, output));
   EXPECT_EQ(input.id, output.id);
   EXPECT_EQ(input.content, output.content);
   EXPECT_EQ(input.weight, output.weight);
 }
 
 TEST(LocalSearchMojomTraitsTest, DataTraits) {
-  std::vector<Content> contents{
-      Content("id1", base::UTF8ToUTF16("contents1"), 0.1),
-      Content("id2", base::UTF8ToUTF16("contents2"), 0.2)};
+  std::vector<Content> contents{Content("id1", u"contents1", 0.1),
+                                Content("id2", u"contents2", 0.2)};
 
   {
     // Empty locale.
@@ -35,7 +33,7 @@ TEST(LocalSearchMojomTraitsTest, DataTraits) {
     Data output;
 
     ASSERT_TRUE(
-        mojo::test::SerializeAndDeserialize<mojom::Data>(&input, &output));
+        mojo::test::SerializeAndDeserialize<mojom::Data>(input, output));
     EXPECT_EQ(input.id, output.id);
     EXPECT_EQ(input.contents[0].id, output.contents[0].id);
     EXPECT_EQ(input.contents[0].content, output.contents[0].content);
@@ -52,7 +50,7 @@ TEST(LocalSearchMojomTraitsTest, DataTraits) {
     Data output;
 
     ASSERT_TRUE(
-        mojo::test::SerializeAndDeserialize<mojom::Data>(&input, &output));
+        mojo::test::SerializeAndDeserialize<mojom::Data>(input, output));
     EXPECT_EQ(input.id, output.id);
     EXPECT_EQ(input.contents[0].id, output.contents[0].id);
     EXPECT_EQ(input.contents[0].content, output.contents[0].content);
@@ -68,8 +66,8 @@ TEST(LocalSearchMojomTraitsTest, SearchParamsTraits) {
   SearchParams input{0.1, 0.2, 0.3};
   SearchParams output;
 
-  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::SearchParams>(
-      &input, &output));
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::SearchParams>(input, output));
   EXPECT_EQ(input.relevance_threshold, output.relevance_threshold);
   EXPECT_EQ(input.prefix_threshold, output.prefix_threshold);
   EXPECT_EQ(input.fuzzy_threshold, output.fuzzy_threshold);
@@ -80,7 +78,7 @@ TEST(LocalSearchMojomTraitsTest, PositionTraits) {
   Position output;
 
   ASSERT_TRUE(
-      mojo::test::SerializeAndDeserialize<mojom::Position>(&input, &output));
+      mojo::test::SerializeAndDeserialize<mojom::Position>(input, output));
   EXPECT_EQ(input.content_id, output.content_id);
   EXPECT_EQ(input.start, output.start);
   EXPECT_EQ(input.length, output.length);
@@ -95,7 +93,7 @@ TEST(LocalSearchMojomTraitsTest, ResultTraits) {
   Result output;
 
   ASSERT_TRUE(
-      mojo::test::SerializeAndDeserialize<mojom::Result>(&input, &output));
+      mojo::test::SerializeAndDeserialize<mojom::Result>(input, output));
   EXPECT_EQ(input.id, output.id);
   EXPECT_EQ(input.score, output.score);
   EXPECT_EQ(input.positions[0].content_id, output.positions[0].content_id);

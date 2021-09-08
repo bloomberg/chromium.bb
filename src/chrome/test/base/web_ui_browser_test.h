@@ -12,21 +12,25 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
+#include "chrome/test/base/devtools_listener.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/javascript_browser_test.h"
+#include "content/public/browser/devtools_agent_host_observer.h"
 
 namespace {
 class WebUITestMessageHandler;
-}
+class WebUICoverageObserver;
+}  // namespace
 
 namespace base {
 class Value;
-}
+}  // namespace base
 
 namespace content {
-class RenderViewHost;
+class RenderFrameHost;
+class ScopedWebUIControllerFactoryRegistration;
 class WebUI;
-}
+}  // namespace content
 
 class TestChromeWebUIControllerFactory;
 
@@ -80,12 +84,12 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   bool RunJavascriptAsyncTest(const std::string& test_name,
                               std::vector<base::Value> test_arguments);
 
-  // Sends message through |preload_host| to preload javascript libraries and
+  // Sends message through |preload_frame| to preload javascript libraries and
   // sets the |libraries_preloaded| flag to prevent re-loading at next
   // javascript invocation.
   void PreLoadJavascriptLibraries(const std::string& preload_test_fixture,
                                   const std::string& preload_test_name,
-                                  content::RenderViewHost* preload_host);
+                                  content::RenderFrameHost* preload_frame);
 
   // Called by javascript-generated test bodies to browse to a page and preload
   // the javascript for the given |preload_test_fixture| and
@@ -145,21 +149,31 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   // |function_arguments|. When |is_test| is true, the framework wraps
   // |function_name| with a test helper function, which waits for completion,
   // logging an error message on failure, otherwise |function_name| is called
-  // asynchronously. When |preload_host| is non-NULL, sends the javascript to
-  // the RenderView for evaluation at the appropriate time before the onload
+  // asynchronously. When |preload_frame| is non-NULL, sends the javascript to
+  // the renderer frame for evaluation at the appropriate time before the onload
   // call is made. Passes |is_async| along to runTest wrapper.
   bool RunJavascriptUsingHandler(const std::string& function_name,
                                  std::vector<base::Value> function_arguments,
                                  bool is_test,
                                  bool is_async,
-                                 content::RenderViewHost* preload_host);
+                                 content::RenderFrameHost* preload_frame);
 
   // Handles test framework messages.
   std::unique_ptr<WebUITestHandler> test_handler_;
 
-  // Indicates that the libraries have been pre-loaded and to not load them
-  // again.
-  bool libraries_preloaded_ = false;
+  // Tracks the frames for which we've preloaded libraries.
+  //
+  // We use `GlobalFrameRoutingId` because in certain cases, e.g. COOP/COEP, the
+  // frame gets swapped during the navigation and we get two calls to
+  // `WebContentsObserver::RenderFrameCreated()` (where we preload libraries).
+  //
+  // In the COOP/COEP case, `RenderFrameCreated()` is called for a speculative
+  // RFH when the navigation starts, then at response time, after parsing the
+  // headers, we realize that we need a new COOP/COEP-enabled SiteInstance, so
+  // we'll create a different RFH for that SiteInstance and dispatch
+  // `RenderFrameCreated()` for that RFH (and throw away the old speculative
+  // RFH).
+  std::set<content::GlobalFrameRoutingId> libraries_preloaded_for_frames_;
 
   // Saves the states of |test_fixture| and |test_name| for calling
   // PreloadJavascriptLibraries().
@@ -171,6 +185,10 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   content::WebUI* override_selected_web_ui_ = nullptr;
 
   std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
+  std::unique_ptr<content::ScopedWebUIControllerFactoryRegistration>
+      factory_registration_;
+
+  std::unique_ptr<WebUICoverageObserver> coverage_handler_;
 };
 
 class WebUIBrowserTest : public BaseWebUIBrowserTest {

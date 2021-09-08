@@ -38,8 +38,8 @@ private:
     }
 
     sk_sp<const GrXferProcessor> makeXferProcessor(
-            const GrProcessorAnalysisColor&, GrProcessorAnalysisCoverage, bool hasMixedSamples,
-            const GrCaps&, GrClampType) const override {
+            const GrProcessorAnalysisColor&, GrProcessorAnalysisCoverage, const GrCaps&,
+            GrClampType) const override {
         return MakeXferProcessor();
     }
 

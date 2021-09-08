@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/mojom/render_frame_metadata.mojom.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
@@ -65,8 +66,9 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
   // the browser process receives their associated frame tokens. These then
   // notify any |observers_|.
   void OnRenderFrameMetadataChangedAfterActivation(
-      cc::RenderFrameMetadata metadata);
-  void OnFrameTokenFrameSubmissionForTesting();
+      cc::RenderFrameMetadata metadata,
+      base::TimeTicks activation_time);
+  void OnFrameTokenFrameSubmissionForTesting(base::TimeTicks activation_time);
 
   // Set |last_render_frame_metadata_| to the given |metadata| for testing
   // purpose.
@@ -86,7 +88,7 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
 
   cc::RenderFrameMetadata last_render_frame_metadata_;
 
-  base::Optional<viz::LocalSurfaceId> last_local_surface_id_;
+  absl::optional<viz::LocalSurfaceId> last_local_surface_id_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -99,9 +101,9 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
       render_frame_metadata_observer_remote_;
 
 #if defined(OS_ANDROID)
-  base::Optional<bool> pending_report_all_root_scrolls_;
+  absl::optional<bool> pending_report_all_root_scrolls_;
 #endif
-  base::Optional<bool> pending_report_all_frame_submission_for_testing_;
+  absl::optional<bool> pending_report_all_frame_submission_for_testing_;
 
   base::WeakPtrFactory<RenderFrameMetadataProviderImpl> weak_factory_{this};
 

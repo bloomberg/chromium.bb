@@ -11,13 +11,13 @@
 
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_framer.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_config.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/crypto/crypto_framer.h"
+#include "quic/core/crypto/crypto_utils.h"
+#include "quic/core/quic_config.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_stream.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -103,6 +103,15 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
 
   // Called when a handshake done frame has been received.
   virtual void OnHandshakeDoneReceived() = 0;
+
+  // Called when a new token frame has been received.
+  virtual void OnNewTokenReceived(absl::string_view token) = 0;
+
+  // Called to get an address token.
+  virtual std::string GetAddressToken() const = 0;
+
+  // Called to validate |token|.
+  virtual bool ValidateAddressToken(absl::string_view token) const = 0;
 
   // Returns current handshake state.
   virtual HandshakeState GetHandshakeState() const = 0;

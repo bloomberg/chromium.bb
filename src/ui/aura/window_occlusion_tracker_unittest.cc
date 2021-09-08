@@ -19,6 +19,7 @@
 #include "ui/aura/test/window_occlusion_tracker_test_api.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -2411,7 +2412,7 @@ TEST_F(WindowOcclusionTrackerTest, ScopedForceVisibleHiddenContainer) {
   EXPECT_FALSE(browser_delegate->is_expecting_call());
   EXPECT_FALSE(webcontents_delegate->is_expecting_call());
 
-  EXPECT_EQ(Window::OcclusionState::VISIBLE, webcontents->occlusion_state());
+  EXPECT_EQ(Window::OcclusionState::VISIBLE, webcontents->GetOcclusionState());
   EXPECT_TRUE(webcontents->TargetVisibility());
 
   container_delegate->set_expectation(Window::OcclusionState::VISIBLE);

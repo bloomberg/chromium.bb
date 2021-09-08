@@ -11,6 +11,7 @@
 #endif
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -28,7 +29,6 @@
 #include "base/strings/string_number_conversions.h"  // For HexEncode.
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"  // For LowerCaseEqualsASCII.
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/trace_event/trace_event.h"
@@ -479,8 +479,7 @@ const HttpResponseInfo* HttpCache::Transaction::GetResponseInfo() const {
         << "These must be in sync via SetResponse and SetAuthResponse.";
     return &auth_response_;
   }
-  DCHECK_EQ(cache_entry_status_, response_.cache_entry_status)
-      << "These must be in sync via SetResponse and SetAuthResponse.";
+  // TODO(https://crbug.com/1219402): This should check in `response_`
   return &response_;
 }
 
@@ -596,6 +595,12 @@ void HttpCache::Transaction::SetResponseHeadersCallback(
   response_headers_callback_ = std::move(callback);
 }
 
+void HttpCache::Transaction::SetEarlyResponseHeadersCallback(
+    ResponseHeadersCallback callback) {
+  DCHECK(!network_trans_);
+  early_response_headers_callback_ = std::move(callback);
+}
+
 int HttpCache::Transaction::ResumeNetworkStart() {
   if (network_trans_)
     return network_trans_->ResumeNetworkStart();
@@ -613,6 +618,14 @@ void HttpCache::Transaction::GetConnectionAttempts(
   out->insert(out->begin(),
               network_transaction_info_.old_connection_attempts.begin(),
               network_transaction_info_.old_connection_attempts.end());
+}
+
+void HttpCache::Transaction::CloseConnectionOnDestruction() {
+  if (network_trans_) {
+    network_trans_->CloseConnectionOnDestruction();
+  } else if (InWriters()) {
+    entry_->writers->CloseConnectionOnDestruction();
+  }
 }
 
 void HttpCache::Transaction::SetValidatingCannotProceed() {
@@ -672,8 +685,8 @@ void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
 //   Start():
 //   GetBackend* -> InitEntry -> OpenOrCreateEntry* -> AddToEntry* ->
 //   SendRequest* -> SuccessfulSendRequest -> OverwriteCachedResponse ->
-//   CacheWriteResponse* -> TruncateCachedData* -> TruncateCachedMetadata* ->
-//   PartialHeadersReceived -> FinishHeaders*
+//   CacheWriteResponse* -> TruncateCachedData* -> PartialHeadersReceived ->
+//   FinishHeaders*
 //
 //   Read():
 //   NetworkReadCacheWrite*/CacheReadData* (if other writers are also writing to
@@ -707,8 +720,7 @@ void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
 //   CacheReadResponse* -> CacheDispatchValidation ->
 //   BeginPartialCacheValidation() -> BeginCacheValidation() -> SendRequest* ->
 //   SuccessfulSendRequest -> OverwriteCachedResponse -> CacheWriteResponse* ->
-//   DoTruncateCachedData* -> TruncateCachedMetadata* -> PartialHeadersReceived
-//   -> FinishHeaders*
+//   DoTruncateCachedData* -> PartialHeadersReceived -> FinishHeaders*
 //
 //   Read():
 //   NetworkReadCacheWrite*/CacheReadData* (if other writers are also writing to
@@ -937,13 +949,6 @@ int HttpCache::Transaction::DoLoop(int result) {
         break;
       case STATE_TRUNCATE_CACHED_DATA_COMPLETE:
         rv = DoTruncateCachedDataComplete(rv);
-        break;
-      case STATE_TRUNCATE_CACHED_METADATA:
-        DCHECK_EQ(OK, rv);
-        rv = DoTruncateCachedMetadata();
-        break;
-      case STATE_TRUNCATE_CACHED_METADATA_COMPLETE:
-        rv = DoTruncateCachedMetadataComplete(rv);
         break;
       case STATE_PARTIAL_HEADERS_RECEIVED:
         DCHECK_EQ(OK, rv);
@@ -1697,6 +1702,8 @@ int HttpCache::Transaction::DoSendRequest() {
       std::move(before_network_start_callback_));
   network_trans_->SetConnectedCallback(connected_callback_);
   network_trans_->SetRequestHeadersCallback(request_headers_callback_);
+  network_trans_->SetEarlyResponseHeadersCallback(
+      early_response_headers_callback_);
   network_trans_->SetResponseHeadersCallback(response_headers_callback_);
 
   // Old load timing information, if any, is now obsolete.
@@ -1881,6 +1888,7 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
   response_.unused_since_prefetch = new_response_->unused_since_prefetch;
   response_.restricted_prefetch = new_response_->restricted_prefetch;
   response_.ssl_info = new_response_->ssl_info;
+  response_.dns_aliases = new_response_->dns_aliases;
   if (new_response_->vary_data.is_valid()) {
     response_.vary_data = new_response_->vary_data;
   } else if (response_.vary_data.is_valid()) {
@@ -2049,30 +2057,6 @@ int HttpCache::Transaction::DoTruncateCachedDataComplete(int result) {
     }
   }
 
-  TransitionToState(STATE_TRUNCATE_CACHED_METADATA);
-  return OK;
-}
-
-int HttpCache::Transaction::DoTruncateCachedMetadata() {
-  TRACE_EVENT0("io", "HttpCacheTransaction::DoTruncateCachedMetadata");
-  TransitionToState(STATE_TRUNCATE_CACHED_METADATA_COMPLETE);
-  if (!entry_)
-    return OK;
-
-  if (net_log_.IsCapturing())
-    net_log_.BeginEvent(NetLogEventType::HTTP_CACHE_WRITE_INFO);
-  return WriteToEntry(kMetadataIndex, 0, nullptr, 0, io_callback_);
-}
-
-int HttpCache::Transaction::DoTruncateCachedMetadataComplete(int result) {
-  TRACE_EVENT0("io", "HttpCacheTransaction::DoTruncateCachedMetadataComplete");
-  if (entry_) {
-    if (net_log_.IsCapturing()) {
-      net_log_.EndEventWithNetErrorCode(NetLogEventType::HTTP_CACHE_WRITE_INFO,
-                                        result);
-    }
-  }
-
   TransitionToState(STATE_PARTIAL_HEADERS_RECEIVED);
   return OK;
 }
@@ -2105,6 +2089,9 @@ int HttpCache::Transaction::DoHeadersPhaseCannotProceed(int result) {
 
   entry_ = nullptr;
   new_entry_ = nullptr;
+
+  // TODO(https://crbug.com/1219402): This should probably clear `response_`,
+  // too, once things are fixed so it's safe to do so.
 
   // Bypass the cache for timeout scenario.
   if (result == ERR_CACHE_LOCK_TIMEOUT)
@@ -2411,13 +2398,13 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
 
   if (range_found && !(effective_load_flags_ & LOAD_DISABLE_CACHE)) {
     UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_OTHER);
-    partial_.reset(new PartialData);
+    partial_ = std::make_unique<PartialData>();
     if (method_ == "GET" && partial_->Init(request_->extra_headers)) {
       // We will be modifying the actual range requested to the server, so
       // let's remove the header here.
       // Note that custom_request_ is a shallow copy so will keep the same
       // pointer to upload data stream as in the original request.
-      custom_request_.reset(new HttpRequestInfo(*request_));
+      custom_request_ = std::make_unique<HttpRequestInfo>(*request_);
       custom_request_->extra_headers.RemoveHeader(HttpRequestHeaders::kRange);
       request_ = custom_request_.get();
       partial_->SetHeaders(custom_request_->extra_headers);
@@ -2602,10 +2589,10 @@ int HttpCache::Transaction::BeginPartialCacheValidation() {
   if (!range_requested_) {
     // The request is not for a range, but we have stored just ranges.
 
-    partial_.reset(new PartialData());
+    partial_ = std::make_unique<PartialData>();
     partial_->SetHeaders(request_->extra_headers);
     if (!custom_request_.get()) {
-      custom_request_.reset(new HttpRequestInfo(*request_));
+      custom_request_ = std::make_unique<HttpRequestInfo>(*request_);
       request_ = custom_request_.get();
     }
   }
@@ -2839,7 +2826,7 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
 
   if (!partial_) {
     // Need to customize the request, so this forces us to allocate :(
-    custom_request_.reset(new HttpRequestInfo(*request_));
+    custom_request_ = std::make_unique<HttpRequestInfo>(*request_);
     request_ = custom_request_.get();
   }
   DCHECK(custom_request_.get());
@@ -3313,7 +3300,7 @@ void HttpCache::Transaction::ResetPartialState(bool delete_object) {
 
   if (!delete_object) {
     // The simplest way to re-initialize partial_ is to create a new object.
-    partial_.reset(new PartialData());
+    partial_ = std::make_unique<PartialData>();
 
     // Reset the range header to the original value (http://crbug.com/820599).
     custom_request_->extra_headers.RemoveHeader(HttpRequestHeaders::kRange);
@@ -3584,9 +3571,10 @@ void HttpCache::Transaction::SaveNetworkTransactionInfo(
     const HttpTransaction& transaction) {
   DCHECK(!network_transaction_info_.old_network_trans_load_timing);
   LoadTimingInfo load_timing;
-  if (transaction.GetLoadTimingInfo(&load_timing))
-    network_transaction_info_.old_network_trans_load_timing.reset(
-        new LoadTimingInfo(load_timing));
+  if (transaction.GetLoadTimingInfo(&load_timing)) {
+    network_transaction_info_.old_network_trans_load_timing =
+        std::make_unique<LoadTimingInfo>(load_timing);
+  }
 
   network_transaction_info_.total_received_bytes +=
       transaction.GetTotalReceivedBytes();

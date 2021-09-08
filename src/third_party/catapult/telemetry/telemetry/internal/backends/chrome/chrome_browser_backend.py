@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
 import os
 import pprint
@@ -15,6 +16,7 @@ from telemetry.internal.backends.chrome import extension_backend
 from telemetry.internal.backends.chrome import tab_list_backend
 from telemetry.internal.backends.chrome_inspector import devtools_client_backend
 from telemetry.internal.backends.chrome_inspector import inspector_websocket
+from telemetry.internal.backends.chrome_inspector import ui_devtools_client_backend
 from telemetry.internal.browser import web_contents
 
 import py_utils
@@ -304,3 +306,15 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
 
   def ExecuteBrowserCommand(self, command_id, timeout):
     self.devtools_client.ExecuteBrowserCommand(command_id, timeout)
+
+  def SetDownloadBehavior(self, behavior, downloadPath, timeout):
+    self.devtools_client.SetDownloadBehavior(behavior, downloadPath, timeout)
+
+  def GetUIDevtoolsBackend(self, port):
+    return ui_devtools_client_backend.GetUIDevtoolsBackend(port, self)
+
+  def GetWindowForTarget(self, target_id):
+    return self.devtools_client.GetWindowForTarget(target_id)
+
+  def SetWindowBounds(self, window_id, bounds):
+    self.devtools_client.SetWindowBounds(window_id, bounds)

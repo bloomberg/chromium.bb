@@ -8,31 +8,116 @@
 #ifndef SKSL_CONSTRUCTOR
 #define SKSL_CONSTRUCTOR
 
-#include "include/private/SkTArray.h"
+#include "include/core/SkSpan.h"
 #include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/ir/SkSLExpression.h"
-#include "src/sksl/ir/SkSLFloatLiteral.h"
-#include "src/sksl/ir/SkSLIntLiteral.h"
-#include "src/sksl/ir/SkSLPrefixExpression.h"
 
 namespace SkSL {
 
 /**
- * Represents the construction of a compound type, such as "float2(x, y)".
- *
- * Vector constructors will always consist of either exactly 1 scalar, or a collection of vectors
- * and scalars totalling exactly the right number of scalar components.
- *
- * Matrix constructors will always consist of either exactly 1 scalar, exactly 1 matrix, or a
- * collection of vectors and scalars totalling exactly the right number of scalar components.
+ * Base class representing a constructor with unknown arguments.
  */
-class Constructor final : public Expression {
+class AnyConstructor : public Expression {
 public:
-    static constexpr Kind kExpressionKind = Kind::kConstructor;
+    AnyConstructor(int offset, Kind kind, const Type* type)
+            : INHERITED(offset, kind, type) {}
 
-    Constructor(int offset, const Type* type, ExpressionArray arguments)
-        : INHERITED(offset, kExpressionKind, type)
-        , fArguments(std::move(arguments)) {}
+    virtual SkSpan<std::unique_ptr<Expression>> argumentSpan() = 0;
+    virtual SkSpan<const std::unique_ptr<Expression>> argumentSpan() const = 0;
+
+    bool hasProperty(Property property) const override {
+        for (const std::unique_ptr<Expression>& arg : this->argumentSpan()) {
+            if (arg->hasProperty(property)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    String description() const override {
+        String result = this->type().description() + "(";
+        const char* separator = "";
+        for (const std::unique_ptr<Expression>& arg : this->argumentSpan()) {
+            result += separator;
+            result += arg->description();
+            separator = ", ";
+        }
+        result += ")";
+        return result;
+    }
+
+    const Type& componentType() const {
+        return this->type().componentType();
+    }
+
+    bool isCompileTimeConstant() const override {
+        for (const std::unique_ptr<Expression>& arg : this->argumentSpan()) {
+            if (!arg->isCompileTimeConstant()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool isConstantOrUniform() const override {
+        for (const std::unique_ptr<Expression>& arg : this->argumentSpan()) {
+            if (!arg->isConstantOrUniform()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    const Expression* getConstantSubexpression(int n) const override;
+
+    ComparisonResult compareConstant(const Expression& other) const override;
+
+private:
+    std::unique_ptr<Expression> fArgument;
+
+    using INHERITED = Expression;
+};
+
+/**
+ * Base class representing a constructor that takes a single argument.
+ */
+class SingleArgumentConstructor : public AnyConstructor {
+public:
+    SingleArgumentConstructor(int offset, Kind kind, const Type* type,
+                              std::unique_ptr<Expression> argument)
+            : INHERITED(offset, kind, type)
+            , fArgument(std::move(argument)) {}
+
+    std::unique_ptr<Expression>& argument() {
+        return fArgument;
+    }
+
+    const std::unique_ptr<Expression>& argument() const {
+        return fArgument;
+    }
+
+    SkSpan<std::unique_ptr<Expression>> argumentSpan() final {
+        return {&fArgument, 1};
+    }
+
+    SkSpan<const std::unique_ptr<Expression>> argumentSpan() const final {
+        return {&fArgument, 1};
+    }
+
+private:
+    std::unique_ptr<Expression> fArgument;
+
+    using INHERITED = AnyConstructor;
+};
+
+/**
+ * Base class representing a constructor that takes an array of arguments.
+ */
+class MultiArgumentConstructor : public AnyConstructor {
+public:
+    MultiArgumentConstructor(int offset, Kind kind, const Type* type, ExpressionArray arguments)
+            : INHERITED(offset, kind, type)
+            , fArguments(std::move(arguments)) {}
 
     ExpressionArray& arguments() {
         return fArguments;
@@ -42,80 +127,50 @@ public:
         return fArguments;
     }
 
-    std::unique_ptr<Expression> constantPropagate(const IRGenerator& irGenerator,
-                                                  const DefinitionMap& definitions) override;
-
-    bool hasProperty(Property property) const override {
+    ExpressionArray cloneArguments() const {
+        ExpressionArray clonedArgs;
+        clonedArgs.reserve_back(this->arguments().size());
         for (const std::unique_ptr<Expression>& arg: this->arguments()) {
-            if (arg->hasProperty(property)) {
-                return true;
-            }
+            clonedArgs.push_back(arg->clone());
         }
-        return false;
+        return clonedArgs;
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        ExpressionArray cloned;
-        cloned.reserve_back(this->arguments().size());
-        for (const std::unique_ptr<Expression>& arg: this->arguments()) {
-            cloned.push_back(arg->clone());
-        }
-        return std::make_unique<Constructor>(fOffset, &this->type(), std::move(cloned));
+    SkSpan<std::unique_ptr<Expression>> argumentSpan() final {
+        return {&fArguments.front(), fArguments.size()};
     }
 
-    String description() const override {
-        String result = this->type().description() + "(";
-        const char* separator = "";
-        for (const std::unique_ptr<Expression>& arg: this->arguments()) {
-            result += separator;
-            result += arg->description();
-            separator = ", ";
-        }
-        result += ")";
-        return result;
+    SkSpan<const std::unique_ptr<Expression>> argumentSpan() const final {
+        return {&fArguments.front(), fArguments.size()};
     }
-
-    bool isCompileTimeConstant() const override {
-        for (const std::unique_ptr<Expression>& arg: this->arguments()) {
-            if (!arg->isCompileTimeConstant()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    bool isConstantOrUniform() const override {
-        for (const std::unique_ptr<Expression>& arg: this->arguments()) {
-            if (!arg->isConstantOrUniform()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    bool compareConstant(const Context& context, const Expression& other) const override;
-
-    template <typename resultType>
-    resultType getVecComponent(int index) const;
-
-    SKSL_FLOAT getFVecComponent(int n) const override {
-        return this->getVecComponent<SKSL_FLOAT>(n);
-    }
-
-    /**
-     * For a literal vector expression, return the integer value of the n'th vector component. It is
-     * an error to call this method on an expression which is not a literal vector.
-     */
-    SKSL_INT getIVecComponent(int n) const override {
-        return this->getVecComponent<SKSL_INT>(n);
-    }
-
-    SKSL_FLOAT getMatComponent(int col, int row) const override;
 
 private:
     ExpressionArray fArguments;
 
-    using INHERITED = Expression;
+    using INHERITED = AnyConstructor;
+};
+
+/**
+ * Converts any GLSL constructor, such as `float2(x, y)` or `mat3x3(otherMat)` or `int[2](0, i)`, to
+ * an SkSL expression.
+ *
+ * Vector constructors must always consist of either exactly 1 scalar, or a collection of vectors
+ * and scalars totaling exactly the right number of scalar components.
+ *
+ * Matrix constructors must always consist of either exactly 1 scalar, exactly 1 matrix, or a
+ * collection of vectors and scalars totaling exactly the right number of scalar components.
+ *
+ * Array constructors must always contain the proper number of array elements (matching the Type).
+ */
+namespace Constructor {
+    // Creates, typechecks and simplifies constructor expressions. Reports errors via the
+    // ErrorReporter. This can return null on error, so be careful. There are several different
+    // Constructor expression types; this class chooses the proper one based on context, e.g.
+    // `ConstructorCompound`, `ConstructorScalarCast`, or `ConstructorMatrixResize`.
+    std::unique_ptr<Expression> Convert(const Context& context,
+                                        int offset,
+                                        const Type& type,
+                                        ExpressionArray args);
 };
 
 }  // namespace SkSL

@@ -37,6 +37,7 @@
 
 #include "base/bits.h"
 #include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -49,7 +50,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
@@ -92,8 +92,6 @@ BlinkGuardPageSize() {
 static_assert(8 == sizeof(double), "We expect sizeof(double) to be 8");
 constexpr size_t kAllocationGranularity = sizeof(double);
 constexpr size_t kAllocationMask = kAllocationGranularity - 1;
-constexpr size_t kMaxHeapObjectSizeLog2 = 27;
-constexpr size_t kMaxHeapObjectSize = 1 << kMaxHeapObjectSizeLog2;
 constexpr size_t kLargeObjectSizeThreshold = kBlinkPageSize / 2;
 
 // A zap value used for freed memory that is allowed to be added to the free
@@ -505,6 +503,18 @@ class BasePage {
 
   void SetAsYoung(bool young) { is_young_ = young; }
 
+  // The number of bytes that allocated on the page and are not freed yet.
+  size_t AllocatedBytes() { return allocated_bytes_; }
+
+  void SetAllocatedBytes(size_t bytes) { allocated_bytes_ = bytes; }
+
+  void IncreaseAllocatedBytes(size_t bytes) { allocated_bytes_ += bytes; }
+
+  void DecreaseAllocatedBytes(size_t bytes) {
+    DCHECK_GE(allocated_bytes_, bytes);
+    allocated_bytes_ -= bytes;
+  }
+
   virtual void VerifyMarking() = 0;
 
  private:
@@ -524,6 +534,11 @@ class BasePage {
   BaseArena* const arena_;
   ThreadState* const thread_state_;
 
+  // The counter is updated by the sweeper and the allocator.
+  // It is the sum of objects marked at the last GC and objects allocated on
+  // the page since the last GC.
+  size_t allocated_bytes_ = 0;
+
   // Track the sweeping state of a page. Set to false at the start of a sweep,
   // true upon completion of sweeping that page.
   bool swept_ = true;
@@ -532,6 +547,7 @@ class BasePage {
   PageType page_type_;
 
   friend class BaseArena;
+  friend class HeapObjectHeader;
   friend class ThreadHeap;
 };
 
@@ -999,6 +1015,7 @@ class PLATFORM_EXPORT BaseArena {
   void CollectStatistics(std::string, ThreadState::Statistics*);
   virtual void CollectFreeListStatistics(
       ThreadState::Statistics::FreeListStatistics*) {}
+  size_t AllocatedBytes();
 
 #if DCHECK_IS_ON()
   BasePage* FindPageFromAddress(ConstAddress) const;
@@ -1197,6 +1214,7 @@ template <HeapObjectHeader::AccessMode mode>
 inline HeapObjectHeader* HeapObjectHeader::FromInnerAddress(
     const void* address) {
   BasePage* const page = PageFromObject(address);
+  page->SynchronizedLoad();
   return page->IsLargeObjectPage()
              ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
              : static_cast<NormalPage*>(page)->FindHeaderFromAddress<mode>(
@@ -1315,7 +1333,7 @@ inline Address NormalPageArena::AllocateObject(size_t allocation_size,
     current_allocation_point_ += allocation_size;
     remaining_allocation_size_ -= allocation_size;
     DCHECK_GT(gc_info_index, 0u);
-    new (NotNull, header_address)
+    new (NotNullTag::kNotNull, header_address)
         HeapObjectHeader(allocation_size, gc_info_index);
     DCHECK(!PageFromObject(header_address)->IsLargeObjectPage());
     static_cast<NormalPage*>(PageFromObject(header_address))
