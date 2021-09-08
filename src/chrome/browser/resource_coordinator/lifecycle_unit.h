@@ -6,17 +6,17 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LIFECYCLE_UNIT_H_
 
 #include <stdint.h>
+#include <string>
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/optional.h"
 #include "base/process/process_handle.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/decision_details.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-forward.h"
 #include "content/public/browser/visibility.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace resource_coordinator {
 
@@ -68,7 +68,7 @@ class LifecycleUnit {
 
   // Returns a title describing this LifecycleUnit, or an empty string if no
   // title is available.
-  virtual base::string16 GetTitle() const = 0;
+  virtual std::u16string GetTitle() const = 0;
 
   // Returns the last time at which the LifecycleUnit was focused, or
   // base::TimeTicks::Max() if the LifecycleUnit is currently focused.

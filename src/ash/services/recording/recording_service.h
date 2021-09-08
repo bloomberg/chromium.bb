@@ -7,10 +7,13 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "ash/services/recording/public/mojom/recording_service.mojom.h"
 #include "ash/services/recording/recording_encoder_muxer.h"
 #include "ash/services/recording/video_capture_params.h"
+#include "base/bind_post_task.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -24,7 +27,8 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom-forward.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace recording {
 
@@ -45,24 +49,33 @@ class RecordingService : public mojom::RecordingService,
   void RecordFullscreen(
       mojo::PendingRemote<mojom::RecordingServiceClient> client,
       mojo::PendingRemote<viz::mojom::FrameSinkVideoCapturer> video_capturer,
-      mojo::PendingRemote<audio::mojom::StreamFactory> audio_stream_factory,
+      mojo::PendingRemote<media::mojom::AudioStreamFactory>
+          audio_stream_factory,
       const viz::FrameSinkId& frame_sink_id,
-      const gfx::Size& video_size) override;
+      const gfx::Size& frame_sink_size) override;
   void RecordWindow(
       mojo::PendingRemote<mojom::RecordingServiceClient> client,
       mojo::PendingRemote<viz::mojom::FrameSinkVideoCapturer> video_capturer,
-      mojo::PendingRemote<audio::mojom::StreamFactory> audio_stream_factory,
+      mojo::PendingRemote<media::mojom::AudioStreamFactory>
+          audio_stream_factory,
       const viz::FrameSinkId& frame_sink_id,
-      const gfx::Size& initial_video_size,
-      const gfx::Size& max_video_size) override;
+      const gfx::Size& frame_sink_size,
+      const viz::SubtreeCaptureId& subtree_capture_id,
+      const gfx::Size& window_size) override;
   void RecordRegion(
       mojo::PendingRemote<mojom::RecordingServiceClient> client,
       mojo::PendingRemote<viz::mojom::FrameSinkVideoCapturer> video_capturer,
-      mojo::PendingRemote<audio::mojom::StreamFactory> audio_stream_factory,
+      mojo::PendingRemote<media::mojom::AudioStreamFactory>
+          audio_stream_factory,
       const viz::FrameSinkId& frame_sink_id,
-      const gfx::Size& full_capture_size,
+      const gfx::Size& frame_sink_size,
       const gfx::Rect& crop_region) override;
   void StopRecording() override;
+  void OnRecordedWindowChangingRoot(
+      const viz::FrameSinkId& new_frame_sink_id,
+      const gfx::Size& new_frame_sink_size) override;
+  void OnRecordedWindowSizeChanged(const gfx::Size& new_window_size) override;
+  void OnFrameSinkSizeChanged(const gfx::Size& new_frame_sink_size) override;
 
   // viz::mojom::FrameSinkVideoConsumer:
   void OnFrameCaptured(
@@ -80,15 +93,21 @@ class RecordingService : public mojom::RecordingService,
                base::TimeTicks audio_capture_time,
                double volume,
                bool key_pressed) override;
-  void OnCaptureError(const std::string& message) override;
+  void OnCaptureError(media::AudioCapturerSource::ErrorCode code,
+                      const std::string& message) override;
   void OnCaptureMuted(bool is_muted) override;
 
  private:
   void StartNewRecording(
       mojo::PendingRemote<mojom::RecordingServiceClient> client,
       mojo::PendingRemote<viz::mojom::FrameSinkVideoCapturer> video_capturer,
-      mojo::PendingRemote<audio::mojom::StreamFactory> audio_stream_factory,
+      mojo::PendingRemote<media::mojom::AudioStreamFactory>
+          audio_stream_factory,
       std::unique_ptr<VideoCaptureParams> capture_params);
+
+  // Called on the main thread during an on-going recording to reconfigure an
+  // existing video encoder.
+  void ReconfigureVideoEncoder();
 
   // Called on the main thread on |success| from OnStopped() when all video
   // frames have been sent, or from OnEncodingFailure() with |success| set to
@@ -113,10 +132,11 @@ class RecordingService : public mojom::RecordingService,
   void OnAudioCaptured(std::unique_ptr<media::AudioBus> audio_bus,
                        base::TimeTicks audio_capture_time);
 
-  // This is called by |encoder_muxer_| on the same sequence of the
-  // |encoding_task_runner_| when a failure of |type| occurs during audio or
-  // video encoding depending on |for_video|. This ends the ongoing recording
-  // and signals to the client that a failure occurred.
+  // This is called by |encoder_muxer_| on the main thread (since we bound it as
+  // a callback to be invoked on the main thread. See BindOnceToMainThread()),
+  // when a failure of |type| occurs during audio or video encoding depending on
+  // |for_video|. This ends the ongoing recording and signals to the client that
+  // a failure occurred.
   void OnEncodingFailure(FailureType type, bool for_video);
 
   // Called back on the main thread to terminate the recording immediately as a
@@ -125,7 +145,8 @@ class RecordingService : public mojom::RecordingService,
 
   // At the end of recording we ask the |encoder_muxer_| to flush and process
   // any buffered frames. When this completes this function is called on the
-  // same sequence of |encoding_task_runner_|. |success| indicates whether we're
+  // main thread (since it's bound as a callback to be invoked on the main
+  // thread. See BindOnceToMainThread()). |success| indicates whether we're
   // flushing due to normal recording termination, or due to a failure.
   void OnEncoderMuxerFlushed(bool success);
 
@@ -137,14 +158,43 @@ class RecordingService : public mojom::RecordingService,
   // chunks will be sent to the client after this.
   void SignalRecordingEndedToClient(bool success);
 
-  // Called on the same sequence of the |encoding_task_runner_| by
-  // |encoder_muxer_| to deliver a muxer output chunk |data|.
-  void OnMuxerWrite(base::StringPiece data);
+  // Bound as a callback to be repeatedly invoked on the |main_task_runner_|.
+  // It is called by |encoder_muxer_| to deliver a muxer output chunk |data|.
+  void OnMuxerOutput(std::string data);
 
-  // Called on the same sequence of the |encoding_task_runner_| to flush the
-  // chunks buffered in |muxed_chunks_buffer_| by sending them to the client and
-  // reset the |number_of_buffered_chunks_| back to 0.
+  // Called on the main thread to flush the chunks buffered in
+  // |muxed_chunks_buffer_| by sending them to the client and reset the
+  // |number_of_buffered_chunks_| back to 0.
   void FlushBufferedChunks();
+
+  // By default, the |encoder_muxer_| will invoke any callback we provide it
+  // with to notify us of certain events (such as muxer output, or flush done)
+  // on the |encoding_task_runner_|'s sequence. But since these callbacks are
+  // invoked asynchronously from other threads, they may get invoked after this
+  // RecordingService instance had been destroyed. Therefore, we need to bind
+  // these callbacks to weak ptrs, to prevent them from invoking after this
+  // object's destruction. However, this won't work, since weak ptrs cannot be
+  // invalidated except on the sequence on which they were invoked on. Hence, we
+  // must make sure these callbacks are invoked on the main thread.
+  //
+  // The below are two convenience methods to bind once and repeating callbacks
+  // to weak ptrs that would only be invoked on the main thread.
+  template <typename Functor, typename... Args>
+  auto BindOnceToMainThread(Functor&& functor, Args&&... args) {
+    return base::BindPostTask(main_task_runner_,
+                              base::BindOnce(std::forward<Functor>(functor),
+                                             weak_ptr_factory_.GetWeakPtr(),
+                                             std::forward<Args>(args)...));
+  }
+  template <typename Functor, typename... Args>
+  auto BindRepeatingToMainThread(Functor&& functor, Args&&... args) {
+    return base::BindPostTask(
+        main_task_runner_, base::BindRepeating(std::forward<Functor>(functor),
+                                               weak_ptr_factory_.GetWeakPtr(),
+                                               std::forward<Args>(args)...));
+  }
+
+  THREAD_CHECKER(main_thread_checker_);
 
   // The audio parameters that will be used when recording audio.
   const media::AudioParameters audio_parameters_;
@@ -169,6 +219,11 @@ class RecordingService : public mojom::RecordingService,
   mojo::Remote<mojom::RecordingServiceClient> client_remote_
       GUARDED_BY_CONTEXT(main_thread_checker_);
 
+  // A cached scaled down rgb image of the first valid video frame which will be
+  // used to provide the client with an image thumbnail representing the
+  // recorded video.
+  gfx::ImageSkia video_thumbnail_ GUARDED_BY_CONTEXT(main_thread_checker_);
+
   // True if a failure has been propagated from |encoder_muxer_| that we will
   // end recording abruptly and ignore any incoming audio/video frames.
   bool did_failure_occur_ GUARDED_BY_CONTEXT(main_thread_checker_) = false;
@@ -189,21 +244,18 @@ class RecordingService : public mojom::RecordingService,
   scoped_refptr<media::AudioCapturerSource> audio_capturer_
       GUARDED_BY_CONTEXT(main_thread_checker_);
 
-  // Performs all encoding and muxing operations on the |encoding_task_runner_|,
-  // and it is bound to the sequence of that task runner.
-  base::SequenceBound<RecordingEncoderMuxer> encoder_muxer_;
+  // Performs all encoding and muxing operations asynchronously on the
+  // |encoding_task_runner_|. However, the |encoder_muxer_| object itself is
+  // constructed, used, and destroyed on the main thread sequence.
+  base::SequenceBound<RecordingEncoderMuxer> encoder_muxer_
+      GUARDED_BY_CONTEXT(main_thread_checker_);
 
   // To avoid doing a ton of IPC calls to the client for each muxed chunk
-  // received from |encoder_muxer_| in OnMuxerWrite(), we buffer those chunks
+  // received from |encoder_muxer_| in OnMuxerOutput(), we buffer those chunks
   // here up to |kMaxBufferedChunks| before we send them to the client over IPC
   // in SignalMuxerOutputToClient().
-  std::string muxed_chunks_buffer_
-      GUARDED_BY_CONTEXT(encoding_sequence_checker_);
-  int number_of_buffered_chunks_
-      GUARDED_BY_CONTEXT(encoding_sequence_checker_) = 0;
-
-  THREAD_CHECKER(main_thread_checker_);
-  SEQUENCE_CHECKER(encoding_sequence_checker_);
+  std::string muxed_chunks_buffer_ GUARDED_BY_CONTEXT(main_thread_checker_);
+  int number_of_buffered_chunks_ GUARDED_BY_CONTEXT(main_thread_checker_) = 0;
 
   base::WeakPtrFactory<RecordingService> weak_ptr_factory_{this};
 };

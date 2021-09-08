@@ -7,14 +7,16 @@
 
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 
+#include "ash/constants/ash_features.h"
+#include "base/containers/contains.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/android_sms_app_installing_status_observer.h"
-#include "chromeos/services/multidevice_setup/device_reenroller.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 #include "chromeos/services/multidevice_setup/feature_state_manager_impl.h"
 #include "chromeos/services/multidevice_setup/grandfathered_easy_unlock_host_disabler.h"
@@ -67,18 +69,21 @@ std::unique_ptr<MultiDeviceSetupBase> MultiDeviceSetupImpl::Factory::Create(
     OobeCompletionTracker* oobe_completion_tracker,
     AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
     AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
-    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider) {
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
+    bool is_secondary_user) {
   if (test_factory_) {
     return test_factory_->CreateInstance(
         pref_service, device_sync_client, auth_token_validator,
         oobe_completion_tracker, android_sms_app_helper_delegate,
-        android_sms_pairing_state_tracker, gcm_device_info_provider);
+        android_sms_pairing_state_tracker, gcm_device_info_provider,
+        is_secondary_user);
   }
 
   return base::WrapUnique(new MultiDeviceSetupImpl(
       pref_service, device_sync_client, auth_token_validator,
       oobe_completion_tracker, android_sms_app_helper_delegate,
-      android_sms_pairing_state_tracker, gcm_device_info_provider));
+      android_sms_pairing_state_tracker, gcm_device_info_provider,
+      is_secondary_user));
 }
 
 // static
@@ -96,7 +101,8 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
     OobeCompletionTracker* oobe_completion_tracker,
     AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
     AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
-    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider)
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
+    bool is_secondary_user)
     : eligible_host_devices_provider_(
           EligibleHostDevicesProviderImpl::Factory::Create(device_sync_client)),
       host_backend_delegate_(HostBackendDelegateImpl::Factory::Create(
@@ -117,16 +123,6 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
               host_backend_delegate_.get(),
               device_sync_client,
               pref_service)),
-      wifi_sync_feature_manager_(WifiSyncFeatureManagerImpl::Factory::Create(
-          host_status_provider_.get(),
-          pref_service,
-          device_sync_client)),
-      feature_state_manager_(FeatureStateManagerImpl::Factory::Create(
-          pref_service,
-          host_status_provider_.get(),
-          device_sync_client,
-          android_sms_pairing_state_tracker,
-          wifi_sync_feature_manager_.get())),
       host_device_timestamp_manager_(
           HostDeviceTimestampManagerImpl::Factory::Create(
               host_status_provider_.get(),
@@ -139,9 +135,18 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
               host_device_timestamp_manager_.get(),
               oobe_completion_tracker,
               base::DefaultClock::GetInstance())),
-      device_reenroller_(
-          DeviceReenroller::Factory::Create(device_sync_client,
-                                            gcm_device_info_provider)),
+      wifi_sync_feature_manager_(WifiSyncFeatureManagerImpl::Factory::Create(
+          host_status_provider_.get(),
+          pref_service,
+          device_sync_client,
+          delegate_notifier_.get())),
+      feature_state_manager_(FeatureStateManagerImpl::Factory::Create(
+          pref_service,
+          host_status_provider_.get(),
+          device_sync_client,
+          android_sms_pairing_state_tracker,
+          wifi_sync_feature_manager_.get(),
+          is_secondary_user)),
       android_sms_app_installing_host_observer_(
           android_sms_app_helper_delegate
               ? AndroidSmsAppInstallingStatusObserver::Factory::Create(
@@ -188,13 +193,31 @@ void MultiDeviceSetupImpl::GetEligibleHostDevices(
 
 void MultiDeviceSetupImpl::GetEligibleActiveHostDevices(
     GetEligibleActiveHostDevicesCallback callback) {
+  // For metrics.
+  bool has_duplicate_host_name = false;
+  base::flat_set<std::string> name_set;
+
   std::vector<mojom::HostDevicePtr> eligible_active_hosts;
   for (const auto& host_device :
        eligible_host_devices_provider_->GetEligibleActiveHostDevices()) {
+    // For metrics.
+    if (base::Contains(name_set, host_device.remote_device.name())) {
+      has_duplicate_host_name = true;
+      PA_LOG(WARNING) << "MultiDeviceSetupImpl::GetEligibleActiveHostDevices: "
+                      << "Detected duplicate eligible host device name \""
+                      << host_device.remote_device.name() << "\"";
+    } else {
+      name_set.insert(host_device.remote_device.name());
+    }
+
     eligible_active_hosts.push_back(
         mojom::HostDevice::New(host_device.remote_device.GetRemoteDevice(),
                                host_device.connectivity_status));
   }
+
+  base::UmaHistogramBoolean(
+      "MultiDevice.Setup.HasDuplicateEligibleHostDeviceNames",
+      has_duplicate_host_name);
 
   std::move(callback).Run(std::move(eligible_active_hosts));
 }
@@ -216,7 +239,7 @@ void MultiDeviceSetupImpl::RemoveHostDevice() {
       VerifyAndForgetHostConfirmationState::kButtonClickedState);
 
   host_backend_delegate_->AttemptToSetMultiDeviceHostOnBackend(
-      base::nullopt /* host_device */);
+      absl::nullopt /* host_device */);
 }
 
 void MultiDeviceSetupImpl::GetHostStatus(GetHostStatusCallback callback) {
@@ -225,7 +248,7 @@ void MultiDeviceSetupImpl::GetHostStatus(GetHostStatusCallback callback) {
 
   // The Mojo API requires a raw multidevice::RemoteDevice instead of a
   // multidevice::RemoteDeviceRef.
-  base::Optional<multidevice::RemoteDevice> device_for_callback;
+  absl::optional<multidevice::RemoteDevice> device_for_callback;
   if (host_status_with_device.host_device()) {
     device_for_callback =
         host_status_with_device.host_device()->GetRemoteDevice();
@@ -238,10 +261,12 @@ void MultiDeviceSetupImpl::GetHostStatus(GetHostStatusCallback callback) {
 void MultiDeviceSetupImpl::SetFeatureEnabledState(
     mojom::Feature feature,
     bool enabled,
-    const base::Optional<std::string>& auth_token,
+    const absl::optional<std::string>& auth_token,
     SetFeatureEnabledStateCallback callback) {
   if (IsAuthTokenRequiredForFeatureStateChange(feature, enabled) &&
       (!auth_token || !auth_token_validator_->IsAuthTokenValid(*auth_token))) {
+    PA_LOG(ERROR) << __func__ << " Cannot " << (enabled ? "enable" : "disable")
+                  << " " << feature << "; auth token invalid";
     std::move(callback).Run(false /* success */);
     return;
   }
@@ -326,7 +351,7 @@ void MultiDeviceSetupImpl::OnHostStatusChange(
 
   // The Mojo API requires a raw multidevice::RemoteDevice instead of a
   // multidevice::RemoteDeviceRef.
-  base::Optional<multidevice::RemoteDevice> device_for_callback;
+  absl::optional<multidevice::RemoteDevice> device_for_callback;
   if (host_status_with_device.host_device()) {
     device_for_callback =
         host_status_with_device.host_device()->GetRemoteDevice();

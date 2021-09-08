@@ -10,9 +10,9 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "base/stl_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -127,10 +127,10 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
   }
 
   auto watcher = std::make_unique<base::FilePathWatcher>();
-  bool success = watcher->Watch(path,
-                                true /*recursive*/,
-                                base::Bind(&FileWatchManager::OnFilePathChanged,
-                                           weak_factory_.GetWeakPtr()));
+  bool success =
+      watcher->Watch(path, base::FilePathWatcher::Type::kRecursive,
+                     base::BindRepeating(&FileWatchManager::OnFilePathChanged,
+                                         weak_factory_.GetWeakPtr()));
 
   if (success)
     watchers_[path] = std::move(watcher);
@@ -191,8 +191,8 @@ GalleryWatchManager::GalleryWatchManager()
       watch_manager_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  watch_manager_.reset(new FileWatchManager(base::Bind(
-      &GalleryWatchManager::OnFilePathChanged, weak_factory_.GetWeakPtr())));
+  watch_manager_ = std::make_unique<FileWatchManager>(base::BindRepeating(
+      &GalleryWatchManager::OnFilePathChanged, weak_factory_.GetWeakPtr()));
 }
 
 GalleryWatchManager::~GalleryWatchManager() {
@@ -362,8 +362,9 @@ void GalleryWatchManager::EnsureBrowserContextSubscription(
     browser_context_subscription_map_[browser_context] =
         GalleryWatchManagerShutdownNotifierFactory::GetInstance()
             ->Get(browser_context)
-            ->Subscribe(base::Bind(&GalleryWatchManager::ShutdownBrowserContext,
-                                   base::Unretained(this), browser_context));
+            ->Subscribe(base::BindRepeating(
+                &GalleryWatchManager::ShutdownBrowserContext,
+                base::Unretained(this), browser_context));
   }
 }
 

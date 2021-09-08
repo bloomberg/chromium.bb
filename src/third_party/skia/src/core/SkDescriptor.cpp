@@ -83,6 +83,18 @@ bool SkDescriptor::operator==(const SkDescriptor& other) const {
     return true;
 }
 
+SkString SkDescriptor::dumpRec() const {
+    const SkScalerContextRec* rec = static_cast<const SkScalerContextRec*>(
+            this->findEntry(kRec_SkDescriptorTag, nullptr));
+
+    SkString result;
+    result.appendf("    Checksum: %x\n", fChecksum);
+    if (rec != nullptr) {
+        result.append(rec->dump());
+    }
+    return result;
+}
+
 uint32_t SkDescriptor::ComputeChecksum(const SkDescriptor* desc) {
     const uint32_t* ptr = (const uint32_t*)desc + 1; // skip the checksum field
     size_t len = desc->fLength - sizeof(uint32_t);
@@ -125,11 +137,29 @@ bool SkDescriptor::isValid() const {
 SkAutoDescriptor::SkAutoDescriptor() = default;
 SkAutoDescriptor::SkAutoDescriptor(size_t size) { this->reset(size); }
 SkAutoDescriptor::SkAutoDescriptor(const SkDescriptor& desc) { this->reset(desc); }
-SkAutoDescriptor::SkAutoDescriptor(const SkAutoDescriptor& ad) {
-    this->reset(*ad.getDesc());
+SkAutoDescriptor::SkAutoDescriptor(const SkAutoDescriptor& that) {
+    this->reset(*that.getDesc());
 }
-SkAutoDescriptor& SkAutoDescriptor::operator=(const SkAutoDescriptor& ad) {
-    this->reset(*ad.getDesc());
+SkAutoDescriptor& SkAutoDescriptor::operator=(const SkAutoDescriptor& that) {
+    this->reset(*that.getDesc());
+    return *this;
+}
+SkAutoDescriptor::SkAutoDescriptor(SkAutoDescriptor&& that) {
+    if (that.fDesc == (SkDescriptor*)&that.fStorage) {
+        this->reset(*that.getDesc());
+    } else {
+        fDesc = that.fDesc;
+        that.fDesc = nullptr;
+    }
+}
+SkAutoDescriptor& SkAutoDescriptor::operator=(SkAutoDescriptor&& that) {
+    if (that.fDesc == (SkDescriptor*)&that.fStorage) {
+        this->reset(*that.getDesc());
+    } else {
+        this->free();
+        fDesc = that.fDesc;
+        that.fDesc = nullptr;
+    }
     return *this;
 }
 
@@ -151,7 +181,9 @@ void SkAutoDescriptor::reset(const SkDescriptor& desc) {
 }
 
 void SkAutoDescriptor::free() {
-    if (fDesc != (SkDescriptor*)&fStorage) {
+    if (fDesc == (SkDescriptor*)&fStorage) {
+        fDesc->~SkDescriptor();
+    } else {
         delete fDesc;
     }
 }

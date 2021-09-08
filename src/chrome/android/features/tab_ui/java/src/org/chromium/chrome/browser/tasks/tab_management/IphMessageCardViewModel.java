@@ -35,6 +35,8 @@ public class IphMessageCardViewModel {
 
         return new PropertyModel.Builder(MessageCardViewProperties.ALL_KEYS)
                 .with(MessageCardViewProperties.MESSAGE_TYPE, MessageService.MessageType.IPH)
+                .with(MessageCardViewProperties.MESSAGE_IDENTIFIER,
+                        MessageService.DEFAULT_MESSAGE_IDENTIFIER)
                 .with(MessageCardViewProperties.ICON_PROVIDER,
                         IphMessageCardViewModel::getIconDrawable)
                 .with(MessageCardViewProperties.UI_DISMISS_ACTION_PROVIDER, uiDismissActionProvider)
@@ -50,6 +52,7 @@ public class IphMessageCardViewModel {
                 .with(MessageCardViewProperties.SHOULD_KEEP_AFTER_REVIEW, true)
                 .with(MessageCardViewProperties.IS_ICON_VISIBLE, false)
                 .with(MessageCardViewProperties.IS_INCOGNITO, false)
+                .with(MessageCardViewProperties.SHOULD_SHOW_IN_INCOGNITO, true)
                 .with(CARD_TYPE, MESSAGE)
                 .with(CARD_ALPHA, 1f)
                 .build();

@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 // This command line flag enables NoStatePrefetch on Prefetch Proxy.
@@ -36,7 +36,7 @@ bool PrefetchProxyNoStatePrefetchSubresources();
 // The maximum number of prefetches that should be done from predictions on a
 // Google SRP. nullopt is returned for unlimited. Negative values given by the
 // field trial return nullopt.
-base::Optional<size_t> PrefetchProxyMaximumNumberOfPrefetches();
+absl::optional<size_t> PrefetchProxyMaximumNumberOfPrefetches();
 
 // The maximum number of mainframes allowed to be prefetched at the same time.
 size_t PrefetchProxyMaximumNumberOfConcurrentPrefetches();
@@ -44,7 +44,7 @@ size_t PrefetchProxyMaximumNumberOfConcurrentPrefetches();
 // The maximum number of no state prefetches to attempt, in order to prefetch
 // the pages' subresources, while the user is on the SRP. nullopt is returned
 // for unlimited. Negative values given by the field trial return nullopt.
-base::Optional<size_t> PrefetchProxyMaximumNumberOfNoStatePrefetchAttempts();
+absl::optional<size_t> PrefetchProxyMaximumNumberOfNoStatePrefetchAttempts();
 
 // The maximum body length allowed to be prefetched for mainframe responses in
 // bytes.
@@ -85,10 +85,28 @@ size_t PrefetchProxyMaxSubresourcesPerPrerender();
 // complete.
 bool PrefetchProxyStartsSpareRenderer();
 
+// Whether the proxy should decide prefetches based on speculation rules API.
+// The default (false) uses Navigation Predictor. When false, prefetch proxy
+// can only be used for links from default search to links that are not Google.
+// When true, any origin in the origin trial (see
+// blink::features::kSpeculationRulesPrefetchProxy) can request a proxied
+// prefetch for any cross origin link.
+bool PrefetchProxyUseSpeculationRules();
+
 // Whether the given position of a predicted link should be prefetched.
 bool PrefetchProxyShouldPrefetchPosition(size_t position);
 
 // The maximum retry-after header value that will be persisted.
 base::TimeDelta PrefetchProxyMaxRetryAfterDelta();
+
+// Returns true if an ineligible prefetch request should be put on the network,
+// but not cached, to disguise the presence of cookies (or other criteria). The
+// return value is randomly decided based on variation params since always
+// sending the decoy request is expensive from a data use perspective.
+bool PrefetchProxySendDecoyRequestForIneligiblePrefetch();
+
+// Returns true if any domain can issue private prefetches using the Google
+// proxy. Normally, this is restricted to Google domains.
+bool PrefetchProxyAllowAllDomains();
 
 #endif  // CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_PARAMS_H_

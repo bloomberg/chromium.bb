@@ -36,6 +36,28 @@ Polymer({
       value: false,
     },
 
+    invalid: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Whether an errorMessage can be shown beneath the input.
+     */
+    allowErrorMessage: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Error message shown beneath input (only shown if allowErrorMessage is
+     * true).
+     */
+    errorMessage: {
+      type: String,
+      value: '',
+    },
+
     showPolicyIndicator_: {
       type: Boolean,
       value: false,
@@ -110,18 +132,13 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onKeypress_(event) {
+  onKeydown_(event) {
     if (event.target.id === 'input' && event.key === 'Enter') {
       event.stopPropagation();
       this.fire('enter');
+      return;
     }
-  },
 
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  onKeydown_(event) {
     if (!this.isShowingPlaceholder_()) {
       return;
     }

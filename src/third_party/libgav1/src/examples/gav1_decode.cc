@@ -419,6 +419,9 @@ int main(int argc, char* argv[]) {
         input_buffers.ReleaseInputBuffer(input_buffer);
       }
       input_buffer = nullptr;
+      // Clear any in progress frames to ensure the output frame limit is
+      // respected.
+      decoder.SignalEOS();
     }
   } while (input_buffer != nullptr ||
            (!file_reader->IsEndOfFile() && !limit_reached) ||

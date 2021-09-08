@@ -13,6 +13,7 @@
 #include "absl/types/span.h"
 #include "cast/streaming/environment.h"
 #include "cast/streaming/ssrc.h"
+#include "util/flat_map.h"
 
 namespace openscreen {
 namespace cast {
@@ -44,20 +45,14 @@ class ReceiverPacketRouter final : public Environment::PacketConsumer {
   void SendRtcpPacket(absl::Span<const uint8_t> packet);
 
  private:
-  using ReceiverEntries = std::vector<std::pair<Ssrc, Receiver*>>;
-
   // Environment::PacketConsumer implementation.
   void OnReceivedPacket(const IPEndpoint& source,
                         Clock::time_point arrival_time,
                         std::vector<uint8_t> packet) final;
 
-  // Helper to return an iterator pointing to the entry corresponding to the
-  // given |sender_ssrc|, or "end" if not found.
-  ReceiverEntries::iterator FindEntry(Ssrc sender_ssrc);
-
   Environment* const environment_;
 
-  ReceiverEntries receivers_;
+  FlatMap<Ssrc, Receiver*> receivers_;
 };
 
 }  // namespace cast

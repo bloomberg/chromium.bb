@@ -11,10 +11,9 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "base/values.h"
+#include "build/chromeos_buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
@@ -35,8 +34,8 @@ namespace message_center {
 
 // Represents an individual item in NOTIFICATION_TYPE_MULTIPLE notifications.
 struct MESSAGE_CENTER_PUBLIC_EXPORT NotificationItem {
-  base::string16 title;
-  base::string16 message;
+  std::u16string title;
+  std::u16string message;
 };
 
 enum class SettingsButtonHandler {
@@ -50,14 +49,14 @@ enum class SystemNotificationWarningLevel { NORMAL, WARNING, CRITICAL_WARNING };
 
 // Represents a button to be shown as part of a notification.
 struct MESSAGE_CENTER_PUBLIC_EXPORT ButtonInfo {
-  explicit ButtonInfo(const base::string16& title);
+  explicit ButtonInfo(const std::u16string& title);
   ButtonInfo(const ButtonInfo& other);
   ButtonInfo();
   ~ButtonInfo();
   ButtonInfo& operator=(const ButtonInfo& other);
 
   // Title that should be displayed on the notification button.
-  base::string16 title;
+  std::u16string title;
 
   // Icon that should be displayed on the notification button. Optional. On some
   // platforms, a mask will be applied to the icon, to match the visual
@@ -68,7 +67,7 @@ struct MESSAGE_CENTER_PUBLIC_EXPORT ButtonInfo {
   // The placeholder string that should be displayed in the input field for
   // text input type buttons until the user has entered a response themselves.
   // If the value is null, there is no input field associated with the button.
-  base::Optional<base::string16> placeholder;
+  absl::optional<std::u16string> placeholder;
 };
 
 enum class FullscreenVisibility {
@@ -97,7 +96,7 @@ class MESSAGE_CENTER_PUBLIC_EXPORT RichNotificationData {
 
   // Context message to display below the notification's content. Optional. May
   // not be used for notifications that have an explicit origin URL set.
-  base::string16 context_message;
+  std::u16string context_message;
 
   // Large image to display on the notification. Optional.
   gfx::Image image;
@@ -106,11 +105,16 @@ class MESSAGE_CENTER_PUBLIC_EXPORT RichNotificationData {
   // notification. Optional.
   gfx::Image small_image;
 
-#if defined(OS_CHROMEOS)
+  // If true, the small image should be masked with the foreground and then
+  // added on top of the background. Masking is delayed until the notification
+  // is in the views hierarchy or about to be passed to the OS.
+  bool small_image_needs_additional_masking = false;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // If true, we simply use the raw |small_image| icon, ignoring accent color
   // styling. For example, this is used with raw icons received from Android.
   bool ignore_accent_color_for_small_image = false;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Vector version of |small_image|.
   // Used by Notification::GenerateMaskedSmallIcon.
@@ -137,7 +141,7 @@ class MESSAGE_CENTER_PUBLIC_EXPORT RichNotificationData {
 
   // Status text string shown in NOTIFICATION_TYPE_PROGRESS notifications.
   // If MD style notification is not enabled, this attribute is ignored.
-  base::string16 progress_status;
+  std::u16string progress_status;
 
   // Buttons that should show up on the notification. A maximum of 16 buttons
   // is supported by the current implementation, but this may differ between
@@ -148,11 +152,11 @@ class MESSAGE_CENTER_PUBLIC_EXPORT RichNotificationData {
   // depending on visual assistance systems.
   bool should_make_spoken_feedback_for_popup_updates = true;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Flag if the notification is pinned. If true, the notification is pinned
   // and the user can't remove it.
   bool pinned = false;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Vibration pattern to play when displaying the notification. There must be
   // an odd number of entries in this pattern when it's set: numbers of
@@ -168,13 +172,13 @@ class MESSAGE_CENTER_PUBLIC_EXPORT RichNotificationData {
   bool silent = false;
 
   // An accessible description of the notification's contents.
-  base::string16 accessible_name;
+  std::u16string accessible_name;
 
   // Unified theme color used in new style notification.
   // Usually, it should not be set directly.
   // For system notification, ash::CreateSystemNotification with
   // SystemNotificationWarningLevel should be used.
-  base::Optional<SkColor> accent_color;
+  absl::optional<SkColor> accent_color;
 
   // Controls whether a settings button should appear on the notification. See
   // enum definition. TODO(estade): turn this into a boolean. See
@@ -209,10 +213,10 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   //             and receives events on its behalf. May be omitted.
   Notification(NotificationType type,
                const std::string& id,
-               const base::string16& title,
-               const base::string16& message,
+               const std::u16string& title,
+               const std::u16string& message,
                const gfx::Image& icon,
-               const base::string16& display_source,
+               const std::u16string& display_source,
                const GURL& origin_url,
                const NotifierId& notifier_id,
                const RichNotificationData& optional_fields,
@@ -255,11 +259,11 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // NotificationUIManager interface.
   const std::string& id() const { return id_; }
 
-  const base::string16& title() const { return title_; }
-  void set_title(const base::string16& title) { title_ = title; }
+  const std::u16string& title() const { return title_; }
+  void set_title(const std::u16string& title) { title_ = title; }
 
-  const base::string16& message() const { return message_; }
-  void set_message(const base::string16& message) { message_ = message; }
+  const std::u16string& message() const { return message_; }
+  void set_message(const std::u16string& message) { message_ = message; }
 
   // The origin URL of the script which requested the notification.
   // Can be empty if the notification is requested by an extension or
@@ -268,7 +272,7 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   void set_origin_url(const GURL& origin_url) { origin_url_ = origin_url; }
 
   // A display string for the source of the notification.
-  const base::string16& display_source() const { return display_source_; }
+  const std::u16string& display_source() const { return display_source_; }
 
   const NotifierId& notifier_id() const { return notifier_id_; }
 
@@ -305,11 +309,11 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
     optional_fields_.timestamp = timestamp;
   }
 
-  const base::string16 context_message() const {
+  const std::u16string context_message() const {
     return optional_fields_.context_message;
   }
 
-  void set_context_message(const base::string16& context_message) {
+  void set_context_message(const std::u16string& context_message) {
     optional_fields_.context_message = context_message;
   }
 
@@ -326,10 +330,10 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   int progress() const { return optional_fields_.progress; }
   void set_progress(int progress) { optional_fields_.progress = progress; }
 
-  base::string16 progress_status() const {
+  std::u16string progress_status() const {
     return optional_fields_.progress_status;
   }
-  void set_progress_status(const base::string16& progress_status) {
+  void set_progress_status(const std::u16string& progress_status) {
     optional_fields_.progress_status = progress_status;
   }
 
@@ -347,6 +351,14 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
     optional_fields_.small_image = image;
   }
 
+  bool small_image_needs_additional_masking() const {
+    return optional_fields_.small_image_needs_additional_masking;
+  }
+  void set_small_image_needs_additional_masking(bool needs_additional_masking) {
+    optional_fields_.small_image_needs_additional_masking =
+        needs_additional_masking;
+  }
+
   const gfx::VectorIcon& vector_small_image() const {
     return *optional_fields_.vector_small_image;
   }
@@ -362,7 +374,14 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // filled by the |color|.
   // Otherwise, it uses alpha channel of the rasterized |small_image| for
   // masking.
-  gfx::Image GenerateMaskedSmallIcon(int dip_size, SkColor color) const;
+  gfx::Image GenerateMaskedSmallIcon(int dip_size,
+                                     SkColor mask_color,
+                                     SkColor background_color,
+                                     SkColor foreground_color) const;
+
+  gfx::Image GetMaskedSmallImage(const gfx::ImageSkia& small_image,
+                                 SkColor background_color,
+                                 SkColor foreground_color) const;
 
   // Buttons, with icons fetched asynchronously.
   const std::vector<ButtonInfo>& buttons() const {
@@ -384,22 +403,22 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   }
 
   bool pinned() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     return optional_fields_.pinned;
 #else
     return false;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void set_pinned(bool pinned) { optional_fields_.pinned = pinned; }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Gets a text for spoken feedback.
-  const base::string16& accessible_name() const {
+  const std::u16string& accessible_name() const {
     return optional_fields_.accessible_name;
   }
 
-  base::Optional<SkColor> accent_color() const {
+  absl::optional<SkColor> accent_color() const {
     return optional_fields_.accent_color;
   }
   void set_accent_color(SkColor accent_color) {
@@ -441,7 +460,7 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // method explicitly, to avoid setting it accidentally.
   void SetSystemPriority();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void set_system_notification_warning_level(
       SystemNotificationWarningLevel warning_level) {
     system_notification_warning_level_ = warning_level;
@@ -450,7 +469,7 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   SystemNotificationWarningLevel system_notification_warning_level() const {
     return system_notification_warning_level_;
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   const std::string& custom_view_type() const { return custom_view_type_; }
   void set_custom_view_type(const std::string& custom_view_type) {
@@ -463,8 +482,8 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   NotificationType type_;
 
   std::string id_;
-  base::string16 title_;
-  base::string16 message_;
+  std::u16string title_;
+  std::u16string message_;
 
   // Image data for the associated icon, used by Ash when available.
   gfx::Image icon_;
@@ -472,7 +491,7 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // The display string for the source of the notification.  Could be
   // the same as |origin_url_|, or the name of an extension.
   // Expected to be a localized user facing string.
-  base::string16 display_source_;
+  std::u16string display_source_;
 
  private:
   // The origin URL of the script which requested the notification.
@@ -495,11 +514,11 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // used to register the factory in MessageViewFactory.
   std::string custom_view_type_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // The warning level of a system notification.
   SystemNotificationWarningLevel system_notification_warning_level_ =
       SystemNotificationWarningLevel::NORMAL;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 }  // namespace message_center

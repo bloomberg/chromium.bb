@@ -3,10 +3,13 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="cellular_setup_icons.html">
 
 <dom-module id="profile-discovery-list-item">
   <template>
-    <style include="iron-flex">
+    <style include="iron-flex iron-positioning">
       #details {
         align-items: center;
         display: flex;
@@ -22,32 +25,48 @@
         color: var(--cr-primary-text-color);
       }
 
-      #checkmark {
-        -webkit-mask: url(activation_code_page_checked.svg) no-repeat center;
-        background-color: var(--google-blue-600);
-        height: 20px;
+      .icon {
         margin-inline-end: 8px;
-        mask: url(activation_code_page_checked.svg) no-repeat center;
         padding-inline-end: var(--cr-section-padding);
-        width: 20px;
+      }
+
+      #checkmark {
+        --iron-icon-fill-color: var(--google-blue-600);
+      }
+
+      paper-spinner-lite {
+        height: 16px;
+        vertical-align: middle;
+        width: 16px;
       }
     </style>
     <div class="two-line no-padding" selectable>
       <div class="flex layout horizontal center link-wrapper">
-        <div id="details" no-flex$="false">
+        <!-- TODO(crbug.com/1093185): Update UI to new spec. -->
+        <div id="details">
           <!-- TODO(crbug.com/1093185): Update with real profile image. -->
-          <img id="profileImage" src="../../../images/200-logo_googleg.png">
+          <img id="profileImage" src="chrome://resources/cr_components/chromeos/cellular_setup/default_esim_profile.svg">
+          <!-- The item's aria properties are set in profile_discovery_list_page. -->
           <div class="flex settings-box-text">
             <div id="profileTitleLabel">
-              [[profile.name]]
+              [[getProfileName_(profileProperties_)]]
             </div>
             <div id="profileProviderLabel">
-              [[profile.provider]]
+              [[getProfileProvider_(profileProperties_)]]
             </div>
           </div>
         </div>
-        <span id="checkmark" hidden$="[[!selected]]"
-            tabindex="-1">
+        <div class="icon"
+            hidden$="[[!selected]]">
+          <iron-icon id="checkmark"
+              icon="cellular-setup:checked"
+              tabindex="-1"
+              hidden$="[[showLoadingIndicator]]">
+          </iron-icon>
+          <paper-spinner-lite active
+              hidden$="[[!showLoadingIndicator]]">
+          </paper-spinner-lite>
+        </div>
       </div>
     </div>
   </template>

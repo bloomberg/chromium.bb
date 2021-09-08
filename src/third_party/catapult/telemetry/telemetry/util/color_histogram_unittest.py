@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import unittest
 
 from telemetry.util import color_histogram
@@ -57,7 +58,7 @@ class HistogramTest(unittest.TestCase):
     bmp = image_util.Crop(bmp, 1, 1, 2, 2)
 
     hist = image_util.GetColorHistogram(bmp)
-    for i in xrange(3):
+    for i in range(3):
       self.assertEquals(sum(hist[i]),
                         image_util.Width(bmp) * image_util.Height(bmp))
     self.assertEquals(hist.r[1], 0)

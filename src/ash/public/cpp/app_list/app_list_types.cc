@@ -8,6 +8,10 @@ namespace ash {
 
 const char kOemFolderId[] = "ddb1da55-d478-4243-8642-56d3041f0263";
 
+// In order to be compatible with sync folder id must match standard.
+// Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
+const char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListItemMetadata:
 
@@ -40,7 +44,7 @@ SearchResultTag::SearchResultTag(int styles, uint32_t start, uint32_t end)
 SearchResultAction::SearchResultAction() {}
 
 SearchResultAction::SearchResultAction(const gfx::ImageSkia& image,
-                                       const base::string16& tooltip_text,
+                                       const std::u16string& tooltip_text,
                                        bool visible_on_hover)
     : image(image),
       tooltip_text(tooltip_text),

@@ -50,14 +50,21 @@ class AXImageMapLink final : public AXNodeObject {
 
   HTMLMapElement* MapElement() const;
 
-  ax::mojom::Role RoleValue() const override;
+  ax::mojom::blink::Role NativeRoleIgnoringAria() const override;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool CanHaveChildren() const override {
+    // If the area has child nodes, those will be rendered, and the combination
+    // of Role::kGenericContainer and CanHaveChildren() = true allows for those
+    // children to show in the AX hierarchy.
+    return RoleValue() == ax::mojom::blink::Role::kGenericContainer;
+  }
 
   Element* AnchorElement() const override;
   Element* ActionElement() const override;
   KURL Url() const override;
   bool IsLinked() const override { return true; }
-  AXObject* ComputeParent() const override;
+  // For an <area>, return an <img> that should be used as its parent, or null.
+  static AXObject* GetAXObjectForImageMap(AXObjectCacheImpl& cache, Node* area);
   void GetRelativeBounds(AXObject** out_container,
                          FloatRect& out_bounds_in_container,
                          SkMatrix44& out_container_transform,

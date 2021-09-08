@@ -37,8 +37,15 @@ class CONTROLLER_EXPORT RendererResourceCoordinatorImpl final
                             ExecutionContext* execution_context) final;
   void OnScriptStateDetached(ScriptState* script_state) final;
   void OnScriptStateDestroyed(ScriptState* script_state) final;
+  void OnBeforeContentFrameAttached(const Frame& frame,
+                                    const HTMLFrameOwnerElement& owner) final;
+  void OnBeforeContentFrameDetached(const Frame& frame,
+                                    const HTMLFrameOwnerElement& owner) final;
+  void FireBackgroundTracingTrigger(const String& trigger_name) final;
 
  private:
+  friend class RendererResourceCoordinatorImplTest;
+
   explicit RendererResourceCoordinatorImpl(
       mojo::PendingRemote<
           performance_manager::mojom::blink::ProcessCoordinationUnit> remote);
@@ -51,6 +58,7 @@ class CONTROLLER_EXPORT RendererResourceCoordinatorImpl final
           iframe_attribution_data);
   void DispatchOnV8ContextDetached(const blink::V8ContextToken& token);
   void DispatchOnV8ContextDestroyed(const blink::V8ContextToken& token);
+  void DispatchFireBackgroundTracingTrigger(const String& trigger_name);
 
   mojo::Remote<performance_manager::mojom::blink::ProcessCoordinationUnit>
       service_;
@@ -58,4 +66,4 @@ class CONTROLLER_EXPORT RendererResourceCoordinatorImpl final
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_RENDERER_RESOURCE_COORDINATOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CONTROLLER_PERFORMANCE_MANAGER_RENDERER_RESOURCE_COORDINATOR_IMPL_H_

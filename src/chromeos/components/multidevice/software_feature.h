@@ -52,7 +52,11 @@ enum class SoftwareFeature {
   // Wifi Sync with Android, which allows users to sync wifi network
   // configurations between Chrome OS devices and a connected Android phone
   kWifiSyncHost = 11,
-  kWifiSyncClient = 12
+  kWifiSyncClient = 12,
+
+  // Eche
+  kEcheHost = 13,
+  kEcheClient = 14
 };
 
 SoftwareFeature FromCryptAuthFeature(
@@ -65,5 +69,13 @@ std::ostream& operator<<(std::ostream& stream, const SoftwareFeature& feature);
 }  // namespace multidevice
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+namespace multidevice {
+using ::chromeos::multidevice::SoftwareFeature;
+}
+}  // namespace ash
 
 #endif  // CHROMEOS_COMPONENTS_MULTIDEVICE_SOFTWARE_FEATURE_H_

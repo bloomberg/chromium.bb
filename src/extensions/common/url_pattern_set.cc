@@ -7,6 +7,7 @@
 #include <iterator>
 #include <ostream>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -80,7 +81,7 @@ URLPatternSet URLPatternSet::CreateIntersection(
   // they have with the other patterns.
   for (const auto* pattern : unique_set1) {
     for (const auto* pattern2 : unique_set2) {
-      base::Optional<URLPattern> intersection =
+      absl::optional<URLPattern> intersection =
           pattern->CreateIntersection(*pattern2);
       if (intersection)
         result.patterns_.insert(std::move(*intersection));
@@ -266,8 +267,11 @@ bool URLPatternSet::OverlapsWith(const URLPatternSet& other) const {
 
 std::unique_ptr<base::ListValue> URLPatternSet::ToValue() const {
   std::unique_ptr<base::ListValue> value(new base::ListValue);
-  for (auto i = patterns_.cbegin(); i != patterns_.cend(); ++i)
-    value->AppendIfNotPresent(std::make_unique<base::Value>(i->GetAsString()));
+  for (auto i = patterns_.cbegin(); i != patterns_.cend(); ++i) {
+    base::Value pattern_str_value(i->GetAsString());
+    if (!base::Contains(value->GetList(), pattern_str_value))
+      value->Append(std::move(pattern_str_value));
+  }
   return value;
 }
 

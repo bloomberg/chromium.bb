@@ -15,8 +15,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -45,7 +45,7 @@ class AutofillPopupControllerBrowserTest : public InProcessBrowserTest,
             ->DriverForFrame(web_contents->GetMainFrame());
     autofill_external_delegate_ =
         std::make_unique<TestAutofillExternalDelegate>(
-            driver->autofill_manager(), driver,
+            driver->browser_autofill_manager(), driver,
             /*call_parent_methods=*/true);
 
     disable_animation_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
@@ -129,15 +129,14 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest, ResetSelectedLine) {
   ASSERT_TRUE(controller);
 
   // Push some suggestions and select the line #3.
-  std::vector<base::string16> rows = {
-      base::ASCIIToUTF16("suggestion1"), base::ASCIIToUTF16("suggestion2"),
-      base::ASCIIToUTF16("suggestion3"), base::ASCIIToUTF16("suggestion4")};
+  std::vector<std::u16string> rows = {u"suggestion1", u"suggestion2",
+                                      u"suggestion3", u"suggestion4"};
   client->UpdateAutofillPopupDataListValues(rows, rows);
   int original_suggestions_count = controller->GetLineCount();
   controller->SetSelectedLine(3);
 
   // Replace the list with the smaller one.
-  rows = {base::ASCIIToUTF16("suggestion1")};
+  rows = {u"suggestion1"};
   client->UpdateAutofillPopupDataListValues(rows, rows);
   // Make sure that previously selected line #3 doesn't exist.
   ASSERT_LT(controller->GetLineCount(), original_suggestions_count);

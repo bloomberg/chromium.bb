@@ -95,7 +95,11 @@ void RENAME(av1_k_means)(const int *data, int *centroids, uint8_t *indices,
   int pre_centroids[2 * PALETTE_MAX_SIZE];
   uint8_t pre_indices[MAX_SB_SQUARE];
 
-  RENAME(av1_calc_indices)(data, centroids, indices, n, k);
+#if AV1_K_MEANS_DIM - 2
+  av1_calc_indices_dim1(data, centroids, indices, n, k);
+#else
+  av1_calc_indices_dim2(data, centroids, indices, n, k);
+#endif
   int64_t this_dist = RENAME(calc_total_dist)(data, centroids, indices, n, k);
 
   for (int i = 0; i < max_itr; ++i) {
@@ -105,7 +109,11 @@ void RENAME(av1_k_means)(const int *data, int *centroids, uint8_t *indices,
     memcpy(pre_indices, indices, sizeof(pre_indices[0]) * n);
 
     RENAME(calc_centroids)(data, centroids, indices, n, k);
-    RENAME(av1_calc_indices)(data, centroids, indices, n, k);
+#if AV1_K_MEANS_DIM - 2
+    av1_calc_indices_dim1(data, centroids, indices, n, k);
+#else
+    av1_calc_indices_dim2(data, centroids, indices, n, k);
+#endif
     this_dist = RENAME(calc_total_dist)(data, centroids, indices, n, k);
 
     if (this_dist > pre_dist) {

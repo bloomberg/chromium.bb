@@ -114,6 +114,20 @@ aom_codec_err_t aom_codec_control(aom_codec_ctx_t *ctx, int ctrl_id, ...) {
   return AOM_CODEC_ERROR;
 }
 
+aom_codec_err_t aom_codec_set_option(aom_codec_ctx_t *ctx, const char *name,
+                                     const char *value) {
+  if (!ctx) {
+    return AOM_CODEC_INVALID_PARAM;
+  }
+  if (!ctx->iface || !ctx->priv || !ctx->iface->set_option) {
+    ctx->err = AOM_CODEC_ERROR;
+    return AOM_CODEC_ERROR;
+  }
+  ctx->err =
+      ctx->iface->set_option((aom_codec_alg_priv_t *)ctx->priv, name, value);
+  return ctx->err;
+}
+
 void aom_internal_error(struct aom_internal_error_info *info,
                         aom_codec_err_t error, const char *fmt, ...) {
   va_list ap;

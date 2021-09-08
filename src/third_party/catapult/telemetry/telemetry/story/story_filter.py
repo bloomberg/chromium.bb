@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import optparse
 import os
 import logging
@@ -25,6 +26,8 @@ class _StoryMatcher(object):
   def __nonzero__(self):
     return self._regex is not None
 
+  __bool__ = __nonzero__
+
   def HasMatch(self, story):
     return self and bool(self._regex.search(story.name))
 
@@ -36,6 +39,8 @@ class _StoryTagMatcher(object):
 
   def __nonzero__(self):
     return self._tags is not None
+
+  __bool__ = __nonzero__
 
   def HasLabelIn(self, story):
     return self and bool(story.tags.intersection(self._tags))
@@ -65,7 +70,7 @@ class StoryFilterFactory(object):
         cls._story_filter_exclude,
         cls._story_tag_filter, cls._story_tag_filter_exclude,
         cls._shard_begin_index, cls._shard_end_index, cls._run_disabled_stories,
-        stories=cls._stories)
+        stories=cls._stories, shard_indexes=cls._shard_indexes)
 
   @classmethod
   def AddCommandLineArgs(cls, parser):
@@ -96,6 +101,12 @@ class StoryFilterFactory(object):
               'rounded down to the number of stories. Negative values not'
               'allowed. If this is omited, the end index is the final story'
               'of the benchmark. '+ common_story_shard_help))
+    group.add_option(
+        '--story-shard-indexes', type='string', dest='story_shard_indexes',
+        help=('Index ranges of sets of stories to run. (Negative values not '
+              'allowed.) Each range can be a single index or a range in '
+              '"begin-end" format. E.g., 2,4-6 means stories on index 2, 4, '
+              '5 and 6. Ranges should be ordered. '+ common_story_shard_help))
     # This should be renamed to --also-run-disabled-stories.
     group.add_option('-d', '--also-run-disabled-tests',
                      dest='run_disabled_stories',
@@ -136,6 +147,8 @@ class StoryFilterFactory(object):
           '--story and --story-shard-begin-index are mutually exclusive.')
       assert args.story_shard_end_index is None, (
           '--story and --story-shard-end-index are mutually exclusive.')
+      assert args.story_shard_indexes is None, (
+          '--story and --story-shard-indexes are mutually exclusive.')
       assert args.story_filter is None, (
           '--story and --story-filter are mutually exclusive.')
       assert args.story_filter_exclude is None, (
@@ -146,6 +159,14 @@ class StoryFilterFactory(object):
           '--story and --story-tag-filter-exclude are mutually exclusive.')
       assert args.run_abridged_story_set is None, (
           '--story and --run-abridged-story-set are mutually exclusive.')
+    if args.story_shard_indexes:
+      assert args.story_shard_begin_index is None, (
+          '--story-shard-indexes and --story-shard-begin-index are mutually '
+          'exclusive.')
+      assert args.story_shard_end_index is None, (
+          '--story-shard-indexes and --story-shard-end-index are mutually '
+          'exclusive.')
+    cls._shard_indexes = args.story_shard_indexes
     cls._shard_begin_index = args.story_shard_begin_index or 0
     cls._shard_end_index = args.story_shard_end_index
     if environment and environment.expectations_files:
@@ -165,7 +186,7 @@ class StoryFilter(object):
       story_filter_exclude=None,
       story_tag_filter=None, story_tag_filter_exclude=None,
       shard_begin_index=0, shard_end_index=None, run_disabled_stories=False,
-      stories=None):
+      stories=None, shard_indexes=None):
     self._expectations = expectations
     self._include_regex = _StoryMatcher(story_filter)
     self._exclude_regex = _StoryMatcher(story_filter_exclude)
@@ -173,6 +194,7 @@ class StoryFilter(object):
     self._exclude_tags = _StoryTagMatcher(story_tag_filter_exclude)
     self._shard_begin_index = shard_begin_index
     self._shard_end_index = shard_end_index
+    self._shard_indexes = shard_indexes
     if self._shard_end_index is not None:
       if self._shard_end_index < 0:
         raise ValueError(
@@ -218,11 +240,14 @@ class StoryFilter(object):
     if self._abridged_story_set_tag:
       stories = [story for story in stories
                  if self._abridged_story_set_tag in story.tags]
-    if self._shard_begin_index < 0:
-      self._shard_begin_index = 0
-    if self._shard_end_index is None:
-      self._shard_end_index = len(stories)
-    stories = stories[self._shard_begin_index:self._shard_end_index]
+    if self._shard_indexes:
+      stories = [stories[i] for i in self._GetSelectedIndexes(len(stories))]
+    else:
+      if self._shard_begin_index < 0:
+        self._shard_begin_index = 0
+      if self._shard_end_index is None:
+        self._shard_end_index = len(stories)
+      stories = stories[self._shard_begin_index:self._shard_end_index]
     final_stories = []
     for story in stories:
       # Exclude filters take priority.
@@ -265,3 +290,28 @@ class StoryFilter(object):
           'the following reason: %s' % (story.name, disabled))
       return ''
     return disabled
+
+  def _GetSelectedIndexes(self, length):
+    indexes = []
+    index_ranges = self._shard_indexes.split(',')
+    cur_end = 0
+    for index_range in index_ranges:
+      if '-' in index_range:
+        begin, end = index_range.split('-')
+        begin = int(begin) if begin else 0
+        end = int(end) if end else length
+        if begin >= end or begin < cur_end or end > length:
+          raise ValueError(
+              'The index ranges have overlaps or not sorted correctly: %s' %
+              self._shard_indexes)
+        indexes = indexes + list(range(begin, end))
+        cur_end = end
+      else:
+        index = int(index_range)
+        if index < cur_end:
+          raise ValueError(
+              'The index ranges have overlaps or not sorted correctly: %s' %
+              self._shard_indexes)
+        indexes.append(index)
+        cur_end = index + 1
+    return indexes

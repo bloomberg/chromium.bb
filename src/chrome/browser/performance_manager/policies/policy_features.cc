@@ -23,7 +23,7 @@ const base::Feature kEmptyWorkingSet{"EmptyWorkingSet",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 const base::Feature kTrimOnMemoryPressure{"TrimOnMemoryPressure",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -117,43 +117,7 @@ const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec = {
     &kDynamicTcmallocTuning, "DynamicTcmallocScaleInvisibleTimeSec", -1};
 #endif  // BUILDFLAG(USE_TCMALLOC)
 
-#endif  // defined(OS_CHROMEOS)
-
-#if !defined(OS_ANDROID)
-const base::Feature kPageFreezingFromPerformanceManager{
-    "PageFreezingFromPerformanceManager", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kUrgentDiscardingFromPerformanceManager{
-  "UrgentDiscardingFromPerformanceManager",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_LINUX)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
-UrgentDiscardingParams::UrgentDiscardingParams() = default;
-UrgentDiscardingParams::UrgentDiscardingParams(
-    const UrgentDiscardingParams& rhs) = default;
-UrgentDiscardingParams::~UrgentDiscardingParams() = default;
-
-constexpr base::FeatureParam<int> UrgentDiscardingParams::kDiscardStrategy;
-
-// static
-UrgentDiscardingParams UrgentDiscardingParams::GetParams() {
-  UrgentDiscardingParams params = {};
-  params.discard_strategy_ = static_cast<DiscardStrategy>(
-      UrgentDiscardingParams::kDiscardStrategy.Get());
-  return params;
-}
-
-const base::Feature kBackgroundTabLoadingFromPerformanceManager{
-    "BackgroundTabLoadingFromPerformanceManager",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kHighPMFDiscardPolicy{"HighPMFDiscardPolicy",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace features
 }  // namespace performance_manager

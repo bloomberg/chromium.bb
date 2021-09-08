@@ -14,8 +14,8 @@
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/page_size.h"
 #include "base/partition_alloc_buildflags.h"
-#include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/gtest_util.h"
 #include "base/test/multiprocess_test.h"
@@ -53,9 +53,11 @@ constexpr int kSuccess = 0;
 constexpr int kFailure = 1;
 
 constexpr base::PartitionOptions kAllocatorOptions = {
-    base::PartitionOptions::Alignment::kRegular,
+    base::PartitionOptions::AlignedAlloc::kDisallowed,
     base::PartitionOptions::ThreadCache::kDisabled,
-    base::PartitionOptions::PCScan::kAlwaysDisabled};
+    base::PartitionOptions::Quarantine::kDisallowed,
+    base::PartitionOptions::Cookies::kAllowed,
+    base::PartitionOptions::RefCount::kDisallowed};
 
 static void HandleOOM(size_t unused_size) {
   LOG(FATAL) << "Out of memory.";

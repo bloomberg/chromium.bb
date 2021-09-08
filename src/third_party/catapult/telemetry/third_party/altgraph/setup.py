@@ -15,6 +15,8 @@ Additional functionality:
 
 """
 
+from __future__ import print_function
+from __future__ import absolute_import
 import sys
 import os
 import re
@@ -28,7 +30,7 @@ import tarfile
 try:
     import urllib.request as urllib
 except ImportError:
-    import urllib
+    import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 from distutils import log
 try:
     from hashlib import md5
@@ -37,7 +39,7 @@ except ImportError:
     from md5 import md5
 
 if sys.version_info[0] == 2:
-    from ConfigParser import RawConfigParser, NoOptionError, NoSectionError
+    from six.moves.configparser import RawConfigParser, NoOptionError, NoSectionError
 else:
     from configparser import RawConfigParser, NoOptionError, NoSectionError
 
@@ -252,7 +254,7 @@ def parse_setup_cfg():
 
         metadata['entry_points']['console_scripts'] = v.splitlines()
 
-    if sys.version_info[:2] <= (2,6):
+    if sys.version_info[:2] <= (2, 6):
         try:
             metadata['tests_require'] += ", unittest2"
         except KeyError:
@@ -295,7 +297,7 @@ try:
 
     def get_pypi_src_download(package):
         url = 'https://pypi.python.org/pypi/%s/json'%(package,)
-        fp = urllib.urlopen(url)
+        fp = six.moves.urllib.request.urlopen(url)
         try:
             try:
                 data = fp.read()
@@ -323,7 +325,7 @@ except ImportError:
 
     def get_pypi_src_download(package):
         url = 'https://pypi.python.org/pypi/%s/json'%(package,)
-        fp = urllib.urlopen(url)
+        fp = six.moves.urllib.request.urlopen(url)
         try:
             try:
                 data = fp.read()
@@ -437,7 +439,7 @@ def download_setuptools(packagename, to_dir):
     try:
         from urllib.request import urlopen
     except ImportError:
-        from urllib2 import urlopen
+        from six.moves.urllib.request import urlopen
 
     chksum, url = get_pypi_src_download(packagename)
     tgz_name = os.path.basename(url)
@@ -579,11 +581,14 @@ else:
             import shutil
             import zipfile
             import os
-            import urllib
-            import StringIO
+            import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+            try:
+                from StringIO import StringIO
+            except ImportError:
+                from io import StringIO
             from base64 import standard_b64encode
-            import httplib
-            import urlparse
+            import six.moves.http_client
+            import six.moves.urllib.parse
 
             # Extract the package name from distutils metadata
             meta = self.distribution.metadata
@@ -633,7 +638,7 @@ else:
             boundary = '--------------GHSKFJDLGDS7543FJKLFHRE75642756743254'
             sep_boundary = '\n--' + boundary
             end_boundary = sep_boundary + '--'
-            body = StringIO.StringIO()
+            body = StringIO()
             for key, value in data.items():
                 if not isinstance(value, list):
                     value = [value]
@@ -658,13 +663,13 @@ else:
             self.announce("Uploading documentation to %s"%(self.repository,), log.INFO)
 
             schema, netloc, url, params, query, fragments = \
-                    urlparse.urlparse(self.repository)
+                    six.moves.urllib.parse.urlparse(self.repository)
 
 
             if schema == 'http':
-                http = httplib.HTTPConnection(netloc)
+                http = six.moves.http_client.HTTPConnection(netloc)
             elif schema == 'https':
-                http = httplib.HTTPSConnection(netloc)
+                http = six.moves.http_client.HTTPSConnection(netloc)
             else:
                 raise AssertionError("unsupported schema "+schema)
 
@@ -718,7 +723,7 @@ def importExternalTestCases(unittest,
     """
 
     testFiles = recursiveGlob(root, pathPattern)
-    testModules = map(lambda x:x[len(root)+1:-3].replace('/', '.'), testFiles)
+    testModules = [x[len(root)+1:-3].replace('/', '.') for x in testFiles]
     if package is not None:
         testModules = [(package + '.' + m) for m in testModules]
 

@@ -33,6 +33,7 @@ struct BLINK_COMMON_EXPORT FrameVisualProperties {
   uint32_t capture_sequence_number = 0u;
   double zoom_level = 0;
   float page_scale_factor = 1.f;
+  float compositing_scale_factor = 1.f;
   gfx::Size visible_viewport_size;
   gfx::Size min_size_for_auto_resize;
   gfx::Size max_size_for_auto_resize;
@@ -41,7 +42,10 @@ struct BLINK_COMMON_EXPORT FrameVisualProperties {
   // The size of the compositor viewport, to match the sub-frame's surface.
   gfx::Rect compositor_viewport;
 
+  // The screen's coordinate space.
   gfx::Rect screen_space_rect;
+
+  // The size of the frame in its parent's coordinate space.
   gfx::Size local_frame_size;
 
   // The time at which the viz::LocalSurfaceId used to submit this was

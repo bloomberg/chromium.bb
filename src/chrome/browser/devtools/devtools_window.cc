@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -23,8 +24,10 @@
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_eye_dropper.h"
 #include "chrome/browser/file_select_helper.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -38,6 +41,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/javascript_dialogs/app_modal_dialog_manager.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -88,7 +92,8 @@ typedef std::vector<DevToolsWindow*> DevToolsWindows;
 base::LazyInstance<DevToolsWindows>::Leaky g_devtools_window_instances =
     LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<std::vector<base::Callback<void(DevToolsWindow*)>>>::Leaky
+base::LazyInstance<
+    std::vector<base::RepeatingCallback<void(DevToolsWindow*)>>>::Leaky
     g_creation_callbacks = LAZY_INSTANCE_INITIALIZER;
 
 static const char kKeyUpEventName[] = "keyup";
@@ -121,7 +126,7 @@ bool FindInspectedBrowserAndTabIndex(
 }
 
 void SetPreferencesFromJson(Profile* profile, const std::string& json) {
-  base::Optional<base::Value> parsed = base::JSONReader::Read(json);
+  absl::optional<base::Value> parsed = base::JSONReader::Read(json);
   if (!parsed || !parsed->is_dict())
     return;
   DictionaryPrefUpdate update(profile->GetPrefs(), prefs::kDevToolsPreferences);
@@ -268,7 +273,7 @@ class DevToolsEventForwarder {
 
 void DevToolsEventForwarder::SetWhitelistedShortcuts(
     const std::string& message) {
-  base::Optional<base::Value> parsed_message = base::JSONReader::Read(message);
+  absl::optional<base::Value> parsed_message = base::JSONReader::Read(message);
   if (!parsed_message || !parsed_message->is_list())
     return;
   for (const auto& list_item : parsed_message->GetList()) {
@@ -396,7 +401,15 @@ class DevToolsWindow::OwnedMainWebContents {
       std::unique_ptr<content::WebContents> web_contents)
       : keep_alive_(KeepAliveOrigin::DEVTOOLS_WINDOW,
                     KeepAliveRestartOption::DISABLED),
-        web_contents_(std::move(web_contents)) {}
+        web_contents_(std::move(web_contents)) {
+    Profile* profile = GetProfileForDevToolsWindow(web_contents_.get());
+    DCHECK(profile);
+    if (!profile->IsOffTheRecord()) {
+      // ScopedProfileKeepAlive does not support OTR profiles.
+      profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
+          profile, ProfileKeepAliveOrigin::kDevToolsWindow);
+    }
+  }
 
   static std::unique_ptr<content::WebContents> TakeWebContents(
       std::unique_ptr<OwnedMainWebContents> instance) {
@@ -405,6 +418,7 @@ class DevToolsWindow::OwnedMainWebContents {
 
  private:
   ScopedKeepAlive keep_alive_;
+  std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive_;
   std::unique_ptr<content::WebContents> web_contents_;
 };
 
@@ -442,6 +456,7 @@ DevToolsWindow::~DevToolsWindow() {
   UpdateBrowserWindow();
   UpdateBrowserToolbar();
 
+  capture_handle_.RunAndReset();
   owned_toolbox_web_contents_.reset();
 
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
@@ -701,6 +716,17 @@ DevToolsWindow* DevToolsWindow::OpenNodeFrontendWindow(Profile* profile) {
 }
 
 // static
+Profile* DevToolsWindow::GetProfileForDevToolsWindow(
+    content::WebContents* web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsPrimaryOTRProfile()) {
+    return profile;
+  }
+  return profile->GetOriginalProfile();
+}
+
+// static
 void DevToolsWindow::ToggleDevToolsWindow(
     content::WebContents* inspected_web_contents,
     bool force_open,
@@ -712,8 +738,7 @@ void DevToolsWindow::ToggleDevToolsWindow(
   DevToolsWindow* window = FindDevToolsWindow(agent.get());
   bool do_open = force_open;
   if (!window) {
-    Profile* profile = Profile::FromBrowserContext(
-        inspected_web_contents->GetBrowserContext());
+    Profile* profile = GetProfileForDevToolsWindow(inspected_web_contents);
     base::RecordAction(base::UserMetricsAction("DevTools_InspectRenderer"));
     std::string panel;
     switch (action.type()) {
@@ -887,6 +912,10 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
   if (!browser_)
     CreateDevToolsBrowser();
 
+  // Ignore action if browser does not exist and could not be created.
+  if (!browser_)
+    return;
+
   RegisterModalDialogManager(browser_);
 
   if (should_show_window) {
@@ -1009,8 +1038,8 @@ DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
 
   // There is no inspected_web_contents in case of various workers.
   if (inspected_web_contents)
-    inspected_contents_observer_.reset(
-        new ObserverWithAccessor(inspected_web_contents));
+    inspected_contents_observer_ =
+        std::make_unique<ObserverWithAccessor>(inspected_web_contents);
 
   // Initialize docked page to be of the right size.
   if (can_dock_ && inspected_web_contents) {
@@ -1022,13 +1051,13 @@ DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
     }
   }
 
-  event_forwarder_.reset(new DevToolsEventForwarder(this));
+  event_forwarder_ = std::make_unique<DevToolsEventForwarder>(this);
 
   // Tag the DevTools main WebContents with its TaskManager specific UserData
   // so that it shows up in the task manager.
   task_manager::WebContentsTags::CreateForDevToolsContents(main_web_contents_);
 
-  std::vector<base::Callback<void(DevToolsWindow*)>> copy(
+  std::vector<base::RepeatingCallback<void(DevToolsWindow*)>> copy(
       g_creation_callbacks.Get());
   for (const auto& callback : copy)
     callback.Run(this);
@@ -1255,6 +1284,7 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
     CHECK(can_dock_);
 
     // Ownership will be passed in DevToolsWindow::AddNewContents.
+    capture_handle_.RunAndReset();
     if (owned_toolbox_web_contents_)
       owned_toolbox_web_contents_.reset();
     toolbox_web_contents_ = new_contents;
@@ -1269,8 +1299,10 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
     // is resized when the frame is rendered. Force rendering of the toolbox at
     // all times, to make sure that a frame can be rendered even when the
     // inspected WebContents fully covers the toolbox. https://crbug.com/828307
-    toolbox_web_contents_->IncrementCapturerCount(gfx::Size(),
-                                                  /* stay_hidden */ false);
+    capture_handle_ =
+        toolbox_web_contents_->IncrementCapturerCount(gfx::Size(),
+                                                      /*stay_hidden=*/false,
+                                                      /*stay_awake=*/false);
   }
 }
 
@@ -1477,9 +1509,10 @@ void DevToolsWindow::SetEyeDropperActive(bool active) {
   if (!web_contents)
     return;
   if (active) {
-    eye_dropper_.reset(new DevToolsEyeDropper(
-        web_contents, base::Bind(&DevToolsWindow::ColorPickedInEyeDropper,
-                                 base::Unretained(this))));
+    eye_dropper_ = std::make_unique<DevToolsEyeDropper>(
+        web_contents,
+        base::BindRepeating(&DevToolsWindow::ColorPickedInEyeDropper,
+                            base::Unretained(this)));
   } else {
     eye_dropper_.reset();
   }
@@ -1503,10 +1536,11 @@ void DevToolsWindow::InspectedContentsClosing() {
   main_web_contents_->ClosePage();
 }
 
-InfoBarService* DevToolsWindow::GetInfoBarService() {
-  return is_docked_ ?
-      InfoBarService::FromWebContents(GetInspectedWebContents()) :
-      InfoBarService::FromWebContents(main_web_contents_);
+infobars::ContentInfoBarManager* DevToolsWindow::GetInfoBarManager() {
+  return is_docked_ ? infobars::ContentInfoBarManager::FromWebContents(
+                          GetInspectedWebContents())
+                    : infobars::ContentInfoBarManager::FromWebContents(
+                          main_web_contents_);
 }
 
 void DevToolsWindow::RenderProcessGone(bool crashed) {
@@ -1521,7 +1555,7 @@ void DevToolsWindow::RenderProcessGone(bool crashed) {
 }
 
 void DevToolsWindow::ShowCertificateViewer(const std::string& cert_chain) {
-  base::Optional<base::Value> value = base::JSONReader::Read(cert_chain);
+  absl::optional<base::Value> value = base::JSONReader::Read(cert_chain);
   CHECK(value && value->is_list());
   std::vector<std::string> decoded;
   for (const auto& item : value->GetList()) {
@@ -1606,6 +1640,10 @@ void DevToolsWindow::CreateDevToolsBrowser() {
     wp_prefs->SetKey(kDevToolsApp, std::move(dev_tools_defaults));
   }
 
+  if (Browser::GetCreationStatusForProfile(profile_) !=
+      Browser::CreationStatus::kOk) {
+    return;
+  }
   browser_ =
       Browser::Create(Browser::CreateParams::CreateForDevTools(profile_));
   browser_->tab_strip_model()->AddWebContents(

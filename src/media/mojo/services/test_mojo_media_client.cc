@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -56,7 +57,7 @@ std::unique_ptr<Renderer> TestMojoMediaClient::CreateRenderer(
     const std::string& /* audio_device_id */) {
   // If called the first time, do one time initialization.
   if (!decoder_factory_) {
-    decoder_factory_.reset(new media::DefaultDecoderFactory(nullptr));
+    decoder_factory_ = std::make_unique<media::DefaultDecoderFactory>(nullptr);
   }
 
   if (!renderer_factory_) {

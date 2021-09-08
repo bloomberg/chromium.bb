@@ -13,14 +13,13 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.settings.HomepageMetricsEnums.HomepageLocationType;
 import org.chromium.chrome.browser.homepage.settings.HomepageSettings;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 
@@ -85,12 +84,7 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
      * @param context {@link Context} used for launching a settings activity.
      */
     public void onMenuClick(Context context) {
-        assert ChromeFeatureList.isInitialized();
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION)) {
-            mSettingsLauncher.launchSettingsActivity(context, HomepageSettings.class);
-        } else {
-            setPrefHomepageEnabled(false);
-        }
+        mSettingsLauncher.launchSettingsActivity(context, HomepageSettings.class);
     }
 
     /**
@@ -171,12 +165,23 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
     }
 
     /**
+     * Determines whether the homepage is set to something other than the NTP or empty/null. This is
+     * the same as {@link #isHomepageNonNtp()}, but uses {@link UrlUtilities#isCanonicalizedNTPUrl}
+     * instead of {@link UrlUtilities#isNTPUrl} to make it possible to use before native is loaded.
+     * Prefer {@link #isHomepageNonNtp()} if possible.
+     * @return Whether the current homepage is something other than the NTP.
+     */
+    public static boolean isHomepageNonNtpPreNative() {
+        String currentHomepage = getHomepageUri();
+        return !TextUtils.isEmpty(currentHomepage)
+                && !UrlUtilities.isCanonicalizedNTPUrl(currentHomepage);
+    }
+
+    /**
      * Get homepage URI without checking if the homepage is enabled.
      * @return Homepage URI based on policy and shared preference settings.
      */
-    public @NonNull String getHomepageUriIgnoringEnabledState() {
-        // TODO(wenyufu): Move this function back to #getHomepageUri after
-        //  ChromeFeatureList#HOMEPAGE_SETTINGS_UI_CONVERSION 100% release
+    private @NonNull String getHomepageUriIgnoringEnabledState() {
         if (HomepagePolicyManager.isHomepageManagedByPolicy()) {
             return HomepagePolicyManager.getHomepageUrl();
         }

@@ -50,13 +50,12 @@ struct ForcedFallbackParams {
     return enable_resolution_based_switch &&
            codec.codecType == kVideoCodecVP8 &&
            codec.numberOfSimulcastStreams <= 1 &&
-           codec.VP8().numberOfTemporalLayers == 1 &&
            codec.width * codec.height <= max_pixels;
   }
 
   bool SupportsTemporalBasedSwitch(const VideoCodec& codec) const {
     return enable_temporal_based_switch &&
-           SimulcastUtility::NumberOfTemporalLayers(codec, 0) > 1;
+           SimulcastUtility::NumberOfTemporalLayers(codec, 0) != 1;
   }
 
   bool enable_temporal_based_switch = false;
@@ -462,7 +461,7 @@ bool VideoEncoderSoftwareFallbackWrapper::TryInitForcedFallbackEncoder() {
     }
 
     if (encoder_state_ == EncoderState::kMainEncoderUsed &&
-        encoder_->GetEncoderInfo().fps_allocation[0].size() > 1) {
+        encoder_->GetEncoderInfo().fps_allocation[0].size() != 1) {
       // Primary encoder already supports temporal layers, use that instead.
       return true;
     }
@@ -471,7 +470,7 @@ bool VideoEncoderSoftwareFallbackWrapper::TryInitForcedFallbackEncoder() {
     if (fallback_encoder_->InitEncode(&codec_settings_,
                                       encoder_settings_.value()) ==
         WEBRTC_VIDEO_CODEC_OK) {
-      if (fallback_encoder_->GetEncoderInfo().fps_allocation[0].size() > 1) {
+      if (fallback_encoder_->GetEncoderInfo().fps_allocation[0].size() != 1) {
         // Fallback encoder available and supports temporal layers, use it!
         if (encoder_state_ == EncoderState::kMainEncoderUsed) {
           // Main encoder initialized but does not support temporal layers,

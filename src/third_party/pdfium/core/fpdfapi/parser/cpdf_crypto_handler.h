@@ -14,18 +14,25 @@
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "third_party/base/span.h"
 
 class CPDF_Dictionary;
 class CPDF_Object;
-class CPDF_SecurityHandler;
 
 class CPDF_CryptoHandler {
  public:
-  CPDF_CryptoHandler(int cipher, const uint8_t* key, size_t keylen);
-  ~CPDF_CryptoHandler();
+  enum class Cipher {
+    kNone = 0,
+    kRC4 = 1,
+    kAES = 2,
+    kAES2 = 3,
+  };
 
   static bool IsSignatureDictionary(const CPDF_Dictionary* dictionary);
+
+  CPDF_CryptoHandler(Cipher cipher, const uint8_t* key, size_t keylen);
+  ~CPDF_CryptoHandler();
 
   bool DecryptObjectTree(RetainPtr<CPDF_Object> object);
   size_t EncryptGetSize(pdfium::span<const uint8_t> source) const;
@@ -33,7 +40,7 @@ class CPDF_CryptoHandler {
                       uint32_t gennum,
                       pdfium::span<const uint8_t> source,
                       uint8_t* dest_buf,
-                      uint32_t& dest_size);
+                      uint32_t& dest_size) const;
 
   bool IsCipherAES() const;
 
@@ -46,13 +53,13 @@ class CPDF_CryptoHandler {
                      CFX_BinaryBuf& dest_buf);
   bool DecryptFinish(void* context, CFX_BinaryBuf& dest_buf);
 
-  void PopulateKey(uint32_t objnum, uint32_t gennum, uint8_t* key);
+  void PopulateKey(uint32_t objnum, uint32_t gennum, uint8_t* key) const;
   void CryptBlock(bool bEncrypt,
                   uint32_t objnum,
                   uint32_t gennum,
                   pdfium::span<const uint8_t> source,
                   uint8_t* dest_buf,
-                  uint32_t& dest_size);
+                  uint32_t& dest_size) const;
   void* CryptStart(uint32_t objnum, uint32_t gennum, bool bEncrypt);
   bool CryptStream(void* context,
                    pdfium::span<const uint8_t> source,
@@ -61,7 +68,7 @@ class CPDF_CryptoHandler {
   bool CryptFinish(void* context, CFX_BinaryBuf& dest_buf, bool bEncrypt);
 
   const size_t m_KeyLen;
-  const int m_Cipher;
+  const Cipher m_Cipher;
   std::unique_ptr<CRYPT_aes_context, FxFreeDeleter> m_pAESContext;
   uint8_t m_EncryptKey[32];
 };

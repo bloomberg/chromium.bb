@@ -17,8 +17,10 @@
 #include "av1/common/alloccommon.h"
 #include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
+#include "av1/common/cdef_block.h"
 #include "av1/common/entropymode.h"
 #include "av1/common/entropymv.h"
+#include "av1/common/thread_common.h"
 
 int av1_get_MBs(int width, int height) {
   const int aligned_width = ALIGN_POWER_OF_TWO(width, 3);
@@ -49,6 +51,227 @@ void av1_free_ref_frame_buffers(BufferPool *pool) {
     pool->frame_bufs[i].seg_map = NULL;
     aom_free_frame_buffer(&pool->frame_bufs[i].buf);
   }
+}
+
+static INLINE void free_cdef_linebuf_conditional(
+    AV1_COMMON *const cm, const size_t *new_linebuf_size) {
+  CdefInfo *cdef_info = &cm->cdef_info;
+  for (int plane = 0; plane < MAX_MB_PLANE; plane++) {
+    if (new_linebuf_size[plane] != cdef_info->allocated_linebuf_size[plane]) {
+      aom_free(cdef_info->linebuf[plane]);
+      cdef_info->linebuf[plane] = NULL;
+    }
+  }
+}
+
+static INLINE void free_cdef_bufs_conditional(AV1_COMMON *const cm,
+                                              uint16_t **colbuf,
+                                              uint16_t **srcbuf,
+                                              const size_t *new_colbuf_size,
+                                              const size_t new_srcbuf_size) {
+  CdefInfo *cdef_info = &cm->cdef_info;
+  if (new_srcbuf_size != cdef_info->allocated_srcbuf_size) {
+    aom_free(*srcbuf);
+    *srcbuf = NULL;
+  }
+  for (int plane = 0; plane < MAX_MB_PLANE; plane++) {
+    if (new_colbuf_size[plane] != cdef_info->allocated_colbuf_size[plane]) {
+      aom_free(colbuf[plane]);
+      colbuf[plane] = NULL;
+    }
+  }
+}
+
+static INLINE void free_cdef_bufs(uint16_t **colbuf, uint16_t **srcbuf) {
+  aom_free(*srcbuf);
+  *srcbuf = NULL;
+  for (int plane = 0; plane < MAX_MB_PLANE; plane++) {
+    aom_free(colbuf[plane]);
+    colbuf[plane] = NULL;
+  }
+}
+
+static INLINE void free_cdef_row_sync(AV1CdefRowSync **cdef_row_mt,
+                                      const int num_mi_rows) {
+  if (*cdef_row_mt == NULL) return;
+#if CONFIG_MULTITHREAD
+  for (int row_idx = 0; row_idx < num_mi_rows; row_idx++) {
+    pthread_mutex_destroy((*cdef_row_mt)[row_idx].row_mutex_);
+    pthread_cond_destroy((*cdef_row_mt)[row_idx].row_cond_);
+    aom_free((*cdef_row_mt)[row_idx].row_mutex_);
+    aom_free((*cdef_row_mt)[row_idx].row_cond_);
+  }
+#else
+  (void)num_mi_rows;
+#endif  // CONFIG_MULTITHREAD
+  aom_free(*cdef_row_mt);
+  *cdef_row_mt = NULL;
+}
+
+void av1_free_cdef_buffers(AV1_COMMON *const cm,
+                           AV1CdefWorkerData **cdef_worker,
+                           AV1CdefSync *cdef_sync, int num_workers) {
+  CdefInfo *cdef_info = &cm->cdef_info;
+  const int num_mi_rows = cdef_info->allocated_mi_rows;
+
+  for (int plane = 0; plane < MAX_MB_PLANE; plane++) {
+    aom_free(cdef_info->linebuf[plane]);
+    cdef_info->linebuf[plane] = NULL;
+  }
+  // De-allocation of column buffer & source buffer (worker_0).
+  free_cdef_bufs(cdef_info->colbuf, &cdef_info->srcbuf);
+
+  if (num_workers < 2) return;
+  if (*cdef_worker != NULL) {
+    for (int idx = num_workers - 1; idx >= 1; idx--) {
+      // De-allocation of column buffer & source buffer for remaining workers.
+      free_cdef_bufs((*cdef_worker)[idx].colbuf, &(*cdef_worker)[idx].srcbuf);
+    }
+    aom_free(*cdef_worker);
+    *cdef_worker = NULL;
+  }
+  free_cdef_row_sync(&cdef_sync->cdef_row_mt, num_mi_rows);
+}
+
+static INLINE void alloc_cdef_linebuf(AV1_COMMON *const cm, uint16_t **linebuf,
+                                      const int num_planes) {
+  CdefInfo *cdef_info = &cm->cdef_info;
+  for (int plane = 0; plane < num_planes; plane++) {
+    if (linebuf[plane] == NULL)
+      CHECK_MEM_ERROR(cm, linebuf[plane],
+                      aom_malloc(cdef_info->allocated_linebuf_size[plane]));
+  }
+}
+
+static INLINE void alloc_cdef_bufs(AV1_COMMON *const cm, uint16_t **colbuf,
+                                   uint16_t **srcbuf, const int num_planes) {
+  CdefInfo *cdef_info = &cm->cdef_info;
+  if (*srcbuf == NULL)
+    CHECK_MEM_ERROR(cm, *srcbuf,
+                    aom_memalign(16, cdef_info->allocated_srcbuf_size));
+
+  for (int plane = 0; plane < num_planes; plane++) {
+    if (colbuf[plane] == NULL)
+      CHECK_MEM_ERROR(cm, colbuf[plane],
+                      aom_malloc(cdef_info->allocated_colbuf_size[plane]));
+  }
+}
+
+static INLINE void alloc_cdef_row_sync(AV1_COMMON *const cm,
+                                       AV1CdefRowSync **cdef_row_mt,
+                                       const int num_mi_rows) {
+  if (*cdef_row_mt != NULL) return;
+
+  CHECK_MEM_ERROR(cm, *cdef_row_mt,
+                  aom_malloc(sizeof(**cdef_row_mt) * num_mi_rows));
+#if CONFIG_MULTITHREAD
+  for (int row_idx = 0; row_idx < num_mi_rows; row_idx++) {
+    CHECK_MEM_ERROR(cm, (*cdef_row_mt)[row_idx].row_mutex_,
+                    aom_malloc(sizeof(*(*cdef_row_mt)[row_idx].row_mutex_)));
+    pthread_mutex_init((*cdef_row_mt)[row_idx].row_mutex_, NULL);
+
+    CHECK_MEM_ERROR(cm, (*cdef_row_mt)[row_idx].row_cond_,
+                    aom_malloc(sizeof(*(*cdef_row_mt)[row_idx].row_cond_)));
+    pthread_cond_init((*cdef_row_mt)[row_idx].row_cond_, NULL);
+
+    (*cdef_row_mt)[row_idx].is_row_done = 0;
+  }
+#endif  // CONFIG_MULTITHREAD
+}
+
+void av1_alloc_cdef_buffers(AV1_COMMON *const cm,
+                            AV1CdefWorkerData **cdef_worker,
+                            AV1CdefSync *cdef_sync, int num_workers) {
+  const int num_planes = av1_num_planes(cm);
+  size_t new_linebuf_size[MAX_MB_PLANE] = { 0 };
+  size_t new_colbuf_size[MAX_MB_PLANE] = { 0 };
+  size_t new_srcbuf_size = 0;
+  CdefInfo *const cdef_info = &cm->cdef_info;
+  // Check for configuration change
+  const int num_mi_rows =
+      (cm->mi_params.mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  const int is_num_workers_changed =
+      cdef_info->allocated_num_workers != num_workers;
+  const int is_cdef_enabled =
+      cm->seq_params->enable_cdef && !cm->tiles.large_scale;
+
+  // num-bufs=3 represents ping-pong buffers for top linebuf,
+  // followed by bottom linebuf.
+  // ping-pong is to avoid top linebuf over-write by consecutive row.
+  int num_bufs = 3;
+  if (num_workers > 1)
+    num_bufs = (cm->mi_params.mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+
+  if (is_cdef_enabled) {
+    // Calculate src buffer size
+    new_srcbuf_size = sizeof(*cdef_info->srcbuf) * CDEF_INBUF_SIZE;
+    for (int plane = 0; plane < num_planes; plane++) {
+      const int shift =
+          plane == AOM_PLANE_Y ? 0 : cm->seq_params->subsampling_x;
+      // Calculate top and bottom line buffer size
+      const int luma_stride =
+          ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols << MI_SIZE_LOG2, 4);
+      new_linebuf_size[plane] = sizeof(*cdef_info->linebuf) * num_bufs *
+                                (CDEF_VBORDER << 1) * (luma_stride >> shift);
+      // Calculate column buffer size
+      const int block_height =
+          (CDEF_BLOCKSIZE << (MI_SIZE_LOG2 - shift)) * 2 * CDEF_VBORDER;
+      new_colbuf_size[plane] =
+          sizeof(*cdef_info->colbuf[plane]) * block_height * CDEF_HBORDER;
+    }
+  }
+
+  // Free src, line and column buffers for worker 0 in case of reallocation
+  free_cdef_linebuf_conditional(cm, new_linebuf_size);
+  free_cdef_bufs_conditional(cm, cdef_info->colbuf, &cdef_info->srcbuf,
+                             new_colbuf_size, new_srcbuf_size);
+
+  if (*cdef_worker != NULL) {
+    if (is_num_workers_changed) {
+      // Free src and column buffers for remaining workers in case of change in
+      // num_workers
+      for (int idx = cdef_info->allocated_num_workers - 1; idx >= 1; idx--)
+        free_cdef_bufs((*cdef_worker)[idx].colbuf, &(*cdef_worker)[idx].srcbuf);
+    } else if (num_workers > 1) {
+      // Free src and column buffers for remaining workers in case of
+      // reallocation
+      for (int idx = num_workers - 1; idx >= 1; idx--)
+        free_cdef_bufs_conditional(cm, (*cdef_worker)[idx].colbuf,
+                                   &(*cdef_worker)[idx].srcbuf, new_colbuf_size,
+                                   new_srcbuf_size);
+    }
+  }
+
+  if (cdef_info->allocated_mi_rows != num_mi_rows)
+    free_cdef_row_sync(&cdef_sync->cdef_row_mt, cdef_info->allocated_mi_rows);
+
+  // Store allocated sizes for reallocation
+  cdef_info->allocated_srcbuf_size = new_srcbuf_size;
+  av1_copy(cdef_info->allocated_colbuf_size, new_colbuf_size);
+  av1_copy(cdef_info->allocated_linebuf_size, new_linebuf_size);
+  // Store configuration to check change in configuration
+  cdef_info->allocated_mi_rows = num_mi_rows;
+  cdef_info->allocated_num_workers = num_workers;
+
+  if (!is_cdef_enabled) return;
+
+  // Memory allocation of column buffer & source buffer (worker_0).
+  alloc_cdef_bufs(cm, cdef_info->colbuf, &cdef_info->srcbuf, num_planes);
+  alloc_cdef_linebuf(cm, cdef_info->linebuf, num_planes);
+
+  if (num_workers < 2) return;
+
+  if (*cdef_worker == NULL)
+    CHECK_MEM_ERROR(cm, *cdef_worker,
+                    aom_calloc(num_workers, sizeof(**cdef_worker)));
+
+  // Memory allocation of column buffer & source buffer for remaining workers.
+  for (int idx = num_workers - 1; idx >= 1; idx--)
+    alloc_cdef_bufs(cm, (*cdef_worker)[idx].colbuf, &(*cdef_worker)[idx].srcbuf,
+                    num_planes);
+
+  alloc_cdef_row_sync(cm, &cdef_sync->cdef_row_mt,
+                      cdef_info->allocated_mi_rows);
 }
 
 #if !CONFIG_REALTIME_ONLY
@@ -86,11 +309,11 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   // Now we need to allocate enough space to store the line buffers for the
   // stripes
   const int frame_w = cm->superres_upscaled_width;
-  const int use_highbd = cm->seq_params.use_highbitdepth;
+  const int use_highbd = cm->seq_params->use_highbitdepth;
 
   for (int p = 0; p < num_planes; ++p) {
     const int is_uv = p > 0;
-    const int ss_x = is_uv && cm->seq_params.subsampling_x;
+    const int ss_x = is_uv && cm->seq_params->subsampling_x;
     const int plane_w = ((frame_w + ss_x) >> ss_x) + 2 * RESTORATION_EXTRA_HORZ;
     const int stride = ALIGN_POWER_OF_TWO(plane_w, 5);
     const int buf_size = num_stripes * stride * RESTORATION_CTX_VERT

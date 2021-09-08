@@ -155,6 +155,8 @@ def prefixName (prefix, name):
 	name = name.replace("VULKAN_12_PROPERTIES", "VULKAN_1_2_PROPERTIES")
 	name = name.replace("INT_8_", "INT8_")
 	name = name.replace("AABBNV", "AABB_NV")
+	name = name.replace("_H_264_", "_H264_")
+	name = name.replace("_H_265_", "_H265_")
 
 	return prefix + name
 
@@ -296,6 +298,9 @@ class Variable:
 	def getAsString (self, separator):
 		return '%s%s%s%s%s' % (self.getType(), separator, self.name, self.arraySize, self.fieldWidth)
 
+	def getAsStringForArgumentList (self, separator):
+		return '%s%s%s%s' % (self.getType(), separator, self.name, self.arraySize)
+
 	def __repr__ (self):
 		return '<%s> <%s> <%s>' % (self.type, self.name, self.arraySize)
 
@@ -399,12 +404,13 @@ class Extension:
 		return 'EXT:\n%s ->\nENUMS:\n%s\nCOMPOS:\n%s\nFUNCS:\n%s\nBITF:\n%s\nHAND:\n%s\nDEFS:\n%s\n' % (self.name, self.enums, self.compositeTypes, self.functions, self.bitfields, self.handles, self.definitions, self.versionInCore)
 
 class API:
-	def __init__ (self, versions, definitions, handles, enums, bitfields, compositeTypes, functions, extensions):
+	def __init__ (self, versions, definitions, handles, enums, bitfields, bitfields64, compositeTypes, functions, extensions):
 		self.versions		= versions
 		self.definitions	= definitions
 		self.handles		= handles
 		self.enums			= enums
 		self.bitfields		= bitfields
+		self.bitfields64	= bitfields64
 		self.compositeTypes	= compositeTypes
 		self.functions		= functions # \note contains extension functions as well
 		self.extensions		= extensions
@@ -473,9 +479,9 @@ def parseEnums (src):
 	return enums
 
 def parseCompositeType (type, name, src):
-	typeNamePtrn	= r'(' + TYPE_PTRN + r')(\s+' + IDENT_PTRN + r')((\[[^\]]+\]|:[0-9]+)*)\s*;'
+	typeNamePtrn	= r'(' + TYPE_PTRN + r')(\s+' + IDENT_PTRN + r')((\[[^\]]+\]|\s*:\s*[0-9]+)*)\s*;'
 	matches			= re.findall(typeNamePtrn, src)
-	members			= [Variable(t.strip(), n.strip(), a.strip()) for t, n, a, _ in matches]
+	members			= [Variable(t.strip(), n.strip(), a.replace(' ', '')) for t, n, a, _ in matches]
 	return CompositeType(type, name, members)
 
 def parseCompositeTypes (src):
@@ -635,10 +641,12 @@ def parseDefinitions (extensionName, src):
 		if extensionName == None:
 			return True
 		extNameUpper = extensionName.upper()
+		extNameUpper = extNameUpper.replace("VK_KHR_SYNCHRONIZATION2", "VK_KHR_SYNCHRONIZATION_2")
 		extNameUpper = extNameUpper.replace("VK_INTEL_SHADER_INTEGER_FUNCTIONS2", "VK_INTEL_SHADER_INTEGER_FUNCTIONS_2")
 		extNameUpper = extNameUpper.replace("VK_EXT_ROBUSTNESS2", "VK_EXT_ROBUSTNESS_2")
 		extNameUpper = extNameUpper.replace("VK_EXT_FRAGMENT_DENSITY_MAP2", "VK_EXT_FRAGMENT_DENSITY_MAP_2")
 		extNameUpper = extNameUpper.replace("VK_AMD_SHADER_CORE_PROPERTIES2", "VK_AMD_SHADER_CORE_PROPERTIES_2")
+		extNameUpper = extNameUpper.replace("VK_EXT_EXTENDED_DYNAMIC_STATE2", "VK_EXT_EXTENDED_DYNAMIC_STATE_2")
 		# SPEC_VERSION enums
 		if definition[0].startswith(extNameUpper) and definition[1].isdigit():
 			return False
@@ -712,7 +720,6 @@ def parseExtensions (src, versions, allFunctions, allCompositeTypes, allEnums, a
 			populateExtensionAliases(enumsByName, extEnums)
 			populateExtensionAliases(bitfieldsByName, extBitfields)
 			populateExtensionAliases(compositeTypesByName, extCompositeTypes)
-
 		extensions.append(Extension(extensionName, extHandles, extEnums, extBitfields, extCompositeTypes, extFunctions, extDefinitions, additionalDefinitions, typedefs, extCoreVersion))
 	return extensions
 
@@ -722,20 +729,38 @@ def parseBitfieldNames (src):
 
 	return matches
 
-def parseAPI (src):
-	versionsData = parseVersions(src)
-	versions     = [Version((v[2], v[3], 0)) for v in versionsData]
-	definitions	 = [Definition("deUint32", v.getInHex(), parsePreprocDefinedValue(src, v.getInHex())) for v in versions]
-	definitions.extend([Definition(type, name, parsePreprocDefinedValue(src, name)) for name, type in DEFINITIONS])
+def parse64bitBitfieldNames (src):
+	ptrn		= r'typedef\s+VkFlags64\s(' + IDENT_PTRN + r')\s*;'
+	matches		= re.findall(ptrn, src)
 
-	handles			= parseHandles(src)
-	rawEnums		= parseEnums(src)
-	bitfieldNames	= parseBitfieldNames(src)
-	enums			= []
-	bitfields		= []
-	bitfieldEnums	= set([getBitEnumNameForBitfield(n) for n in bitfieldNames if getBitEnumNameForBitfield(n) in [enum.name for enum in rawEnums]])
-	compositeTypes	= parseCompositeTypesByVersion(src, versionsData)
-	allFunctions	= parseFunctionsByVersion(src, versionsData)
+	return matches
+
+def parse64bitBitfieldValues (src, bitfieldNamesList):
+
+	bitfields64 = []
+	for bitfieldName in bitfieldNamesList:
+		ptrn		= r'static const ' + bitfieldName + r'\s*(' + IDENT_PTRN + r')\s*=\s*([a-zA-Z0-9_]+)\s*;'
+		matches		= re.findall(ptrn, src)
+		bitfields64.append(Bitfield(bitfieldName, matches))
+
+	return bitfields64
+
+def parseAPI (src):
+	versionsData	= parseVersions(src)
+	versions		= [Version((v[2], v[3], 0)) for v in versionsData]
+	definitions		= [Definition("deUint32", v.getInHex(), parsePreprocDefinedValue(src, v.getInHex())) for v in versions] +\
+					  [Definition(type, name, parsePreprocDefinedValue(src, name)) for name, type in DEFINITIONS]
+
+	handles				= parseHandles(src)
+	rawEnums			= parseEnums(src)
+	bitfieldNames		= parseBitfieldNames(src)
+	bitfieldEnums		= set([getBitEnumNameForBitfield(n) for n in bitfieldNames if getBitEnumNameForBitfield(n) in [enum.name for enum in rawEnums]])
+	bitfield64Names		= parse64bitBitfieldNames(src)
+	bitfields64			= parse64bitBitfieldValues(src, bitfield64Names)
+	enums				= []
+	bitfields			= []
+	compositeTypes		= parseCompositeTypesByVersion(src, versionsData)
+	allFunctions		= parseFunctionsByVersion(src, versionsData)
 
 	for enum in rawEnums:
 		if enum.name in bitfieldEnums:
@@ -759,7 +784,6 @@ def parseAPI (src):
 	for enum in enums:
 		removeAliasedValues(enum)
 
-
 	# Make generator to create Deleter<VkAccelerationStructureNV>
 	for f in allFunctions:
 		if (f.name == 'vkDestroyAccelerationStructureNV'):
@@ -777,6 +801,7 @@ def parseAPI (src):
 		handles			= handles,
 		enums			= enums,
 		bitfields		= bitfields,
+		bitfields64		= bitfields64,
 		compositeTypes	= compositeTypes,
 		functions		= allFunctions,
 		extensions		= extensions)
@@ -870,6 +895,14 @@ def genBitfieldSrc (bitfield):
 		yield "};"
 	yield "typedef deUint32 %s;" % bitfield.name
 
+def genBitfield64Src (bitfield64):
+	yield "typedef deUint64 %s;" % bitfield64.name
+	if len(bitfield64.values) > 0:
+		ptrn = "static const " + bitfield64.name + " %s\t= %s;"
+		for line in indentLines([ptrn % v for v in bitfield64.values]):
+			yield line
+		yield ""
+
 def genCompositeTypeSrc (type):
 	yield "%s %s" % (type.getClassName(), type.name)
 	yield "{"
@@ -959,6 +992,11 @@ def writeBasicTypes (api, filename):
 					if bitfield2.alias == bitfield:
 						yield "typedef %s %s;" % (bitfield2.name, bitfield.name)
 			yield ""
+
+		for bitfield64 in api.bitfields64:
+			for line in genBitfield64Src(bitfield64):
+				yield line
+
 		for line in indentLines(["VK_DEFINE_PLATFORM_TYPE(%s,\t%s);" % (s[0], c) for n, s, c in PLATFORM_TYPES]):
 			yield line
 
@@ -966,6 +1004,7 @@ def writeBasicTypes (api, filename):
 			if ext.additionalDefs != None:
 				for definition in ext.additionalDefs:
 					yield "#define " + definition.name + " " + definition.value
+
 	writeInlFile(filename, INL_HEADER, gen())
 
 def writeCompositeTypes (api, filename):
@@ -985,7 +1024,7 @@ def writeCompositeTypes (api, filename):
 	writeInlFile(filename, INL_HEADER, gen())
 
 def argListToStr (args):
-	return ", ".join(v.getAsString(' ') for v in args)
+	return ", ".join(v.getAsStringForArgumentList(' ') for v in args)
 
 def writeInterfaceDecl (api, filename, functionTypes, concrete):
 	def genProtos ():
@@ -1143,9 +1182,10 @@ def writeStrUtilImpl (api, filename):
 					elif member.getType() == PLATFORM_TYPE_NAMESPACE + "::Win32LPCWSTR":
 						valFmt = "getWStr(value.%s)" % member.name
 					elif member.arraySize != '':
+						singleDimensional = not '][' in member.arraySize
 						if member.name in ["extensionName", "deviceName", "layerName", "description"]:
 							valFmt = "(const char*)value.%s" % member.name
-						elif member.getType() == 'char' or member.getType() == 'deUint8':
+						elif singleDimensional and (member.getType() == 'char' or member.getType() == 'deUint8'):
 							newLine = "'\\n' << "
 							valFmt	= "tcu::formatArray(tcu::Format::HexIterator<%s>(DE_ARRAY_BEGIN(value.%s)), tcu::Format::HexIterator<%s>(DE_ARRAY_END(value.%s)))" % (member.getType(), member.name, member.getType(), member.name)
 						else:
@@ -1422,6 +1462,23 @@ def writeTypeUtil (api, filename):
 			"VkQueueFamilyProperties",
 			"VkMemoryType",
 			"VkMemoryHeap",
+			"StdVideoH264SpsVuiFlags",
+			"StdVideoH264SpsFlags",
+			"StdVideoH264PpsFlags",
+			"StdVideoDecodeH264PictureInfoFlags",
+			"StdVideoDecodeH264ReferenceInfoFlags",
+			"StdVideoDecodeH264MvcElementFlags",
+			"StdVideoEncodeH264SliceHeaderFlags",
+			"StdVideoEncodeH264PictureInfoFlags",
+			"StdVideoEncodeH264RefMgmtFlags",
+			"StdVideoH265HrdFlags",
+			"StdVideoH265VpsFlags",
+			"StdVideoH265SpsVuiFlags",
+			"StdVideoH265SpsFlags",
+			"StdVideoH265PpsFlags",
+			"StdVideoDecodeH265PictureInfoFlags",
+			"StdVideoDecodeH265ReferenceInfoFlags",
+			"StdVideoEncodeH265PictureInfoFlags"
 		])
 	COMPOSITE_TYPES = set([t.name for t in api.compositeTypes if not t.isAlias])
 
@@ -1449,8 +1506,10 @@ def writeTypeUtil (api, filename):
 			if not isSimpleStruct(type) or type.isAlias:
 				continue
 
+			name = type.name[2:] if type.name[:2].lower() == "vk" else type.name
+
 			yield ""
-			yield "inline %s make%s (%s)" % (type.name, type.name[2:], argListToStr(type.members))
+			yield "inline %s make%s (%s)" % (type.name, name, argListToStr(type.members))
 			yield "{"
 			yield "\t%s res;" % type.name
 			for line in indentLines(["\tres.%s\t= %s;" % (m.name, m.name) for m in type.members]):
@@ -1590,7 +1649,12 @@ def writeExtensionFunctions (api, filename):
 			if ext.name:
 				for func in ext.functions:
 					if func.getType() == functionType:
-						funcNames.append(func.name)
+						# only add functions with same vendor as extension
+						# this is a workaroudn for entrypoints requiring more
+						# than one excetions and lack of the dependency in vulkan_core.h
+						vendor = ext.name.split('_')[1]
+						if func.name.endswith(vendor):
+							funcNames.append(func.name)
 			if ext.name:
 				yield '\tif (extName == "%s")' % ext.name
 				yield '\t{'
@@ -2300,16 +2364,36 @@ def writeExtensionList(filename, patternPart):
 	stream.append('};\n')
 	writeInlFile(filename, INL_HEADER, stream)
 
+def preprocessTopInclude(src, dir):
+	pattern = r'#include\s+"([^\n]+)"'
+	while True:
+		inc = re.search(pattern, src)
+		if inc is None:
+			return src
+		incFileName = inc.string[inc.start(1):inc.end(1)]
+		patternIncNamed = r'#include\s+"' + incFileName + '"'
+		incBody = readFile(os.path.join(dir, incFileName)) if incFileName != 'vk_platform.h' else ''
+		incBodySanitized = re.sub(pattern, '', incBody)
+		bodyEndSanitized = re.sub(patternIncNamed, '', src[inc.end(0):])
+		src = src[0:inc.start(0)] + incBodySanitized + bodyEndSanitized
+	return src
+
 if __name__ == "__main__":
 	# Read all .h files, with vulkan_core.h first
 	files			= os.listdir(VULKAN_H_DIR)
 	files			= [f for f in files if f.endswith(".h")]
 	files.sort()
 	files.remove("vulkan_core.h")
-	files.insert(0, "vulkan_core.h")
+	first = ["vk_video/vulkan_video_codecs_common.h", "vulkan_core.h"]
+	files = first + files
+
 	src				= ""
 	for file in files:
-		src += readFile(os.path.join(VULKAN_H_DIR,file))
+		src += preprocessTopInclude(readFile(os.path.join(VULKAN_H_DIR,file)), VULKAN_H_DIR)
+
+	src = re.sub('\s*//[^\n]*', '', src)
+	src = re.sub('\n\n', '\n', src)
+
 	api				= parseAPI(src)
 
 	platformFuncs	= [Function.TYPE_PLATFORM]

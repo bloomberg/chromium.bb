@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {assertTrue} from '../base/logging';
 import {Actions} from '../common/actions';
 import {HttpRpcState} from '../common/http_rpc_engine';
 import {
@@ -208,6 +209,7 @@ export class FrontendLocalState {
   selectArea(
       startSec: number, endSec: number,
       tracks = this._selectedArea ? this._selectedArea.tracks : []) {
+    assertTrue(endSec >= startSec);
     this.showPanningHint = true;
     this._selectedArea = {startSec, endSec, tracks},
     globals.rafScheduler.scheduleFullRedraw();
@@ -263,6 +265,10 @@ export class FrontendLocalState {
     this._visibleState.endSec = this.visibleWindowTime.end;
     this._visibleState.resolution = globals.getCurResolution();
     this.ratelimitedUpdateVisible();
+  }
+
+  getVisibleStateBounds(): [number, number] {
+    return [this.visibleWindowTime.start, this.visibleWindowTime.end];
   }
 
   // Whenever start/end px of the timeScale is changed, update

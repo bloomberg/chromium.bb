@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -21,13 +22,18 @@
 namespace base {
 class CommandLine;
 class FilePath;
+class TimeDelta;
+}
+
+namespace chromeos {
+class ScopedDisableCrosapiForTesting;
 }
 
 namespace content {
 class BrowserMainParts;
 class WebContents;
 
-class BrowserTestBase : public testing::Test {
+class BrowserTestBase : public ::testing::Test {
  public:
   BrowserTestBase();
   ~BrowserTestBase() override;
@@ -152,9 +158,6 @@ class BrowserTestBase : public testing::Test {
   // instead.
   void UseSoftwareCompositing();
 
-  // Returns true if the test will be using GL acceleration via a software GL.
-  bool UsingSoftwareGL() const;
-
   // Should be in PreRunTestOnMainThread, with the initial WebContents for the
   // main window. This allows the test harness to watch it for navigations so
   // that it can sync the host_resolver() rules to the out-of-process network
@@ -165,7 +168,8 @@ class BrowserTestBase : public testing::Test {
 #if defined(OS_ANDROID)
   // Android browser tests need to wait for async initialization in Java code.
   // This waits for those to complete before we can continue with the test.
-  void WaitUntilJavaIsReady(base::OnceClosure quit_closure);
+  void WaitUntilJavaIsReady(base::OnceClosure quit_closure,
+                            const base::TimeDelta& wait_retry_left);
 #endif
   // Performs a bunch of setup, and then runs the browser test body.
   void ProxyRunTestOnMainThreadLoop();
@@ -173,6 +177,10 @@ class BrowserTestBase : public testing::Test {
   // When using the network process, update the host resolver rules that were
   // added in SetUpOnMainThread.
   void InitializeNetworkProcess();
+
+  // Captures |browser_main_parts_| and forwards the call to
+  // CreatedBrowserMainParts().
+  void CreatedBrowserMainPartsImpl(BrowserMainParts* browser_main_parts);
 
   // Embedded test server, cheap to create, started on demand.
   std::unique_ptr<net::EmbeddedTestServer> embedded_test_server_;
@@ -207,6 +215,10 @@ class BrowserTestBase : public testing::Test {
   // not run and report a false positive result.
   bool set_up_called_ = false;
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  std::unique_ptr<chromeos::ScopedDisableCrosapiForTesting> disable_crosapi_;
+#endif
+
   std::unique_ptr<storage::QuotaSettings> quota_settings_;
 
   std::unique_ptr<NoRendererCrashesAssertion> no_renderer_crashes_assertion_;
@@ -214,6 +226,8 @@ class BrowserTestBase : public testing::Test {
   bool initialized_network_process_ = false;
 
   bool allow_network_access_to_host_resolutions_ = false;
+
+  BrowserMainParts* browser_main_parts_ = nullptr;
 
 #if defined(OS_POSIX)
   bool handle_sigterm_;

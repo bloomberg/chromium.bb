@@ -15,8 +15,20 @@ enum BlocklistState {
   BLOCKLISTED_SECURITY_VULNERABILITY = 2,
   BLOCKLISTED_CWS_POLICY_VIOLATION = 3,
   BLOCKLISTED_POTENTIALLY_UNWANTED = 4,
-  BLOCKLISTED_UNKNOWN  // Used when we couldn't connect to server,
-                       // e.g. when offline.
+  BLOCKLISTED_UNKNOWN = 5  // Used when we couldn't connect to server,
+                           // e.g. when offline.
+};
+
+// The new bit map version of `BlocklistState`. The values should match the
+// respective enum in ClientCRXListInfoResponse proto. This enum is added in
+// addition to the original `BlocklistState` because there can be multiple
+// blocklist states in omaha attributes.
+enum class BitMapBlocklistState {
+  NOT_BLOCKLISTED = 0,
+  BLOCKLISTED_MALWARE = 1 << 0,
+  BLOCKLISTED_SECURITY_VULNERABILITY = 1 << 1,
+  BLOCKLISTED_CWS_POLICY_VIOLATION = 1 << 2,
+  BLOCKLISTED_POTENTIALLY_UNWANTED = 1 << 3,
 };
 
 }  // namespace extensions

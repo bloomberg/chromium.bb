@@ -43,7 +43,7 @@ void CaptureModeTestApi::StartForRegion(bool for_video) {
 }
 
 void CaptureModeTestApi::SetUserSelectedRegion(const gfx::Rect& region) {
-  controller_->set_user_capture_region(region);
+  controller_->SetUserCaptureRegion(region, /*by_user=*/true);
 }
 
 void CaptureModeTestApi::PerformCapture() {
@@ -71,6 +71,16 @@ void CaptureModeTestApi::SetAudioRecordingEnabled(bool enabled) {
 void CaptureModeTestApi::FlushRecordingServiceForTesting() {
   DCHECK(controller_->is_recording_in_progress());
   controller_->recording_service_remote_.FlushForTesting();
+}
+
+void CaptureModeTestApi::ResetRecordingServiceRemote() {
+  DCHECK(controller_->is_recording_in_progress());
+  controller_->recording_service_remote_.reset();
+}
+
+void CaptureModeTestApi::ResetRecordingServiceClientReceiver() {
+  DCHECK(controller_->is_recording_in_progress());
+  controller_->recording_service_client_receiver_.reset();
 }
 
 void CaptureModeTestApi::SetType(bool for_video) {

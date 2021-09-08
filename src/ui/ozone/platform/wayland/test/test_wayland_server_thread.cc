@@ -36,11 +36,15 @@ TestWaylandServerThread::~TestWaylandServerThread() {
   if (client_)
     wl_client_destroy(client_);
 
+  // Stop watching the descriptor here to guarantee that no new events will come
+  // during or after the destruction of the display.
+  controller_.StopWatchingFileDescriptor();
+
   Resume();
   Stop();
 }
 
-bool TestWaylandServerThread::Start(uint32_t shell_version) {
+bool TestWaylandServerThread::Start(const ServerConfig& config) {
   display_.reset(wl_display_create());
   if (!display_)
     return false;
@@ -68,14 +72,12 @@ bool TestWaylandServerThread::Start(uint32_t shell_version) {
     return false;
   if (!seat_.Initialize(display_.get()))
     return false;
-  if (shell_version == 6) {
+  if (config.shell_version == ShellVersion::kV6) {
     if (!zxdg_shell_v6_.Initialize(display_.get()))
       return false;
-  } else if (shell_version == 7) {
+  } else {
     if (!xdg_shell_.Initialize(display_.get()))
       return false;
-  } else {
-    NOTREACHED() << "Unsupported shell version: " << shell_version;
   }
   if (!zwp_text_input_manager_v1_.Initialize(display_.get()))
     return false;
@@ -89,7 +91,7 @@ bool TestWaylandServerThread::Start(uint32_t shell_version) {
   base::Thread::Options options;
   options.message_pump_factory = base::BindRepeating(
       &TestWaylandServerThread::CreateMessagePump, base::Unretained(this));
-  if (!base::Thread::StartWithOptions(options))
+  if (!base::Thread::StartWithOptions(std::move(options)))
     return false;
 
   setenv("WAYLAND_SOCKET", base::NumberToString(client_fd.release()).c_str(),
@@ -146,7 +148,8 @@ TestWaylandServerThread::CreateMessagePump() {
 
 void TestWaylandServerThread::OnFileCanReadWithoutBlocking(int fd) {
   wl_event_loop_dispatch(event_loop_, 0);
-  wl_display_flush_clients(display_.get());
+  if (display_)
+    wl_display_flush_clients(display_.get());
 }
 
 void TestWaylandServerThread::OnFileCanWriteWithoutBlocking(int fd) {}

@@ -74,7 +74,7 @@ suite('NearbyShare', function() {
   suite('EnabledTests', function() {
     setup(function() {
       sharedSetup(true);
-      dialog.showHighVisibilityPage();
+      dialog.showHighVisibilityPage(/*shutoffTimeoutInSeconds=*/ 5 * 60);
       Polymer.dom.flush();
     });
 
@@ -83,6 +83,7 @@ suite('NearbyShare', function() {
     });
 
     test('show high visibility page, get a target, accept', async function() {
+      await test_util.waitAfterNextRender(dialog);
       // When attached we enter high visibility mode by default
       assertTrue(isVisible('nearby-share-high-visibility-page'));
       assertFalse(isVisible('nearby-share-confirm-page'));
@@ -92,10 +93,12 @@ suite('NearbyShare', function() {
       const confirmPage = dialog.$$('nearby-share-confirm-page');
       Polymer.dom.flush();
 
-      assertEquals(
-          target.name, confirmPage.$$('#shareTargetName').textContent.trim());
-      assertEquals(
-          '1234', confirmPage.$$('#connectionToken').textContent.trim());
+      const progressIcon = confirmPage.$$('#progressIcon');
+      assertTrue(!!progressIcon.shareTarget);
+      assertEquals(target.name, progressIcon.shareTarget.name);
+      assertTrue(
+          confirmPage.$$('#connectionToken').textContent.includes('1234'));
+      assertTrue(test_util.isChildVisible(confirmPage, 'nearby-preview'));
 
       confirmPage.$$('nearby-page-template').$$('#actionButton').click();
       const shareTargetId = await fakeReceiveManager.whenCalled('accept');
@@ -103,6 +106,7 @@ suite('NearbyShare', function() {
     });
 
     test('show high visibility page, get a target, reject', async function() {
+      await test_util.waitAfterNextRender(dialog);
       // When attached we enter high visibility mode by default
       assertTrue(isVisible('nearby-share-high-visibility-page'));
       assertFalse(isVisible('nearby-share-confirm-page'));
@@ -112,10 +116,12 @@ suite('NearbyShare', function() {
       const confirmPage = dialog.$$('nearby-share-confirm-page');
       Polymer.dom.flush();
 
-      assertEquals(
-          target.name, confirmPage.$$('#shareTargetName').textContent.trim());
-      assertEquals(
-          '1234', confirmPage.$$('#connectionToken').textContent.trim());
+      const progressIcon = confirmPage.$$('#progressIcon');
+      assertTrue(!!progressIcon.shareTarget);
+      assertEquals(target.name, progressIcon.shareTarget.name);
+      assertTrue(
+          confirmPage.$$('#connectionToken').textContent.includes('1234'));
+      assertTrue(test_util.isChildVisible(confirmPage, 'nearby-preview'));
 
       confirmPage.$$('nearby-page-template').$$('#cancelButton').click();
       const shareTargetId = await fakeReceiveManager.whenCalled('reject');
@@ -125,28 +131,46 @@ suite('NearbyShare', function() {
     test(
         'show high visibility page, unregister surface, closes dialog',
         async function() {
+          await test_util.waitAfterNextRender(dialog);
           // When attached we enter high visibility mode by default
           assertTrue(isVisible('nearby-share-high-visibility-page'));
           assertFalse(isVisible('nearby-share-confirm-page'));
           // If a share target comes in, we show it.
           await fakeReceiveManager.unregisterForegroundReceiveSurface();
           Polymer.dom.flush();
+          assertTrue(dialog.closing_);
           assertFalse(isVisible('cr-dialog'));
         });
 
     test(
-        'unregister surface, OnTransferUpdate, does not close dialog',
+        'OnTransferUpdate, unregister surface, does not close dialog',
         async function() {
+          await test_util.waitAfterNextRender(dialog);
           // When attached we enter high visibility mode by default
           assertTrue(isVisible('nearby-share-high-visibility-page'));
           assertFalse(isVisible('nearby-share-confirm-page'));
           // If a share target comes in, we show it.
-          await fakeReceiveManager.unregisterForegroundReceiveSurface();
           const target =
               fakeReceiveManager.simulateShareTargetArrival('testName', '1234');
           Polymer.dom.flush();
           assertFalse(dialog.closing_);
+          await fakeReceiveManager.unregisterForegroundReceiveSurface();
+          Polymer.dom.flush();
+          assertFalse(dialog.closing_);
         });
+
+    test('onStartAdvertisingFailure shows an error', async function() {
+      await test_util.waitAfterNextRender(dialog);
+      assertTrue(isVisible('nearby-share-high-visibility-page'));
+      const highVisibilityPage = dialog.$$('nearby-share-high-visibility-page');
+      assertFalse(!!highVisibilityPage.$$('#errorTitle'));
+
+      dialog.onStartAdvertisingFailure();
+      await test_util.waitAfterNextRender(dialog);
+
+      const errorTitle = highVisibilityPage.$$('#errorTitle');
+      assertTrue(!!errorTitle && errorTitle.textContent.length > 0);
+    });
   });
 
   suite('DisabledTests', function() {

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import unittest
 import mock
 
@@ -22,4 +23,4 @@ class PlatformBackendTest(unittest.TestCase):
             pb.__class__, '_InitPlatformIfNeeded', return_value=None):
           pb._platform = platform_module.Platform(pbe)
           self.assertEqual(set(pb.GetTypExpectationsTags()),
-                           set(['win', 'win-10', 'reference-debug']))
+                           {'win', 'win-10', 'reference-debug'})

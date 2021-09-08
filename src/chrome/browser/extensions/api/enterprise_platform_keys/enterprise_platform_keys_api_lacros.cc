@@ -11,12 +11,13 @@
 
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
+#include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys_internal.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 
@@ -24,6 +25,7 @@ namespace {
 
 namespace api_epk = api::enterprise_platform_keys;
 namespace api_epki = api::enterprise_platform_keys_internal;
+using KeystoreService = crosapi::mojom::KeystoreService;
 
 std::vector<uint8_t> VectorFromString(const std::string& s) {
   return std::vector<uint8_t>(s.begin(), s.end());
@@ -33,13 +35,13 @@ std::string StringFromVector(const std::vector<uint8_t>& v) {
   return std::string(v.begin(), v.end());
 }
 
-base::Optional<crosapi::mojom::KeystoreType> KeystoreTypeFromString(
+absl::optional<crosapi::mojom::KeystoreType> KeystoreTypeFromString(
     const std::string& input) {
   if (input == "user")
     return crosapi::mojom::KeystoreType::kUser;
   if (input == "system")
     return crosapi::mojom::KeystoreType::kDevice;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 const char kLacrosNotImplementedError[] = "Not implemented.";
@@ -49,6 +51,8 @@ const char kUnsupportedSigning[] = "Unsupported signing algorithm.";
 const char kUnsupportedSigningInput[] =
     "Unsupported input for signing algorithm.";
 const char kInvalidKeystoreType[] = "Invalid keystore type.";
+const char kExtensionDoesNotHavePermission[] =
+    "The extension does not have permission to call this function.";
 
 // Performs common crosapi validation. These errors are not caused by the
 // extension so they are considered recoverable. Returns an error message on
@@ -56,8 +60,8 @@ const char kInvalidKeystoreType[] = "Invalid keystore type.";
 // the ash implementation of KeystoreService necessary to support this
 // extension. |context| is the browser context in which the extension is hosted.
 std::string ValidateCrosapi(int min_version, content::BrowserContext* context) {
-  int version = chromeos::LacrosChromeServiceImpl::Get()->GetInterfaceVersion(
-      crosapi::mojom::KeystoreService::Uuid_);
+  int version = chromeos::LacrosService::Get()->GetInterfaceVersion(
+      KeystoreService::Uuid_);
   if (version < min_version)
     return kUnsupportedByAsh;
 
@@ -65,7 +69,7 @@ std::string ValidateCrosapi(int min_version, content::BrowserContext* context) {
   // the user for ash is the same as the user for lacros. We do this by
   // restricting the API to the default profile, which is guaranteed to be the
   // same user.
-  if (!Profile::FromBrowserContext(context)->IsDefaultProfile())
+  if (!Profile::FromBrowserContext(context)->IsMainProfile())
     return kUnsupportedProfile;
 
   return "";
@@ -77,7 +81,7 @@ std::string ValidateCrosapi(int min_version, content::BrowserContext* context) {
 // extension termination.
 std::string ValidateInput(const std::string& token_id,
                           crosapi::mojom::KeystoreType* keystore) {
-  base::Optional<crosapi::mojom::KeystoreType> keystore_type =
+  absl::optional<crosapi::mojom::KeystoreType> keystore_type =
       KeystoreTypeFromString(token_id);
   if (!keystore_type)
     return kInvalidKeystoreType;
@@ -140,7 +144,8 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
       api_epki::GenerateKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  std::string error = ValidateCrosapi(/*min_version=*/2, browser_context());
+  std::string error = ValidateCrosapi(
+      KeystoreService::kExtensionGenerateKeyMinVersion, browser_context());
   if (!error.empty()) {
     return RespondNow(Error(error));
   }
@@ -153,15 +158,16 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
 
   auto c = base::BindOnce(
       &EnterprisePlatformKeysInternalGenerateKeyFunction::OnGenerateKey, this);
-  chromeos::LacrosChromeServiceImpl::Get()
-      ->keystore_service_remote()
-      ->GenerateKey(keystore, std::move(signing), std::move(c));
+  chromeos::LacrosService::Get()
+      ->GetRemote<crosapi::mojom::KeystoreService>()
+      ->ExtensionGenerateKey(keystore, std::move(signing), extension_id(),
+                             std::move(c));
   return RespondLater();
 }
 
 void EnterprisePlatformKeysInternalGenerateKeyFunction::OnGenerateKey(
     ResultPtr result) {
-  using Result = crosapi::mojom::KeystoreBinaryResult;
+  using Result = crosapi::mojom::ExtensionKeystoreBinaryResult;
   switch (result->which()) {
     case Result::Tag::ERROR_MESSAGE:
       Respond(Error(result->get_error_message()));
@@ -179,7 +185,8 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
       api_epk::GetCertificates::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  std::string error = ValidateCrosapi(/*min_version=*/2, browser_context());
+  std::string error = ValidateCrosapi(
+      KeystoreService::kGetCertificatesMinVersion, browser_context());
   if (!error.empty()) {
     return RespondNow(Error(error));
   }
@@ -190,8 +197,8 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
 
   auto c = base::BindOnce(
       &EnterprisePlatformKeysGetCertificatesFunction::OnGetCertificates, this);
-  chromeos::LacrosChromeServiceImpl::Get()
-      ->keystore_service_remote()
+  chromeos::LacrosService::Get()
+      ->GetRemote<crosapi::mojom::KeystoreService>()
       ->GetCertificates(keystore, std::move(c));
   return RespondLater();
 }
@@ -222,7 +229,8 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
       api_epk::ImportCertificate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  std::string error = ValidateCrosapi(/*min_version=*/2, browser_context());
+  std::string error = ValidateCrosapi(
+      KeystoreService::kAddCertificateMinVersion, browser_context());
   if (!error.empty()) {
     return RespondNow(Error(error));
   }
@@ -233,8 +241,8 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
 
   auto c = base::BindOnce(
       &EnterprisePlatformKeysImportCertificateFunction::OnAddCertificate, this);
-  chromeos::LacrosChromeServiceImpl::Get()
-      ->keystore_service_remote()
+  chromeos::LacrosService::Get()
+      ->GetRemote<crosapi::mojom::KeystoreService>()
       ->AddCertificate(keystore, params->certificate, std::move(c));
   return RespondLater();
 }
@@ -254,7 +262,8 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
       api_epk::RemoveCertificate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  std::string error = ValidateCrosapi(/*min_version=*/2, browser_context());
+  std::string error = ValidateCrosapi(
+      KeystoreService::kRemoveCertificateMinVersion, browser_context());
   if (!error.empty()) {
     return RespondNow(Error(error));
   }
@@ -266,8 +275,8 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
   auto c = base::BindOnce(
       &EnterprisePlatformKeysRemoveCertificateFunction::OnRemoveCertificate,
       this);
-  chromeos::LacrosChromeServiceImpl::Get()
-      ->keystore_service_remote()
+  chromeos::LacrosService::Get()
+      ->GetRemote<crosapi::mojom::KeystoreService>()
       ->RemoveCertificate(keystore, params->certificate, std::move(c));
   return RespondLater();
 }
@@ -285,15 +294,16 @@ ExtensionFunction::ResponseAction
 EnterprisePlatformKeysInternalGetTokensFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(args_->empty());
 
-  std::string error = ValidateCrosapi(/*min_version=*/1, browser_context());
+  std::string error = ValidateCrosapi(KeystoreService::kGetKeyStoresMinVersion,
+                                      browser_context());
   if (!error.empty()) {
     return RespondNow(Error(error));
   }
 
   auto c = base::BindOnce(
       &EnterprisePlatformKeysInternalGetTokensFunction::OnGetKeyStores, this);
-  chromeos::LacrosChromeServiceImpl::Get()
-      ->keystore_service_remote()
+  chromeos::LacrosService::Get()
+      ->GetRemote<crosapi::mojom::KeystoreService>()
       ->GetKeyStores(std::move(c));
   return RespondLater();
 }
@@ -332,17 +342,28 @@ EnterprisePlatformKeysChallengeMachineKeyFunction::Run() {
   std::unique_ptr<api_epk::ChallengeMachineKey::Params> params(
       api_epk::ChallengeMachineKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  // TODO(https://crbug.com/1113443): This implementation needs to check if the
-  // extension is allowlisted via the AttestationExtensionAllowlist policy.
+
+  const std::string error = ValidateCrosapi(
+      KeystoreService::kChallengeAttestationOnlyKeystoreMinVersion,
+      browser_context());
+  if (!error.empty())
+    return RespondNow(Error(error));
+
+  if (!platform_keys::IsExtensionAllowed(
+          Profile::FromBrowserContext(browser_context()), extension())) {
+    return RespondNow(Error(kExtensionDoesNotHavePermission));
+  }
+
   auto c = base::BindOnce(&EnterprisePlatformKeysChallengeMachineKeyFunction::
                               OnChallengeAttestationOnlyKeystore,
                           this);
-  chromeos::LacrosChromeServiceImpl::Get()
-      ->keystore_service_remote()
-      ->ChallengeAttestationOnlyKeystore(StringFromVector(params->challenge),
-                                         crosapi::mojom::KeystoreType::kDevice,
-                                         /*migrate=*/*params->register_key,
-                                         std::move(c));
+  chromeos::LacrosService::Get()
+      ->GetRemote<crosapi::mojom::KeystoreService>()
+      ->ChallengeAttestationOnlyKeystore(
+          StringFromVector(params->challenge),
+          crosapi::mojom::KeystoreType::kDevice,
+          /*migrate=*/params->register_key ? *params->register_key : false,
+          std::move(c));
   return RespondLater();
 }
 
@@ -366,18 +387,22 @@ EnterprisePlatformKeysChallengeUserKeyFunction::Run() {
       api_epk::ChallengeUserKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  std::string error = ValidateCrosapi(/*min_version=*/0, browser_context());
-  if (!error.empty()) {
+  const std::string error = ValidateCrosapi(
+      KeystoreService::kChallengeAttestationOnlyKeystoreMinVersion,
+      browser_context());
+  if (!error.empty())
     return RespondNow(Error(error));
+
+  if (!platform_keys::IsExtensionAllowed(
+          Profile::FromBrowserContext(browser_context()), extension())) {
+    return RespondNow(Error(kExtensionDoesNotHavePermission));
   }
 
-  // TODO(https://crbug.com/1113443): This implementation needs to check if the
-  // extension is allowlisted via the AttestationExtensionAllowlist policy.
   auto c = base::BindOnce(&EnterprisePlatformKeysChallengeUserKeyFunction::
                               OnChallengeAttestationOnlyKeystore,
                           this);
-  chromeos::LacrosChromeServiceImpl::Get()
-      ->keystore_service_remote()
+  chromeos::LacrosService::Get()
+      ->GetRemote<crosapi::mojom::KeystoreService>()
       ->ChallengeAttestationOnlyKeystore(StringFromVector(params->challenge),
                                          crosapi::mojom::KeystoreType::kUser,
                                          /*migrate=*/params->register_key,

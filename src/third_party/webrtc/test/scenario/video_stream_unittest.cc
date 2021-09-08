@@ -9,6 +9,8 @@
  */
 #include <atomic>
 
+#include "api/test/network_emulation/create_cross_traffic.h"
+#include "api/test/network_emulation/cross_traffic.h"
 #include "test/field_trial.h"
 #include "test/gtest.h"
 #include "test/scenario/scenario.h"
@@ -128,7 +130,9 @@ TEST(VideoStreamTest, SendsNacksOnLoss) {
   auto video = s.CreateVideoStream(route->forward(), VideoStreamConfig());
   s.RunFor(TimeDelta::Seconds(1));
   int retransmit_packets = 0;
-  for (const auto& substream : video->send()->GetStats().substreams) {
+  VideoSendStream::Stats stats;
+  route->first()->SendTask([&]() { stats = video->send()->GetStats(); });
+  for (const auto& substream : stats.substreams) {
     retransmit_packets += substream.second.rtp_stats.retransmitted.packets;
   }
   EXPECT_GT(retransmit_packets, 0);
@@ -150,7 +154,8 @@ TEST(VideoStreamTest, SendsFecWithUlpFec) {
     c->stream.use_ulpfec = true;
   });
   s.RunFor(TimeDelta::Seconds(5));
-  VideoSendStream::Stats video_stats = video->send()->GetStats();
+  VideoSendStream::Stats video_stats;
+  route->first()->SendTask([&]() { video_stats = video->send()->GetStats(); });
   EXPECT_GT(video_stats.substreams.begin()->second.rtp_stats.fec.packets, 0u);
 }
 TEST(VideoStreamTest, SendsFecWithFlexFec) {
@@ -167,7 +172,8 @@ TEST(VideoStreamTest, SendsFecWithFlexFec) {
     c->stream.use_flexfec = true;
   });
   s.RunFor(TimeDelta::Seconds(5));
-  VideoSendStream::Stats video_stats = video->send()->GetStats();
+  VideoSendStream::Stats video_stats;
+  route->first()->SendTask([&]() { video_stats = video->send()->GetStats(); });
   EXPECT_GT(video_stats.substreams.begin()->second.rtp_stats.fec.packets, 0u);
 }
 
@@ -217,8 +223,9 @@ TEST(VideoStreamTest, ResolutionAdaptsToAvailableBandwidth) {
 
   // Trigger cross traffic, run until we have seen 3 consecutive
   // seconds with no VGA frames due to reduced available bandwidth.
-  auto cross_traffic =
-      s.net()->StartFakeTcpCrossTraffic(send_net, ret_net, FakeTcpConfig());
+  auto cross_traffic = s.net()->StartCrossTraffic(CreateFakeTcpCrossTraffic(
+      s.net()->CreateRoute(send_net), s.net()->CreateRoute(ret_net),
+      FakeTcpConfig()));
 
   int num_seconds_without_vga = 0;
   int num_iterations = 0;

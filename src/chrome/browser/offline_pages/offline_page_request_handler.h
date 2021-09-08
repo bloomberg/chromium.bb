@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "components/offline_pages/core/archive_validator.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
@@ -171,9 +170,6 @@ class OfflinePageRequestHandler {
     // and returned because NavigationUIData may be disposed right after the
     // response data is received.
     virtual void SetOfflinePageNavigationUIData(bool is_offline_page) = 0;
-
-    // Returns true if the preview is allowed.
-    virtual bool ShouldAllowPreview() const = 0;
 
     // Returns the page transition type for this navigation.
     virtual int GetPageTransition() const = 0;

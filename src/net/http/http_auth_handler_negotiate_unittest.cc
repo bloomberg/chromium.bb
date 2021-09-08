@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -67,9 +68,9 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
     resolver_->rules_map()[HostResolverSource::ANY]->AddIPLiteralRule(
         "alias", "10.0.0.2", "canonical.example.com");
 
-    http_auth_preferences_.reset(new MockAllowHttpAuthPreferences());
-    factory_.reset(
-        new HttpAuthHandlerNegotiate::Factory(HttpAuthMechanismFactory()));
+    http_auth_preferences_ = std::make_unique<MockAllowHttpAuthPreferences>();
+    factory_ = std::make_unique<HttpAuthHandlerNegotiate::Factory>(
+        HttpAuthMechanismFactory());
     factory_->set_http_auth_preferences(http_auth_preferences_.get());
 #if defined(OS_ANDROID)
     http_auth_preferences_->set_auth_android_negotiate_account_type(
@@ -86,7 +87,7 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
 
   void SetupMocks(MockAuthLibrary* mock_library) {
 #if defined(OS_WIN)
-    security_package_.reset(new SecPkgInfoW);
+    security_package_ = std::make_unique<SecPkgInfoW>();
     memset(security_package_.get(), 0x0, sizeof(SecPkgInfoW));
     security_package_->cbMaxToken = 1337;
     mock_library->ExpectQuerySecurityPackageInfo(SEC_E_OK,
@@ -463,7 +464,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
 #endif  // BUILDFLAG(USE_EXTERNAL_GSSAPI)
 
 // AllowGssapiLibraryLoad() is only supported on Chrome OS.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(HttpAuthHandlerNegotiateTest, AllowGssapiLibraryLoad) {
   // Disabling allow_gssapi_library_load should prevent handler creation.
   SetupMocks(AuthLibrary());
@@ -479,7 +480,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, AllowGssapiLibraryLoad) {
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(auth_handler);
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #endif  // defined(OS_POSIX)
 

@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -178,9 +178,10 @@ class DownloadRequestLimiter
                                         DownloadStatus status,
                                         ContentSetting setting);
 
-    // Check if download is restricted (either requires prompting or is blocked)
-    // for the |navigation_handle|.
-    bool IsNavigationRestricted(content::NavigationHandle* navigation_handle);
+    // Check if the navigation should clear the download state. If an origin is
+    // in a limited state, history forward/backward shouldn't clear the download
+    // state.
+    bool shouldClearDownloadState(content::NavigationHandle* navigation_handle);
 
     content::WebContents* web_contents_;
 
@@ -213,8 +214,8 @@ class DownloadRequestLimiter
     using DownloadStatusMap = std::map<url::Origin, DownloadStatus>;
     DownloadStatusMap download_status_map_;
 
-    ScopedObserver<HostContentSettingsMap, content_settings::Observer>
-        observer_{this};
+    base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>
+        observation_{this};
 
     // Weak pointer factory for generating a weak pointer to pass to the
     // infobar.  User responses to the throttling prompt will be returned
@@ -244,7 +245,7 @@ class DownloadRequestLimiter
   void CanDownload(const content::WebContents::Getter& web_contents_getter,
                    const GURL& url,
                    const std::string& request_method,
-                   base::Optional<url::Origin> request_initiator,
+                   absl::optional<url::Origin> request_initiator,
                    bool from_download_cross_origin_redirect,
                    Callback callback);
 
@@ -283,7 +284,7 @@ class DownloadRequestLimiter
   // potentially prompting the user.
   void CanDownloadImpl(content::WebContents* originating_contents,
                        const std::string& request_method,
-                       base::Optional<url::Origin> request_initiator,
+                       absl::optional<url::Origin> request_initiator,
                        bool from_download_cross_origin_redirect,
                        Callback callback);
 
@@ -291,7 +292,7 @@ class DownloadRequestLimiter
   void OnCanDownloadDecided(
       const content::WebContents::Getter& web_contents_getter,
       const std::string& request_method,
-      base::Optional<url::Origin> request_initiator,
+      absl::optional<url::Origin> request_initiator,
       bool from_download_cross_origin_redirect,
       Callback orig_callback,
       bool allow);

@@ -5,13 +5,13 @@
 #include "ash/system/phonehub/interstitial_view_button.h"
 
 #include "ash/system/unified/rounded_label_button.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
 InterstitialViewButton::InterstitialViewButton(Button::PressedCallback callback,
-                                               const base::string16& text,
+                                               const std::u16string& text,
                                                bool paint_background)
     : RoundedLabelButton(std::move(callback), text),
       paint_background_(paint_background) {}

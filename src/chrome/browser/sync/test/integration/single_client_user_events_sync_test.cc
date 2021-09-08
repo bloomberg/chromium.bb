@@ -37,6 +37,7 @@ CommitResponse::ResponseType BounceType(
 class SingleClientUserEventsSyncTest : public SyncTest {
  public:
   SingleClientUserEventsSyncTest() : SyncTest(SINGLE_CLIENT) {}
+
   ~SingleClientUserEventsSyncTest() override = default;
 
   bool ExpectUserEvents(std::vector<UserEventSpecifics> expected_specifics) {

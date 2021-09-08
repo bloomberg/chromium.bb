@@ -38,21 +38,20 @@
 #include "base/process/environment_internal.h"
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
-#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
 #include <sys/prctl.h>
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include <sys/ioctl.h>
 #endif
 
@@ -68,13 +67,6 @@
 extern char** environ;
 
 namespace base {
-
-// Friend and derived class of ScopedAllowBaseSyncPrimitives which allows
-// GetAppOutputInternal() to join a process. GetAppOutputInternal() can't itself
-// be a friend of ScopedAllowBaseSyncPrimitives because it is in the anonymous
-// namespace.
-class GetAppOutputScopedAllowBaseSyncPrimitives
-    : public base::ScopedAllowBaseSyncPrimitives {};
 
 #if !defined(OS_NACL_NONSFI)
 
@@ -366,19 +358,27 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     // might do things like block waiting for threads that don't even exist
     // in the child.
 
-    // If a child process uses the readline library, the process block forever.
-    // In BSD like OSes including OS X it is safe to assign /dev/null as stdin.
-    // See http://crbug.com/56596.
-    base::ScopedFD null_fd(HANDLE_EINTR(open("/dev/null", O_RDONLY)));
-    if (!null_fd.is_valid()) {
-      RAW_LOG(ERROR, "Failed to open /dev/null");
-      _exit(127);
-    }
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+    // See comments on the ResetFDOwnership() declaration in
+    // base/files/scoped_file.h regarding why this is called early here.
+    subtle::ResetFDOwnership();
+#endif
 
-    int new_fd = HANDLE_EINTR(dup2(null_fd.get(), STDIN_FILENO));
-    if (new_fd != STDIN_FILENO) {
-      RAW_LOG(ERROR, "Failed to dup /dev/null for stdin");
-      _exit(127);
+    {
+      // If a child process uses the readline library, the process block
+      // forever. In BSD like OSes including OS X it is safe to assign /dev/null
+      // as stdin. See http://crbug.com/56596.
+      base::ScopedFD null_fd(HANDLE_EINTR(open("/dev/null", O_RDONLY)));
+      if (!null_fd.is_valid()) {
+        RAW_LOG(ERROR, "Failed to open /dev/null");
+        _exit(127);
+      }
+
+      int new_fd = HANDLE_EINTR(dup2(null_fd.get(), STDIN_FILENO));
+      if (new_fd != STDIN_FILENO) {
+        RAW_LOG(ERROR, "Failed to dup /dev/null for stdin");
+        _exit(127);
+      }
     }
 
     if (options.new_process_group) {
@@ -417,7 +417,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     memset(reinterpret_cast<void*>(malloc), 0xff, 8);
 #endif  // 0
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     if (options.ctrl_terminal_fd >= 0) {
       // Set process' controlling terminal.
       if (HANDLE_EINTR(setsid()) != -1) {
@@ -429,7 +429,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
         RAW_LOG(WARNING, "setsid failed, ctrl terminal not set");
       }
     }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
     // Cannot use STL iterators here, since debug iterators use locks.
     // NOLINTNEXTLINE(modernize-loop-convert)
@@ -523,7 +523,6 @@ static bool GetAppOutputInternal(
     std::string* output,
     bool do_search_path,
     int* exit_code) {
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   // exit_code must be supplied so calling function can determine success.
   DCHECK(exit_code);
   *exit_code = EXIT_FAILURE;
@@ -558,6 +557,12 @@ static bool GetAppOutputInternal(
       //
       // DANGER: no calls to malloc or locks are allowed from now on:
       // http://crbug.com/36678
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+      // See comments on the ResetFDOwnership() declaration in
+      // base/files/scoped_file.h regarding why this is called early here.
+      subtle::ResetFDOwnership();
+#endif
 
       // Obscure fork() rule: in the child, if you don't end up doing exec*(),
       // you call _exit() instead of exit(). This is because _exit() does not
@@ -605,6 +610,8 @@ static bool GetAppOutputInternal(
       // write to the pipe).
       close(pipe_fd[1]);
 
+      TRACE_EVENT0("base", "GetAppOutput");
+
       output->clear();
 
       while (true) {
@@ -620,9 +627,10 @@ static bool GetAppOutputInternal(
       // Always wait for exit code (even if we know we'll declare
       // GOT_MAX_OUTPUT).
       Process process(pid);
-      // A process launched with GetAppOutput*() usually doesn't wait on the
-      // process that launched it and thus chances of deadlock are low.
-      GetAppOutputScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
+      // It is okay to allow this process to wait on the launched process as a
+      // process launched with GetAppOutput*() shouldn't wait back on the
+      // process that launched it.
+      internal::GetAppOutputScopedAllowBaseSyncPrimitives allow_wait;
       return process.WaitForExit(exit_code);
     }
   }

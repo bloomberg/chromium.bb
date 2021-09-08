@@ -7,6 +7,9 @@
 
 #include <stddef.h>
 
+#include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
 namespace lite_video {
 
 // Returns whether LiteVideo is enabled.
@@ -21,6 +24,11 @@ bool ShouldThrottleLiteVideoMissingContentLength();
 
 // Returns the maximum active throttles size.
 size_t GetMaxActiveThrottles();
+
+// Returns the content length of the response received. absl::nullopt is
+// returned when content length cannot be retrieved.
+absl::optional<uint64_t> GetContentLength(
+    const network::mojom::URLResponseHead& response_head);
 
 }  // namespace lite_video
 

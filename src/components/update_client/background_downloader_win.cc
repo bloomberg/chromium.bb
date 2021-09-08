@@ -25,6 +25,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_co_mem.h"
 #include "components/update_client/task_traits.h"
@@ -107,7 +108,7 @@ namespace {
 
 // All jobs created by this module have a specific description so they can
 // be found at run-time or by using system administration tools.
-const base::char16 kJobName[] = L"Chrome Component Updater";
+const wchar_t kJobName[] = L"Chrome Component Updater";
 
 // How often the code looks for changes in the BITS job state.
 const int kJobPollingIntervalSec = 4;
@@ -139,6 +140,9 @@ const int kMaxQueuedJobs = 10;
 
 // Retrieves the singleton instance of GIT for this process.
 HRESULT GetGit(ComPtr<IGlobalInterfaceTable>* git) {
+  // Mitigate the issues caused by loading DLLs on a background thread
+  // (http://crbug/973868).
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
   return ::CoCreateInstance(CLSID_StdGlobalInterfaceTable, nullptr,
                             CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&(*git)));
 }
@@ -197,8 +201,8 @@ HRESULT GetFilesInJob(const ComPtr<IBackgroundCopyJob>& job,
 // Returns the file name, the url, and some per-file progress information.
 // The function out parameters can be NULL if that data is not requested.
 HRESULT GetJobFileProperties(const ComPtr<IBackgroundCopyFile>& file,
-                             base::string16* local_name,
-                             base::string16* remote_name,
+                             std::wstring* local_name,
+                             std::wstring* remote_name,
                              BG_FILE_PROGRESS* progress) {
   if (!file)
     return E_FAIL;
@@ -206,7 +210,7 @@ HRESULT GetJobFileProperties(const ComPtr<IBackgroundCopyFile>& file,
   HRESULT hr = S_OK;
 
   if (local_name) {
-    ScopedCoMem<base::char16> name;
+    ScopedCoMem<wchar_t> name;
     hr = file->GetLocalName(&name);
     if (FAILED(hr))
       return hr;
@@ -214,7 +218,7 @@ HRESULT GetJobFileProperties(const ComPtr<IBackgroundCopyFile>& file,
   }
 
   if (remote_name) {
-    ScopedCoMem<base::char16> name;
+    ScopedCoMem<wchar_t> name;
     hr = file->GetRemoteName(&name);
     if (FAILED(hr))
       return hr;
@@ -262,8 +266,8 @@ HRESULT GetJobByteCount(const ComPtr<IBackgroundCopyJob>& job,
 }
 
 HRESULT GetJobDisplayName(const ComPtr<IBackgroundCopyJob>& job,
-                          base::string16* name) {
-  ScopedCoMem<base::char16> local_name;
+                          std::wstring* name) {
+  ScopedCoMem<wchar_t> local_name;
   const HRESULT hr = job->GetDisplayName(&local_name);
   if (FAILED(hr))
     return hr;
@@ -315,7 +319,7 @@ HRESULT FindBitsJobIf(Predicate pred,
     ComPtr<IBackgroundCopyJob> current_job;
     if (enum_jobs->Next(1, &current_job, nullptr) == S_OK &&
         pred(current_job)) {
-      base::string16 job_name;
+      std::wstring job_name;
       hr = GetJobDisplayName(current_job, &job_name);
       if (job_name.compare(kJobName) == 0)
         jobs->push_back(current_job);
@@ -345,9 +349,9 @@ bool JobFileUrlEqualPredicate(ComPtr<IBackgroundCopyJob> job, const GURL& url) {
     return false;
 
   for (size_t i = 0; i != files.size(); ++i) {
-    ScopedCoMem<base::char16> remote_name;
+    ScopedCoMem<wchar_t> remote_name;
     if (SUCCEEDED(files[i]->GetRemoteName(&remote_name)) &&
-        url == GURL(base::StringPiece16(remote_name)))
+        url == GURL(base::SysWideToUTF8(remote_name.get())))
       return true;
   }
 
@@ -380,7 +384,7 @@ void CleanupJob(const ComPtr<IBackgroundCopyJob>& job) {
 
   std::vector<base::FilePath> paths;
   for (const auto& file : files) {
-    base::string16 local_name;
+    std::wstring local_name;
     HRESULT hr = GetJobFileProperties(file, &local_name, nullptr, nullptr);
     if (SUCCEEDED(hr))
       paths.push_back(base::FilePath(local_name));
@@ -739,9 +743,9 @@ HRESULT BackgroundDownloader::InitializeNewJob(
                                     &tempdir))
     return E_FAIL;
 
-  const base::string16 filename(base::SysUTF8ToWide(url.ExtractFileName()));
+  const std::wstring filename(base::SysUTF8ToWide(url.ExtractFileName()));
   HRESULT hr = job->AddFile(base::SysUTF8ToWide(url.spec()).c_str(),
-                            tempdir.Append(filename).AsUTF16Unsafe().c_str());
+                            tempdir.Append(filename).value().c_str());
   if (FAILED(hr))
     return hr;
 
@@ -784,7 +788,7 @@ HRESULT BackgroundDownloader::CompleteJob() {
   if (files.empty())
     return E_UNEXPECTED;
 
-  base::string16 local_name;
+  std::wstring local_name;
   BG_FILE_PROGRESS progress = {0};
   hr = GetJobFileProperties(files.front(), &local_name, nullptr, &progress);
   if (FAILED(hr))

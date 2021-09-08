@@ -119,7 +119,7 @@ static int tta_read_header(AVFormatContext *s)
     for (i = 0; i < c->totalframes; i++) {
         uint32_t size = avio_rl32(s->pb);
         int r;
-        if ((r = av_add_index_entry(st, framepos, i * c->frame_size, size, 0,
+        if ((r = av_add_index_entry(st, framepos, i * (int64_t)c->frame_size, size, 0,
                                     AVINDEX_KEYFRAME)) < 0)
             return r;
         framepos += size;
@@ -155,15 +155,15 @@ static int tta_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (c->currentframe >= c->totalframes)
         return AVERROR_EOF;
 
-    if (st->nb_index_entries < c->totalframes) {
+    if (st->internal->nb_index_entries < c->totalframes) {
         av_log(s, AV_LOG_ERROR, "Index entry disappeared\n");
         return AVERROR_INVALIDDATA;
     }
 
-    size = st->index_entries[c->currentframe].size;
+    size = st->internal->index_entries[c->currentframe].size;
 
     ret = av_get_packet(s->pb, pkt, size);
-    pkt->dts = st->index_entries[c->currentframe++].timestamp;
+    pkt->dts = st->internal->index_entries[c->currentframe++].timestamp;
     pkt->duration = c->currentframe == c->totalframes ? c->last_frame_size :
                                                         c->frame_size;
     return ret;
@@ -176,7 +176,7 @@ static int tta_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
     int index = av_index_search_timestamp(st, timestamp, flags);
     if (index < 0)
         return -1;
-    if (avio_seek(s->pb, st->index_entries[index].pos, SEEK_SET) < 0)
+    if (avio_seek(s->pb, st->internal->index_entries[index].pos, SEEK_SET) < 0)
         return -1;
 
     c->currentframe = index;

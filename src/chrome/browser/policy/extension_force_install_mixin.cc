@@ -19,16 +19,21 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/crx_file/id_util.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_creator.h"
@@ -45,13 +50,13 @@
 #include "extensions/test/test_background_page_ready_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/zlib/google/zip.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #endif
 
@@ -97,19 +102,11 @@ class ForceInstallPrefObserver final {
   base::WeakPtrFactory<ForceInstallPrefObserver> weak_ptr_factory_{this};
 };
 
-std::string GetForceInstallPrefName(Profile* profile) {
-#if defined(OS_CHROMEOS)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile))
-    return extensions::pref_names::kLoginScreenExtensions;
-#endif  // OS_CHROMEOS
-  return extensions::pref_names::kInstallForceList;
-}
-
 ForceInstallPrefObserver::ForceInstallPrefObserver(
     Profile* profile,
     const extensions::ExtensionId& extension_id)
     : pref_service_(profile->GetPrefs()),
-      pref_name_(GetForceInstallPrefName(profile)),
+      pref_name_(extensions::pref_names::kInstallForceList),
       extension_id_(extension_id) {
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
@@ -301,7 +298,8 @@ bool ParseCrxOuterData(const base::FilePath& crx_path,
   const crx_file::VerifierResult crx_verifier_result = crx_file::Verify(
       crx_path, crx_file::VerifierFormat::CRX3,
       /*required_key_hashes=*/std::vector<std::vector<uint8_t>>(),
-      /*required_file_hash=*/std::vector<uint8_t>(), &public_key, extension_id);
+      /*required_file_hash=*/std::vector<uint8_t>(), &public_key, extension_id,
+      /*compressed_verified_contents=*/nullptr);
   if (crx_verifier_result != crx_file::VerifierResult::OK_FULL) {
     ADD_FAILURE() << "Failed to read created CRX: verifier result "
                   << static_cast<int>(crx_verifier_result);
@@ -325,8 +323,6 @@ bool ParseCrxInnerData(const base::FilePath& crx_path,
   return ParseExtensionManifestData(temp_dir.GetPath(), extension_version);
 }
 
-#if defined(OS_CHROMEOS)
-
 std::string MakeForceInstallPolicyItemValue(
     const extensions::ExtensionId& extension_id,
     const GURL& update_manifest_url) {
@@ -335,6 +331,36 @@ std::string MakeForceInstallPolicyItemValue(
   return base::StringPrintf("%s;%s", extension_id.c_str(),
                             update_manifest_url.spec().c_str());
 }
+
+void UpdatePolicyViaMockPolicyProvider(
+    const extensions::ExtensionId& extension_id,
+    const GURL& update_manifest_url,
+    policy::MockConfigurationPolicyProvider* mock_policy_provider) {
+  const std::string policy_item_value =
+      MakeForceInstallPolicyItemValue(extension_id, update_manifest_url);
+  policy::PolicyMap policy_map =
+      mock_policy_provider->policies()
+          .Get(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                       /*component_id=*/std::string()))
+          .Clone();
+  policy::PolicyMap::Entry* const existing_entry =
+      policy_map.GetMutable(policy::key::kExtensionInstallForcelist);
+  if (existing_entry) {
+    // Append to the existing policy.
+    existing_entry->value()->Append(policy_item_value);
+  } else {
+    // Set the new policy value.
+    base::Value policy_value(base::Value::Type::LIST);
+    policy_value.Append(policy_item_value);
+    policy_map.Set(policy::key::kExtensionInstallForcelist,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD, std::move(policy_value),
+                   /*external_data_fetcher=*/nullptr);
+  }
+  mock_policy_provider->UpdateChromePolicy(policy_map);
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 void UpdatePolicyViaDeviceStateMixin(
     const extensions::ExtensionId& extension_id,
@@ -359,7 +385,7 @@ void UpdatePolicyViaDevicePolicyCrosTestHelper(
   device_policy_cros_test_helper->RefreshDevicePolicy();
 }
 
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -369,7 +395,18 @@ ExtensionForceInstallMixin::ExtensionForceInstallMixin(
 
 ExtensionForceInstallMixin::~ExtensionForceInstallMixin() = default;
 
-#if defined(OS_CHROMEOS)
+void ExtensionForceInstallMixin::InitWithMockPolicyProvider(
+    Profile* profile,
+    policy::MockConfigurationPolicyProvider* mock_policy_provider) {
+  DCHECK(profile);
+  DCHECK(mock_policy_provider);
+  DCHECK(!profile_) << "Init already called";
+  DCHECK(!mock_policy_provider_);
+  profile_ = profile;
+  mock_policy_provider_ = mock_policy_provider;
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 void ExtensionForceInstallMixin::InitWithDeviceStateMixin(
     Profile* profile,
@@ -393,7 +430,7 @@ void ExtensionForceInstallMixin::InitWithDevicePolicyCrosTestHelper(
   device_policy_cros_test_helper_ = device_policy_cros_test_helper;
 }
 
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool ExtensionForceInstallMixin::ForceInstallFromCrx(
     const base::FilePath& crx_path,
@@ -421,7 +458,7 @@ bool ExtensionForceInstallMixin::ForceInstallFromCrx(
 
 bool ExtensionForceInstallMixin::ForceInstallFromSourceDir(
     const base::FilePath& extension_dir_path,
-    const base::Optional<base::FilePath>& pem_path,
+    const absl::optional<base::FilePath>& pem_path,
     WaitMode wait_mode,
     extensions::ExtensionId* extension_id,
     base::Version* extension_version) {
@@ -527,7 +564,7 @@ bool ExtensionForceInstallMixin::ServeExistingCrx(
 
 bool ExtensionForceInstallMixin::CreateAndServeCrx(
     const base::FilePath& extension_dir_path,
-    const base::Optional<base::FilePath>& pem_path,
+    const absl::optional<base::FilePath>& pem_path,
     const base::Version& extension_version,
     extensions::ExtensionId* extension_id) {
   base::ScopedAllowBlockingForTesting scoped_allow_blocking;
@@ -605,7 +642,12 @@ bool ExtensionForceInstallMixin::UpdatePolicy(
     const GURL& update_manifest_url) {
   DCHECK(profile_) << "Init not called";
 
-#if defined(OS_CHROMEOS)
+  if (mock_policy_provider_) {
+    UpdatePolicyViaMockPolicyProvider(extension_id, update_manifest_url,
+                                      mock_policy_provider_);
+    return true;
+  }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (device_state_mixin_) {
     UpdatePolicyViaDeviceStateMixin(extension_id, update_manifest_url,
                                     device_state_mixin_);
@@ -616,7 +658,7 @@ bool ExtensionForceInstallMixin::UpdatePolicy(
                                               device_policy_cros_test_helper_);
     return true;
   }
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   NOTREACHED() << "Init not called";
   return false;
 }

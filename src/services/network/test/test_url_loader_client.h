@@ -16,7 +16,6 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace network {
@@ -34,6 +33,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   TestURLLoaderClient();
   ~TestURLLoaderClient() override;
 
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
   void OnReceiveResponse(mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          mojom::URLResponseHeadPtr response_head) override;
@@ -46,6 +46,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const URLLoaderCompletionStatus& status) override;
 
+  bool has_received_early_hints() const { return has_received_early_hints_; }
   bool has_received_response() const { return has_received_response_; }
   bool has_received_redirect() const { return has_received_redirect_; }
   bool has_received_upload_progress() const {
@@ -59,7 +60,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   const mojom::URLResponseHeadPtr& response_head() const {
     return response_head_;
   }
-  const base::Optional<net::SSLInfo>& ssl_info() const {
+  const absl::optional<net::SSLInfo>& ssl_info() const {
     DCHECK(response_head_);
     return response_head_->ssl_info;
   }
@@ -75,6 +76,9 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   int64_t body_transfer_size() const { return body_transfer_size_; }
   int64_t current_upload_position() const { return current_upload_position_; }
   int64_t total_upload_size() const { return total_upload_size_; }
+  const std::vector<network::mojom::EarlyHintsPtr>& early_hints() const {
+    return early_hints_;
+  }
 
   void reset_has_received_upload_progress() {
     has_received_upload_progress_ = false;
@@ -103,6 +107,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   std::string cached_metadata_;
   mojo::ScopedDataPipeConsumerHandle response_body_;
   URLLoaderCompletionStatus completion_status_;
+  bool has_received_early_hints_ = false;
   bool has_received_response_ = false;
   bool has_received_redirect_ = false;
   bool has_received_upload_progress_ = false;
@@ -121,6 +126,8 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   int64_t body_transfer_size_ = 0;
   int64_t current_upload_position_ = 0;
   int64_t total_upload_size_ = 0;
+
+  std::vector<network::mojom::EarlyHintsPtr> early_hints_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderClient);
 };

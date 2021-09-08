@@ -30,7 +30,11 @@ bool ParseValue(const base::Value* value, bool* out_value) {
 }
 
 bool ParseValue(const base::Value* value, int* out_value) {
-  return value->GetAsInteger(out_value);
+  if (out_value && value->is_int()) {
+    *out_value = value->GetInt();
+    return true;
+  }
+  return value->is_int();
 }
 
 bool ParseValue(const base::Value* value, double* out_value) {
@@ -41,7 +45,7 @@ bool ParseValue(const base::Value* value, std::string* out_value) {
   return value->GetAsString(out_value);
 }
 
-bool ParseValue(const base::Value* value, base::string16* out_value) {
+bool ParseValue(const base::Value* value, std::u16string* out_value) {
   return value->GetAsString(out_value);
 }
 
@@ -89,7 +93,7 @@ base::Value MakeValue(const std::string& v) {
   return base::Value(v);
 }
 
-base::Value MakeValue(const base::string16& v) {
+base::Value MakeValue(const std::u16string& v) {
   return base::Value(v);
 }
 

@@ -42,17 +42,18 @@ class RootFrameSink::ChildCompositorFrameSink
   }
 
   void DidReceiveCompositorFrameAck(
-      const std::vector<viz::ReturnedResource>& resources) override {
-    ReclaimResources(resources);
+      std::vector<viz::ReturnedResource> resources) override {
+    ReclaimResources(std::move(resources));
   }
   void OnBeginFrame(const viz::BeginFrameArgs& args,
                     const viz::FrameTimingDetailsMap& feedbacks) override {}
   void OnBeginFramePausedChanged(bool paused) override {}
-  void ReclaimResources(
-      const std::vector<viz::ReturnedResource>& resources) override {
+  void ReclaimResources(std::vector<viz::ReturnedResource> resources) override {
     owner_->ReturnResources(frame_sink_id_, layer_tree_frame_sink_id_,
-                            resources);
+                            std::move(resources));
   }
+  void OnCompositorFrameTransitionDirectiveProcessed(
+      uint32_t sequence_id) override {}
 
   const viz::FrameSinkId frame_sink_id() { return frame_sink_id_; }
 
@@ -64,10 +65,15 @@ class RootFrameSink::ChildCompositorFrameSink
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list) {
+      absl::optional<viz::HitTestRegionList> hit_test_region_list) {
     size_ = frame.size_in_pixels();
     support()->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                      std::move(hit_test_region_list));
+  }
+
+  void EvictSurface(viz::SurfaceId surface_id) {
+    if (surface_id.frame_sink_id() == frame_sink_id_)
+      support_->EvictSurface(surface_id.local_surface_id());
   }
 
  private:
@@ -105,14 +111,47 @@ viz::FrameSinkManagerImpl* RootFrameSink::GetFrameSinkManager() {
   return VizCompositorThreadRunnerWebView::GetInstance()->GetFrameSinkManager();
 }
 
+const viz::LocalSurfaceId& RootFrameSink::SubmitRootCompositorFrame(
+    viz::CompositorFrame frame) {
+  frame.metadata.frame_token = ++next_root_frame_token_;
+
+  if (!root_local_surface_id_allocator_.HasValidLocalSurfaceId() ||
+      root_surface_size_ != frame.size_in_pixels() ||
+      root_device_scale_factor_ != frame.device_scale_factor()) {
+    root_local_surface_id_allocator_.GenerateId();
+    root_surface_size_ = frame.size_in_pixels();
+    root_device_scale_factor_ = frame.device_scale_factor();
+  }
+
+  const auto& local_surface_id =
+      root_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  return local_surface_id;
+}
+
+void RootFrameSink::EvictRootSurface(
+    const viz::LocalSurfaceId& local_surface_id) {
+  const auto& current_local_surface_id =
+      root_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+
+  DLOG_IF(FATAL, !current_local_surface_id.IsSameOrNewerThan(local_surface_id))
+      << "Evicting newer surface: " << local_surface_id.ToString()
+      << " old: " << current_local_surface_id.ToString();
+  if (current_local_surface_id == local_surface_id) {
+    root_surface_size_ = gfx::Size();
+    root_device_scale_factor_ = 0.0f;
+  }
+  support_->EvictSurface(local_surface_id);
+}
+
 void RootFrameSink::DidReceiveCompositorFrameAck(
-    const std::vector<viz::ReturnedResource>& resources) {
+    std::vector<viz::ReturnedResource> resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ReclaimResources(resources);
+  ReclaimResources(std::move(resources));
 }
 
 void RootFrameSink::ReclaimResources(
-    const std::vector<viz::ReturnedResource>& resources) {
+    std::vector<viz::ReturnedResource> resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Root surface should have no resources to return.
   CHECK(resources.empty());
@@ -195,10 +234,9 @@ void RootFrameSink::DettachClient() {
   client_ = nullptr;
 }
 
-void RootFrameSink::SubmitChildCompositorFrame(
-    const viz::LocalSurfaceId& local_surface_id,
-    ChildFrame* child_frame) {
+void RootFrameSink::SubmitChildCompositorFrame(ChildFrame* child_frame) {
   DCHECK(child_frame->frame);
+  DCHECK(child_frame->local_surface_id.is_valid());
   if (!child_sink_support_ ||
       child_sink_support_->frame_sink_id() != child_frame->frame_sink_id ||
       child_sink_support_->layer_tree_frame_sink_id() !=
@@ -211,7 +249,7 @@ void RootFrameSink::SubmitChildCompositorFrame(
   }
 
   child_sink_support_->SubmitCompositorFrame(
-      local_surface_id, std::move(*child_frame->frame),
+      child_frame->local_surface_id, std::move(*child_frame->frame),
       std::move(child_frame->hit_test_region_list));
   child_frame->frame.reset();
 }
@@ -228,6 +266,11 @@ gfx::Size RootFrameSink::GetChildFrameSize() {
     return child_sink_support_->size();
   }
   return gfx::Size();
+}
+
+void RootFrameSink::EvictChildSurface(const viz::SurfaceId& surface_id) {
+  DCHECK(child_sink_support_);
+  child_sink_support_->EvictSurface(surface_id);
 }
 
 }  // namespace android_webview

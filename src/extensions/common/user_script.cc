@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/pickle.h"
 #include "base/strings/pattern.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "extensions/common/switches.h"
 
@@ -40,18 +41,19 @@ namespace extensions {
 // The bitmask for valid user script injectable schemes used by URLPattern.
 enum {
   kValidUserScriptSchemes = URLPattern::SCHEME_CHROMEUI |
-                            URLPattern::SCHEME_HTTP |
-                            URLPattern::SCHEME_HTTPS |
-                            URLPattern::SCHEME_FILE |
-                            URLPattern::SCHEME_FTP
+                            URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
+                            URLPattern::SCHEME_FILE | URLPattern::SCHEME_FTP |
+                            URLPattern::SCHEME_URN
 };
 
 // static
 const char UserScript::kFileExtension[] = ".user.js";
 
 // static
-int UserScript::GenerateUserScriptID() {
-  return g_user_script_id_generator.GetNext();
+std::string UserScript::GenerateUserScriptID() {
+  // This could just as easily use a GUID. The actual value of the id is not
+  // important as long a unique id is generated for each UserScript.
+  return "_" + base::NumberToString(g_user_script_id_generator.GetNext());
 }
 
 bool UserScript::IsURLUserScript(const GURL& url,
@@ -184,8 +186,8 @@ void UserScript::File::Unpickle(const base::Pickle& pickle,
 
 void UserScript::Pickle(base::Pickle* pickle) const {
   // Write the simple types to the pickle.
-  pickle->WriteInt(run_location());
-  pickle->WriteInt(user_script_id_);
+  pickle->WriteInt(static_cast<int>(run_location()));
+  pickle->WriteString(user_script_id_);
   pickle->WriteBool(emulate_greasemonkey());
   pickle->WriteBool(match_all_frames());
   pickle->WriteInt(static_cast<int>(match_origin_as_fallback()));
@@ -210,9 +212,9 @@ void UserScript::PickleGlobs(base::Pickle* pickle,
 }
 
 void UserScript::PickleHostID(base::Pickle* pickle,
-                              const HostID& host_id) const {
-  pickle->WriteInt(host_id.type());
-  pickle->WriteString(host_id.id());
+                              const mojom::HostID& host_id) const {
+  pickle->WriteInt(static_cast<int>(host_id.type));
+  pickle->WriteString(host_id.id);
 }
 
 void UserScript::PickleURLPatternSet(base::Pickle* pickle,
@@ -237,10 +239,11 @@ void UserScript::Unpickle(const base::Pickle& pickle,
   // Read the run location.
   int run_location = 0;
   CHECK(iter->ReadInt(&run_location));
-  CHECK(run_location >= 0 && run_location < RUN_LOCATION_LAST);
-  run_location_ = static_cast<RunLocation>(run_location);
+  CHECK(run_location >= static_cast<int>(mojom::RunLocation::kUndefined) &&
+        run_location <= static_cast<int>(mojom::RunLocation::kMaxValue));
+  run_location_ = static_cast<mojom::RunLocation>(run_location);
 
-  CHECK(iter->ReadInt(&user_script_id_));
+  CHECK(iter->ReadString(&user_script_id_));
   CHECK(iter->ReadBool(&emulate_greasemonkey_));
   CHECK(iter->ReadBool(&match_all_frames_));
   int match_origin_as_fallback_int = 0;
@@ -279,12 +282,12 @@ void UserScript::UnpickleGlobs(const base::Pickle& pickle,
 
 void UserScript::UnpickleHostID(const base::Pickle& pickle,
                                 base::PickleIterator* iter,
-                                HostID* host_id) {
+                                mojom::HostID* host_id) {
   int type = 0;
   std::string id;
   CHECK(iter->ReadInt(&type));
   CHECK(iter->ReadString(&id));
-  *host_id = HostID(static_cast<HostID::HostType>(type), id);
+  *host_id = mojom::HostID(static_cast<mojom::HostID::HostType>(type), id);
 }
 
 void UserScript::UnpickleURLPatternSet(const base::Pickle& pickle,
@@ -323,15 +326,6 @@ void UserScript::UnpickleScripts(const base::Pickle& pickle,
     file->Unpickle(pickle, iter);
     scripts->push_back(std::move(file));
   }
-}
-
-UserScriptIDPair::UserScriptIDPair(int id, const HostID& host_id)
-    : id(id), host_id(host_id) {}
-
-UserScriptIDPair::UserScriptIDPair(int id) : id(id), host_id(HostID()) {}
-
-bool operator<(const UserScriptIDPair& a, const UserScriptIDPair& b) {
-  return a.id < b.id;
 }
 
 }  // namespace extensions

@@ -494,6 +494,11 @@ bool SkComputeRadialSteps(const SkVector& v1, const SkVector& v2, SkScalar offse
     SkScalar dTheta = steps > 0 ? theta / steps : 0;
     *rotSin = SkScalarSin(dTheta);
     *rotCos = SkScalarCos(dTheta);
+    // Our offset may be so large that we end up with a tiny dTheta, in which case we
+    // lose precision when computing rotSin and rotCos.
+    if (steps > 0 && (*rotSin == 0 || *rotCos == 1)) {
+        return false;
+    }
     *n = steps;
     return true;
 }
@@ -1618,7 +1623,7 @@ bool SkTriangulateSimplePolygon(const SkPoint* polygonVerts, uint16_t* indexMap,
     }
 
     // Set up vertices
-    SkAutoSTMalloc<64, TriangulationVertex> triangulationVertices(polygonSize);
+    SkAutoSTArray<64, TriangulationVertex> triangulationVertices(polygonSize);
     int prevIndex = polygonSize - 1;
     SkVector v0 = polygonVerts[0] - polygonVerts[prevIndex];
     for (int currIndex = 0; currIndex < polygonSize; ++currIndex) {

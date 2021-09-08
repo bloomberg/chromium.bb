@@ -11,7 +11,7 @@
 <translation id="1218444235442067213">‏<ph name="APP_NAME" />، تطبيق من "متجر Play"</translation>
 <translation id="1243314992276662751">تحميل</translation>
 <translation id="1266864766717917324">تعذَّرت مشاركة <ph name="CONTENT_TYPE" />.</translation>
-<translation id="1269641567813814718">الفوز</translation>
+<translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">نقل <ph name="DRAGGED_APP" /> إلى مجلد <ph name="FOLDER_NAME" />.</translation>
 <translation id="1291104554099683393">يُرجى تجربة مشاركة النص في مجموعات أصغر.</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -30,7 +30,7 @@
 <translation id="1710340000377843106">الآن</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{دقيقة واحدة}zero{# من الدقائق}two{دقيقتان (#)}few{# دقائق}many{# دقيقة}other{# من الدقائق}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> بايت</translation>
-<translation id="1801827354178857021">الفترة</translation>
+<translation id="1801827354178857021">نقطة</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{شهر واحد}zero{# شهر}two{شهران (#)}few{# أشهر}many{# شهرًا}other{# شهر}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> ميغابايات/ثانية</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{ساعة واحدة و }zero{# من الساعات و }two{ساعتان (#) و }few{# ساعات و }many{# ساعة و }other{# من الساعات و }}</translation>
@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">عرض مُضمَّن</translation>
 <translation id="335581015389089642">الحديث</translation>
 <translation id="3389286852084373014">النص كبير جدًا</translation>
+<translation id="3406306243914553062">‏محتوى HTML</translation>
 <translation id="348799646910989694">إخفاء الرف تلقائيًا</translation>
 <translation id="3554637740840164787">تم تثبيت <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{يتبقى يوم واحد}zero{يتبقى عدد # من الأيام}two{يتبقى يومان (#)}few{يتبقى # أيام}many{يتبقى # يومًا}other{يتبقى # من الأيام}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">رقم</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> غيغابايت/ثانية</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> غيغابايت</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">متابعة القراءة من جهازك الجوّال <ph name="TITLE" /></translation>
 <translation id="385051799172605136">رجوع</translation>
 <translation id="3889424535448813030">مفتاح سهم إلى اليمين</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{قبل شهر واحد}zero{قبل # شهر}two{قبل شهرين (#)}few{قبل # أشهر}many{قبل # شهرًا}other{قبل # شهر}}</translation>
 <translation id="4289300219472526559">بدء التحدث</translation>
 <translation id="430191667033048642">تم نقل <ph name="MOVED_APP_NAME" /> إلى المجلد <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">إزالة من الحافظة</translation>
 <translation id="4316910396681052118">جميع التطبيقات</translation>
 <translation id="4491109536499578614">صورة</translation>
 <translation id="4588090240171750605">التمرير إلى اليسار</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">هل تريد حذف هذا البحث من السجل؟</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> تيرابايت</translation>
 <translation id="7507604095951736240">الرموز التعبيرية</translation>
+<translation id="7620655452534002301">تمت الإزالة.</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7781829728241885113">أمس</translation>
 <translation id="7814458197256864873">&amp;نسخ</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{قبل ساعة واحدة}zero{قبل # من الساعات}two{قبل ساعتين (#)}few{قبل # ساعات}many{قبل # ساعة}other{قبل # من الساعات}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{يتبقى ثانية واحدة}zero{يتبقى # من الثواني}two{يتبقى ثانيتان (#)}few{يتبقى # ثوانٍ}many{يتبقى # ثانية}other{يتبقى # من الثواني}}</translation>
 <translation id="8134065097954893699">إعادة تحميل هذه الصفحة</translation>
-<translation id="8144660977431427332">‏عمليات بحثك يوفّرها "مساعد Google". <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />، الإكمال التلقائي</translation>
 <translation id="815598010540052116">التمرير إلى أسفل</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">صفحة  إلى أسفل</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />، <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">علامة تبويب</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />، تطبيق</translation>
 <translation id="8259556432390118667">القيمة السداسية للّون</translation>

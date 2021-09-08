@@ -18,12 +18,6 @@ namespace extensions {
 
 class Extension;
 
-enum InputComponentType {
-  INPUT_COMPONENT_TYPE_NONE = -1,
-  INPUT_COMPONENT_TYPE_IME,
-  INPUT_COMPONENT_TYPE_COUNT
-};
-
 struct InputComponentInfo {
   // Define out of line constructor/destructor to please Clang.
   InputComponentInfo();
@@ -31,15 +25,9 @@ struct InputComponentInfo {
   ~InputComponentInfo();
 
   std::string name;
-  InputComponentType type;
   std::string id;
-  std::string description;
   std::set<std::string> languages;
   std::set<std::string> layouts;
-  std::string shortcut_keycode;
-  bool shortcut_alt;
-  bool shortcut_ctrl;
-  bool shortcut_shift;
   GURL options_page_url;
   GURL input_view_url;
 };
@@ -62,7 +50,7 @@ class InputComponentsHandler : public ManifestHandler {
   InputComponentsHandler();
   ~InputComponentsHandler() override;
 
-  bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, std::u16string* error) override;
 
   // Requires kOptionsPage is already parsed.
   const std::vector<std::string> PrerequisiteKeys() const override;

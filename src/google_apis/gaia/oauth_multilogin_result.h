@@ -6,9 +6,7 @@
 #define GOOGLE_APIS_GAIA_OAUTH_MULTILOGIN_RESULT_H_
 
 #include <string>
-#include <unordered_map>
 
-#include "base/time/time.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/cookies/canonical_cookie.h"

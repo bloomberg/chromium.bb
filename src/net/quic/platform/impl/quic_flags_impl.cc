@@ -8,22 +8,18 @@
 #include <initializer_list>
 #include <iostream>
 #include <set>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/export_template.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-
-#define QUIC_FLAG(flag, value) bool flag = value;
-#include "net/third_party/quiche/src/quic/core/quic_flags_list.h"
-#undef QUIC_FLAG
 
 #define DEFINE_QUIC_PROTOCOL_FLAG_SINGLE_VALUE(type, flag, value, doc) \
   type FLAGS_##flag = value;

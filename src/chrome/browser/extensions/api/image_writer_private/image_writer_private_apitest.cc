@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/strings/pattern.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
@@ -91,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(ImageWriterPrivateApiTest, TestWriteFromFile) {
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &selected_image);
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   auto set_up_utility_client_callbacks = [](FakeImageWriterClient* client) {
     std::vector<int> progress_list{0, 50, 100};
     client->SimulateProgressOnWrite(progress_list, true);
@@ -104,7 +105,8 @@ IN_PROC_BROWSER_TEST_F(ImageWriterPrivateApiTest, TestWriteFromFile) {
       base::BindOnce(set_up_utility_client_callbacks));
 #endif
 
-  ASSERT_TRUE(RunPlatformAppTest("image_writer_private/write_from_file"))
+  ASSERT_TRUE(RunExtensionTest({.name = "image_writer_private/write_from_file",
+                                .launch_as_platform_app = true}))
       << message_;
 }
 }  // namespace extensions

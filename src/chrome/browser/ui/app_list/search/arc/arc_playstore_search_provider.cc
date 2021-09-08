@@ -17,12 +17,9 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_result.h"
 #include "chrome/common/chrome_features.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/arc/app/arc_playstore_search_request_state.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "components/prefs/pref_service.h"
 
 namespace {
 constexpr int kHistogramBuckets = 13;
@@ -64,14 +61,6 @@ bool IsInvalidResult(const arc::mojom::AppDiscoveryResult& result) {
   if (!result.label || result.label->empty())
     return true;
 
-  // The result doesn't have a valid formatted price.
-  if (!result.formatted_price || result.formatted_price->empty())
-    return true;
-
-  // The result doesn't have a valid review score.
-  if (result.review_score < 0)
-    return true;
-
   // The result doesn't have a valid launcher icon.
   //
   // TODO(crbug.com/1083331): Remove the checking result.icon_png_data.empty(),
@@ -91,6 +80,7 @@ bool IsInvalidResult(const arc::mojom::AppDiscoveryResult& result) {
 
   return false;
 }
+
 }  // namespace
 
 namespace app_list {
@@ -111,22 +101,10 @@ ash::AppListSearchResultType ArcPlayStoreSearchProvider::ResultType() {
   return ash::AppListSearchResultType::kPlayStoreApp;
 }
 
-void ArcPlayStoreSearchProvider::Start(const base::string16& query) {
+void ArcPlayStoreSearchProvider::Start(const std::u16string& query) {
   last_query_ = query;
   // Clear any results from the previous query.
   ClearResultsSilently();
-
-  // Always check if suggested content is enabled before searching for play
-  // store apps.
-  PrefService* pref_service = profile_->GetPrefs();
-  bool is_suggested_content_toggle_enabled =
-      base::FeatureList::IsEnabled(chromeos::features::kSuggestedContentToggle);
-  if (is_suggested_content_toggle_enabled && pref_service) {
-    bool is_suggested_content_enabled =
-        pref_service->GetBoolean(chromeos::prefs::kSuggestedContentEnabled);
-    if (!is_suggested_content_enabled)
-      return;
-  }
 
   arc::mojom::AppInstance* app_instance =
       arc::ArcServiceManager::Get()
@@ -147,15 +125,26 @@ void ArcPlayStoreSearchProvider::Start(const base::string16& query) {
 }
 
 void ArcPlayStoreSearchProvider::OnResults(
-    const base::string16& query,
+    const std::u16string& query,
     base::TimeTicks query_start_time,
     arc::ArcPlayStoreSearchRequestState state,
     std::vector<arc::mojom::AppDiscoveryResultPtr> results) {
   if (state != arc::ArcPlayStoreSearchRequestState::SUCCESS) {
-    DCHECK(results.empty());
+    DCHECK(
+        state ==
+            arc::ArcPlayStoreSearchRequestState::PHONESKY_RESULT_INVALID_DATA ||
+        results.empty());
     UMA_HISTOGRAM_ENUMERATION(kAppListPlayStoreQueryStateHistogram, state,
                               arc::ArcPlayStoreSearchRequestState::STATE_COUNT);
-    return;
+
+    // PHONESKY_RESULT_INVALID_DATA indicates that at least one of the apps
+    // returned from playstore was invalid. The returned data may still contain
+    // valid results - display them in the UI if that's the case.
+    if (state !=
+            arc::ArcPlayStoreSearchRequestState::PHONESKY_RESULT_INVALID_DATA ||
+        results.empty()) {
+      return;
+    }
   }
 
   // Play store could have a long latency that when the results come back,
@@ -171,13 +160,11 @@ void ArcPlayStoreSearchProvider::OnResults(
 
   SearchProvider::Results new_results;
   size_t instant_app_count = 0;
+  bool has_invalid_result = false;
   for (auto& result : results) {
     if (IsInvalidResult(*result)) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kAppListPlayStoreQueryStateHistogram,
-          arc::ArcPlayStoreSearchRequestState::CHROME_GOT_INVALID_RESULT,
-          arc::ArcPlayStoreSearchRequestState::STATE_COUNT);
-      return;
+      has_invalid_result = true;
+      continue;
     }
 
     if (result->is_instant_app)
@@ -187,14 +174,25 @@ void ArcPlayStoreSearchProvider::OnResults(
       continue;
 
     new_results.emplace_back(std::make_unique<ArcPlayStoreSearchResult>(
-        std::move(result), profile_, list_controller_));
+        std::move(result), profile_, list_controller_, last_query_));
   }
   SwapResults(&new_results);
 
   // Record user metrics.
-  UMA_HISTOGRAM_ENUMERATION(kAppListPlayStoreQueryStateHistogram,
-                            arc::ArcPlayStoreSearchRequestState::SUCCESS,
-                            arc::ArcPlayStoreSearchRequestState::STATE_COUNT);
+  if (state == arc::ArcPlayStoreSearchRequestState::SUCCESS) {
+    if (has_invalid_result) {
+      UMA_HISTOGRAM_ENUMERATION(
+          kAppListPlayStoreQueryStateHistogram,
+          arc::ArcPlayStoreSearchRequestState::CHROME_GOT_INVALID_RESULT,
+          arc::ArcPlayStoreSearchRequestState::STATE_COUNT);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          kAppListPlayStoreQueryStateHistogram,
+          arc::ArcPlayStoreSearchRequestState::SUCCESS,
+          arc::ArcPlayStoreSearchRequestState::STATE_COUNT);
+    }
+  }
+
   UMA_HISTOGRAM_TIMES("Arc.PlayStoreSearch.QueryTime",
                       base::TimeTicks::Now() - query_start_time);
   if (results.size() > 0) {

@@ -109,7 +109,7 @@ void DevToolsWindowTesting::WaitForDevToolsWindowLoad(DevToolsWindow* window) {
     window->ready_for_test_callback_ = runner->QuitClosure();
     runner->Run();
   }
-  base::string16 harness = base::UTF8ToUTF16(
+  std::u16string harness = base::UTF8ToUTF16(
       content::DevToolsFrontendHost::GetFrontendResource(kHarnessScript));
   window->main_web_contents_->GetMainFrame()->ExecuteJavaScript(
       harness, base::NullCallback());
@@ -180,7 +180,7 @@ void DevToolsWindowTesting::CloseDevToolsWindowSync(
 // DevToolsWindowCreationObserver ---------------------------------------------
 
 DevToolsWindowCreationObserver::DevToolsWindowCreationObserver()
-    : creation_callback_(base::Bind(
+    : creation_callback_(base::BindRepeating(
           &DevToolsWindowCreationObserver::DevToolsWindowCreated,
           base::Unretained(this))) {
   DevToolsWindow::AddCreationCallbackForTest(creation_callback_);

@@ -50,6 +50,7 @@ using extensions::ExtensionSet;
 using extensions::PermissionSet;
 using extensions::UnloadedExtensionReason;
 using extensions::UpdatedExtensionPermissionsInfo;
+using extensions::mojom::APIPermissionID;
 
 class ExtensionNameComparator {
  public:
@@ -249,7 +250,7 @@ bool BackgroundApplicationListModel::IsPersistentBackgroundApp(
 
   // Not a background app if we don't have the background permission.
   if (!extension.permissions_data()->HasAPIPermission(
-          APIPermission::kBackground)) {
+          APIPermissionID::kBackground)) {
     return false;
   }
 
@@ -284,7 +285,7 @@ bool BackgroundApplicationListModel::IsTransientBackgroundApp(
     Profile* profile) {
   return base::FeatureList::IsEnabled(features::kOnConnectNative) &&
          extension.permissions_data()->HasAPIPermission(
-             APIPermission::kTransientBackground) &&
+             APIPermissionID::kTransientBackground) &&
          extensions::BackgroundInfo::HasLazyBackgroundPage(&extension);
 }
 
@@ -344,21 +345,24 @@ void BackgroundApplicationListModel::OnExtensionSystemReady() {
   // know that this object is constructed prior to the initialization process
   // for the extension system, which isn't a guarantee. Thus, register here and
   // associate all initial extensions.
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+  extension_registry_observation_.Observe(ExtensionRegistry::Get(profile_));
 
-  background_contents_service_observer_.Add(
+  background_contents_service_observation_.Observe(
       BackgroundContentsServiceFactory::GetForProfile(profile_));
 
-  if (base::FeatureList::IsEnabled(features::kOnConnectNative))
-    process_manager_observer_.Add(extensions::ProcessManager::Get(profile_));
+  if (base::FeatureList::IsEnabled(features::kOnConnectNative)) {
+    process_manager_observation_.Observe(
+        extensions::ProcessManager::Get(profile_));
+  }
 
   startup_done_ = true;
 }
 
 void BackgroundApplicationListModel::OnShutdown(ExtensionRegistry* registry) {
   DCHECK_EQ(ExtensionRegistry::Get(profile_), registry);
-  extension_registry_observer_.Remove(registry);
-  process_manager_observer_.RemoveAll();
+  DCHECK(extension_registry_observation_.IsObservingSource(registry));
+  extension_registry_observation_.Reset();
+  process_manager_observation_.Reset();
 }
 
 void BackgroundApplicationListModel::OnBackgroundContentsServiceChanged() {
@@ -366,16 +370,16 @@ void BackgroundApplicationListModel::OnBackgroundContentsServiceChanged() {
 }
 
 void BackgroundApplicationListModel::OnBackgroundContentsServiceDestroying() {
-  background_contents_service_observer_.RemoveAll();
+  background_contents_service_observation_.Reset();
 }
 
 void BackgroundApplicationListModel::OnExtensionPermissionsUpdated(
     const Extension* extension,
     UpdatedExtensionPermissionsInfo::Reason reason,
     const PermissionSet& permissions) {
-  if (permissions.HasAPIPermission(APIPermission::kBackground) ||
+  if (permissions.HasAPIPermission(APIPermissionID::kBackground) ||
       (base::FeatureList::IsEnabled(features::kOnConnectNative) &&
-       permissions.HasAPIPermission(APIPermission::kTransientBackground))) {
+       permissions.HasAPIPermission(APIPermissionID::kTransientBackground))) {
     switch (reason) {
       case UpdatedExtensionPermissionsInfo::ADDED:
       case UpdatedExtensionPermissionsInfo::REMOVED:

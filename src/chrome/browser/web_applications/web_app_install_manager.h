@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_MANAGER_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
@@ -44,43 +43,40 @@ class WebAppInstallManager final : public InstallManager,
   // InstallManager:
   void LoadWebAppAndCheckManifest(
       const GURL& web_app_url,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       WebAppManifestCheckCallback callback) override;
   void InstallWebAppFromManifest(content::WebContents* contents,
                                  bool bypass_service_worker_check,
-                                 WebappInstallSource install_source,
+                                 webapps::WebappInstallSource install_source,
                                  WebAppInstallDialogCallback dialog_callback,
                                  OnceInstallCallback callback) override;
   void InstallWebAppFromManifestWithFallback(
       content::WebContents* contents,
       bool force_shortcut_app,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       WebAppInstallDialogCallback dialog_callback,
       OnceInstallCallback callback) override;
 
   void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
       ForInstallableSite for_installable_site,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       OnceInstallCallback callback) override;
 
   void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
       ForInstallableSite for_installable_site,
-      const base::Optional<InstallParams>& install_params,
-      WebappInstallSource install_source,
+      const absl::optional<InstallParams>& install_params,
+      webapps::WebappInstallSource install_source,
       OnceInstallCallback callback) override;
   void InstallWebAppWithParams(content::WebContents* web_contents,
                                const InstallParams& install_params,
-                               WebappInstallSource install_source,
+                               webapps::WebappInstallSource install_source,
                                OnceInstallCallback callback) override;
-  void InstallBookmarkAppFromSync(
-      const AppId& bookmark_app_id,
-      std::unique_ptr<WebApplicationInfo> web_application_info,
-      OnceInstallCallback callback) override;
   void UpdateWebAppFromInfo(
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool redownload_app_icons,
       OnceInstallCallback callback) override;
 
   // For the new USS-based system only. SyncInstallDelegate:
@@ -96,13 +92,12 @@ class WebAppInstallManager final : public InstallManager,
 
   void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);
   bool has_web_contents_for_testing() const { return web_contents_ != nullptr; }
-  size_t tasks_size_for_testing() const { return tasks_.size(); }
+  std::set<AppId> GetEnqueuedInstallAppIdsForTesting() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppInstallManagerTest,
                            TaskQueueWebContentsReadyRace);
 
-  void MaybeEnqueuePendingAppSyncInstalls();
   void EnqueueInstallAppFromSync(
       const AppId& sync_app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
@@ -130,10 +125,6 @@ class WebAppInstallManager final : public InstallManager,
                              OnceInstallCallback callback,
                              const AppId& app_id,
                              InstallResultCode code);
-  // For the new USS-based system only:
-  void OnWebAppUninstalledAfterSync(std::unique_ptr<WebApp> web_app,
-                                    OnceUninstallCallback callback,
-                                    bool uninstalled);
 
   void OnLoadWebAppAndCheckManifestCompleted(
       WebAppInstallTask* task,
@@ -170,17 +161,6 @@ class WebAppInstallManager final : public InstallManager,
   using TaskQueue = base::queue<PendingTask>;
   TaskQueue task_queue_;
   const WebAppInstallTask* current_queued_task_ = nullptr;
-
-  struct AppSyncInstallRequest {
-    AppSyncInstallRequest();
-    AppSyncInstallRequest(AppSyncInstallRequest&&);
-    ~AppSyncInstallRequest();
-
-    AppId sync_app_id;
-    std::unique_ptr<WebApplicationInfo> web_application_info;
-    OnceInstallCallback callback;
-  };
-  std::vector<AppSyncInstallRequest> pending_app_sync_installs_;
 
   // A single WebContents, shared between tasks in |task_queue_|.
   std::unique_ptr<content::WebContents> web_contents_;

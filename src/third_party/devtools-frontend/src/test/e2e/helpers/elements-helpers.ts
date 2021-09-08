@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import {assert} from 'chai';
 import {performance} from 'perf_hooks';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 
 import {$, $$, click, getBrowserAndPages, step, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
 
@@ -17,6 +17,8 @@ const COMPUTED_STYLES_PANEL_SELECTOR = '[aria-label="Computed panel"]';
 const COMPUTED_STYLES_SHOW_ALL_SELECTOR = '[aria-label="Show all"]';
 const COMPUTED_STYLES_GROUP_SELECTOR = '[aria-label="Group"]';
 const ELEMENTS_PANEL_SELECTOR = '.panel[aria-label="elements"]';
+const FONT_EDITOR_SELECTOR = '[aria-label="Font Editor"]';
+const HIDDEN_FONT_EDITOR_SELECTOR = '.font-toolbar-hidden';
 const SECTION_SUBTITLE_SELECTOR = '.styles-section-subtitle';
 const CLS_PANE_SELECTOR = '.styles-sidebar-toolbar-pane';
 const CLS_BUTTON_SELECTOR = '[aria-label="Element Classes"]';
@@ -27,6 +29,7 @@ const ADORNER_SELECTOR = 'devtools-adorner';
 export const INACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Enable grid mode"]';
 export const ACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Disable grid mode"]';
 const ELEMENT_CHECKBOX_IN_LAYOUT_PANE_SELECTOR = '.elements input[type=checkbox]';
+const ELEMENT_STYLE_SECTION_SELECTOR = '[aria-label="element.style, css selector"]';
 
 export const openLayoutPane = async () => {
   await step('Open Layout pane', async () => {
@@ -96,8 +99,7 @@ export const waitForSomeGridsInLayoutPane = async (minimumGridCount: number) => 
 
 export const waitForContentOfSelectedElementsNode = async (expectedTextContent: string) => {
   await waitForFunction(async () => {
-    const selectedNode = await waitFor(SELECTED_TREE_ELEMENT_SELECTOR);
-    const selectedTextContent = await selectedNode.evaluate(node => node.textContent);
+    const selectedTextContent = await getContentOfSelectedNode();
     return selectedTextContent === expectedTextContent;
   });
 };
@@ -155,6 +157,12 @@ export const waitForChildrenOfSelectedElementNode = async () => {
   await waitFor(`${SELECTED_TREE_ELEMENT_SELECTOR} + ol > li`);
 };
 
+export const clickNthChildOfSelectedElementNode = async (childIndex: number) => {
+  assert(childIndex > 0, 'CSS :nth-child() selector indices are 1-based.');
+  const element = await waitFor(`${SELECTED_TREE_ELEMENT_SELECTOR} + ol > li:nth-child(${childIndex})`);
+  await element.click();
+};
+
 export const focusElementsTree = async () => {
   await click(SELECTED_TREE_ELEMENT_SELECTOR);
 };
@@ -197,7 +205,7 @@ export const getAllPropertiesFromComputedPane = async () => {
              value: value.textContent ? value.textContent.trim().replace(/;$/, '') : '',
            };
          }))))
-      .filter(prop => !!prop);
+      .filter(prop => Boolean(prop));
 };
 
 export const getPropertyFromComputedPane = async (name: string) => {
@@ -212,7 +220,7 @@ export const getPropertyFromComputedPane = async (name: string) => {
     }, name);
     // Note that evaluateHandle always returns a handle, even if it points to an undefined remote object, so we need to
     // check it's defined here or continue iterating.
-    if (await matchingProperty.evaluate(n => !!n)) {
+    if (await matchingProperty.evaluate(n => Boolean(n))) {
       return matchingProperty as puppeteer.ElementHandle;
     }
   }
@@ -338,12 +346,30 @@ export const getDisplayedCSSPropertyNames = async (propertiesSection: puppeteer.
   const propertyNamesText = (await Promise.all(cssPropertyNames.map(
                                  node => node.evaluate(n => n.textContent),
                                  )))
-                                .filter(c => !!c);
+                                .filter(c => Boolean(c));
   return propertyNamesText;
 };
 
 export const getStyleRule = (selector: string) => {
   return waitFor(getStyleRuleSelector(selector));
+};
+
+export const getStyleRuleWithSourcePosition = (styleSelector: string, sourcePosition?: string) => {
+  if (!sourcePosition) {
+    return getStyleRule(styleSelector);
+  }
+  const selector = getStyleRuleSelector(styleSelector);
+  return waitForFunction(async () => {
+    const candidate = await waitFor(selector);
+    if (candidate) {
+      const sourcePositionElement = await candidate.$('.styles-section-subtitle .devtools-link');
+      const text = await sourcePositionElement?.evaluate(node => node.textContent);
+      if (text === sourcePosition) {
+        return candidate;
+      }
+    }
+    return undefined;
+  });
 };
 
 export const getColorSwatch = async (parent: puppeteer.ElementHandle<Element>, index: number) => {
@@ -364,14 +390,30 @@ export const shiftClickColorSwatch = async (ruleSection: puppeteer.ElementHandle
   await frontend.keyboard.up('Shift');
 };
 
+export const getElementStyleFontEditorButton = async () => {
+  const section = await waitFor(ELEMENT_STYLE_SECTION_SELECTOR);
+  return await $(FONT_EDITOR_SELECTOR, section);
+};
+
+export const getFontEditorButtons = async () => {
+  const buttons = await $$(FONT_EDITOR_SELECTOR);
+  return buttons;
+};
+
+export const getHiddenFontEditorButtons = async () => {
+  const buttons = await $$(HIDDEN_FONT_EDITOR_SELECTOR);
+  return buttons;
+};
+
 export const getStyleSectionSubtitles = async () => {
   const subtitles = await $$(SECTION_SUBTITLE_SELECTOR);
   return Promise.all(subtitles.map(node => node.evaluate(n => n.textContent)));
 };
 
-export const getCSSPropertyInRule = async (ruleSection: puppeteer.ElementHandle<Element>|string, name: string) => {
+export const getCSSPropertyInRule =
+    async (ruleSection: puppeteer.ElementHandle<Element>|string, name: string, sourcePosition?: string) => {
   if (typeof ruleSection === 'string') {
-    ruleSection = await getStyleRule(ruleSection);
+    ruleSection = await getStyleRuleWithSourcePosition(ruleSection, sourcePosition);
   }
 
   const propertyNames = await $$(CSS_PROPERTY_NAME_SELECTOR, ruleSection);
@@ -380,7 +422,7 @@ export const getCSSPropertyInRule = async (ruleSection: puppeteer.ElementHandle<
         await node.evaluateHandle((node, name) => (name === node.textContent) ? node.parentNode : undefined, name);
     // Note that evaluateHandle always returns a handle, even if it points to an undefined remote object, so we need to
     // check it's defined here or continue iterating.
-    if (await parent.evaluate(n => !!n)) {
+    if (await parent.evaluate(n => Boolean(n))) {
       return parent as puppeteer.ElementHandle;
     }
   }
@@ -421,19 +463,23 @@ export async function editCSSProperty(selector: string, propertyName: string, ne
   });
 }
 
-export async function waitForCSSPropertyValue(selector: string, name: string, value: string) {
-  await waitForFunction(async () => {
-    const propertyHandle = await getCSSPropertyInRule(selector, name);
+export async function waitForCSSPropertyValue(selector: string, name: string, value: string, sourcePosition?: string) {
+  return await waitForFunction(async () => {
+    const propertyHandle = await getCSSPropertyInRule(selector, name, sourcePosition);
     if (!propertyHandle) {
-      return false;
+      return undefined;
     }
 
     const valueHandle = await $(CSS_PROPERTY_VALUE_SELECTOR, propertyHandle);
     if (!valueHandle) {
-      return false;
+      return undefined;
     }
 
-    return await valueHandle.evaluate((node, value) => node.textContent === value, value);
+    const matches = await valueHandle.evaluate((node, value) => node.textContent === value, value);
+    if (matches) {
+      return valueHandle;
+    }
+    return undefined;
   });
 }
 
@@ -450,19 +496,30 @@ export async function waitForPropertyToHighlight(ruleSelector: string, propertyN
   });
 }
 
-export const getBreadcrumbsTextContent = async () => {
-  const crumbs = await $$('li.crumb > a > devtools-node-text');
+export const getBreadcrumbsTextContent = async ({expectedNodeCount}: {expectedNodeCount: number}) => {
+  const crumbsSelector = 'li.crumb > a > devtools-node-text';
+  await waitForFunction(async () => {
+    const crumbs = await $$(crumbsSelector);
+    return crumbs.length === expectedNodeCount;
+  });
 
-  const crumbsAsText: string[] = await Promise.all(crumbs.map(node => node.evaluate(node => {
-    return Array.from(node.shadowRoot!.querySelectorAll('span')).map(span => span.textContent).join('');
+  const crumbs = await $$(crumbsSelector);
+  const crumbsAsText: string[] = await Promise.all(crumbs.map(node => node.evaluate((node: Element) => {
+    if (!node.shadowRoot) {
+      assert.fail('Found breadcrumbs node that unexpectedly has no shadowRoot.');
+    }
+    return Array.from(node.shadowRoot.querySelectorAll('span') || []).map(span => span.textContent).join('');
   })));
   return crumbsAsText;
 };
 
 export const getSelectedBreadcrumbTextContent = async () => {
   const selectedCrumb = await waitFor('li.crumb.selected > a > devtools-node-text');
-  const text = selectedCrumb.evaluate(node => {
-    return Array.from(node.shadowRoot!.querySelectorAll('span')).map(span => span.textContent).join('');
+  const text = selectedCrumb.evaluate((node: Element) => {
+    if (!node.shadowRoot) {
+      assert.fail('Found breadcrumbs node that unexpectedly has no shadowRoot.');
+    }
+    return Array.from(node.shadowRoot.querySelectorAll('span') || []).map(span => span.textContent).join('');
   });
   return text;
 };
@@ -483,7 +540,7 @@ export const toggleClassesPane = async () => {
 };
 
 export const typeInClassesPaneInput =
-    async (text: string, commitWith: string = 'Enter', waitForNodeChange: Boolean = true) => {
+    async (text: string, commitWith: puppeteer.KeyInput = 'Enter', waitForNodeChange: Boolean = true) => {
   await step(`Typing in new class names ${text}`, async () => {
     const clsInput = await waitFor(CLS_INPUT_SELECTOR);
     await clsInput.type(text, {delay: 50});

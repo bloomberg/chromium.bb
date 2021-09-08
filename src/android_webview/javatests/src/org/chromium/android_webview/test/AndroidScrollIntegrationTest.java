@@ -567,7 +567,7 @@ public class AndroidScrollIntegrationTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @DisabledTest(message = "crbug.com/1147938")
+    @DisabledTest(message = "https://crbug.com/1147838")
     public void testFlingScroll() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =
@@ -595,12 +595,9 @@ public class AndroidScrollIntegrationTest {
     }
 
     @Test
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * BUG=813837
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @DisabledTest(message = "https://crbug.com/813837")
     public void testFlingScrollOnPopup() throws Throwable {
         final TestAwContentsClient parentContentsClient = new TestAwContentsClient();
         final ScrollTestContainerView parentContainerView =

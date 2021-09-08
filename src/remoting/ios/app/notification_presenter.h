@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
@@ -41,7 +39,7 @@ class NotificationPresenter final {
   ~NotificationPresenter() = delete;
 
   void FetchNotificationIfNecessary();
-  void OnNotificationFetched(base::Optional<NotificationMessage> notification);
+  void OnNotificationFetched(absl::optional<NotificationMessage> notification);
 
   NotificationClient notification_client_;
 

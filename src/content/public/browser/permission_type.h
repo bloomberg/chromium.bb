@@ -7,16 +7,16 @@
 
 #include <vector>
 
-#include "base/optional.h"
 #include "content/common/content_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-forward.h"
 
 namespace content {
 
 // This enum is also used for UMA purposes, so it needs to adhere to
 // the UMA guidelines.
-// Make sure you update enums.xml and GetAllPermissionTypes if you add
-// new permission types.
+// Make sure you update enums.xml and GetAllPermissionTypes if you add new
+// or deprecate permission types.
 // Never delete or reorder an entry; only add new entries
 // immediately before PermissionType::NUM
 enum class PermissionType {
@@ -30,7 +30,7 @@ enum class PermissionType {
   AUDIO_CAPTURE = 8,
   VIDEO_CAPTURE = 9,
   BACKGROUND_SYNC = 10,
-  FLASH = 11,
+  // FLASH = 11,
   SENSORS = 12,
   ACCESSIBILITY_EVENTS = 13,
   // CLIPBOARD_READ = 14, // Replaced by CLIPBOARD_READ_WRITE in M81.
@@ -50,6 +50,8 @@ enum class PermissionType {
   CAMERA_PAN_TILT_ZOOM = 28,
   WINDOW_PLACEMENT = 29,
   FONT_ACCESS = 30,
+  DISPLAY_CAPTURE = 31,
+  FILE_HANDLING = 32,
 
   // Always keep this at the end.
   NUM,
@@ -58,7 +60,7 @@ enum class PermissionType {
 CONTENT_EXPORT const std::vector<PermissionType>& GetAllPermissionTypes();
 
 // Given |descriptor|, set |permission_type| to a corresponding PermissionType.
-CONTENT_EXPORT base::Optional<PermissionType>
+CONTENT_EXPORT absl::optional<PermissionType>
 PermissionDescriptorToPermissionType(
     const blink::mojom::PermissionDescriptorPtr& descriptor);
 

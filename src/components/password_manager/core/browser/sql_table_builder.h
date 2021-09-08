@@ -50,6 +50,9 @@ class SQLTableBuilder {
   // Create the builder for an arbitrary table name.
   explicit SQLTableBuilder(const std::string& table_name);
 
+  SQLTableBuilder(const SQLTableBuilder& rhs) = delete;
+  SQLTableBuilder& operator=(const SQLTableBuilder& rhs) = delete;
+
   ~SQLTableBuilder();
 
   // Adds a column in the table description, with |name| and |type|. |name|
@@ -62,7 +65,12 @@ class SQLTableBuilder {
   void AddPrimaryKeyColumn(std::string name);
 
   // As AddColumn but also adds column |name| to the unique key of the table.
-  void AddColumnToUniqueKey(std::string name, std::string type);
+  // If 'parent_table' isn't empty then the column is a foreign key to
+  // 'parent_table' and an implicit index is created. Only one foreign key per
+  // table is allowed.
+  void AddColumnToUniqueKey(std::string name,
+                            std::string type,
+                            std::string parent_table = std::string());
 
   // Renames column |old_name| to |new_name|. |new_name| can not exist already.
   // |old_name| must have been added in the past. Furthermore, there must be no
@@ -186,8 +194,6 @@ class SQLTableBuilder {
 
   // The name of the table.
   const std::string table_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(SQLTableBuilder);
 };
 
 }  // namespace password_manager

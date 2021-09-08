@@ -14,6 +14,7 @@
 #include "net/base/request_priority.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom.h"
 #include "third_party/blink/public/common/common_export.h"
 
 class GURL;
@@ -161,6 +162,10 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
   // handle the request.
   virtual void WillStartRequest(network::ResourceRequest* request, bool* defer);
 
+  // If non-null is returned a histogram will be logged using this name when the
+  // throttle defers the navigation in WillStartRequest().
+  virtual const char* NameForLoggingWillStartRequest();
+
   // Called when the request was redirected.  |redirect_info| contains the
   // redirect responses's HTTP status code and some information about the new
   // request that will be sent if the redirect is followed, including the new
@@ -191,6 +196,10 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
       network::mojom::URLResponseHead* response_head,
       bool* defer);
 
+  // If non-null is returned a histogram will be logged using this name when the
+  // throttle defers the navigation in WillProcessResponse().
+  virtual const char* NameForLoggingWillProcessResponse();
+
   // Called prior WillProcessResponse() to allow throttles to restart the URL
   // load by calling delegate_->RestartWithFlags().
   //
@@ -206,6 +215,11 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
   virtual void WillOnCompleteWithError(
       const network::URLLoaderCompletionStatus& status,
       bool* defer);
+
+  // Called when an ACCEPT_CH frame is observed.
+  virtual void HandleAcceptCHFrameReceived(
+      const GURL& url,
+      const std::vector<network::mojom::WebClientHintsType>& accept_ch_frame);
 
   // Must return true if the throttle may make cross-scheme redirects
   // (which is usually considered unsafe, so allowed only if the setting

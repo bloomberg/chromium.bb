@@ -20,7 +20,6 @@ import android.net.http.SslCertificate;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.print.PrintDocumentAdapter;
@@ -65,13 +64,11 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwThreadUtils;
 import org.chromium.android_webview.gfx.AwDrawFnImpl;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
-import org.chromium.components.autofill.AutofillProvider;
-import org.chromium.components.content_capture.ContentCaptureConsumerImpl;
 import org.chromium.components.content_capture.ContentCaptureFeatures;
+import org.chromium.components.content_capture.OnscreenContentProvider;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.SmartClipProvider;
@@ -279,7 +276,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     // so is ignored. TODO: remove it from WebViewProvider.
     public void init(final Map<String, Object> javaScriptInterfaces,
             final boolean privateBrowsing) {
-        long startTime = SystemClock.elapsedRealtime();
+        long startTime = SystemClock.uptimeMillis();
         boolean isFirstWebViewInit = !mFactory.hasStarted();
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("WebViewChromium.init")) {
             if (privateBrowsing) {
@@ -296,21 +293,32 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
                 }
             }
 
-            // We will defer real initialization until we know which thread to do it on, unless:
-            // - we are on the main thread already (common case),
-            // - the app is targeting >= JB MR2, in which case checkThread enforces that all usage
-            //   comes from a single thread. (Note in JB MR2 this exception was in WebView.java).
             if (mAppTargetSdkVersion >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                // If the app targets >= JB MR2 then we require that WebView is only used from a
+                // single thread. So, we:
+                // 1) start Chromium using the current thread as the UI thread (this is a no-op if
+                //    it was already started).
                 mFactory.startYourEngines(false);
+                // 2) check that the current thread is the UI thread, which will throw if it was
+                //    already started using a different thread as the UI thread.
                 checkThread();
-            } else if (!mFactory.hasStarted()) {
-                if (Looper.myLooper() == Looper.getMainLooper()) {
-                    mFactory.startYourEngines(true);
-                } else {
-                    // Record which thread we're on now so we can track whether the final UI thread
-                    // decision differed.
-                    mFactory.getAwInit().setFirstWebViewConstructedOn(Looper.myLooper());
-                }
+            } else {
+                // For older apps, only the view methods that relate to the view hierarchy must come
+                // from a single thread. Other calls, including the constructor itself, can come
+                // from any thread, and will be posted to the UI thread if necessary.
+                //
+                // We used to defer the decision about which thread is the UI thread for as long as
+                // possible to allow for the case where an app targeting < JB MR2 used a different
+                // thread, but this significantly complicated initialization and is virtually never
+                // encountered in the wild. We can't just use the current thread as the UI thread as
+                // the normal case does, because it *is* somewhat common for old apps to construct
+                // WebView on a background thread and then attach it to the view hierarchy on the
+                // main looper.
+                //
+                // So, we just start Chromium using the main looper as the UI thread, which works
+                // for virtually every old app, and accept that a very tiny number of them will
+                // break.
+                mFactory.startYourEngines(true);
             }
 
             final boolean isAccessFromFileURLsGrantedByDefault =
@@ -372,11 +380,11 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             if (isFirstWebViewInit) {
                 RecordHistogram.recordTimesHistogram(
                         "Android.WebView.Startup.CreationTime.Stage2.ProviderInit.Cold",
-                        SystemClock.elapsedRealtime() - startTime);
+                        SystemClock.uptimeMillis() - startTime);
             } else {
                 RecordHistogram.recordTimesHistogram(
                         "Android.WebView.Startup.CreationTime.Stage2.ProviderInit.Warm",
-                        SystemClock.elapsedRealtime() - startTime);
+                        SystemClock.uptimeMillis() - startTime);
             }
         }
     }
@@ -405,13 +413,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             mAwContents = new AwContents(mFactory.getBrowserContextOnUiThread(), mWebView, mContext,
                     new InternalAccessAdapter(), new WebViewNativeDrawFunctorFactory(),
                     mContentsClientAdapter, mWebSettings.getAwSettings(),
-                    new AwContents.DependencyFactory() {
-                        @Override
-                        public AutofillProvider createAutofillProvider(
-                                Context context, ViewGroup containerView) {
-                            return mFactory.createAutofillProvider(context, mWebView);
-                        }
-                    });
+                    new AwContents.DependencyFactory());
             if (mAppTargetSdkVersion >= Build.VERSION_CODES.KITKAT) {
                 // On KK and above, favicons are automatically downloaded as the method
                 // old apps use to enable that behavior is deprecated.
@@ -1823,7 +1825,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         if (ContentCaptureFeatures.isDumpForTestingEnabled()) {
             Log.i("ContentCapture", "onProvideContentCaptureStructure");
         }
-        mAwContents.setContentCaptureConsumer(ContentCaptureConsumerImpl.create(
+        mAwContents.setOnscreenContentProvider(new OnscreenContentProvider(
                 ClassLoaderContextWrapperFactory.get(mWebView.getContext()), mWebView, structure,
                 mAwContents.getWebContents()));
     }
@@ -2537,7 +2539,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
         @Override
         public AwDrawFnImpl.DrawFnAccess getDrawFnAccess() {
-            if (BuildInfo.isAtLeastQ()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 return mFactory.getWebViewDelegate();
             }
             return null;

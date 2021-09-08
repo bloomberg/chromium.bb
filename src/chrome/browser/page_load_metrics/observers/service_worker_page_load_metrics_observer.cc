@@ -48,38 +48,14 @@ const char kBackgroundHistogramServiceWorkerFirstContentfulPaint[] =
 const char kHistogramServiceWorkerParseStartToFirstContentfulPaint[] =
     "PageLoad.Clients.ServiceWorker2.PaintTiming."
     "ParseStartToFirstContentfulPaint";
-const char kHistogramServiceWorkerFirstMeaningfulPaint[] =
-    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
-    "NavigationToFirstMeaningfulPaint";
-const char kHistogramServiceWorkerParseStartToFirstMeaningfulPaint[] =
-    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
-    "ParseStartToFirstMeaningfulPaint";
 const char kHistogramServiceWorkerDomContentLoaded[] =
     "PageLoad.Clients.ServiceWorker2.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired";
 const char kHistogramServiceWorkerLoad[] =
     "PageLoad.Clients.ServiceWorker2.DocumentTiming.NavigationToLoadEventFired";
-
-const char kHistogramServiceWorkerParseStartInbox[] =
-    "PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart.inbox";
-const char kHistogramServiceWorkerFirstContentfulPaintInbox[] =
+const char kHistogramServiceWorkerLargestContentfulPaint[] =
     "PageLoad.Clients.ServiceWorker2.PaintTiming."
-    "NavigationToFirstContentfulPaint.inbox";
-const char kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox[] =
-    "PageLoad.Clients.ServiceWorker2.PaintTiming."
-    "ParseStartToFirstContentfulPaint.inbox";
-const char kHistogramServiceWorkerFirstMeaningfulPaintInbox[] =
-    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
-    "NavigationToFirstMeaningfulPaint.inbox";
-const char kHistogramServiceWorkerParseStartToFirstMeaningfulPaintInbox[] =
-    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
-    "ParseStartToFirstMeaningfulPaint.inbox";
-const char kHistogramServiceWorkerDomContentLoadedInbox[] =
-    "PageLoad.Clients.ServiceWorker2.DocumentTiming."
-    "NavigationToDOMContentLoadedEventFired.inbox";
-const char kHistogramServiceWorkerLoadInbox[] =
-    "PageLoad.Clients.ServiceWorker2.DocumentTiming.NavigationToLoadEventFired."
-    "inbox";
+    "NavigationToLargestContentfulPaint2";
 
 const char kHistogramServiceWorkerParseStartSearch[] =
     "PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart.search";
@@ -89,12 +65,6 @@ const char kHistogramServiceWorkerFirstContentfulPaintSearch[] =
 const char kHistogramServiceWorkerParseStartToFirstContentfulPaintSearch[] =
     "PageLoad.Clients.ServiceWorker2.PaintTiming."
     "ParseStartToFirstContentfulPaint.search";
-const char kHistogramServiceWorkerFirstMeaningfulPaintSearch[] =
-    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
-    "NavigationToFirstMeaningfulPaint.search";
-const char kHistogramServiceWorkerParseStartToFirstMeaningfulPaintSearch[] =
-    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
-    "ParseStartToFirstMeaningfulPaint.search";
 const char kHistogramServiceWorkerDomContentLoadedSearch[] =
     "PageLoad.Clients.ServiceWorker2.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired.search";
@@ -108,12 +78,6 @@ const char kHistogramNoServiceWorkerFirstContentfulPaintSearch[] =
 const char kHistogramNoServiceWorkerParseStartToFirstContentfulPaintSearch[] =
     "PageLoad.Clients.NoServiceWorker2.PaintTiming."
     "ParseStartToFirstContentfulPaint.search";
-const char kHistogramNoServiceWorkerFirstMeaningfulPaintSearch[] =
-    "PageLoad.Clients.NoServiceWorker2.Experimental.PaintTiming."
-    "NavigationToFirstMeaningfulPaint.search";
-const char kHistogramNoServiceWorkerParseStartToFirstMeaningfulPaintSearch[] =
-    "PageLoad.Clients.NoServiceWorker2.Experimental.PaintTiming."
-    "ParseStartToFirstMeaningfulPaint.search";
 const char kHistogramNoServiceWorkerDomContentLoadedSearch[] =
     "PageLoad.Clients.NoServiceWorker2.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired.search";
@@ -131,10 +95,6 @@ const char kHistogramNoServiceWorkerFirstContentfulPaintDocs[] =
 }  // namespace internal
 
 namespace {
-
-bool IsInboxSite(const GURL& url) {
-  return url.host_piece() == "inbox.google.com";
-}
 
 bool IsDocsSite(const GURL& url) {
   return url.host_piece() == "docs.google.com";
@@ -223,16 +183,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     }
   }
 
-  if (IsInboxSite(GetDelegate().GetUrl())) {
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramServiceWorkerFirstContentfulPaintInbox,
-        timing.paint_timing->first_contentful_paint.value());
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox,
-        timing.paint_timing->first_contentful_paint.value() -
-            timing.parse_timing->parse_start.value());
-  } else if (page_load_metrics::IsGoogleSearchResultUrl(
-                 GetDelegate().GetUrl())) {
+  if (page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerFirstContentfulPaintSearch,
         timing.paint_timing->first_contentful_paint.value());
@@ -244,53 +195,6 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerFirstContentfulPaintDocs,
         timing.paint_timing->first_contentful_paint.value());
-  }
-}
-
-void ServiceWorkerPageLoadMetricsObserver::
-    OnFirstMeaningfulPaintInMainFrameDocument(
-        const page_load_metrics::mojom::PageLoadTiming& timing) {
-  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint, GetDelegate())) {
-    return;
-  }
-  if (!IsServiceWorkerControlled()) {
-    if (!page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl()))
-      return;
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramNoServiceWorkerFirstMeaningfulPaintSearch,
-        timing.paint_timing->first_meaningful_paint.value());
-    PAGE_LOAD_HISTOGRAM(
-        internal::
-            kHistogramNoServiceWorkerParseStartToFirstMeaningfulPaintSearch,
-        timing.paint_timing->first_meaningful_paint.value() -
-            timing.parse_timing->parse_start.value());
-    return;
-  }
-  PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstMeaningfulPaint,
-                      timing.paint_timing->first_meaningful_paint.value());
-  PAGE_LOAD_HISTOGRAM(
-      internal::kHistogramServiceWorkerParseStartToFirstMeaningfulPaint,
-      timing.paint_timing->first_meaningful_paint.value() -
-          timing.parse_timing->parse_start.value());
-
-  if (IsInboxSite(GetDelegate().GetUrl())) {
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramServiceWorkerFirstMeaningfulPaintInbox,
-        timing.paint_timing->first_meaningful_paint.value());
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramServiceWorkerParseStartToFirstMeaningfulPaintInbox,
-        timing.paint_timing->first_meaningful_paint.value() -
-            timing.parse_timing->parse_start.value());
-  } else if (page_load_metrics::IsGoogleSearchResultUrl(
-                 GetDelegate().GetUrl())) {
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramServiceWorkerFirstMeaningfulPaintSearch,
-        timing.paint_timing->first_meaningful_paint.value());
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramServiceWorkerParseStartToFirstMeaningfulPaintSearch,
-        timing.paint_timing->first_meaningful_paint.value() -
-            timing.parse_timing->parse_start.value());
   }
 }
 
@@ -312,12 +216,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramServiceWorkerDomContentLoaded,
       timing.document_timing->dom_content_loaded_event_start.value());
-  if (IsInboxSite(GetDelegate().GetUrl())) {
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramServiceWorkerDomContentLoadedInbox,
-        timing.document_timing->dom_content_loaded_event_start.value());
-  } else if (page_load_metrics::IsGoogleSearchResultUrl(
-                 GetDelegate().GetUrl())) {
+  if (page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerDomContentLoadedSearch,
         timing.document_timing->dom_content_loaded_event_start.value());
@@ -338,11 +237,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoad,
                       timing.document_timing->load_event_start.value());
-  if (IsInboxSite(GetDelegate().GetUrl())) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadInbox,
-                        timing.document_timing->load_event_start.value());
-  } else if (page_load_metrics::IsGoogleSearchResultUrl(
-                 GetDelegate().GetUrl())) {
+  if (page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadSearch,
                         timing.document_timing->load_event_start.value());
   }
@@ -385,11 +280,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStart,
                         timing.parse_timing->parse_start.value());
 
-    if (IsInboxSite(GetDelegate().GetUrl())) {
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStartInbox,
-                          timing.parse_timing->parse_start.value());
-    } else if (page_load_metrics::IsGoogleSearchResultUrl(
-                   GetDelegate().GetUrl())) {
+    if (page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl())) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStartSearch,
                           timing.parse_timing->parse_start.value());
     }
@@ -418,6 +309,37 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadingBehaviorObserved(
       GetDelegate().GetPageUkmSourceId())
       .Record(ukm::UkmRecorder::Get());
   logged_ukm_event_ = true;
+}
+
+void ServiceWorkerPageLoadMetricsObserver::OnComplete(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  RecordTimingHistograms();
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+ServiceWorkerPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  //  This follows UmaPageLoadMetricsObserver.
+  if (GetDelegate().DidCommit())
+    RecordTimingHistograms();
+  return STOP_OBSERVING;
+}
+
+void ServiceWorkerPageLoadMetricsObserver::RecordTimingHistograms() {
+  if (!IsServiceWorkerControlled())
+    return;
+
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      all_frames_largest_contentful_paint =
+          GetDelegate()
+              .GetLargestContentfulPaintHandler()
+              .MergeMainFrameAndSubframes();
+  if (all_frames_largest_contentful_paint.ContainsValidTime() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          all_frames_largest_contentful_paint.Time(), GetDelegate())) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLargestContentfulPaint,
+                        all_frames_largest_contentful_paint.Time().value());
+  }
 }
 
 bool ServiceWorkerPageLoadMetricsObserver::IsServiceWorkerControlled() {

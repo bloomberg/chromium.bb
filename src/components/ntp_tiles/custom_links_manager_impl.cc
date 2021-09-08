@@ -70,7 +70,7 @@ const std::vector<CustomLinksManager::Link>& CustomLinksManagerImpl::GetLinks()
 }
 
 bool CustomLinksManagerImpl::AddLink(const GURL& url,
-                                     const base::string16& title) {
+                                     const std::u16string& title) {
   if (!IsInitialized() || !url.is_valid() ||
       current_links_.size() == ntp_tiles::kMaxNumCustomLinks) {
     return false;
@@ -87,7 +87,7 @@ bool CustomLinksManagerImpl::AddLink(const GURL& url,
 
 bool CustomLinksManagerImpl::UpdateLink(const GURL& url,
                                         const GURL& new_url,
-                                        const base::string16& new_title) {
+                                        const std::u16string& new_title) {
   if (!IsInitialized() || !url.is_valid() ||
       (new_url.is_empty() && new_title.empty())) {
     return false;
@@ -166,7 +166,7 @@ bool CustomLinksManagerImpl::UndoAction() {
 
   // Replace the current links with the previous state.
   current_links_ = *previous_links_;
-  previous_links_ = base::nullopt;
+  previous_links_ = absl::nullopt;
   StoreLinks();
   return true;
 }
@@ -177,7 +177,7 @@ void CustomLinksManagerImpl::ClearLinks() {
     store_.ClearLinks();
   }
   current_links_.clear();
-  previous_links_ = base::nullopt;
+  previous_links_ = absl::nullopt;
 }
 
 void CustomLinksManagerImpl::StoreLinks() {
@@ -191,10 +191,10 @@ CustomLinksManagerImpl::FindLinkWithUrl(const GURL& url) {
                       [&url](const Link& link) { return link.url == url; });
 }
 
-std::unique_ptr<base::CallbackList<void()>::Subscription>
+base::CallbackListSubscription
 CustomLinksManagerImpl::RegisterCallbackForOnChanged(
     base::RepeatingClosure callback) {
-  return callback_list_.Add(callback);
+  return closure_list_.Add(callback);
 }
 
 // history::HistoryServiceObserver implementation.
@@ -217,16 +217,17 @@ void CustomLinksManagerImpl::OnURLsDeleted(
     }
   }
   StoreLinks();
-  previous_links_ = base::nullopt;
+  previous_links_ = absl::nullopt;
 
   // Alert MostVisitedSites that some links have been deleted.
   if (initial_size != current_links_.size())
-    callback_list_.Notify();
+    closure_list_.Notify();
 }
 
 void CustomLinksManagerImpl::HistoryServiceBeingDeleted(
     history::HistoryService* history_service) {
-  history_service_observation_.RemoveObservation();
+  DCHECK(history_service_observation_.IsObserving());
+  history_service_observation_.Reset();
 }
 
 void CustomLinksManagerImpl::OnPreferenceChanged() {
@@ -237,8 +238,8 @@ void CustomLinksManagerImpl::OnPreferenceChanged() {
     current_links_ = store_.RetrieveLinks();
   else
     current_links_.clear();
-  previous_links_ = base::nullopt;
-  callback_list_.Notify();
+  previous_links_ = absl::nullopt;
+  closure_list_.Notify();
 }
 
 // static

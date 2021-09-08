@@ -6,15 +6,18 @@
 
 #include <memory>
 
-#include "ui/base/resource/resource_bundle.h"
+#include "build/chromeos_buildflags.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/painter.h"
 
 namespace message_center {
 
@@ -23,27 +26,29 @@ PaddedButton::PaddedButton(PressedCallback callback)
   SetBorder(views::CreateEmptyBorder(gfx::Insets(kControlButtonBorderSize)));
   SetAnimateOnStateChange(false);
 
-  SetInkDropMode(InkDropMode::ON);
-  SetInkDropVisibleOpacity(0.12f);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  ink_drop()->SetVisibleOpacity(0.12f);
   SetHasInkDropActionOnClick(true);
-}
-
-std::unique_ptr<views::InkDrop> PaddedButton::CreateInkDrop() {
-  auto ink_drop = CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  ink_drop->SetShowHighlightOnFocus(false);
-  return std::move(ink_drop);
+  views::InkDrop::UseInkDropForSquareRipple(ink_drop(),
+                                            /*highlight_on_hover=*/false);
 }
 
 void PaddedButton::OnThemeChanged() {
   ImageButton::OnThemeChanged();
   auto* theme = GetNativeTheme();
-#if defined(OS_CHROMEOS)
-  SetBackground(views::CreateSolidBackground(theme->GetSystemColor(
-      ui::NativeTheme::kColorId_NotificationButtonBackground)));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  SkColor background_color = theme->GetSystemColor(
+      ui::NativeTheme::kColorId_NotificationButtonBackground);
+  SetBackground(views::CreateSolidBackground(background_color));
+#else
+  SkColor background_color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
 #endif
-  SetInkDropBaseColor(theme->GetSystemColor(
-      ui::NativeTheme::kColorId_PaddedButtonInkDropColor));
+  ink_drop()->SetBaseColor(
+      color_utils::GetColorWithMaxContrast(background_color));
 }
+
+BEGIN_METADATA(PaddedButton, views::ImageButton)
+END_METADATA
 
 }  // namespace message_center

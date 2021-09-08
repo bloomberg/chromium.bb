@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-cr.define('settings', function() {
   /**
    * @typedef {{fullName: (string|undefined),
    *            givenName: (string|undefined),
@@ -14,7 +13,7 @@ cr.define('settings', function() {
    *            avatarImage: (string|undefined)}}
    * @see chrome/browser/ui/webui/settings/people_handler.cc
    */
-  /* #export */ let StoredAccount;
+  export let StoredAccount;
 
   /**
    * @typedef {{childUser: (boolean|undefined),
@@ -27,21 +26,21 @@ cr.define('settings', function() {
    *            firstSetupInProgress: (boolean|undefined),
    *            signedIn: (boolean|undefined),
    *            signedInUsername: (string|undefined),
-   *            statusAction: (!settings.StatusAction),
+   *            statusAction: (!StatusAction),
    *            statusActionText: (string|undefined),
    *            statusText: (string|undefined),
    *            supervisedUser: (boolean|undefined),
    *            syncSystemEnabled: (boolean|undefined)}}
    * @see chrome/browser/ui/webui/settings/people_handler.cc
    */
-  /* #export */ let SyncStatus;
+  export let SyncStatus;
 
   /**
    * Must be kept in sync with the return values of getSyncErrorAction in
    * chrome/browser/ui/webui/settings/people_handler.cc
    * @enum {string}
    */
-  /* #export */ const StatusAction = {
+  export const StatusAction = {
     NO_ACTION: 'noAction',             // No action to take.
     REAUTHENTICATE: 'reauthenticate',  // User needs to reauthenticate.
     SIGNOUT_AND_SIGNIN:
@@ -66,13 +65,12 @@ cr.define('settings', function() {
    *   autofillSynced: boolean,
    *   bookmarksRegistered: boolean,
    *   bookmarksSynced: boolean,
+   *   customPassphraseAllowed: boolean,
    *   encryptAllData: boolean,
-   *   encryptAllDataAllowed: boolean,
    *   enterPassphraseBody: (string|undefined),
    *   extensionsRegistered: boolean,
    *   extensionsSynced: boolean,
    *   fullEncryptionBody: string,
-   *   passphrase: (string|undefined),
    *   passphraseRequired: boolean,
    *   passwordsRegistered: boolean,
    *   passwordsSynced: boolean,
@@ -81,7 +79,6 @@ cr.define('settings', function() {
    *   preferencesSynced: boolean,
    *   readingListRegistered: boolean,
    *   readingListSynced: boolean,
-   *   setNewPassphrase: (boolean|undefined),
    *   syncAllDataTypes: boolean,
    *   tabsRegistered: boolean,
    *   tabsSynced: boolean,
@@ -94,10 +91,10 @@ cr.define('settings', function() {
    *   wifiConfigurationsSynced: boolean,
    * }}
    */
-  /* #export */ let SyncPrefs;
+  export let SyncPrefs;
 
   /** @enum {string} */
-  /* #export */ const PageStatus = {
+  export const PageStatus = {
     SPINNER: 'spinner',      // Before the page has loaded.
     CONFIGURE: 'configure',  // Preferences ready to be configured.
     DONE: 'done',            // Sync subpage can be closed now.
@@ -111,7 +108,7 @@ cr.define('settings', function() {
   const PROMO_IMPRESSION_COUNT_KEY = 'signin-promo-count';
 
   /** @interface */
-  /* #export */ class SyncBrowserProxy {
+  export class SyncBrowserProxy {
     // <if expr="not chromeos">
     /**
      * Starts the signin process for the user. Does nothing if the user is
@@ -166,13 +163,13 @@ cr.define('settings', function() {
 
     /**
      * Gets the current sync status.
-     * @return {!Promise<!settings.SyncStatus>}
+     * @return {!Promise<!SyncStatus>}
      */
     getSyncStatus() {}
 
     /**
      * Gets a list of stored accounts.
-     * @return {!Promise<!Array<!settings.StoredAccount>>}
+     * @return {!Promise<!Array<!StoredAccount>>}
      */
     getStoredAccounts() {}
 
@@ -192,19 +189,26 @@ cr.define('settings', function() {
 
     /**
      * Sets which types of data to sync.
-     * @param {!settings.SyncPrefs} syncPrefs
-     * @return {!Promise<!settings.PageStatus>}
+     * @param {!SyncPrefs} syncPrefs
+     * @return {!Promise<!PageStatus>}
      */
     setSyncDatatypes(syncPrefs) {}
 
     /**
-     * Sets the sync encryption options.
-     * @param {!settings.SyncPrefs} syncPrefs
-     * @return {!Promise<!settings.PageStatus>}
+     * Attempts to set up a new passphrase to encrypt Sync data.
+     * @param {string} passphrase
+     * @return {!Promise<boolean>} Whether the passphrase was successfully set.
+     * The call can fail, for example, if encrypting the data is disallowed.
      */
-    // TODO(crbug.com/1139060): Use a clear signature which doesn't rely on
-    // syncPrefs.
-    setSyncEncryption(syncPrefs) {}
+    setEncryptionPassphrase(passphrase) {}
+
+    /**
+     * Attempts to set the passphrase to decrypt Sync data.
+     * @param {string} passphrase
+     * @return {!Promise<boolean>} Whether the passphrase was successfully set.
+     * The call can fail, for example, if the passphrase is incorrect.
+     */
+    setDecryptionPassphrase(passphrase) {}
 
     /**
      * Start syncing with an account, specified by its email.
@@ -226,12 +230,17 @@ cr.define('settings', function() {
      * manager in passwords section on page load.
      */
     sendSyncPrefsChanged() {}
+
+    /**
+     * Forces an offer-trusted-vault-opt-in-changed event to be fired.
+     */
+    sendOfferTrustedVaultOptInChanged() {}
   }
 
   /**
-   * @implements {settings.SyncBrowserProxy}
+   * @implements {SyncBrowserProxy}
    */
-  /* #export */ class SyncBrowserProxyImpl {
+  export class SyncBrowserProxyImpl {
     // <if expr="not chromeos">
     /** @override */
     startSignIn() {
@@ -287,12 +296,12 @@ cr.define('settings', function() {
 
     /** @override */
     getSyncStatus() {
-      return cr.sendWithPromise('SyncSetupGetSyncStatus');
+      return sendWithPromise('SyncSetupGetSyncStatus');
     }
 
     /** @override */
     getStoredAccounts() {
-      return cr.sendWithPromise('SyncSetupGetStoredAccounts');
+      return sendWithPromise('SyncSetupGetStoredAccounts');
     }
 
     /** @override */
@@ -307,14 +316,18 @@ cr.define('settings', function() {
 
     /** @override */
     setSyncDatatypes(syncPrefs) {
-      return cr.sendWithPromise(
+      return sendWithPromise(
           'SyncSetupSetDatatypes', JSON.stringify(syncPrefs));
     }
 
     /** @override */
-    setSyncEncryption(syncPrefs) {
-      return cr.sendWithPromise(
-          'SyncSetupSetEncryption', JSON.stringify(syncPrefs));
+    setEncryptionPassphrase(passphrase) {
+      return sendWithPromise('SyncSetupSetEncryptionPassphrase', passphrase);
+    }
+
+    /** @override */
+    setDecryptionPassphrase(passphrase) {
+      return sendWithPromise('SyncSetupSetDecryptionPassphrase', passphrase);
     }
 
     /** @override */
@@ -333,18 +346,11 @@ cr.define('settings', function() {
     sendSyncPrefsChanged() {
       chrome.send('SyncPrefsDispatch');
     }
+
+    /** @override */
+    sendOfferTrustedVaultOptInChanged() {
+      chrome.send('SyncOfferTrustedVaultOptInDispatch');
+    }
   }
 
-  cr.addSingletonGetter(SyncBrowserProxyImpl);
-
-  // #cr_define_end
-  return {
-    PageStatus,
-    StatusAction,
-    StoredAccount,
-    SyncBrowserProxy,
-    SyncBrowserProxyImpl,
-    SyncPrefs,
-    SyncStatus,
-  };
-});
+  addSingletonGetter(SyncBrowserProxyImpl);

@@ -7,23 +7,26 @@
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
+#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "extensions/common/constants.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
 // The default app's histogram name. This is used for logging so do
 // not change the order of this enum.
 // https://docs.google.com/document/d/1WJ-BjlVOM87ygIsdDBCyXxdKw3iS5EtNGm1fWiWhfIs
+// If you're adding to this enum with the intention that it will be logged,
+// update the DefaultAppName enum listing in tools/metrics/histograms/enums.xml.
 enum class DefaultAppName {
   kCalculator = 10,
   kText = 11,
@@ -57,10 +60,16 @@ enum class DefaultAppName {
   // This is our test SWA. It's only installed in tests.
   kMockSystemApp = 39,
   kStadia = 40,
+  kScanningApp = 41,
+  kDiagnosticsApp = 42,
+  kPrintManagementApp = 43,
+  kShortcutCustomizationApp = 44,
+  kShimlessRMAApp = 45,
+  kOsFeedbackApp = 46,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kStadia,
+  kMaxValue = kOsFeedbackApp,
 };
 
 void RecordDefaultAppLaunch(DefaultAppName default_app_name,
@@ -140,6 +149,19 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
           "Apps.DefaultAppLaunch.FromReleaseNotesNotification",
           default_app_name);
       break;
+    case apps::mojom::LaunchSource::kFromFullRestore:
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromFullRestore",
+                                    default_app_name);
+      break;
+    case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
+      base::UmaHistogramEnumeration(
+          "Apps.DefaultAppLaunch.FromSmartTextContextMenu", default_app_name);
+      break;
+    case apps::mojom::LaunchSource::kFromDiscoverTabNotification:
+      base::UmaHistogramEnumeration(
+          "Apps.DefaultAppLaunch.FromDiscoverTabNotification",
+          default_app_name);
+      break;
   }
 }
 
@@ -173,6 +195,9 @@ void RecordBuiltInAppLaunch(apps::BuiltInAppName built_in_app_name,
     case apps::mojom::LaunchSource::kFromArc:
     case apps::mojom::LaunchSource::kFromSharesheet:
     case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
+    case apps::mojom::LaunchSource::kFromFullRestore:
+    case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
+    case apps::mojom::LaunchSource::kFromDiscoverTabNotification:
       break;
   }
 }
@@ -183,77 +208,92 @@ namespace apps {
 
 void RecordAppLaunch(const std::string& app_id,
                      apps::mojom::LaunchSource launch_source) {
-  if (app_id == extension_misc::kCalculatorAppId)
+  if (app_id == extension_misc::kCalculatorAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kCalculator, launch_source);
-  else if (app_id == extension_misc::kTextEditorAppId)
+  } else if (app_id == extension_misc::kTextEditorAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kText, launch_source);
-  else if (app_id == file_manager::kGalleryAppId)
+  } else if (app_id == file_manager::kGalleryAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kGallery, launch_source);
-  else if (app_id == file_manager::kVideoPlayerAppId)
+  } else if (app_id == file_manager::kVideoPlayerAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kVideoPlayer, launch_source);
-  else if (app_id == file_manager::kAudioPlayerAppId)
+  } else if (app_id == file_manager::kAudioPlayerAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kAudioPlayer, launch_source);
-  else if (app_id == chromeos::default_web_apps::kCanvasAppId)
+  } else if (app_id == web_app::kCanvasAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kChromeCanvas, launch_source);
-  else if (app_id == extension_misc::kCameraAppId)
+  } else if (app_id == extension_misc::kCameraAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kCamera, launch_source);
-  else if (app_id == chromeos::default_web_apps::kCameraAppId)
+  } else if (app_id == web_app::kCameraAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kCamera, launch_source);
-  else if (app_id == chromeos::default_web_apps::kHelpAppId)
+  } else if (app_id == web_app::kHelpAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kHelpApp, launch_source);
-  else if (app_id == chromeos::default_web_apps::kMediaAppId)
+  } else if (app_id == web_app::kMediaAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kMediaApp, launch_source);
-  else if (app_id == extension_misc::kChromeAppId)
+  } else if (app_id == extension_misc::kChromeAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kChrome, launch_source);
-  else if (app_id == extension_misc::kGoogleDocAppId)
+  } else if (app_id == extension_misc::kGoogleDocAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kDocs, launch_source);
-  else if (app_id == extension_misc::kDriveHostedAppId)
+  } else if (app_id == extension_misc::kDriveHostedAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kDrive, launch_source);
-#if defined(OS_CHROMEOS)
-  else if (app_id == arc::kGoogleDuoAppId)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  } else if (app_id == arc::kGoogleDuoAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kDuo, launch_source);
-#endif  // OS_CHROMEOS
-  else if (app_id == extension_misc::kFilesManagerAppId)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  } else if (app_id == extension_misc::kFilesManagerAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kFiles, launch_source);
-#if defined(OS_CHROMEOS)
-  else if (app_id == extension_misc::kGmailAppId || app_id == arc::kGmailAppId)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  } else if (app_id == extension_misc::kGmailAppId ||
+             app_id == arc::kGmailAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kGmail, launch_source);
-#endif  // OS_CHROMEOS
-  else if (app_id == extension_misc::kGoogleKeepAppId)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  } else if (app_id == extension_misc::kGoogleKeepAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kKeep, launch_source);
-#if defined(OS_CHROMEOS)
-  else if (app_id == extension_misc::kGooglePhotosAppId)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  } else if (app_id == extension_misc::kGooglePhotosAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kPhotos, launch_source);
-  else if (app_id == arc::kPlayBooksAppId)
+  } else if (app_id == arc::kPlayBooksAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kPlayBooks, launch_source);
-  else if (app_id == arc::kPlayGamesAppId)
+  } else if (app_id == arc::kPlayGamesAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kPlayGames, launch_source);
-  else if (app_id == arc::kPlayMoviesAppId ||
-           app_id == extension_misc::kGooglePlayMoviesAppId)
+  } else if (app_id == arc::kPlayMoviesAppId ||
+             app_id == extension_misc::kGooglePlayMoviesAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kPlayMovies, launch_source);
-  else if (app_id == arc::kPlayMusicAppId ||
-           app_id == extension_misc::kGooglePlayMusicAppId)
+  } else if (app_id == arc::kPlayMusicAppId ||
+             app_id == extension_misc::kGooglePlayMusicAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kPlayMusic, launch_source);
-  else if (app_id == arc::kPlayStoreAppId)
+  } else if (app_id == arc::kPlayStoreAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kPlayStore, launch_source);
-#endif  // OS_CHROMEOS
-  else if (app_id == chromeos::default_web_apps::kOsSettingsAppId)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  } else if (app_id == web_app::kOsSettingsAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kSettings, launch_source);
-  else if (app_id == extension_misc::kGoogleSheetsAppId)
+  } else if (app_id == extension_misc::kGoogleSheetsAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kSheets, launch_source);
-  else if (app_id == extension_misc::kGoogleSlidesAppId)
+  } else if (app_id == extension_misc::kGoogleSlidesAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kSlides, launch_source);
-  else if (app_id == extensions::kWebStoreAppId)
+  } else if (app_id == extensions::kWebStoreAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kWebStore, launch_source);
-#if defined(OS_CHROMEOS)
-  else if (app_id == extension_misc::kYoutubeAppId ||
-           app_id == arc::kYoutubeAppId)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  } else if (app_id == extension_misc::kYoutubeAppId ||
+             app_id == arc::kYoutubeAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kYouTube, launch_source);
-#endif  // OS_CHROMEOS
-  else if (app_id == chromeos::default_web_apps::kYoutubeMusicAppId)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  } else if (app_id == web_app::kYoutubeMusicAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kYouTubeMusic, launch_source);
-  else if (app_id == chromeos::default_web_apps::kStadiaAppId)
+  } else if (app_id == web_app::kStadiaAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kStadia, launch_source);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  } else if (app_id == web_app::kScanningAppId) {
+    RecordDefaultAppLaunch(DefaultAppName::kScanningApp, launch_source);
+  } else if (app_id == web_app::kDiagnosticsAppId) {
+    RecordDefaultAppLaunch(DefaultAppName::kDiagnosticsApp, launch_source);
+  } else if (app_id == web_app::kPrintManagementAppId) {
+    RecordDefaultAppLaunch(DefaultAppName::kPrintManagementApp, launch_source);
+  } else if (app_id == web_app::kShortcutCustomizationAppId) {
+    RecordDefaultAppLaunch(DefaultAppName::kShortcutCustomizationApp,
+                           launch_source);
+  } else if (app_id == web_app::kShimlessRMAAppId) {
+    RecordDefaultAppLaunch(DefaultAppName::kShimlessRMAApp, launch_source);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  }
 
   // Above are default apps; below are built-in apps.
 
@@ -264,14 +304,14 @@ void RecordAppLaunch(const std::string& app_id,
     RecordBuiltInAppLaunch(BuiltInAppName::kSettings, launch_source);
   } else if (app_id == ash::kInternalAppIdContinueReading) {
     RecordBuiltInAppLaunch(BuiltInAppName::kContinueReading, launch_source);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   } else if (app_id == plugin_vm::kPluginVmShelfAppId) {
     RecordBuiltInAppLaunch(BuiltInAppName::kPluginVm, launch_source);
-#endif  // OS_CHROMEOS
-  } else if (app_id == ash::kReleaseNotesAppId) {
-    RecordBuiltInAppLaunch(BuiltInAppName::kReleaseNotes, launch_source);
-  } else if (app_id == chromeos::default_web_apps::kMockSystemAppId) {
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  } else if (app_id == web_app::kMockSystemAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kMockSystemApp, launch_source);
+  } else if (app_id == web_app::kOsFeedbackAppId) {
+    RecordDefaultAppLaunch(DefaultAppName::kOsFeedbackApp, launch_source);
   }
 }
 
@@ -285,14 +325,11 @@ void RecordBuiltInAppSearchResult(const std::string& app_id) {
   } else if (app_id == ash::kInternalAppIdContinueReading) {
     base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
                                   BuiltInAppName::kContinueReading);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   } else if (app_id == plugin_vm::kPluginVmShelfAppId) {
     base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
                                   BuiltInAppName::kPluginVm);
-#endif  // OS_CHROMEOS
-  } else if (app_id == ash::kReleaseNotesAppId) {
-    base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
-                                  BuiltInAppName::kReleaseNotes);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 }
 

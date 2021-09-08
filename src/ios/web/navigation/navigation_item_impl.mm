@@ -57,8 +57,8 @@ NavigationItemImpl::NavigationItemImpl()
       should_skip_repost_form_confirmation_(false),
       should_skip_serialization_(false),
       navigation_initiation_type_(web::NavigationInitiationType::NONE),
-      is_untrusted_(false) {
-}
+      is_untrusted_(false),
+      is_upgraded_to_https_(false) {}
 
 NavigationItemImpl::~NavigationItemImpl() {
 }
@@ -88,7 +88,8 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       error_retry_state_machine_(item.error_retry_state_machine_),
       navigation_initiation_type_(item.navigation_initiation_type_),
       is_untrusted_(item.is_untrusted_),
-      cached_display_title_(item.cached_display_title_) {}
+      cached_display_title_(item.cached_display_title_),
+      is_upgraded_to_https_(item.is_upgraded_to_https_) {}
 
 int NavigationItemImpl::GetUniqueID() const {
   return unique_id_;
@@ -129,7 +130,7 @@ const GURL& NavigationItemImpl::GetVirtualURL() const {
   return virtual_url_.is_empty() ? url_ : virtual_url_;
 }
 
-void NavigationItemImpl::SetTitle(const base::string16& title) {
+void NavigationItemImpl::SetTitle(const std::u16string& title) {
   if (title_ == title)
     return;
 
@@ -141,7 +142,7 @@ void NavigationItemImpl::SetTitle(const base::string16& title) {
   cached_display_title_.clear();
 }
 
-const base::string16& NavigationItemImpl::GetTitle() const {
+const std::u16string& NavigationItemImpl::GetTitle() const {
   return title_;
 }
 
@@ -154,7 +155,7 @@ const PageDisplayState& NavigationItemImpl::GetPageDisplayState() const {
   return page_display_state_;
 }
 
-const base::string16& NavigationItemImpl::GetTitleForDisplay() const {
+const std::u16string& NavigationItemImpl::GetTitleForDisplay() const {
   // Most pages have real titles. Don't even bother caching anything if this is
   // the case.
   if (!title_.empty())
@@ -238,6 +239,14 @@ void NavigationItemImpl::AddHttpRequestHeaders(
     [http_request_headers_ addEntriesFromDictionary:additional_headers];
   else
     http_request_headers_ = [additional_headers mutableCopy];
+}
+
+void NavigationItemImpl::SetUpgradedToHttps() {
+  is_upgraded_to_https_ = true;
+}
+
+bool NavigationItemImpl::IsUpgradedToHttps() const {
+  return is_upgraded_to_https_;
 }
 
 void NavigationItemImpl::SetSerializedStateObject(
@@ -344,16 +353,16 @@ ErrorRetryStateMachine& NavigationItemImpl::error_retry_state_machine() {
 }
 
 // static
-base::string16 NavigationItemImpl::GetDisplayTitleForURL(const GURL& url) {
+std::u16string NavigationItemImpl::GetDisplayTitleForURL(const GURL& url) {
   if (url.is_empty())
-    return base::string16();
+    return std::u16string();
 
-  base::string16 title = url_formatter::FormatUrl(url);
+  std::u16string title = url_formatter::FormatUrl(url);
 
   // For file:// URLs use the filename as the title, not the full path.
   if (url.SchemeIsFile()) {
-    base::string16::size_type slashpos = title.rfind('/');
-    if (slashpos != base::string16::npos && slashpos != (title.size() - 1))
+    std::u16string::size_type slashpos = title.rfind('/');
+    if (slashpos != std::u16string::npos && slashpos != (title.size() - 1))
       title = title.substr(slashpos + 1);
   }
 
@@ -371,7 +380,8 @@ NSString* NavigationItemImpl::GetDescription() const {
            "displayState:%@ userAgent:%s "
            "is_create_from_push_state: %@ "
            "has_state_been_replaced: %@ is_created_from_hash_change: %@ "
-           "navigation_initiation_type: %d",
+           "navigation_initiation_type: %d "
+           "is_upgraded_to_https: %@",
           url_.spec().c_str(), virtual_url_.spec().c_str(),
           original_request_url_.spec().c_str(), referrer_.url.spec().c_str(),
           base::UTF16ToUTF8(title_).c_str(), transition_type_,
@@ -380,7 +390,8 @@ NSString* NavigationItemImpl::GetDescription() const {
           is_created_from_push_state_ ? @"true" : @"false",
           has_state_been_replaced_ ? @"true" : @"false",
           is_created_from_hash_change_ ? @"true" : @"false",
-          navigation_initiation_type_];
+          navigation_initiation_type_,
+          is_upgraded_to_https_ ? @"true" : @"false"];
 }
 #endif
 

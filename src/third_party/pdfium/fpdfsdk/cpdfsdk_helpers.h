@@ -7,9 +7,12 @@
 #ifndef FPDFSDK_CPDFSDK_HELPERS_H_
 #define FPDFSDK_CPDFSDK_HELPERS_H_
 
+#include <vector>
+
 #include "build/build_config.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_parser.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "public/fpdf_doc.h"
 #include "public/fpdf_ext.h"
@@ -18,11 +21,6 @@
 #ifdef PDF_ENABLE_XFA
 #include "core/fxcrt/fx_stream.h"
 #endif  // PDF_ENABLE_XFA
-
-#if defined(OS_WIN)
-#include <math.h>
-#include <tchar.h>
-#endif
 
 class CPDF_Annot;
 class CPDF_AnnotContext;
@@ -282,5 +280,8 @@ void CheckForUnsupportedAnnot(const CPDF_Annot* pAnnot);
 void ProcessParseError(CPDF_Parser::Error err);
 void SetColorFromScheme(const FPDF_COLORSCHEME* pColorScheme,
                         CPDF_RenderOptions* pRenderOptions);
+
+std::vector<uint32_t> ParsePageRangeString(const ByteString& bsPageRange,
+                                           uint32_t nCount);
 
 #endif  // FPDFSDK_CPDFSDK_HELPERS_H_
