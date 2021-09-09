@@ -8,22 +8,20 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble/info_bubble.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/mouse_watcher_view_host.h"
 
 namespace views {
 
-TooltipIcon::TooltipIcon(const base::string16& tooltip, int tooltip_icon_size)
+TooltipIcon::TooltipIcon(const std::u16string& tooltip, int tooltip_icon_size)
     : tooltip_(tooltip),
       tooltip_icon_size_(tooltip_icon_size),
       mouse_inside_(false),
       bubble_(nullptr),
-      preferred_width_(0) {
-  SetDrawAsHovered(false);
-}
+      preferred_width_(0) {}
 
 TooltipIcon::~TooltipIcon() {
   for (auto& observer : observers_)
@@ -56,6 +54,11 @@ void TooltipIcon::OnGestureEvent(ui::GestureEvent* event) {
 void TooltipIcon::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTooltip;
   node_data->SetName(tooltip_);
+}
+
+void TooltipIcon::OnThemeChanged() {
+  ImageView::OnThemeChanged();
+  SetDrawAsHovered(false);
 }
 
 void TooltipIcon::MouseMovedOutOfHost() {
@@ -98,7 +101,7 @@ void TooltipIcon::ShowBubble() {
   bubble_->SetCanActivate(!mouse_inside_);
 
   bubble_->Show();
-  observer_.Add(bubble_->GetWidget());
+  observation_.Observe(bubble_->GetWidget());
 
   if (mouse_inside_) {
     View* frame = bubble_->GetWidget()->non_client_view()->frame_view();
@@ -117,7 +120,8 @@ void TooltipIcon::HideBubble() {
 }
 
 void TooltipIcon::OnWidgetDestroyed(Widget* widget) {
-  observer_.Remove(widget);
+  DCHECK(observation_.IsObservingSource(widget));
+  observation_.Reset();
 
   SetDrawAsHovered(false);
   mouse_watcher_.reset();

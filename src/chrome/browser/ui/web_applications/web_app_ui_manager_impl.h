@@ -11,9 +11,10 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 class Browser;
@@ -35,7 +36,8 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   WebAppUiManagerImpl& operator=(const WebAppUiManagerImpl&) = delete;
   ~WebAppUiManagerImpl() override;
 
-  void SetSubsystems(AppRegistryController* app_registry_controller) override;
+  void SetSubsystems(AppRegistryController* app_registry_controller,
+                     OsIntegrationManager* os_integration_manager) override;
   void Start() override;
   void Shutdown() override;
 
@@ -46,7 +48,7 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   size_t GetNumWindowsForApp(const AppId& app_id) override;
   void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                    base::OnceClosure callback) override;
-  void UninstallAndReplaceIfExists(const std::vector<AppId>& from_apps,
+  bool UninstallAndReplaceIfExists(const std::vector<AppId>& from_apps,
                                    const AppId& to_app) override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
@@ -60,10 +62,18 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   void ReparentAppTabToWindow(content::WebContents* contents,
                               const AppId& app_id,
                               bool shortcut_created) override;
+  content::WebContents* NavigateExistingWindow(const AppId& app_id,
+                                               const GURL& url) override;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
+
+#if defined(OS_WIN)
+  // Attempts to uninstall the given web app id. Meant to be used with OS-level
+  // uninstallation support/hooks.
+  void UninstallWebAppFromStartupSwitch(const AppId& app_id);
+#endif
 
  private:
   // Returns true if Browser is for an installed App.
@@ -73,11 +83,23 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   // must be true.
   const AppId GetAppIdForBrowser(Browser* browser);
 
+  void OnExtensionSystemReady();
+
+  void OnShortcutInfoReceivedSearchShortcutLocations(
+      const AppId& from_app,
+      const AppId& app_id,
+      std::unique_ptr<ShortcutInfo> shortcut_info);
+
+  void OnShortcutLocationGathered(const AppId& from_app,
+                                  const AppId& app_id,
+                                  ShortcutLocations locations);
+
   std::unique_ptr<WebAppDialogManager> dialog_manager_;
 
   Profile* const profile_;
 
   AppRegistryController* app_registry_controller_ = nullptr;
+  OsIntegrationManager* os_integration_manager_ = nullptr;
 
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;
   std::map<AppId, size_t> num_windows_for_apps_map_;

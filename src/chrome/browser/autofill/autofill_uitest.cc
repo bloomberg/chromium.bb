@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/autofill/autofill_uitest.h"
+#include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -27,37 +28,45 @@
 
 namespace autofill {
 
-// AutofillManagerTestDelegateImpl --------------------------------------------
-AutofillManagerTestDelegateImpl::AutofillManagerTestDelegateImpl()
+// BrowserAutofillManagerTestDelegateImpl
+// --------------------------------------------
+BrowserAutofillManagerTestDelegateImpl::BrowserAutofillManagerTestDelegateImpl()
     : is_expecting_dynamic_refill_(false) {}
 
-AutofillManagerTestDelegateImpl::~AutofillManagerTestDelegateImpl() {}
+BrowserAutofillManagerTestDelegateImpl::
+    ~BrowserAutofillManagerTestDelegateImpl() {}
 
-void AutofillManagerTestDelegateImpl::DidPreviewFormData() {
+void BrowserAutofillManagerTestDelegateImpl::DidPreviewFormData() {
   DCHECK(event_waiter_);
-  event_waiter_->OnEvent(ObservedUiEvents::kPreviewFormData);
+  if (event_waiter_) {
+    event_waiter_->OnEvent(ObservedUiEvents::kPreviewFormData);
+  }
 }
 
-void AutofillManagerTestDelegateImpl::DidFillFormData() {
+void BrowserAutofillManagerTestDelegateImpl::DidFillFormData() {
   DCHECK(event_waiter_);
-  event_waiter_->OnEvent(ObservedUiEvents::kFormDataFilled);
+  if (event_waiter_) {
+    event_waiter_->OnEvent(ObservedUiEvents::kFormDataFilled);
+  }
 }
 
-void AutofillManagerTestDelegateImpl::DidShowSuggestions() {
+void BrowserAutofillManagerTestDelegateImpl::DidShowSuggestions() {
   DCHECK(event_waiter_);
-  event_waiter_->OnEvent(ObservedUiEvents::kSuggestionShown);
+  if (event_waiter_) {
+    event_waiter_->OnEvent(ObservedUiEvents::kSuggestionShown);
+  }
 }
 
-void AutofillManagerTestDelegateImpl::OnTextFieldChanged() {}
+void BrowserAutofillManagerTestDelegateImpl::OnTextFieldChanged() {}
 
-void AutofillManagerTestDelegateImpl::SetExpectations(
+void BrowserAutofillManagerTestDelegateImpl::SetExpectations(
     std::list<ObservedUiEvents> expected_events,
     base::TimeDelta timeout) {
   event_waiter_ =
       std::make_unique<EventWaiter<ObservedUiEvents>>(expected_events, timeout);
 }
 
-bool AutofillManagerTestDelegateImpl::Wait() {
+bool BrowserAutofillManagerTestDelegateImpl::Wait() {
   return event_waiter_->Wait();
 }
 
@@ -70,16 +79,19 @@ AutofillUiTest::AutofillUiTest()
 AutofillUiTest::~AutofillUiTest() {}
 
 void AutofillUiTest::SetUpOnMainThread() {
-  LOG(ERROR) << "crbug/967588: AutofillUiTest::SetUpOnMainThread() entered";
   // Don't want Keychain coming up on Mac.
   test::DisableSystemServices(browser()->profile()->GetPrefs());
   // Make autofill popup stay open by ignoring external changes when possible.
   ChromeAutofillClient::FromWebContents(GetWebContents())
       ->KeepPopupOpenForTesting();
-  // Inject the test delegate into the AutofillManager of the main frame.
+  // Inject the test delegate into the BrowserAutofillManager of the main frame.
   RenderFrameHostChanged(/* old_host = */ nullptr,
                          /* new_host = */ GetWebContents()->GetMainFrame());
   Observe(GetWebContents());
+
+  // Wait for Personal Data Manager to be fully loaded to prevent that
+  // spurious notifications deceive the tests.
+  WaitForPersonalDataManagerToBeLoaded(browser()->profile());
 
   disable_animation_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
@@ -90,12 +102,11 @@ void AutofillUiTest::SetUpOnMainThread() {
   gfx::Point reset_mouse(GetWebContents()->GetContainerBounds().origin());
   reset_mouse = gfx::Point(reset_mouse.x() + 5, reset_mouse.y() + 5);
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(reset_mouse));
-  LOG(ERROR) << "crbug/967588: AutofillUiTest::SetUpOnMainThread() exited";
 }
 
 void AutofillUiTest::TearDownOnMainThread() {
   // Make sure to close any showing popups prior to tearing down the UI.
-  AutofillManager* autofill_manager = GetAutofillManager();
+  BrowserAutofillManager* autofill_manager = GetBrowserAutofillManager();
   if (autofill_manager)
     autofill_manager->client()->HideAutofillPopup(
         autofill::PopupHidingReason::kTabGone);
@@ -228,7 +239,7 @@ content::RenderViewHost* AutofillUiTest::GetRenderViewHost() {
   return GetWebContents()->GetMainFrame()->GetRenderViewHost();
 }
 
-AutofillManager* AutofillUiTest::GetAutofillManager() {
+BrowserAutofillManager* AutofillUiTest::GetBrowserAutofillManager() {
   ContentAutofillDriver* driver =
       ContentAutofillDriverFactory::FromWebContents(GetWebContents())
           ->DriverForFrame(current_main_rfh_);
@@ -237,7 +248,7 @@ AutofillManager* AutofillUiTest::GetAutofillManager() {
   // when there is a web page popup during teardown
   if (!driver)
     return nullptr;
-  return driver->autofill_manager();
+  return driver->browser_autofill_manager();
 }
 
 void AutofillUiTest::RenderFrameHostChanged(
@@ -246,7 +257,7 @@ void AutofillUiTest::RenderFrameHostChanged(
   if (current_main_rfh_ != old_frame)
     return;
   current_main_rfh_ = new_frame;
-  AutofillManager* autofill_manager = GetAutofillManager();
+  BrowserAutofillManager* autofill_manager = GetBrowserAutofillManager();
   if (autofill_manager)
     autofill_manager->SetTestDelegate(test_delegate());
 }

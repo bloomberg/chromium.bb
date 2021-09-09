@@ -6,16 +6,13 @@
 
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_pref_names.h"
-
-const base::Feature kUseMultiloginEndpoint{"UseMultiloginEndpoint",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace signin {
 
@@ -28,14 +25,6 @@ DiceAccountReconcilorDelegate::DiceAccountReconcilorDelegate(
 }
 
 bool DiceAccountReconcilorDelegate::IsReconcileEnabled() const {
-  return true;
-}
-
-bool DiceAccountReconcilorDelegate::IsMultiloginEndpointEnabled() const {
-  return base::FeatureList::IsEnabled(kUseMultiloginEndpoint);
-}
-
-bool DiceAccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
   return true;
 }
 

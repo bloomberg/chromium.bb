@@ -15,14 +15,11 @@
 #include "media/base/media_permission.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
-#include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_result.h"
 #include "third_party/blink/public/platform/web_encrypted_media_request.h"
 #include "third_party/blink/public/platform/web_media_key_system_configuration.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -100,9 +97,13 @@ class WebEncryptedMediaClientImpl::Reporter {
 
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
     CdmFactory* cdm_factory,
-    MediaPermission* media_permission)
+    MediaPermission* media_permission,
+    std::unique_ptr<KeySystemConfigSelector::WebLocalFrameDelegate>
+        web_frame_delegate)
     : cdm_factory_(cdm_factory),
-      key_system_config_selector_(KeySystems::GetInstance(), media_permission) {
+      key_system_config_selector_(KeySystems::GetInstance(),
+                                  media_permission,
+                                  std::move(web_frame_delegate)) {
   DCHECK(cdm_factory_);
 }
 
@@ -140,16 +141,12 @@ void WebEncryptedMediaClientImpl::OnConfigSelected(
   // and kUnsupportedConfigs.
   const char kUnsupportedKeySystemOrConfigMessage[] =
       "Unsupported keySystem or supportedConfigurations.";
-  const char kUnsupportedPlatformMessage[] = "Unsupported platform.";
 
   // Handle unsupported cases first.
   switch (status) {
     case KeySystemConfigSelector::Status::kUnsupportedKeySystem:
     case KeySystemConfigSelector::Status::kUnsupportedConfigs:
       request.RequestNotSupported(kUnsupportedKeySystemOrConfigMessage);
-      return;
-    case KeySystemConfigSelector::Status::kUnsupportedPlatform:
-      request.RequestNotSupported(kUnsupportedPlatformMessage);
       return;
     case KeySystemConfigSelector::Status::kSupported:
       break;  // Handled below.

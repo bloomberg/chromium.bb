@@ -45,6 +45,8 @@ class TestStyleSheet {
   Persistent<CSSStyleSheet> style_sheet_;
 };
 
+CSSStyleSheet* CreateStyleSheet(Document& document);
+
 // Create a PropertyRegistration for the given name. The syntax, initial value,
 // and inherited status are all undefined.
 PropertyRegistration* CreatePropertyRegistration(const String& name);
@@ -56,7 +58,7 @@ PropertyRegistration* CreateLengthRegistration(const String& name, int px);
 void RegisterProperty(Document& document,
                       const String& name,
                       const String& syntax,
-                      const base::Optional<String>& initial_value,
+                      const absl::optional<String>& initial_value,
                       bool is_inherited);
 
 scoped_refptr<CSSVariableData> CreateVariableData(String);

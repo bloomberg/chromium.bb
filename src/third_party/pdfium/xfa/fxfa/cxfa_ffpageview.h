@@ -57,7 +57,7 @@ class CXFA_FFPageWidgetIterator final
 
   void Trace(cppgc::Visitor* visitor) const {}
 
-  void Reset() override;
+  // IXFA_WidgetIterator:
   CXFA_FFWidget* MoveToFirst() override;
   CXFA_FFWidget* MoveToLast() override;
   CXFA_FFWidget* MoveToNext() override;
@@ -74,7 +74,7 @@ class CXFA_FFPageWidgetIterator final
 };
 
 class CXFA_FFTabOrderPageWidgetIterator final
-    : public cppgc::GarbageCollected<CXFA_FFPageWidgetIterator>,
+    : public cppgc::GarbageCollected<CXFA_FFTabOrderPageWidgetIterator>,
       public IXFA_WidgetIterator {
  public:
   CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
@@ -82,7 +82,7 @@ class CXFA_FFTabOrderPageWidgetIterator final
 
   void Trace(cppgc::Visitor* visitor) const;
 
-  void Reset() override;
+  // IXFA_WidgetIterator:
   CXFA_FFWidget* MoveToFirst() override;
   CXFA_FFWidget* MoveToLast() override;
   CXFA_FFWidget* MoveToNext() override;

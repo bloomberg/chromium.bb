@@ -10,8 +10,8 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -112,8 +112,8 @@ void UserNetworkConfigurationUpdater::ApplyNetworkPolicy(
   // if the password substitution variable exists in the ONC.
   bool save_password =
       chromeos::onc::HasUserPasswordSubsitutionVariable(network_configs_onc);
-  chromeos::UserSessionManager::GetInstance()->VoteForSavingLoginPassword(
-      chromeos::UserSessionManager::PasswordConsumingService::kNetwork,
+  ash::UserSessionManager::GetInstance()->VoteForSavingLoginPassword(
+      ash::UserSessionManager::PasswordConsumingService::kNetwork,
       save_password);
 
   network_config_handler_->SetPolicy(onc_source_, user_->username_hash(),

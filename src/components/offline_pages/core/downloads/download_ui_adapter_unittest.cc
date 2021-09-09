@@ -66,10 +66,10 @@ static const base::FilePath kTestFilePath =
     base::FilePath(FILE_PATH_LITERAL("foo/bar.mhtml"));
 static const int kFileSize = 1000;
 static const base::Time kTestCreationTime = base::Time::Now();
-static const base::string16 kTestTitle = base::ASCIIToUTF16("test title");
+static const std::u16string kTestTitle = u"test title";
 
-void GetItemAndVerify(const base::Optional<OfflineItem>& expected,
-                      const base::Optional<OfflineItem>& actual) {
+void GetItemAndVerify(const absl::optional<OfflineItem>& expected,
+                      const absl::optional<OfflineItem>& actual) {
   EXPECT_EQ(expected.has_value(), actual.has_value());
   if (!expected.has_value() || !actual.has_value())
     return;
@@ -238,8 +238,9 @@ class DownloadUIAdapterTest : public testing::Test,
   // DownloadUIAdapter::Observer
   void OnItemsAdded(const std::vector<OfflineItem>& items) override;
   void OnItemUpdated(const OfflineItem& item,
-                     const base::Optional<UpdateDelta>& update_delta) override;
+                     const absl::optional<UpdateDelta>& update_delta) override;
   void OnItemRemoved(const ContentId& id) override;
+  void OnContentProviderGoingDown() override;
 
   // Runs until all of the tasks that are not delayed are gone from the task
   // queue.
@@ -305,7 +306,7 @@ void DownloadUIAdapterTest::OnItemsAdded(
 
 void DownloadUIAdapterTest::OnItemUpdated(
     const OfflineItem& item,
-    const base::Optional<UpdateDelta>& update_delta) {
+    const absl::optional<UpdateDelta>& update_delta) {
   updated_guids.push_back(item.id.id);
   download_progress_bytes += item.received_bytes;
 }
@@ -313,6 +314,8 @@ void DownloadUIAdapterTest::OnItemUpdated(
 void DownloadUIAdapterTest::OnItemRemoved(const ContentId& id) {
   deleted_guids.push_back(id.id);
 }
+
+void DownloadUIAdapterTest::OnContentProviderGoingDown() {}
 
 void DownloadUIAdapterTest::PumpLoop() {
   task_runner_->RunUntilIdle();
@@ -349,9 +352,9 @@ TEST_F(DownloadUIAdapterTest, InitialItemConversion) {
 
   bool called = false;
   auto callback =
-      base::BindLambdaForTesting([&](const base::Optional<OfflineItem>& item) {
+      base::BindLambdaForTesting([&](const absl::optional<OfflineItem>& item) {
         EXPECT_EQ(kTestGuid1, item.value().id.id);
-        EXPECT_EQ(kTestUrl, item.value().page_url.spec());
+        EXPECT_EQ(kTestUrl, item.value().url.spec());
         EXPECT_EQ(OfflineItemState::COMPLETE, item.value().state);
         EXPECT_EQ(kFileSize, item.value().received_bytes);
         EXPECT_EQ(kTestFilePath, item.value().file_path);
@@ -474,7 +477,7 @@ TEST_F(DownloadUIAdapterTest, RemoveRequest) {
   EXPECT_EQ(1UL, deleted_guids.size());
   EXPECT_EQ(kTestClientId1.id, deleted_guids[0]);
   adapter->GetItemById(kTestContentId1,
-                       base::BindOnce(&GetItemAndVerify, base::nullopt));
+                       base::BindOnce(&GetItemAndVerify, absl::nullopt));
   PumpLoop();
 }
 

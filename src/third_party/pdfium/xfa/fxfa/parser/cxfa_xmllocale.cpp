@@ -50,7 +50,7 @@ CXFA_XMLLocale* CXFA_XMLLocale::Create(cppgc::Heap* heap,
 }
 
 CXFA_XMLLocale::CXFA_XMLLocale(std::unique_ptr<CFX_XMLDocument> doc,
-                               CFX_XMLElement* locale)
+                               const CFX_XMLElement* locale)
     : xml_doc_(std::move(doc)), locale_(locale) {
   DCHECK(xml_doc_);
   DCHECK(locale_);
@@ -111,8 +111,8 @@ WideString CXFA_XMLLocale::GetMeridiemName(bool bAM) const {
   return GetCalendarSymbol(L"meridiem", bAM ? 0 : 1, false);
 }
 
-FX_TIMEZONE CXFA_XMLLocale::GetTimeZone() const {
-  return CXFA_TimeZoneProvider().GetTimeZone();
+int CXFA_XMLLocale::GetTimeZoneInMinutes() const {
+  return CXFA_TimeZoneProvider().GetTimeZoneInMinutes();
 }
 
 WideString CXFA_XMLLocale::GetEraName(bool bAD) const {

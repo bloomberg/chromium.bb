@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <cmath>
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -42,7 +43,7 @@ bool AudioFileReader::Open() {
 }
 
 bool AudioFileReader::OpenDemuxer() {
-  glue_.reset(new FFmpegGlue(protocol_));
+  glue_ = std::make_unique<FFmpegGlue>(protocol_);
   AVFormatContext* format_context = glue_->format_context();
 
   // Open FFmpeg AVFormatContext.
@@ -276,9 +277,25 @@ bool AudioFileReader::OnNewFrame(
              sizeof(float) * frames_read);
     }
   } else {
-    audio_bus->FromInterleaved(
-        frame->data[0], frames_read,
-        av_get_bytes_per_sample(codec_context_->sample_fmt));
+    int bytes_per_sample = av_get_bytes_per_sample(codec_context_->sample_fmt);
+    switch (bytes_per_sample) {
+      case 1:
+        audio_bus->FromInterleaved<UnsignedInt8SampleTypeTraits>(
+            reinterpret_cast<const uint8_t*>(frame->data[0]), frames_read);
+        break;
+      case 2:
+        audio_bus->FromInterleaved<SignedInt16SampleTypeTraits>(
+            reinterpret_cast<const int16_t*>(frame->data[0]), frames_read);
+        break;
+      case 4:
+        audio_bus->FromInterleaved<SignedInt32SampleTypeTraits>(
+            reinterpret_cast<const int32_t*>(frame->data[0]), frames_read);
+        break;
+      default:
+        NOTREACHED() << "Unsupported bytes per sample encountered: "
+                     << bytes_per_sample;
+        audio_bus->ZeroFrames(frames_read);
+    }
   }
 
   (*total_frames) += frames_read;

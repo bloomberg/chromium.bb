@@ -68,8 +68,8 @@ class URLBlocklistManagerTest : public testing::Test {
   URLBlocklistManagerTest() = default;
 
   void SetUp() override {
-    pref_service_.registry()->RegisterListPref(policy_prefs::kUrlBlacklist);
-    pref_service_.registry()->RegisterListPref(policy_prefs::kUrlWhitelist);
+    pref_service_.registry()->RegisterListPref(policy_prefs::kUrlBlocklist);
+    pref_service_.registry()->RegisterListPref(policy_prefs::kUrlAllowlist);
     blocklist_manager_ =
         std::make_unique<TestingURLBlocklistManager>(&pref_service_);
     task_environment_.RunUntilIdle();
@@ -124,7 +124,7 @@ policy::URLBlocklist::URLBlocklistState GetMatch(const std::string& pattern,
 TEST_F(URLBlocklistManagerTest, LoadBlocklistOnCreate) {
   auto list = std::make_unique<base::ListValue>();
   list->AppendString("example.com");
-  pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist, std::move(list));
+  pref_service_.SetManagedPref(policy_prefs::kUrlBlocklist, std::move(list));
   auto manager = std::make_unique<URLBlocklistManager>(&pref_service_);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(URLBlocklist::URL_IN_BLOCKLIST,
@@ -134,7 +134,7 @@ TEST_F(URLBlocklistManagerTest, LoadBlocklistOnCreate) {
 TEST_F(URLBlocklistManagerTest, LoadAllowlistOnCreate) {
   auto list = std::make_unique<base::ListValue>();
   list->AppendString("example.com");
-  pref_service_.SetManagedPref(policy_prefs::kUrlWhitelist, std::move(list));
+  pref_service_.SetManagedPref(policy_prefs::kUrlAllowlist, std::move(list));
   auto manager = std::make_unique<URLBlocklistManager>(&pref_service_);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(URLBlocklist::URL_IN_ALLOWLIST,
@@ -146,9 +146,9 @@ TEST_F(URLBlocklistManagerTest, SingleUpdateForTwoPrefChanges) {
   blocklist->AppendString("*.google.com");
   auto allowlist = std::make_unique<base::ListValue>();
   allowlist->AppendString("mail.google.com");
-  pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist,
+  pref_service_.SetManagedPref(policy_prefs::kUrlBlocklist,
                                std::move(blocklist));
-  pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist,
+  pref_service_.SetManagedPref(policy_prefs::kUrlBlocklist,
                                std::move(allowlist));
   task_environment_.RunUntilIdle();
 
@@ -472,18 +472,19 @@ TEST_F(URLBlocklistManagerTest, DefaultBlocklistExceptions) {
 
   // Internal NTP and extension URLs are not blocked by the "*":
   EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://www.google.com")));
-  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-extension://xyz"))));
-  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-search://local-ntp"))));
-  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-native://ntp"))));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("chrome-extension://xyz")));
+  EXPECT_FALSE(
+      blocklist.IsURLBlocked(GURL("chrome-search://most-visited/title.html")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("chrome-native://ntp")));
 #if defined(OS_IOS)
   // Ensure that the NTP is not blocked on iOS by "*".
   // TODO(crbug.com/1073291): On iOS, the NTP can not be blocked even by
   // explicitly listing it as a blocked URL. This is due to the usage of
   // "about:newtab" as its URL which is not recognized and filtered by the
   // URLBlocklist code.
-  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("about:newtab"))));
-  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("about://newtab/"))));
-  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome://newtab"))));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("about:newtab")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("about://newtab/")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("chrome://newtab")));
 #endif
 
   // Unless they are explicitly on the blocklist:
@@ -494,10 +495,11 @@ TEST_F(URLBlocklistManagerTest, DefaultBlocklistExceptions) {
   blocklist.Allow(allowed.get());
 
   EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://www.google.com")));
-  EXPECT_TRUE((blocklist.IsURLBlocked(GURL("chrome-extension://xyz"))));
-  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-extension://abc"))));
-  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-search://local-ntp"))));
-  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-native://ntp"))));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("chrome-extension://xyz")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("chrome-extension://abc")));
+  EXPECT_FALSE(
+      blocklist.IsURLBlocked(GURL("chrome-search://most-visited/title.html")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("chrome-native://ntp")));
 }
 
 TEST_F(URLBlocklistManagerTest, BlocklistBasicCoverage) {

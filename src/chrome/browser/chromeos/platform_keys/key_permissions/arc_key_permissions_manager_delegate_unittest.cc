@@ -56,10 +56,12 @@ class ArcKeyPermissionsManagerDelegateTest : public testing::Test {
   ~ArcKeyPermissionsManagerDelegateTest() override = default;
 
   void SetUp() override {
-    policy_provider_ =
-        std::make_unique<policy::MockConfigurationPolicyProvider>();
-    EXPECT_CALL(*policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    policy_provider_ = std::make_unique<
+        testing::NiceMock<policy::MockConfigurationPolicyProvider>>();
+    ON_CALL(*policy_provider_, IsInitializationComplete(testing::_))
+        .WillByDefault(testing::Return(true));
+    ON_CALL(*policy_provider_, IsFirstPolicyLoadComplete(testing::_))
+        .WillByDefault(testing::Return(true));
     std::vector<policy::ConfigurationPolicyProvider*> providers = {
         policy_provider_.get()};
     auto policy_service_ =
@@ -107,8 +109,8 @@ class ArcKeyPermissionsManagerDelegateTest : public testing::Test {
                                  base::Value(allowed));
 
     base::DictionaryValue policy_value;
-    policy_value.SetWithoutPathExpansion(package_name,
-                                         std::move(corporate_key_usage));
+    policy_value.SetKey(package_name, base::Value::FromUniquePtrValue(
+                                          std::move(corporate_key_usage)));
 
     policy::PolicyMap policy_map;
     policy_map.Set(policy::key::kKeyPermissions, policy::POLICY_LEVEL_MANDATORY,

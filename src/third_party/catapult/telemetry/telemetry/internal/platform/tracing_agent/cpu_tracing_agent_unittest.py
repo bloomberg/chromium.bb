@@ -1,6 +1,7 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import sys
 import time
 import unittest
@@ -123,7 +124,7 @@ class CpuTracingAgentTest(unittest.TestCase):
 
     self.assertEquals(set(data[0].keys()), set(TRACE_EVENT_KEYS))
     self.assertEquals(set(data[0]['args']['snapshot'].keys()),
-                      set(['processes']))
+                      {'processes'})
     self.assertTrue(data[0]['args']['snapshot']['processes'])
     self.assertEquals(set(data[0]['args']['snapshot']['processes'][0].keys()),
                       set(SNAPSHOT_KEYS))

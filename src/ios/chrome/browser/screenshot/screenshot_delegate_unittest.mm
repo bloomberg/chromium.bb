@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
@@ -49,8 +49,8 @@ class ScreenshotDelegateTest : public PlatformTest {
 // be set and that data can be generated from it.
 TEST_F(ScreenshotDelegateTest, ScreenshotService) {
   // Expected: Empty NSData.
-  if (@available(iOS 13, *)) {
-    auto web_state = std::make_unique<web::TestWebState>();
+  if (@available(iOS 14, *)) {
+    auto web_state = std::make_unique<web::FakeWebState>();
     TestBrowser browser;
 
     CRWWebViewScrollViewProxy* scroll_view_proxy =
@@ -111,7 +111,7 @@ TEST_F(ScreenshotDelegateTest, ScreenshotService) {
 // Browser screenshotService will return nil.
 TEST_F(ScreenshotDelegateTest, NilBrowser) {
   // Expected: nil NSData.
-  if (@available(iOS 13, *)) {
+  if (@available(iOS 14, *)) {
     // Add the StubBrowserInterface with no set Browser to
     // StubBrowserInterfaceProvider.
     browser_interface_provider_.currentInterface = browser_interface_;
@@ -135,7 +135,7 @@ TEST_F(ScreenshotDelegateTest, NilBrowser) {
 // WebSatate screenshotService will return nil.
 TEST_F(ScreenshotDelegateTest, NilWebState) {
   // Expected: nil NSData.
-  if (@available(iOS 13, *)) {
+  if (@available(iOS 14, *)) {
     TestBrowser browser;
 
     // Add the empty Browser to StubBrowserInterface.

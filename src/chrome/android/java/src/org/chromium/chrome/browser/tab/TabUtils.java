@@ -13,8 +13,11 @@ import android.view.Display;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroidManager;
 
@@ -22,6 +25,8 @@ import org.chromium.ui.display.DisplayAndroidManager;
  * Collection of utility methods that operates on Tab.
  */
 public class TabUtils {
+    private static final String REQUEST_DESKTOP_SCREEN_WIDTH_PARAM = "screen_width_dp";
+
     // Do not instantiate this class.
     private TabUtils() {}
 
@@ -69,5 +74,45 @@ public class TabUtils {
 
     public static Tab fromWebContents(WebContents webContents) {
         return TabImplJni.get().fromWebContents(webContents);
+    }
+
+    /**
+     * Call when tab need to switch user agent between desktop and mobile.
+     * @param tab The tab to be switched the user agent.
+     * @param switchToDesktop Whether switching the user agent to desktop.
+     * @param forcedByUser Whether this was triggered by users action.
+     */
+    public static void switchUserAgent(Tab tab, boolean switchToDesktop, boolean forcedByUser) {
+        final boolean reloadOnChange = !tab.isNativePage();
+        tab.getWebContents().getNavigationController().setUseDesktopUserAgent(
+                switchToDesktop, reloadOnChange);
+        if (forcedByUser) ((TabImpl) tab).setUserForcedUserAgent();
+    }
+
+    /**
+     * Check if the tab is large enough for displaying desktop sites. This method will only check
+     * for tablets, if the device is a phone, will return false regardless of tab size.
+     * @param tab The tab to be checked if the size is large enough for desktop site.
+     * @return Whether or not the screen size is large enough for desktop sites.
+     */
+    public static boolean isTabLargeEnoughForDesktopSite(Tab tab) {
+        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(tab.getContext())) {
+            // The device is a phone, do not check the tab size.
+            return false;
+        }
+        Activity activity = ((TabImpl) tab).getActivity();
+        if (activity == null) {
+            // It is possible that we are in custom tabs or tests, and need to access the activity
+            // differently.
+            activity = ApplicationStatus.getLastTrackedFocusedActivity();
+            if (activity == null) return false;
+        }
+        int windowWidth = activity.getWindow().getDecorView().getWidth();
+        int minWidthForDesktopSite = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.REQUEST_DESKTOP_SITE_FOR_TABLETS,
+                REQUEST_DESKTOP_SCREEN_WIDTH_PARAM,
+                /* Set a very large size as default to serve as a disabled screen width. */ 4096);
+
+        return minWidthForDesktopSite <= windowWidth;
     }
 }

@@ -9,9 +9,8 @@ const path = require('path');
 const FRONTEND_PATH = path.resolve(__dirname, '..', 'front_end');
 
 const manifestModules = [];
-for (const config
-         of ['inspector.json', 'devtools_app.json', 'js_app.json', 'node_app.json', 'shell.json', 'worker_app.json']) {
-  manifestModules.push(...require(path.resolve(FRONTEND_PATH, config)).modules);
+for (const config of ['inspector', 'devtools_app', 'js_app', 'node_app', 'shell', 'worker_app']) {
+  manifestModules.push(...require(path.resolve(FRONTEND_PATH, 'entrypoints', config, `${config}.json`)).modules);
 }
 
 const gnPath = path.resolve(__dirname, '..', 'BUILD.gn');
@@ -25,7 +24,7 @@ const gnLines = gnFile.split('\n');
  */
 function checkNonAutostartNonRemoteModules() {
   const errors = [];
-  const gnVariable = 'generated_non_autostart_non_remote_modules';
+  const gnVariable = 'non_autostart_non_remote_modules';
   const lines = selectGNLines(`${gnVariable} = [`, ']');
   if (!lines.length) {
     return [
@@ -36,13 +35,13 @@ function checkNonAutostartNonRemoteModules() {
   const text = lines.join('\n');
   const modules = manifestModules.filter(m => m.type !== 'autostart').map(m => m.name);
 
-  const missingModules = modules.filter(m => !text.includes(`${m}/${m}_module.js`));
+  const missingModules = modules.filter(m => !text.includes(`${m}/${path.basename(m)}_module.js`));
   if (missingModules.length) {
     errors.push(`Check that you've included [${missingModules.join(', ')}] modules in: ` + gnVariable);
   }
 
-  // e.g. "$resources_out_dir/lighthouse/lighthouse_module.js" => "lighthouse"
-  const mapLineToModuleName = line => line.split('/')[2].split('_module')[0];
+  // e.g. "lighthouse/lighthouse_module.js" => "lighthouse"
+  const mapLineToModuleName = line => path.dirname(line.substring(1));
 
   const extraneousModules = lines.map(mapLineToModuleName).filter(module => !modules.includes(module));
   if (extraneousModules.length) {
@@ -67,13 +66,13 @@ function checkAllDevToolsFiles() {
 }
 
 function checkGNVariable(fileName, gnVariable, obtainFiles, obtainRelativePath) {
-  const filePath = path.resolve(__dirname, '..', `${fileName}.gni`);
+  const filePath = path.resolve(__dirname, '..', 'config', 'gni', `${fileName}.gni`);
   const fileContent = fs.readFileSync(filePath, 'utf-8');
   const linesToCheck = fileContent.split('\n');
 
   const errors = [];
   const excludedFiles =
-      ['axe.js', 'formatter_worker/', 'third_party/lighthouse/', 'third_party/i18n/'].map(path.normalize);
+      ['axe.js', 'entrypoints/formatter_worker/', 'third_party/lighthouse/', 'third_party/i18n/'].map(path.normalize);
   const lines = selectGNLines(`${gnVariable} = [`, ']', linesToCheck).map(path.normalize);
   if (!lines.length) {
     return [

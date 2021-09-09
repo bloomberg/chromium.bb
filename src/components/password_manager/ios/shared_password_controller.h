@@ -6,12 +6,12 @@
 #define COMPONENTS_PASSWORD_MANAGER_IOS_SHARED_PASSWORD_CONTROLLER_H_
 
 #import <Foundation/Foundation.h>
-#include <memory>
 
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "components/autofill/ios/form_util/form_activity_observer.h"
 #include "components/password_manager/core/browser/password_manager_interface.h"
 #import "components/password_manager/ios/password_form_helper.h"
+#import "components/password_manager/ios/password_generation_provider.h"
 #import "components/password_manager/ios/password_manager_driver_bridge.h"
 #import "components/password_manager/ios/password_suggestion_helper.h"
 #import "ios/web/public/web_state_observer_bridge.h"
@@ -54,11 +54,12 @@ class PasswordManagerDriver;
 // suggestions, filling forms, and generating passwords.
 @interface SharedPasswordController
     : NSObject <CRWWebStateObserver,
-                PasswordManagerDriverBridge,
-                PasswordSuggestionHelperDelegate,
-                PasswordFormHelperDelegate,
+                FormActivityObserver,
                 FormSuggestionProvider,
-                FormActivityObserver>
+                PasswordFormHelperDelegate,
+                PasswordGenerationProvider,
+                PasswordManagerDriverBridge,
+                PasswordSuggestionHelperDelegate>
 
 // Helper contains common password form processing logic.
 @property(nonatomic, readonly) PasswordFormHelper* formHelper;

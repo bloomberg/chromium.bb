@@ -15,7 +15,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
-import '../settings_shared_css.m.js';
+import '../settings_shared_css.js';
 import './add_site_dialog.js';
 import './edit_exception_dialog.js';
 import './site_list_entry.js';
@@ -160,16 +160,6 @@ Polymer({
     tooltipText_: String,
 
     searchFilter: String,
-
-    /**
-     * Boolean which keeps a track if any of the list has discarded content
-     * setting patterns.
-     */
-    hasDiscardedExceptions: {
-      type: Boolean,
-      computed: 'computeHasDiscardedExceptions_(sites.*)',
-      notify: true,
-    }
   },
 
   // <if expr="chromeos">
@@ -535,16 +525,6 @@ Polymer({
     return this.sites.filter(
         site => propNames.some(
             propName => site[propName].toLowerCase().includes(searchFilter)));
-  },
-
-  /**
-   * Iterates through the sites list and returns true if one of those sites is
-   * a discarded content setting pattern.
-   * @return {boolean}
-   * @private
-   */
-  computeHasDiscardedExceptions_() {
-    return this.sites.some(exception => exception.isDiscarded);
   },
 
   /**

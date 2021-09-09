@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.firstrun;
 
-import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
 import android.support.test.InstrumentationRegistry;
 
@@ -33,11 +32,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 public class FirstRunUtilsTest {
     private FakeAuthenticationAccountManager mAccountManager;
     private AdvancedMockContext mAccountTestingContext;
-    private Account mTestAccount;
-
-    public FirstRunUtilsTest() {
-        mTestAccount = AccountUtils.createAccountFromName("Dummy");
-    }
 
     @Before
     public void setUp() {
@@ -72,8 +66,7 @@ public class FirstRunUtilsTest {
     }
 
     private void addTestAccount() {
-        mAccountManager.addAccountHolderBlocking(
-                AccountHolder.builder(mTestAccount).alwaysAccept(true).build());
+        mAccountManager.addAccount(AccountHolder.createFromEmail("dummy@gmail.com"));
     }
 
     @Test

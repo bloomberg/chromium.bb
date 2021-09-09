@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">מודעת באנר</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> פריטים</translation>
 <translation id="1480676835519562650">ניתן לבחור יותר מאפשרות אחת, נבחרו <ph name="SELECTED" /> מתוך <ph name="COUNT" />.</translation>
+<translation id="1588438908519853928">רגיל</translation>
 <translation id="1589122976691792535">אזור</translation>
 <translation id="1591562245178063882">החודש</translation>
 <translation id="1637811476055996098">יש לבחור קבצים</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">טיימר</translation>
 <translation id="3199563858620722075">תיבה משולבת</translation>
 <translation id="3220661731597678625">השלב הנוכחי</translation>
+<translation id="3321030238473337787">מהירות הפעלה</translation>
 <translation id="3329013043687509092">רווייה</translation>
 <translation id="3450233048674729344">הערך חייב להיות קטן מ-<ph name="MAXIMUM" /> או שווה לו.</translation>
 <translation id="3486220673238053218">הגדרה</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">שורת תפריטים</translation>
 <translation id="4293574643247337246">הכותרת העליונה של הדף</translation>
 <translation id="4360991593054037559">יש להזין ערך חוקי. שני הערכים החוקיים הקרובים ביותר הם <ph name="VALID_VALUE_LOW" /> ו-<ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4371899966896349864">הסתרת התפריט של מהירות ההפעלה</translation>
 <translation id="4384249794467006333">לתמונה הזו אין תוויות. ניתן לפתוח את תפריט האפשרויות הנוספות בפינה השמאלית העליונה כדי לקבל תיאורי תמונה.</translation>
 <translation id="4384583879834880242">שאלות ותשובות</translation>
 <translation id="4444765639179266822">נראה שכתובים כאן הדברים הבאים: <ph name="OCR_TEXT" /></translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">כותרת שורה</translation>
 <translation id="5143125788380636750">אפילוג</translation>
 <translation id="5164977714490026579">הערך חייב להיות גדול מ-<ph name="MINIMUM" /> או שווה לו.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" />PB</translation>
 <translation id="5307600278924710095">יש להזין חלק ואחריו '<ph name="ATSIGN" />'‏. השדה '<ph name="INVALIDADDRESS" />' אינו מלא.</translation>
 <translation id="5334352251556557839">לא ניתן להפעיל את המדיה.</translation>
 <translation id="537648784377940524">התאריך המוקדם ביותר (<ph name="MIN_DATE_OR_TIME" />) חייב לחול לפני התאריך המאוחר ביותר (<ph name="MAX_DATE_OR_TIME" />).</translation>
+<translation id="5378437566635403538">הורחב, תיבת הדו-שיח נפתחה.</translation>
 <translation id="5406322316791861025">ספרה</translation>
 <translation id="5425179576310518467">התאריך הנוכחי</translation>
 <translation id="5453733299334684579">פריט בעץ</translation>
 <translation id="5466621249238537318">יש לבחור קובץ אחד או יותר.</translation>
 <translation id="5468998798572797635">יציאה ממסך מלא</translation>
+<translation id="5516235301412634559">0.75</translation>
 <translation id="5516424706154626233">בוחר תאריכים</translation>
 <translation id="5537725057119320332">העברה</translation>
 <translation id="5546461542133609677">ביטול השתקה</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">אפשרויות נוספות</translation>
 <translation id="576709008726043716">מבוא</translation>
 <translation id="57838592816432529">השתקה</translation>
+<translation id="5786442179789148008">הצגת התפריט של מהירות ההפעלה</translation>
+<translation id="5787939484346677755">הורחב, יש אפשרויות זמינות להשלמה אוטומטית.</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="588258955323874662">מסך מלא</translation>
 <translation id="5888666972993069672">מתבצעת העברה אל <ph name="DEVICE_FRIENDLY_NAME" /></translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">פועל</translation>
 <translation id="5939518447894949180">איפוס</translation>
 <translation id="5966707198760109579">שבוע</translation>
+<translation id="5985507339671257014">0.5</translation>
 <translation id="5987525920412732405">לחצן קביעת ערך</translation>
 <translation id="6011459053400940133">מחוון עוצמת קול</translation>
 <translation id="6015796118275082299">שנה</translation>
 <translation id="6023896073578205740">תיבת רשימה</translation>
 <translation id="6150588977291308318">ביבליוגרפיה</translation>
 <translation id="6164829606128959761">מד</translation>
+<translation id="6165053282446038410">הורחב, יש <ph name="COUNT" /> אפשרויות זמינות להשלמה אוטומטית.</translation>
 <translation id="6166809985690652833">אחרית דבר</translation>
 <translation id="6209276755895393898">נראה כמו: <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">הדף הנוכחי</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">ניקוי</translation>
 <translation id="668171684555832681">אחר...</translation>
 <translation id="6692633176391053278">פקד חצים</translation>
+<translation id="6696580792574109116">בחירת חודש</translation>
 <translation id="6709093583001123835">הערך חייב להיות <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">איכות הפעלה נמוכה</translation>
 <translation id="6755330956360078551">הסבר קצר</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">השתקה</translation>
 <translation id="6885760532393684712">מאגר</translation>
 <translation id="689129560213475294">קולופון</translation>
+<translation id="6919891270253167948">1.5</translation>
 <translation id="6934078000481955284">‏רכיב blockquote</translation>
 <translation id="693476918119313863">כותרת</translation>
 <translation id="6941933287844615239">הורדת מדיה</translation>
 <translation id="6981594929165378967">הוספה</translation>
+<translation id="698788488269350478">מורחב.</translation>
 <translation id="6989848892321993519">עליך להאריך את הטקסט ל-<ph name="MIN_CHARACTERS" /> תווים או יותר (כרגע יש תו אחד).</translation>
 <translation id="7034405885550056553">הצעה</translation>
 <translation id="709897737746224366">יש להתאים את הפורמט המבוקש.</translation>
 <translation id="7102274145889307184">המיקום הנוכחי</translation>
 <translation id="7118469954320184356">אין תיאור זמין.</translation>
 <translation id="7139483182332611405">הקדמה</translation>
+<translation id="7198226213493847604">לחצן קופץ של תפריט</translation>
 <translation id="7214187073215825913">פרטי תוכן</translation>
 <translation id="7238347055216017155">דגש</translation>
 <translation id="7263440858009898357">יש לבחור פריט מהרשימה.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">כדי לקבל תיאורים חסרים של תמונות, יש לפתוח את תפריט ההקשר.</translation>
 <translation id="7750228210027921155">תמונה בתוך תמונה</translation>
 <translation id="775297008183122718">ערך לא חוקי</translation>
+<translation id="7782515065589691344">1.25</translation>
 <translation id="7789962463072032349">השהיה</translation>
 <translation id="7802800022689234070">משולש הצגה/הסתרה</translation>
 <translation id="7852167693871241274">מחוון לבחירת גוון</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">הפניה להערה</translation>
 <translation id="811583516810654505">התיאור עוד מעט מוכן…</translation>
 <translation id="8117451130807776954">השבוע</translation>
+<translation id="8131955114056917397">0.25</translation>
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8208673686607688524">בורר תאריך ושעה מקומיים</translation>
 <translation id="8261464734335370856">איות שגוי</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">שליטה בהפעלה מרחוק</translation>
 <translation id="862370744433916922">כותרת משנה</translation>
 <translation id="8634971699417195529">הצגת בוחר החודש</translation>
+<translation id="8637593834423658414">1.75</translation>
+<translation id="8668988909814782445">גלישת שורות</translation>
 <translation id="8711688047404765493">פלט</translation>
 <translation id="8750798805984357768">יש לבחור אחת מהאפשרויות הבאות.</translation>
 <translation id="8808573423886751634">פרק</translation>
 <translation id="8845239796550121995">העברת תוכן לטלוויזיה מתבצעת</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8861621546968757188">לחצן קופץ של תיבת דו-שיח</translation>
 <translation id="8875657656876809964">שגיאה בהפעלת הסרטון</translation>
 <translation id="8889402386540077796">גוון</translation>
 <translation id="8901569739625249689">‏<ph name="QUANTITY" />KB‏</translation>

@@ -4,6 +4,7 @@
 
 #include "ash/system/message_center/message_center_ui_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -46,7 +47,7 @@ class MockDelegate : public MessageCenterUiDelegate {
     EXPECT_TRUE(popups_visible_);
     popups_visible_ = false;
   }
-  bool ShowMessageCenter(bool show_by_click) override {
+  bool ShowMessageCenter() override {
     EXPECT_FALSE(popups_visible_);
     return show_popups_success_;
   }
@@ -69,9 +70,10 @@ class MessageCenterUiControllerTest : public testing::Test {
 
   void SetUp() override {
     message_center::MessageCenter::Initialize();
-    delegate_.reset(new MockDelegate);
+    delegate_ = std::make_unique<MockDelegate>();
     message_center_ = message_center::MessageCenter::Get();
-    ui_controller_.reset(new MessageCenterUiController(delegate_.get()));
+    ui_controller_ =
+        std::make_unique<MessageCenterUiController>(delegate_.get());
   }
 
   void TearDown() override {
@@ -96,9 +98,8 @@ class MessageCenterUiControllerTest : public testing::Test {
     std::unique_ptr<message_center::Notification> notification(
         new message_center::Notification(
             message_center::NOTIFICATION_TYPE_SIMPLE, id,
-            ASCIIToUTF16("Test Web Notification"),
-            ASCIIToUTF16("Notification message body."), gfx::Image(),
-            ASCIIToUTF16("www.test.org"), GURL(), notifier_id,
+            u"Test Web Notification", u"Notification message body.",
+            gfx::Image(), u"www.test.org", GURL(), notifier_id,
             message_center::RichNotificationData(),
             new TestNotificationDelegate()));
     message_center::Notification* notification_ptr = notification.get();
@@ -117,8 +118,7 @@ TEST_F(MessageCenterUiControllerTest, BasicMessageCenter) {
   ASSERT_FALSE(ui_controller_->popups_visible());
   ASSERT_FALSE(ui_controller_->message_center_visible());
 
-  bool shown =
-      ui_controller_->ShowMessageCenterBubble(false /* show_by_click */);
+  bool shown = ui_controller_->ShowMessageCenterBubble();
   EXPECT_TRUE(shown);
 
   ASSERT_FALSE(ui_controller_->popups_visible());
@@ -129,7 +129,7 @@ TEST_F(MessageCenterUiControllerTest, BasicMessageCenter) {
   ASSERT_FALSE(ui_controller_->popups_visible());
   ASSERT_FALSE(ui_controller_->message_center_visible());
 
-  ui_controller_->ShowMessageCenterBubble(false /* show_by_click */);
+  ui_controller_->ShowMessageCenterBubble();
 
   ASSERT_FALSE(ui_controller_->popups_visible());
   ASSERT_TRUE(ui_controller_->message_center_visible());
@@ -169,8 +169,7 @@ TEST_F(MessageCenterUiControllerTest, MessageCenterClosesPopups) {
   ASSERT_TRUE(ui_controller_->popups_visible());
   ASSERT_FALSE(ui_controller_->message_center_visible());
 
-  bool shown =
-      ui_controller_->ShowMessageCenterBubble(false /* show_by_click */);
+  bool shown = ui_controller_->ShowMessageCenterBubble();
   EXPECT_TRUE(shown);
 
   ASSERT_FALSE(ui_controller_->popups_visible());
@@ -190,7 +189,7 @@ TEST_F(MessageCenterUiControllerTest, MessageCenterClosesPopups) {
   ASSERT_FALSE(ui_controller_->popups_visible());
   ASSERT_FALSE(ui_controller_->message_center_visible());
 
-  ui_controller_->ShowMessageCenterBubble(false /* show_by_click */);
+  ui_controller_->ShowMessageCenterBubble();
   ui_controller_->HideMessageCenterBubble();
   ASSERT_FALSE(ui_controller_->popups_visible());
   ASSERT_FALSE(ui_controller_->message_center_visible());
@@ -211,8 +210,7 @@ TEST_F(MessageCenterUiControllerTest, ShowBubbleFails) {
   ASSERT_FALSE(ui_controller_->popups_visible());
   ASSERT_FALSE(ui_controller_->message_center_visible());
 
-  bool shown =
-      ui_controller_->ShowMessageCenterBubble(false /* show_by_click */);
+  bool shown = ui_controller_->ShowMessageCenterBubble();
   EXPECT_FALSE(shown);
 
   ASSERT_FALSE(ui_controller_->popups_visible());
@@ -223,7 +221,7 @@ TEST_F(MessageCenterUiControllerTest, ShowBubbleFails) {
   ASSERT_FALSE(ui_controller_->popups_visible());
   ASSERT_FALSE(ui_controller_->message_center_visible());
 
-  ui_controller_->ShowMessageCenterBubble(false /* show_by_click */);
+  ui_controller_->ShowMessageCenterBubble();
 
   ASSERT_FALSE(ui_controller_->popups_visible());
   ASSERT_FALSE(ui_controller_->message_center_visible());

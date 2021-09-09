@@ -116,8 +116,8 @@ class InputMethodEngineBrowserTest
       case kTestTypeNormal:
         return LoadExtension(test_data_dir_.AppendASCII(extension_name));
       case kTestTypeIncognito:
-        return LoadExtensionIncognito(
-            test_data_dir_.AppendASCII(extension_name));
+        return LoadExtension(test_data_dir_.AppendASCII(extension_name),
+                             {.allow_in_incognito = true});
       case kTestTypeComponent:
         return LoadExtensionAsComponent(
             test_data_dir_.AppendASCII(extension_name));
@@ -136,7 +136,7 @@ class KeyEventDoneCallback {
  public:
   explicit KeyEventDoneCallback(bool expected_argument)
       : expected_argument_(expected_argument) {}
-  ~KeyEventDoneCallback() {}
+  ~KeyEventDoneCallback() = default;
 
   void Run(bool consumed) {
     if (consumed == expected_argument_)
@@ -160,17 +160,18 @@ class TestTextInputClient : public ui::DummyTextInputClient {
 
   void WaitUntilCalled() { run_loop_.Run(); }
 
-  const base::string16& inserted_text() const { return inserted_text_; }
+  const std::u16string& inserted_text() const { return inserted_text_; }
 
  private:
   // ui::DummyTextInputClient:
   bool ShouldDoLearning() override { return true; }
-  void InsertText(const base::string16& text) override {
+  void InsertText(const std::u16string& text,
+                  InsertTextCursorBehavior cursor_behavior) override {
     inserted_text_ = text;
     run_loop_.Quit();
   }
 
-  base::string16 inserted_text_;
+  std::u16string inserted_text_;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
@@ -234,11 +235,10 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   // onSurroundingTextChange should be fired if SetSurroundingText is called.
   ExtensionTestMessageListener surrounding_text_listener(
       "onSurroundingTextChanged", false);
-  engine_handler->SetSurroundingText(
-      base::UTF8ToUTF16("text"),  // Surrounding text.
-      0,                          // focused position.
-      1,                          // anchor position.
-      0);                         // offset position.
+  engine_handler->SetSurroundingText(u"text",  // Surrounding text.
+                                     0,        // focused position.
+                                     1,        // anchor position.
+                                     0);       // offset position.
   ASSERT_TRUE(surrounding_text_listener.WaitUntilSatisfied());
   ASSERT_TRUE(surrounding_text_listener.was_satisfied());
 
@@ -445,27 +445,27 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     const char* code;
     const char* key;
   } kMediaKeyCases[] = {
-    { ui::VKEY_BROWSER_BACK, "BrowserBack", "HistoryBack" },
-    { ui::VKEY_BROWSER_FORWARD, "BrowserForward", "HistoryForward" },
-    { ui::VKEY_BROWSER_REFRESH, "BrowserRefresh", "BrowserRefresh" },
-    { ui::VKEY_MEDIA_LAUNCH_APP2, "ChromeOSFullscreen", "ChromeOSFullscreen" },
-    { ui::VKEY_MEDIA_LAUNCH_APP1,
-      "ChromeOSSwitchWindow", "ChromeOSSwitchWindow" },
-    { ui::VKEY_BRIGHTNESS_DOWN, "BrightnessDown", "BrightnessDown" },
-    { ui::VKEY_BRIGHTNESS_UP, "BrightnessUp", "BrightnessUp" },
-    { ui::VKEY_VOLUME_MUTE, "VolumeMute", "AudioVolumeMute" },
-    { ui::VKEY_VOLUME_DOWN, "VolumeDown", "AudioVolumeDown" },
-    { ui::VKEY_VOLUME_UP, "VolumeUp", "AudioVolumeUp" },
-    { ui::VKEY_F1, "F1", "HistoryBack" },
-    { ui::VKEY_F2, "F2", "HistoryForward" },
-    { ui::VKEY_F3, "F3", "BrowserRefresh" },
-    { ui::VKEY_F4, "F4", "ChromeOSFullscreen" },
-    { ui::VKEY_F5, "F5", "ChromeOSSwitchWindow" },
-    { ui::VKEY_F6, "F6", "BrightnessDown" },
-    { ui::VKEY_F7, "F7", "BrightnessUp" },
-    { ui::VKEY_F8, "F8", "AudioVolumeMute" },
-    { ui::VKEY_F9, "F9", "AudioVolumeDown" },
-    { ui::VKEY_F10, "F10", "AudioVolumeUp" },
+      {ui::VKEY_BROWSER_BACK, "BrowserBack", "HistoryBack"},
+      {ui::VKEY_BROWSER_FORWARD, "BrowserForward", "HistoryForward"},
+      {ui::VKEY_BROWSER_REFRESH, "BrowserRefresh", "BrowserRefresh"},
+      {ui::VKEY_ZOOM, "ChromeOSFullscreen", "ChromeOSFullscreen"},
+      {ui::VKEY_MEDIA_LAUNCH_APP1, "ChromeOSSwitchWindow",
+       "ChromeOSSwitchWindow"},
+      {ui::VKEY_BRIGHTNESS_DOWN, "BrightnessDown", "BrightnessDown"},
+      {ui::VKEY_BRIGHTNESS_UP, "BrightnessUp", "BrightnessUp"},
+      {ui::VKEY_VOLUME_MUTE, "VolumeMute", "AudioVolumeMute"},
+      {ui::VKEY_VOLUME_DOWN, "VolumeDown", "AudioVolumeDown"},
+      {ui::VKEY_VOLUME_UP, "VolumeUp", "AudioVolumeUp"},
+      {ui::VKEY_F1, "F1", "HistoryBack"},
+      {ui::VKEY_F2, "F2", "HistoryForward"},
+      {ui::VKEY_F3, "F3", "BrowserRefresh"},
+      {ui::VKEY_F4, "F4", "ChromeOSFullscreen"},
+      {ui::VKEY_F5, "F5", "ChromeOSSwitchWindow"},
+      {ui::VKEY_F6, "F6", "BrightnessDown"},
+      {ui::VKEY_F7, "F7", "BrightnessUp"},
+      {ui::VKEY_F8, "F8", "AudioVolumeMute"},
+      {ui::VKEY_F9, "F9", "AudioVolumeDown"},
+      {ui::VKEY_F10, "F10", "AudioVolumeUp"},
   };
 
   for (size_t i = 0; i < base::size(kMediaKeyCases); ++i) {
@@ -503,7 +503,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        commit_text_test_script));
     EXPECT_EQ(1, mock_input_context->commit_text_call_count());
-    EXPECT_EQ("COMMIT_TEXT", mock_input_context->last_commit_text());
+    EXPECT_EQ(u"COMMIT_TEXT", mock_input_context->last_commit_text());
   }
   {
     SCOPED_TRACE("sendKeyEvents test");
@@ -623,7 +623,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     const ui::CompositionText& composition_text =
         mock_input_context->last_update_composition_arg().composition_text;
-    EXPECT_EQ(base::UTF8ToUTF16("COMPOSITION_TEXT"), composition_text.text);
+    EXPECT_EQ(u"COMPOSITION_TEXT", composition_text.text);
     const ui::ImeTextSpans ime_text_spans = composition_text.ime_text_spans;
 
     ASSERT_EQ(2U, ime_text_spans.size());
@@ -1061,28 +1061,20 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ASSERT_EQ(4U, table.candidates().size());
 
-    EXPECT_EQ(base::UTF8ToUTF16("CANDIDATE_1"),
-              table.candidates().at(0).value);
+    EXPECT_EQ(u"CANDIDATE_1", table.candidates().at(0).value);
 
-    EXPECT_EQ(base::UTF8ToUTF16("CANDIDATE_2"),
-              table.candidates().at(1).value);
-    EXPECT_EQ(base::UTF8ToUTF16("LABEL_2"), table.candidates().at(1).label);
+    EXPECT_EQ(u"CANDIDATE_2", table.candidates().at(1).value);
+    EXPECT_EQ(u"LABEL_2", table.candidates().at(1).label);
 
-    EXPECT_EQ(base::UTF8ToUTF16("CANDIDATE_3"),
-              table.candidates().at(2).value);
-    EXPECT_EQ(base::UTF8ToUTF16("LABEL_3"), table.candidates().at(2).label);
-    EXPECT_EQ(base::UTF8ToUTF16("ANNOTACTION_3"),
-              table.candidates().at(2).annotation);
+    EXPECT_EQ(u"CANDIDATE_3", table.candidates().at(2).value);
+    EXPECT_EQ(u"LABEL_3", table.candidates().at(2).label);
+    EXPECT_EQ(u"ANNOTACTION_3", table.candidates().at(2).annotation);
 
-    EXPECT_EQ(base::UTF8ToUTF16("CANDIDATE_4"),
-              table.candidates().at(3).value);
-    EXPECT_EQ(base::UTF8ToUTF16("LABEL_4"), table.candidates().at(3).label);
-    EXPECT_EQ(base::UTF8ToUTF16("ANNOTACTION_4"),
-              table.candidates().at(3).annotation);
-    EXPECT_EQ(base::UTF8ToUTF16("TITLE_4"),
-              table.candidates().at(3).description_title);
-    EXPECT_EQ(base::UTF8ToUTF16("BODY_4"),
-              table.candidates().at(3).description_body);
+    EXPECT_EQ(u"CANDIDATE_4", table.candidates().at(3).value);
+    EXPECT_EQ(u"LABEL_4", table.candidates().at(3).label);
+    EXPECT_EQ(u"ANNOTACTION_4", table.candidates().at(3).annotation);
+    EXPECT_EQ(u"TITLE_4", table.candidates().at(3).description_title);
+    EXPECT_EQ(u"BODY_4", table.candidates().at(3).description_body);
   }
   {
     SCOPED_TRACE("setCursorPosition test");
@@ -1287,7 +1279,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     const ui::CompositionText& composition_text =
         mock_input_context->last_update_composition_arg().composition_text;
-    EXPECT_EQ(base::UTF8ToUTF16("us"), composition_text.text);
+    EXPECT_EQ(u"us", composition_text.text);
     const ui::ImeTextSpans ime_text_spans = composition_text.ime_text_spans;
 
     ASSERT_EQ(1U, ime_text_spans.size());
@@ -1301,7 +1293,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
         kIdentityIMEID, false /* show_message */);
     EXPECT_EQ(1, mock_input_context->commit_text_call_count());
-    EXPECT_EQ("us", mock_input_context->last_commit_text());
+    EXPECT_EQ(u"us", mock_input_context->last_commit_text());
 
     // Should not call CommitText anymore.
     InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
@@ -1512,7 +1504,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, MojoInteractionTest) {
     ASSERT_TRUE(
         content::ExecuteScript(host->host_contents(), commit_text_test_script));
     tic.WaitUntilCalled();
-    EXPECT_EQ(base::UTF8ToUTF16("COMMIT_TEXT"), tic.inserted_text());
+    EXPECT_EQ(u"COMMIT_TEXT", tic.inserted_text());
   }
 
   {

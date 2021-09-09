@@ -169,10 +169,10 @@ const SiteSettingsBehaviorImpl = {
       embeddingOrigin: embeddingOrigin,
       incognito: exception.incognito,
       isEmbargoed: exception.isEmbargoed,
-      isDiscarded: exception.isDiscarded,
       origin: origin,
       displayName: exception.displayName,
       setting: exception.setting,
+      settingDetail: exception.settingDetail,
       enforcement: enforcement,
       controlledBy: controlledBy,
     };
@@ -228,8 +228,6 @@ const SiteSettingsBehaviorImpl = {
     addOrRemoveSettingWithFlag(
         ContentSettingsTypes.WINDOW_PLACEMENT,
         'enableExperimentalWebPlatformFeatures');
-    addOrRemoveSettingWithFlag(
-        ContentSettingsTypes.FONT_ACCESS, 'enableFontAccessContentSetting');
     return this.contentTypes_.slice(0);
   },
 

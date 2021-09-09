@@ -32,6 +32,9 @@ class PaintTestConfigurations
   INSTANTIATE_TEST_SUITE_P(All, test_class,        \
                            ::testing::Values(0, kCompositeAfterPaint))
 
+#define INSTANTIATE_PRE_CAP_TEST_SUITE_P(test_class) \
+  INSTANTIATE_TEST_SUITE_P(All, test_class, ::testing::Values(0))
+
 #define INSTANTIATE_CAP_TEST_SUITE_P(test_class) \
   INSTANTIATE_TEST_SUITE_P(All, test_class,      \
                            ::testing::Values(kCompositeAfterPaint))

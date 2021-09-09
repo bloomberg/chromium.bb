@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/memory.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/paint/paint_flags.h"
 #include "cc/tiles/mipmap_util.h"
 #include "ui/gfx/skia_util.h"
 
@@ -154,7 +155,9 @@ SoftwareImageDecodeCacheUtils::GenerateCacheEntryFromCandidate(
     result = ImageDecodeCacheUtils::ScaleToHalfFloatPixmapUsingN32Intermediate(
         decoded_pixmap, &target_pixmap, filter_quality);
   } else {
-    result = decoded_pixmap.scalePixels(target_pixmap, filter_quality);
+    result = decoded_pixmap.scalePixels(
+        target_pixmap,
+        PaintFlags::FilterQualityToSkSamplingOptions(filter_quality));
   }
   DCHECK(result) << key.ToString();
 

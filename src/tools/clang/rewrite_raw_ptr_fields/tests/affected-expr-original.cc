@@ -172,6 +172,34 @@ void foo(int x) {
 
 }  // namespace ternary_operator_tests
 
+namespace string_comparison_operator_tests {
+
+void foo(int x) {
+  MyStruct my_struct;
+  std::string other_str = "other";
+
+  // To avoid the following error type:
+  //   error: invalid operands to binary expression ... basic_string ... and ...
+  //   CheckedPtr ...
+  // we need to append |.get()| to |my_struct.const_char_ptr| below.
+  //
+  // Expected rewrite: ... my_struct.const_char_ptr.get() ...
+  bool v1 = my_struct.const_char_ptr == other_str;
+  bool v2 = other_str == my_struct.const_char_ptr;
+  bool v3 = my_struct.const_char_ptr > other_str;
+  bool v4 = other_str > my_struct.const_char_ptr;
+  bool v5 = my_struct.const_char_ptr >= other_str;
+  bool v6 = other_str >= my_struct.const_char_ptr;
+  bool v7 = my_struct.const_char_ptr < other_str;
+  bool v8 = other_str < my_struct.const_char_ptr;
+  bool v9 = my_struct.const_char_ptr <= other_str;
+  bool v10 = other_str <= my_struct.const_char_ptr;
+  std::string v11 = my_struct.const_char_ptr + other_str;
+  std::string v12 = other_str + my_struct.const_char_ptr;
+}
+
+}  // namespace string_comparison_operator_tests
+
 namespace templated_functions {
 
 template <typename T>
@@ -248,17 +276,18 @@ void foo() {
 namespace implicit_constructors {
 
 // Based on //base/strings/string_piece_forward.h:
-template <typename STRING_TYPE>
+template <typename CharT>
 class BasicStringPiece;
-typedef BasicStringPiece<std::string> StringPiece;
+typedef BasicStringPiece<char> StringPiece;
 // Based on //base/strings/string_piece.h:
-template <typename STRING_TYPE>
+template <typename CharT>
 class BasicStringPiece {
  public:
   constexpr BasicStringPiece(const char* str) {}
 };
 // Test case:
 void FunctionTakingBasicStringPiece(StringPiece arg) {}
+void FunctionTakingBasicStringPieceRef(const StringPiece& arg) {}
 
 class ClassWithImplicitConstructor {
  public:
@@ -274,9 +303,13 @@ void foo() {
   // error: no matching function for call to 'FunctionTakingBasicStringPiece'
   // note: candidate function not viable: no known conversion from
   // 'base::CheckedPtr<const char>' to 'templated_functions::StringPiece' (aka
-  // 'BasicStringPiece<basic_string<char, char_traits<char>, allocator<char>>>')
-  // for 1st argument
+  // 'BasicStringPiece<char>') for 1st argument
   FunctionTakingBasicStringPiece(my_struct.const_char_ptr);
+  FunctionTakingBasicStringPieceRef(my_struct.const_char_ptr);
+
+  // No rewrite expected.
+  FunctionTakingBasicStringPiece(StringPiece(my_struct.const_char_ptr));
+  FunctionTakingBasicStringPieceRef(StringPiece(my_struct.const_char_ptr));
 
   // Expected rewrite - appending: .get().  This is the same scenario as with
   // StringPiece above (except that no templates are present here).

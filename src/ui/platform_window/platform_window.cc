@@ -54,4 +54,8 @@ std::string PlatformWindow::GetWindowUniqueId() const {
   return std::string();
 }
 
+bool PlatformWindow::ShouldUpdateWindowShape() const {
+  return false;
+}
+
 }  // namespace ui

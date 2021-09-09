@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_AUTOFILL_PARSING_UTILS_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_AUTOFILL_PARSING_UTILS_H_
 
-#include <base/optional.h>
 #include <string>
+
+#include "components/autofill/core/common/language_code.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill {
 
@@ -45,19 +47,20 @@ constexpr int MATCH_DEFAULT = MATCH_ATTRIBUTES_DEFAULT | MATCH_INPUTS_DEFAULT;
 // to recognize incorrect matches.
 struct MatchingPattern {
   MatchingPattern();
-  MatchingPattern(const MatchingPattern& mp);
-  MatchingPattern& operator=(const MatchingPattern& mp);
+  MatchingPattern(const MatchingPattern&);
+  MatchingPattern& operator=(const MatchingPattern&);
+  MatchingPattern(MatchingPattern&&);
+  MatchingPattern& operator=(MatchingPattern&&);
   ~MatchingPattern();
 
-  std::string pattern_identifier;
-  std::string positive_pattern;
-  float positive_score = 1.1f;
-  base::Optional<std::string> negative_pattern;
-  int match_field_attributes;
-  int match_field_input_types;
-  std::string language;
+  LanguageCode language;
+  std::u16string positive_pattern;
+  std::u16string negative_pattern;
+  float positive_score = 1.1;
+  uint8_t match_field_attributes;
+  uint16_t match_field_input_types;
 };
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_AUTOFILL_PARSING_UTILS_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_AUTOFILL_PARSING_UTILS_H_

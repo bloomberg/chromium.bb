@@ -56,13 +56,13 @@ class DynamicBufferOffsetTests : public DawnTest {
         // Default bind group layout
         mBindGroupLayouts[0] = utils::MakeBindGroupLayout(
             device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::UniformBuffer},
+                      wgpu::BufferBindingType::Uniform},
                      {1, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::StorageBuffer},
+                      wgpu::BufferBindingType::Storage},
                      {3, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::UniformBuffer, true},
+                      wgpu::BufferBindingType::Uniform, true},
                      {4, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::StorageBuffer, true}});
+                      wgpu::BufferBindingType::Storage, true}});
 
         // Default bind group
         mBindGroups[0] = utils::MakeBindGroup(device, mBindGroupLayouts[0],
@@ -78,7 +78,7 @@ class DynamicBufferOffsetTests : public DawnTest {
         // Bind group layout for inheriting test
         mBindGroupLayouts[1] = utils::MakeBindGroupLayout(
             device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::UniformBuffer}});
+                      wgpu::BufferBindingType::Uniform}});
 
         // Bind group for inheriting test
         mBindGroups[1] = utils::MakeBindGroup(device, mBindGroupLayouts[1],
@@ -93,56 +93,69 @@ class DynamicBufferOffsetTests : public DawnTest {
     wgpu::Texture mColorAttachment;
 
     wgpu::RenderPipeline CreateRenderPipeline(bool isInheritedPipeline = false) {
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                void main() {
-                    const vec2 pos[3] = vec2[3](vec2(-1.0f, 0.0f), vec2(-1.0f, 1.0f), vec2(0.0f, 1.0f));
-                    gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
-                })");
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    vec2<f32>(-1.0, 0.0),
+                    vec2<f32>(-1.0, 1.0),
+                    vec2<f32>( 0.0, 1.0));
+                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+            })");
 
         // Construct fragment shader source
         std::ostringstream fs;
         std::string multipleNumber = isInheritedPipeline ? "2" : "1";
         fs << R"(
-            #version 450
-            layout(std140, set = 0, binding = 0) uniform uBufferNotDynamic {
-                uvec2 notDynamicValue;
+            // TODO(crbug.com/tint/386):  Use the same struct.
+            [[block]] struct Buffer1 {
+                value : vec2<u32>;
             };
-            layout(std140, set = 0, binding = 1) buffer sBufferNotDynamic {
-                uvec2 notDynamicResult;
-            } mid;
-            layout(std140, set = 0, binding = 3) uniform uBuffer {
-                uvec2 value;
+
+            [[block]] struct Buffer2 {
+                value : vec2<u32>;
             };
-            layout(std140, set = 0, binding = 4) buffer SBuffer {
-                uvec2 result;
-            } sBuffer;
+
+            [[block]] struct Buffer3 {
+                value : vec2<u32>;
+            };
+
+            [[block]] struct Buffer4 {
+                value : vec2<u32>;
+            };
+
+            [[group(0), binding(0)]] var<uniform> uBufferNotDynamic : Buffer1;
+            [[group(0), binding(1)]] var<storage> sBufferNotDynamic : [[access(read_write)]] Buffer2;
+            [[group(0), binding(3)]] var<uniform> uBuffer : Buffer3;
+            [[group(0), binding(4)]] var<storage> sBuffer : [[access(read_write)]] Buffer4;
         )";
 
         if (isInheritedPipeline) {
             fs << R"(
-                layout(std140, set = 1, binding = 0) uniform paddingBlock {
-                    uvec2 padding;
+                [[block]] struct Buffer5 {
+                    value : vec2<u32>;
                 };
+
+                [[group(1), binding(0)]] var<uniform> paddingBlock : Buffer5;
             )";
         }
 
-        fs << " layout(location = 0) out vec4 fragColor;\n";
-        fs << " void main() {\n";
-        fs << "     mid.notDynamicResult.xy = notDynamicValue.xy;\n";
-        fs << "     sBuffer.result.xy = " << multipleNumber
-           << " * (value.xy + mid.notDynamicResult.xy);\n";
-        fs << "     fragColor = vec4(value.x / 255.0f, value.y / 255.0f, 1.0f, 1.0f);\n";
-        fs << " }\n";
+        fs << "let multipleNumber : u32 = " << multipleNumber << "u;\n";
+        fs << R"(
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                sBufferNotDynamic.value = uBufferNotDynamic.value.xy;
+                sBuffer.value = vec2<u32>(multipleNumber, multipleNumber) * (uBuffer.value.xy + sBufferNotDynamic.value.xy);
+                return vec4<f32>(f32(uBuffer.value.x) / 255.0, f32(uBuffer.value.y) / 255.0,
+                                      1.0, 1.0);
+            }
+        )";
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fs.str().c_str());
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fs.str().c_str());
 
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-        pipelineDescriptor.vertexStage.module = vsModule;
-        pipelineDescriptor.cFragmentStage.module = fsModule;
-        pipelineDescriptor.cColorStates[0].format = wgpu::TextureFormat::RGBA8Unorm;
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        pipelineDescriptor.vertex.module = vsModule;
+        pipelineDescriptor.cFragment.module = fsModule;
+        pipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
 
         wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor;
         if (isInheritedPipeline) {
@@ -153,7 +166,7 @@ class DynamicBufferOffsetTests : public DawnTest {
         pipelineLayoutDescriptor.bindGroupLayouts = mBindGroupLayouts;
         pipelineDescriptor.layout = device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 
-        return device.CreateRenderPipeline(&pipelineDescriptor);
+        return device.CreateRenderPipeline2(&pipelineDescriptor);
     }
 
     wgpu::ComputePipeline CreateComputePipeline(bool isInheritedPipeline = false) {
@@ -161,37 +174,48 @@ class DynamicBufferOffsetTests : public DawnTest {
         std::ostringstream cs;
         std::string multipleNumber = isInheritedPipeline ? "2" : "1";
         cs << R"(
-            #version 450
-            layout(std140, set = 0, binding = 0) uniform uBufferNotDynamic {
-                uvec2 notDynamicValue;
+            // TODO(crbug.com/tint/386):  Use the same struct.
+            [[block]] struct Buffer1 {
+                value : vec2<u32>;
             };
-            layout(std140, set = 0, binding = 1) buffer sBufferNotDynamic {
-                uvec2 notDynamicResult;
-            } mid;
-            layout(std140, set = 0, binding = 3) uniform uBuffer {
-                uvec2 value;
+
+            [[block]] struct Buffer2 {
+                value : vec2<u32>;
             };
-            layout(std140, set = 0, binding = 4) buffer SBuffer {
-                uvec2 result;
-            } sBuffer;
+
+            [[block]] struct Buffer3 {
+                value : vec2<u32>;
+            };
+
+            [[block]] struct Buffer4 {
+                value : vec2<u32>;
+            };
+
+            [[group(0), binding(0)]] var<uniform> uBufferNotDynamic : Buffer1;
+            [[group(0), binding(1)]] var<storage> sBufferNotDynamic : [[access(read_write)]] Buffer2;
+            [[group(0), binding(3)]] var<uniform> uBuffer : Buffer3;
+            [[group(0), binding(4)]] var<storage> sBuffer : [[access(read_write)]] Buffer4;
         )";
 
         if (isInheritedPipeline) {
             cs << R"(
-                layout(std140, set = 1, binding = 0) uniform paddingBlock {
-                    uvec2 padding;
+                [[block]] struct Buffer5 {
+                    value : vec2<u32>;
                 };
+
+                [[group(1), binding(0)]] var<uniform> paddingBlock : Buffer5;
             )";
         }
 
-        cs << " void main() {\n";
-        cs << "     mid.notDynamicResult.xy = notDynamicValue.xy;\n";
-        cs << "     sBuffer.result.xy = " << multipleNumber
-           << " * (value.xy + mid.notDynamicResult.xy);\n";
-        cs << " }\n";
+        cs << "let multipleNumber : u32 = " << multipleNumber << "u;\n";
+        cs << R"(
+            [[stage(compute)]] fn main() {
+                sBufferNotDynamic.value = uBufferNotDynamic.value.xy;
+                sBuffer.value = vec2<u32>(multipleNumber, multipleNumber) * (uBuffer.value.xy + sBufferNotDynamic.value.xy);
+            }
+        )";
 
-        wgpu::ShaderModule csModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, cs.str().c_str());
+        wgpu::ShaderModule csModule = utils::CreateShaderModule(device, cs.str().c_str());
 
         wgpu::ComputePipelineDescriptor csDesc;
         csDesc.computeStage.module = csModule;
@@ -407,4 +431,5 @@ DAWN_INSTANTIATE_TEST(DynamicBufferOffsetTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

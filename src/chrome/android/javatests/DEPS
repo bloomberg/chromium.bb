@@ -1,6 +1,8 @@
 include_rules = [
   "+chrome/app",
   "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
+  "+chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java",
+  "+chrome/browser/android/browserservices/verification",
   "+chrome/browser/android/lifecycle",
   "+chrome/browser/image_fetcher",
   "+chrome/browser/paint_preview/android",
@@ -14,7 +16,10 @@ include_rules = [
   "+chrome/browser/endpoint_fetcher",
   "+chrome/browser/ui/android/appmenu",
   "-chrome/browser/ui/android/appmenu/internal",
+  "+chrome/browser/optimization_guide/android/java/src/org/chromium/chrome/browser/optimization_guide",
+  "+chrome/browser/ui/android/theme/java",
   "+chrome/browser/ui/messages/android/java",
+  "+chrome/browser/signin/services/android/java",
   "+components/autofill/android/java/src/org/chromium/components/autofill",
   "+components/background_task_scheduler/android/java",
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",
@@ -48,6 +53,7 @@ include_rules = [
   # We should only depend on the util package of something that lives in
   # javatests.
   "+components/sync/test/android/javatests/src/org/chromium/components/sync/test/util",
+  "+components/webauthn/android/java",
 
   "-content/public/android/java",
   "+content/public/android/java/src/org/chromium/content_public",
@@ -71,4 +77,7 @@ specific_include_rules = {
   "PageInfoPopupTest\.java": [
     "+content/public/android/java/src/org/chromium/content_public/common/ContentSwitches.java",
   ],
+  "ToolbarPhoneTest\.java": [
+    "+chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/ButtonData.java",
+  ]
 }

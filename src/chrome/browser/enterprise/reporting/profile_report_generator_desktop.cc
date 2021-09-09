@@ -10,8 +10,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/util/values/values_util.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/reporting/extension_info.h"
+#include "chrome/browser/enterprise/reporting/extension_request/extension_request_report_generator.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
@@ -34,20 +36,6 @@ namespace {
 
 const int kMaxNumberOfExtensionRequest = 1000;
 
-// Extension request are moved out of the pending list once user confirm the
-// notification. However, there is no need to upload these requests anymore as
-// long as admin made a decision.
-bool ShouldUploadExtensionRequest(
-    const std::string& extension_id,
-    const std::string& webstore_update_url,
-    extensions::ExtensionManagement* extension_management) {
-  auto mode = extension_management->GetInstallationMode(extension_id,
-                                                        webstore_update_url);
-  return (mode == extensions::ExtensionManagement::INSTALLATION_BLOCKED ||
-          mode == extensions::ExtensionManagement::INSTALLATION_REMOVED) &&
-         !extension_management->IsInstallationExplicitlyBlocked(extension_id);
-}
-
 }  // namespace
 
 ProfileReportGeneratorDesktop::ProfileReportGeneratorDesktop() = default;
@@ -67,12 +55,13 @@ bool ProfileReportGeneratorDesktop::Init(const base::FilePath& path) {
 void ProfileReportGeneratorDesktop::GetSigninUserInfo(
     enterprise_management::ChromeUserProfileInfo* report) {
   auto account_info =
-      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountInfo();
+      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountInfo(
+          signin::ConsentLevel::kSync);
   if (account_info.IsEmpty())
     return;
   auto* signed_in_user_info = report->mutable_chrome_signed_in_user();
   signed_in_user_info->set_email(account_info.email);
-  signed_in_user_info->set_obfudscated_gaia_id(account_info.gaia);
+  signed_in_user_info->set_obfuscated_gaia_id(account_info.gaia);
 }
 
 void ProfileReportGeneratorDesktop::GetExtensionInfo(
@@ -97,9 +86,9 @@ void ProfileReportGeneratorDesktop::GetExtensionRequest(
       extension_urls::GetDefaultWebstoreUpdateUrl().spec();
 
   int number_of_requests = 0;
-  for (const auto& it : *pending_requests) {
-    if (!ShouldUploadExtensionRequest(it.first, webstore_update_url,
-                                      extension_management)) {
+  for (const auto& it : pending_requests->DictItems()) {
+    if (!ExtensionRequestReportGenerator::ShouldUploadExtensionRequest(
+            it.first, webstore_update_url, extension_management)) {
       continue;
     }
 
@@ -111,8 +100,8 @@ void ProfileReportGeneratorDesktop::GetExtensionRequest(
 
     auto* request = report->add_extension_requests();
     request->set_id(it.first);
-    base::Optional<base::Time> timestamp = ::util::ValueToTime(
-        it.second->FindKey(extension_misc::kExtensionRequestTimestamp));
+    absl::optional<base::Time> timestamp = ::util::ValueToTime(
+        it.second.FindKey(extension_misc::kExtensionRequestTimestamp));
     if (timestamp)
       request->set_request_timestamp(timestamp->ToJavaTime());
   }
@@ -125,12 +114,12 @@ ProfileReportGeneratorDesktop::MakePolicyConversionsClient() {
 
 policy::MachineLevelUserCloudPolicyManager*
 ProfileReportGeneratorDesktop::GetCloudPolicyManager() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return nullptr;
 #else
   return g_browser_process->browser_policy_connector()
       ->machine_level_user_cloud_policy_manager();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 }  // namespace enterprise_reporting

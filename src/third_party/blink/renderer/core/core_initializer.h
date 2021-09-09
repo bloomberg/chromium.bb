@@ -53,6 +53,7 @@ class LocalFrame;
 class MediaControls;
 class Page;
 class PictureInPictureController;
+struct ScreenInfos;
 class Settings;
 class ShadowRoot;
 class WebLocalFrameClient;
@@ -60,7 +61,6 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
 class WebRemotePlaybackClient;
-class WebViewClient;
 
 class CORE_EXPORT CoreInitializer {
   USING_FAST_MALLOC(CoreInitializer);
@@ -113,7 +113,8 @@ class CORE_EXPORT CoreInitializer {
   virtual WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) const = 0;
 
-  virtual void ProvideModulesToPage(Page&, WebViewClient*) const = 0;
+  virtual void ProvideModulesToPage(Page&,
+                                    const SessionStorageNamespaceId&) const = 0;
   virtual void ForceNextWebGLContextCreationToFail() const = 0;
 
   virtual void CollectAllGarbageForAnimationAndPaintWorkletForTesting()
@@ -125,6 +126,9 @@ class CORE_EXPORT CoreInitializer {
 
   virtual void DidChangeManifest(LocalFrame&) = 0;
   virtual void NotifyOrientationChanged(LocalFrame&) = 0;
+  // Called with an updated set of ScreenInfos for a local root frame
+  // during a visual property update.
+  virtual void DidUpdateScreens(LocalFrame& frame, const ScreenInfos&) = 0;
 
  protected:
   // CoreInitializer is only instantiated by subclass ModulesInitializer.

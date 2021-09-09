@@ -15,10 +15,14 @@
 #ifndef DAWNNATIVE_COMPUTEPASSENCODER_H_
 #define DAWNNATIVE_COMPUTEPASSENCODER_H_
 
+#include "dawn_native/CommandBufferStateTracker.h"
 #include "dawn_native/Error.h"
+#include "dawn_native/PassResourceUsageTracker.h"
 #include "dawn_native/ProgrammablePassEncoder.h"
 
 namespace dawn_native {
+
+    class SyncScopeUsageTracker;
 
     class ComputePassEncoder final : public ProgrammablePassEncoder {
       public:
@@ -30,13 +34,18 @@ namespace dawn_native {
                                              CommandEncoder* commandEncoder,
                                              EncodingContext* encodingContext);
 
-        void EndPass();
+        void APIEndPass();
 
-        void Dispatch(uint32_t x, uint32_t y, uint32_t z);
-        void DispatchIndirect(BufferBase* indirectBuffer, uint64_t indirectOffset);
-        void SetPipeline(ComputePipelineBase* pipeline);
+        void APIDispatch(uint32_t x, uint32_t y = 1, uint32_t z = 1);
+        void APIDispatchIndirect(BufferBase* indirectBuffer, uint64_t indirectOffset);
+        void APISetPipeline(ComputePipelineBase* pipeline);
 
-        void WriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex);
+        void APISetBindGroup(uint32_t groupIndex,
+                             BindGroupBase* group,
+                             uint32_t dynamicOffsetCount = 0,
+                             const uint32_t* dynamicOffsets = nullptr);
+
+        void APIWriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex);
 
       protected:
         ComputePassEncoder(DeviceBase* device,
@@ -45,6 +54,13 @@ namespace dawn_native {
                            ErrorTag errorTag);
 
       private:
+        CommandBufferStateTracker mCommandBufferState;
+
+        // Adds the bindgroups used for the current dispatch to the SyncScopeResourceUsage and
+        // records it in mUsageTracker.
+        void AddDispatchSyncScope(SyncScopeUsageTracker scope = {});
+        ComputePassResourceUsageTracker mUsageTracker;
+
         // For render and compute passes, the encoding context is borrowed from the command encoder.
         // Keep a reference to the encoder to make sure the context isn't freed.
         Ref<CommandEncoder> mCommandEncoder;

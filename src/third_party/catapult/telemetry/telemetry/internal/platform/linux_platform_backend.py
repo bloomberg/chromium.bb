@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
 import os
 import platform
@@ -26,6 +27,9 @@ _POSSIBLE_PERFHOST_APPLICATIONS = [
 
 
 def _GetOSVersion(value):
+  if value == 'rodete':
+    return 0.0
+
   try:
     return float(value)
   except (TypeError, ValueError):
@@ -138,7 +142,7 @@ class LinuxPlatformBackend(
           ipfw_bin, cloud_storage.INTERNAL_BUCKET)
       changed |= cloud_storage.GetIfChanged(
           ipfw_mod, cloud_storage.INTERNAL_BUCKET)
-    except cloud_storage.CloudStorageError, e:
+    except cloud_storage.CloudStorageError as e:
       logging.error(str(e))
       logging.error('You may proceed by manually building and installing'
                     'dummynet for your kernel. See: '
@@ -148,7 +152,7 @@ class LinuxPlatformBackend(
     if changed or not self.CanLaunchApplication('ipfw'):
       if not self._IsIpfwKernelModuleInstalled():
         subprocess.check_call(['/usr/bin/sudo', 'insmod', ipfw_mod])
-      os.chmod(ipfw_bin, 0755)
+      os.chmod(ipfw_bin, 0o755)
       subprocess.check_call(
           ['/usr/bin/sudo', 'cp', ipfw_bin, '/usr/local/sbin'])
 

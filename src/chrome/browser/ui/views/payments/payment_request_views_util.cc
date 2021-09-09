@@ -30,7 +30,10 @@
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "ui/base/default_style.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
@@ -55,15 +58,64 @@ namespace payments {
 
 namespace {
 
+class ThemeTrackingLabel : public views::Label {
+ public:
+  METADATA_HEADER(ThemeTrackingLabel);
+
+  explicit ThemeTrackingLabel(const std::u16string& text) : Label(text) {}
+  ~ThemeTrackingLabel() override = default;
+
+  void set_enabled_color_id(ui::NativeTheme::ColorId enabled_color_id) {
+    enabled_color_id_ = enabled_color_id;
+  }
+
+  // views::Label:
+  void OnThemeChanged() override {
+    Label::OnThemeChanged();
+    if (enabled_color_id_.has_value())
+      SetEnabledColor(GetNativeTheme()->GetSystemColor(*enabled_color_id_));
+  }
+
+ private:
+  absl::optional<ui::NativeTheme::ColorId> enabled_color_id_;
+};
+
+BEGIN_METADATA(ThemeTrackingLabel, views::Label)
+END_METADATA
+
+class ChromeLogoImageView : public views::ImageView {
+ public:
+  METADATA_HEADER(ChromeLogoImageView);
+
+  ChromeLogoImageView() {
+    SetCanProcessEventsWithinSubtree(false);
+    SetTooltipText(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  }
+  ~ChromeLogoImageView() override = default;
+
+  // views::ImageView:
+  void OnThemeChanged() override {
+    ImageView::OnThemeChanged();
+    SetImage(ui::ResourceBundle::GetSharedInstance()
+                 .GetImageNamed(GetNativeTheme()->ShouldUseDarkColors()
+                                    ? IDR_PRODUCT_LOGO_NAME_22_WHITE
+                                    : IDR_PRODUCT_LOGO_NAME_22)
+                 .AsImageSkia());
+  }
+};
+
+BEGIN_METADATA(ChromeLogoImageView, views::ImageView)
+END_METADATA
+
 // |s1|, |s2|, and |s3| are lines identifying the profile. |s1| is the
 // "headline" which may be emphasized depending on |type|. If |enabled| is
 // false, the labels will look disabled.
 std::unique_ptr<views::View> GetBaseProfileLabel(
     AddressStyleType type,
-    const base::string16& s1,
-    const base::string16& s2,
-    const base::string16& s3,
-    base::string16* accessible_content,
+    const std::u16string& s1,
+    const std::u16string& s2,
+    const std::u16string& s3,
+    std::u16string* accessible_content,
     bool enabled = true) {
   DCHECK(accessible_content);
   std::unique_ptr<views::View> container = std::make_unique<views::View>();
@@ -77,36 +129,31 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
     const int text_style = type == AddressStyleType::DETAILED
                                ? static_cast<int>(STYLE_EMPHASIZED)
                                : static_cast<int>(views::style::STYLE_PRIMARY);
-    std::unique_ptr<views::Label> label = std::make_unique<views::Label>(
-        s1, views::style::CONTEXT_LABEL, text_style);
+    auto label = std::make_unique<ThemeTrackingLabel>(s1);
+    label->SetTextContext(views::style::CONTEXT_LABEL);
+    label->SetTextStyle(text_style);
     label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    if (!enabled) {
-      label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelDisabledColor));
-    }
+    if (!enabled)
+      label->set_enabled_color_id(ui::NativeTheme::kColorId_LabelDisabledColor);
     container->AddChildView(std::move(label));
   }
 
   if (!s2.empty()) {
-    std::unique_ptr<views::Label> label = std::make_unique<views::Label>(s2);
+    auto label = std::make_unique<ThemeTrackingLabel>(s2);
     label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_2));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    if (!enabled) {
-      label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelDisabledColor));
-    }
+    if (!enabled)
+      label->set_enabled_color_id(ui::NativeTheme::kColorId_LabelDisabledColor);
     container->AddChildView(std::move(label));
   }
 
   if (!s3.empty()) {
-    std::unique_ptr<views::Label> label = std::make_unique<views::Label>(s3);
+    auto label = std::make_unique<ThemeTrackingLabel>(s3);
     label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_3));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    if (!enabled) {
-      label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelDisabledColor));
-    }
+    if (!enabled)
+      label->set_enabled_color_id(ui::NativeTheme::kColorId_LabelDisabledColor);
     container->AddChildView(std::move(label));
   }
 
@@ -122,15 +169,15 @@ std::unique_ptr<views::View> GetShippingAddressLabel(
     AddressStyleType type,
     const std::string& locale,
     const autofill::AutofillProfile& profile,
-    base::string16* accessible_content,
+    std::u16string* accessible_content,
     bool enabled) {
   DCHECK(accessible_content);
-  base::string16 name = profile.GetInfo(autofill::NAME_FULL, locale);
+  std::u16string name = profile.GetInfo(autofill::NAME_FULL, locale);
 
-  base::string16 address =
+  std::u16string address =
       GetShippingAddressLabelFromAutofillProfile(profile, locale);
 
-  base::string16 phone =
+  std::u16string phone =
       autofill::i18n::GetFormattedPhoneNumberForDisplay(profile, locale);
 
   return GetBaseProfileLabel(type, name, address, phone, accessible_content,
@@ -138,13 +185,12 @@ std::unique_ptr<views::View> GetShippingAddressLabel(
 }
 
 std::unique_ptr<views::Label> GetLabelForMissingInformation(
-    const base::string16& missing_info) {
-  std::unique_ptr<views::Label> label = std::make_unique<views::Label>(
-      missing_info, CONTEXT_DIALOG_BODY_TEXT_SMALL);
+    const std::u16string& missing_info) {
+  auto label = std::make_unique<ThemeTrackingLabel>(missing_info);
+  label->SetTextContext(CONTEXT_DIALOG_BODY_TEXT_SMALL);
   label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   // Missing information typically has a nice shade of blue.
-  label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LinkEnabled));
+  label->set_enabled_color_id(ui::NativeTheme::kColorId_LinkEnabled);
   return label;
 }
 
@@ -230,7 +276,7 @@ void PopulateSheetHeaderView(bool show_back_arrow,
 std::unique_ptr<views::ImageView> CreateAppIconView(
     int icon_resource_id,
     const SkBitmap* icon_bitmap,
-    const base::string16& tooltip_text,
+    const std::u16string& tooltip_text,
     float opacity) {
   std::unique_ptr<views::ImageView> icon_view =
       std::make_unique<views::ImageView>();
@@ -275,17 +321,7 @@ std::unique_ptr<views::View> CreateProductLogoFooterView() {
   content_view->SetLayoutManager(std::move(layout));
 
   // Adds the Chrome logo image.
-  std::unique_ptr<views::ImageView> chrome_logo =
-      std::make_unique<views::ImageView>();
-  chrome_logo->SetCanProcessEventsWithinSubtree(false);
-  chrome_logo->SetImage(
-      ui::ResourceBundle::GetSharedInstance()
-          .GetImageNamed(content_view->GetNativeTheme()->ShouldUseDarkColors()
-                             ? IDR_PRODUCT_LOGO_NAME_22_WHITE
-                             : IDR_PRODUCT_LOGO_NAME_22)
-          .AsImageSkia());
-  chrome_logo->SetTooltipText(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  content_view->AddChildView(std::move(chrome_logo));
+  content_view->AddChildView(std::make_unique<ChromeLogoImageView>());
 
   return content_view;
 }
@@ -295,13 +331,13 @@ std::unique_ptr<views::View> GetShippingAddressLabelWithMissingInfo(
     const std::string& locale,
     const autofill::AutofillProfile& profile,
     const PaymentsProfileComparator& comp,
-    base::string16* accessible_content,
+    std::u16string* accessible_content,
     bool enabled) {
   DCHECK(accessible_content);
   std::unique_ptr<views::View> base_label = GetShippingAddressLabel(
       type, locale, profile, accessible_content, enabled);
 
-  base::string16 missing = comp.GetStringForMissingShippingFields(profile);
+  std::u16string missing = comp.GetStringForMissingShippingFields(profile);
   if (!missing.empty()) {
     base_label->AddChildView(GetLabelForMissingInformation(missing));
     *accessible_content = l10n_util::GetStringFUTF16(
@@ -320,25 +356,25 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     bool request_payer_email,
     bool request_payer_phone,
     const PaymentsProfileComparator& comp,
-    base::string16* accessible_content) {
+    std::u16string* accessible_content) {
   DCHECK(accessible_content);
-  base::string16 name = request_payer_name
+  std::u16string name = request_payer_name
                             ? profile.GetInfo(autofill::NAME_FULL, locale)
-                            : base::string16();
+                            : std::u16string();
 
-  base::string16 phone =
+  std::u16string phone =
       request_payer_phone
           ? autofill::i18n::GetFormattedPhoneNumberForDisplay(profile, locale)
-          : base::string16();
+          : std::u16string();
 
-  base::string16 email = request_payer_email
+  std::u16string email = request_payer_email
                              ? profile.GetInfo(autofill::EMAIL_ADDRESS, locale)
-                             : base::string16();
+                             : std::u16string();
 
   std::unique_ptr<views::View> base_label =
       GetBaseProfileLabel(type, name, phone, email, accessible_content);
 
-  base::string16 missing = comp.GetStringForMissingContactFields(profile);
+  std::u16string missing = comp.GetStringForMissingContactFields(profile);
   if (!missing.empty()) {
     base_label->AddChildView(GetLabelForMissingInformation(missing));
     *accessible_content = l10n_util::GetStringFUTF16(
@@ -354,25 +390,26 @@ std::unique_ptr<views::Border> CreatePaymentRequestRowBorder(
       std::make_unique<PaymentRequestRowBorderPainter>(color), insets);
 }
 
-std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text) {
+std::unique_ptr<views::Label> CreateBoldLabel(const std::u16string& text) {
   return std::make_unique<views::Label>(text, views::style::CONTEXT_LABEL,
                                         STYLE_EMPHASIZED);
 }
 
-std::unique_ptr<views::Label> CreateMediumLabel(const base::string16& text) {
+std::unique_ptr<views::Label> CreateMediumLabel(const std::u16string& text) {
   // TODO(tapted): This should refer to a style in the Chrome typography spec.
   // Also, it needs to handle user setups where the default font is BOLD already
   // since asking for a MEDIUM font will give a lighter font.
   std::unique_ptr<views::Label> label = std::make_unique<views::Label>(text);
   label->SetFontList(
-      ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-          ui::kLabelFontSizeDelta, gfx::Font::NORMAL,
-          gfx::Font::Weight::MEDIUM));
+      ui::ResourceBundle::GetSharedInstance().GetFontListForDetails(
+          ui::ResourceBundle::FontDetails(std::string(),
+                                          ui::kLabelFontSizeDelta,
+                                          gfx::Font::Weight::MEDIUM)));
   return label;
 }
 
 std::unique_ptr<views::Label> CreateHintLabel(
-    const base::string16& text,
+    const std::u16string& text,
     gfx::HorizontalAlignment alignment) {
   std::unique_ptr<views::Label> label = std::make_unique<views::Label>(
       text, views::style::CONTEXT_LABEL, views::style::STYLE_HINT);
@@ -382,9 +419,9 @@ std::unique_ptr<views::Label> CreateHintLabel(
 
 std::unique_ptr<views::View> CreateShippingOptionLabel(
     payments::mojom::PaymentShippingOption* shipping_option,
-    const base::string16& formatted_amount,
+    const std::u16string& formatted_amount,
     bool emphasize_label,
-    base::string16* accessible_content) {
+    std::u16string* accessible_content) {
   DCHECK(accessible_content);
   std::unique_ptr<views::View> container = std::make_unique<views::View>();
 
@@ -395,7 +432,7 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
   container->SetLayoutManager(std::move(layout));
 
   if (shipping_option) {
-    const base::string16& text = base::UTF8ToUTF16(shipping_option->label);
+    const std::u16string& text = base::UTF8ToUTF16(shipping_option->label);
     std::unique_ptr<views::Label> shipping_label =
         emphasize_label ? CreateMediumLabel(text)
                         : std::make_unique<views::Label>(text);
@@ -416,13 +453,13 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
 
     *accessible_content = l10n_util::GetStringFUTF16(
         IDS_PAYMENTS_PROFILE_LABELS_ACCESSIBLE_FORMAT, text, formatted_amount,
-        base::string16());
+        std::u16string());
   }
 
   return container;
 }
 
-std::unique_ptr<views::View> CreateWarningView(const base::string16& message,
+std::unique_ptr<views::View> CreateWarningView(const std::u16string& message,
                                                bool show_icon) {
   auto header_view = std::make_unique<views::View>();
   // 8 pixels between the warning icon view (if present) and the text.
@@ -436,7 +473,7 @@ std::unique_ptr<views::View> CreateWarningView(const base::string16& message,
       views::BoxLayout::CrossAxisAlignment::kStretch);
   header_view->SetLayoutManager(std::move(layout));
 
-  auto label = std::make_unique<views::Label>(message);
+  auto label = std::make_unique<ThemeTrackingLabel>(message);
   // If the warning message comes from the websites, then align label
   // according to the language of the website's text.
   label->SetHorizontalAlignment(message.empty() ? gfx::ALIGN_LEFT
@@ -448,13 +485,11 @@ std::unique_ptr<views::View> CreateWarningView(const base::string16& message,
   if (show_icon) {
     auto warning_icon = std::make_unique<views::ImageView>();
     warning_icon->SetCanProcessEventsWithinSubtree(false);
-    warning_icon->SetImage(gfx::CreateVectorIcon(
-        vector_icons::kWarningIcon, 16,
-        warning_icon->GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_AlertSeverityHigh)));
+    warning_icon->SetImage(ui::ImageModel::FromVectorIcon(
+        vector_icons::kWarningIcon, ui::NativeTheme::kColorId_AlertSeverityHigh,
+        16));
     header_view->AddChildView(std::move(warning_icon));
-    label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_AlertSeverityHigh));
+    label->set_enabled_color_id(ui::NativeTheme::kColorId_AlertSeverityHigh);
   }
 
   header_view->AddChildView(std::move(label));

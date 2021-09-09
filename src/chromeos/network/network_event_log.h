@@ -8,8 +8,6 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "base/strings/stringprintf.h"
-#include "base/time/time.h"
 #include "components/device_event_log/device_event_log.h"
 
 namespace chromeos {
@@ -32,5 +30,10 @@ COMPONENT_EXPORT(CHROMEOS_NETWORK)
 std::string NetworkGuidId(const std::string& guid);
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::NetworkPathId;
+}
 
 #endif  // CHROMEOS_NETWORK_NETWORK_EVENT_LOG_H_

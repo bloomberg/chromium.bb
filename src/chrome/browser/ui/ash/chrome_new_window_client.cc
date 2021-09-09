@@ -7,34 +7,36 @@
 #include <utility>
 
 #include "apps/launcher.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/chromeos/apps/apk_web_app_service.h"
-#include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
-#include "chrome/browser/chromeos/arc/intent_helper/custom_tab_session_impl.h"
+#include "chrome/browser/ash/apps/apk_web_app_service.h"
+#include "chrome/browser/ash/apps/metrics/intent_handling_metrics.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/arc_web_contents_data.h"
+#include "chrome/browser/ash/arc/fileapi/arc_content_file_system_url_util.h"
+#include "chrome/browser/ash/arc/intent_helper/custom_tab_session_impl.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/web_applications/chrome_camera_app_ui_delegate.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/web_applications/chrome_camera_app_ui_delegate.h"
-#include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/shelf/app_window_base.h"
+#include "chrome/browser/ui/ash/shelf/app_window_shelf_item_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -46,12 +48,13 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -69,10 +72,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "ui/aura/window.h"
-#include "ui/base/base_window.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/display/types/display_constants.h"
 #include "url/url_constants.h"
 
 using arc::mojom::ChromePage;
@@ -129,14 +130,10 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
       chromeos::settings::mojom::kKnownNetworksSubpagePath},
      {ChromePage::OSLANGUAGES,
       chromeos::settings::mojom::kLanguagesAndInputSectionPath},
-     {ChromePage::OSLANGUAGESDETAILS,
-      chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath},
      {ChromePage::OSLANGUAGESEDITDICTIONARY,
       chromeos::settings::mojom::kEditDictionarySubpagePath},
      {ChromePage::OSLANGUAGESINPUT,
       chromeos::settings::mojom::kInputSubpagePath},
-     {ChromePage::OSLANGUAGESINPUTMETHODS,
-      chromeos::settings::mojom::kManageInputMethodsSubpagePath},
      {ChromePage::OSLANGUAGESLANGUAGES,
       chromeos::settings::mojom::kLanguagesSubpagePath},
      {ChromePage::OSLANGUAGESSMARTINPUTS,
@@ -166,6 +163,7 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::POINTEROVERLAY,
       chromeos::settings::mojom::kPointersSubpagePath},
      {ChromePage::POWER, chromeos::settings::mojom::kPowerSubpagePath},
+     {ChromePage::SEARCHSUBPAGE, chromeos::settings::mojom::kSearchSubpagePath},
      {ChromePage::SMARTLOCKSETTINGS,
       chromeos::settings::mojom::kSmartLockSubpagePath},
      {ChromePage::STORAGE, chromeos::settings::mojom::kStorageSubpagePath},
@@ -205,7 +203,10 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kAboutPagesMapping[] =
 constexpr arc::mojom::ChromePage kDeprecatedPages[] = {
     ChromePage::DEPRECATED_DOWNLOADEDCONTENT,
     ChromePage::DEPRECATED_PLUGINVMDETAILS,
-    ChromePage::DEPRECATED_CROSTINIDISKRESIZE};
+    ChromePage::DEPRECATED_CROSTINIDISKRESIZE,
+    ChromePage::DEPRECATED_OSLANGUAGESDETAILS,
+    ChromePage::DEPRECATED_OSLANGUAGESINPUTMETHODS,
+};
 
 // mojom::ChromePage::LAST returns the amount of valid entries - 1.
 static_assert(base::size(kOSSettingsMapping) +
@@ -350,13 +351,37 @@ void ChromeNewWindowClient::NewWindow(bool is_incognito) {
   Profile* profile = (browser && browser->profile())
                          ? browser->profile()->GetOriginalProfile()
                          : ProfileManager::GetActiveUserProfile();
-  chrome::NewEmptyWindow(is_incognito ? profile->GetPrimaryOTRProfile()
-                                      : profile);
+  chrome::NewEmptyWindow(
+      is_incognito ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+                   : profile);
+}
+
+void ChromeNewWindowClient::OpenCalculator() {
+  Profile* const profile = ProfileManager::GetActiveUserProfile();
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  if (!registry)
+    return;
+
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(extension_misc::kCalculatorAppId);
+  if (!extension)
+    return;
+
+  auto url = GURL(extensions::Extension::GetBaseURLFromExtensionId(
+                      extension_misc::kCalculatorAppId)
+                      .spec());
+  apps::LaunchPlatformAppWithUrl(profile, extension,
+                                 /*handler_id=*/std::string(), url,
+                                 /*referrer_url=*/GURL());
+
+  apps::RecordAppLaunch(extension_misc::kCalculatorAppId,
+                        apps::mojom::LaunchSource::kFromKeyboard);
 }
 
 void ChromeNewWindowClient::OpenFileManager() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   DCHECK(proxy);
 
@@ -373,7 +398,7 @@ void ChromeNewWindowClient::OpenFileManager() {
         apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerNone,
                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
                             /*preferred_containner=*/true),
-        apps::mojom::LaunchSource::kFromKeyboard, display::kInvalidDisplayId);
+        apps::mojom::LaunchSource::kFromKeyboard);
   };
 
   bool result = proxy->AppRegistryCache().ForOneApp(
@@ -383,7 +408,7 @@ void ChromeNewWindowClient::OpenFileManager() {
 
 void ChromeNewWindowClient::OpenDownloadsFolder() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   auto downloads_path =
       file_manager::util::GetDownloadsFolderForProfile(profile);
@@ -416,17 +441,19 @@ void ChromeNewWindowClient::OpenDownloadsFolder() {
 
 void ChromeNewWindowClient::OpenCrosh() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  GURL crosh_url = extensions::TerminalExtensionHelper::GetCroshURL(profile);
-  if (!crosh_url.is_valid())
-    return;
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
-  Browser* browser = displayer.browser();
-  content::WebContents* page = browser->OpenURL(content::OpenURLParams(
-      crosh_url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_GENERATED, false));
-  browser->window()->Show();
-  browser->window()->Activate();
-  page->Focus();
+  if (base::FeatureList::IsEnabled(chromeos::features::kCroshSWA)) {
+    web_app::LaunchSystemWebAppAsync(profile, web_app::SystemAppType::CROSH);
+  } else {
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+    Browser* browser = displayer.browser();
+    content::WebContents* page = browser->OpenURL(content::OpenURLParams(
+        GURL(chrome::kChromeUIUntrustedCroshURL), content::Referrer(),
+        WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui::PAGE_TRANSITION_GENERATED, false));
+    browser->window()->Show();
+    browser->window()->Activate();
+    page->Focus();
+  }
 }
 
 void ChromeNewWindowClient::OpenGetHelp() {
@@ -466,6 +493,11 @@ void ChromeNewWindowClient::ShowKeyboardShortcutViewer() {
 
 void ChromeNewWindowClient::ShowTaskManager() {
   chrome::OpenTaskManager(nullptr);
+}
+
+void ChromeNewWindowClient::OpenDiagnostics() {
+  if (base::FeatureList::IsEnabled(chromeos::features::kDiagnosticsApp))
+    chrome::ShowDiagnosticsApp(ProfileManager::GetActiveUserProfile());
 }
 
 void ChromeNewWindowClient::OpenFeedbackPage(bool from_assistant) {
@@ -510,7 +542,7 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
   if (!profile)
     return;
 
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       web_app::FindInstalledAppWithUrlInScope(profile, url,
                                               /*window_only=*/true);
 
@@ -531,14 +563,13 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
         WindowOpenDisposition::NEW_FOREGROUND_TAB, /*prefer_container=*/false);
   }
 
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->LaunchAppWithUrl(*app_id, event_flags, url,
-                          apps::mojom::LaunchSource::kFromArc,
-                          display::kInvalidDisplayId);
+                          apps::mojom::LaunchSource::kFromArc);
 
-  chromeos::ApkWebAppService* apk_web_app_service =
-      chromeos::ApkWebAppService::Get(profile);
+  ash::ApkWebAppService* apk_web_app_service =
+      ash::ApkWebAppService::Get(profile);
   if (!apk_web_app_service ||
       !apk_web_app_service->IsWebAppInstalledFromArc(app_id.value())) {
     return;
@@ -548,7 +579,7 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
   if (!prefs)
     return;
 
-  base::Optional<std::string> package_name =
+  absl::optional<std::string> package_name =
       apk_web_app_service->GetPackageNameForWebApp(app_id.value());
   if (!package_name.has_value())
     return;
@@ -686,10 +717,10 @@ void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries,
 
 void ChromeNewWindowClient::CloseCameraApp() {
   const ash::ShelfID shelf_id(extension_misc::kCameraAppId);
-  AppWindowLauncherItemController* const app_controller =
-      ChromeLauncherController::instance()
+  AppWindowShelfItemController* const app_controller =
+      ChromeShelfController::instance()
           ->shelf_model()
-          ->GetAppWindowLauncherItemController(shelf_id);
+          ->GetAppWindowShelfItemController(shelf_id);
   if (!app_controller)
     return;
 

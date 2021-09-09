@@ -15,6 +15,8 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/ranges.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
@@ -24,6 +26,33 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 
 namespace app_list {
+namespace {
+
+// TODO(crbug.com/1028447): This is a stop-gap until we remove the two-stage
+// result adding logic in Mixer::MixAndPublish. Remove this when possible.
+void RemoveDuplicates(Mixer::SortedResults* results) {
+  Mixer::SortedResults deduplicated;
+  deduplicated.reserve(results->size());
+
+  std::set<std::string> seen;
+  for (const Mixer::SortData& sort_data : *results) {
+    // If a result is intended for display in two views, we will have two
+    // results with the same id but different display types. We want to keep
+    // both of these, so insert concat(id, display_type).
+    const std::string display_type = base::NumberToString(
+        static_cast<int>(sort_data.result->display_type()));
+    if (!seen.insert(
+                 base::JoinString({sort_data.result->id(), display_type}, "-"))
+             .second)
+      continue;
+
+    deduplicated.emplace_back(sort_data);
+  }
+
+  results->swap(deduplicated);
+}
+
+}  // namespace
 
 Mixer::SortData::SortData() : result(nullptr), score(0.0) {}
 
@@ -108,7 +137,7 @@ void Mixer::AddProviderToGroup(size_t group_id, SearchProvider* provider) {
   groups_[group_id]->AddProvider(provider);
 }
 
-void Mixer::MixAndPublish(size_t num_max_results, const base::string16& query) {
+void Mixer::MixAndPublish(size_t num_max_results, const std::u16string& query) {
   FetchResults(query);
 
   SortedResults results;
@@ -151,6 +180,7 @@ void Mixer::MixAndPublish(size_t num_max_results, const base::string16& query) {
     // would not be seen at all once the result list is truncated.)
     std::sort(results.begin() + original_size, results.end());
   }
+  RemoveDuplicates(&results);
 
   std::vector<ChromeSearchResult*> new_results;
   for (const SortData& sort_data : results) {
@@ -160,18 +190,18 @@ void Mixer::MixAndPublish(size_t num_max_results, const base::string16& query) {
   model_updater_->PublishSearchResults(new_results);
 }
 
-void Mixer::FetchResults(const base::string16& query) {
+void Mixer::FetchResults(const std::u16string& query) {
   if (search_result_ranker_)
     search_result_ranker_->FetchRankings(query);
   for (const auto& group : groups_)
     group->FetchResults(search_result_ranker_.get());
 }
 
-void Mixer::Train(const AppLaunchData& app_launch_data) {
+void Mixer::Train(const LaunchData& launch_data) {
   if (search_result_ranker_)
-    search_result_ranker_->Train(app_launch_data);
+    search_result_ranker_->Train(launch_data);
   if (chip_ranker_)
-    chip_ranker_->Train(app_launch_data);
+    chip_ranker_->Train(launch_data);
 }
 
 }  // namespace app_list

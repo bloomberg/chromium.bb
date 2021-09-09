@@ -17,12 +17,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chrome/browser/chromeos/arc/icon_decode_request.h"
+#include "chrome/browser/ash/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
+#include "components/arc/mojom/compatibility_mode.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace app_list {
@@ -94,14 +95,14 @@ TEST_P(ArcAppShortcutsSearchProviderTest, Basic) {
       launchable);
 
   const size_t kMaxResults = launchable ? 4 : 0;
-  constexpr char kQuery[] = "shortlabel";
+  constexpr char16_t kQuery[] = u"shortlabel";
 
   auto provider = std::make_unique<ArcAppShortcutsSearchProvider>(
       kMaxResults, profile(), controller_.get());
   EXPECT_TRUE(provider->results().empty());
   arc::IconDecodeRequest::DisableSafeDecodingForTesting();
 
-  provider->Start(base::UTF8ToUTF16(kQuery));
+  provider->Start(kQuery);
   const auto& results = provider->results();
   EXPECT_EQ(kMaxResults, results.size());
   // Verify search results.

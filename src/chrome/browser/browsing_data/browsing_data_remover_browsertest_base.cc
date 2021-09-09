@@ -26,7 +26,6 @@
 #include "content/public/test/download_test_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/leveldatabase/leveldb_features.h"
 #include "ui/base/models/tree_model.h"
 
 namespace {
@@ -110,7 +109,7 @@ bool BrowsingDataRemoverBrowserTestBase::RunScriptAndGetBool(
 
 void BrowsingDataRemoverBrowserTestBase::VerifyDownloadCount(size_t expected) {
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(GetBrowser()->profile());
+      GetBrowser()->profile()->GetDownloadManager();
   DownloadManagerWaiter download_manager_waiter(download_manager);
   download_manager_waiter.WaitForInitialized();
   std::vector<download::DownloadItem*> downloads;
@@ -121,7 +120,7 @@ void BrowsingDataRemoverBrowserTestBase::VerifyDownloadCount(size_t expected) {
 void BrowsingDataRemoverBrowserTestBase::DownloadAnItem() {
   // Start a download.
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(GetBrowser()->profile());
+      GetBrowser()->profile()->GetDownloadManager();
   std::unique_ptr<content::DownloadTestObserver> observer(
       new content::DownloadTestObserverTerminal(
           download_manager, 1,
@@ -163,7 +162,8 @@ int BrowsingDataRemoverBrowserTestBase::GetSiteDataCount() {
 
 network::mojom::NetworkContext*
 BrowsingDataRemoverBrowserTestBase::network_context() const {
-  return content::BrowserContext::GetDefaultStoragePartition(
-             GetBrowser()->profile())
+  return GetBrowser()
+      ->profile()
+      ->GetDefaultStoragePartition()
       ->GetNetworkContext();
 }

@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "services/network/trust_tokens/trust_token_operation_metrics_recorder.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
+#include "services/network/trust_tokens/trust_token_request_issuance_helper.h"
 
 namespace network {
 
@@ -19,7 +20,7 @@ namespace network {
 class OperationTimingRequestHelperWrapper : public TrustTokenRequestHelper {
  public:
   explicit OperationTimingRequestHelperWrapper(
-      mojom::TrustTokenOperationType type,
+      std::unique_ptr<TrustTokenOperationMetricsRecorder> metrics_recorder,
       std::unique_ptr<TrustTokenRequestHelper> helper);
   ~OperationTimingRequestHelperWrapper() override;
 
@@ -32,6 +33,9 @@ class OperationTimingRequestHelperWrapper : public TrustTokenRequestHelper {
       mojom::URLResponseHead* response,
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) override;
 
+  mojom::TrustTokenOperationResultPtr CollectOperationResultWithStatus(
+      mojom::TrustTokenOperationStatus status) override;
+
  private:
   // Records timing metrics, then calls the callback.
   void FinishBegin(
@@ -43,8 +47,7 @@ class OperationTimingRequestHelperWrapper : public TrustTokenRequestHelper {
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
       mojom::TrustTokenOperationStatus status);
 
-  mojom::TrustTokenOperationType type_;
-  TrustTokenOperationMetricsRecorder recorder_;
+  std::unique_ptr<TrustTokenOperationMetricsRecorder> recorder_;
   std::unique_ptr<TrustTokenRequestHelper> helper_;
 
   base::WeakPtrFactory<OperationTimingRequestHelperWrapper> weak_factory_{this};

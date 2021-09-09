@@ -46,9 +46,9 @@ ConsumerIPCClientImpl::ConsumerIPCClientImpl(const char* service_sock_name,
                                              Consumer* consumer,
                                              base::TaskRunner* task_runner)
     : consumer_(consumer),
-      ipc_channel_(ipc::Client::CreateInstance(service_sock_name,
-                                               /*retry=*/false,
-                                               task_runner)),
+      ipc_channel_(
+          ipc::Client::CreateInstance({service_sock_name, /*sock_retry=*/false},
+                                      task_runner)),
       consumer_port_(this /* event_listener */),
       weak_ptr_factory_(this) {
   ipc_channel_->BindService(consumer_port_.GetWeakPtr());
@@ -75,6 +75,14 @@ void ConsumerIPCClientImpl::EnableTracing(const TraceConfig& trace_config,
     return;
   }
 
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+  if (fd) {
+    consumer_->OnTracingDisabled(
+        "Passing FDs for write_into_file is not supported on Windows");
+    return;
+  }
+#endif
+
   protos::gen::EnableTracingRequest req;
   *req.mutable_trace_config() = trace_config;
   ipc::Deferred<protos::gen::EnableTracingResponse> async_response;
@@ -91,7 +99,7 @@ void ConsumerIPCClientImpl::EnableTracing(const TraceConfig& trace_config,
   consumer_port_.EnableTracing(req, std::move(async_response), *fd);
 }
 
-void ConsumerIPCClientImpl::ChangeTraceConfig(const TraceConfig&) {
+void ConsumerIPCClientImpl::ChangeTraceConfig(const TraceConfig& trace_config) {
   if (!connected_) {
     PERFETTO_DLOG(
         "Cannot ChangeTraceConfig(), not connected to tracing service");
@@ -105,6 +113,7 @@ void ConsumerIPCClientImpl::ChangeTraceConfig(const TraceConfig&) {
           PERFETTO_DLOG("ChangeTraceConfig() failed");
       });
   protos::gen::ChangeTraceConfigRequest req;
+  *req.mutable_trace_config() = trace_config;
   consumer_port_.ChangeTraceConfig(req, std::move(async_response));
 }
 
@@ -421,6 +430,32 @@ void ConsumerIPCClientImpl::QueryCapabilities(
         }
       });
   consumer_port_.QueryCapabilities(req, std::move(async_response));
+}
+
+void ConsumerIPCClientImpl::SaveTraceForBugreport(
+    SaveTraceForBugreportCallback callback) {
+  if (!connected_) {
+    PERFETTO_DLOG(
+        "Cannot SaveTraceForBugreport(), not connected to tracing service");
+    return;
+  }
+
+  protos::gen::SaveTraceForBugreportRequest req;
+  ipc::Deferred<protos::gen::SaveTraceForBugreportResponse> async_response;
+  async_response.Bind(
+      [callback](ipc::AsyncResult<protos::gen::SaveTraceForBugreportResponse>
+                     response) {
+        if (!response) {
+          // If the IPC fails, we are talking to an older version of the service
+          // that didn't support SaveTraceForBugreport at all.
+          callback(
+              false,
+              "The tracing service doesn't support SaveTraceForBugreport()");
+        } else {
+          callback(response->success(), response->msg());
+        }
+      });
+  consumer_port_.SaveTraceForBugreport(req, std::move(async_response));
 }
 
 }  // namespace perfetto

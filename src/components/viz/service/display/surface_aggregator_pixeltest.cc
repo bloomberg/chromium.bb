@@ -66,6 +66,9 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::ValuesIn(GetGpuRendererTypes()),
                          testing::PrintToStringParamName());
 
+// GetGpuRendererTypes() can return an empty list, e.g. on Fuchsia ARM64.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SurfaceAggregatorPixelTest);
+
 SharedQuadState* CreateAndAppendTestSharedQuadState(
     CompositorRenderPass* render_pass,
     const gfx::Transform& transform,
@@ -73,15 +76,13 @@ SharedQuadState* CreateAndAppendTestSharedQuadState(
   const gfx::Rect layer_rect = gfx::Rect(size);
   const gfx::Rect visible_layer_rect = gfx::Rect(size);
   const gfx::MaskFilterInfo mask_filter_info;
-  const gfx::Rect clip_rect = gfx::Rect(size);
-  bool is_clipped = false;
   bool are_contents_opaque = false;
   float opacity = 1.f;
   const SkBlendMode blend_mode = SkBlendMode::kSrcOver;
   auto* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(transform, layer_rect, visible_layer_rect,
-                       mask_filter_info, clip_rect, is_clipped,
-                       are_contents_opaque, opacity, blend_mode, 0);
+                       mask_filter_info, absl::nullopt, are_contents_opaque,
+                       opacity, blend_mode, 0);
   return shared_state;
 }
 
@@ -152,7 +153,7 @@ TEST_P(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
     auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     surface_quad->SetNew(
         pass->shared_quad_state_list.back(), gfx::Rect(child_size),
-        gfx::Rect(child_size), SurfaceRange(base::nullopt, child_surface_id),
+        gfx::Rect(child_size), SurfaceRange(absl::nullopt, child_surface_id),
         SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false);
 
     auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -246,7 +247,7 @@ TEST_P(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     auto* left_surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     left_surface_quad->SetNew(
         pass->shared_quad_state_list.back(), gfx::Rect(child_size),
-        gfx::Rect(child_size), SurfaceRange(base::nullopt, left_child_id),
+        gfx::Rect(child_size), SurfaceRange(absl::nullopt, left_child_id),
         SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false);
 
     surface_transform.Translate(100, 0);
@@ -256,7 +257,7 @@ TEST_P(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     auto* right_surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     right_surface_quad->SetNew(
         pass->shared_quad_state_list.back(), gfx::Rect(child_size),
-        gfx::Rect(child_size), SurfaceRange(base::nullopt, right_child_id),
+        gfx::Rect(child_size), SurfaceRange(absl::nullopt, right_child_id),
         SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false);
 
     auto root_frame =
@@ -347,11 +348,15 @@ TEST_P(SurfaceAggregatorPixelTest, DrawAndEraseDelegatedInkTrail) {
 
   // Create and send metadata and points to the renderer that will be drawn.
   // Points and timestamps are chosen arbitrarily.
-  delegated_ink_helper.CreateAndSendMetadata(
-      gfx::PointF(10, 10), 7.7f, SK_ColorWHITE, gfx::RectF(0, 0, 200, 200));
-  delegated_ink_helper.CreateAndSendPointFromMetadata();
+  const gfx::PointF kFirstPoint(10, 10);
+  const base::TimeTicks kFirstTimestamp = base::TimeTicks::Now();
+  delegated_ink_helper.CreateAndSendPoint(kFirstPoint, kFirstTimestamp);
   delegated_ink_helper.CreateAndSendPointFromLastPoint(gfx::PointF(26, 37));
   delegated_ink_helper.CreateAndSendPointFromLastPoint(gfx::PointF(45, 87));
+
+  delegated_ink_helper.CreateAndSendMetadata(kFirstPoint, 7.7f, SK_ColorWHITE,
+                                             kFirstTimestamp,
+                                             gfx::RectF(0, 0, 200, 200));
 
   gfx::Rect rect(this->device_viewport_size_);
   CompositorRenderPassId id{1};

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import absolute_import
 import importlib
 import logging
 
@@ -56,7 +58,7 @@ def ImportOptionalModule(module):
     # the implementation. It's important to re-raise the error here
     # instead of failing silently.
     if 'cannot import name' in str(e):
-      print 'Possible circular dependency!'
+      print('Possible circular dependency!')
       raise
     logging.warning('Unable to import %s due to: %s', module, e)
     return None

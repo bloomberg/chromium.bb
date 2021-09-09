@@ -31,19 +31,19 @@ namespace dawn_native {
             }
 
           private:
-            void Configure(wgpu::TextureFormat format,
-                           wgpu::TextureUsage allowedUsage,
-                           uint32_t width,
-                           uint32_t height) override {
+            void APIConfigure(wgpu::TextureFormat format,
+                              wgpu::TextureUsage allowedUsage,
+                              uint32_t width,
+                              uint32_t height) override {
                 GetDevice()->ConsumedError(DAWN_VALIDATION_ERROR("error swapchain"));
             }
 
-            TextureViewBase* GetCurrentTextureView() override {
+            TextureViewBase* APIGetCurrentTextureView() override {
                 GetDevice()->ConsumedError(DAWN_VALIDATION_ERROR("error swapchain"));
                 return TextureViewBase::MakeError(GetDevice());
             }
 
-            void Present() override {
+            void APIPresent() override {
                 GetDevice()->ConsumedError(DAWN_VALIDATION_ERROR("error swapchain"));
             }
         };
@@ -89,7 +89,8 @@ namespace dawn_native {
                 return DAWN_VALIDATION_ERROR("Swapchain size can't be empty");
             }
 
-            if (descriptor->width > kMaxTextureSize || descriptor->height > kMaxTextureSize) {
+            if (descriptor->width > kMaxTextureDimension2D ||
+                descriptor->height > kMaxTextureDimension2D) {
                 return DAWN_VALIDATION_ERROR("Swapchain size too big");
             }
         }
@@ -141,10 +142,10 @@ namespace dawn_native {
         }
     }
 
-    void OldSwapChainBase::Configure(wgpu::TextureFormat format,
-                                     wgpu::TextureUsage allowedUsage,
-                                     uint32_t width,
-                                     uint32_t height) {
+    void OldSwapChainBase::APIConfigure(wgpu::TextureFormat format,
+                                        wgpu::TextureUsage allowedUsage,
+                                        uint32_t width,
+                                        uint32_t height) {
         if (GetDevice()->ConsumedError(ValidateConfigure(format, allowedUsage, width, height))) {
             return;
         }
@@ -160,14 +161,14 @@ namespace dawn_native {
                                   static_cast<WGPUTextureUsage>(allowedUsage), width, height);
     }
 
-    TextureViewBase* OldSwapChainBase::GetCurrentTextureView() {
+    TextureViewBase* OldSwapChainBase::APIGetCurrentTextureView() {
         if (GetDevice()->ConsumedError(ValidateGetCurrentTextureView())) {
             return TextureViewBase::MakeError(GetDevice());
         }
         ASSERT(!IsError());
 
         // Return the same current texture view until Present is called.
-        if (mCurrentTextureView.Get() != nullptr) {
+        if (mCurrentTextureView != nullptr) {
             // Calling GetCurrentTextureView always returns a new reference so add it even when
             // reuse the existing texture view.
             mCurrentTextureView->Reference();
@@ -179,7 +180,7 @@ namespace dawn_native {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = mWidth;
         descriptor.size.height = mHeight;
-        descriptor.size.depth = 1;
+        descriptor.size.depthOrArrayLayers = 1;
         descriptor.sampleCount = 1;
         descriptor.format = mFormat;
         descriptor.mipLevelCount = 1;
@@ -189,11 +190,11 @@ namespace dawn_native {
         // of dawn_native
         mCurrentTexture = AcquireRef(GetNextTextureImpl(&descriptor));
 
-        mCurrentTextureView = mCurrentTexture->CreateView(nullptr);
+        mCurrentTextureView = mCurrentTexture->APICreateView();
         return mCurrentTextureView.Get();
     }
 
-    void OldSwapChainBase::Present() {
+    void OldSwapChainBase::APIPresent() {
         if (GetDevice()->ConsumedError(ValidatePresent())) {
             return;
         }
@@ -247,7 +248,7 @@ namespace dawn_native {
         DAWN_TRY(GetDevice()->ValidateIsAlive());
         DAWN_TRY(GetDevice()->ValidateObject(this));
 
-        if (mCurrentTextureView.Get() == nullptr) {
+        if (mCurrentTextureView == nullptr) {
             return DAWN_VALIDATION_ERROR(
                 "Cannot call present without a GetCurrentTextureView call for this frame");
         }
@@ -271,7 +272,7 @@ namespace dawn_native {
     }
 
     NewSwapChainBase::~NewSwapChainBase() {
-        if (mCurrentTextureView.Get() != nullptr) {
+        if (mCurrentTextureView != nullptr) {
             ASSERT(mCurrentTextureView->GetTexture()->GetTextureState() ==
                    TextureBase::TextureState::Destroyed);
         }
@@ -291,20 +292,20 @@ namespace dawn_native {
         mAttached = true;
     }
 
-    void NewSwapChainBase::Configure(wgpu::TextureFormat format,
-                                     wgpu::TextureUsage allowedUsage,
-                                     uint32_t width,
-                                     uint32_t height) {
+    void NewSwapChainBase::APIConfigure(wgpu::TextureFormat format,
+                                        wgpu::TextureUsage allowedUsage,
+                                        uint32_t width,
+                                        uint32_t height) {
         GetDevice()->ConsumedError(
             DAWN_VALIDATION_ERROR("Configure is invalid for surface-based swapchains"));
     }
 
-    TextureViewBase* NewSwapChainBase::GetCurrentTextureView() {
+    TextureViewBase* NewSwapChainBase::APIGetCurrentTextureView() {
         if (GetDevice()->ConsumedError(ValidateGetCurrentTextureView())) {
             return TextureViewBase::MakeError(GetDevice());
         }
 
-        if (mCurrentTextureView.Get() != nullptr) {
+        if (mCurrentTextureView != nullptr) {
             // Calling GetCurrentTextureView always returns a new reference so add it even when
             // reusing the existing texture view.
             mCurrentTextureView->Reference();
@@ -330,7 +331,7 @@ namespace dawn_native {
         return view;
     }
 
-    void NewSwapChainBase::Present() {
+    void NewSwapChainBase::APIPresent() {
         if (GetDevice()->ConsumedError(ValidatePresent())) {
             return;
         }
@@ -384,7 +385,7 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("Presenting on detached swapchain");
         }
 
-        if (mCurrentTextureView.Get() == nullptr) {
+        if (mCurrentTextureView == nullptr) {
             return DAWN_VALIDATION_ERROR("Presenting without prior GetCurrentTextureView");
         }
 

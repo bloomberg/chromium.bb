@@ -10,15 +10,14 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -34,7 +33,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
-#include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -48,6 +47,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "url/gurl.h"
@@ -238,9 +238,10 @@ PasswordCheckDelegate::PasswordCheckDelegate(
           presenter,
           BulkLeakCheckServiceFactory::GetForProfile(profile_),
           profile_->GetPrefs()) {
-  observed_saved_passwords_presenter_.Add(saved_passwords_presenter_);
-  observed_insecure_credentials_manager_.Add(&insecure_credentials_manager_);
-  observed_bulk_leak_check_service_.Add(
+  observed_saved_passwords_presenter_.Observe(saved_passwords_presenter_);
+  observed_insecure_credentials_manager_.Observe(
+      &insecure_credentials_manager_);
+  observed_bulk_leak_check_service_.Observe(
       BulkLeakCheckServiceFactory::GetForProfile(profile_));
 
   // Instructs the provider to initialize and build its cache.
@@ -256,7 +257,7 @@ std::vector<api::passwords_private::InsecureCredential>
 PasswordCheckDelegate::GetCompromisedCredentials() {
   std::vector<CompromisedCredentialAndType>
       ordered_compromised_credential_and_types = OrderCompromisedCredentials(
-          insecure_credentials_manager_.GetCompromisedCredentials());
+          insecure_credentials_manager_.GetInsecureCredentials());
 
   std::vector<api::passwords_private::InsecureCredential>
       compromised_credentials;
@@ -294,13 +295,13 @@ PasswordCheckDelegate::GetWeakCredentials() {
   return api_credentials;
 }
 
-base::Optional<api::passwords_private::InsecureCredential>
+absl::optional<api::passwords_private::InsecureCredential>
 PasswordCheckDelegate::GetPlaintextInsecurePassword(
     api::passwords_private::InsecureCredential credential) const {
   const CredentialWithPassword* insecure_credential =
       FindMatchingInsecureCredential(credential);
   if (!insecure_credential)
-    return base::nullopt;
+    return absl::nullopt;
 
   credential.password = std::make_unique<std::string>(
       base::UTF16ToUTF8(insecure_credential->password));
@@ -347,14 +348,10 @@ void PasswordCheckDelegate::StartPasswordCheck(
     return;
   }
 
-  // In case the Weakness Check feature is enabled start the check, and notify
-  // observers once done.
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordsWeaknessCheck)) {
-    insecure_credentials_manager_.StartWeakCheck(base::BindOnce(
-        &PasswordCheckDelegate::RecordAndNotifyAboutCompletedWeakPasswordCheck,
-        weak_ptr_factory_.GetWeakPtr()));
-  }
+  // Start the weakness check, and notify observers once done.
+  insecure_credentials_manager_.StartWeakCheck(base::BindOnce(
+      &PasswordCheckDelegate::RecordAndNotifyAboutCompletedWeakPasswordCheck,
+      weak_ptr_factory_.GetWeakPtr()));
 
   auto progress = base::MakeRefCounted<PasswordCheckProgress>();
   for (const auto& password : saved_passwords_presenter_->GetSavedPasswords())
@@ -443,7 +440,7 @@ void PasswordCheckDelegate::OnSavedPasswordsChanged(SavedPasswordsView) {
   NotifyPasswordCheckStatusChanged();
 }
 
-void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
+void PasswordCheckDelegate::OnInsecureCredentialsChanged(
     InsecureCredentialsView credentials) {
   if (auto* event_router =
           PasswordsPrivateEventRouterFactory::GetForProfile(profile_)) {
@@ -476,7 +473,7 @@ void PasswordCheckDelegate::OnCredentialDone(
     const LeakCheckCredential& credential,
     password_manager::IsLeaked is_leaked) {
   if (is_leaked) {
-    insecure_credentials_manager_.SaveCompromisedCredential(credential);
+    insecure_credentials_manager_.SaveInsecureCredential(credential);
   }
 
   // Update the progress in case there is one.
@@ -515,6 +512,9 @@ void PasswordCheckDelegate::
   profile_->GetPrefs()->SetDouble(
       password_manager::prefs::kLastTimePasswordCheckCompleted,
       base::Time::Now().ToDoubleT());
+  profile_->GetPrefs()->SetTime(
+      password_manager::prefs::kSyncedLastTimePasswordCheckCompleted,
+      base::Time::Now());
 
   // Delay the last Check Status update by a second. This avoids flickering of
   // the UI if the full check ran from start to finish almost immediately.

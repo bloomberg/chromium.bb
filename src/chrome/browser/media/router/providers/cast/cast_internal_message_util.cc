@@ -23,42 +23,48 @@ namespace cast_util {
 using media_router::CastInternalMessage;
 
 template <>
-const EnumTable<CastInternalMessage::Type>
-    EnumTable<CastInternalMessage::Type>::instance(
-        {
-            {CastInternalMessage::Type::kClientConnect, "client_connect"},
-            {CastInternalMessage::Type::kAppMessage, "app_message"},
-            {CastInternalMessage::Type::kV2Message, "v2_message"},
-            {CastInternalMessage::Type::kLeaveSession, "leave_session"},
-            {CastInternalMessage::Type::kReceiverAction, "receiver_action"},
-            {CastInternalMessage::Type::kNewSession, "new_session"},
-            {CastInternalMessage::Type::kUpdateSession, "update_session"},
-            {CastInternalMessage::Type::kError, "error"},
-            {CastInternalMessage::Type::kOther},
-        },
-        CastInternalMessage::Type::kMaxValue);
+const EnumTable<CastInternalMessage::Type>&
+EnumTable<CastInternalMessage::Type>::GetInstance() {
+  static const EnumTable<CastInternalMessage::Type> kInstance(
+      {
+          {CastInternalMessage::Type::kClientConnect, "client_connect"},
+          {CastInternalMessage::Type::kAppMessage, "app_message"},
+          {CastInternalMessage::Type::kV2Message, "v2_message"},
+          {CastInternalMessage::Type::kLeaveSession, "leave_session"},
+          {CastInternalMessage::Type::kReceiverAction, "receiver_action"},
+          {CastInternalMessage::Type::kNewSession, "new_session"},
+          {CastInternalMessage::Type::kUpdateSession, "update_session"},
+          {CastInternalMessage::Type::kError, "error"},
+          {CastInternalMessage::Type::kOther},
+      },
+      CastInternalMessage::Type::kMaxValue);
+  return kInstance;
+}
 
 template <>
-const EnumTable<CastInternalMessage::ErrorCode>
-    EnumTable<CastInternalMessage::ErrorCode>::instance(
-        {
-            {CastInternalMessage::ErrorCode::kInternalError, "internal_error"},
-            {CastInternalMessage::ErrorCode::kCancel, "cancel"},
-            {CastInternalMessage::ErrorCode::kTimeout, "timeout"},
-            {CastInternalMessage::ErrorCode::kApiNotInitialized,
-             "api_not_initialized"},
-            {CastInternalMessage::ErrorCode::kInvalidParameter,
-             "invalid_parameter"},
-            {CastInternalMessage::ErrorCode::kExtensionNotCompatible,
-             "extension_not_compatible"},
-            {CastInternalMessage::ErrorCode::kReceiverUnavailable,
-             "receiver_unavailable"},
-            {CastInternalMessage::ErrorCode::kSessionError, "session_error"},
-            {CastInternalMessage::ErrorCode::kChannelError, "channel_error"},
-            {CastInternalMessage::ErrorCode::kLoadMediaFailed,
-             "load_media_failed"},
-        },
-        CastInternalMessage::ErrorCode::kMaxValue);
+const EnumTable<CastInternalMessage::ErrorCode>&
+EnumTable<CastInternalMessage::ErrorCode>::GetInstance() {
+  static const EnumTable<CastInternalMessage::ErrorCode> kInstance(
+      {
+          {CastInternalMessage::ErrorCode::kInternalError, "internal_error"},
+          {CastInternalMessage::ErrorCode::kCancel, "cancel"},
+          {CastInternalMessage::ErrorCode::kTimeout, "timeout"},
+          {CastInternalMessage::ErrorCode::kApiNotInitialized,
+           "api_not_initialized"},
+          {CastInternalMessage::ErrorCode::kInvalidParameter,
+           "invalid_parameter"},
+          {CastInternalMessage::ErrorCode::kExtensionNotCompatible,
+           "extension_not_compatible"},
+          {CastInternalMessage::ErrorCode::kReceiverUnavailable,
+           "receiver_unavailable"},
+          {CastInternalMessage::ErrorCode::kSessionError, "session_error"},
+          {CastInternalMessage::ErrorCode::kChannelError, "channel_error"},
+          {CastInternalMessage::ErrorCode::kLoadMediaFailed,
+           "load_media_failed"},
+      },
+      CastInternalMessage::ErrorCode::kMaxValue);
+  return kInstance;
+}
 
 }  // namespace cast_util
 
@@ -107,7 +113,7 @@ CastInternalMessage::Type CastInternalMessageTypeFromString(
 std::string CastInternalMessageTypeToString(CastInternalMessage::Type type) {
   auto found = cast_util::EnumToString(type);
   DCHECK(found);
-  return found.value_or(base::StringPiece()).as_string();
+  return std::string(found.value_or(base::StringPiece()));
 }
 
 // Possible types in a receiver_action message.
@@ -161,7 +167,7 @@ blink::mojom::PresentationConnectionMessagePtr CreateMessageCommon(
     CastInternalMessage::Type type,
     base::Value payload,
     const std::string& client_id,
-    base::Optional<int> sequence_number = base::nullopt) {
+    absl::optional<int> sequence_number = absl::nullopt) {
   base::Value message(base::Value::Type::DICTIONARY);
   message.SetKey("type", base::Value(CastInternalMessageTypeToString(type)));
   message.SetKey("message", std::move(payload));
@@ -317,7 +323,7 @@ std::unique_ptr<CastInternalMessage> CastInternalMessage::From(
   return base::WrapUnique(new CastInternalMessage(
       message_type, client_id,
       sequence_number_value ? sequence_number_value->GetInt()
-                            : base::Optional<int>(),
+                            : absl::optional<int>(),
       session_id, namespace_or_v2_type, std::move(new_message_body)));
 }
 
@@ -326,7 +332,7 @@ CastInternalMessage::~CastInternalMessage() = default;
 CastInternalMessage::CastInternalMessage(
     Type type,
     const std::string& client_id,
-    base::Optional<int> sequence_number,
+    absl::optional<int> sequence_number,
     const std::string& session_id,
     const std::string& namespace_or_v2_type,
     base::Value message_body)
@@ -500,14 +506,14 @@ blink::mojom::PresentationConnectionMessagePtr CreateAppMessage(
 blink::mojom::PresentationConnectionMessagePtr CreateV2Message(
     const std::string& client_id,
     const base::Value& payload,
-    base::Optional<int> sequence_number) {
+    absl::optional<int> sequence_number) {
   return CreateMessageCommon(CastInternalMessage::Type::kV2Message,
                              payload.Clone(), client_id, sequence_number);
 }
 
 blink::mojom::PresentationConnectionMessagePtr CreateLeaveSessionAckMessage(
     const std::string& client_id,
-    base::Optional<int> sequence_number) {
+    absl::optional<int> sequence_number) {
   return CreateMessageCommon(CastInternalMessage::Type::kLeaveSession,
                              base::Value(), client_id, sequence_number);
 }
@@ -515,7 +521,7 @@ blink::mojom::PresentationConnectionMessagePtr CreateLeaveSessionAckMessage(
 blink::mojom::PresentationConnectionMessagePtr CreateErrorMessage(
     const std::string& client_id,
     base::Value error,
-    base::Optional<int> sequence_number) {
+    absl::optional<int> sequence_number) {
   return CreateMessageCommon(CastInternalMessage::Type::kError,
                              std::move(error), client_id, sequence_number);
 }

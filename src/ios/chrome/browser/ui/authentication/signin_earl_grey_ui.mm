@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
+#import "ios/chrome/browser/ui/authentication/views/views_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -18,7 +19,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service_constants.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -33,28 +34,57 @@ using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SignOutAccountsButton;
 
+namespace {
+
+// Closes the managed account dialog, if |fakeIdentity| is a managed account.
+void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
+  if (![fakeIdentity.userEmail hasSuffix:ios::kManagedIdentityEmailSuffix]) {
+    return;
+  }
+  // Synchronization off due to an infinite spinner, in the user consent view,
+  // under the managed consent dialog. This spinner is started by the sign-in
+  // process.
+  ScopedSynchronizationDisabler disabler;
+  id<GREYMatcher> acceptButton = [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON];
+  [ChromeEarlGrey waitForMatcher:acceptButton];
+  [[EarlGrey selectElementWithMatcher:acceptButton] performAction:grey_tap()];
+}
+
+}  // namespace
+
 @implementation SigninEarlGreyUI
 
 + (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
+  [self signinWithFakeIdentity:fakeIdentity enableSync:YES];
+}
+
++ (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity
+                    enableSync:(BOOL)enableSync {
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
-      tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
+      tapSettingsMenuButton:chrome_test_util::PrimarySignInButton()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kIdentityButtonControlIdentifier)]
+      performAction:grey_tap()];
   [self selectIdentityWithEmail:fakeIdentity.userEmail];
   [self tapSigninConfirmationDialog];
-  if ([fakeIdentity.userEmail hasSuffix:ios::kManagedIdentityEmailSuffix]) {
-    // Synchronization off due to an infinite spinner, in the user consent view,
-    // under the managed consent dialog. This spinner is started by the sign-in
-    // process.
-    ScopedSynchronizationDisabler disabler;
-    id<GREYMatcher> acceptButton = [ChromeMatchersAppInterface
-        buttonWithAccessibilityLabelID:IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON];
-    [ChromeEarlGrey waitForMatcher:acceptButton];
-    [[EarlGrey selectElementWithMatcher:acceptButton] performAction:grey_tap()];
-  }
+  CloseSigninManagedAccountDialogIfAny(fakeIdentity);
+
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+
+  // Sync utilities require sync to be initialized in order to perform
+  // operations on the Sync server.
+  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:10.0];
+
+  if (!enableSync) {
+    [ChromeEarlGrey stopSync];
+    [ChromeEarlGrey revokeSyncConsent];
+    // Ensure that Sync preferences do not take into account the first setup.
+    [ChromeEarlGrey clearSyncFirstSetupComplete];
+  }
 }
 
 + (void)signOut {
@@ -71,6 +101,23 @@ using chrome_test_util::SignOutAccountsButton;
             grey_accessibilityID(
                 kSettingsAccountsTableViewSignoutAndClearDataCellId)
       confirmationLabelID:IDS_IOS_DISCONNECT_DIALOG_CONTINUE_AND_CLEAR_MOBILE];
+}
+
++ (void)signOutWithConfirmationChoice:(SignOutConfirmationChoice)confirmation {
+  int confirmationLabelID = 0;
+  switch (confirmation) {
+    case SignOutConfirmationChoiceClearData:
+      confirmationLabelID = IDS_IOS_SIGNOUT_DIALOG_CLEAR_DATA_BUTTON;
+      break;
+    case SignOutConfirmationChoiceKeepData:
+      confirmationLabelID = IDS_IOS_SIGNOUT_DIALOG_KEEP_DATA_BUTTON;
+      break;
+    case SignOutConfirmationChoiceNotSyncing:
+      confirmationLabelID = IDS_IOS_SIGNOUT_DIALOG_SIGN_OUT_BUTTON;
+      break;
+  }
+  [self signOutWithButton:SignOutAccountsButton()
+      confirmationLabelID:confirmationLabelID];
 }
 
 + (void)selectIdentityWithEmail:(NSString*)userEmail {
@@ -154,35 +201,25 @@ using chrome_test_util::SignOutAccountsButton;
                              closeButton:(BOOL)closeButton {
   [ChromeEarlGreyUI waitForAppToIdle];
 
-  // The sign-in promo is not visible when showing illustrated empty states.
-  if (![ChromeEarlGrey isIllustratedEmptyStatesEnabled]) {
-    [[EarlGrey
-        selectElementWithMatcher:grey_allOf(
-                                     grey_accessibilityID(kSigninPromoViewId),
-                                     grey_sufficientlyVisible(), nil)]
-        assertWithMatcher:grey_notNil()];
-  }
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notNil()];
+
   switch (mode) {
-    case SigninPromoViewModeColdState:
+    case SigninPromoViewModeNoAccounts:
+    case SigninPromoViewModeSyncWithPrimaryAccount:
       [[EarlGrey
           selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
                                               grey_sufficientlyVisible(), nil)]
           assertWithMatcher:grey_nil()];
       break;
-    case SigninPromoViewModeWarmState:
-      if (![ChromeEarlGrey isIllustratedEmptyStatesEnabled]) {
-        [[EarlGrey
-            selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
-                                                grey_sufficientlyVisible(),
-                                                nil)]
-            assertWithMatcher:grey_notNil()];
-      }
+    case SigninPromoViewModeSigninWithAccount:
+      // TODO(crbug.com/1210846): Determine when the SecondarySignInButton
+      // should be present and assert that.
       break;
   }
+
   if (closeButton) {
     [[EarlGrey
         selectElementWithMatcher:grey_allOf(grey_accessibilityID(
@@ -208,7 +245,7 @@ using chrome_test_util::SignOutAccountsButton;
       assertWithMatcher:grey_nil()];
 }
 
-+ (void)tapRemoveAccountFromDeviceWithFakeIdentity:
++ (void)openRemoveAccountConfirmationDialogWithFakeIdentity:
     (FakeChromeIdentity*)fakeIdentity {
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
                                           fakeIdentity.userEmail)]
@@ -218,6 +255,11 @@ using chrome_test_util::SignOutAccountsButton;
                                    l10n_util::GetNSString(
                                        IDS_IOS_REMOVE_GOOGLE_ACCOUNT_TITLE))]
       performAction:grey_tap()];
+}
+
++ (void)tapRemoveAccountFromDeviceWithFakeIdentity:
+    (FakeChromeIdentity*)fakeIdentity {
+  [self openRemoveAccountConfirmationDialogWithFakeIdentity:fakeIdentity];
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
                                           l10n_util::GetNSString(
                                               IDS_IOS_REMOVE_ACCOUNT_LABEL))]
@@ -226,7 +268,10 @@ using chrome_test_util::SignOutAccountsButton;
   [ChromeEarlGreyUI waitForAppToIdle];
 }
 
-+ (void)scrollToPrimarySignInButtonInRecentTabs {
++ (void)tapPrimarySignInButtonInRecentTabs {
+  [ChromeEarlGreyUI openToolsMenu];
+  [ChromeEarlGreyUI
+      tapToolsMenuButton:chrome_test_util::RecentTabsMenuButton()];
   [[[EarlGrey
       selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
@@ -238,22 +283,24 @@ using chrome_test_util::SignOutAccountsButton;
       performAction:grey_tap()];
 }
 
-+ (void)collapseRecentlyClosedTabsIfSigninPromoNotVisible {
-  NSError* error = nil;
-  [[EarlGrey selectElementWithMatcher:
-                 grey_accessibilityID(
-                     kRecentTabsTableViewControllerAccessibilityIdentifier)]
-      assertWithMatcher:chrome_test_util::ContentViewSmallerThanScrollView()
-                  error:&error];
-
-  if (error) {
-    [[EarlGrey selectElementWithMatcher:
-                   grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(
-                                  l10n_util::GetNSString(
-                                      IDS_IOS_RECENT_TABS_RECENTLY_CLOSED)),
-                              grey_sufficientlyVisible(), nil)]
-        performAction:grey_tap()];
-  }
++ (void)tapPrimarySignInButtonInTabSwitcher {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridOtherDevicesPanelButton()]
+      performAction:grey_tap()];
+  // The start point needs to avoid the "Done" bar on iPhone, in order to catch
+  // the table view and scroll.
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollToContentEdgeWithStartPoint(
+                               kGREYContentEdgeBottom, 0.5, 0.5)
+      onElementWithMatcher:
+          grey_allOf(grey_accessibilityID(
+                         kRecentTabsTableViewControllerAccessibilityIdentifier),
+                     grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
 }
 
 #pragma mark - Private

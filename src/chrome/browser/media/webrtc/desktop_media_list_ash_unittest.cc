@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/webrtc/desktop_media_list_ash.h"
 
+#include <memory>
+
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -43,8 +45,8 @@ class DesktopMediaListAshTest : public ChromeAshTestBase {
     ChromeAshTestBase::TearDown();
   }
 
-  void CreateList(content::DesktopMediaID::Type type) {
-    list_.reset(new DesktopMediaListAsh(type));
+  void CreateList(DesktopMediaList::Type type) {
+    list_ = std::make_unique<DesktopMediaListAsh>(type);
     list_->SetThumbnailSize(gfx::Size(kThumbnailSize, kThumbnailSize));
 
     // Set update period to reduce the time it takes to run tests.
@@ -63,7 +65,7 @@ ACTION(QuitMessageLoop) {
 }
 
 TEST_F(DesktopMediaListAshTest, ScreenOnly) {
-  CreateList(content::DesktopMediaID::TYPE_SCREEN);
+  CreateList(DesktopMediaList::Type::kScreen);
 
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
@@ -77,7 +79,7 @@ TEST_F(DesktopMediaListAshTest, ScreenOnly) {
 }
 
 TEST_F(DesktopMediaListAshTest, WindowOnly) {
-  CreateList(content::DesktopMediaID::TYPE_WINDOW);
+  CreateList(DesktopMediaList::Type::kWindow);
 
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 

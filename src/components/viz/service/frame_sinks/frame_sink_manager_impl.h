@@ -17,10 +17,10 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "components/viz/common/constants.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"
@@ -42,6 +42,7 @@
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace viz {
 
@@ -68,13 +69,14 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     InitParams& operator=(InitParams&& other);
 
     SharedBitmapManager* shared_bitmap_manager = nullptr;
-    base::Optional<uint32_t> activation_deadline_in_frames =
+    absl::optional<uint32_t> activation_deadline_in_frames =
         kDefaultActivationDeadlineInFrames;
     OutputSurfaceProvider* output_surface_provider = nullptr;
     uint32_t restart_id = BeginFrameSource::kNotRestartableId;
     bool run_all_compositor_stages_before_draw = false;
     bool log_capture_pipeline_in_webrtc = false;
     DebugRendererSettings debug_renderer_settings;
+    gfx::RenderingPipeline* gpu_pipeline = nullptr;
   };
   explicit FrameSinkManagerImpl(const InitParams& params);
   // TODO(kylechar): Cleanup tests and remove this constructor.
@@ -82,10 +84,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       SharedBitmapManager* shared_bitmap_manager,
       OutputSurfaceProvider* output_surface_provider = nullptr);
   ~FrameSinkManagerImpl() override;
-
-  // Performs cleanup needed to force shutdown from the GPU process. Stops all
-  // incoming IPCs and destroys all [Root]CompositorFrameSinkImpls.
-  void ForceShutdown();
 
   // Binds |this| as a FrameSinkManagerImpl for |receiver| on |task_runner|. On
   // Mac |task_runner| will be the resize helper task runner. May only be called
@@ -138,9 +136,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                        EvictBackBufferCallback callback) override;
   void UpdateDebugRendererSettings(
       const DebugRendererSettings& debug_settings) override;
-  void StartThrottling(const std::vector<FrameSinkId>& frame_sink_ids,
-                       base::TimeDelta interval) override;
-  void EndThrottling() override;
+  void Throttle(const std::vector<FrameSinkId>& ids,
+                base::TimeDelta interval) override;
 
   // SurfaceObserver implementation.
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
@@ -185,7 +182,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void SubmitHitTestRegionList(
       const SurfaceId& surface_id,
       uint64_t frame_index,
-      base::Optional<HitTestRegionList> hit_test_region_list);
+      absl::optional<HitTestRegionList> hit_test_region_list);
 
   // Instantiates |video_detector_| for tests where we simulate the passage of
   // time.
@@ -194,7 +191,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   void OnFrameTokenChangedDirect(const FrameSinkId& frame_sink_id,
-                                 uint32_t frame_token);
+                                 uint32_t frame_token,
+                                 base::TimeTicks activation_time);
 
   // Called when |frame_token| is changed on a submitted CompositorFrame.
   void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
@@ -228,6 +226,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // This may be used in case we know a frame can't be produced any time soon,
   // so there's no point for caller to wait for the copy of output.
   void DiscardPendingCopyOfOutputRequests(const BeginFrameSource* source);
+
+  // Called when video capture starts on the target frame sink with |id|.
+  void OnCaptureStarted(const FrameSinkId& id);
+  // Called when video capture stops on the target frame sink with |id|.
+  void OnCaptureStopped(const FrameSinkId& id);
 
  private:
   friend class FrameSinkManagerTest;
@@ -286,6 +289,16 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void UpdateThrottlingRecursively(const FrameSinkId& id,
                                    base::TimeDelta interval);
 
+  // Called when throttling needs to be updated. Some examples can trigger such
+  // an update include: starting of video capturing requires throttling on the
+  // frame sink being captured to be stopped; a frame sink hierarchical change
+  // requires throttling on affected frame sinks to be started or stopped.
+  void UpdateThrottling();
+
+  // Clears throttling operation on the frame sink with |id| and all its
+  // descendants.
+  void ClearThrottling(const FrameSinkId& id);
+
   // SharedBitmapManager for the viz display service for receiving software
   // resources in CompositorFrameSinks.
   SharedBitmapManager* const shared_bitmap_manager_;
@@ -338,10 +351,17 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                  base::UniquePtrComparator>
       video_capturers_;
 
-  base::flat_map<uint32_t, base::ScopedClosureRunner> cached_back_buffers_;
+  // The ids of the frame sinks that are currently being captured.
+  // These frame sinks should not be throttled.
+  base::flat_set<FrameSinkId> captured_frame_sink_ids_;
 
-  // This tells if any frame sinks are currently throttled.
-  bool frame_sinks_throttled_ = false;
+  // Ids of the frame sinks that have been requested to throttle.
+  std::vector<FrameSinkId> frame_sink_ids_to_throttle_;
+
+  // The throttling interval which defines how often BeginFrames are sent.
+  base::TimeDelta throttle_interval_ = BeginFrameArgs::DefaultInterval();
+
+  base::flat_map<uint32_t, base::ScopedClosureRunner> cached_back_buffers_;
 
   THREAD_CHECKER(thread_checker_);
 
@@ -363,11 +383,13 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   //     OnFrameTokenChanged() will be directly called (without PostTask) on
   //     |client_|. Used for some unit tests.
   mojom::FrameSinkManagerClient* client_ = nullptr;
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_ = nullptr;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   mojo::Remote<mojom::FrameSinkManagerClient> client_remote_;
   mojo::Receiver<mojom::FrameSinkManager> receiver_{this};
 
   base::ObserverList<FrameSinkObserver>::Unchecked observer_list_;
+
+  gfx::RenderingPipeline* gpu_pipeline_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerImpl);
 };

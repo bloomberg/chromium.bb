@@ -5,9 +5,6 @@
 #ifndef CC_INPUT_SCROLL_STATE_H_
 #define CC_INPUT_SCROLL_STATE_H_
 
-#include <list>
-#include <memory>
-
 #include "cc/cc_export.h"
 #include "cc/input/scroll_state_data.h"
 #include "ui/gfx/geometry/point.h"
@@ -57,6 +54,14 @@ class CC_EXPORT ScrollState {
   bool is_direct_manipulation() const { return data_.is_direct_manipulation; }
   void set_is_direct_manipulation(bool is_direct_manipulation) {
     data_.is_direct_manipulation = is_direct_manipulation;
+  }
+
+  // True if the user interacts with the scrollbar.
+  bool is_scrollbar_interaction() const {
+    return data_.is_scrollbar_interaction;
+  }
+  void set_is_scrollbar_interaction(bool is_scrollbar_interaction) {
+    data_.is_scrollbar_interaction = is_scrollbar_interaction;
   }
 
   bool delta_consumed_for_scroll_sequence() const {

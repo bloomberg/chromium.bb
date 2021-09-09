@@ -7,9 +7,10 @@
 
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "components/media_message_center/media_notification_view.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 
@@ -40,6 +41,8 @@ struct COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) NotificationTheme {
 class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
     : public MediaNotificationView {
  public:
+  METADATA_HEADER(MediaNotificationViewImpl);
+
   // The name of the histogram used when recorded whether the artwork was
   // present.
   static const char kArtworkHistogramName[];
@@ -63,10 +66,13 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
       MediaNotificationContainer* container,
       base::WeakPtr<MediaNotificationItem> item,
       std::unique_ptr<views::View> header_row_controls_view,
-      const base::string16& default_app_name,
+      const std::u16string& default_app_name,
       int notification_width,
       bool should_show_icon,
-      base::Optional<NotificationTheme> theme = base::nullopt);
+      absl::optional<NotificationTheme> theme = absl::nullopt);
+  MediaNotificationViewImpl(const MediaNotificationViewImpl&) = delete;
+  MediaNotificationViewImpl& operator=(const MediaNotificationViewImpl&) =
+      delete;
   ~MediaNotificationViewImpl() override;
 
   // views::View:
@@ -83,6 +89,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   void UpdateWithMediaActions(
       const base::flat_set<media_session::mojom::MediaSessionAction>& actions)
       override;
+  void UpdateWithMediaPosition(
+      const media_session::MediaPosition& position) override {}
   void UpdateWithMediaArtwork(const gfx::ImageSkia& image) override;
   void UpdateWithFavicon(const gfx::ImageSkia& icon) override;
   void UpdateWithVectorIcon(const gfx::VectorIcon& vector_icon) override;
@@ -105,7 +113,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   std::vector<views::View*> get_buttons_for_testing() { return GetButtons(); }
 
   views::Button* GetHeaderRowForTesting() const;
-  base::string16 GetSourceTitleForTesting() const;
+  std::u16string GetSourceTitleForTesting() const;
 
  private:
   friend class MediaNotificationViewImplTest;
@@ -115,7 +123,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   // |accessible_name| is the text used for screen readers and the
   // button's tooltip.
   void CreateMediaButton(media_session::mojom::MediaSessionAction action,
-                         const base::string16& accessible_name);
+                         const std::u16string& accessible_name);
 
   void CreateHeaderRow(std::unique_ptr<views::View> header_row_controls_view,
                        bool should_show_icon);
@@ -127,12 +135,14 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
 
   MediaNotificationBackground* GetMediaNotificationBackground();
 
-  bool IsExpandable() const;
-  bool IsActuallyExpanded() const;
+  bool GetExpandable() const;
+  bool GetActuallyExpanded() const;
 
   void UpdateForegroundColor();
 
   void ButtonPressed(views::Button* button);
+
+  void MaybeShowOrHideArtistLabel();
 
   // Returns the buttons contained in the button row and playback button
   // container.
@@ -150,7 +160,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   views::View* header_row_controls_view_ = nullptr;
 
   // String to set as the app name of the header when there is no source title.
-  base::string16 default_app_name_;
+  std::u16string default_app_name_;
 
   // Width of the notification in pixels. Used for calculating artwork bounds.
   int notification_width_;
@@ -161,14 +171,14 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   bool expanded_ = false;
 
   // Used to force the notification to remain in a specific expanded state.
-  base::Optional<bool> forced_expanded_state_;
+  absl::optional<bool> forced_expanded_state_;
 
   // Set of enabled actions.
   base::flat_set<media_session::mojom::MediaSessionAction> enabled_actions_;
 
   // Stores the text to be read by screen readers describing the notification.
   // Contains the title, artist and album separated by hyphens.
-  base::string16 accessible_name_;
+  std::u16string accessible_name_;
 
   // Container views directly attached to this view.
   message_center::NotificationHeaderView* header_row_ = nullptr;
@@ -187,11 +197,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   views::BoxLayout* title_artist_row_layout_ = nullptr;
   const gfx::VectorIcon* vector_header_icon_ = nullptr;
 
-  base::Optional<NotificationTheme> theme_;
+  absl::optional<NotificationTheme> theme_;
 
   const bool is_cros_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaNotificationViewImpl);
 };
 
 }  // namespace media_message_center

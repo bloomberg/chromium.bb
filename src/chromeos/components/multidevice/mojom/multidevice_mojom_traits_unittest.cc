@@ -32,7 +32,7 @@ TEST(MultiDeviceMojomStructTraitsTest, BeaconSeed) {
 
   chromeos::multidevice::BeaconSeed output;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              chromeos::multidevice::mojom::BeaconSeed>(&input, &output));
+              chromeos::multidevice::mojom::BeaconSeed>(input, output));
 
   EXPECT_EQ(kTestBeaconSeedData, output.data());
   EXPECT_EQ(kTestBeaconSeedStartTimeMillis, output.start_time().ToJavaTime());
@@ -66,7 +66,7 @@ TEST(MultiDeviceMojomStructTraitsTest, RemoteDevice) {
 
   chromeos::multidevice::RemoteDevice output;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              chromeos::multidevice::mojom::RemoteDevice>(&input, &output));
+              chromeos::multidevice::mojom::RemoteDevice>(input, output));
 
   EXPECT_EQ("userEmail", output.user_email);
   EXPECT_EQ("instanceId", output.instance_id);
@@ -99,7 +99,9 @@ TEST(DeviceSyncMojomEnumTraitsTest, SoftwareFeature) {
           chromeos::multidevice::SoftwareFeature::kPhoneHubHost,
           chromeos::multidevice::SoftwareFeature::kPhoneHubClient,
           chromeos::multidevice::SoftwareFeature::kWifiSyncHost,
-          chromeos::multidevice::SoftwareFeature::kWifiSyncClient};
+          chromeos::multidevice::SoftwareFeature::kWifiSyncClient,
+          chromeos::multidevice::SoftwareFeature::kEcheHost,
+          chromeos::multidevice::SoftwareFeature::kEcheClient};
 
   for (auto feature_in : kTestSoftwareFeatures) {
     chromeos::multidevice::SoftwareFeature feature_out;

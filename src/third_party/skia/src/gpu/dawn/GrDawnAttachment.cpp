@@ -18,7 +18,7 @@ GrDawnAttachment::GrDawnAttachment(GrDawnGpu* gpu,
                                    int samples,
                                    wgpu::Texture texture,
                                    wgpu::TextureView view)
-        : INHERITED(gpu, dimensions, supportedUsages, samples, GrProtected::kNo)
+        : INHERITED(gpu, dimensions, supportedUsages, samples, GrMipmapped::kNo, GrProtected::kNo)
         , fTexture(texture)
         , fView(view) {
     this->registerWithCache(SkBudgeted::kYes);
@@ -28,10 +28,10 @@ sk_sp<GrDawnAttachment> GrDawnAttachment::MakeStencil(GrDawnGpu* gpu,
                                                       SkISize dimensions,
                                                       int sampleCnt) {
     wgpu::TextureDescriptor desc;
-    desc.usage = wgpu::TextureUsage::OutputAttachment;
+    desc.usage = wgpu::TextureUsage::RenderAttachment;
     desc.size.width = dimensions.width();
     desc.size.height = dimensions.height();
-    desc.size.depth = 1;
+    desc.size.depthOrArrayLayers = 1;
     desc.format = wgpu::TextureFormat::Depth24PlusStencil8;
     wgpu::Texture texture = gpu->device().CreateTexture(&desc);
     if (!texture) {

@@ -150,6 +150,64 @@ function waitForAnimationEndTimeBased(getValue) {
   })
 }
 
+function waitForEvent(eventTarget, eventName, timeoutMs = 1000) {
+  return new Promise((resolve, reject) => {
+    const eventListener = (evt) => {
+      clearTimeout(timeout);
+      eventTarget.removeEventListener(eventName, eventListener);
+      resolve(evt);
+    };
+    let timeout = setTimeout(() => {
+      eventTarget.removeEventListener(eventName, eventListener);
+      reject(`Timeout waiting for ${eventName} event`);
+    }, timeoutMs);
+    eventTarget.addEventListener(eventName, eventListener);
+  });
+}
+
+function waitForScrollEvent(eventTarget, timeoutMs = 1000) {
+  return waitForEvent(eventTarget, 'scroll', timeoutMs);
+}
+
+function waitForScrollendEvent(eventTarget, timeoutMs = 2000) {
+  return waitForEvent(eventTarget, 'scrollend', timeoutMs);
+}
+
+// Event driven scroll promise. This method has the advantage over timing
+// methods, as it is more forgiving to delays in event dispatch or between
+// chained smooth scrolls. It has an additional advantage of completing sooner
+// once the end condition is reached.
+// The promise is resolved when the result of calling getValue matches the
+// target value. The timeout timer starts once the first event has been
+// received.
+function waitForScrollEnd(eventTarget, getValue, targetValue, errorMessage) {
+  // Give up if the animation still isn't done after this many milliseconds from
+  // the time of the first scroll event.
+  const TIMEOUT_MS = 1000;
+
+  return new Promise((resolve, reject) => {
+    let timeout = undefined;
+    const scrollListener = () => {
+      if (!timeout)
+        timeout = setTimeout(() => {
+          reject(errorMessage || 'Timeout waiting for scroll end');
+        }, TIMEOUT_MS);
+
+      if (getValue() == targetValue) {
+        clearTimeout(timeout);
+        eventTarget.removeEventListener('scroll', scrollListener);
+        // Wait for a commit to allow the scroll to propagate through the
+        // compositor before resolving.
+        return waitForCompositorCommit().then(() => { resolve(); });
+      }
+    };
+    if (getValue() == targetValue)
+      resolve();
+    else
+      eventTarget.addEventListener('scroll', scrollListener);
+  });
+}
+
 // Enums for gesture_source_type parameters in gpuBenchmarking synthetic
 // gesture methods. Must match C++ side enums in synthetic_gesture_params.h
 const GestureSourceType = (function() {
@@ -213,6 +271,12 @@ const Buttons = (function() {
 // the synthetic gesture code modified to guarantee the single update behavior.
 // https://crbug.com/893608
 const SPEED_INSTANT = 400000;
+
+// Constant wheel delta value when percent based scrolling is enabled
+const WHEEL_DELTA = 100;
+
+// kMinFractionToStepWhenPaging constant from cc/input/scroll_utils.h
+const MIN_FRACTION_TO_STEP_WHEN_PAGING = 0.875;
 
 // This will be replaced by smoothScrollWithXY.
 function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type,

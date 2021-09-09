@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/mediarecorder/audio_track_opus_encoder.h"
 
+#include <memory>
+
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "media/base/audio_sample_types.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -65,9 +68,11 @@ namespace blink {
 
 AudioTrackOpusEncoder::AudioTrackOpusEncoder(
     OnEncodedAudioCB on_encoded_audio_cb,
-    int32_t bits_per_second)
+    int32_t bits_per_second,
+    bool vbr_enabled)
     : AudioTrackEncoder(std::move(on_encoded_audio_cb)),
       bits_per_second_(bits_per_second),
+      vbr_enabled_(vbr_enabled),
       opus_encoder_(nullptr) {}
 
 AudioTrackOpusEncoder::~AudioTrackOpusEncoder() {
@@ -110,14 +115,14 @@ void AudioTrackOpusEncoder::OnSetFormat(
            << " -->|converted_params_|:"
            << converted_params_.AsHumanReadableString();
 
-  converter_.reset(new media::AudioConverter(input_params_, converted_params_,
-                                             false /* disable_fifo */));
+  converter_ = std::make_unique<media::AudioConverter>(
+      input_params_, converted_params_, false /* disable_fifo */);
   converter_->AddInput(this);
   converter_->PrimeWithSilence();
 
-  fifo_.reset(new media::AudioFifo(
+  fifo_ = std::make_unique<media::AudioFifo>(
       input_params_.channels(),
-      kMaxNumberOfFifoBuffers * input_params_.frames_per_buffer()));
+      kMaxNumberOfFifoBuffers * input_params_.frames_per_buffer());
 
   buffer_.reset(new float[converted_params_.channels() *
                           converted_params_.frames_per_buffer()]);
@@ -142,6 +147,12 @@ void AudioTrackOpusEncoder::OnSetFormat(
       (bits_per_second_ > 0) ? bits_per_second_ : OPUS_AUTO;
   if (opus_encoder_ctl(opus_encoder_, OPUS_SET_BITRATE(bitrate)) != OPUS_OK) {
     DLOG(ERROR) << "Failed to set Opus bitrate: " << bitrate;
+    return;
+  }
+
+  const opus_int32 vbr_enabled = static_cast<opus_int32>(vbr_enabled_);
+  if (opus_encoder_ctl(opus_encoder_, OPUS_SET_VBR(vbr_enabled)) != OPUS_OK) {
+    DLOG(ERROR) << "Failed to set Opus VBR mode: " << vbr_enabled;
     return;
   }
 }

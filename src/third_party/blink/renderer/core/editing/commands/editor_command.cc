@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/core/editing/commands/editor_command.h"
 
 #include "base/metrics/histogram_functions.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -277,14 +276,10 @@ static bool ExecuteApplyParagraphStyle(LocalFrame& frame,
 
 bool ExpandSelectionToGranularity(LocalFrame& frame,
                                   TextGranularity granularity) {
-  const VisibleSelection& selection = CreateVisibleSelectionWithGranularity(
-      SelectionInDOMTree::Builder()
-          .SetBaseAndExtent(
-              frame.Selection().ComputeVisibleSelectionInDOMTree().Base(),
-              frame.Selection().ComputeVisibleSelectionInDOMTree().Extent())
-          .Build(),
+  const SelectionInDOMTree& selection = ExpandWithGranularity(
+      frame.Selection().ComputeVisibleSelectionInDOMTree().AsSelection(),
       granularity);
-  const EphemeralRange new_range = selection.ToNormalizedEphemeralRange();
+  const EphemeralRange& new_range = NormalizeRange(selection);
   if (new_range.IsNull())
     return false;
   if (new_range.IsCollapsed())
@@ -719,12 +714,7 @@ static bool ExecuteToggleOverwrite(LocalFrame& frame,
                                    Event*,
                                    EditorCommandSource,
                                    const String&) {
-  // Overwrite mode is disabled by-default. We only return true
-  // if the flag is enabled explicitly by the user in about:flags page.
-  if (base::FeatureList::IsEnabled(features::kInsertKeyToggleMode)) {
-    frame.GetEditor().ToggleOverwriteModeEnabled();
-    return true;
-  }
+  // Overwrite mode is not supported. See https://crbug.com/1030231.
   // We return false to match the expectation of the ExecCommand.
   return false;
 }
@@ -2044,7 +2034,8 @@ const StaticRangeVector* EditorCommand::GetTargetRanges() const {
           TextGranularity::kCharacter);
     case EditingCommandType::kDeleteToBeginningOfLine:
       return RangesFromCurrentSelectionOrExtendCaret(
-          *frame_, SelectionModifyDirection::kBackward, TextGranularity::kLine);
+          *frame_, SelectionModifyDirection::kBackward,
+          TextGranularity::kLineBoundary);
     case EditingCommandType::kDeleteToBeginningOfParagraph:
       return RangesFromCurrentSelectionOrExtendCaret(
           *frame_, SelectionModifyDirection::kBackward,

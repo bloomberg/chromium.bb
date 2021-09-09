@@ -7,8 +7,12 @@ trace_viewer project:
 https://code.google.com/p/trace-viewer/
 """
 
+from __future__ import absolute_import
 import logging
+
 from operator import attrgetter
+
+import six
 
 from telemetry.timeline import bounds
 from telemetry.timeline import event_container
@@ -83,16 +87,16 @@ class TimelineModel(event_container.TimelineEventContainer):
     return iter(self._global_memory_dumps or [])
 
   def IterChildContainers(self):
-    for process in self._processes.itervalues():
+    for process in six.itervalues(self._processes):
       yield process
 
   def GetAllProcesses(self):
-    return self._processes.values()
+    return list(self._processes.values())
 
   def GetAllThreads(self):
     threads = []
     for process in self._processes.values():
-      threads.extend(process.threads.values())
+      threads.extend(list(process.threads.values()))
     return threads
 
   @property
@@ -148,14 +152,14 @@ class TimelineModel(event_container.TimelineEventContainer):
       importers = []
     self.UpdateBounds()
     if not self.bounds.is_empty:
-      for process in self._processes.itervalues():
+      for process in six.itervalues(self._processes):
         process.AutoCloseOpenSlices(self.bounds.max,
                                     self._thread_time_bounds)
 
     for importer in importers:
       importer.FinalizeImport()
 
-    for process in self.processes.itervalues():
+    for process in six.itervalues(self.processes):
       process.FinalizeImport()
 
     if shift_world_to_zero:
@@ -204,7 +208,7 @@ class TimelineModel(event_container.TimelineEventContainer):
     raise an error.
     """
     # Make sure names are in a list and remove all None names
-    if isinstance(timeline_marker_names, basestring):
+    if isinstance(timeline_marker_names, six.string_types):
       timeline_marker_names = [timeline_marker_names]
     names = [x for x in timeline_marker_names if x is not None]
 
@@ -219,8 +223,8 @@ class TimelineModel(event_container.TimelineEventContainer):
     for (i, event) in enumerate(events):
       if event.name != names[i]:
         raise MarkerMismatchError()
-    for i in xrange(0, len(events)):
-      for j in xrange(i+1, len(events)):
+    for i in range(0, len(events)):
+      for j in range(i+1, len(events)):
         if events[j].start < events[i].start + events[i].duration:
           raise MarkerOverlapError()
 

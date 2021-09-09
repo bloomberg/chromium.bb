@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {openVideoPlayerWindow} from './background.m.js';
+// #import {test} from 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/test_util_base.m.js';
+// clang-format on
+
 /**
  * Returns if a video element playing the specified file meet the condition
  * which is given by a parameter.
@@ -10,11 +15,11 @@
  * @param {function(!Element):boolean} testFunction
  */
 function testElement(filename, testFunction) {
-  for (var appId in window.appWindows) {
-    var contentWindow = window.appWindows[appId].contentWindow;
+  for (const appId in window.appWindows) {
+    const contentWindow = window.appWindows[appId].contentWindow;
     if (contentWindow &&
         contentWindow.document.title === filename) {
-      var element = contentWindow.document.querySelector('video');
+      const element = contentWindow.document.querySelector('video');
       if (element && testFunction(element)) {
         return true;
       }
@@ -62,7 +67,7 @@ test.util.sync.hasSubtitle = function(filename) {
  * @param {Window} contentWindow Video player window to be chacked toOB.
  */
 test.util.sync.loadMockCastExtension = function(contentWindow) {
-  var script = contentWindow.document.createElement('script');
+  const script = contentWindow.document.createElement('script');
   script.src =
       'chrome-extension://ljoplibgfehghmibaoaepfagnmbbfiga/' +
       'cast_extension_mock/load.js';

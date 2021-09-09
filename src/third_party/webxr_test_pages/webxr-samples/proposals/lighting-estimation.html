@@ -19,6 +19,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -->
+
 <html>
   <head>
     <meta charset="utf-8">
@@ -26,8 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <meta name='mobile-web-app-capable' content='yes'>
     <meta name='apple-mobile-web-app-capable' content='yes'>
 
-    <!-- Origin Trial Token, feature = WebXR Device API, origin = https://immersive-web.github.io, expires = 2018-08-28 -->
-    <meta http-equiv="origin-trial" data-feature="WebXR Device API" data-expires="2018-08-28" content="AnNpu7ceXvLew05ccD8Zr1OZsdZiB2hLQKK82kTTMDwF7oRKtP3QEJ4RzkeHrmB8Sq0vSV6ZNmszpBCZ0I8p9gAAAABceyJvcmlnaW4iOiJodHRwczovL2ltbWVyc2l2ZS13ZWIuZ2l0aHViLmlvOjQ0MyIsImZlYXR1cmUiOiJXZWJYUkRldmljZSIsImV4cGlyeSI6MTUzNTQxNDQwMH0=">
+    <meta http-equiv="origin-trial" data-expires="2021-02-16" content="AsJ99WEM5bgoOEDTva9eWNnhIwCkDnYPf2Mu0y/TGocIZSFVDzr6CLe4uqQajojLFmxFhfvyexBYUGVW5hWalwsAAABkeyJvcmlnaW4iOiJodHRwczovL3N0b3JhZ2UuZ29vZ2xlYXBpcy5jb206NDQzIiwiZmVhdHVyZSI6IldlYlhSTGlnaHRFc3RpbWF0aW9uIiwiZXhwaXJ5IjoxNjEzNDk4MzgwfQ==">
     <link href='../css/common.css' rel='stylesheet'>
 
     <!--The polyfill is not needed for browser that have native API support,
@@ -72,6 +72,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           console.error('This browser does not support WebGL2');
           return;
         }
+        ctx.gl.getExtension('EXT_sRGB');
+        ctx.gl.getExtension('OES_texture_half_float');
 
         // Create a Three.js renderer
         ctx.renderer = new THREE.WebGLRenderer({
@@ -86,6 +88,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // to accept a webgl texture.
         ctx.cubeTarget = new THREE.WebGLCubeRenderTarget(16);
         ctx.threeEnvMap = ctx.cubeTarget.texture;
+        ctx.scene.environment = ctx.threeEnvMap;
         let rendererProps = ctx.renderer.properties.get(ctx.threeEnvMap);
         rendererProps.__webglInit = true;
 
@@ -95,7 +98,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         // Add a sphere
         ctx.geometry = new THREE.SphereGeometry(0.2, 32, 32);
-        ctx.material = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, metalness: 0.0, roughness: 0.0 });
+        ctx.material = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, metalness: 1.0, roughness: 0.0 });
         ctx.sphere = new THREE.Mesh(ctx.geometry, ctx.material);
         ctx.scene.add(ctx.sphere);
         ctx.sphere.position.z = -1;
@@ -103,8 +106,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         // Set up light source
         ctx.light_probe = new THREE.LightProbe();
-        ctx.light_probe.intensity = 3;
+        ctx.light_probe.intensity = 0;
         ctx.scene.add(ctx.light_probe);
+
+        ctx.directional_light = new THREE.DirectionalLight();
+        ctx.directional_light.intensity = 0;
+        ctx.scene.add(ctx.directional_light);
 
         ctx.xrButton = new XRDeviceButton({
           onRequestSession: () => onRequestSession(ctx),
@@ -127,22 +134,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
           session.updateRenderState({ baseLayer: new XRWebGLLayer(session, ctx.gl) });
           session.requestReferenceSpace('local').then(refSpace => onReceivedReferenceSpace(ctx, refSpace));
-          session.requestLightProbe({reflectionFormat: "rgba16f"}).then((rgbaProbe) =>
-          {
-            ctx.rgbaProbe = rgbaProbe;
-            rgbaProbe.addEventListener('onreflectionchange', () => onReflectionChanged(ctx));
-          }).catch(err => console.error(err));
 
-          session.requestLightProbe().then((defaultProbe) => {
-            ctx.defaultProbe = defaultProbe;
-            defaultProbe.addEventListener('onreflectionchange', () => onReflectionChanged(ctx));
-          }).catch(err => console.error(err));
+          if (document.getElementById('useRGBA').checked) {
+            session.requestLightProbe({reflectionFormat: "rgba16f"}).then((lightProbe) => {
+              onReceivedLightProbe(ctx, lightProbe);
+            }).catch(err => console.error(err));
+          } else {
+            session.requestLightProbe().then((lightProbe) => {
+              onReceivedLightProbe(ctx, lightProbe);
+            }).catch(err => console.error(err));
+          }
 
           ctx.reflectionChanged = true;
 
-
           session.requestAnimationFrame((t, frame) => update(ctx, t, frame));
         });
+      }
+
+      function onReceivedLightProbe(ctx, lightProbe) {
+        ctx.xrLightProbe = lightProbe;
+        ctx.xrLightProbe.addEventListener('reflectionchange', () => onReflectionChanged(ctx));
       }
 
       function onReflectionChanged(ctx) {
@@ -184,18 +195,33 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
 
         // Get ambient lighting estimation
-        const lightProbe = document.getElementById('useRGBA').checked ? ctx.rgbaProbe : ctx.defaultProbe;
-        if (lightProbe) {
-          const estimate = frame.getLightEstimate(lightProbe);
+        if (ctx.xrLightProbe) {
+          const estimate = frame.getLightEstimate(ctx.xrLightProbe);
 
           if (estimate) {
             ctx.light_probe.sh.fromArray(estimate.sphericalHarmonicsCoefficients);
+            ctx.light_probe.intensity = 1;
+
+            const intensityScalar =
+              Math.max(1.0,
+              Math.max(estimate.primaryLightIntensity.x,
+              Math.max(estimate.primaryLightIntensity.y,
+                       estimate.primaryLightIntensity.z)));
+
+            ctx.directional_light.color.setRGB(
+              estimate.primaryLightIntensity.x / intensityScalar,
+              estimate.primaryLightIntensity.y / intensityScalar,
+              estimate.primaryLightIntensity.z / intensityScalar);
+
+            ctx.directional_light.intensity = intensityScalar;
+            ctx.directional_light.position.copy(estimate.primaryLightDirection);
+
           } else {
             console.log("light estimate not available");
           }
 
           if (ctx.reflectionChanged) {
-            const cubeMap = ctx.glBinding.getReflectionCubeMap(lightProbe);
+            const cubeMap = ctx.glBinding.getReflectionCubeMap(ctx.xrLightProbe);
             if (cubeMap) {
               let rendererProps = ctx.renderer.properties.get(ctx.threeEnvMap);
               rendererProps.__webglTexture = cubeMap;

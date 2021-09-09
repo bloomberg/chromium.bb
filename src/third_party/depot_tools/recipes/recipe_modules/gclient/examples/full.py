@@ -14,7 +14,6 @@ DEPS = [
 
 TEST_CONFIGS = [
   'android',
-  'angle',
   'boringssl',
   'build_internal',
   'build_internal_scripts_slave',
@@ -27,6 +26,7 @@ TEST_CONFIGS = [
   'disable_syntax_validation',
   'emscripten_releases',
   'expect_tests',
+  'gerrit_plugins',
   'gerrit_test_cq_normal',
   'gyp',
   'infra',
@@ -45,7 +45,6 @@ TEST_CONFIGS = [
   'recipes_py_bare',
   'slave_deps',
   'tint',
-  'wasm_llvm',
   'webports',
   'with_branch_heads',
   'with_tags',

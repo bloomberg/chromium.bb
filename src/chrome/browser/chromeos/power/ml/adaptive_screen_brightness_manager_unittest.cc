@@ -9,9 +9,9 @@
 
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/accessibility/magnification_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_ukm_logger.h"
 #include "chrome/browser/chromeos/power/ml/screen_brightness_event.pb.h"
 #include "chrome/browser/profiles/profile.h"
@@ -169,9 +169,10 @@ class AdaptiveScreenBrightnessManagerTest
                                              bool is_focused,
                                              bool is_incognito = false) {
     Profile* const original_profile = profile();
-    Profile* const used_profile = is_incognito
-                                      ? original_profile->GetPrimaryOTRProfile()
-                                      : original_profile;
+    Profile* const used_profile =
+        is_incognito
+            ? original_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+            : original_profile;
     Browser::CreateParams params(used_profile, true);
 
     auto dummy_window = std::make_unique<aura::Window>(nullptr);

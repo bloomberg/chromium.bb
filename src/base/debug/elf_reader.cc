@@ -13,6 +13,7 @@
 #include "base/hash/sha1.h"
 #include "base/strings/safe_sprintf.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // NOTE: This code may be used in crash handling code, so the implementation
 // must avoid dynamic memory allocation or using data structures which rely on
@@ -85,8 +86,8 @@ size_t ReadElfBuildId(const void* elf_mapped_base,
         }
       }
 
-      size_t section_size = bits::Align(current_note->n_namesz, 4) +
-                            bits::Align(current_note->n_descsz, 4) +
+      size_t section_size = bits::AlignUp(current_note->n_namesz, 4) +
+                            bits::AlignUp(current_note->n_descsz, 4) +
                             sizeof(Nhdr);
       if (section_size > static_cast<size_t>(section_end - current_section))
         return 0;
@@ -104,7 +105,7 @@ size_t ReadElfBuildId(const void* elf_mapped_base,
     // Write out the build ID as a null-terminated hex string.
     const uint8_t* build_id_raw =
         reinterpret_cast<const uint8_t*>(current_note) + sizeof(Nhdr) +
-        bits::Align(current_note->n_namesz, 4);
+        bits::AlignUp(current_note->n_namesz, 4);
     size_t i = 0;
     for (i = 0; i < current_note->n_descsz; ++i) {
       strings::SafeSNPrintf(&build_id[i * 2], 3, (uppercase ? "%02X" : "%02x"),
@@ -119,7 +120,7 @@ size_t ReadElfBuildId(const void* elf_mapped_base,
   return 0;
 }
 
-Optional<StringPiece> ReadElfLibraryName(const void* elf_mapped_base) {
+absl::optional<StringPiece> ReadElfLibraryName(const void* elf_mapped_base) {
   // NOTE: Function should use async signal safe calls only.
 
   const Ehdr* elf_header = GetElfHeader(elf_mapped_base);
@@ -158,7 +159,7 @@ Optional<StringPiece> ReadElfLibraryName(const void* elf_mapped_base) {
       return StringPiece(strtab_addr + soname_strtab_offset);
   }
 
-  return nullopt;
+  return absl::nullopt;
 }
 
 span<const Phdr> GetElfProgramHeaders(const void* elf_mapped_base) {
@@ -191,8 +192,8 @@ size_t GetRelocationOffset(const void* elf_mapped_base) {
 
   // Assume the virtual addresses in the image start at 0, so the offset is
   // from 0 to the actual mapped base address.
-  return static_cast<size_t>(reinterpret_cast<const char*>(elf_mapped_base) -
-                             reinterpret_cast<const char*>(0));
+  return static_cast<size_t>(reinterpret_cast<uintptr_t>(elf_mapped_base) -
+                             reinterpret_cast<uintptr_t>(nullptr));
 }
 
 }  // namespace debug

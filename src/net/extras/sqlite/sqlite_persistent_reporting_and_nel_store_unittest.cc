@@ -236,11 +236,11 @@ class SQLitePersistentReportingAndNelStoreTest
   // risk of tests passing due to comparing origins that are the same but come
   // from different sources.
   const NetworkIsolationKey kNik1_ = NetworkIsolationKey(
-      url::Origin::Create(GURL("https://top-frame-origin-nik1.test")),
-      url::Origin::Create(GURL("https://frame-origin-nik1.test")));
+      SchemefulSite(GURL("https://top-frame-origin-nik1.test")),
+      SchemefulSite(GURL("https://frame-origin-nik1.test")));
   const NetworkIsolationKey kNik2_ = NetworkIsolationKey(
-      url::Origin::Create(GURL("https://top-frame-origin-nik2.test")),
-      url::Origin::Create(GURL("https://frame-origin-nik2.test")));
+      SchemefulSite(GURL("https://top-frame-origin-nik2.test")),
+      SchemefulSite(GURL("https://frame-origin-nik2.test")));
 
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<SQLitePersistentReportingAndNelStore> store_;
@@ -910,7 +910,6 @@ TEST_F(SQLitePersistNelTest, RemoveAllBrowsingData) {
 
 TEST_F(SQLitePersistentReportingAndNelStoreTest, PersistReportingClients) {
   const url::Origin kOrigin = url::Origin::Create(GURL("https://www.foo.test"));
-  url::Origin foo;
 
   CreateStore();
   InitializeStore();
@@ -919,7 +918,6 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, PersistReportingClients) {
       kNik1_, kOrigin, kGroupName1, GURL("https://endpoint.test/1"));
   CachedReportingEndpointGroup group =
       MakeReportingEndpointGroup(kNik1_, kOrigin, kGroupName1, now);
-  foo = *(kNik1_.GetTopFrameSite());
 
   store_->AddReportingEndpoint(endpoint);
   store_->AddReportingEndpointGroup(group);

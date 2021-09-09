@@ -17,7 +17,9 @@
 
 #include <dawn/webgpu.h>
 
+#include "dawn_wire/BufferConsumer.h"
 #include "dawn_wire/ObjectType_autogen.h"
+#include "dawn_wire/WireResult.h"
 
 namespace dawn_wire {
 
@@ -43,11 +45,6 @@ namespace dawn_wire {
       ObjectHandle& AssignFrom(const volatile ObjectHandle& rhs);
     };
 
-    enum class DeserializeResult {
-        Success,
-        FatalError,
-    };
-
     // Interface to allocate more space to deserialize pointed-to data.
     // nullptr is treated as an error.
     class DeserializeAllocator {
@@ -60,8 +57,8 @@ namespace dawn_wire {
     class ObjectIdResolver {
         public:
             {% for type in by_category["object"] %}
-                virtual DeserializeResult GetFromId(ObjectId id, {{as_cType(type.name)}}* out) const = 0;
-                virtual DeserializeResult GetOptionalFromId(ObjectId id, {{as_cType(type.name)}}* out) const = 0;
+                virtual WireResult GetFromId(ObjectId id, {{as_cType(type.name)}}* out) const = 0;
+                virtual WireResult GetOptionalFromId(ObjectId id, {{as_cType(type.name)}}* out) const = 0;
             {% endfor %}
     };
 
@@ -101,7 +98,7 @@ namespace dawn_wire {
 
         //* Serialize the structure and everything it points to into serializeBuffer which must be
         //* big enough to contain all the data (as queried from GetRequiredSize).
-        void Serialize(size_t commandSize, char* serializeBuffer
+        WireResult Serialize(size_t commandSize, SerializeBuffer* serializeBuffer
             {%- if not is_return_command -%}
                 , const ObjectIdProvider& objectIdProvider
             {%- endif -%}
@@ -114,7 +111,7 @@ namespace dawn_wire {
         //* Deserialize returns:
         //*  - Success if everything went well (yay!)
         //*  - FatalError is something bad happened (buffer too small for example)
-        DeserializeResult Deserialize(const volatile char** buffer, size_t* size, DeserializeAllocator* allocator
+        WireResult Deserialize(DeserializeBuffer* deserializeBuffer, DeserializeAllocator* allocator
             {%- if command.may_have_dawn_object -%}
                 , const ObjectIdResolver& resolver
             {%- endif -%}

@@ -5,12 +5,14 @@
 #include "third_party/blink/renderer/core/html/portal/portal_host.h"
 
 #include <utility>
+
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window_post_message_options.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/html/portal/dom_window_portal_host.h"
 #include "third_party/blink/renderer/core/html/portal/portal_post_message_helper.h"
@@ -60,19 +62,7 @@ void PortalHost::OnPortalActivated() {
 
 void PortalHost::postMessage(ScriptState* script_state,
                              const ScriptValue& message,
-                             const String& target_origin,
-                             HeapVector<ScriptValue>& transfer,
-                             ExceptionState& exception_state) {
-  WindowPostMessageOptions* options = WindowPostMessageOptions::Create();
-  options->setTargetOrigin(target_origin);
-  if (!transfer.IsEmpty())
-    options->setTransfer(transfer);
-  postMessage(script_state, message, options, exception_state);
-}
-
-void PortalHost::postMessage(ScriptState* script_state,
-                             const ScriptValue& message,
-                             const WindowPostMessageOptions* options,
+                             const PostMessageOptions* options,
                              ExceptionState& exception_state) {
   if (!DOMWindowPortalHost::ShouldExposePortalHost(*GetSupplementable())) {
     exception_state.ThrowDOMException(

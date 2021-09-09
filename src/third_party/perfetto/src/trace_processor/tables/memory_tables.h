@@ -24,7 +24,7 @@ namespace perfetto {
 namespace trace_processor {
 namespace tables {
 
-// @tablegroup
+// @tablegroup Memory Snapshots
 #define PERFETTO_TP_MEMORY_SNAPSHOT_DEF(NAME, PARENT, C) \
   NAME(MemorySnapshotTable, "memory_snapshot")           \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                      \
@@ -34,7 +34,7 @@ namespace tables {
 
 PERFETTO_TP_TABLE(PERFETTO_TP_MEMORY_SNAPSHOT_DEF);
 
-// @tablegroup
+// @tablegroup Memory Snapshots
 #define PERFETTO_TP_PROCESS_MEMORY_SNAPSHOT_DEF(NAME, PARENT, C) \
   NAME(ProcessMemorySnapshotTable, "process_memory_snapshot")    \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                              \
@@ -43,20 +43,20 @@ PERFETTO_TP_TABLE(PERFETTO_TP_MEMORY_SNAPSHOT_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_PROCESS_MEMORY_SNAPSHOT_DEF);
 
-// @tablegroup
-#define PERFETTO_TP_MEMORY_SNAPSHOT_NODE_DEF(NAME, PARENT, C) \
-  NAME(MemorySnapshotNodeTable, "memory_snapshot_node")       \
-  PERFETTO_TP_ROOT_TABLE(PARENT, C)                           \
-  C(ProcessMemorySnapshotTable::Id, process_snapshot_id)      \
-  C(MemorySnapshotNodeTable::Id, parent_node_id)              \
-  C(StringPool::Id, path)                                     \
-  C(int64_t, size)                                            \
-  C(int64_t, effective_size)                                  \
+// @tablegroup Memory Snapshots
+#define PERFETTO_TP_MEMORY_SNAPSHOT_NODE_DEF(NAME, PARENT, C)    \
+  NAME(MemorySnapshotNodeTable, "memory_snapshot_node")          \
+  PERFETTO_TP_ROOT_TABLE(PARENT, C)                              \
+  C(ProcessMemorySnapshotTable::Id, process_snapshot_id)         \
+  C(base::Optional<MemorySnapshotNodeTable::Id>, parent_node_id) \
+  C(StringPool::Id, path)                                        \
+  C(int64_t, size)                                               \
+  C(int64_t, effective_size)                                     \
   C(base::Optional<uint32_t>, arg_set_id)
 
 PERFETTO_TP_TABLE(PERFETTO_TP_MEMORY_SNAPSHOT_NODE_DEF);
 
-// @tablegroup
+// @tablegroup Memory Snapshots
 #define PERFETTO_TP_MEMORY_SNAPSHOT_EDGE_DEF(NAME, PARENT, C) \
   NAME(MemorySnapshotEdgeTable, "memory_snapshot_edge")       \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                           \

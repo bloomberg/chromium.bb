@@ -74,6 +74,8 @@ SharedImageRepresentationSkiaGL::SharedImageRepresentationSkiaGL(
 SharedImageRepresentationSkiaGL::~SharedImageRepresentationSkiaGL() {
   DCHECK_EQ(RepresentationAccessMode::kNone, mode_);
   surface_.reset();
+  if (!has_context())
+    gl_representation_->OnContextLost();
 }
 
 sk_sp<SkSurface> SharedImageRepresentationSkiaGL::BeginWriteAccess(
@@ -104,13 +106,29 @@ sk_sp<SkSurface> SharedImageRepresentationSkiaGL::BeginWriteAccess(
   return surface;
 }
 
+sk_sp<SkPromiseImageTexture> SharedImageRepresentationSkiaGL::BeginWriteAccess(
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+  DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
+  CheckContext();
+
+  if (!gl_representation_->BeginAccess(
+          GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM)) {
+    return nullptr;
+  }
+  mode_ = RepresentationAccessMode::kWrite;
+  return promise_texture_;
+}
+
 void SharedImageRepresentationSkiaGL::EndWriteAccess(sk_sp<SkSurface> surface) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kWrite);
-  DCHECK(surface_);
-  DCHECK_EQ(surface.get(), surface_.get());
-
-  surface.reset();
-  DCHECK(surface_->unique());
+  if (surface) {
+    DCHECK(surface_);
+    DCHECK_EQ(surface.get(), surface_.get());
+    surface.reset();
+    DCHECK(surface_->unique());
+  }
 
   gl_representation_->EndAccess();
   mode_ = RepresentationAccessMode::kNone;

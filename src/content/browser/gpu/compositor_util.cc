@@ -19,7 +19,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
+#include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -36,6 +38,7 @@
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/vulkan/buildflags.h"
+#include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/switches.h"
 #include "ui/gl/gl_switches.h"
@@ -88,6 +91,7 @@ gpu::GpuFeatureStatus SafeGetFeatureStatus(
 const GpuFeatureData GetGpuFeatureData(
     const gpu::GpuFeatureInfo& gpu_feature_info,
     size_t index,
+    bool is_gpu_compositing_disabled,
     bool* eof) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -102,13 +106,13 @@ const GpuFeatureData GetGpuFeatureData(
          "via blocklist or the command line."),
      true},
     {"gpu_compositing",
-     // TODO(sgilhuly): Replace with a check to see which backend is used for
+     // TODO(rivr): Replace with a check to see which backend is used for
      // compositing; do the same for GPU rasterization if it's enabled. For now
      // assume that if GL is blocklisted, then Vulkan is also. Check GL to see
      // if GPU compositing is disabled.
      SafeGetFeatureStatus(gpu_feature_info,
                           gpu::GPU_FEATURE_TYPE_ACCELERATED_GL),
-     GpuDataManagerImpl::GetInstance()->IsGpuCompositingDisabled(),
+     is_gpu_compositing_disabled,
      DisableInfo::Problem(
          "Gpu compositing has been disabled, either via blocklist, about:flags "
          "or the command line. The browser will fall back to software "
@@ -121,21 +125,14 @@ const GpuFeatureData GetGpuFeatureData(
      DisableInfo::Problem(
          "WebGL has been disabled via blocklist or the command line."),
      false},
-    {"protected_video_decode",
-     SafeGetFeatureStatus(gpu_feature_info,
-                          gpu::GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE),
-     false,
-     DisableInfo::Problem(
-         "Protected video decode has been disabled, via blocklist."),
-     false},
     {"video_decode",
      SafeGetFeatureStatus(gpu_feature_info,
                           gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
-#if defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-     !command_line.HasSwitch(switches::kEnableAcceleratedVideoDecode),
+#if defined(OS_LINUX)
+     !base::FeatureList::IsEnabled(media::kVaapiVideoDecodeLinux),
 #else
      command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
-#endif  // defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX)
      DisableInfo::Problem(
          "Accelerated video decode has been disabled, either via blocklist, "
          "about:flags or the command line."),
@@ -199,23 +196,30 @@ const GpuFeatureData GetGpuFeatureData(
   return kGpuFeatureData[index];
 }
 
-std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
-    GpuFeatureInfoType type) {
+base::Value GetFeatureStatusImpl(GpuFeatureInfoType type) {
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
   std::string gpu_access_blocked_reason;
-  bool gpu_access_blocked =
-      !manager->GpuAccessAllowed(&gpu_access_blocked_reason);
-  const gpu::GpuFeatureInfo gpu_feature_info =
-      type == GpuFeatureInfoType::kCurrent
-          ? manager->GetGpuFeatureInfo()
-          : manager->GetGpuFeatureInfoForHardwareGpu();
+  bool gpu_access_blocked;
+  gpu::GpuFeatureInfo gpu_feature_info;
+  bool is_gpu_compositing_disabled;
+  if (type == GpuFeatureInfoType::kCurrent) {
+    gpu_access_blocked = !manager->GpuAccessAllowed(&gpu_access_blocked_reason);
+    gpu_feature_info = manager->GetGpuFeatureInfo();
+    is_gpu_compositing_disabled = manager->IsGpuCompositingDisabled();
+  } else {
+    gpu_access_blocked =
+        !manager->GpuAccessAllowedForHardwareGpu(&gpu_access_blocked_reason);
+    gpu_feature_info = manager->GetGpuFeatureInfoForHardwareGpu();
+    is_gpu_compositing_disabled =
+        manager->IsGpuCompositingDisabledForHardwareGpu();
+  }
 
-  auto feature_status_dict = std::make_unique<base::DictionaryValue>();
+  auto feature_status_dict = base::Value(base::Value::Type::DICTIONARY);
 
   bool eof = false;
   for (size_t i = 0; !eof; ++i) {
-    const GpuFeatureData gpu_feature_data =
-        GetGpuFeatureData(gpu_feature_info, i, &eof);
+    const GpuFeatureData gpu_feature_data = GetGpuFeatureData(
+        gpu_feature_info, i, is_gpu_compositing_disabled, &eof);
     std::string status;
     // Features undergoing a finch controlled roll out.
     if (gpu_feature_data.name == "skia_renderer" ||
@@ -236,7 +240,7 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
       status = "enabled";
       if ((gpu_feature_data.name == "webgl" ||
            gpu_feature_data.name == "webgl2") &&
-          manager->IsGpuCompositingDisabled())
+          is_gpu_compositing_disabled)
         status += "_readback";
       if (gpu_feature_data.name == "rasterization") {
         const base::CommandLine& command_line =
@@ -258,61 +262,69 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
         status += "_on";
       }
     }
-    feature_status_dict->SetString(gpu_feature_data.name, status);
+    feature_status_dict.SetStringKey(gpu_feature_data.name, status);
   }
   return feature_status_dict;
 }
 
-std::unique_ptr<base::ListValue> GetProblemsImpl(GpuFeatureInfoType type) {
+base::Value GetProblemsImpl(GpuFeatureInfoType type) {
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
   std::string gpu_access_blocked_reason;
-  bool gpu_access_blocked =
-      !manager->GpuAccessAllowed(&gpu_access_blocked_reason);
-  const gpu::GpuFeatureInfo gpu_feature_info =
-      type == GpuFeatureInfoType::kCurrent
-          ? manager->GetGpuFeatureInfo()
-          : manager->GetGpuFeatureInfoForHardwareGpu();
+  bool gpu_access_blocked;
+  gpu::GpuFeatureInfo gpu_feature_info;
+  bool is_gpu_compositing_disabled;
+  if (type == GpuFeatureInfoType::kCurrent) {
+    gpu_access_blocked = !manager->GpuAccessAllowed(&gpu_access_blocked_reason);
+    gpu_feature_info = manager->GetGpuFeatureInfo();
+    is_gpu_compositing_disabled = manager->IsGpuCompositingDisabled();
+  } else {
+    gpu_access_blocked =
+        !manager->GpuAccessAllowedForHardwareGpu(&gpu_access_blocked_reason);
+    gpu_feature_info = manager->GetGpuFeatureInfoForHardwareGpu();
+    is_gpu_compositing_disabled =
+        manager->IsGpuCompositingDisabledForHardwareGpu();
+  }
 
-  auto problem_list = std::make_unique<base::ListValue>();
+  auto problem_list = base::Value(base::Value::Type::LIST);
   if (!gpu_feature_info.applied_gpu_blocklist_entries.empty()) {
     std::unique_ptr<gpu::GpuBlocklist> blocklist(gpu::GpuBlocklist::Create());
-    blocklist->GetReasons(problem_list.get(), "disabledFeatures",
+    blocklist->GetReasons(problem_list, "disabledFeatures",
                           gpu_feature_info.applied_gpu_blocklist_entries);
   }
   if (!gpu_feature_info.applied_gpu_driver_bug_list_entries.empty()) {
     std::unique_ptr<gpu::GpuDriverBugList> bug_list(
         gpu::GpuDriverBugList::Create());
-    bug_list->GetReasons(problem_list.get(), "workarounds",
+    bug_list->GetReasons(problem_list, "workarounds",
                          gpu_feature_info.applied_gpu_driver_bug_list_entries);
   }
 
   if (gpu_access_blocked) {
-    auto problem = std::make_unique<base::DictionaryValue>();
-    problem->SetString("description", "GPU process was unable to boot: " +
-                                          gpu_access_blocked_reason);
-    problem->Set("crBugs", std::make_unique<base::ListValue>());
-    auto disabled_features = std::make_unique<base::ListValue>();
-    disabled_features->AppendString("all");
-    problem->Set("affectedGpuSettings", std::move(disabled_features));
-    problem->SetString("tag", "disabledFeatures");
-    problem_list->Insert(0, std::move(problem));
+    auto problem = base::Value(base::Value::Type::DICTIONARY);
+    problem.SetStringKey("description", "GPU process was unable to boot: " +
+                                            gpu_access_blocked_reason);
+    problem.SetKey("crBugs", base::Value(base::Value::Type::LIST));
+    auto disabled_features = base::Value(base::Value::Type::LIST);
+    disabled_features.Append("all");
+    problem.SetKey("affectedGpuSettings", std::move(disabled_features));
+    problem.SetStringKey("tag", "disabledFeatures");
+    problem_list.Insert(problem_list.GetList().begin(), std::move(problem));
   }
 
   bool eof = false;
   for (size_t i = 0; !eof; ++i) {
-    const GpuFeatureData gpu_feature_data =
-        GetGpuFeatureData(gpu_feature_info, i, &eof);
+    const GpuFeatureData gpu_feature_data = GetGpuFeatureData(
+        gpu_feature_info, i, is_gpu_compositing_disabled, &eof);
     if (gpu_feature_data.disabled &&
         gpu_feature_data.disabled_info.is_problem) {
-      auto problem = std::make_unique<base::DictionaryValue>();
-      problem->SetString("description",
-                         gpu_feature_data.disabled_info.description);
-      problem->Set("crBugs", std::make_unique<base::ListValue>());
-      auto disabled_features = std::make_unique<base::ListValue>();
-      disabled_features->AppendString(gpu_feature_data.name);
-      problem->Set("affectedGpuSettings", std::move(disabled_features));
-      problem->SetString("tag", "disabledFeatures");
-      problem_list->Append(std::move(problem));
+      auto problem = base::Value(base::Value::Type::DICTIONARY);
+      problem.SetStringKey("description",
+                           gpu_feature_data.disabled_info.description);
+      problem.SetKey("crBugs", base::Value(base::Value::Type::LIST));
+      auto disabled_features = base::Value(base::Value::Type::LIST);
+      disabled_features.Append(gpu_feature_data.name);
+      problem.SetKey("affectedGpuSettings", std::move(disabled_features));
+      problem.SetStringKey("tag", "disabledFeatures");
+      problem_list.Insert(problem_list.GetList().begin(), std::move(problem));
     }
   }
   return problem_list;
@@ -358,7 +370,7 @@ int NumberOfRendererRasterThreads() {
   int num_processors = base::SysInfo::NumberOfProcessors();
 
 #if defined(OS_ANDROID) || \
-    (defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY))
+    (BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_ARM_FAMILY))
   // Android and ChromeOS ARM devices may report 6 to 8 CPUs for big.LITTLE
   // configurations. Limit the number of raster threads based on maximum of
   // 4 big cores.
@@ -461,11 +473,11 @@ bool IsMainFrameBeforeActivationEnabled() {
   return true;
 }
 
-std::unique_ptr<base::DictionaryValue> GetFeatureStatus() {
+base::Value GetFeatureStatus() {
   return GetFeatureStatusImpl(GpuFeatureInfoType::kCurrent);
 }
 
-std::unique_ptr<base::ListValue> GetProblems() {
+base::Value GetProblems() {
   return GetProblemsImpl(GpuFeatureInfoType::kCurrent);
 }
 
@@ -473,11 +485,11 @@ std::vector<std::string> GetDriverBugWorkarounds() {
   return GetDriverBugWorkaroundsImpl(GpuFeatureInfoType::kCurrent);
 }
 
-std::unique_ptr<base::DictionaryValue> GetFeatureStatusForHardwareGpu() {
+base::Value GetFeatureStatusForHardwareGpu() {
   return GetFeatureStatusImpl(GpuFeatureInfoType::kForHardwareGpu);
 }
 
-std::unique_ptr<base::ListValue> GetProblemsForHardwareGpu() {
+base::Value GetProblemsForHardwareGpu() {
   return GetProblemsImpl(GpuFeatureInfoType::kForHardwareGpu);
 }
 

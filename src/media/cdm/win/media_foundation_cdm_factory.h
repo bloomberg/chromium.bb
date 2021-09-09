@@ -9,18 +9,23 @@
 #include <wrl.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/unguessable_token.h"
 #include "base/win/scoped_com_initializer.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_export.h"
+#include "media/cdm/cdm_auxiliary_helper.h"
 
 namespace media {
 
 class MEDIA_EXPORT MediaFoundationCdmFactory : public CdmFactory {
  public:
-  MediaFoundationCdmFactory();
+  MediaFoundationCdmFactory(std::unique_ptr<CdmAuxiliaryHelper> helper,
+                            const base::FilePath& user_data_dir);
   MediaFoundationCdmFactory(const MediaFoundationCdmFactory&) = delete;
   MediaFoundationCdmFactory& operator=(const MediaFoundationCdmFactory&) =
       delete;
@@ -30,8 +35,9 @@ class MEDIA_EXPORT MediaFoundationCdmFactory : public CdmFactory {
   // support different key systems and for testing.
   using CreateCdmFactoryCB = base::RepeatingCallback<HRESULT(
       Microsoft::WRL::ComPtr<IMFContentDecryptionModuleFactory>& factory)>;
-  void SetCreateCdmFactoryCallback(const std::string& key_system,
-                                   CreateCdmFactoryCB create_cdm_factory_cb);
+  void SetCreateCdmFactoryCallbackForTesting(
+      const std::string& key_system,
+      CreateCdmFactoryCB create_cdm_factory_cb);
 
   // CdmFactory implementation.
   void Create(const std::string& key_system,
@@ -43,13 +49,16 @@ class MEDIA_EXPORT MediaFoundationCdmFactory : public CdmFactory {
               CdmCreatedCB cdm_created_cb) final;
 
  private:
-  HRESULT CreateMFCdmFactory(
+  HRESULT GetCdmFactory(
       const std::string& key_system,
       Microsoft::WRL::ComPtr<IMFContentDecryptionModuleFactory>& cdm_factory);
   HRESULT CreateCdmInternal(
       const std::string& key_system,
       const CdmConfig& cdm_config,
       Microsoft::WRL::ComPtr<IMFContentDecryptionModule>& mf_cdm);
+
+  std::unique_ptr<CdmAuxiliaryHelper> helper_;
+  base::FilePath user_data_dir_;
 
   // IMFContentDecryptionModule implementations typically require MTA to run.
   base::win::ScopedCOMInitializer com_initializer_{
