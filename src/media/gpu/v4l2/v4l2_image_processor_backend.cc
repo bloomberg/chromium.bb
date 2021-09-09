@@ -28,6 +28,7 @@
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/v4l2/v4l2_utils.h"
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_str) \
   do {                                                          \
@@ -55,12 +56,12 @@ enum v4l2_buf_type ToSingleV4L2Planar(enum v4l2_buf_type type) {
   }
 }
 
-base::Optional<gfx::GpuMemoryBufferHandle> CreateHandle(
+absl::optional<gfx::GpuMemoryBufferHandle> CreateHandle(
     const VideoFrame* frame) {
   gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBufferHandle(frame);
 
   if (handle.is_null() || handle.type != gfx::NATIVE_PIXMAP)
-    return base::nullopt;
+    return absl::nullopt;
   return handle;
 }
 
@@ -535,7 +536,7 @@ bool V4L2ImageProcessorBackend::TryOutputFormat(uint32_t input_pixelformat,
   if (device->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
       format.fmt.pix_mp.pixelformat != input_pixelformat) {
     DVLOGF(4) << "Failed to set image processor input format: "
-              << V4L2Device::V4L2FormatToString(format);
+              << V4L2FormatToString(format);
     return false;
   }
 
@@ -623,7 +624,7 @@ void V4L2ImageProcessorBackend::ProcessJobsTask() {
     }
 
     // We need one input and one output buffer to schedule the job
-    base::Optional<V4L2WritableBufferRef> input_buffer;
+    absl::optional<V4L2WritableBufferRef> input_buffer;
     // If we are using DMABUF frames, try to always obtain the same V4L2 buffer.
     if (input_memory_type_ == V4L2_MEMORY_DMABUF) {
       const VideoFrame& input_frame =
@@ -633,7 +634,7 @@ void V4L2ImageProcessorBackend::ProcessJobsTask() {
     if (!input_buffer)
       input_buffer = input_queue_->GetFreeBuffer();
 
-    base::Optional<V4L2WritableBufferRef> output_buffer;
+    absl::optional<V4L2WritableBufferRef> output_buffer;
     // If we are using DMABUF frames, try to always obtain the same V4L2 buffer.
     if (output_memory_type_ == V4L2_MEMORY_DMABUF) {
       const VideoFrame& output_frame =
@@ -701,7 +702,17 @@ bool V4L2ImageProcessorBackend::ApplyCrop(const gfx::Rect& visible_rect,
 
   const gfx::Rect adjusted_visible_rect(rect.left, rect.top, rect.width,
                                         rect.height);
-  if (visible_rect != adjusted_visible_rect) {
+
+  // The adjusted visible rectangle might not be exactly as we requested due to
+  // hardware constraints (e.g. hardware not supporting odd resolutions).
+  // This is ok as long as the top-left point is the same as the request, and
+  // the adjusted rect is bigger than the requested one. Even though we will be
+  // delivered more pixels than we requested, we will pass the actual visible
+  // rectangle to the rest of the pipeline, so the buffer will be displayed
+  // correctly.
+  if (visible_rect.origin() != adjusted_visible_rect.origin() ||
+      visible_rect.width() > adjusted_visible_rect.width() ||
+      visible_rect.height() > adjusted_visible_rect.height()) {
     VLOGF(1) << "Unsupported visible rectangle: " << visible_rect.ToString()
              << ", the rectangle adjusted by the driver: "
              << adjusted_visible_rect.ToString();
@@ -895,7 +906,7 @@ void V4L2ImageProcessorBackend::EnqueueOutput(JobRecord* job_record,
 // static
 void V4L2ImageProcessorBackend::V4L2VFRecycleThunk(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::Optional<base::WeakPtr<V4L2ImageProcessorBackend>> image_processor,
+    absl::optional<base::WeakPtr<V4L2ImageProcessorBackend>> image_processor,
     V4L2ReadableBufferRef buf) {
   DVLOGF(4);
   DCHECK(image_processor);

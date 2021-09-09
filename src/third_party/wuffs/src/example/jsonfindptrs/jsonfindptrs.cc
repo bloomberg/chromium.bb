@@ -79,8 +79,8 @@ for a C++ compiler $CXX, such as clang++ or g++.
 #define WUFFS_IMPLEMENTATION
 
 // Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
-// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
-// the entire Wuffs standard library, implementing a variety of codecs and file
+// release/c/etc.c choose which parts of Wuffs to build. That file contains the
+// entire Wuffs standard library, implementing a variety of codecs and file
 // formats. Without this macro definition, an optimizing compiler or linker may
 // very well discard Wuffs code for unused codecs, but listing the Wuffs
 // modules we use makes that process explicit. Preprocessing means that such
@@ -113,6 +113,8 @@ static const char* g_usage =
     "            -input-allow-comments\n"
     "            -input-allow-extra-comma\n"
     "            -input-allow-inf-nan-numbers\n"
+    "            -input-jwcc\n"
+    "            -jwcc\n"
     "            -only-parse-dont-output\n"
     "            -strict-json-pointer-syntax\n"
     "\n"
@@ -167,6 +169,16 @@ static const char* g_usage =
     "The -input-allow-inf-nan-numbers flag allows non-finite floating point\n"
     "numbers (infinities and not-a-numbers) within JSON input.\n"
     "\n"
+    "Combining some of those flags results in speaking JWCC (JSON With Commas\n"
+    "and Comments), not plain JSON. For convenience, the -input-jwcc or -jwcc\n"
+    "flags enables all of:\n"
+    "            -input-allow-comments\n"
+    "            -input-allow-extra-comma\n"
+    "\n"
+#if defined(WUFFS_EXAMPLE_SPEAK_JWCC_NOT_JSON)
+    "This program was configured at compile time to always use -jwcc.\n"
+    "\n"
+#endif
     "----\n"
     "\n"
     "The -only-parse-dont-output flag means to write nothing to stdout. An\n"
@@ -176,11 +188,12 @@ static const char* g_usage =
     "\n"
     "The -strict-json-pointer-syntax flag restricts the output lines to\n"
     "exactly RFC 6901, with only two escape sequences: \"~0\" and \"~1\" for\n"
-    "\"~\" and \"/\". Without this flag, this program also lets \"~n\" and\n"
-    "\"~r\" escape the New Line and Carriage Return ASCII control characters,\n"
-    "which can work better with line oriented Unix tools that assume exactly\n"
-    "one value (i.e. one JSON Pointer string) per line. With this flag, it\n"
-    "fails if the input JSON's keys contain \"\\u000A\" or \"\\u000D\".\n"
+    "\"~\" and \"/\". Without this flag, this program also lets \"~n\",\n"
+    "\"~r\" and \"~t\" escape the New Line, Carriage Return and Horizontal\n"
+    "Tab ASCII control characters, which can work better with line oriented\n"
+    "(and tab separated) Unix tools that assume exactly one record (e.g. one\n"
+    "JSON Pointer string) per line. With this flag, it fails if the input\n"
+    "JSON's keys contain \"\\u0009\", \"\\u000A\" or \"\\u000D\".\n"
     "\n"
     "----\n"
     "\n"
@@ -218,6 +231,12 @@ struct {
 std::string  //
 parse_flags(int argc, char** argv) {
   g_flags.max_output_depth = 0xFFFFFFFF;
+
+#if defined(WUFFS_EXAMPLE_SPEAK_JWCC_NOT_JSON)
+  g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_COMMENT_BLOCK);
+  g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_COMMENT_LINE);
+  g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_EXTRA_COMMA);
+#endif
 
   int c = (argc > 0) ? 1 : 0;  // Skip argv[0], the program name.
   for (; c < argc; c++) {
@@ -266,6 +285,12 @@ parse_flags(int argc, char** argv) {
     }
     if (!strcmp(arg, "input-allow-inf-nan-numbers")) {
       g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_INF_NAN_NUMBERS);
+      continue;
+    }
+    if (!strcmp(arg, "input-jwcc") || !strcmp(arg, "jwcc")) {
+      g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_COMMENT_BLOCK);
+      g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_COMMENT_LINE);
+      g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_EXTRA_COMMA);
       continue;
     }
     if (!strncmp(arg, "q=", 2) || !strncmp(arg, "query=", 6)) {
@@ -328,7 +353,7 @@ struct JsonValue : JsonVariant {
 bool  //
 escape_needed(const std::string& s) {
   for (const char& c : s) {
-    if ((c == '~') || (c == '/') || (c == '\n') || (c == '\r')) {
+    if ((c == '~') || (c == '/') || (c == '\n') || (c == '\r') || (c == '\t')) {
       return true;
     }
   }
@@ -358,6 +383,12 @@ escape(const std::string& s) {
           return "";
         }
         e += "~r";
+        break;
+      case '\t':
+        if (g_flags.strict_json_pointer_syntax) {
+          return "";
+        }
+        e += "~t";
         break;
       default:
         e += c;
@@ -395,7 +426,8 @@ print_json_pointers(JsonValue& jvalue, uint32_t depth) {
       } else {
         std::string e = escape(kv.first);
         if (e.empty()) {
-          return "main: unsupported \"\\u000A\" or \"\\u000D\" in object key";
+          return "main: unsupported \"\\u0009\", \"\\u000A\" or \"\\u000D\" in "
+                 "object key";
         }
         g_dst += e;
       }
@@ -508,7 +540,8 @@ std::string  //
 main1(int argc, char** argv) {
   TRY(parse_flags(argc, argv));
   if (!g_flags.strict_json_pointer_syntax) {
-    g_quirks.push_back(WUFFS_JSON__QUIRK_JSON_POINTER_ALLOW_TILDE_R_TILDE_N);
+    g_quirks.push_back(
+        WUFFS_JSON__QUIRK_JSON_POINTER_ALLOW_TILDE_N_TILDE_R_TILDE_T);
   }
 
   FILE* in = stdin;

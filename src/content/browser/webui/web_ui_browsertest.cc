@@ -15,9 +15,11 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -31,19 +33,33 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/scoped_web_ui_controller_factory_registration.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_ui_browsertest_util.h"
 #include "content/shell/browser/shell.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/webui/untrusted_web_ui_browsertest_util.h"
 
 namespace content {
 
 namespace {
 
-using WebUIImplBrowserTest = ContentBrowserTest;
+class WebUIImplBrowserTest : public ContentBrowserTest {
+ protected:
+  ui::TestUntrustedWebUIControllerFactory& untrusted_factory() {
+    return untrusted_factory_;
+  }
+
+ private:
+  ui::TestUntrustedWebUIControllerFactory untrusted_factory_;
+  content::ScopedWebUIControllerFactoryRegistration
+      untrusted_factory_registration_{&untrusted_factory_};
+};
 
 // TODO(crbug.com/154571): Shared workers are not available on Android.
 #if !defined(OS_ANDROID)
@@ -57,6 +73,16 @@ const char kLoadSharedWorkerScript[] = R"(
     });
   )";
 #endif  // !defined(OS_ANDROID)
+
+const char kLoadDedicatedWorkerScript[] = R"(
+    new Promise((resolve) => {
+      const worker = new Worker($1);
+      worker.onmessage = (event) => {
+        resolve(event.data === 'pong');
+      };
+      worker.postMessage('ping');
+    });
+  )";
 
 class TestWebUIMessageHandler : public WebUIMessageHandler {
  public:
@@ -141,8 +167,8 @@ class WebUIRequiringGestureBrowserTest : public ContentBrowserTest {
  protected:
   void SendMessageAndWaitForFinish() {
     main_rfh()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16("chrome.send('messageRequiringGesture');"
-                           "chrome.send('notifyFinish');"),
+        u"chrome.send('messageRequiringGesture');"
+        u"chrome.send('notifyFinish');",
         base::NullCallback());
     base::RunLoop run_loop;
     test_handler()->set_finish_closure(run_loop.QuitClosure());
@@ -223,7 +249,8 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest,
 // SiteInstance swap.
 IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnFromChromeToUntrusted) {
   WebContents* web_contents = shell()->web_contents();
-  AddUntrustedDataSource(web_contents->GetBrowserContext(), "test-host");
+  untrusted_factory().add_web_ui_config(
+      std::make_unique<ui::TestUntrustedWebUIConfig>("test-host"));
 
   const GURL web_ui_url(GetWebUIURL(kChromeUIHistogramHost));
   EXPECT_TRUE(ContentWebUIControllerFactory::GetInstance()->UseWebUIForURL(
@@ -255,7 +282,8 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnFromChromeToUntrusted) {
 // SiteInstance swap.
 IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnFromUntrustedToChrome) {
   WebContents* web_contents = shell()->web_contents();
-  AddUntrustedDataSource(web_contents->GetBrowserContext(), "test-host");
+  untrusted_factory().add_web_ui_config(
+      std::make_unique<ui::TestUntrustedWebUIConfig>("test-host"));
 
   ASSERT_TRUE(NavigateToURL(web_contents,
                             GetChromeUntrustedUIURL("test-host/title1.html")));
@@ -321,8 +349,8 @@ IN_PROC_BROWSER_TEST_F(WebUIRequiringGestureBrowserTest,
   // to use a test-only helper to instantiate a scoped user gesture in the
   // renderer.
   main_rfh()->ExecuteJavaScriptWithUserGestureForTests(
-      base::ASCIIToUTF16("chrome.send('messageRequiringGesture');"
-                         "chrome.send('notifyFinish');"));
+      u"chrome.send('messageRequiringGesture');"
+      u"chrome.send('notifyFinish');");
   base::RunLoop run_loop;
   test_handler()->set_finish_closure(run_loop.QuitClosure());
   run_loop.Run();
@@ -373,13 +401,13 @@ IN_PROC_BROWSER_TEST_F(WebUIRequiringGestureBrowserTest,
 
 // Verify that we can successfully navigate to a chrome-untrusted:// URL.
 IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, UntrustedSchemeLoads) {
-  auto* web_contents = shell()->web_contents();
-  AddUntrustedDataSource(web_contents->GetBrowserContext(), "test-host");
+  untrusted_factory().add_web_ui_config(
+      std::make_unique<ui::TestUntrustedWebUIConfig>("test-host"));
 
   const GURL untrusted_url(GetChromeUntrustedUIURL("test-host/title2.html"));
+  auto* web_contents = shell()->web_contents();
   EXPECT_TRUE(NavigateToURL(web_contents, untrusted_url));
-  EXPECT_EQ(base::ASCIIToUTF16("Title Of Awesomeness"),
-            web_contents->GetTitle());
+  EXPECT_EQ(u"Title Of Awesomeness", web_contents->GetTitle());
 }
 
 // Verify that we can successfully navigate to a chrome-untrusted:// URL
@@ -394,11 +422,10 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, NavigateWhileWebUISend) {
   web_contents->GetWebUI()->AddMessageHandler(base::WrapUnique(test_handler));
 
   auto* webui = static_cast<WebUIImpl*>(web_contents->GetWebUI());
-  EXPECT_EQ(web_contents->GetMainFrame(), webui->frame_host_for_test());
+  EXPECT_EQ(web_contents->GetMainFrame(), webui->frame_host());
 
-  test_handler->set_finish_closure(base::BindLambdaForTesting([&]() {
-    EXPECT_NE(web_contents->GetMainFrame(), webui->frame_host_for_test());
-  }));
+  test_handler->set_finish_closure(base::BindLambdaForTesting(
+      [&]() { EXPECT_NE(web_contents->GetMainFrame(), webui->frame_host()); }));
 
   bool received_send_message = false;
   test_handler->set_send_message_closure(
@@ -406,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, NavigateWhileWebUISend) {
 
   base::RunLoop run_loop;
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("onunload=function() { chrome.send('sendMessage')}"),
+      u"onunload=function() { chrome.send('sendMessage')}",
       base::BindOnce([](base::OnceClosure callback,
                         base::Value) { std::move(callback).Run(); },
                      run_loop.QuitClosure()));
@@ -420,15 +447,26 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, NavigateWhileWebUISend) {
   EXPECT_TRUE(received_send_message);
 }
 
+IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, CoopCoepPolicies) {
+  auto* web_contents = shell()->web_contents();
+
+  TestUntrustedDataSourceHeaders headers;
+  headers.cross_origin_opener_policy =
+      network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep;
+  untrusted_factory().add_web_ui_config(
+      std::make_unique<ui::TestUntrustedWebUIConfig>("isolated", headers));
+
+  const GURL isolated_url(GetChromeUntrustedUIURL("isolated/title2.html"));
+  ASSERT_TRUE(NavigateToURL(web_contents, isolated_url));
+
+  auto* main_frame = web_contents->GetMainFrame();
+  EXPECT_EQ(true, EvalJs(main_frame, "window.crossOriginIsolated;",
+                         EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+}
+
 class WebUIRequestSchemesTest : public ContentBrowserTest {
  public:
-  WebUIRequestSchemesTest() {
-    WebUIControllerFactory::RegisterFactory(&factory_);
-  }
-
-  ~WebUIRequestSchemesTest() override {
-    WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
-  }
+  WebUIRequestSchemesTest() = default;
 
   WebUIRequestSchemesTest(const WebUIRequestSchemesTest&) = delete;
 
@@ -438,6 +476,7 @@ class WebUIRequestSchemesTest : public ContentBrowserTest {
 
  private:
   TestWebUIControllerFactory factory_;
+  ScopedWebUIControllerFactoryRegistration factory_registration_{&factory_};
 };
 
 // Verify that by default WebUI's child process security policy can request
@@ -536,37 +575,86 @@ IN_PROC_BROWSER_TEST_F(WebUIRequestSchemesTest,
 
 class WebUIWorkerTest : public ContentBrowserTest {
  public:
-  WebUIWorkerTest() { WebUIControllerFactory::RegisterFactory(&factory_); }
-
-  ~WebUIWorkerTest() override {
-    WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
-  }
+  WebUIWorkerTest() = default;
 
   WebUIWorkerTest(const WebUIWorkerTest&) = delete;
 
   WebUIWorkerTest& operator=(const WebUIWorkerTest&) = delete;
 
+ protected:
+  void SetUntrustedWorkerSrcToWebUIConfig(bool allow_embedded_frame) {
+    TestUntrustedDataSourceHeaders headers;
+
+    if (allow_embedded_frame) {
+      // Allow the frame to be embedded in the chrome main page.
+      headers.frame_ancestors.emplace().push_back("chrome://trusted");
+    }
+
+    // These two lines are to avoid:
+    // "TypeError: Failed to construct 'SharedWorker': This document requires
+    // 'TrustedScriptURL' assignment."
+    headers.script_src = "worker-src chrome-untrusted://untrusted;";
+    headers.no_trusted_types = true;
+
+    untrusted_factory().add_web_ui_config(
+        std::make_unique<ui::TestUntrustedWebUIConfig>("untrusted", headers));
+    if (allow_embedded_frame) {
+      AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
+                             "untrusted", headers);
+    }
+  }
+
+  EvalJsResult RunWorkerTest(const GURL& page_url,
+                             const GURL& worker_url,
+                             const std::string& worker_script) {
+    auto* web_contents = shell()->web_contents();
+    EXPECT_TRUE(NavigateToURL(web_contents, page_url));
+
+    return EvalJs(web_contents,
+                  JsReplace(worker_script, worker_url.spec().c_str()),
+                  EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */);
+  }
+
+  ui::TestUntrustedWebUIControllerFactory& untrusted_factory() {
+    return untrusted_factory_;
+  }
+
  private:
   TestWebUIControllerFactory factory_;
+  content::ScopedWebUIControllerFactoryRegistration factory_registration_{
+      &factory_};
+  ui::TestUntrustedWebUIControllerFactory untrusted_factory_;
+  content::ScopedWebUIControllerFactoryRegistration
+      untrusted_factory_registration_{&untrusted_factory_};
 };
+
+class WebUIDedicatedWorkerTest : public WebUIWorkerTest,
+                                 public testing::WithParamInterface<bool> {
+ public:
+  WebUIDedicatedWorkerTest() {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(blink::features::kPlzDedicatedWorker);
+    } else {
+      feature_list_.InitAndDisableFeature(blink::features::kPlzDedicatedWorker);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All, WebUIDedicatedWorkerTest, testing::Bool());
 
 // TODO(crbug.com/154571): Shared workers are not available on Android.
 #if !defined(OS_ANDROID)
 // Verify that we can create SharedWorker with scheme "chrome://" under
 // WebUI page.
 IN_PROC_BROWSER_TEST_F(WebUIWorkerTest, CanCreateWebUISharedWorkerForWebUI) {
-  const GURL web_ui_url =
-      GURL(GetWebUIURL("test-host/title2.html?notrustedtypes=true"));
-  const GURL web_ui_worker_url =
-      GURL(GetWebUIURL("test-host/web_ui_shared_worker.js"));
-
-  auto* web_contents = shell()->web_contents();
-  ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url));
-
-  EXPECT_EQ(true, EvalJs(web_contents,
-                         JsReplace(kLoadSharedWorkerScript,
-                                   web_ui_worker_url.spec().c_str()),
-                         EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_EQ(true, RunWorkerTest(
+                      GetWebUIURL("test-host/title2.html?notrustedtypes=true"),
+                      GetWebUIURL("test-host/web_ui_shared_worker.js"),
+                      kLoadSharedWorkerScript));
 }
 
 // Verify that pages with scheme other than "chrome://" cannot create
@@ -574,22 +662,264 @@ IN_PROC_BROWSER_TEST_F(WebUIWorkerTest, CanCreateWebUISharedWorkerForWebUI) {
 IN_PROC_BROWSER_TEST_F(WebUIWorkerTest,
                        CannotCreateWebUISharedWorkerForNonWebUI) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL non_web_ui_url =
-      GURL(embedded_test_server()->GetURL("/title1.html?notrustedtypes=true"));
-  const GURL web_ui_worker_url =
-      GURL(GetWebUIURL("test-host/web_ui_shared_worker.js"));
+  EvalJsResult result = RunWorkerTest(
+      embedded_test_server()->GetURL("/title1.html?notrustedtypes=true"),
+      GetWebUIURL("test-host/web_ui_shared_worker.js"),
+      kLoadSharedWorkerScript);
 
-  auto* web_contents = shell()->web_contents();
-  ASSERT_TRUE(NavigateToURL(web_contents, non_web_ui_url));
-
-  auto result = EvalJs(
-      web_contents,
-      JsReplace(kLoadSharedWorkerScript, web_ui_worker_url.spec().c_str()),
-      EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */);
   std::string expected_failure = R"(a JavaScript error:
 Error: Failed to construct 'SharedWorker')";
   EXPECT_THAT(result.error, ::testing::StartsWith(expected_failure));
 }
+
+// Test that we can start a Shared Worker from a chrome-untrusted:// iframe.
+IN_PROC_BROWSER_TEST_F(WebUIWorkerTest,
+                       CanCreateSharedWorkerFromUntrustedIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  auto* web_contents = shell()->web_contents();
+
+  SetUntrustedWorkerSrcToWebUIConfig(/*allow_embedded_frame=*/true);
+
+  // Set up the urls.
+  const GURL web_ui_url(
+      GetWebUIURL("trusted/"
+                  "title2.html?notrustedtypes=true&requestableschemes=chrome-"
+                  "untrusted&childsrc="));
+  const GURL untrusted_iframe_url(
+      GetChromeUntrustedUIURL("untrusted/title1.html"));
+  const GURL untrusted_worker_url(
+      GetChromeUntrustedUIURL("untrusted/web_ui_shared_worker.js"));
+
+  // Navigate to a chrome:// main page.
+  EXPECT_TRUE(NavigateToURL(web_contents, web_ui_url));
+  auto* main_frame = web_contents->GetMainFrame();
+  // Add an iframe in chrome-untrusted://.
+  EXPECT_EQ(true,
+            EvalJs(main_frame,
+                   JsReplace("var frame = document.createElement('iframe');\n"
+                             "frame.src=$1;\n"
+                             "!!document.body.appendChild(frame);\n",
+                             untrusted_iframe_url.spec().c_str()),
+                   EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
+
+  // Get the chrome-untrusted:// iframe.
+  RenderFrameHost* child = ChildFrameAt(main_frame, 0);
+  EXPECT_EQ(untrusted_iframe_url, child->GetLastCommittedURL());
+
+  // Start a shared worker from the chrome-untrusted iframe.
+  EXPECT_EQ(true, EvalJs(child,
+                         JsReplace(kLoadSharedWorkerScript,
+                                   untrusted_worker_url.spec().c_str()),
+                         EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+}
+
+// Test that we can create a shared worker from a chrome-untrusted:// main
+// frame.
+IN_PROC_BROWSER_TEST_F(WebUIWorkerTest,
+                       CanCreateUntrustedWebUISharedWorkerForUntrustedWebUI) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  SetUntrustedWorkerSrcToWebUIConfig(/*allow_embedded_frame=*/false);
+
+  const GURL untrusted_page_url(
+      GetChromeUntrustedUIURL("untrusted/title2.html"));
+
+  EXPECT_EQ(true, RunWorkerTest(untrusted_page_url,
+                                GetChromeUntrustedUIURL(
+                                    "untrusted/web_ui_shared_worker.js"),
+                                kLoadSharedWorkerScript));
+  EXPECT_EQ(untrusted_page_url, shell()->web_contents()->GetLastCommittedURL());
+}
+
+// Verify that chrome:// pages cannot create a SharedWorker with scheme
+// "chrome-untrusted://".
+IN_PROC_BROWSER_TEST_F(WebUIWorkerTest,
+                       CannotCreateUntrustedWebUISharedWorkerFromTrustedWebUI) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EvalJsResult result = RunWorkerTest(
+      GetWebUIURL("trusted/title2.html?notrustedtypes=true"),
+      GetChromeUntrustedUIURL("untrusted/web_ui_shared_worker.js"),
+      kLoadSharedWorkerScript);
+
+  std::string expected_failure =
+      "a JavaScript error:\nError: Failed to construct 'SharedWorker': "
+      "Script at 'chrome-untrusted://untrusted/web_ui_shared_worker.js' cannot "
+      "be accessed from origin 'chrome://trusted'";
+  EXPECT_THAT(result.error, ::testing::StartsWith(expected_failure));
+}
+
+// Verify that pages with scheme other than "chrome-untrusted://" cannot create
+// a SharedWorker with scheme "chrome-untrusted://".
+IN_PROC_BROWSER_TEST_F(WebUIWorkerTest,
+                       CannotCreateUntrustedWebUISharedWorkerForWebURL) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EvalJsResult result = RunWorkerTest(
+      embedded_test_server()->GetURL("localhost",
+                                     "/title1.html?notrustedtypes=true"),
+      GetChromeUntrustedUIURL("untrusted/web_ui_shared_worker.js"),
+      kLoadSharedWorkerScript);
+
+  std::string expected_failure =
+      "a JavaScript error:\nError: Failed to construct 'SharedWorker': "
+      "Script at 'chrome-untrusted://untrusted/web_ui_shared_worker.js' cannot "
+      "be accessed from origin 'http://localhost";
+  EXPECT_THAT(result.error, ::testing::StartsWith(expected_failure));
+}
+
+// Verify that pages with scheme "chrome-untrusted://" cannot create a
+// SharedWorker with scheme "chrome://".
+IN_PROC_BROWSER_TEST_F(WebUIWorkerTest,
+                       CannotCreateWebUISharedWorkerForUntrustedPage) {
+  SetUntrustedWorkerSrcToWebUIConfig(/*allow_embedded_frame=*/false);
+
+  EvalJsResult result = RunWorkerTest(
+      GetChromeUntrustedUIURL("untrusted/title2.html?notrustedtypes=true"),
+      GetWebUIURL("trusted/web_ui_shared_worker.js"), kLoadSharedWorkerScript);
+
+  std::string expected_failure =
+      "a JavaScript error:\nError: Failed to construct 'SharedWorker': Script "
+      "at 'chrome://trusted/web_ui_shared_worker.js' cannot be accessed from "
+      "origin 'chrome-untrusted://untrusted'.";
+  EXPECT_THAT(result.error, ::testing::StartsWith(expected_failure));
+}
+
 #endif  // !defined(OS_ANDROID)
+
+// Verify that we can create a Worker with scheme "chrome://" under WebUI page.
+IN_PROC_BROWSER_TEST_P(WebUIDedicatedWorkerTest,
+                       CanCreateWebUIDedicatedWorkerForWebUI) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_EQ(true,
+            RunWorkerTest(
+                GURL(GetWebUIURL("test-host/title2.html?notrustedtypes=true")),
+                GURL(GetWebUIURL("test-host/web_ui_dedicated_worker.js")),
+                kLoadDedicatedWorkerScript));
+}
+
+// Verify that pages with scheme other than "chrome://" cannot create a Worker
+// with scheme "chrome://".
+IN_PROC_BROWSER_TEST_P(WebUIDedicatedWorkerTest,
+                       CannotCreateWebUIDedicatedWorkerForNonWebUI) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EvalJsResult result = RunWorkerTest(
+      GURL(embedded_test_server()->GetURL("/title1.html?notrustedtypes=true")),
+      GURL(GetWebUIURL("test-host/web_ui_dedicated_worker.js")),
+      kLoadDedicatedWorkerScript);
+
+  std::string expected_failure = R"(a JavaScript error:
+Error: Failed to construct 'Worker')";
+  EXPECT_THAT(result.error, ::testing::StartsWith(expected_failure));
+}
+
+// Test that we can start a Worker from a chrome-untrusted:// iframe.
+IN_PROC_BROWSER_TEST_P(WebUIDedicatedWorkerTest,
+                       CanCreateDedicatedWorkerFromUntrustedIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  auto* web_contents = shell()->web_contents();
+
+  SetUntrustedWorkerSrcToWebUIConfig(/*allow_embedded_frame=*/true);
+
+  // Set up the urls.
+  const GURL web_ui_url(
+      GetWebUIURL("trusted/"
+                  "title2.html?notrustedtypes=true&requestableschemes=chrome-"
+                  "untrusted&childsrc="));
+  const GURL untrusted_iframe_url(
+      GetChromeUntrustedUIURL("untrusted/title1.html"));
+  const GURL untrusted_worker_url(
+      GetChromeUntrustedUIURL("untrusted/web_ui_dedicated_worker.js"));
+
+  // Navigate to a chrome:// main page.
+  EXPECT_TRUE(NavigateToURL(web_contents, web_ui_url));
+  auto* main_frame = web_contents->GetMainFrame();
+  // Add an iframe in chrome-untrusted://.
+  EXPECT_EQ(true,
+            EvalJs(main_frame,
+                   JsReplace("var frame = document.createElement('iframe');\n"
+                             "frame.src=$1;\n"
+                             "!!document.body.appendChild(frame);\n",
+                             untrusted_iframe_url.spec().c_str()),
+                   EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
+
+  // Get the chrome-untrusted:// iframe.
+  RenderFrameHost* child = ChildFrameAt(main_frame, 0);
+  EXPECT_EQ(untrusted_iframe_url, child->GetLastCommittedURL());
+
+  // Start a worker from the chrome-untrusted iframe.
+  EXPECT_EQ(true, EvalJs(child,
+                         JsReplace(kLoadDedicatedWorkerScript,
+                                   untrusted_worker_url.spec().c_str()),
+                         EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+}
+
+// Test that we can create a Worker from a chrome-untrusted:// main frame.
+IN_PROC_BROWSER_TEST_P(
+    WebUIDedicatedWorkerTest,
+    CanCreateUntrustedWebUIDedicatedWorkerForUntrustedWebUI) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  SetUntrustedWorkerSrcToWebUIConfig(/*allow_embedded_frame=*/false);
+
+  EXPECT_EQ(true,
+            RunWorkerTest(
+                GetChromeUntrustedUIURL("untrusted/title2.html"),
+                GetChromeUntrustedUIURL("untrusted/web_ui_dedicated_worker.js"),
+                kLoadDedicatedWorkerScript));
+}
+
+// Verify that chrome:// pages cannot create a Worker with scheme
+// "chrome-untrusted://".
+IN_PROC_BROWSER_TEST_P(
+    WebUIDedicatedWorkerTest,
+    CannotCreateUntrustedWebUIDedicatedWorkerFromTrustedWebUI) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EvalJsResult result = RunWorkerTest(
+      GetWebUIURL("trusted/title2.html?notrustedtypes=true"),
+      GetChromeUntrustedUIURL("untrusted/web_ui_dedicated_worker.js"),
+      kLoadDedicatedWorkerScript);
+
+  std::string expected_failure =
+      "a JavaScript error:\nError: Failed to construct 'Worker': "
+      "Script at 'chrome-untrusted://untrusted/web_ui_dedicated_worker.js' "
+      "cannot be accessed from origin 'chrome://trusted'";
+  EXPECT_THAT(result.error, ::testing::StartsWith(expected_failure));
+}
+
+// Verify that pages with scheme other than "chrome-untrusted://" cannot create
+// a Worker with scheme "chrome-untrusted://".
+IN_PROC_BROWSER_TEST_P(WebUIDedicatedWorkerTest,
+                       CannotCreateUntrustedWebUIDedicatedWorkerForWebURL) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EvalJsResult result = RunWorkerTest(
+      embedded_test_server()->GetURL("localhost",
+                                     "/title1.html?notrustedtypes=true"),
+      GetChromeUntrustedUIURL("untrusted/web_ui_dedicated_worker.js"),
+      kLoadDedicatedWorkerScript);
+
+  std::string expected_failure =
+      "a JavaScript error:\nError: Failed to construct 'Worker': "
+      "Script at 'chrome-untrusted://untrusted/web_ui_dedicated_worker.js' "
+      "cannot be accessed from origin 'http://localhost";
+  EXPECT_THAT(result.error, ::testing::StartsWith(expected_failure));
+}
+
+// Verify that pages with scheme "chrome-untrusted://" cannot create a Worker
+// with scheme "chrome://".
+IN_PROC_BROWSER_TEST_P(WebUIDedicatedWorkerTest,
+                       CannotCreateWebUIDedicatedWorkerForUntrustedPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  SetUntrustedWorkerSrcToWebUIConfig(/*allow_embedded_frame=*/false);
+
+  EvalJsResult result = RunWorkerTest(
+      GetChromeUntrustedUIURL("untrusted/title2.html?notrustedtypes=true"),
+      GetWebUIURL("trusted/web_ui_dedicated_worker.js"),
+      kLoadDedicatedWorkerScript);
+
+  std::string expected_failure =
+      "a JavaScript error:\nError: Failed to construct 'Worker': Script "
+      "at 'chrome://trusted/web_ui_dedicated_worker.js' cannot be accessed "
+      "from origin 'chrome-untrusted://untrusted'.";
+  EXPECT_THAT(result.error, ::testing::StartsWith(expected_failure));
+}
 
 }  // namespace content

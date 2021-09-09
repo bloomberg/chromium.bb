@@ -30,6 +30,7 @@
 #include <iosfwd>
 
 #include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
 #include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
@@ -272,4 +273,4 @@ PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&, const FloatRect&);
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_RECT_H_

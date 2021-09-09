@@ -82,11 +82,11 @@ class CORE_EXPORT IdlenessDetector
   // Record the actual start time of network quiet.
   base::TimeTicks network_0_quiet_start_time_;
   base::TimeTicks network_2_quiet_start_time_;
-  TaskRunnerTimer<IdlenessDetector> network_quiet_timer_;
+  HeapTaskRunnerTimer<IdlenessDetector> network_quiet_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(IdlenessDetector);
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_IDLENESS_DETECTOR_H_

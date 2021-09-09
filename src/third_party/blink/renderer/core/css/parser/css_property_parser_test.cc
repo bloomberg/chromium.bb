@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -297,7 +298,7 @@ TEST(CSSPropertyParserTest, ColorFunction) {
       CSSPropertyID::kBackgroundColor, "rgba(0, 0, 0, 1)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
   ASSERT_TRUE(value);
-  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColorValue>(*value).Value());
+  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColor>(*value).Value());
 }
 
 TEST(CSSPropertyParserTest, IncompleteColor) {
@@ -387,8 +388,8 @@ TEST(CSSPropertyParserTest, GradientUseCount) {
 TEST(CSSPropertyParserTest, PaintUseCount) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   dummy_page_holder->GetFrame().Loader().CommitNavigation(
-      WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(),
-                                                KURL("https://example.com")),
+      WebNavigationParams::CreateWithHTMLBufferForTesting(
+          SharedBuffer::Create(), KURL("https://example.com")),
       nullptr /* extra_data */);
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());

@@ -45,9 +45,11 @@
 
 namespace blpwtk2 {
 
-void RendererUtil::handleInputEvents(content::RenderWidget *rw, const WebView::InputEvent *events, size_t eventsCount)
+void RendererUtil::handleInputEvents(blink::WebWidget *widget, const WebView::InputEvent *events, size_t eventsCount)
 {
     for (size_t i=0; i < eventsCount; ++i) {
+        ui::LatencyInfo latency_info;
+
         const WebView::InputEvent *event = events + i;
         MSG msg = {
             event->hwnd,
@@ -113,7 +115,7 @@ void RendererUtil::handleInputEvents(content::RenderWidget *rw, const WebView::I
             modifiers |= blink::WebInputEvent::kCapsLockOn;
 
           blinkKeyboardEvent.SetModifiers(modifiers);
-          rw->bbHandleInputEvent(blinkKeyboardEvent);
+          widget->HandleInputEvent(blink::WebCoalescedInputEvent(blinkKeyboardEvent, latency_info));
         } break;
 
         case WM_MOUSEMOVE:
@@ -130,14 +132,14 @@ void RendererUtil::handleInputEvents(content::RenderWidget *rw, const WebView::I
             ui::MouseEvent uiMouseEvent(msg);
             blink::WebMouseEvent blinkMouseEvent = 
                             ui::MakeWebMouseEvent(uiMouseEvent);
-            rw->bbHandleInputEvent(blinkMouseEvent);
+            widget->HandleInputEvent(blink::WebCoalescedInputEvent(blinkMouseEvent, latency_info));
         } break;
 
         case WM_MOUSEWHEEL: {
             ui::MouseWheelEvent uiMouseWheelEvent(msg);
             blink::WebMouseWheelEvent blinkMouseWheelEvent =
                    ui::MakeWebMouseWheelEvent(uiMouseWheelEvent);
-            rw->bbHandleInputEvent(blinkMouseWheelEvent);
+            widget->HandleInputEvent(blink::WebCoalescedInputEvent(blinkMouseWheelEvent, latency_info));
         } break;
         }
     }

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 from telemetry.internal.forwarders import do_nothing_forwarder
 from telemetry.internal.platform import network_controller_backend
 from telemetry.internal.platform import tracing_controller_backend
@@ -230,3 +231,9 @@ class PlatformBackend(object):
   def GetTypExpectationsTags(self):
     return test_utils.sanitizeTypExpectationsTags(
         [self.GetOSName(), self.GetOSVersionName()])
+
+  def GetIntelPowerGadgetPath(self):
+    return None
+
+  def SupportsIntelPowerGadget(self):
+    return False

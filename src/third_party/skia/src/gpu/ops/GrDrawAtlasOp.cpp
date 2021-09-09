@@ -46,18 +46,18 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override;
 
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
-                                      bool hasMixedSampledCoverage, GrClampType) override;
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override;
 
 private:
     GrProgramInfo* programInfo() override { return fProgramInfo; }
 
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&&,
                              const GrXferProcessor::DstProxyView&,
-                             GrXferBarrierFlags renderPassXferBarriers) override;
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override;
 
     void onPrepareDraws(Target*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
@@ -200,10 +200,11 @@ SkString DrawAtlasOp::onDumpInfo() const {
 
 void DrawAtlasOp::onCreateProgramInfo(const GrCaps* caps,
                                       SkArenaAlloc* arena,
-                                      const GrSurfaceProxyView* writeView,
+                                      const GrSurfaceProxyView& writeView,
                                       GrAppliedClip&& appliedClip,
                                       const GrXferProcessor::DstProxyView& dstProxyView,
-                                      GrXferBarrierFlags renderPassXferBarriers) {
+                                      GrXferBarrierFlags renderPassXferBarriers,
+                                      GrLoadOp colorLoadOp) {
     // Setup geometry processor
     GrGeometryProcessor* gp = make_gp(arena,
                                       this->hasColors(),
@@ -212,7 +213,7 @@ void DrawAtlasOp::onCreateProgramInfo(const GrCaps* caps,
 
     fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(appliedClip),
                                              dstProxyView, gp, GrPrimitiveType::kTriangles,
-                                             renderPassXferBarriers);
+                                             renderPassXferBarriers, colorLoadOp);
 }
 
 void DrawAtlasOp::onPrepareDraws(Target* target) {
@@ -221,7 +222,7 @@ void DrawAtlasOp::onPrepareDraws(Target* target) {
     }
 
     int instanceCount = fGeoData.count();
-    size_t vertexStride = fProgramInfo->primProc().vertexStride();
+    size_t vertexStride = fProgramInfo->geomProc().vertexStride();
 
     int numQuads = this->quadCount();
     QuadHelper helper(target, vertexStride, numQuads);
@@ -249,7 +250,7 @@ void DrawAtlasOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBound
     }
 
     flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-    flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+    flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
     flushState->drawMesh(*fMesh);
 }
 
@@ -283,16 +284,15 @@ GrDrawOp::FixedFunctionFlags DrawAtlasOp::fixedFunctionFlags() const {
     return fHelper.fixedFunctionFlags();
 }
 
-GrProcessorSet::Analysis DrawAtlasOp::finalize(
-        const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-        GrClampType clampType) {
+GrProcessorSet::Analysis DrawAtlasOp::finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                               GrClampType clampType) {
     GrProcessorAnalysisColor gpColor;
     if (this->hasColors()) {
         gpColor.setToUnknown();
     } else {
         gpColor.setToConstant(fColor);
     }
-    auto result = fHelper.finalizeProcessors(caps, clip, hasMixedSampledCoverage, clampType,
+    auto result = fHelper.finalizeProcessors(caps, clip, clampType,
                                              GrProcessorAnalysisCoverage::kNone, &gpColor);
     if (gpColor.isConstant(&fColor)) {
         fHasColors = false;

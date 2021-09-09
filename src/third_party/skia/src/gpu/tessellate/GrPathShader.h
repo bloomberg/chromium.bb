@@ -13,6 +13,7 @@
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsRenderPass.h"
 #include "src/gpu/GrProgramInfo.h"
+#include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
  // This is a common base class for shaders in the GPU tessellator.
@@ -33,34 +34,34 @@ public:
     int tessellationPatchVertexCount() const { return fTessellationPatchVertexCount; }
     const SkMatrix& viewMatrix() const { return fViewMatrix; }
 
-    static GrProgramInfo* MakeProgramInfo(const GrPathShader* shader, SkArenaAlloc* arena,
-                                          const GrSurfaceProxyView* writeView,
-                                          GrPipeline::InputFlags pipelineFlags,
-                                          GrProcessorSet&& processors, GrAppliedClip&& appliedClip,
-                                          const GrXferProcessor::DstProxyView& dstProxyView,
-                                          GrXferBarrierFlags renderPassXferBarriers,
-                                          const GrUserStencilSettings* stencil,
-                                          const GrCaps& caps) {
-        auto* pipeline = GrSimpleMeshDrawOpHelper::CreatePipeline(
-                &caps, arena, writeView->swizzle(), std::move(appliedClip), dstProxyView,
-                std::move(processors), pipelineFlags);
-        return MakeProgramInfo(shader, arena, writeView, pipeline, dstProxyView,
-                               renderPassXferBarriers, stencil, caps);
+    struct ProgramArgs {
+        SkArenaAlloc* fArena;
+        const GrSurfaceProxyView& fWriteView;
+        const GrXferProcessor::DstProxyView* fDstProxyView;
+        GrXferBarrierFlags fXferBarrierFlags;
+        GrLoadOp fColorLoadOp;
+        const GrCaps* fCaps;
+    };
+
+    static GrProgramInfo* MakeProgram(const ProgramArgs& args, const GrPathShader* shader,
+                                      const GrPipeline* pipeline,
+                                      const GrUserStencilSettings* stencil) {
+        return args.fArena->make<GrProgramInfo>(args.fWriteView, pipeline, stencil, shader,
+                                                shader->fPrimitiveType,
+                                                shader->fTessellationPatchVertexCount,
+                                                args.fXferBarrierFlags, args.fColorLoadOp);
     }
 
-    static GrProgramInfo* MakeProgramInfo(const GrPathShader* shader, SkArenaAlloc* arena,
-                                          const GrSurfaceProxyView* writeView,
-                                          const GrPipeline* pipeline,
-                                          const GrXferProcessor::DstProxyView& dstProxyView,
-                                          GrXferBarrierFlags renderPassXferBarriers,
-                                          const GrUserStencilSettings* stencil,
-                                          const GrCaps& caps) {
-        GrRenderTargetProxy* proxy = writeView->asRenderTargetProxy();
-        return arena->make<GrProgramInfo>(proxy->numSamples(), proxy->numStencilSamples(),
-                                          proxy->backendFormat(), writeView->origin(), pipeline,
-                                          stencil, shader, shader->fPrimitiveType,
-                                          shader->fTessellationPatchVertexCount,
-                                          renderPassXferBarriers);
+    // Fills in a 4-point patch in such a way that the shader will recognize it as a conic.
+    static void WriteConicPatch(const SkPoint pts[3], float w, GrVertexWriter* writer) {
+        // Write out the 3 conic points to patch[0..2], the weight to patch[3].x, and then set
+        // patch[3].y as NaN to flag this patch as a conic.
+        writer->writeArray(pts, 3);
+        writer->write(w, GrVertexWriter::kIEEE_32_infinity);
+    }
+    static void WriteConicPatch(const SkPoint pts[3], float w, SkPoint patch[4]) {
+        GrVertexWriter writer(patch);
+        WriteConicPatch(pts, w, &writer);
     }
 
 private:

@@ -45,7 +45,7 @@ UserPolicies::UserPolicies()
 
   // Override with existing registry entry if any.
   DWORD reg_validity_period_days;
-  HRESULT hr = GetGlobalFlag(base::UTF8ToUTF16(kKeyValidityPeriodInDays),
+  HRESULT hr = GetGlobalFlag(base::UTF8ToWide(kKeyValidityPeriodInDays),
                              &reg_validity_period_days);
   if (SUCCEEDED(hr)) {
     validity_period_days = reg_validity_period_days;
@@ -58,13 +58,13 @@ UserPolicies UserPolicies::FromValue(const base::Value& dict) {
 
   UserPolicies user_policies;
 
-  base::Optional<bool> dm_enrollment =
+  absl::optional<bool> dm_enrollment =
       dict.FindBoolKey(kGcpwPolicyDmEnrollmentParameterName);
   if (dm_enrollment) {
     user_policies.enable_dm_enrollment = *dm_enrollment;
   }
 
-  base::Optional<bool> gcpw_auto_update =
+  absl::optional<bool> gcpw_auto_update =
       dict.FindBoolKey(kGcpwPolicyAutoUpdateParameterName);
   if (gcpw_auto_update) {
     user_policies.enable_gcpw_auto_update = *gcpw_auto_update;
@@ -76,13 +76,13 @@ UserPolicies UserPolicies::FromValue(const base::Value& dict) {
     user_policies.gcpw_pinned_version = GcpwVersion(*pin_version);
   }
 
-  base::Optional<bool> multi_user_login =
+  absl::optional<bool> multi_user_login =
       dict.FindBoolKey(kGcpwPolicMultiUserLoginParameterName);
   if (multi_user_login) {
     user_policies.enable_multi_user_login = *multi_user_login;
   }
 
-  base::Optional<int> validity_period_days =
+  absl::optional<int> validity_period_days =
       dict.FindIntKey(kGcpwPolicyValidityPeriodParameterName);
   if (validity_period_days) {
     user_policies.validity_period_days = *validity_period_days;

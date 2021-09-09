@@ -9,11 +9,13 @@
 
 #include "base/files/file_path.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/identity_manager_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -30,10 +32,15 @@
 #include "components/signin/core/browser/cookie_settings_util.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/account_manager/account_manager_factory.h"
+#include "chrome/browser/account_manager_facade_factory.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/account_manager_facade_factory.h"
 #endif
 
 #if defined(OS_WIN)
@@ -54,9 +61,16 @@ IdentityManagerFactory::IdentityManagerFactory()
   DependsOn(WebDataServiceFactory::GetInstance());
 #endif
   DependsOn(ChromeSigninClientFactory::GetInstance());
+
+  signin::SetIdentityManagerProvider(
+      base::BindRepeating([](content::BrowserContext* context) {
+        return GetForProfile(Profile::FromBrowserContext(context));
+      }));
 }
 
-IdentityManagerFactory::~IdentityManagerFactory() {}
+IdentityManagerFactory::~IdentityManagerFactory() {
+  signin::SetIdentityManagerProvider({});
+}
 
 // static
 signin::IdentityManager* IdentityManagerFactory::GetForProfile(
@@ -114,16 +128,29 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
 #endif
 
-#if defined(OS_CHROMEOS)
-  chromeos::AccountManagerFactory* factory =
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  auto* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
   DCHECK(factory);
   params.account_manager =
       factory->GetAccountManager(profile->GetPath().value());
+  params.account_manager_facade =
+      GetAccountManagerFacade(profile->GetPath().value());
   params.is_regular_profile =
-      !chromeos::ProfileHelper::IsSigninProfile(profile) &&
-      !chromeos::ProfileHelper::IsLockScreenAppProfile(profile);
+      chromeos::ProfileHelper::IsRegularProfile(profile);
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  params.account_manager_facade =
+      GetAccountManagerFacade(profile->GetPath().value());
+  // Lacros runs inside a user session and is not used to render Chrome OS's
+  // Login Screen, or its Lock Screen. Hence, all Profiles in Lacros are regular
+  // Profiles.
+  params.is_regular_profile = true;
+#endif
+
+  // Ephemeral Guest profiles are not supposed to fetch Dice access tokens.
+  params.allow_access_token_fetch = !profile->IsEphemeralGuestProfile();
 
 #if defined(OS_WIN)
   params.reauth_callback =
@@ -138,15 +165,4 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
     observer.IdentityManagerCreated(identity_manager.get());
 
   return identity_manager.release();
-}
-
-void IdentityManagerFactory::BrowserContextShutdown(
-    content::BrowserContext* context) {
-  auto* identity_manager = static_cast<signin::IdentityManager*>(
-      GetServiceForBrowserContext(context, false));
-  if (identity_manager) {
-    for (Observer& observer : observer_list_)
-      observer.IdentityManagerShutdown(identity_manager);
-  }
-  BrowserContextKeyedServiceFactory::BrowserContextShutdown(context);
 }

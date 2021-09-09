@@ -67,6 +67,11 @@ class WebStateImpl;
 @property(nonatomic, readonly, assign, getter=isWebProcessCrashed)
     BOOL webProcessCrashed;
 
+// Whether or not the user is currently interacting with the web content
+// presented by this controller.
+@property(nonatomic, readonly, assign, getter=isUserInteracting)
+    BOOL userInteracting;
+
 // Whether the WebController is visible. Returns YES after wasShown call and
 // NO after wasHidden() call.
 @property(nonatomic, assign, getter=isVisible) BOOL visible;
@@ -100,8 +105,8 @@ class WebStateImpl;
 - (void)clearTransientContentView;
 
 // Removes the back WebView. DANGER: this method is exposed for the sole purpose
-// of allowing WKBasedNavigationManagerImpl to reset the back-forward history.
-// Please reconsider before using this method.
+// of allowing NavigationManagerImpl to reset the back-forward history. Please
+// reconsider before using this method.
 - (void)removeWebView;
 
 // Call when the CRWWebController needs go away. Caller must reset the delegate
@@ -156,13 +161,6 @@ class WebStateImpl;
 // Notifies the CRWWebController that it has been hidden.
 - (void)wasHidden;
 
-// Called when NavigationManager has completed go to index same-document
-// navigation. Updates HTML5 history state, current document URL and sends
-// approprivate navigation and loading WebStateObserver callbacks.
-- (void)didFinishGoToIndexSameDocumentNavigationWithType:
-            (web::NavigationInitiationType)type
-                                          hasUserGesture:(BOOL)hasUserGesture;
-
 // Instructs WKWebView to navigate to the given navigation item. |wk_item| and
 // |item| must point to the same navigation item. Calling this method may
 // result in an iframe navigation.
@@ -190,6 +188,19 @@ class WebStateImpl;
 - (void)removeWebViewFromViewHierarchy;
 // Adds the webView back in the view hierarchy.
 - (void)addWebViewToViewHierarchy;
+
+// Notifies this controller that the surface size has changed due to
+// multiwindow action or orientation change.
+- (void)surfaceSizeChanged;
+
+// Injects an opaque NSData block into a WKWebView to restore or serialize.
+// TODO(crbug.com/1174560) This depends on iOS TBA logic landed in WebKit's
+// opensource repository, and currently includes not-to-be-shipped logic to use
+// private APIs, so the rest of the Chromium logic can be tested. When iOS TBA
+// is released with the necessary logic, the private implementation can be
+// removed.
+- (BOOL)setSessionStateData:(NSData*)data;
+- (NSData*)sessionStateData;
 
 @end
 

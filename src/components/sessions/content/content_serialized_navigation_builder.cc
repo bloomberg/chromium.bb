@@ -23,11 +23,11 @@
 namespace sessions {
 namespace {
 
-base::Optional<SerializedNavigationEntry::ReplacedNavigationEntryData>
+absl::optional<SerializedNavigationEntry::ReplacedNavigationEntryData>
 ConvertReplacedEntryData(
-    const base::Optional<content::ReplacedNavigationEntryData>& input_data) {
+    const absl::optional<content::ReplacedNavigationEntryData>& input_data) {
   if (!input_data.has_value())
-    return base::nullopt;
+    return absl::nullopt;
 
   SerializedNavigationEntry::ReplacedNavigationEntryData output_data;
   output_data.first_committed_url = input_data->first_committed_url;
@@ -70,7 +70,6 @@ ContentSerializedNavigationBuilder::FromNavigationEntry(
   navigation.task_id_ = NavigationTaskId::Get(entry)->id();
   navigation.parent_task_id_ = NavigationTaskId::Get(entry)->parent_id();
   navigation.root_task_id_ = NavigationTaskId::Get(entry)->root_id();
-  navigation.children_task_ids_ = NavigationTaskId::Get(entry)->children_ids();
 
   for (const auto& handler_entry :
        ContentSerializedNavigationDriver::GetInstance()
@@ -100,7 +99,7 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
   // in favor of using the data stored in |navigation->encoded_page_state|.
   GURL temporary_url;
   content::Referrer temporary_referrer;
-  base::Optional<url::Origin> temporary_initiator_origin;
+  absl::optional<url::Origin> temporary_initiator_origin;
 
   std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationController::CreateNavigationEntry(

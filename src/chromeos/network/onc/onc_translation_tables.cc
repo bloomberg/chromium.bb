@@ -153,7 +153,6 @@ const FieldTranslationEntry wifi_fields[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::wifi::kSecurity, shill::kSecurityClassProperty },
     {::onc::wifi::kSignalStrength, shill::kSignalStrengthProperty},
-    {::onc::wifi::kTetheringState, shill::kTetheringProperty},
     {nullptr}};
 
 const FieldTranslationEntry cellular_apn_fields[] = {
@@ -164,6 +163,7 @@ const FieldTranslationEntry cellular_apn_fields[] = {
     {::onc::cellular_apn::kAuthentication, shill::kApnAuthenticationProperty},
     {::onc::cellular_apn::kLocalizedName, shill::kApnLocalizedNameProperty},
     {::onc::cellular_apn::kLanguage, shill::kApnLanguageProperty},
+    {::onc::cellular_apn::kAttach, shill::kApnAttachProperty},
     {nullptr}};
 
 const FieldTranslationEntry cellular_found_network_fields[] = {
@@ -199,6 +199,7 @@ const FieldTranslationEntry cellular_fields[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kActivationState, shill::kActivationStateProperty},
     {::onc::cellular::kAutoConnect, shill::kAutoConnectProperty},
+    {::onc::cellular::kEID, shill::kEidProperty},
     {::onc::cellular::kICCID, shill::kIccidProperty},
     {::onc::cellular::kIMSI, shill::kImsiProperty},
     // This field is converted during translation, see onc_translator_*.
@@ -385,15 +386,6 @@ const StringTranslationEntry kRoamingStateTable[] = {
     {::onc::cellular::kRoamingRoaming, shill::kRoamingStateRoaming},
     {nullptr}};
 
-const StringTranslationEntry kTetheringStateTable[] = {
-    {::onc::tethering_state::kTetheringConfirmedState,
-     shill::kTetheringConfirmedState},
-    {::onc::tethering_state::kTetheringNotDetectedState,
-     shill::kTetheringNotDetectedState},
-    {::onc::tethering_state::kTetheringSuspectedState,
-     shill::kTetheringSuspectedState},
-    {nullptr}};
-
 const StringTranslationEntry kOpenVpnCompressionAlgorithmTable[] = {
     {::onc::openvpn_compression_algorithm::kFramingOnly,
      shill::kOpenVPNCompressFramingOnly},
@@ -417,11 +409,7 @@ const FieldTranslationEntry kCellularDeviceTable[] = {
     {::onc::cellular::kHardwareRevision, shill::kHardwareRevisionProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kHomeProvider, shill::kHomeProviderProperty},
-    // ICCID is only copied from the Device if not provided by the Service.
-    // {::onc::cellular::kICCID, shill::kIccidProperty},
     {::onc::cellular::kIMEI, shill::kImeiProperty},
-    // IMSI is only copied from the Device if not provided by the Service.
-    // {::onc::cellular::kIMSI, shill::kImsiProperty},
     {::onc::cellular::kManufacturer, shill::kManufacturerProperty},
     {::onc::cellular::kMDN, shill::kMdnProperty},
     {::onc::cellular::kMEID, shill::kMeidProperty},

@@ -12,17 +12,58 @@ class SharesheetMetrics {
   // The action taken by a user after the sharesheet is invoked.
   // This enum is for recording histograms and must be treated as append-only.
   enum class UserAction {
-    kCancelled = 0,  // User cancelled sharesheet.
-    kArc,            // Opened an ARC app.
-    kAction,         // User selected an action.
-    kMaxValue = kAction,
+    kCancelledThroughClickingOut =
+        0,          // User cancelled sharesheet by clicking outside the bubble.
+    kArc,           // Opened an ARC app.
+    kNearbyAction,  // User selected the nearby share action.
+    kCancelledThroughEscPress,  // User cancelled sharesheet by pressing esc on
+                                // keyboard.
+    kWeb,                       // Opened a web app.
+    kDriveAction,               // User selected the drive share action.
+    kMaxValue = kDriveAction,
+  };
+
+  // Device form factor when sharesheet is invoked.
+  // This enum is for recording histograms and must be treated as append-only.
+  enum class FormFactor {
+    kTablet = 0,
+    kClamshell,
+    kMaxValue = kClamshell,
+  };
+
+  // The source from which the sharesheet was launched from.
+  // This enum is for recording histograms and must be treated as append-only.
+  enum class LaunchSource {
+    kUnknown = 0,
+    kFilesAppShareButton = 1,
+    kFilesAppContextMenu = 2,
+    kWebShare = 3,
+    kArcNearbyShare = 4,
+    kOmniboxShare = 5,
+    kMaxValue = kOmniboxShare,
   };
 
   SharesheetMetrics();
 
-  static void RecordSharesheetActionMetrics(UserAction action);
+  static void RecordSharesheetActionMetrics(const UserAction action);
 
-  static void RecordSharesheetAppCount(int app_count);
+  // Records number of each target type that appear in the Sharesheet
+  // when it is invoked.
+  static void RecordSharesheetAppCount(const int app_count);
+  static void RecordSharesheetArcAppCount(const int app_count);
+  static void RecordSharesheetWebAppCount(const int app_count);
+  static void RecordSharesheetShareAction(const UserAction action);
+
+  static void RecordSharesheetFormFactor(const FormFactor form_factor);
+
+  static void RecordSharesheetLaunchSource(const LaunchSource source);
+
+  static void RecordSharesheetFilesSharedCount(const int file_count);
+  // Records true if the data being shared is a drive folder. False otherwise.
+  static void RecordSharesheetIsDriveFolder(const bool is_drive_folder);
+  // Records true if the image preview was pressed in the current invocation.
+  // False otherwise.
+  static void RecordSharesheetImagePreviewPressed(const bool is_pressed);
 };
 
 }  // namespace sharesheet

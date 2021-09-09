@@ -43,10 +43,10 @@ namespace content {
 namespace {
 
 EmbeddedWorkerInstance::StatusCallback ReceiveStatus(
-    base::Optional<blink::ServiceWorkerStatusCode>* out_status,
+    absl::optional<blink::ServiceWorkerStatusCode>* out_status,
     base::OnceClosure quit) {
   return base::BindOnce(
-      [](base::Optional<blink::ServiceWorkerStatusCode>* out_status,
+      [](absl::optional<blink::ServiceWorkerStatusCode>* out_status,
          base::OnceClosure quit, blink::ServiceWorkerStatusCode status) {
         *out_status = status;
         std::move(quit).Run();
@@ -74,14 +74,14 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
 
   struct EventLog {
     EventType type;
-    base::Optional<EmbeddedWorkerStatus> status;
-    base::Optional<blink::mojom::ServiceWorkerStartStatus> start_status;
+    absl::optional<EmbeddedWorkerStatus> status;
+    absl::optional<blink::mojom::ServiceWorkerStartStatus> start_status;
   };
 
   void RecordEvent(EventType type,
-                   base::Optional<EmbeddedWorkerStatus> status = base::nullopt,
-                   base::Optional<blink::mojom::ServiceWorkerStartStatus>
-                       start_status = base::nullopt) {
+                   absl::optional<EmbeddedWorkerStatus> status = absl::nullopt,
+                   absl::optional<blink::mojom::ServiceWorkerStartStatus>
+                       start_status = absl::nullopt) {
     EventLog log = {type, status, start_status};
     events_.push_back(log);
   }
@@ -93,7 +93,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   void OnStarted(blink::mojom::ServiceWorkerStartStatus status,
                  bool has_fetch_handler) override {
     has_fetch_handler_ = has_fetch_handler;
-    RecordEvent(STARTED, base::nullopt, status);
+    RecordEvent(STARTED, absl::nullopt, status);
   }
   void OnStopped(EmbeddedWorkerStatus old_status) override {
     RecordEvent(STOPPED, old_status);
@@ -132,7 +132,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   void StartWorkerUntilStartSent(
       EmbeddedWorkerInstance* worker,
       blink::mojom::EmbeddedWorkerStartParamsPtr params) {
-    base::Optional<blink::ServiceWorkerStatusCode> status;
+    absl::optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop loop;
     worker->Start(std::move(params),
                   ReceiveStatus(&status, loop.QuitClosure()));
@@ -336,42 +336,6 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
 
-TEST_F(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
-  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    // This test calls Start() then Detach() to test detaching during process
-    // allocation. But when ServiceWorkerOnUI is enabled, Start() synchronously
-    // reaches the SetupOnUIThread() step, so process allocation occurs before
-    // Detach() is called, so this test doesn't make sense.
-    return;
-  }
-
-  const GURL scope("http://example.com/");
-  const GURL url("http://example.com/worker.js");
-
-  RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
-  worker->AddObserver(this);
-
-  // Run the start worker sequence and detach during process allocation.
-  base::Optional<blink::ServiceWorkerStatusCode> status;
-  blink::mojom::EmbeddedWorkerStartParamsPtr params =
-      CreateStartParams(pair.second);
-  worker->Start(std::move(params), ReceiveStatus(&status, base::DoNothing()));
-  worker->Detach();
-  base::RunLoop().RunUntilIdle();
-  // The start callback should not be aborted by detach (see a comment on the
-  // dtor of EmbeddedWorkerInstance::StartTask).
-  EXPECT_FALSE(status);
-
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
-  EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, worker->process_id());
-
-  // "PROCESS_ALLOCATED" event should not be recorded.
-  ASSERT_EQ(1u, events_.size());
-  EXPECT_EQ(DETACHED, events_[0].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status.value());
-}
-
 TEST_F(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
@@ -399,55 +363,6 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
   ASSERT_EQ(1u, events_.size());
   EXPECT_EQ(DETACHED, events_[0].type);
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status.value());
-}
-
-TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
-  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    // This test calls Start() then Stop() to test stopping during process
-    // allocation. But when ServiceWorkerOnUI is enabled, Start() synchronously
-    // reaches the SetupOnUIThread() step, so process allocation occurs before
-    // Stop() is called, so this test doesn't make sense.
-    return;
-  }
-
-  const GURL scope("http://example.com/");
-  const GURL url("http://example.com/worker.js");
-
-  RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
-  worker->AddObserver(this);
-
-  // Stop the start worker sequence before a process is allocated.
-  base::Optional<blink::ServiceWorkerStatusCode> status;
-
-  worker->Start(CreateStartParams(pair.second),
-                ReceiveStatus(&status, base::DoNothing()));
-  worker->Stop();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
-  EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, worker->process_id());
-
-  // The start callback should not be aborted by stop (see a comment on the dtor
-  // of EmbeddedWorkerInstance::StartTask).
-  EXPECT_FALSE(status);
-
-  // "PROCESS_ALLOCATED" event should not be recorded.
-  ASSERT_EQ(1u, events_.size());
-  EXPECT_EQ(STOPPED, events_[0].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status.value());
-  events_.clear();
-
-  // Restart the worker.
-  StartWorker(worker.get(), CreateStartParams(pair.second));
-
-  ASSERT_EQ(3u, events_.size());
-  EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
-  EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
-  EXPECT_EQ(STARTED, events_[2].type);
-
-  // Tear down the worker.
-  worker->Stop();
 }
 
 TEST_F(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
@@ -522,7 +437,7 @@ TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
 
   // Attempt to start the worker. From the browser process's point of view, the
   // start IPC was sent.
-  base::Optional<blink::ServiceWorkerStatusCode> status;
+  absl::optional<blink::ServiceWorkerStatusCode> status;
   base::RunLoop loop;
   worker->Start(CreateStartParams(pair.second),
                 ReceiveStatus(&status, loop.QuitClosure()));
@@ -550,7 +465,7 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
   worker->AddObserver(this);
 
   // Attempt to start the worker.
-  base::Optional<blink::ServiceWorkerStatusCode> status;
+  absl::optional<blink::ServiceWorkerStatusCode> status;
   base::RunLoop loop;
   auto* client = helper_->AddNewPendingInstanceClient<
       DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());

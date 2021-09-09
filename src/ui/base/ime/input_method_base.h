@@ -45,6 +45,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
 #if defined(OS_WIN)
   bool OnUntranslatedIMEMessage(const MSG event,
                                 NativeEventResult* result) override;
+  void OnInputLocaleChanged() override;
+  bool IsInputLocaleCJK() const override;
 #endif
 
   void SetFocusedTextInputClient(TextInputClient* client) override;
@@ -55,9 +57,6 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   // If a derived class overrides this method, it should call parent's
   // implementation.
   void OnTextInputTypeChanged(const TextInputClient* client) override;
-  void OnInputLocaleChanged() override;
-  bool IsInputLocaleCJK() const override;
-
   TextInputType GetTextInputType() const override;
   TextInputMode GetTextInputMode() const override;
   int GetTextInputFlags() const override;
@@ -68,12 +67,12 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   void AddObserver(InputMethodObserver* observer) override;
   void RemoveObserver(InputMethodObserver* observer) override;
 
-  InputMethodKeyboardController* GetInputMethodKeyboardController() override;
+  VirtualKeyboardController* GetVirtualKeyboardController() override;
 
  protected:
   explicit InputMethodBase(internal::InputMethodDelegate* delegate);
   InputMethodBase(internal::InputMethodDelegate* delegate,
-                  std::unique_ptr<InputMethodKeyboardController> controller);
+                  std::unique_ptr<VirtualKeyboardController> controller);
 
   virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,
                                          TextInputClient* focused) {}
@@ -124,7 +123,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   // Screen bounds of a on-screen keyboard.
   gfx::Rect keyboard_bounds_;
 
-  std::unique_ptr<InputMethodKeyboardController> const keyboard_controller_;
+  std::unique_ptr<VirtualKeyboardController> const keyboard_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodBase);
 };

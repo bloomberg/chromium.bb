@@ -1,3 +1,45 @@
+## 8.1.0 (2021-04-24)
+
+### New features
+
+Add support for ES2022 class fields and private methods.
+
+## 8.0.2 (2021-01-25)
+
+### Bug fixes
+
+Adjust package.json to work with Node 12.16.0 and 13.0-13.6.
+
+## 8.0.1 (2020-10-11)
+
+### Bug fixes
+
+Allow `for await` at the top level.
+
+## 8.0.0 (2020-08-12)
+
+### New features
+
+The package can now be loaded directly as an ECMAScript module in node 13+.
+
+### Breaking changes
+
+The `ecmaVersion` option is now required. For the moment, omitting it will still work with a warning, but that will change in a future release.
+
+## 7.1.0 (2020-06-11)
+
+### Bug fixes
+
+Fix various issues in regexp validation.
+
+### New features
+
+Add support for `import.meta`.
+
+Add support for optional chaining (`?.`) and nullish coalescing (`??`).
+
+Support `export * as ns from "source"`.
+
 ## 7.0.0 (2019-08-12)
 
 ### Breaking changes

@@ -35,13 +35,15 @@ public:
                                      GrMaskFormat format,
                                      const SkMatrix& localMatrix,
                                      bool usesW) {
-        return arena->make<GrBitmapTextGeoProc>(caps, color, wideColor, views, numActiveViews,
-                                                p, format, localMatrix, usesW);
+        return arena->make([&](void* ptr) {
+            return new (ptr) GrBitmapTextGeoProc(caps, color, wideColor, views, numActiveViews,
+                                                 p, format, localMatrix, usesW);
+        });
     }
 
     ~GrBitmapTextGeoProc() override {}
 
-    const char* name() const override { return "Texture"; }
+    const char* name() const override { return "BitmapText"; }
 
     const Attribute& inPosition() const { return fInPosition; }
     const Attribute& inColor() const { return fInColor; }
@@ -57,11 +59,9 @@ public:
 
     void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override;
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps& caps) const override;
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps& caps) const override;
 
 private:
-    friend class ::SkArenaAlloc; // for access to ctor
-
     GrBitmapTextGeoProc(const GrShaderCaps&, const SkPMColor4f&, bool wideColor,
                         const GrSurfaceProxyView* views, int numViews, GrSamplerState params,
                         GrMaskFormat format, const SkMatrix& localMatrix, bool usesW);

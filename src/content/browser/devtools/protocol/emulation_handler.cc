@@ -15,11 +15,14 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/idle_manager.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/http/http_util.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
+#include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/widget/screen_orientation.mojom.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
@@ -41,13 +44,13 @@ blink::mojom::ScreenOrientation WebScreenOrientationTypeFromString(
   return blink::mojom::ScreenOrientation::kUndefined;
 }
 
-base::Optional<content::DisplayFeature::Orientation>
+absl::optional<content::DisplayFeature::Orientation>
 DisplayFeatureOrientationTypeFromString(const std::string& type) {
   if (type == Emulation::DisplayFeature::OrientationEnum::Vertical)
     return content::DisplayFeature::Orientation::kVertical;
   if (type == Emulation::DisplayFeature::OrientationEnum::Horizontal)
     return content::DisplayFeature::Orientation::kHorizontal;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 ui::GestureProviderConfigType TouchEmulationConfigurationToType(
@@ -266,11 +269,11 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     }
   }
 
-  base::Optional<content::DisplayFeature> display_feature = base::nullopt;
+  absl::optional<content::DisplayFeature> display_feature = absl::nullopt;
   if (displayFeature.isJust()) {
     protocol::Emulation::DisplayFeature* emu_display_feature =
         displayFeature.fromJust();
-    base::Optional<content::DisplayFeature::Orientation> disp_orientation =
+    absl::optional<content::DisplayFeature::Orientation> disp_orientation =
         DisplayFeatureOrientationTypeFromString(
             emu_display_feature->GetOrientation());
     if (!disp_orientation) {
@@ -412,7 +415,7 @@ Response EmulationHandler::SetUserAgentOverride(
   user_agent_ = user_agent;
   accept_language_ = accept_lang;
 
-  user_agent_metadata_ = base::nullopt;
+  user_agent_metadata_ = absl::nullopt;
   if (!ua_metadata_override.isJust())
     return Response::FallThrough();
 
@@ -424,24 +427,35 @@ Response EmulationHandler::SetUserAgentOverride(
   std::unique_ptr<Emulation::UserAgentMetadata> ua_metadata =
       ua_metadata_override.takeJust();
   blink::UserAgentMetadata new_ua_metadata;
-  DCHECK(ua_metadata->GetBrands());
+  blink::UserAgentMetadata default_ua_metadata =
+      GetContentClient()->browser()->GetUserAgentMetadata();
 
-  for (const auto& bv : *ua_metadata->GetBrands()) {
-    blink::UserAgentBrandVersion out_bv;
-    if (!ValidateClientHintString(bv->GetBrand()))
-      return Response::InvalidParams("Invalid brand string");
-    out_bv.brand = bv->GetBrand();
+  if (ua_metadata->HasBrands()) {
+    for (const auto& bv : *ua_metadata->GetBrands(nullptr)) {
+      blink::UserAgentBrandVersion out_bv;
+      if (!ValidateClientHintString(bv->GetBrand()))
+        return Response::InvalidParams("Invalid brand string");
+      out_bv.brand = bv->GetBrand();
 
-    if (!ValidateClientHintString(bv->GetVersion()))
-      return Response::InvalidParams("Invalid brand version string");
-    out_bv.major_version = bv->GetVersion();
+      if (!ValidateClientHintString(bv->GetVersion()))
+        return Response::InvalidParams("Invalid brand version string");
+      out_bv.major_version = bv->GetVersion();
 
-    new_ua_metadata.brand_version_list.push_back(std::move(out_bv));
+      new_ua_metadata.brand_version_list.push_back(std::move(out_bv));
+    }
+  } else {
+    new_ua_metadata.brand_version_list =
+        std::move(default_ua_metadata.brand_version_list);
   }
 
-  if (!ValidateClientHintString(ua_metadata->GetFullVersion()))
-    return Response::InvalidParams("Invalid full version string");
-  new_ua_metadata.full_version = ua_metadata->GetFullVersion();
+  if (ua_metadata->HasFullVersion()) {
+    String full_version = ua_metadata->GetFullVersion("");
+    if (!ValidateClientHintString(full_version))
+      return Response::InvalidParams("Invalid full version string");
+    new_ua_metadata.full_version = full_version;
+  } else {
+    new_ua_metadata.full_version = std::move(default_ua_metadata.full_version);
+  }
 
   if (!ValidateClientHintString(ua_metadata->GetPlatform()))
     return Response::InvalidParams("Invalid platform string");
@@ -471,10 +485,12 @@ Response EmulationHandler::SetFocusEmulationEnabled(bool enabled) {
     return Response::FallThrough();
   focus_emulation_enabled_ = enabled;
   if (enabled) {
-    GetWebContents()->IncrementCapturerCount(gfx::Size(),
-                                             /* stay_hidden */ false);
+    capture_handle_ =
+        GetWebContents()->IncrementCapturerCount(gfx::Size(),
+                                                 /*stay_hidden=*/false,
+                                                 /*stay_awake=*/false);
   } else {
-    GetWebContents()->DecrementCapturerCount(/* stay_hidden */ false);
+    capture_handle_.RunAndReset();
   }
   return Response::FallThrough();
 }
@@ -572,7 +588,7 @@ void EmulationHandler::ApplyOverrides(net::HttpRequestHeaders* headers) {
 }
 
 bool EmulationHandler::ApplyUserAgentMetadataOverrides(
-    base::Optional<blink::UserAgentMetadata>* override_out) {
+    absl::optional<blink::UserAgentMetadata>* override_out) {
   // This is conditional on basic user agent override being on; this helps us
   // emulate a device not sending any UA client hints.
   if (user_agent_.empty())

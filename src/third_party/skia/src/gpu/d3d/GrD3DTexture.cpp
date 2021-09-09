@@ -108,33 +108,42 @@ sk_sp<GrD3DTexture> GrD3DTexture::MakeWrappedTexture(GrD3DGpu* gpu,
                                                 ioType));
 }
 
-void GrD3DTexture::onRelease() {
-    // We're about to be severed from our GrManagedResource. If there are "finish" idle procs we
-    // have to decide who will handle them. If the resource is still tied to a command buffer we let
-    // it handle them. Otherwise, we handle them.
-    SkASSERT(this->resource());
-    if (this->resource()->isQueuedForWorkOnGpu()) {
-        this->removeFinishIdleProcs();
+sk_sp<GrD3DTexture> GrD3DTexture::MakeAliasingTexture(GrD3DGpu* gpu,
+                                                      sk_sp<GrD3DTexture> originalTexture,
+                                                      DXGI_FORMAT format) {
+    GrD3DTextureResourceInfo info = originalTexture->fInfo;
+    D3D12_RESOURCE_DESC desc = originalTexture->d3dResource()->GetDesc();
+    desc.Format = format;
+
+    info.fResource = gpu->memoryAllocator()->createAliasingResource(info.fAlloc, 0, &desc,
+                                                                    info.fResourceState, nullptr);
+    if (!info.fResource) {
+        return false;
     }
 
+    sk_sp<GrD3DResourceState> state(
+        new GrD3DResourceState(static_cast<D3D12_RESOURCE_STATES>(info.fResourceState)));
+
+    GrD3DDescriptorHeap::CPUHandle shaderResourceView =
+        gpu->resourceProvider().createShaderResourceView(info.fResource.get());
+
+    GrD3DTexture* tex = new GrD3DTexture(gpu, SkBudgeted::kNo, originalTexture->dimensions(),
+                                         info, std::move(state), shaderResourceView,
+                                         originalTexture->mipmapStatus());
+    return sk_sp<GrD3DTexture>(tex);
+}
+
+void GrD3DTexture::onRelease() {
     GrD3DGpu* gpu = this->getD3DGpu();
-    gpu->resourceProvider().recycleConstantOrShaderView(fShaderResourceView);
+    gpu->resourceProvider().recycleShaderView(fShaderResourceView);
     this->releaseResource(gpu);
 
     INHERITED::onRelease();
 }
 
 void GrD3DTexture::onAbandon() {
-    // We're about to be severed from our GrManagedResource. If there are "finish" idle procs we
-    // have to decide who will handle them. If the resource is still tied to a command buffer we let
-    // it handle them. Otherwise, we handle them.
-    SkASSERT(this->resource());
-    if (this->resource()->isQueuedForWorkOnGpu()) {
-        this->removeFinishIdleProcs();
-    }
-
     GrD3DGpu* gpu = this->getD3DGpu();
-    gpu->resourceProvider().recycleConstantOrShaderView(fShaderResourceView);
+    gpu->resourceProvider().recycleShaderView(fShaderResourceView);
     this->releaseResource(gpu);
     INHERITED::onAbandon();
 }
@@ -146,62 +155,4 @@ GrBackendTexture GrD3DTexture::getBackendTexture() const {
 GrD3DGpu* GrD3DTexture::getD3DGpu() const {
     SkASSERT(!this->wasDestroyed());
     return static_cast<GrD3DGpu*>(this->getGpu());
-}
-
-void GrD3DTexture::addIdleProc(sk_sp<GrRefCntedCallback> idleProc) {
-    INHERITED::addIdleProc(idleProc);
-    this->addResourceIdleProc(this, std::move(idleProc));
-}
-
-void GrD3DTexture::callIdleProcsOnBehalfOfResource() {
-    // If we got here then the resource is being removed from its last command buffer and the
-    // texture is idle in the cache. Any kFlush idle procs should already have been called. So
-    // the texture and resource should have the same set of procs.
-    SkASSERT(this->resourceIdleProcCnt() == fIdleProcs.count());
-#ifdef SK_DEBUG
-    for (int i = 0; i < fIdleProcs.count(); ++i) {
-        SkASSERT(fIdleProcs[i] == this->resourceIdleProc(i));
-    }
-#endif
-    fIdleProcs.reset();
-    this->resetResourceIdleProcs();
-}
-
-void GrD3DTexture::willRemoveLastRef() {
-    if (!fIdleProcs.count()) {
-        return;
-    }
-    // This is called when the GrTexture is purgeable. However, we need to check whether the
-    // Resource is still owned by any command buffers. If it is then it will call the proc.
-    if (!this->resourceIsQueuedForWorkOnGpu()) {
-        // Everything must go!
-        fIdleProcs.reset();
-        this->resetResourceIdleProcs();
-    } else {
-        // The procs that should be called on flush but not finish are those that are owned
-        // by the GrD3DTexture and not the Resource. We do this by copying the resource's array
-        // and thereby dropping refs to procs we own but the resource does not.
-        fIdleProcs.reset(this->resourceIdleProcCnt());
-        for (int i = 0; i < fIdleProcs.count(); ++i) {
-            fIdleProcs[i] = this->resourceIdleProc(i);
-        }
-    }
-}
-
-void GrD3DTexture::removeFinishIdleProcs() {
-    // This should only be called by onRelease/onAbandon when we have already checked for a
-    // resource.
-    SkSTArray<4, sk_sp<GrRefCntedCallback>> procsToKeep;
-    int resourceIdx = 0;
-    // The idle procs that are common between the GrD3DTexture and its Resource should be found in
-    // the same order.
-    for (int i = 0; i < fIdleProcs.count(); ++i) {
-        if (fIdleProcs[i] == this->resourceIdleProc(resourceIdx)) {
-            ++resourceIdx;
-        } else {
-            procsToKeep.push_back(fIdleProcs[i]);
-        }
-    }
-    SkASSERT(resourceIdx == this->resourceIdleProcCnt());
-    fIdleProcs = procsToKeep;
 }

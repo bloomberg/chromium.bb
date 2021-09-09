@@ -45,7 +45,7 @@ private:
         b->add32(fUsesLocalCoords);
     }
     const TextureSampler& onTextureSampler(int) const override { return fAtlasAccess; }
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override;
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override;
 
     const TextureSampler fAtlasAccess;
     const SkISize fAtlasDimensions;
@@ -56,13 +56,14 @@ private:
 
 class DrawAtlasPathShader::Impl : public GrGLSLGeometryProcessor {
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-        const auto& shader = args.fGP.cast<DrawAtlasPathShader>();
+        const auto& shader = args.fGeomProc.cast<DrawAtlasPathShader>();
         args.fVaryingHandler->emitAttributes(shader);
 
         GrGLSLVarying atlasCoord(kFloat2_GrSLType);
         args.fVaryingHandler->addVarying("atlascoord", &atlasCoord);
 
         GrGLSLVarying color(kHalf4_GrSLType);
+        args.fFragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
         args.fVaryingHandler->addPassThroughAttribute(
                 kInstanceAttribs[2], args.fOutputColor,
                 GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
@@ -79,7 +80,7 @@ class DrawAtlasPathShader::Impl : public GrGLSLGeometryProcessor {
                 if (dev_xywh.w < 0) {  // Negative height indicates that the path is transposed.
                     atlascoord = atlascoord.yx;
                 }
-                atlascoord += atlas_xy;
+                atlascoord += float2(atlas_xy);
                 %s = atlascoord * %s;)",
                 atlasCoord.vsOut(), atlasAdjust);
 
@@ -92,33 +93,32 @@ class DrawAtlasPathShader::Impl : public GrGLSLGeometryProcessor {
             gpArgs->fLocalCoordVar.set(kFloat2_GrSLType, "localcoord");
         }
 
-        args.fFragBuilder->codeAppendf("%s = ", args.fOutputCoverage);
+        args.fFragBuilder->codeAppendf("half4 %s = ", args.fOutputCoverage);
         args.fFragBuilder->appendTextureLookup(args.fTexSamplers[0], atlasCoord.fsIn());
         args.fFragBuilder->codeAppendf(".aaaa;");
     }
 
     void setData(const GrGLSLProgramDataManager& pdman,
-                 const GrPrimitiveProcessor& primProc) override {
-        const SkISize& dimensions = primProc.cast<DrawAtlasPathShader>().fAtlasDimensions;
+                 const GrShaderCaps&,
+                 const GrGeometryProcessor& geomProc) override {
+        const SkISize& dimensions = geomProc.cast<DrawAtlasPathShader>().fAtlasDimensions;
         pdman.set2f(fAtlasAdjustUniform, 1.f / dimensions.width(), 1.f / dimensions.height());
     }
 
     GrGLSLUniformHandler::UniformHandle fAtlasAdjustUniform;
 };
 
-GrGLSLPrimitiveProcessor* DrawAtlasPathShader::createGLSLInstance(const GrShaderCaps&) const {
+GrGLSLGeometryProcessor* DrawAtlasPathShader::createGLSLInstance(const GrShaderCaps&) const {
     return new Impl();
 }
 
 }  // namespace
 
 GrProcessorSet::Analysis GrDrawAtlasPathOp::finalize(const GrCaps& caps, const GrAppliedClip* clip,
-                                                     bool hasMixedSampledCoverage,
                                                      GrClampType clampType) {
     const GrProcessorSet::Analysis& analysis = fProcessors.finalize(
             fInstanceList.fInstance.fColor, GrProcessorAnalysisCoverage::kSingleChannel, clip,
-            &GrUserStencilSettings::kUnused, hasMixedSampledCoverage, caps, clampType,
-            &fInstanceList.fInstance.fColor);
+            &GrUserStencilSettings::kUnused, caps, clampType, &fInstanceList.fInstance.fColor);
     fUsesLocalCoords = analysis.usesLocalCoords();
     return analysis;
 }
@@ -142,10 +142,11 @@ GrOp::CombineResult GrDrawAtlasPathOp::onCombineIfPossible(
 }
 
 void GrDrawAtlasPathOp::onPrePrepare(GrRecordingContext*,
-                                     const GrSurfaceProxyView* writeView,
+                                     const GrSurfaceProxyView& writeView,
                                      GrAppliedClip*,
                                      const GrXferProcessor::DstProxyView&,
-                                     GrXferBarrierFlags renderPassXferBarriers) {}
+                                     GrXferBarrierFlags renderPassXferBarriers,
+                                     GrLoadOp colorLoadOp) {}
 
 void GrDrawAtlasPathOp::onPrepare(GrOpFlushState* state) {
     size_t instanceStride = Instance::Stride(fUsesLocalCoords);
@@ -169,7 +170,7 @@ void GrDrawAtlasPathOp::onExecute(GrOpFlushState* state, const SkRect& chainBoun
     }
     initArgs.fCaps = &state->caps();
     initArgs.fDstProxyView = state->drawOpArgs().dstProxyView();
-    initArgs.fWriteSwizzle = state->drawOpArgs().writeSwizzle();
+    initArgs.fWriteSwizzle = state->drawOpArgs().writeView().swizzle();
     GrPipeline pipeline(initArgs, std::move(fProcessors), state->detachAppliedClip());
 
     GrSwizzle swizzle = state->caps().getReadSwizzle(fAtlasProxy->backendFormat(),
@@ -178,10 +179,9 @@ void GrDrawAtlasPathOp::onExecute(GrOpFlushState* state, const SkRect& chainBoun
     DrawAtlasPathShader shader(fAtlasProxy.get(), swizzle, fUsesLocalCoords);
     SkASSERT(shader.instanceStride() == Instance::Stride(fUsesLocalCoords));
 
-    GrProgramInfo programInfo(state->proxy()->numSamples(), state->proxy()->numStencilSamples(),
-                              state->proxy()->backendFormat(), state->writeView()->origin(),
-                              &pipeline, &GrUserStencilSettings::kUnused, &shader,
-                              GrPrimitiveType::kTriangleStrip, 0, state->renderPassBarriers());
+    GrProgramInfo programInfo(state->writeView(), &pipeline, &GrUserStencilSettings::kUnused,
+                              &shader, GrPrimitiveType::kTriangleStrip, 0,
+                              state->renderPassBarriers(), state->colorLoadOp());
 
     state->bindPipelineAndScissorClip(programInfo, this->bounds());
     state->bindTextures(shader, *fAtlasProxy, pipeline);

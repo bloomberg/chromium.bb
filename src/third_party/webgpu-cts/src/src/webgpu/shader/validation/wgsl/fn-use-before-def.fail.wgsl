@@ -1,4 +1,4 @@
-# v-0005 - Fails because `a` calls `c` but `c` has not been defined.
+// v-0006 - Fails because `a` calls `c` but `c` has not been defined.
 
 fn a() -> i32 {
   return c();
@@ -13,6 +13,6 @@ fn c() -> i32 {
 }
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   return;
 }

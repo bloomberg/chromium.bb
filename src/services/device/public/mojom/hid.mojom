@@ -11,6 +11,7 @@ module device.mojom;
 enum HidBusType {
   kHIDBusTypeUSB = 0,
   kHIDBusTypeBluetooth = 1,
+  [MinVersion=1] kHIDBusTypeUnknown = 2,
 };
 
 // Usage pages.
@@ -341,6 +342,11 @@ struct HidDeviceInfo {
 
   // A platform-specific string identifier for the logical device.
   string device_node@13;
+
+  // Reports that should not be accessible from Javascript.
+  [MinVersion=1] array<uint8>? protected_input_report_ids@14;
+  [MinVersion=1] array<uint8>? protected_output_report_ids@15;
+  [MinVersion=1] array<uint8>? protected_feature_report_ids@16;
 };
 
 // A client interface for receiving a notification when HID devices are
@@ -353,6 +359,13 @@ interface HidManagerClient {
   // Notifies the client that a device is being removed; called before
   // removing the device from HidService.
   DeviceRemoved@1(HidDeviceInfo device_info);
+
+  // Notifies the client that the device info has been changed.
+  // * New collections may be added.
+  // * The maximum report sizes may be increased.
+  // * The protected report ID lists may have additional report IDs added.
+  // Other device information is not modified.
+  [MinVersion=2] DeviceChanged@2(HidDeviceInfo device_info);
 };
 
 // Provides an interface for enumerating available HID devices, registering for
@@ -379,9 +392,13 @@ interface HidManager {
   // open. When the HID connection is closed, the watcher is also closed. This
   // is useful when the connection closure should be handled somewhere other
   // than where the |connection| and |connection_client| are held.
+  //
+  // If |allow_protected_reports| is true, this connection is exempted from
+  // the HID blocklist so that protected reports may be sent and received.
   Connect@2(string device_guid,
           pending_remote<HidConnectionClient>? connection_client,
-          pending_remote<HidConnectionWatcher>? watcher)
+          pending_remote<HidConnectionWatcher>? watcher,
+          [MinVersion=1] bool allow_protected_reports)
       => (pending_remote<HidConnection>? connection);
 
   // Binds a HidManager endpoint.

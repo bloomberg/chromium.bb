@@ -9,8 +9,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/performance_manager/test_support/page_discarding_utils.h"
+#include "components/performance_manager/public/decorators/page_live_state_decorator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,7 +78,7 @@ TEST_F(PageDiscardingHelperTest, TestCannotDiscardRecentlyAudiblePage) {
           page_node()));
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PageDiscardingHelperTest, TestCannotDiscardRecentlyVisiblePage) {
   page_node()->SetIsVisible(true);
   page_node()->SetIsVisible(false);
@@ -117,48 +119,48 @@ TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageWithInvalidURL) {
 }
 
 TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageProtectedByExtension) {
-  testing::FakePageLiveStateData::GetOrCreate(page_node())
-      ->is_auto_discardable_ = false;
+  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
+      ->SetIsAutoDiscardableForTesting(false);
   EXPECT_FALSE(
       PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
           page_node()));
 }
 
 TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageCapturingVideo) {
-  testing::FakePageLiveStateData::GetOrCreate(page_node())
-      ->is_capturing_video_ = true;
+  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
+      ->SetIsCapturingVideoForTesting(true);
   EXPECT_FALSE(
       PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
           page_node()));
 }
 
 TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageCapturingAudio) {
-  testing::FakePageLiveStateData::GetOrCreate(page_node())
-      ->is_capturing_audio_ = true;
+  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
+      ->SetIsCapturingAudioForTesting(true);
   EXPECT_FALSE(
       PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
           page_node()));
 }
 
 TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageBeingMirrored) {
-  testing::FakePageLiveStateData::GetOrCreate(page_node())->is_being_mirrored_ =
-      true;
+  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
+      ->SetIsBeingMirroredForTesting(true);
   EXPECT_FALSE(
       PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
           page_node()));
 }
 
 TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageCapturingWindow) {
-  testing::FakePageLiveStateData::GetOrCreate(page_node())
-      ->is_capturing_window_ = true;
+  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
+      ->SetIsCapturingWindowForTesting(true);
   EXPECT_FALSE(
       PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
           page_node()));
 }
 
 TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageCapturingDisplay) {
-  testing::FakePageLiveStateData::GetOrCreate(page_node())
-      ->is_capturing_display_ = true;
+  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
+      ->SetIsCapturingDisplayForTesting(true);
   EXPECT_FALSE(
       PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
           page_node()));
@@ -166,25 +168,25 @@ TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageCapturingDisplay) {
 
 TEST_F(PageDiscardingHelperTest,
        TestCannotDiscardPageConnectedToBluetoothDevice) {
-  testing::FakePageLiveStateData::GetOrCreate(page_node())
-      ->is_connected_to_bluetooth_device_ = true;
+  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
+      ->SetIsConnectedToBluetoothDeviceForTesting(true);
   EXPECT_FALSE(
       PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
           page_node()));
 }
 
 TEST_F(PageDiscardingHelperTest, TestCannotDiscardIsConnectedToUSBDevice) {
-  testing::FakePageLiveStateData::GetOrCreate(page_node())
-      ->is_connected_to_usb_device_ = true;
+  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
+      ->SetIsConnectedToUSBDeviceForTesting(true);
   EXPECT_FALSE(
       PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
           page_node()));
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageMultipleTimes) {
-  testing::FakePageLiveStateData::GetOrCreate(page_node())->was_discarded_ =
-      true;
+  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
+      ->SetWasDiscardedForTesting(true);
   EXPECT_FALSE(
       PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
           page_node()));

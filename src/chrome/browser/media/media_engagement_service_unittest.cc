@@ -176,6 +176,7 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
       scoped_refptr<base::SequencedTaskRunner> backend_runner) {
     // Triggers destruction of the existing HistoryService and waits for all
     // cleanup work to be done.
+    service()->SetHistoryServiceForTesting(nullptr);
     BlockUntilHistoryBackendDestroyed(profile());
 
     // Force the creation of a new HistoryService that runs its backend on
@@ -183,7 +184,7 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
     ConfigureHistoryService(std::move(backend_runner));
     history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         profile(), ServiceAccessType::IMPLICIT_ACCESS);
-    history->AddObserver(service());
+    service()->SetHistoryServiceForTesting(history);
   }
 
   void RecordVisitAndPlaybackAndAdvanceClock(const url::Origin& origin) {
@@ -375,8 +376,8 @@ TEST_P(MediaEngagementServiceTest, IncognitoEngagementService) {
   base::Time origin1_time = Now();
   RecordVisitAndPlaybackAndAdvanceClock(origin2);
 
-  MediaEngagementService* incognito_service =
-      MediaEngagementService::Get(profile()->GetPrimaryOTRProfile());
+  MediaEngagementService* incognito_service = MediaEngagementService::Get(
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true));
   ExpectScores(incognito_service, origin1, 0.05, 1, 1, origin1_time);
   ExpectScores(incognito_service, origin2, 0.05, 1, 1, Now());
   ExpectScores(incognito_service, origin3, 0.0, 0, 0, TimeNotSet());
@@ -410,8 +411,8 @@ TEST_P(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
                TimeNotSet());
   ExpectScores(kOrigin2, 0.0, 1, 0, TimeNotSet());
 
-  MediaEngagementService* incognito_service =
-      MediaEngagementService::Get(profile()->GetPrimaryOTRProfile());
+  MediaEngagementService* incognito_service = MediaEngagementService::Get(
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true));
   ExpectScores(incognito_service, kOrigin1, 0.05,
                MediaEngagementScore::GetScoreMinVisits(), 1, TimeNotSet());
   ExpectScores(incognito_service, kOrigin2, 0.0, 1, 0, TimeNotSet());
@@ -760,7 +761,7 @@ TEST_P(MediaEngagementServiceTest, HistoryExpirationIsNoOp) {
     service()->OnURLsDeleted(
         history, history::DeletionInfo(history::DeletionTimeRange::Invalid(),
                                        true, history::URLRows(),
-                                       std::set<GURL>(), base::nullopt));
+                                       std::set<GURL>(), absl::nullopt));
 
     // Same as above, nothing should have changed.
     ExpectScores(origin1, 7.0 / 11.0,

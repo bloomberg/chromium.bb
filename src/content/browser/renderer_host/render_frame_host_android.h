@@ -7,8 +7,6 @@
 
 #include <jni.h>
 
-#include <memory>
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
@@ -16,8 +14,6 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace content {
 
@@ -28,16 +24,13 @@ class RenderFrameHostImpl;
 // native counterpart.
 class RenderFrameHostAndroid : public base::SupportsUserData::Data {
  public:
-  RenderFrameHostAndroid(
-      RenderFrameHostImpl* render_frame_host,
-      mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-          interface_provider_remote);
+  RenderFrameHostAndroid(RenderFrameHostImpl* render_frame_host);
   ~RenderFrameHostAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // Methods called from Java
-  base::android::ScopedJavaLocalRef<jstring> GetLastCommittedURL(
+  base::android::ScopedJavaLocalRef<jobject> GetLastCommittedURL(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&) const;
 
@@ -62,9 +55,24 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
   void NotifyUserActivation(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>&);
 
+  jboolean SignalModalCloseWatcherIfActive(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&) const;
+
   jboolean IsRenderFrameCreated(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&) const;
+
+  void GetInterfaceToRendererFrame(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&,
+      const base::android::JavaParamRef<jstring>& interface_name,
+      jint message_pipe_handle) const;
+
+  void TerminateRendererDueToBadMessage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&,
+      jint reason) const;
 
   jboolean IsProcessBlocked(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>&) const;
@@ -85,8 +93,6 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
 
  private:
   RenderFrameHostImpl* const render_frame_host_;
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      interface_provider_remote_;
   JavaObjectWeakGlobalRef obj_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostAndroid);

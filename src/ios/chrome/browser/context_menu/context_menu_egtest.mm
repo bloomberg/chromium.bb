@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_app_interface.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
@@ -62,7 +63,7 @@ const char kDestinationPageTextId[] = "message";
 const char kDestinationPageText[] = "You made it!";
 
 // URL to a page with a link to the destination page.
-const char kInitialPageUrl[] = "/scenarioContextMenuOpenInNewTab";
+const char kInitialPageUrl[] = "/scenarioContextMenuOpenInNewSurface";
 // HTML content of a page with a link to the destination page.
 const char kInitialPageHtml[] =
     "<html><body><a style='margin-left:150px' href='/destination' id='link'>"
@@ -180,6 +181,14 @@ void TapOnContextMenuButton(id<GREYMatcher> context_menu_item_button) {
 
 @implementation ContextMenuTestCase
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+
+  config.features_disabled.push_back(
+      fullscreen::features::kSmoothScrollingDefault);
+  return config;
+}
+
 + (void)setUpForTestCase {
   [super setUpForTestCase];
   [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW];
@@ -265,8 +274,7 @@ void TapOnContextMenuButton(id<GREYMatcher> context_menu_item_button) {
 
   // Calculate a point inside the displayed image.
   CGFloat topInset = 0.0;
-  if ([ChromeEarlGrey webStateWebViewUsesContentInset] ||
-      [FullscreenAppInterface isFullscreenInitialized]) {
+  if ([ChromeEarlGrey webStateWebViewUsesContentInset]) {
     topInset = [FullscreenAppInterface currentViewportInsets].top;
   }
   CGPoint pointOnImage = CGPointZero;
@@ -444,6 +452,33 @@ void TapOnContextMenuButton(id<GREYMatcher> context_menu_item_button) {
                    chrome_test_util::ButtonWithAccessibilityLabelId(IDS_CANCEL)]
         assertWithMatcher:grey_sufficientlyVisible()];
   }
+}
+
+// Checks that "open in new window" shows up on a long press of a url link
+// and that it actually opens in a new window.
+- (void)testOpenLinkInNewWindow {
+  if (![ChromeEarlGrey areMultipleWindowsSupported])
+    EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
+
+  // Loads url in first window.
+  const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
+  [ChromeEarlGrey loadURL:initialURL inWindowWithNumber:0];
+
+  [ChromeEarlGrey waitForWebStateContainingText:kInitialPageDestinationLinkText
+                             inWindowWithNumber:0];
+
+  // Display the context menu.
+  LongPressElement(kInitialPageDestinationLinkId);
+
+  // Open link in new window.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::OpenLinkInNewWindowButton()]
+      performAction:grey_tap()];
+
+  // Assert there's a second window with expected content.
+  [ChromeEarlGrey waitForForegroundWindowCount:2];
+  [ChromeEarlGrey waitForWebStateContainingText:kDestinationPageText
+                             inWindowWithNumber:1];
 }
 
 @end

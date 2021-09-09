@@ -115,12 +115,8 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
     if (exception_state.HadException())
       return nullptr;
 
-    if (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled()) {
-      return CreateVideoCapturePermissionDescriptor(
-          camera_device_permission->panTiltZoom());
-    }
-
-    return CreateVideoCapturePermissionDescriptor(false /* pan_tilt_zoom */);
+    return CreateVideoCapturePermissionDescriptor(
+        camera_device_permission->panTiltZoom());
   }
   if (name == "microphone")
     return CreatePermissionDescriptor(PermissionName::AUDIO_CAPTURE);
@@ -198,11 +194,6 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
   if (name == "periodic-background-sync")
     return CreatePermissionDescriptor(PermissionName::PERIODIC_BACKGROUND_SYNC);
   if (name == "screen-wake-lock") {
-    if (!RuntimeEnabledFeatures::ScreenWakeLockEnabled(
-            ExecutionContext::From(script_state))) {
-      exception_state.ThrowTypeError("Screen Wake Lock is not enabled.");
-      return nullptr;
-    }
     return CreatePermissionDescriptor(PermissionName::SCREEN_WAKE_LOCK);
   }
   if (name == "system-wake-lock") {
@@ -243,6 +234,22 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
       return nullptr;
     }
     return CreatePermissionDescriptor(PermissionName::FONT_ACCESS);
+  }
+  if (name == "display-capture") {
+    if (!RuntimeEnabledFeatures::DisplayCapturePermissionPolicyEnabled(
+            ExecutionContext::From(script_state))) {
+      exception_state.ThrowTypeError("Display Capture is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::DISPLAY_CAPTURE);
+  }
+  if (name == "file-handling") {
+    if (!RuntimeEnabledFeatures::FileHandlingEnabled(
+            ExecutionContext::From(script_state))) {
+      exception_state.ThrowTypeError("File Handling is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::FILE_HANDLING);
   }
   return nullptr;
 }

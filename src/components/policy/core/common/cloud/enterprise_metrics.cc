@@ -14,9 +14,6 @@ const char kMetricUserPolicyInvalidations[] = "Enterprise.PolicyInvalidations";
 const char kMetricUserPolicyInvalidationsFcm[] =
     "Enterprise.FCMInvalidationService.PolicyInvalidations";
 
-const char kMetricUserPolicyChromeOSSessionAbort[] =
-    "Enterprise.UserPolicyChromeOS.SessionAbort";
-
 const char kMetricDevicePolicyRefresh[] = "Enterprise.DevicePolicyRefresh3";
 const char kMetricDevicePolicyRefreshFcm[] =
     "Enterprise.FCMInvalidationService.DevicePolicyRefresh3";
@@ -186,12 +183,17 @@ const char kMetricCBCMRemoteCommandExecutedTemplate[] =
 const char kMetricCBCMUnsignedRemoteCommandExecutedTemplate[] =
     "Enterprise.CBCMRemoteCommand.Executed.Unsigned.%s";
 
-const char kUMAPrivateSetMembershipHashDanceComparison[] =
+const char kUMAPsmHashDanceComparison[] =
     "Enterprise.AutoEnrollmentPrivateSetMembershipHashDanceComparison";
-const char kUMAPrivateSetMembershipSuccessTime[] =
+const char kUMAPsmHashDanceDifferentResultsComparison[] =
+    "Enterprise.AutoEnrollmentPsmHashDanceDifferentResultsComparison";
+const char kUMAPsmSuccessTime[] =
     "Enterprise.AutoEnrollmentPrivateSetMembershipSuccessTime";
-const char kUMAPrivateSetMembershipRequestStatus[] =
-    "Enterprise.AutoEnrollmentPrivateSetMembershipRequestStatus";
+const char kUMAPsmResult[] = "Enterprise.AutoEnrollmentPsmResult";
+const char kUMAPsmNetworkErrorCode[] =
+    "Enterprise.AutoEnrollmentPsmRequestNetworkErrorCode";
+const char kUMAPsmDmServerRequestStatus[] =
+    "Enterprise.AutoEnrollmentPsmDmServerRequestStatus";
 
 const char kUMAHashDanceSuccessTime[] =
     "Enterprise.AutoEnrollmentHashDanceSuccessTime";

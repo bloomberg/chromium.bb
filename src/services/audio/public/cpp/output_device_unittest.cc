@@ -87,7 +87,7 @@ class MockAudioOutputIPC : public media::AudioOutputIPC {
       CreateStream,
       void(media::AudioOutputIPCDelegate* delegate,
            const media::AudioParameters& params,
-           const base::Optional<base::UnguessableToken>& processing_id));
+           const absl::optional<base::UnguessableToken>& processing_id));
   MOCK_METHOD0(PlayStream, void());
   MOCK_METHOD0(PauseStream, void());
   MOCK_METHOD0(FlushStream, void());
@@ -119,8 +119,8 @@ class FakeOutputStreamFactory : public audio::FakeStreamFactory {
   }
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    receiver_.Bind(
-        mojo::PendingReceiver<audio::mojom::StreamFactory>(std::move(handle)));
+    receiver_.Bind(mojo::PendingReceiver<media::mojom::AudioStreamFactory>(
+        std::move(handle)));
   }
 
   StrictMock<MockStream> stream_;
@@ -177,7 +177,7 @@ class AudioServiceOutputDeviceTest : public testing::Test {
     task_env_.RunUntilIdle();
   }
 
-  mojo::PendingRemote<audio::mojom::StreamFactory> MakeFactoryRemote() {
+  mojo::PendingRemote<media::mojom::AudioStreamFactory> MakeFactoryRemote() {
     return stream_factory_->receiver_.BindNewPipeAndPassRemote();
   }
 
@@ -204,7 +204,7 @@ TEST_F(AudioServiceOutputDeviceTest, CreatePlayPause) {
 }
 
 // Flaky on Linux Chromium OS ASan LSan (https://crbug.com/889845)
-#if BUILDFLAG(IS_ASH) && defined(ADDRESS_SANITIZER)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(ADDRESS_SANITIZER)
 #define MAYBE_VerifyDataFlow DISABLED_VerifyDataFlow
 #else
 #define MAYBE_VerifyDataFlow VerifyDataFlow

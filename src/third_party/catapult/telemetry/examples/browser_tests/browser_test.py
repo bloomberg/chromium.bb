@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import sys
 import os
 
@@ -179,13 +180,13 @@ class GetsExpectationsFromTyp(
 
   def _RunsWithExpectationsFile(self):
     if (self.GetExpectationsForTest()[:2] ==
-        (set([json_results.ResultType.Failure]), True)):
+        ({json_results.ResultType.Failure}, True)):
       return
     self.fail()
 
   def _RunsWithoutExpectationsFile(self):
     if (self.GetExpectationsForTest()[:2] ==
-        (set([json_results.ResultType.Pass]), False)):
+        ({json_results.ResultType.Pass}, False)):
       return
     self.fail()
 

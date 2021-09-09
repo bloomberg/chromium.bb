@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-in fragmentProcessor? inputFP;
+in fragmentProcessor inputFP;
 in half4 circleRect;
 in half solidRadius;
 in half textureRadius;
@@ -22,8 +22,7 @@ in fragmentProcessor blurProfile;
 uniform half4 circleData;
 
 @optimizationFlags {
-    (inputFP ? ProcessorOptimizationFlags(inputFP.get()) : kAll_OptimizationFlags) &
-    kCompatibleWithCoverageAsAlpha_OptimizationFlag
+    ProcessorOptimizationFlags(inputFP.get()) & kCompatibleWithCoverageAsAlpha_OptimizationFlag
 }
 
 @make {
@@ -40,10 +39,10 @@ uniform half4 circleData;
 @cpp {
     #include "include/gpu/GrRecordingContext.h"
     #include "src/core/SkGpuBlurUtils.h"
-    #include "src/gpu/GrBitmapTextureMaker.h"
     #include "src/gpu/GrProxyProvider.h"
     #include "src/gpu/GrRecordingContextPriv.h"
     #include "src/gpu/GrThreadSafeCache.h"
+    #include "src/gpu/SkGr.h"
 
     // Computes an unnormalized half kernel (right side). Returns the summation of all the half
     // kernel values.
@@ -202,7 +201,7 @@ uniform half4 circleData;
                                                                       float* solidRadius,
                                                                       float* textureRadius) {
         float circleR = circle.width() / 2.0f;
-        if (circleR < SK_ScalarNearlyZero) {
+        if (!sk_float_isfinite(circleR) || circleR < SK_ScalarNearlyZero) {
             return nullptr;
         }
 
@@ -268,11 +267,9 @@ uniform half4 circleData;
             create_circle_profile(bm.getAddr8(0, 0), sigma * scale, circleR * scale,
                     kProfileTextureWidth);
         }
-
         bm.setImmutable();
 
-        GrBitmapTextureMaker maker(rContext, bm, GrImageTexGenPolicy::kNew_Uncached_Budgeted);
-        profileView = maker.view(GrMipmapped::kNo);
+        profileView = std::get<0>(GrMakeUncachedBitmapProxyView(rContext, bm));
         if (!profileView) {
             return nullptr;
         }

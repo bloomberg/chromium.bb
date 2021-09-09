@@ -96,16 +96,19 @@ bool CachedStorageArea::SetItem(const String& key,
     return false;
 
   const FormatOption value_format = GetValueFormat();
-  base::Optional<Vector<uint8_t>> optional_old_value;
+  absl::optional<Vector<uint8_t>> optional_old_value;
   if (!old_value.IsNull() && should_send_old_value_on_mutations_)
     optional_old_value = StringToUint8Vector(old_value, value_format);
   KURL page_url = source->GetPageUrl();
   String source_id = areas_->at(source);
   String source_string = PackSource(page_url, source_id);
-  remote_area_->Put(StringToUint8Vector(key, GetKeyFormat()),
-                    StringToUint8Vector(value, value_format),
-                    optional_old_value, source_string,
-                    MakeSuccessCallback(source));
+
+  if (!is_session_storage_for_prerendering_) {
+    remote_area_->Put(StringToUint8Vector(key, GetKeyFormat()),
+                      StringToUint8Vector(value, value_format),
+                      optional_old_value, source_string,
+                      MakeSuccessCallback(source));
+  }
   if (!IsSessionStorage())
     EnqueuePendingMutation(key, value, old_value, source_string);
   else if (old_value != value)
@@ -121,15 +124,17 @@ void CachedStorageArea::RemoveItem(const String& key, Source* source) {
   if (!map_->RemoveItem(key, &old_value))
     return;
 
-  base::Optional<Vector<uint8_t>> optional_old_value;
+  absl::optional<Vector<uint8_t>> optional_old_value;
   if (should_send_old_value_on_mutations_)
     optional_old_value = StringToUint8Vector(old_value, GetValueFormat());
   KURL page_url = source->GetPageUrl();
   String source_id = areas_->at(source);
   String source_string = PackSource(page_url, source_id);
-  remote_area_->Delete(StringToUint8Vector(key, GetKeyFormat()),
-                       optional_old_value, source_string,
-                       MakeSuccessCallback(source));
+  if (!is_session_storage_for_prerendering_) {
+    remote_area_->Delete(StringToUint8Vector(key, GetKeyFormat()),
+                         optional_old_value, source_string,
+                         MakeSuccessCallback(source));
+  }
   if (!IsSessionStorage())
     EnqueuePendingMutation(key, String(), old_value, source_string);
   else
@@ -164,8 +169,10 @@ void CachedStorageArea::Clear(Source* source) {
   KURL page_url = source->GetPageUrl();
   String source_id = areas_->at(source);
   String source_string = PackSource(page_url, source_id);
-  remote_area_->DeleteAll(source_string, std::move(new_observer),
-                          MakeSuccessCallback(source));
+  if (!is_session_storage_for_prerendering_) {
+    remote_area_->DeleteAll(source_string, std::move(new_observer),
+                            MakeSuccessCallback(source));
+  }
   if (!IsSessionStorage())
     EnqueuePendingMutation(String(), String(), String(), source_string);
   else if (!already_empty)
@@ -182,10 +189,12 @@ CachedStorageArea::CachedStorageArea(
     AreaType type,
     scoped_refptr<const SecurityOrigin> origin,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    StorageNamespace* storage_namespace)
+    StorageNamespace* storage_namespace,
+    bool is_session_storage_for_prerendering)
     : type_(type),
       origin_(std::move(origin)),
       storage_namespace_(storage_namespace),
+      is_session_storage_for_prerendering_(is_session_storage_for_prerendering),
       task_runner_(std::move(task_runner)),
       areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
   BindStorageArea();
@@ -218,6 +227,7 @@ void CachedStorageArea::BindStorageArea(
 
 void CachedStorageArea::ResetConnection(
     mojo::PendingRemote<mojom::blink::StorageArea> new_area) {
+  DCHECK(!is_session_storage_for_prerendering_);
   remote_area_.reset();
   BindStorageArea(std::move(new_area));
 
@@ -299,7 +309,7 @@ void CachedStorageArea::ResetConnection(
 void CachedStorageArea::KeyChanged(
     const Vector<uint8_t>& key,
     const Vector<uint8_t>& new_value,
-    const base::Optional<Vector<uint8_t>>& old_value,
+    const absl::optional<Vector<uint8_t>>& old_value,
     const String& source) {
   DCHECK(!IsSessionStorage());
 
@@ -379,7 +389,7 @@ void CachedStorageArea::KeyChangeFailed(const Vector<uint8_t>& key,
 
 void CachedStorageArea::KeyDeleted(
     const Vector<uint8_t>& key,
-    const base::Optional<Vector<uint8_t>>& old_value,
+    const absl::optional<Vector<uint8_t>>& old_value,
     const String& source) {
   DCHECK(!IsSessionStorage());
 

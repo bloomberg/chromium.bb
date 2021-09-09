@@ -15,9 +15,8 @@ import android.os.Handler;
 import android.os.Process;
 import android.os.UserHandle;
 
-import org.chromium.base.BuildConfig;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.compat.ApiHelperForQ;
+import org.chromium.build.BuildConfig;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
@@ -29,7 +28,8 @@ final class BindService {
     private static Method sBindServiceAsUserMethod;
 
     static boolean supportVariableConnections() {
-        return BuildInfo.isAtLeastQ() && !BuildConfig.IS_INCREMENTAL_INSTALL;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                && !BuildConfig.IS_INCREMENTAL_INSTALL;
     }
 
     // Note that handler is not guaranteed to be used, and client still need to correctly handle

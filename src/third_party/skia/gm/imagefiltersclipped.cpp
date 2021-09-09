@@ -88,8 +88,8 @@ protected:
     }
 
     void onOnceBeforeDraw() override {
-        fCheckerboard = SkImage::MakeFromBitmap(
-                ToolUtils::create_checkerboard_bitmap(64, 64, 0xFFA0A0A0, 0xFF404040, 8));
+        fCheckerboard =
+                ToolUtils::create_checkerboard_image(64, 64, 0xFFA0A0A0, 0xFF404040, 8);
         fGradientCircle = make_gradient_circle(64, 64);
     }
 
@@ -111,7 +111,7 @@ protected:
             SkImageFilters::Dilate(2, 2, checkerboard),
             SkImageFilters::Erode(2, 2, checkerboard),
             SkImageFilters::Offset(SkIntToScalar(-16), SkIntToScalar(32), nullptr),
-            SkImageFilters::MatrixTransform(resizeMatrix, kNone_SkFilterQuality, nullptr),
+            SkImageFilters::MatrixTransform(resizeMatrix, SkSamplingOptions(), nullptr),
             SkImageFilters::PointLitDiffuse(pointLocation, SK_ColorWHITE, SK_Scalar1,
                                             SkIntToScalar(2), checkerboard),
 

@@ -1,8 +1,8 @@
-# v-0027: line 9: a literal value must not appear more than once in the case selectors for a
-# switch statement: '0'
+// v-0027: line 9: a literal value must not appear more than once in the case selectors for a
+// switch statement: '0'
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var a: u32 = 2;
   switch (a) {
     case 10u: {}

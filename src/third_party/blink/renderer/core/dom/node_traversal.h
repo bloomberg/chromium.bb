@@ -74,9 +74,12 @@ class NodeTraversal {
   // current one in document order
   static Node* Previous(const Node&, const Node* stay_within = nullptr);
 
-  // Like previous, but skips children and starts with the next sibling.
-  static Node* PreviousSkippingChildren(const Node&,
-                                        const Node* stay_within = nullptr);
+  // Returns the previous direct sibling of the node, if there is one. If not,
+  // it will traverse up the ancestor chain until it finds an ancestor
+  // that has a previous sibling, returning that sibling. Or nullptr if none.
+  // See comment for |FlatTreeTraversal::PreviousAbsoluteSibling| for details.
+  static Node* PreviousAbsoluteSibling(const Node&,
+                                       const Node* stay_within = nullptr);
 
   // Like next, but visits parents after their children.
   static Node* NextPostOrder(const Node&, const Node* stay_within = nullptr);
@@ -92,7 +95,11 @@ class NodeTraversal {
   CORE_EXPORT static Node* NextIncludingPseudo(
       const Node&,
       const Node* stay_within = nullptr);
-  static Node* NextIncludingPseudoSkippingChildren(
+  // See comment for |FlatTreeTraversal::PreviousAbsoluteSibling| for details.
+  CORE_EXPORT static Node* PreviousAbsoluteSiblingIncludingPseudo(
+      const Node&,
+      const Node* stay_within = nullptr);
+  CORE_EXPORT static Node* NextIncludingPseudoSkippingChildren(
       const Node&,
       const Node* stay_within = nullptr);
 
@@ -240,4 +247,4 @@ inline Node* NodeTraversal::ChildAtTemplate(NodeType& parent, unsigned index) {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_TRAVERSAL_H_

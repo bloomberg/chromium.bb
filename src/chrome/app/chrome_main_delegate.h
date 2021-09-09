@@ -58,10 +58,13 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
                           delegates) override;
   void ZygoteForked() override;
 #endif
-  void PreCreateMainMessageLoop() override;
+  void PreBrowserMain() override;
   void PostEarlyInitialization(bool is_running_tests) override;
   bool ShouldCreateFeatureList() override;
   void PostFieldTrialInitialization() override;
+#if defined(OS_WIN)
+  bool ShouldHandleConsoleControlEvents() override;
+#endif
 
   content::ContentClient* CreateContentClient() override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
@@ -85,7 +88,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   // the reporting pipeline.
   std::unique_ptr<HeapProfilerController> heap_profiler_controller_;
 
-#if BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   std::unique_ptr<chromeos::LacrosChromeServiceImpl> lacros_chrome_service_;
 #endif
 

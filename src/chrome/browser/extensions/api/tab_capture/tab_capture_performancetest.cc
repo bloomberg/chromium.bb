@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_performance_test_base.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,7 +31,7 @@
 
 namespace {
 
-// Number of events to trim from the begining and end. These events don't
+// Number of events to trim from the beginning and end. These events don't
 // contribute anything toward stable measurements: A brief moment of startup
 // "jank" is acceptable, and shutdown may result in missing events (since
 // render widget draws may stop before capture stops).
@@ -98,6 +99,23 @@ enum TestFlags {
   kSmallWindow = 1 << 4,         // Window size: 1 = 800x600, 0 = 2000x1000
 };
 
+// Perfetto trace events should have a "success" that is either on
+// the beginning or end event.
+bool EventWasSuccessful(const trace_analyzer::TraceEvent* event) {
+  double result;
+  // First case: the begin event had a success.
+  if (event->GetArgAsNumber("success", &result) && result > 0.0) {
+    return true;
+  }
+
+  // Second case: the end event had a success.
+  if (event->other_event &&
+      event->other_event->GetArgAsNumber("success", &result) && result > 0.0) {
+    return true;
+  }
+
+  return false;
+}
 class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
                                   public testing::WithParamInterface<int> {
  public:
@@ -237,29 +255,17 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
         events.begin() + trim_count, events.end() - trim_count);
 
     // Compute percentage of begin→end events missing a success=true flag.
+    // If there are no events to analyze, then the failure rate is 100%.
     double fail_percent = 100.0;
-    if (events_to_analyze.empty()) {
-      // If there are no events to analyze, then the failure rate is 100%.
-    } else {
+    if (!events_to_analyze.empty()) {
       int fail_count = 0;
-      for (const auto* begin_event : events_to_analyze) {
-        const auto* end_event = begin_event->other_event;
-        if (!end_event) {
-          // This indicates the operation never completed, and so is counted as
-          // a failure.
-          ++fail_count;
-          continue;
-        }
-        const auto it = end_event->arg_numbers.find("success");
-        if (it == end_event->arg_numbers.end()) {
-          LOG(ERROR) << "Missing 'success' value in Capture end event.";
-          return false;
-        }
-        if (it->second == 0.0) {
+      for (const auto* event : events_to_analyze) {
+        if (!EventWasSuccessful(event)) {
           ++fail_count;
         }
       }
-      fail_percent *= fail_count / events_to_analyze.size();
+      fail_percent = 100.0 * static_cast<double>(fail_count) /
+                     static_cast<double>(events_to_analyze.size());
     }
     auto reporter = SetUpTabCaptureReporter(GetSuffixForTestFlags());
     reporter.AddResult(
@@ -272,17 +278,17 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
   // The HTML test web page that draws animating balls continuously. Populated
   // in SetUp().
   std::string test_page_html_;
-
-  // Naming of performance measurement written to stdout.
 };
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
-  if (!is_full_performance_run()) {
-    // TODO(crbug.com/1042457): Flaky failures across multiple CQ builders.
-    return;
-  }
+// Using MSAN on ChromeOS causes problems due to its hardware OpenGL library.
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(MEMORY_SANITIZER)
+#define MAYBE_Performance DISABLED_Performance
+#else
+#define MAYBE_Performance Performance
+#endif
+IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, MAYBE_Performance) {
   // Load the extension and test page, and tell the extension to start tab
   // capture.
   LoadExtension(GetApiTestDataDir()
@@ -334,16 +340,13 @@ IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
       PrintFailRateResults(analyzer.get(), kEventCapture));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
-// On ChromeOS, software compositing is not an option, and using MSAN on
-// ChromeOS causes problems due to its hardware OpenGL library.
-#if !defined(MEMORY_SANITIZER)
+// On ChromeOS, software compositing is not an option.
 INSTANTIATE_TEST_SUITE_P(All,
                          TabCapturePerformanceTest,
                          testing::Values(kUseGpu,
                                          kTestThroughWebRTC | kUseGpu));
-#endif
 
 #else
 
@@ -355,4 +358,4 @@ INSTANTIATE_TEST_SUITE_P(All,
                                          kTestThroughWebRTC,
                                          kTestThroughWebRTC | kUseGpu));
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

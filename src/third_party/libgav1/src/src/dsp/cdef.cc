@@ -41,7 +41,7 @@ int32_t Square(int32_t x) { return x * x; }
 
 template <int bitdepth, typename Pixel>
 void CdefDirection_C(const void* const source, ptrdiff_t stride,
-                     int* const direction, int* const variance) {
+                     uint8_t* const direction, int* const variance) {
   assert(direction != nullptr);
   assert(variance != nullptr);
   const auto* src = static_cast<const Pixel*>(source);

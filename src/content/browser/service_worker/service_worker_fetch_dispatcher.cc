@@ -12,12 +12,14 @@
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
+#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -34,7 +36,6 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/navigation_policy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -130,6 +131,9 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
     client_->OnTransferSizeUpdated(transfer_size_diff);
   }
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
+    client_->OnReceiveEarlyHints(std::move(early_hints));
+  }
   void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
     if (devtools_enabled_) {
       // Make a deep copy of URLResponseHead before passing it cross-thread.
@@ -210,7 +214,7 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   const GURL url_;
   const bool devtools_enabled_;
 
-  base::Optional<std::pair<int, int>> worker_id_;
+  absl::optional<std::pair<int, int>> worker_id_;
   std::string devtools_request_id_;
   base::queue<base::OnceCallback<void(const WorkerId&, const std::string&)>>
       devtools_callbacks;
@@ -404,7 +408,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
   static void HandleResponse(
       base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher,
       ServiceWorkerVersion* version,
-      base::Optional<int> fetch_event_id,
+      absl::optional<int> fetch_event_id,
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       FetchEventResult fetch_result,
@@ -427,7 +431,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
   // Must be set to a non-nullopt value before the corresponding mojo
   // handle is passed to the other end (i.e. before any of OnResponse*
   // is called).
-  base::Optional<int> fetch_event_id_;
+  absl::optional<int> fetch_event_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponseCallback);
 };
@@ -550,8 +554,7 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
       base::BindOnce(&ServiceWorkerFetchDispatcher::DidStartWorker,
                      weak_factory_.GetWeakPtr()));
 
-  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled() &&
-      version_->is_endpoint_ready()) {
+  if (version_->is_endpoint_ready()) {
     // For an active service worker, the endpoint becomes ready synchronously
     // with StartWorker(). In that case, we can dispatch FetchEvent immediately.
     DispatchFetchEvent();
@@ -770,8 +773,23 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   url_loader_client->Bind(&url_loader_client_to_pass);
   mojo::PendingRemote<network::mojom::URLLoader> url_loader;
 
+  // Allow the embedder to intercept the URLLoader request if necessary. This
+  // must be a synchronous decision by the embedder. In the future, we may wish
+  // to support asynchronous decisions using |URLLoaderRequestInterceptor| in
+  // the same fashion that they are used for navigation requests.
+  ContentBrowserClient::URLLoaderRequestHandler embedder_url_loader_handler =
+      GetContentClient()
+          ->browser()
+          ->CreateURLLoaderHandlerForServiceWorkerNavigationPreload(
+              frame_tree_node_id, resource_request);
+
+  if (!embedder_url_loader_handler.is_null()) {
+    factory = base::MakeRefCounted<content::SingleRequestURLLoaderFactory>(
+        std::move(embedder_url_loader_handler));
+  }
+
   factory->CreateLoaderAndStart(
-      url_loader.InitWithNewPipeAndPassReceiver(), -1 /* routing_id? */,
+      url_loader.InitWithNewPipeAndPassReceiver(),
       GlobalRequestID::MakeBrowserInitiated().request_id,
       network::mojom::kURLLoadOptionNone, resource_request,
       std::move(url_loader_client_to_pass),

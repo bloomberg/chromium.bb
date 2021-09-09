@@ -194,6 +194,14 @@ public class PlayerFrameMediatorTest {
         }
 
         @Override
+        public int requestBitmap(Rect clipRect, float scaleFactor, Callback<Bitmap> bitmapCallback,
+                Runnable errorCallback) {
+            Assert.fail("The GUIDless version of TestPlayerCompositorDelegate#requestBitmap() "
+                    + "shouldn't be called.");
+            return 0;
+        }
+
+        @Override
         public boolean cancelBitmapRequest(int requestId) {
             return false;
         }
@@ -229,11 +237,11 @@ public class PlayerFrameMediatorTest {
         mScroller = new OverScroller(ContextUtils.getApplicationContext());
         mGestureListener = new PlayerGestureListener(null, () -> mHasUserInteraction = true, null);
         Size contentSize = new Size(CONTENT_WIDTH, CONTENT_HEIGHT);
-        mMediator = new PlayerFrameMediator(mModel, mCompositorDelegate, mGestureListener,
-                mFrameGuid, contentSize, 0, 0);
+        mMediator = new PlayerFrameMediator(
+                mModel, mCompositorDelegate, mGestureListener, mFrameGuid, contentSize, 0, 0, null);
         mScaleController =
                 new PlayerFrameScaleController(mModel.get(PlayerFrameProperties.SCALE_MATRIX),
-                        mMediator, mGestureListener::onScale);
+                        mMediator, null, mGestureListener::onScale);
         mScrollController = new PlayerFrameScrollController(
                 mScroller, mMediator, mGestureListener::onScroll, mGestureListener::onFling);
         mBitmapStateController = mMediator.getBitmapStateControllerForTest();
@@ -757,19 +765,19 @@ public class PlayerFrameMediatorTest {
         List<ClickedPoint> expectedClickedPoints = new ArrayList<>();
 
         // No scrolling has happened yet.
-        mMediator.onTap(15, 26);
+        mMediator.onTap(15, 26, false);
         expectedClickedPoints.add(new ClickedPoint(mFrameGuid, 15, 26));
         Assert.assertEquals(expectedClickedPoints, mCompositorDelegate.mClickedPoints);
 
         // Scroll, and then click. The call to {@link PlayerFrameMediator} must account for the
         // scroll offset.
         mScrollController.scrollBy(90, 100);
-        mMediator.onTap(70, 50);
+        mMediator.onTap(70, 50, false);
         expectedClickedPoints.add(new ClickedPoint(mFrameGuid, 160, 150));
         Assert.assertEquals(expectedClickedPoints, mCompositorDelegate.mClickedPoints);
 
         mScrollController.scrollBy(-40, -60);
-        mMediator.onTap(30, 80);
+        mMediator.onTap(30, 80, false);
         expectedClickedPoints.add(new ClickedPoint(mFrameGuid, 80, 120));
         Assert.assertEquals(expectedClickedPoints, mCompositorDelegate.mClickedPoints);
     }

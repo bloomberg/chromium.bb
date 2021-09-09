@@ -6,8 +6,6 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -307,14 +305,14 @@ TEST_F(ExtensionsPermissionsTrackerTest, UnsafeForceListChanged) {
 
   dict.RemoveKey(kExtensionId1);
   prefs_->SetManagedPref(pref_names::kInstallForceList,
-                         base::Value::ToUniquePtrValue(std::move(dict)));
+                         base::Value::ToUniquePtrValue(dict.Clone()));
 
   EXPECT_TRUE(testing_local_state_.Get()->GetBoolean(
       prefs::kManagedSessionUseFullLoginWarning));
 
   dict.RemoveKey(kExtensionId2);
   prefs_->SetManagedPref(pref_names::kInstallForceList,
-                         base::Value::ToUniquePtrValue(std::move(dict)));
+                         base::Value::ToUniquePtrValue(dict.Clone()));
 
   EXPECT_FALSE(testing_local_state_.Get()->GetBoolean(
       prefs::kManagedSessionUseFullLoginWarning));

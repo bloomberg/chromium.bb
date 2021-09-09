@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/persistent_memory_allocator.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 
@@ -23,6 +23,7 @@ namespace base {
 
 class FieldTrial;
 class FieldTrialList;
+class PersistentMemoryAllocator;
 
 // Specifies whether a given feature is enabled or disabled by default.
 // NOTE: The actual runtime state may be different, due to a field trial or a
@@ -141,8 +142,8 @@ class BASE_EXPORT FeatureList {
   // a list entry has the format "FeatureName<TrialName" then this
   // initialization will also associate the feature state override with the
   // named field trial, if it exists. If a list entry has the format
-  // "FeatureName:k1/v1/k2/v2", "FeatureName<TrailName:k1/v1/k2/v2" or
-  // "FeatureName<TrailName.GroupName:k1/v1/k2/v2" then this initialization will
+  // "FeatureName:k1/v1/k2/v2", "FeatureName<TrialName:k1/v1/k2/v2" or
+  // "FeatureName<TrialName.GroupName:k1/v1/k2/v2" then this initialization will
   // also associate the feature state override with the named field trial and
   // its params. If the feature params part is provided but trial and/or group
   // isn't, this initialization will also create a synthetic trial, named
@@ -224,6 +225,14 @@ class BASE_EXPORT FeatureList {
   void GetCommandLineFeatureOverrides(std::string* enable_overrides,
                                       std::string* disable_overrides);
 
+  // Returns the field trial associated with the given feature |name|. Used for
+  // getting the FieldTrial without requiring a struct Feature.
+  base::FieldTrial* GetAssociatedFieldTrialByFeatureName(StringPiece name);
+
+  // Get associated field trial for the given feature |name| only if override
+  // enables it.
+  FieldTrial* GetEnabledFieldTrialByFeatureName(StringPiece name);
+
   // Returns whether the given |feature| is enabled. Must only be called after
   // the singleton instance has been registered via SetInstance(). Additionally,
   // a feature with a given name must only have a single corresponding Feature
@@ -276,6 +285,12 @@ class BASE_EXPORT FeatureList {
   // to support base::test::ScopedFeatureList helper class.
   static void RestoreInstanceForTesting(std::unique_ptr<FeatureList> instance);
 
+  // On some platforms, the base::FeatureList singleton might be duplicated to
+  // more than one module. If this function is called, then using base::Feature
+  // API will result in DCHECK if accessed from the same module as the callee.
+  // Has no effect if DCHECKs are not enabled.
+  static void ForbidUseForCurrentModule();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(FeatureListTest, CheckFeatureIdentity);
   FRIEND_TEST_ALL_PREFIXES(FeatureListTest,
@@ -285,7 +300,7 @@ class BASE_EXPORT FeatureList {
 
   struct OverrideEntry {
     // The overridden enable (on/off) state of the feature.
-    const OverrideState overridden_state;
+    OverrideState overridden_state;
 
     // An optional associated field trial, which will be activated when the
     // state of the feature is queried for the first time. Weak pointer to the
@@ -296,7 +311,7 @@ class BASE_EXPORT FeatureList {
     // If it's not, and |field_trial| is not null, it means it is simply an
     // associated field trial for reporting purposes (and |overridden_state|
     // came from the command-line).
-    const bool overridden_by_field_trial;
+    bool overridden_by_field_trial;
 
     // TODO(asvitkine): Expand this as more support is added.
 
@@ -305,6 +320,11 @@ class BASE_EXPORT FeatureList {
     // the trial, so |overridden_by_field_trial| will be set to true.
     OverrideEntry(OverrideState overridden_state, FieldTrial* field_trial);
   };
+
+  // Returns the override for the field trial associated with the given feature
+  // |name| or null if the feature is not found.
+  const base::FeatureList::OverrideEntry* GetOverrideEntryByFeatureName(
+      StringPiece name);
 
   // Finalizes the initialization state of the FeatureList, so that no further
   // overrides can be registered. This is called by SetInstance() on the
@@ -356,7 +376,7 @@ class BASE_EXPORT FeatureList {
 
   // Map from feature name to an OverrideEntry struct for the feature, if it
   // exists.
-  std::map<std::string, OverrideEntry, std::less<>> overrides_;
+  base::flat_map<std::string, OverrideEntry> overrides_;
 
   // Locked map that keeps track of seen features, to ensure a single feature is
   // only defined once. This verification is only done in builds with DCHECKs

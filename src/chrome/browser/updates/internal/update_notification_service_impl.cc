@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/notifications/scheduler/public/client_overview.h"
@@ -16,9 +17,9 @@
 #include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
 #include "chrome/browser/notifications/scheduler/public/schedule_service_utils.h"
 #include "chrome/browser/notifications/scheduler/public/throttle_config.h"
-#include "chrome/browser/updates/update_notification_config.h"
-#include "chrome/browser/updates/update_notification_info.h"
-#include "chrome/browser/updates/update_notification_service_bridge.h"
+#include "chrome/browser/updates/update_notification_config.h"  // nogncheck
+#include "chrome/browser/updates/update_notification_info.h"    // nogncheck
+#include "chrome/browser/updates/update_notification_service_bridge.h"  // nogncheck
 
 namespace updates {
 
@@ -54,18 +55,18 @@ notifications::ScheduleParams BuildScheduleParams(
       notifications::UserFeedback::kNotHelpful,
       notifications::ImpressionResult::kNegative);
   if (should_show_immediately) {
-    schedule_params.deliver_time_start = base::make_optional(clock->Now());
+    schedule_params.deliver_time_start = absl::make_optional(clock->Now());
     schedule_params.deliver_time_end =
-        base::make_optional(clock->Now() + base::TimeDelta::FromMinutes(1));
+        absl::make_optional(clock->Now() + base::TimeDelta::FromMinutes(1));
   } else {
     notifications::TimePair actual_window;
     notifications::NextTimeWindow(clock, config->deliver_window_morning,
                                   config->deliver_window_evening,
                                   &actual_window);
     schedule_params.deliver_time_start =
-        base::make_optional(std::move(actual_window.first));
+        absl::make_optional(std::move(actual_window.first));
     schedule_params.deliver_time_end =
-        base::make_optional(std::move(actual_window.second));
+        absl::make_optional(std::move(actual_window.second));
   }
   return schedule_params;
 }

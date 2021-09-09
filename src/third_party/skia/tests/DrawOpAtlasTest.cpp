@@ -28,7 +28,7 @@
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/GrOpFlushState.h"
-#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrXferProcessor.h"
 #include "src/gpu/ops/GrAtlasTextOp.h"
@@ -196,8 +196,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrAtlasTextOpPreparation, reporter, ctxInfo) 
     auto gpu = context->priv().getGpu();
     auto resourceProvider = context->priv().resourceProvider();
 
-    auto rtc = GrRenderTargetContext::Make(
-            context, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kApprox, {32, 32});
+    auto rtc = GrSurfaceDrawContext::Make(context, GrColorType::kRGBA_8888, nullptr,
+                                          SkBackingFit::kApprox, {32, 32}, SkSurfaceProps());
 
     SkPaint paint;
     paint.setColor(SK_ColorRED);
@@ -215,10 +215,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrAtlasTextOpPreparation, reporter, ctxInfo) 
         return;
     }
 
-    bool hasMixedSampledCoverage = false;
     GrAtlasTextOp* atlasTextOp = (GrAtlasTextOp*)op.get();
-    atlasTextOp->finalize(
-            *context->priv().caps(), nullptr, hasMixedSampledCoverage, GrClampType::kAuto);
+    atlasTextOp->finalize(*context->priv().caps(), nullptr, GrClampType::kAuto);
 
     TestingUploadTarget uploadTarget;
 
@@ -226,10 +224,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrAtlasTextOpPreparation, reporter, ctxInfo) 
 
     GrSurfaceProxyView surfaceView = rtc->writeSurfaceView();
     GrOpFlushState::OpArgs opArgs(op.get(),
-                                  &surfaceView,
+                                  surfaceView,
+                                  false /*usesMSAASurface*/,
                                   nullptr,
                                   GrXferProcessor::DstProxyView(),
-                                  GrXferBarrierFlags::kNone);
+                                  GrXferBarrierFlags::kNone,
+                                  GrLoadOp::kLoad);
 
     // Modify the atlas manager so it can't allocate any pages. This will force a failure
     // in the preparation of the text op

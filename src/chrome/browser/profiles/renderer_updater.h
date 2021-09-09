@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_PROFILES_RENDERER_UPDATER_H_
 #define CHROME_BROWSER_PROFILES_RENDERER_UPDATER_H_
 
-#include <string>
 #include <vector>
 
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/renderer_configuration.mojom-forward.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -17,8 +17,8 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/signin/oauth2_login_manager.h"
 #endif
 
 class Profile;
@@ -29,7 +29,7 @@ class RenderProcessHost;
 
 // The RendererUpdater is responsible for updating renderers about state change.
 class RendererUpdater : public KeyedService,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
                         public chromeos::OAuth2LoginManager::Observer,
 #endif
                         public signin::IdentityManager::Observer {
@@ -52,7 +52,7 @@ class RendererUpdater : public KeyedService,
   mojo::AssociatedRemote<chrome::mojom::RendererConfiguration>
   GetRendererConfiguration(content::RenderProcessHost* render_process_host);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // chromeos::OAuth2LoginManager::Observer:
   void OnSessionRestoreStateChanged(
       Profile* user_profile,
@@ -60,8 +60,8 @@ class RendererUpdater : public KeyedService,
 #endif
 
   // IdentityManager::Observer:
-  void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
-  void OnPrimaryAccountCleared(const CoreAccountInfo& account_info) override;
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event) override;
 
   // Update all renderers due to a configuration change.
   void UpdateAllRenderers();
@@ -73,7 +73,7 @@ class RendererUpdater : public KeyedService,
 
   Profile* profile_;
   PrefChangeRegistrar pref_change_registrar_;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::OAuth2LoginManager* oauth2_login_manager_;
   bool merge_session_running_;
   std::vector<mojo::Remote<chrome::mojom::ChromeOSListener>>
@@ -85,8 +85,9 @@ class RendererUpdater : public KeyedService,
   IntegerPrefMember force_youtube_restrict_;
   StringPrefMember allowed_domains_for_apps_;
 
-  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
-      identity_manager_observer_;
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      identity_manager_observation_{this};
   signin::IdentityManager* identity_manager_;
 };
 

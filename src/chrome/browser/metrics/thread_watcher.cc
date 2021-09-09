@@ -15,13 +15,14 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/metrics/thread_watcher_report_hang.h"
 #include "chrome/common/channel_info.h"
@@ -32,6 +33,7 @@
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -82,8 +84,7 @@ class ThreadWatcherObserver : public content::NotificationObserver {
 
   // Subscription for receiving callbacks that a URL was opened from the
   // omnibox.
-  std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
-      omnibox_url_opened_subscription_;
+  base::CallbackListSubscription omnibox_url_opened_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadWatcherObserver);
 };
@@ -161,7 +162,7 @@ void ThreadWatcherObserver::OnUserActivityDetected() {
 ThreadWatcher::ThreadWatcher(const WatchingParams& params)
     : thread_id_(params.thread_id),
       thread_name_(params.thread_name),
-      watched_runner_(base::CreateSingleThreadTaskRunner({params.thread_id})),
+      watched_runner_(BrowserThread::GetTaskRunnerForThread(params.thread_id)),
       sleep_time_(params.sleep_time),
       unresponsive_time_(params.unresponsive_time),
       ping_time_(base::TimeTicks::Now()),
@@ -175,6 +176,7 @@ ThreadWatcher::ThreadWatcher(const WatchingParams& params)
       hung_processing_complete_(false),
       unresponsive_threshold_(params.unresponsive_threshold),
       crash_on_hang_(params.crash_on_hang) {
+  DCHECK(watched_runner_);
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   Initialize();
 }
@@ -287,7 +289,7 @@ void ThreadWatcher::OnPongMessage(uint64_t ping_sequence_number) {
   base::TimeDelta response_time = now - ping_time_;
   response_time_histogram_->AddTime(response_time);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On ChromeOS, we log when the response time is long on the UI thread as part
   // of an effort to debug extreme jank reported by some users. This log message
   // can be used to correlate the period of jank with other system logs.
@@ -626,7 +628,7 @@ void ThreadWatcherList::ParseCommandLineCrashOnHangThreads(
     // unresponsive before considering it as hung.
     CHECK_LE(values.size(), 2U);
 
-    std::string thread_name = values[0].as_string();
+    std::string thread_name(values[0]);
 
     uint32_t crash_seconds = default_crash_seconds;
     if (values.size() >= 2 &&

@@ -8,6 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
@@ -23,6 +24,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/message_box_view.h"
@@ -33,8 +35,8 @@ using content::WebContents;
 
 namespace {
 
-base::string16 GetMessageTextForOrigin(
-    const base::Optional<url::Origin>& origin) {
+std::u16string GetMessageTextForOrigin(
+    const absl::optional<url::Origin>& origin) {
   if (!origin || origin->opaque())
     return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_MESSAGE);
   return l10n_util::GetStringFUTF16(
@@ -44,17 +46,17 @@ base::string16 GetMessageTextForOrigin(
 
 }  // namespace
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url,
     WebContents* web_contents,
     ui::PageTransition ignored_page_transition,
     bool ignored_has_user_gesture,
-    const base::Optional<url::Origin>& initiating_origin) {
+    const absl::optional<url::Origin>& initiating_origin) {
   DCHECK(web_contents);
 
-  base::string16 program_name =
+  std::u16string program_name =
       shell_integration::GetApplicationNameForProtocol(url);
   if (program_name.empty()) {
     // ShellExecute won't do anything. Don't bother warning the user.
@@ -65,13 +67,13 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   new ExternalProtocolDialog(web_contents, url, program_name,
                              initiating_origin);
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 ExternalProtocolDialog::ExternalProtocolDialog(
     WebContents* web_contents,
     const GURL& url,
-    const base::string16& program_name,
-    const base::Optional<url::Origin>& initiating_origin)
+    const std::u16string& program_name,
+    const absl::optional<url::Origin>& initiating_origin)
     : content::WebContentsObserver(web_contents),
       url_(url),
       program_name_(program_name),
@@ -92,13 +94,14 @@ ExternalProtocolDialog::ExternalProtocolDialog(
   SetCloseCallback(base::BindOnce(
       &ExternalProtocolHandler::RecordHandleStateMetrics,
       false /* checkbox_selected */, ExternalProtocolHandler::BLOCK));
+  SetModalType(ui::MODAL_TYPE_CHILD);
 
   message_box_view_ =
       new views::MessageBoxView(GetMessageTextForOrigin(initiating_origin_));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  set_margins(
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
+  set_margins(provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kText, views::DialogContentType::kText));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -140,9 +143,9 @@ bool ExternalProtocolDialog::ShouldShowCloseButton() const {
   return false;
 }
 
-base::string16 ExternalProtocolDialog::GetWindowTitle() const {
+std::u16string ExternalProtocolDialog::GetWindowTitle() const {
   constexpr int kMaxCommandCharsToDisplay = 32;
-  base::string16 elided;
+  std::u16string elided;
   gfx::ElideString(program_name_, kMaxCommandCharsToDisplay, &elided);
   return l10n_util::GetStringFUTF16(IDS_EXTERNAL_PROTOCOL_TITLE, elided);
 }
@@ -174,19 +177,18 @@ views::View* ExternalProtocolDialog::GetContentsView() {
   return message_box_view_;
 }
 
-ui::ModalType ExternalProtocolDialog::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
-}
-
 views::Widget* ExternalProtocolDialog::GetWidget() {
-  return message_box_view_->GetWidget();
+  return message_box_view_ ? message_box_view_->GetWidget() : nullptr;
 }
 
 const views::Widget* ExternalProtocolDialog::GetWidget() const {
-  return message_box_view_->GetWidget();
+  return message_box_view_ ? message_box_view_->GetWidget() : nullptr;
 }
 
 void ExternalProtocolDialog::SetRememberSelectionCheckboxCheckedForTesting(
     bool checked) {
   message_box_view_->SetCheckBoxSelected(checked);
 }
+
+BEGIN_METADATA(ExternalProtocolDialog, views::DialogDelegateView)
+END_METADATA

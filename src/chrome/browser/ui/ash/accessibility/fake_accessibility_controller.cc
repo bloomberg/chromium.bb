@@ -38,9 +38,14 @@ void FakeAccessibilityController::SetSelectToSpeakEventHandlerDelegate(
 
 void FakeAccessibilityController::ShowSelectToSpeakPanel(
     const gfx::Rect& anchor,
-    bool is_paused) {}
+    bool is_paused,
+    double speed) {}
 
 void FakeAccessibilityController::HideSelectToSpeakPanel() {}
+
+void FakeAccessibilityController::OnSelectToSpeakPanelAction(
+    ash::SelectToSpeakPanelAction action,
+    double value) {}
 
 void FakeAccessibilityController::HideSwitchAccessBackButton() {}
 
@@ -53,7 +58,12 @@ void FakeAccessibilityController::ShowSwitchAccessMenu(
     const gfx::Rect& anchor,
     std::vector<std::string> actions) {}
 
-void FakeAccessibilityController::ActivatePointScan() {}
+void FakeAccessibilityController::StartPointScan() {}
+
+void FakeAccessibilityController::StopPointScan() {}
+
+void FakeAccessibilityController::SetPointScanSpeedDipsPerSecond(
+    int point_scan_speed_dips_per_second) {}
 
 void FakeAccessibilityController::SetDictationActive(bool is_active) {}
 
@@ -63,8 +73,8 @@ void FakeAccessibilityController::ToggleDictationFromSource(
 void FakeAccessibilityController::HandleAutoclickScrollableBoundsFound(
     gfx::Rect& bounds_in_screen) {}
 
-base::string16 FakeAccessibilityController::GetBatteryDescription() const {
-  return base::string16();
+std::u16string FakeAccessibilityController::GetBatteryDescription() const {
+  return std::u16string();
 }
 
 void FakeAccessibilityController::SetVirtualKeyboardVisible(bool is_visible) {}

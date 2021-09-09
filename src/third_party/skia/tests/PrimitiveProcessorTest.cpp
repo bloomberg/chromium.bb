@@ -21,8 +21,7 @@
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
@@ -44,8 +43,7 @@ public:
         return FixedFunctionFlags::kNone;
     }
 
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
-                                      bool hasMixedSampledCoverage, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
 
@@ -60,32 +58,36 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         class GP : public GrGeometryProcessor {
         public:
             static GrGeometryProcessor* Make(SkArenaAlloc* arena, int numAttribs) {
-                return arena->make<GP>(numAttribs);
+                return arena->make([&](void* ptr) {
+                    return new (ptr) GP(numAttribs);
+                });
             }
 
             const char* name() const override { return "Dummy GP"; }
 
-            GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override {
+            GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
                 class GLSLGP : public GrGLSLGeometryProcessor {
                 public:
                     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-                        const GP& gp = args.fGP.cast<GP>();
+                        const GP& gp = args.fGeomProc.cast<GP>();
                         args.fVaryingHandler->emitAttributes(gp);
-                        this->writeOutputPosition(args.fVertBuilder, gpArgs,
-                                                  gp.fAttributes[0].name());
+                        WriteOutputPosition(args.fVertBuilder, gpArgs, gp.fAttributes[0].name());
                         GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
-                        fragBuilder->codeAppendf("%s = half4(1);", args.fOutputColor);
-                        fragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+                        fragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputColor);
+                        fragBuilder->codeAppendf("const half4 %s = half4(1);",
+                                                 args.fOutputCoverage);
                     }
-                    void setData(const GrGLSLProgramDataManager& pdman,
-                                 const GrPrimitiveProcessor& primProc) override {}
+                    void setData(const GrGLSLProgramDataManager&,
+                                 const GrShaderCaps&,
+                                 const GrGeometryProcessor&) override {}
                 };
                 return new GLSLGP();
             }
@@ -95,8 +97,6 @@ private:
             }
 
         private:
-            friend class ::SkArenaAlloc; // for access to ctor
-
             GP(int numAttribs) : INHERITED(kGP_ClassID), fNumAttribs(numAttribs) {
                 SkASSERT(numAttribs > 1);
                 fAttribNames = std::make_unique<SkString[]>(numAttribs);
@@ -134,6 +134,7 @@ private:
                                                                    GrProcessorSet::MakeEmptySet(),
                                                                    GrPrimitiveType::kTriangles,
                                                                    renderPassXferBarriers,
+                                                                   colorLoadOp,
                                                                    GrPipeline::InputFlags::kNone);
     }
 
@@ -142,7 +143,7 @@ private:
             this->createProgramInfo(target);
         }
 
-        size_t vertexStride = fProgramInfo->primProc().vertexStride();
+        size_t vertexStride = fProgramInfo->geomProc().vertexStride();
         QuadHelper helper(target, vertexStride, 1);
         SkPoint* vertices = reinterpret_cast<SkPoint*>(helper.vertices());
         SkPointPriv::SetRectTriStrip(vertices, 0.f, 0.f, 1.f, 1.f, vertexStride);
@@ -155,7 +156,7 @@ private:
         }
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
         flushState->drawMesh(*fMesh);
     }
 
@@ -173,9 +174,10 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(VertexAttributeCount, reporter, ctxInfo) {
     GrGpu* gpu = context->priv().getGpu();
 #endif
 
-    auto renderTargetContext = GrRenderTargetContext::Make(
-            context, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kApprox, {1, 1});
-    if (!renderTargetContext) {
+    auto surfaceDrawContext = GrSurfaceDrawContext::Make(context, GrColorType::kRGBA_8888, nullptr,
+                                                         SkBackingFit::kApprox, {1, 1},
+                                                         SkSurfaceProps());
+    if (!surfaceDrawContext) {
         ERRORF(reporter, "Could not create render target context.");
         return;
     }
@@ -191,18 +193,18 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(VertexAttributeCount, reporter, ctxInfo) {
     REPORTER_ASSERT(reporter, gpu->stats()->numFailedDraws() == 0);
 #endif
     // Adding discard to appease vulkan validation warning about loading uninitialized data on draw
-    renderTargetContext->discard();
+    surfaceDrawContext->discard();
 
     GrPaint grPaint;
     // This one should succeed.
-    renderTargetContext->priv().testingOnly_addDrawOp(Op::Make(context, attribCnt));
+    surfaceDrawContext->addDrawOp(Op::Make(context, attribCnt));
     context->flushAndSubmit();
 #if GR_GPU_STATS
     REPORTER_ASSERT(reporter, gpu->stats()->numDraws() == 1);
     REPORTER_ASSERT(reporter, gpu->stats()->numFailedDraws() == 0);
 #endif
     context->priv().resetGpuStats();
-    renderTargetContext->priv().testingOnly_addDrawOp(Op::Make(context, attribCnt + 1));
+    surfaceDrawContext->addDrawOp(Op::Make(context, attribCnt + 1));
     context->flushAndSubmit();
 #if GR_GPU_STATS
     REPORTER_ASSERT(reporter, gpu->stats()->numDraws() == 0);

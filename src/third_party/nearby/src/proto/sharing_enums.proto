@@ -16,6 +16,7 @@ syntax = "proto2";
 
 package location.nearby.proto.sharing;
 
+
 option optimize_for = LITE_RUNTIME;
 option java_package = "com.google.location.nearby.proto";
 option java_outer_classname = "SharingEnums";
@@ -153,6 +154,20 @@ enum EventType {
 
   // Receiver taps quick settings tile.
   TAP_QUICK_SETTINGS_TILE = 39;
+
+  // Receiver Installation of APKs status.
+  INSTALL_APK = 40;
+
+  // Receiver verification of APKs status.
+  VERIFY_APK = 41;
+
+  // User starts a consent.
+  LAUNCH_CONSENT = 42;
+
+  // After receiving payloads, Nearby Share still needs to transfer the payloads
+  // to correct attachment formats and move files attachments from temporary
+  // directory to final destination.
+  PROCESS_RECEIVED_ATTACHMENTS_END = 43;
 }
 
 // Event category to differentiate whether this comes from sender or receiver,
@@ -210,6 +225,18 @@ enum AttachmentTransmissionStatus {
   FAILED_NULL_CONNECTION = 14;
   FAILED_NO_PAYLOAD = 15;
   FAILED_WRITE_INTRODUCTION = 16;
+}
+
+// The status of processing attachments after receiver received payloads
+// successfully.
+enum ProcessReceivedAttachmentsStatus {
+  PROCESSING_STATUS_UNKNOWN = 0;
+
+  PROCESSING_STATUS_COMPLETE_PROCESSING_ATTACHMENTS = 1;
+  PROCESSING_STATUS_FAILED_MOVING_FILES = 2;
+  PROCESSING_STATUS_FAILED_RECEIVING_APK = 3;
+  PROCESSING_STATUS_FAILED_RECEIVING_TEXT = 4;
+  PROCESSING_STATUS_FAILED_RECEIVING_WIFI_CREDENTIALS = 5;
 }
 
 // The status of advertising and discovering sessions. Used by
@@ -289,6 +316,8 @@ enum ServerActionName {
   CHECK_REACHABILITY = 3;
   UPLOAD_CONTACTS = 4;
   UPDATE_DEVICE_NAME = 5;
+  UPLOAD_SENDER_CERTIFICATES = 6;
+  DOWNLOAD_SENDER_CERTIFICATES = 7;
 }
 
 // The Fast Share server response state.
@@ -329,4 +358,34 @@ enum ActivityName {
   SETUP_ACTIVITY = 4;
   CONTACT_SELECT_ACTIVITY = 5;
   CONSENTS_ACTIVITY = 6;
+}
+
+enum ConsentType {
+  CONSENT_TYPE_UNKNOWN = 0;
+
+  CONSENT_TYPE_C11N = 1;
+}
+
+enum ApkSource {
+  UNKNOWN_APK_SOURCE = 0;
+
+  FILE_BROSWER = 1;
+  LAUNCHER = 2;
+}
+
+// The Installation status of APK.
+enum InstallAPKStatus {
+  UNKNOWN_INSTALL_APK_STATUS = 0;
+
+  FAIL_INSTALLATION = 1;
+  SUCCESS_INSTALLATION = 2;
+}
+
+// The verification status of APK.
+enum VerifyAPKStatus {
+  UNKNOWN_VERIFY_APK_STATUS = 0;
+
+  NOT_INSTALLABLE = 1;
+  INSTALLABLE = 2;
+  ALREADY_INSTALLED = 3;
 }

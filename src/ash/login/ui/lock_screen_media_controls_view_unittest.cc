@@ -12,13 +12,14 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/power_monitor_test_base.h"
+#include "base/test/power_monitor_test.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -40,7 +41,7 @@ const int kAppIconSize = 20;
 constexpr int kArtworkViewHeight = 48;
 constexpr int kArtworkCornerRadius = 4;
 
-const base::string16 kTestAppName = base::ASCIIToUTF16("Test app");
+const std::u16string kTestAppName = u"Test app";
 
 MediaSessionAction kActionButtonOrder[] = {
     MediaSessionAction::kPreviousTrack, MediaSessionAction::kSeekBackward,
@@ -92,10 +93,6 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     // Enable media controls.
     feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
-    auto power_source = std::make_unique<base::PowerMonitorTestSource>();
-    power_source_ = power_source.get();
-    base::PowerMonitor::Initialize(std::move(power_source));
-
     LoginTestBase::SetUp();
 
     lock_contents_view_ = new LockContentsView(
@@ -124,8 +121,6 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     actions_.clear();
 
     LoginTestBase::TearDown();
-
-    base::PowerMonitor::ShutdownForTesting();
   }
 
   void EnableAllActions() {
@@ -247,7 +242,7 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return header_row()->app_icon_for_testing();
   }
 
-  const base::string16& GetAppName() const {
+  const std::u16string& GetAppName() const {
     return header_row()->app_name_for_testing();
   }
 
@@ -255,10 +250,9 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return media_controls_view_->GetArtworkClipPath();
   }
 
-  base::PowerMonitorTestSource& GetTestPowerSource() { return *power_source_; }
-
   LockScreenMediaControlsView* media_controls_view_ = nullptr;
   AnimationWaiter* animation_waiter_ = nullptr;
+  base::test::ScopedPowerMonitorTestSource test_power_monitor_source_;
 
  private:
   void NotifyUpdatedActions() {
@@ -271,7 +265,6 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   LockContentsView* lock_contents_view_ = nullptr;
   std::unique_ptr<TestMediaController> media_controller_;
   std::set<MediaSessionAction> actions_;
-  base::PowerMonitorTestSource* power_source_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsViewTest);
 };
@@ -283,23 +276,23 @@ TEST_F(LockScreenMediaControlsViewTest, DoNotUpdateMetadataBetweenSessions) {
   // Set metadata for current session
   media_session::MediaMetadata metadata;
   metadata.source_title = kTestAppName;
-  metadata.title = base::ASCIIToUTF16("title");
-  metadata.artist = base::ASCIIToUTF16("artist");
+  metadata.title = u"title";
+  metadata.artist = u"artist";
 
   media_controls_view_->MediaSessionMetadataChanged(metadata);
 
   // Simulate new media session starting.
-  metadata.source_title = base::ASCIIToUTF16("AppName2");
-  metadata.title = base::ASCIIToUTF16("title2");
-  metadata.artist = base::ASCIIToUTF16("artist2");
+  metadata.source_title = u"AppName2";
+  metadata.title = u"title2";
+  metadata.artist = u"artist2";
 
   SimulateMediaSessionChanged(
       media_session::mojom::MediaPlaybackState::kPlaying);
   media_controls_view_->MediaSessionMetadataChanged(metadata);
 
   EXPECT_EQ(kTestAppName, GetAppName());
-  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
-  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
+  EXPECT_EQ(u"title", title_label()->GetText());
+  EXPECT_EQ(u"artist", artist_label()->GetText());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, DoNotUpdateArtworkBetweenSessions) {
@@ -424,7 +417,7 @@ TEST_F(LockScreenMediaControlsViewTest, PlayPauseButtonTooltipCheck) {
   EnableAction(MediaSessionAction::kPause);
 
   auto* button = GetButtonForAction(MediaSessionAction::kPause);
-  base::string16 tooltip = button->GetTooltipText(gfx::Point());
+  std::u16string tooltip = button->GetTooltipText(gfx::Point());
   EXPECT_FALSE(tooltip.empty());
 
   media_session::mojom::MediaSessionInfoPtr session_info(
@@ -433,7 +426,7 @@ TEST_F(LockScreenMediaControlsViewTest, PlayPauseButtonTooltipCheck) {
       media_session::mojom::MediaPlaybackState::kPaused;
   media_controls_view_->MediaSessionInfoChanged(session_info.Clone());
 
-  base::string16 new_tooltip = button->GetTooltipText(gfx::Point());
+  std::u16string new_tooltip = button->GetTooltipText(gfx::Point());
   EXPECT_FALSE(new_tooltip.empty());
   EXPECT_NE(tooltip, new_tooltip);
 }
@@ -456,7 +449,7 @@ TEST_F(LockScreenMediaControlsViewTest, ProgressBarVisibility) {
   EXPECT_TRUE(progress_view()->GetVisible());
 
   // Simulate position turning null.
-  media_controls_view_->MediaSessionPositionChanged(base::nullopt);
+  media_controls_view_->MediaSessionPositionChanged(absl::nullopt);
 
   // Verify that the progress is hidden again.
   EXPECT_FALSE(progress_view()->GetVisible());
@@ -696,8 +689,8 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateMetadata) {
       GetAppName());
 
   metadata.source_title = kTestAppName;
-  metadata.title = base::ASCIIToUTF16("title");
-  metadata.artist = base::ASCIIToUTF16("artist");
+  metadata.title = u"title";
+  metadata.artist = u"artist";
 
   media_controls_view_->MediaSessionMetadataChanged(metadata);
 
@@ -839,15 +832,15 @@ TEST_F(LockScreenMediaControlsViewTest, AccessibleNodeData) {
 
   // Update the metadata.
   media_session::MediaMetadata metadata;
-  metadata.title = base::ASCIIToUTF16("title");
-  metadata.artist = base::ASCIIToUTF16("artist");
+  metadata.title = u"title";
+  metadata.artist = u"artist";
   media_controls_view_->MediaSessionMetadataChanged(metadata);
   media_controls_view_->GetAccessibleNodeData(&data);
 
   // Verify that the accessible name updates with the metadata.
   EXPECT_TRUE(
       data.HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription));
-  EXPECT_EQ(base::ASCIIToUTF16("title - artist"),
+  EXPECT_EQ(u"title - artist",
             data.GetString16Attribute(ax::mojom::StringAttribute::kName));
 }
 
@@ -1112,7 +1105,7 @@ TEST_F(LockScreenMediaControlsViewTest, Histogram_Hide_SessionChanged) {
       media_session::mojom::MediaPlaybackState::kPlaying);
 
   // Simulate media session stopping and delay.
-  media_controls_view_->MediaSessionChanged(base::nullopt);
+  media_controls_view_->MediaSessionChanged(absl::nullopt);
   mock_timer->Fire();
 
   SimulateSessionUnlock();
@@ -1170,7 +1163,7 @@ TEST_F(LockScreenMediaControlsViewTest, Histogram_Hide_DeviceSleep) {
   SimulateMediaSessionChanged(
       media_session::mojom::MediaPlaybackState::kPlaying);
 
-  GetTestPowerSource().GenerateSuspendEvent();
+  test_power_monitor_source_.GenerateSuspendEvent();
 
   SimulateSessionUnlock();
 

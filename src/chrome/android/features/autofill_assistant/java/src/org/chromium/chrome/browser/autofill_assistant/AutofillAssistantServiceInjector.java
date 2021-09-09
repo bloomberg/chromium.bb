@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+
 /**
  * Provides access to a service which is to be injected upon client startup.
  *
  * <p> This is intended to allow tests to inject test services to be used by the native side. </p>
  */
+@JNINamespace("autofill_assistant")
 public class AutofillAssistantServiceInjector {
     /**
      * Interface for service providers.
@@ -17,7 +21,7 @@ public class AutofillAssistantServiceInjector {
         /**
          * Returns a pointer to a native service instance, or 0 if no service was created.
          */
-        long createNativeService();
+        long createNativeService(long nativeClientAndroid);
     }
 
     /**
@@ -65,12 +69,13 @@ public class AutofillAssistantServiceInjector {
      * <p>Please note: the caller must ensure to take ownership of the returned native pointer,
      * else it will leak!</p>
      */
-    public static long getServiceToInject() {
+    @CalledByNative
+    public static long getServiceToInject(long nativeClientAndroid) {
         if (sNativeServiceProvider == null) {
             return 0;
         }
 
-        return sNativeServiceProvider.createNativeService();
+        return sNativeServiceProvider.createNativeService(nativeClientAndroid);
     }
 
     /**
@@ -80,11 +85,20 @@ public class AutofillAssistantServiceInjector {
      * <p>Please note: the caller must ensure to take ownership of the returned native pointer,
      * else it will leak!</p>
      */
+    @CalledByNative
     public static long getServiceRequestSenderToInject() {
         if (sNativeServiceRequestSenderProvider == null) {
             return 0;
         }
 
         return sNativeServiceRequestSenderProvider.createNativeServiceRequestSender();
+    }
+
+    /**
+     * Returns whether a provider for a service request sender to inject has been provided.
+     * Generally, this means that we are in a test environment.
+     */
+    public static boolean hasServiceRequestSenderToInject() {
+        return sNativeServiceRequestSenderProvider != null;
     }
 }

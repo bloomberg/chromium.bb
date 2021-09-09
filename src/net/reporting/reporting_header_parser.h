@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
+#include "net/http/structured_headers.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class Value;
@@ -22,10 +24,27 @@ class ReportingContext;
 
 class NET_EXPORT ReportingHeaderParser {
  public:
-  static void ParseHeader(ReportingContext* context,
-                          const NetworkIsolationKey& network_isolation_key,
-                          const GURL& url,
-                          std::unique_ptr<base::Value> value);
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class ReportingHeaderType {
+    kReportTo = 0,
+    kReportToInvalid = 1,
+    kMaxValue = kReportToInvalid,
+  };
+
+  static void ParseReportToHeader(
+      ReportingContext* context,
+      const NetworkIsolationKey& network_isolation_key,
+      const GURL& url,
+      std::unique_ptr<base::Value> value);
+
+  static void ParseReportingEndpointsHeader(
+      ReportingContext* context,
+      const NetworkIsolationKey& network_isolation_key,
+      const url::Origin& origin,
+      std::unique_ptr<structured_headers::Dictionary> value);
+
+  static void RecordReportingHeaderType(ReportingHeaderType header_type);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ReportingHeaderParser);

@@ -13,7 +13,7 @@
 #include "src/core/SkStrikeForGPU.h"
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/text/GrSDFTOptions.h"
+#include "src/gpu/text/GrSDFTControl.h"
 class GrStrikeCache;
 class GrTextStrike;
 #endif
@@ -25,6 +25,14 @@ class SkSurfaceProps;
 
 class SkStrikeSpec {
 public:
+    SkStrikeSpec(const SkStrikeSpec&) = default;
+    SkStrikeSpec& operator=(const SkStrikeSpec&) = delete;
+
+    SkStrikeSpec(SkStrikeSpec&&) = default;
+    SkStrikeSpec& operator=(SkStrikeSpec&&) = delete;
+
+    ~SkStrikeSpec() = default;
+
     // Create a strike spec for mask style cache entries.
     static SkStrikeSpec MakeMask(
             const SkFont& font,
@@ -67,7 +75,7 @@ public:
             const SkPaint& paint,
             const SkSurfaceProps& surfaceProps,
             const SkMatrix& deviceMatrix,
-            const GrSDFTOptions& options);
+            const GrSDFTControl& control);
 
     sk_sp<GrTextStrike> findOrCreateGrStrike(GrStrikeCache* cache) const;
 #endif
@@ -81,20 +89,22 @@ public:
     bool isEmpty() const { return SkScalarNearlyZero(fStrikeToSourceRatio); }
     const SkDescriptor& descriptor() const { return *fAutoDescriptor.getDesc(); }
     static bool ShouldDrawAsPath(const SkPaint& paint, const SkFont& font, const SkMatrix& matrix);
+    SkString dump() const;
 
 private:
-    void commonSetup(
+    SkStrikeSpec(
             const SkFont& font,
             const SkPaint& paint,
             const SkSurfaceProps& surfaceProps,
             SkScalerContextFlags scalerContextFlags,
-            const SkMatrix& deviceMatrix);
+            const SkMatrix& deviceMatrix,
+            SkScalar strikeToSourceRatio);
 
     SkAutoDescriptor fAutoDescriptor;
     sk_sp<SkMaskFilter> fMaskFilter;
     sk_sp<SkPathEffect> fPathEffect;
     sk_sp<SkTypeface> fTypeface;
-    SkScalar fStrikeToSourceRatio{1.0f};
+    const SkScalar fStrikeToSourceRatio;
 };
 
 class SkBulkGlyphMetrics {

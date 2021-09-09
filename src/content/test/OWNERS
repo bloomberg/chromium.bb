@@ -7,7 +7,7 @@ tommi@chromium.org
 per-file *accessibility*=file://ui/accessibility/OWNERS
 
 # For Background Sync related files.
-per-file *background_sync*=file://content/browser/background_sync/OWNERS
+per-file *background_sync*=file://components/background_sync/OWNERS
 
 # This integration test uses both renderer and renderer_host code.
 per-file renderer_audio_output_stream_factory_context_impl_unittest.cc=file://content/renderer/media/OWNERS
@@ -20,9 +20,6 @@ per-file dwrite_*=drott@chromium.org
 
 # Badging related files.
 per-file mock_badge_service.*=file://chrome/browser/badging/OWNERS
-
-# Trust Tokens-related files.
-per-file *trust_token*=file://services/network/trust_tokens/OWNERS
 
 # Fuchsia related files.
 per-file *fuchsia*=file://build/fuchsia/OWNERS

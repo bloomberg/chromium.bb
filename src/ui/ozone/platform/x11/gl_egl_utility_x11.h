@@ -27,6 +27,7 @@ class GLEGLUtilityX11 : public PlatformGLEGLUtility {
   void CollectGpuExtraInfo(bool enable_native_gpu_memory_buffers,
                            gfx::GpuExtraInfo& gpu_extra_info) const override;
   bool X11DoesVisualHaveAlphaForTest() const override;
+  bool HasVisualManager() override;
 };
 
 }  // namespace ui

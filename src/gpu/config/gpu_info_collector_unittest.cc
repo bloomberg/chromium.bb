@@ -58,7 +58,7 @@ class GPUInfoCollectorTest
     testing::Test::SetUp();
     gl::SetGLGetProcAddressProc(gl::MockGLInterface::GetGLProcAddress);
     gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
-    gl_.reset(new ::testing::StrictMock<::gl::MockGLInterface>());
+    gl_ = std::make_unique<::testing::StrictMock<::gl::MockGLInterface>>();
     ::gl::MockGLInterface::SetGLInterface(gl_.get());
     switch (GetParam()) {
       case kMockedAndroid: {
@@ -142,6 +142,10 @@ class GPUInfoCollectorTest
     EXPECT_CALL(*gl_, GetString(GL_VERSION))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
             test_values_.gl_version.c_str())));
+
+    EXPECT_CALL(*gl_, GetString(GL_RENDERER))
+        .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
+            test_values_.gl_renderer.c_str())));
 
     // Now that that expectation is set up, we can call this helper function.
     if (gl::WillUseGLGetStringForExtensions()) {

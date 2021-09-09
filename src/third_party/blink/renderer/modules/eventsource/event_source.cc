@@ -126,7 +126,7 @@ void EventSource::Connect() {
   DCHECK(!loader_);
   DCHECK(GetExecutionContext());
 
-  ExecutionContext& execution_context = *this->GetExecutionContext();
+  ExecutionContext& execution_context = *GetExecutionContext();
   ResourceRequest request(current_url_);
   request.SetHttpMethod(http_names::kGET);
   request.SetHttpHeaderField(http_names::kAccept, "text/event-stream");
@@ -365,6 +365,7 @@ bool EventSource::HasPendingActivity() const {
 void EventSource::Trace(Visitor* visitor) const {
   visitor->Trace(parser_);
   visitor->Trace(loader_);
+  visitor->Trace(connect_timer_);
   EventTargetWithInlineData::Trace(visitor);
   ThreadableLoaderClient::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

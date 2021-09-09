@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/extensions/extension_install_ui_default.h"
@@ -39,9 +40,9 @@ class ExtensionInstalledBubbleViewsBrowserTest
     }
 
     if (type == "SignInPromo" || type == "NoAction") {
-      builder.SetLocation(extensions::Manifest::INTERNAL);
+      builder.SetLocation(extensions::mojom::ManifestLocation::kInternal);
     } else {
-      builder.SetLocation(extensions::Manifest::COMPONENT);
+      builder.SetLocation(extensions::mojom::ManifestLocation::kComponent);
     }
 
     if (type == "Omnibox") {
@@ -87,7 +88,7 @@ void ExtensionInstalledBubbleViewsBrowserTest::WaitForUserDismissal() {
   observer.Wait();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // None of these tests work when run under Ash, because they need an
 // AuraTestHelper constructed at an inconvenient time in test setup, which
 // InProcessBrowserTest is not equipped to handle.

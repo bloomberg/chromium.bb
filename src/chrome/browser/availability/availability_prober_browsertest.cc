@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -13,9 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -68,8 +67,8 @@ class AvailabilityProberBrowserTest : public InProcessBrowserTest {
   ~AvailabilityProberBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->RegisterRequestHandler(base::BindRepeating(
         &AvailabilityProberBrowserTest::HandleRequest, base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());

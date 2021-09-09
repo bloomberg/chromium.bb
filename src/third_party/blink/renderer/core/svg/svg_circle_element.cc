@@ -66,13 +66,11 @@ Path SVGCircleElement::AsPath() const {
   SVGLengthContext length_context(this);
   const ComputedStyle& style = ComputedStyleRef();
 
-  const SVGComputedStyle& svg_style = style.SvgStyle();
-
-  float r = length_context.ValueForLength(svg_style.R(), style,
-                                          SVGLengthMode::kOther);
+  float r =
+      length_context.ValueForLength(style.R(), style, SVGLengthMode::kOther);
   if (r > 0) {
-    FloatPoint center(length_context.ResolveLengthPair(svg_style.Cx(),
-                                                       svg_style.Cy(), style));
+    FloatPoint center(
+        length_context.ResolveLengthPair(style.Cx(), style.Cy(), style));
     FloatSize radii(r, r);
     path.AddEllipse(FloatRect(center - radii, radii.ScaledBy(2)));
   }
@@ -99,7 +97,9 @@ void SVGCircleElement::CollectStyleForPresentationAttribute(
   }
 }
 
-void SVGCircleElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+void SVGCircleElement::SvgAttributeChanged(
+    const SvgAttributeChangedParams& params) {
+  const QualifiedName& attr_name = params.name;
   if (attr_name == svg_names::kRAttr || attr_name == svg_names::kCxAttr ||
       attr_name == svg_names::kCyAttr) {
     UpdateRelativeLengthsInformation();
@@ -107,7 +107,7 @@ void SVGCircleElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     return;
   }
 
-  SVGGraphicsElement::SvgAttributeChanged(attr_name);
+  SVGGraphicsElement::SvgAttributeChanged(params);
 }
 
 bool SVGCircleElement::SelfHasRelativeLengths() const {

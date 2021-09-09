@@ -4,6 +4,7 @@
 
 """Finds browsers that can be controlled by telemetry."""
 
+from __future__ import absolute_import
 import logging
 
 from telemetry import decorators
@@ -45,6 +46,9 @@ def FindAllBrowserTypes(browser_finders=None):
     browsers.extend(bf.FindAllBrowserTypes())
   return browsers
 
+def _IsCrosBrowser(options):
+  return (options.browser_type in
+          ['cros-chrome', 'cros-chrome-guest', 'lacros-chrome'])
 
 @decorators.Cache
 def FindBrowser(options):
@@ -68,14 +72,10 @@ def FindBrowser(options):
     raise browser_finder_exceptions.BrowserFinderException(
         '--browser-executable requires --browser=exact.')
 
-  if options.browser_type == 'cros-chrome' and options.cros_remote is None:
-    raise browser_finder_exceptions.BrowserFinderException(
-        'browser_type=cros-chrome requires cros_remote be set.')
-  if (options.browser_type != 'cros-chrome' and
-      options.browser_type != 'cros-chrome-guest' and
+  if (not _IsCrosBrowser(options)  and
       options.cros_remote != None):
     raise browser_finder_exceptions.BrowserFinderException(
-        '--remote requires --browser=cros-chrome or cros-chrome-guest.')
+        '--remote requires --browser=[la]cros-chrome[-guest].')
 
   devices = device_finder.GetDevicesMatchingOptions(options)
   browsers = []
@@ -114,7 +114,7 @@ def FindBrowser(options):
 
     raise browser_finder_exceptions.BrowserTypeRequiredException(
         '--browser must be specified. Available browsers:\n%s' %
-        '\n'.join(sorted(set([b.browser_type for b in browsers]))))
+        '\n'.join(sorted({b.browser_type for b in browsers})))
 
   chosen_browser = None
   if options.browser_type == 'any':
@@ -181,7 +181,7 @@ def GetAllAvailableBrowserTypes(options):
   possible_browsers = []
   for device in devices:
     possible_browsers.extend(GetAllAvailableBrowsers(options, device))
-  type_list = set([browser.browser_type for browser in possible_browsers])
+  type_list = {browser.browser_type for browser in possible_browsers}
   # The reference build should be available for mac, linux and win, but the
   # desktop browser finder won't return it in the list of browsers.
   for browser in possible_browsers:

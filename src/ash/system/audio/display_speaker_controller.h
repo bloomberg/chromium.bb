@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 
 namespace ash {
@@ -25,12 +26,11 @@ class DisplaySpeakerController : public display::DisplayObserver,
                                uint32_t changed_metrics) override;
 
   // chromeos::PowerManagerClient::Observer:
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(base::TimeDelta sleep_duration) override;
 
  private:
-  // Swaps the left and right channels on yoga devices based on orientation.
-  void ChangeInternalSpeakerChannelMode();
-
+  // Update the state of internal speakers based on orientation.
+  void UpdateInternalSpeakerForDisplayRotation();
   DISALLOW_COPY_AND_ASSIGN(DisplaySpeakerController);
 };
 

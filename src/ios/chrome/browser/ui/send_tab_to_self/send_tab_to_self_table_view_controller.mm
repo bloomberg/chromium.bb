@@ -8,6 +8,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/send_tab_to_self/metrics_util.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/target_device_info.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_image_detail_text_item.h"
@@ -19,7 +20,6 @@
 #include "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -82,8 +82,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.backgroundColor = UIColor.cr_systemBackgroundColor;
-  self.styler.cellBackgroundColor = UIColor.cr_systemBackgroundColor;
+  self.view.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
+  self.styler.cellBackgroundColor =
+      [UIColor colorNamed:kPrimaryBackgroundColor];
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 0;
   [self.tableView
@@ -206,6 +207,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Helpers
 
 - (void)sendTabWhenPressed:(UIButton*)sender {
+  send_tab_to_self::RecordDeviceClicked(
+      send_tab_to_self::ShareEntryPoint::kShareMenu);
   [self.delegate sendTabToTargetDeviceCacheGUID:self.selectedItem.cacheGuid
                                targetDeviceName:self.selectedItem.text];
   [self.delegate dismissViewControllerAnimated:YES completion:nil];

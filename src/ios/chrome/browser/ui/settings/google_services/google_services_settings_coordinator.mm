@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "components/google/core/common/google_util.h"
+#import "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -17,7 +18,10 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+#import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
+#import "ios/chrome/browser/ui/authentication/signout_action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -30,8 +34,11 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/sync_error_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -67,7 +74,10 @@ using signin_metrics::PromoAction;
 // be dismissed and the sync setup flag should not be marked as done. The sync
 // should be kept undecided, not marked as disabled.
 @property(nonatomic, assign) BOOL signinInterrupted;
-
+// Action sheets that provides options for sign out.
+@property(nonatomic, strong) ActionSheetCoordinator* signOutCoordinator;
+@property(nonatomic, strong)
+    SignoutActionSheetCoordinator* dataRetentionStrategyCoordinator;
 @end
 
 @implementation GoogleServicesSettingsCoordinator
@@ -92,13 +102,9 @@ using signin_metrics::PromoAction;
 }
 
 - (void)start {
-  self.authService->WaitUntilCacheIsPopulated();
-  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                               ? UITableViewStylePlain
-                               : UITableViewStyleGrouped;
-
   GoogleServicesSettingsViewController* viewController =
-      [[GoogleServicesSettingsViewController alloc] initWithStyle:style];
+      [[GoogleServicesSettingsViewController alloc]
+          initWithStyle:ChromeTableViewStyle()];
   viewController.presentationDelegate = self;
   self.viewController = viewController;
   SyncSetupService* syncSetupService =
@@ -264,6 +270,56 @@ using signin_metrics::PromoAction;
         baseViewController:self.googleServicesSettingsViewController];
 }
 
+- (void)showSignOutFromTargetRect:(CGRect)targetRect
+                       completion:(signin_ui::CompletionCallback)completion {
+  DCHECK(completion);
+  SyncSetupService* syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  BOOL isSyncConsentGiven =
+      syncSetupService && syncSetupService->IsFirstSetupComplete();
+  NSString* title =
+      isSyncConsentGiven
+          ? l10n_util::GetNSString(IDS_IOS_SIGNOUT_DIALOG_TITLE_WITHOUT_SYNC)
+          : nil;
+  NSString* message =
+      isSyncConsentGiven
+          ? l10n_util::GetNSString(IDS_IOS_SIGNOUT_DIALOG_MESSAGE_WITH_SYNC)
+          : nil;
+  self.signOutCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                           title:title
+                         message:message
+                            rect:targetRect
+                            view:self.viewController.view];
+  __weak GoogleServicesSettingsCoordinator* weakSelf = self;
+  [self.signOutCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_SIGNOUT_DIALOG_SIGN_OUT_BUTTON)
+                action:^{
+                  weakSelf.dataRetentionStrategyCoordinator =
+                      [[SignoutActionSheetCoordinator alloc]
+                          initWithBaseViewController:weakSelf.viewController
+                                             browser:weakSelf.browser
+                                                rect:targetRect
+                                                view:weakSelf.viewController
+                                                         .view];
+                  weakSelf.dataRetentionStrategyCoordinator.completion =
+                      completion;
+                  [weakSelf.dataRetentionStrategyCoordinator start];
+                }
+                 style:UIAlertActionStyleDestructive];
+  [self.signOutCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                action:^{
+                  weakSelf.signOutCoordinator = nil;
+                  completion(NO);
+                }
+                 style:UIAlertActionStyleCancel];
+  [self.signOutCoordinator start];
+}
+
 - (void)signinFinishedWithSuccess:(BOOL)success {
   // TODO(crbug.com/1101346): SigninCoordinatorResult should be received instead
   // of guessing if the sign-in has been interrupted.
@@ -299,16 +355,6 @@ using signin_metrics::PromoAction;
       ->PresentAccountDetailsController(
           self.authService->GetAuthenticatedIdentity(),
           self.googleServicesSettingsViewController, /*animated=*/YES);
-}
-
-- (void)openManageGoogleAccountWebPage {
-  GURL url = google_util::AppendGoogleLocaleParam(
-      GURL(kManageYourGoogleAccountURL),
-      GetApplicationContext()->GetApplicationLocale());
-  OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:url];
-  id<ApplicationCommands> handler = HandlerForProtocol(
-      self.browser->GetCommandDispatcher(), ApplicationCommands);
-  [handler closeSettingsUIAndOpenURL:command];
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerPresentationDelegate

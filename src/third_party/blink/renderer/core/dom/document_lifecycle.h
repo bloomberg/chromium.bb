@@ -32,9 +32,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_LIFECYCLE_H_
 
 #include "base/auto_reset.h"
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #if DCHECK_IS_ON()
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -60,7 +60,6 @@ class CORE_EXPORT DocumentLifecycle {
     kInLayoutSubtreeChange,
     kLayoutSubtreeChangeClean,
 
-    kInPreLayout,
     kInPerformLayout,
     kAfterPerformLayout,
     kLayoutClean,
@@ -247,7 +246,7 @@ class CORE_EXPORT DocumentLifecycle {
 };
 
 inline bool DocumentLifecycle::StateAllowsTreeMutations() const {
-  // FIXME: We should not allow mutations in InPreLayout or AfterPerformLayout
+  // TODO: We should not allow mutations in AfterPerformLayout
   // either, but we need to fix MediaList listeners and plugins first.
   return state_ != kInStyleRecalc && state_ != kInPerformLayout &&
          state_ != kInCompositingAssignmentsUpdate &&
@@ -267,12 +266,11 @@ inline bool DocumentLifecycle::StateAllowsLayoutTreeNotifications() const {
 inline bool DocumentLifecycle::StateAllowsDetach() const {
   return state_ == kVisualUpdatePending || state_ == kInStyleRecalc ||
          state_ == kStyleClean || state_ == kLayoutSubtreeChangeClean ||
-         state_ == kInPreLayout || state_ == kLayoutClean ||
-         state_ == kCompositingInputsClean ||
+         state_ == kLayoutClean || state_ == kCompositingInputsClean ||
          state_ == kCompositingAssignmentsClean || state_ == kPrePaintClean ||
          state_ == kPaintClean || state_ == kStopping || state_ == kInactive;
 }
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_LIFECYCLE_H_

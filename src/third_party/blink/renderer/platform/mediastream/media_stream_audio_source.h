@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/audio_capturer_source.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_deliverer.h"
@@ -101,6 +102,9 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   bool disable_local_echo() const { return disable_local_echo_; }
   bool RenderToAssociatedSinkEnabled() const;
 
+  // Checks all tracks acting as consumers and returns true if all are disabled.
+  bool AllTracksAreDisabled();
+
   // Returns a unique class identifier. Some subclasses override and use this
   // method to provide safe down-casting to their type.
   virtual void* GetClassIdentifier() const;
@@ -119,9 +123,14 @@ class PLATFORM_EXPORT MediaStreamAudioSource
 
   // Returns the audio processing properties associated to this source if any,
   // or nullopt otherwise.
-  virtual base::Optional<blink::AudioProcessingProperties>
+  virtual absl::optional<blink::AudioProcessingProperties>
   GetAudioProcessingProperties() const {
-    return base::nullopt;
+    return absl::nullopt;
+  }
+
+  absl::optional<media::AudioCapturerSource::ErrorCode> ErrorCode() {
+    DCHECK(task_runner_->BelongsToCurrentThread());
+    return error_code_;
   }
 
  protected:
@@ -166,13 +175,18 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   // Called by subclasses when capture error occurs.
   // Note: This can be called on any thread, and will post a task to the main
   // thread to stop the source soon.
-  void StopSourceOnError(const std::string& why);
+  void StopSourceOnError(media::AudioCapturerSource::ErrorCode code,
+                         const std::string& why);
 
   // Sets muted state and notifies it to all registered tracks.
   void SetMutedState(bool state);
 
   // Gets the TaskRunner for the main thread, for subclasses that need it.
   base::SingleThreadTaskRunner* GetTaskRunner() const;
+
+  // Maximum number of channels preferred by any connected track or -1 if
+  // unknown.
+  int NumPreferredChannels() const;
 
  private:
   // MediaStreamSource override.
@@ -183,6 +197,20 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   // audio data. The "stop callback" that was provided to the track calls
   // this.
   void StopAudioDeliveryTo(MediaStreamAudioTrack* track);
+
+  // Number of MediaStreamAudioTracks added as consumers.
+  int NumConsumers() const;
+
+  void LogMessage(const std::string& message);
+
+  void SetErrorCode(media::AudioCapturerSource::ErrorCode code) {
+    DCHECK(task_runner_->BelongsToCurrentThread());
+    error_code_ = code;
+  }
+
+  // The portion of StopSourceOnError processing carried out on the main thread.
+  void StopSourceOnErrorOnTaskRunner(
+      media::AudioCapturerSource::ErrorCode code);
 
   // True if the source of audio is a local device. False if the source is
   // remote (e.g., streamed-in from a server).
@@ -201,6 +229,9 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   // could cause object graph or data flow changes are being called on the main
   // thread.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // Code set if this source was closed due to an error.
+  absl::optional<media::AudioCapturerSource::ErrorCode> error_code_;
 
   // Provides weak pointers so that MediaStreamAudioTracks won't call
   // StopAudioDeliveryTo() if this instance dies first.
