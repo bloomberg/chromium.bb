@@ -24,7 +24,7 @@ namespace history {
 struct PrepopulatedPage {
   PrepopulatedPage();
   PrepopulatedPage(const GURL& url,
-                   const base::string16& title,
+                   const std::u16string& title,
                    int favicon_id,
                    SkColor color);
 
@@ -86,7 +86,7 @@ class TopSites : public RefcountedKeyedService {
   // Returns the set of prepopulated pages.
   virtual PrepopulatedPageList GetPrepopulatedPages() = 0;
 
-  // Called when user has navigated to |url|.
+  // Called when user has navigated to `url`.
   virtual void OnNavigationCommitted(const GURL& url) = 0;
 
   // Add Observer to the list.

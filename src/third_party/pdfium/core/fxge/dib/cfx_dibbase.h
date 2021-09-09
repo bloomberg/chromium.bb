@@ -47,20 +47,17 @@ class CFX_DIBBase : public Retainable {
   }
   int GetWidth() const { return m_Width; }
   int GetHeight() const { return m_Height; }
+  uint32_t GetPitch() const { return m_Pitch; }
 
   FXDIB_Format GetFormat() const { return m_Format; }
-  uint32_t GetPitch() const { return m_Pitch; }
+  int GetBPP() const { return GetBppFromFormat(m_Format); }
+  bool IsMaskFormat() const { return GetIsMaskFromFormat(m_Format); }
+  bool IsAlphaFormat() const { return GetIsAlphaFromFormat(m_Format); }
+  bool IsOpaqueImage() const { return !IsMaskFormat() && !IsAlphaFormat(); }
+
   bool HasPalette() const { return !m_palette.empty(); }
   pdfium::span<const uint32_t> GetPaletteSpan() const { return m_palette; }
-  const uint32_t* GetPaletteData() const { return m_palette.data(); }
-  int GetBPP() const { return GetBppFromFormat(m_Format); }
-
-  bool IsMask() const { return GetIsMaskFromFormat(m_Format); }
-  bool HasAlpha() const { return GetIsAlphaFromFormat(m_Format); }
-  bool IsOpaqueImage() const { return !IsMask() && !HasAlpha(); }
-
-  size_t GetPaletteSize() const;
-
+  size_t GetRequiredPaletteSize() const;
   uint32_t GetPaletteArgb(int index) const;
   void SetPaletteArgb(int index, uint32_t color);
 
@@ -79,6 +76,12 @@ class CFX_DIBBase : public Retainable {
   RetainPtr<CFX_DIBitmap> SwapXY(bool bXFlip, bool bYFlip) const;
   RetainPtr<CFX_DIBitmap> FlipImage(bool bXFlip, bool bYFlip) const;
 
+  bool HasAlphaMask() const { return !!m_pAlphaMask; }
+  uint32_t GetAlphaMaskPitch() const;
+  const uint8_t* GetAlphaMaskScanline(int line) const;
+  uint8_t* GetWritableAlphaMaskScanline(int line);
+  uint8_t* GetAlphaMaskBuffer();
+  RetainPtr<CFX_DIBitmap> GetAlphaMask();
   RetainPtr<CFX_DIBitmap> CloneAlphaMask() const;
 
   // Copies into internally-owned mask.
@@ -99,8 +102,6 @@ class CFX_DIBBase : public Retainable {
   void DebugVerifyBitmapIsPreMultiplied(void* buffer) const;
 #endif
 
-  RetainPtr<CFX_DIBitmap> m_pAlphaMask;
-
  protected:
   CFX_DIBBase();
 
@@ -120,10 +121,11 @@ class CFX_DIBBase : public Retainable {
   int FindPalette(uint32_t color) const;
   void GetPalette(uint32_t* pal, int alpha) const;
 
+  FXDIB_Format m_Format = FXDIB_Format::kInvalid;
   int m_Width = 0;
   int m_Height = 0;
   uint32_t m_Pitch = 0;
-  FXDIB_Format m_Format = FXDIB_Format::kInvalid;
+  RetainPtr<CFX_DIBitmap> m_pAlphaMask;
   std::vector<uint32_t, FxAllocAllocator<uint32_t>> m_palette;
 };
 

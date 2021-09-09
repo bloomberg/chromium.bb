@@ -22,6 +22,7 @@
 namespace chromeos {
 
 namespace {
+
 const char* kDefaultMccMnc = "310999";
 const char* kFakeActivationCodePrefix = "1$SMDP.GSMA.COM$00000-00000-00000-000";
 const char* kFakeProfilePathPrefix = "/org/chromium/Hermes/Profile/";
@@ -115,22 +116,23 @@ void FakeHermesEuiccClient::ResetPendingEventsRequested() {
 dbus::ObjectPath FakeHermesEuiccClient::AddFakeCarrierProfile(
     const dbus::ObjectPath& euicc_path,
     hermes::profile::State state,
-    std::string activation_code) {
+    const std::string& activation_code,
+    AddCarrierProfileBehavior add_carrier_profile_behavior) {
   int index = fake_profile_counter_++;
   dbus::ObjectPath carrier_profile_path(
       base::StringPrintf("%s%02d", kFakeProfilePathPrefix, index));
 
-  if (activation_code.empty()) {
-    activation_code =
-        base::StringPrintf("%s%02d", kFakeActivationCodePrefix, index);
-  }
   AddCarrierProfile(
       carrier_profile_path, euicc_path,
       base::StringPrintf("%s%02d", kFakeIccidPrefix, index),
       base::StringPrintf("%s%02d", kFakeProfileNamePrefix, index),
-      kFakeServiceProvider, activation_code,
-      base::StringPrintf("%s%02d", kFakeNetworkServicePathPrefix, index),
-      state);
+      kFakeServiceProvider,
+      activation_code.empty()
+          ? base::StringPrintf("%s%02d", kFakeActivationCodePrefix, index)
+          : activation_code,
+      base::StringPrintf("%s%02d", kFakeNetworkServicePathPrefix, index), state,
+      hermes::profile::ProfileClass::kOperational,
+      add_carrier_profile_behavior);
   return carrier_profile_path;
 }
 
@@ -142,7 +144,9 @@ void FakeHermesEuiccClient::AddCarrierProfile(
     const std::string& service_provider,
     const std::string& activation_code,
     const std::string& network_service_path,
-    hermes::profile::State state) {
+    hermes::profile::State state,
+    hermes::profile::ProfileClass profile_class,
+    AddCarrierProfileBehavior add_carrier_profile_behavior) {
   DVLOG(1) << "Adding new profile path=" << path.value() << ", name=" << name
            << ", state=" << state;
   HermesProfileClient::Properties* profile_properties =
@@ -154,6 +158,7 @@ void FakeHermesEuiccClient::AddCarrierProfile(
   profile_properties->name().ReplaceValue(name);
   profile_properties->nick_name().ReplaceValue(name);
   profile_properties->state().ReplaceValue(state);
+  profile_properties->profile_class().ReplaceValue(profile_class);
   profile_service_path_map_[path] = network_service_path;
 
   Properties* euicc_properties = GetProperties(euicc_path);
@@ -165,12 +170,61 @@ void FakeHermesEuiccClient::AddCarrierProfile(
     return;
   }
 
-  CreateCellularService(path);
+  bool should_create_service =
+      add_carrier_profile_behavior ==
+          AddCarrierProfileBehavior::kAddProfileWithService ||
+      add_carrier_profile_behavior ==
+          AddCarrierProfileBehavior::kAddDelayedProfileWithService;
+  if (should_create_service)
+    CreateCellularService(euicc_path, path);
+
+  bool should_delay_install =
+      add_carrier_profile_behavior ==
+          AddCarrierProfileBehavior::kAddDelayedProfileWithService ||
+      add_carrier_profile_behavior ==
+          AddCarrierProfileBehavior::kAddDelayedProfileWithoutService;
+  if (should_delay_install) {
+    QueueInstalledProfile(euicc_path, path);
+    return;
+  }
+
   std::vector<dbus::ObjectPath> installed_profiles =
       euicc_properties->installed_carrier_profiles().value();
   installed_profiles.push_back(path);
   euicc_properties->installed_carrier_profiles().ReplaceValue(
       installed_profiles);
+}
+
+bool FakeHermesEuiccClient::RemoveCarrierProfile(
+    const dbus::ObjectPath& euicc_path,
+    const dbus::ObjectPath& carrier_profile_path) {
+  // Remove entry from profile service path map.
+  auto profile_service_path_map_iter =
+      profile_service_path_map_.find(carrier_profile_path);
+  if (profile_service_path_map_iter == profile_service_path_map_.end()) {
+    return false;
+  }
+  profile_service_path_map_.erase(profile_service_path_map_iter);
+
+  // Remove profile from Euicc properties.
+  Properties* euicc_properties = GetProperties(euicc_path);
+  std::vector<dbus::ObjectPath> installed_profiles =
+      euicc_properties->installed_carrier_profiles().value();
+  auto installed_carrier_profiles_iter =
+      std::find(installed_profiles.begin(), installed_profiles.end(),
+                carrier_profile_path);
+  if (installed_carrier_profiles_iter == installed_profiles.end()) {
+    return false;
+  }
+
+  installed_profiles.erase(installed_carrier_profiles_iter);
+  euicc_properties->installed_carrier_profiles().ReplaceValue(
+      installed_profiles);
+
+  // Remove profile dbus object.
+  HermesProfileClient::Get()->GetTestInterface()->ClearProfile(
+      carrier_profile_path);
+  return true;
 }
 
 void FakeHermesEuiccClient::QueueHermesErrorStatus(
@@ -180,6 +234,11 @@ void FakeHermesEuiccClient::QueueHermesErrorStatus(
 
 void FakeHermesEuiccClient::SetInteractiveDelay(base::TimeDelta delay) {
   interactive_delay_ = delay;
+}
+
+std::string FakeHermesEuiccClient::GenerateFakeActivationCode() {
+  return base::StringPrintf("%s-%04d", kFakeActivationCodePrefix,
+                            fake_profile_counter_++);
 }
 
 void FakeHermesEuiccClient::InstallProfileFromActivationCode(
@@ -209,12 +268,24 @@ void FakeHermesEuiccClient::InstallPendingProfile(
       interactive_delay_);
 }
 
-void FakeHermesEuiccClient::RequestPendingEvents(
+void FakeHermesEuiccClient::RequestInstalledProfiles(
     const dbus::ObjectPath& euicc_path,
     HermesResponseCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&FakeHermesEuiccClient::DoRequestPendingEvents,
+      base::BindOnce(&FakeHermesEuiccClient::DoRequestInstalledProfiles,
+                     weak_ptr_factory_.GetWeakPtr(), euicc_path,
+                     std::move(callback)),
+      interactive_delay_);
+}
+
+void FakeHermesEuiccClient::RequestPendingProfiles(
+    const dbus::ObjectPath& euicc_path,
+    const std::string& root_smds,
+    HermesResponseCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&FakeHermesEuiccClient::DoRequestPendingProfiles,
                      weak_ptr_factory_.GetWeakPtr(), euicc_path,
                      std::move(callback)),
       interactive_delay_);
@@ -289,9 +360,10 @@ void FakeHermesEuiccClient::DoInstallProfileFromActivationCode(
   } else {
     // Create a new installed profile with given activation code.
     profile_path = AddFakeCarrierProfile(
-        euicc_path, hermes::profile::State::kInactive, activation_code);
+        euicc_path, hermes::profile::State::kInactive, activation_code,
+        AddCarrierProfileBehavior::kAddProfileWithService);
   }
-  CreateCellularService(profile_path);
+  CreateCellularService(euicc_path, profile_path);
 
   std::move(callback).Run(HermesResponseStatus::kSuccess, &profile_path);
 }
@@ -325,15 +397,41 @@ void FakeHermesEuiccClient::DoInstallPendingProfile(
   installed_profiles.push_back(carrier_profile_path);
   euicc_properties->installed_carrier_profiles().ReplaceValue(
       installed_profiles);
-  CreateCellularService(carrier_profile_path);
+  CreateCellularService(euicc_path, carrier_profile_path);
 
   std::move(callback).Run(HermesResponseStatus::kSuccess);
 }
 
-void FakeHermesEuiccClient::DoRequestPendingEvents(
+void FakeHermesEuiccClient::DoRequestInstalledProfiles(
     const dbus::ObjectPath& euicc_path,
     HermesResponseCallback callback) {
-  DVLOG(1) << "Pending Events Requested";
+  DVLOG(1) << "Installed Profiles Requested";
+  if (!error_status_queue_.empty()) {
+    std::move(callback).Run(error_status_queue_.front());
+    error_status_queue_.pop();
+    return;
+  }
+
+  auto iter = installed_profile_queue_map_.find(euicc_path);
+  if (iter != installed_profile_queue_map_.end() && !iter->second->empty()) {
+    InstalledProfileQueue* installed_profile_queue = iter->second.get();
+    Properties* euicc_properties = GetProperties(euicc_path);
+    std::vector<dbus::ObjectPath> installed_profiles =
+        euicc_properties->installed_carrier_profiles().value();
+    while (!installed_profile_queue->empty()) {
+      installed_profiles.push_back(installed_profile_queue->front());
+      installed_profile_queue->pop();
+    }
+    euicc_properties->installed_carrier_profiles().ReplaceValue(
+        installed_profiles);
+  }
+  std::move(callback).Run(HermesResponseStatus::kSuccess);
+}
+
+void FakeHermesEuiccClient::DoRequestPendingProfiles(
+    const dbus::ObjectPath& euicc_path,
+    HermesResponseCallback callback) {
+  DVLOG(1) << "Pending Profiles Requested";
   if (!error_status_queue_.empty()) {
     std::move(callback).Run(error_status_queue_.front());
     error_status_queue_.pop();
@@ -341,7 +439,8 @@ void FakeHermesEuiccClient::DoRequestPendingEvents(
   }
 
   if (!pending_event_requested_) {
-    AddFakeCarrierProfile(euicc_path, hermes::profile::State::kPending, "");
+    AddFakeCarrierProfile(euicc_path, hermes::profile::State::kPending, "",
+                          AddCarrierProfileBehavior::kAddProfileWithService);
     pending_event_requested_ = true;
   }
   std::move(callback).Run(HermesResponseStatus::kSuccess);
@@ -357,21 +456,11 @@ void FakeHermesEuiccClient::DoUninstallProfile(
     return;
   }
 
-  Properties* euicc_properties = GetProperties(euicc_path);
-  std::vector<dbus::ObjectPath> installed_profiles =
-      euicc_properties->installed_carrier_profiles().value();
-  auto it = std::find(installed_profiles.begin(), installed_profiles.end(),
-                      carrier_profile_path);
-  if (it == installed_profiles.end()) {
-    std::move(callback).Run(HermesResponseStatus::kErrorUnknown);
-    return;
-  }
-
-  RemoveCellularService(carrier_profile_path);
-  installed_profiles.erase(it);
-  euicc_properties->installed_carrier_profiles().ReplaceValue(
-      installed_profiles);
-  std::move(callback).Run(HermesResponseStatus::kSuccess);
+  // TODO(azeemarshad): Remove Shill service after removing carrier profile.
+  bool remove_success = RemoveCarrierProfile(euicc_path, carrier_profile_path);
+  std::move(callback).Run(remove_success
+                              ? HermesResponseStatus::kSuccess
+                              : HermesResponseStatus::kErrorInvalidIccid);
 }
 
 // Creates cellular service in shill for the given carrier profile path.
@@ -379,17 +468,23 @@ void FakeHermesEuiccClient::DoUninstallProfile(
 // profile is installed on the device through Hermes. Shill will be notified and
 // it then creates cellular services with matching ICCID for this profile.
 void FakeHermesEuiccClient::CreateCellularService(
+    const dbus::ObjectPath& euicc_path,
     const dbus::ObjectPath& carrier_profile_path) {
   const std::string& service_path =
       profile_service_path_map_[carrier_profile_path];
   HermesProfileClient::Properties* properties =
       HermesProfileClient::Get()->GetProperties(carrier_profile_path);
+  HermesEuiccClient::Properties* euicc_properties =
+      HermesEuiccClient::Get()->GetProperties(euicc_path);
   ShillServiceClient::TestInterface* service_test =
       ShillServiceClient::Get()->GetTestInterface();
   service_test->AddService(service_path,
                            "esim_guid" + properties->iccid().value(),
                            properties->name().value(), shill::kTypeCellular,
                            shill::kStateIdle, true);
+  service_test->SetServiceProperty(
+      service_path, shill::kEidProperty,
+      base::Value(euicc_properties->eid().value()));
   service_test->SetServiceProperty(service_path, shill::kIccidProperty,
                                    base::Value(properties->iccid().value()));
   service_test->SetServiceProperty(
@@ -409,14 +504,6 @@ void FakeHermesEuiccClient::CreateCellularService(
                            service_path);
 }
 
-void FakeHermesEuiccClient::RemoveCellularService(
-    const dbus::ObjectPath& carrier_profile_path) {
-  ShillServiceClient::TestInterface* service_test =
-      ShillServiceClient::Get()->GetTestInterface();
-  service_test->RemoveService(profile_service_path_map_[carrier_profile_path]);
-  profile_service_path_map_.erase(carrier_profile_path);
-}
-
 void FakeHermesEuiccClient::CallNotifyPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
@@ -434,6 +521,21 @@ void FakeHermesEuiccClient::NotifyPropertyChanged(
   for (auto& observer : observers()) {
     observer.OnEuiccPropertyChanged(object_path, property_name);
   }
+}
+
+void FakeHermesEuiccClient::QueueInstalledProfile(
+    const dbus::ObjectPath& euicc_path,
+    const dbus::ObjectPath& profile_path) {
+  auto iter = installed_profile_queue_map_.find(euicc_path);
+  if (iter != installed_profile_queue_map_.end()) {
+    iter->second->push(profile_path);
+    return;
+  }
+
+  std::unique_ptr<InstalledProfileQueue> installed_profile_queue =
+      std::make_unique<InstalledProfileQueue>();
+  installed_profile_queue->push(profile_path);
+  installed_profile_queue_map_[euicc_path] = std::move(installed_profile_queue);
 }
 
 }  // namespace chromeos

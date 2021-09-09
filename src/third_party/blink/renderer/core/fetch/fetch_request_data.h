@@ -36,7 +36,6 @@ class ScriptState;
 class CORE_EXPORT FetchRequestData final
     : public GarbageCollected<FetchRequestData> {
  public:
-  enum Tainting { kBasicTainting, kCorsTainting, kOpaqueTainting };
   enum class ForServiceWorkerFetchEvent { kFalse, kTrue };
 
   static FetchRequestData* Create(ScriptState*,
@@ -95,8 +94,6 @@ class CORE_EXPORT FetchRequestData final
     importance_ = importance;
   }
   mojom::FetchImportanceMode Importance() const { return importance_; }
-  void SetResponseTainting(Tainting tainting) { response_tainting_ = tainting; }
-  Tainting ResponseTainting() const { return response_tainting_; }
   FetchHeaderList* HeaderList() const { return header_list_.Get(); }
   void SetHeaderList(FetchHeaderList* header_list) {
     header_list_ = header_list;
@@ -126,12 +123,12 @@ class CORE_EXPORT FetchRequestData final
   const base::UnguessableToken& WindowId() const { return window_id_; }
   void SetWindowId(const base::UnguessableToken& id) { window_id_ = id; }
 
-  const base::Optional<network::mojom::blink::TrustTokenParams>&
+  const absl::optional<network::mojom::blink::TrustTokenParams>&
   TrustTokenParams() const {
     return trust_token_params_;
   }
   void SetTrustTokenParams(
-      base::Optional<network::mojom::blink::TrustTokenParams>
+      absl::optional<network::mojom::blink::TrustTokenParams>
           trust_token_params) {
     trust_token_params_ = std::move(trust_token_params);
   }
@@ -168,10 +165,9 @@ class CORE_EXPORT FetchRequestData final
   mojom::FetchCacheMode cache_mode_;
   network::mojom::RedirectMode redirect_;
   mojom::FetchImportanceMode importance_;
-  base::Optional<network::mojom::blink::TrustTokenParams> trust_token_params_;
+  absl::optional<network::mojom::blink::TrustTokenParams> trust_token_params_;
   // FIXME: Support m_useURLCredentialsFlag;
   // FIXME: Support m_redirectCount;
-  Tainting response_tainting_;
   Member<BodyStreamBuffer> buffer_;
   String mime_type_;
   String integrity_;
@@ -182,9 +178,7 @@ class CORE_EXPORT FetchRequestData final
   // the system would otherwise decide to use to load this request.
   // Currently used for blob: URLs, to ensure they can still be loaded even if
   // the URL got revoked after creating the request.
-  HeapMojoRemote<network::mojom::blink::URLLoaderFactory,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      url_loader_factory_;
+  HeapMojoRemote<network::mojom::blink::URLLoaderFactory> url_loader_factory_;
   base::UnguessableToken window_id_;
   Member<ExecutionContext> execution_context_;
   bool allow_http1_for_streaming_upload_ = false;

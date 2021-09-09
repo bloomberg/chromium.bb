@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "media/base/status_codes.h"
 #include "media/base/video_frame.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/gpu/h264_decoder.h"
@@ -26,6 +27,8 @@
 #include "ui/gl/gl_image.h"
 
 namespace media {
+
+constexpr int kRefFrameMaxCount = 16;
 
 class D3D11H264Accelerator;
 class MediaLog;
@@ -74,8 +77,7 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
   void PicParamsFromSliceHeader(DXVA_PicParams_H264* pic_param,
                                 const H264SliceHeader* pps);
 
-  void PicParamsFromPic(DXVA_PicParams_H264* pic_param,
-                        scoped_refptr<H264Picture> pic);
+  void PicParamsFromPic(DXVA_PicParams_H264* pic_param, D3D11H264Picture* pic);
 
   void SetVideoDecoder(ComD3D11VideoDecoder video_decoder);
 
@@ -84,7 +86,9 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
   bool RetrieveBitstreamBuffer();
 
   // Record a failure to DVLOG and |media_log_|.
-  void RecordFailure(const std::string& reason, HRESULT hr = S_OK) const;
+  void RecordFailure(const std::string& reason,
+                     StatusCode code,
+                     HRESULT hr = S_OK) const;
 
   D3D11VideoDecoderClient* client_;
   MediaLog* media_log_ = nullptr;
@@ -95,10 +99,10 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
 
   // This information set at the beginning of a frame and saved for processing
   // all the slices.
-  DXVA_PicEntry_H264 ref_frame_list_[16];
+  DXVA_PicEntry_H264 ref_frame_list_[kRefFrameMaxCount];
   H264SPS sps_;
-  INT field_order_cnt_list_[16][2];
-  USHORT frame_num_list_[16];
+  INT field_order_cnt_list_[kRefFrameMaxCount][2];
+  USHORT frame_num_list_[kRefFrameMaxCount];
   UINT used_for_reference_flags_;
   USHORT non_existing_frame_flags_;
 
@@ -119,4 +123,4 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_D3D11_WINDOWS_H264_ACCELERATOR_H_
+#endif  // MEDIA_GPU_WINDOWS_D3D11_H264_ACCELERATOR_H_

@@ -27,11 +27,11 @@ class SpellingOptionsSubMenuObserverTest : public InProcessBrowserTest {
   ~SpellingOptionsSubMenuObserverTest() override {}
 
   void SetUpOnMainThread() override {
-    menu_.reset(new MockRenderViewContextMenu(false));
-    observer_.reset(
+    menu_ = std::make_unique<MockRenderViewContextMenu>(false);
+    observer_ = std::make_unique<SpellingOptionsSubMenuObserver>(
         // Pass nullptr as a delegate so that submenu items do not get put into
         // MockRenderViewContextMenu::items_.
-        new SpellingOptionsSubMenuObserver(menu_.get(), nullptr, 1));
+        menu_.get(), nullptr, 1);
     menu_->SetObserver(observer_.get());
   }
 
@@ -53,7 +53,9 @@ class SpellingOptionsSubMenuObserverTest : public InProcessBrowserTest {
     menu()->GetPrefs()->SetString(language::prefs::kAcceptLanguages,
                                   accept_languages);
     base::ListValue dictionaries_value;
-    dictionaries_value.AppendStrings(dictionaries);
+    for (const std::string& dict : dictionaries) {
+      dictionaries_value.Append(dict);
+    }
     menu()->GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries,
                             dictionaries_value);
     observer()->InitMenu(content::ContextMenuParams());
@@ -64,7 +66,9 @@ class SpellingOptionsSubMenuObserverTest : public InProcessBrowserTest {
     EXPECT_EQ(spellcheck_enabled, menu()->GetPrefs()->GetBoolean(
                                       spellcheck::prefs::kSpellCheckEnable));
     base::ListValue dictionaries_value;
-    dictionaries_value.AppendStrings(dictionaries);
+    for (const std::string& dict : dictionaries) {
+      dictionaries_value.Append(dict);
+    }
     EXPECT_TRUE(dictionaries_value.Equals(menu()->GetPrefs()->GetList(
         spellcheck::prefs::kSpellCheckDictionaries)));
   }

@@ -8,13 +8,13 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -225,7 +225,7 @@ void FilesystemImpl::GetFileInfo(const base::FilePath& path,
   if (base::GetFileInfo(MakeAbsolute(path), &info))
     std::move(callback).Run(std::move(info));
   else
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
 }
 
 void FilesystemImpl::GetPathAccess(const base::FilePath& path,

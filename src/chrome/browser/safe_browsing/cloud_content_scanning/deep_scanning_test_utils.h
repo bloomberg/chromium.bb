@@ -9,10 +9,11 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/optional.h"
+#include "base/containers/flat_map.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class Value;
@@ -43,7 +44,8 @@ class EventReportValidator {
       const std::set<std::string>* expected_mimetypes,
       int expected_content_size,
       const std::string& expected_result,
-      const std::string& expected_username);
+      const std::string& expected_username,
+      const absl::optional<std::string>& expected_scan_id);
 
   void ExpectSensitiveDataEvent(
       const std::string& expected_url,
@@ -55,7 +57,8 @@ class EventReportValidator {
       const std::set<std::string>* expected_mimetypes,
       int expected_content_size,
       const std::string& expected_result,
-      const std::string& expected_username);
+      const std::string& expected_username,
+      const std::string& expected_scan_id);
 
   void ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
       const std::string& expected_url,
@@ -68,7 +71,8 @@ class EventReportValidator {
       const std::set<std::string>* expected_mimetypes,
       int expected_content_size,
       const std::string& expected_result,
-      const std::string& expected_username);
+      const std::string& expected_username,
+      const std::string& expected_scan_id);
 
   void ExpectSensitiveDataEventAndDangerousDeepScanningResult(
       const std::string& expected_url,
@@ -81,7 +85,8 @@ class EventReportValidator {
       const std::set<std::string>* expected_mimetypes,
       int expected_content_size,
       const std::string& expected_result,
-      const std::string& expected_username);
+      const std::string& expected_username,
+      const std::string& expected_scan_id);
 
   void ExpectUnscannedFileEvent(const std::string& expected_url,
                                 const std::string& expected_filename,
@@ -93,6 +98,17 @@ class EventReportValidator {
                                 const std::string& expected_result,
                                 const std::string& expected_username);
 
+  void ExpectUnscannedFileEvents(
+      const std::string& expected_url,
+      const std::vector<const std::string>& expected_filenames,
+      const std::vector<const std::string>& expected_sha256s,
+      const std::string& expected_trigger,
+      const std::string& expected_reason,
+      const std::set<std::string>* expected_mimetypes,
+      int expected_content_size,
+      const std::string& expected_result,
+      const std::string& expected_username);
+
   void ExpectDangerousDownloadEvent(
       const std::string& expected_url,
       const std::string& expected_filename,
@@ -102,7 +118,8 @@ class EventReportValidator {
       const std::set<std::string>* expected_mimetypes,
       int expected_content_size,
       const std::string& expected_result,
-      const std::string& expected_username);
+      const std::string& expected_username,
+      const absl::optional<std::string>& expected_scan_id);
 
   void ExpectNoReport();
 
@@ -116,40 +133,59 @@ class EventReportValidator {
   void ValidateDlpRule(base::Value* value,
                        const enterprise_connectors::ContentAnalysisResponse::
                            Result::TriggeredRule& expected_rule);
+  void ValidateFilenameAndHash(base::Value* value);
   void ValidateField(base::Value* value,
                      const std::string& field_key,
-                     const base::Optional<std::string>& expected_value);
+                     const absl::optional<std::string>& expected_value);
   void ValidateField(base::Value* value,
                      const std::string& field_key,
-                     const base::Optional<int>& expected_value);
+                     const absl::optional<int>& expected_value);
   void ValidateField(base::Value* value,
                      const std::string& field_key,
-                     const base::Optional<bool>& expected_value);
+                     const absl::optional<bool>& expected_value);
 
   policy::MockCloudPolicyClient* client_;
 
   std::string event_key_;
   std::string url_;
-  std::string filename_;
-  std::string sha256_;
   std::string trigger_;
-  base::Optional<enterprise_connectors::ContentAnalysisResponse::Result>
-      dlp_verdict_ = base::nullopt;
-  base::Optional<std::string> threat_type_ = base::nullopt;
-  base::Optional<std::string> unscanned_reason_ = base::nullopt;
-  base::Optional<int> content_size_ = base::nullopt;
+  absl::optional<enterprise_connectors::ContentAnalysisResponse::Result>
+      dlp_verdict_ = absl::nullopt;
+  absl::optional<std::string> threat_type_ = absl::nullopt;
+  absl::optional<std::string> unscanned_reason_ = absl::nullopt;
+  absl::optional<int> content_size_ = absl::nullopt;
   const std::set<std::string>* mimetypes_ = nullptr;
-  base::Optional<std::string> result_ = base::nullopt;
+  absl::optional<std::string> result_ = absl::nullopt;
   std::string username_;
+  absl::optional<std::string> scan_id_ = absl::nullopt;
+
+  // When multiple files generate events, we don't necessarily know in which
+  // order they will be reported. As such, we use a map to ensure all of them
+  // are called as expected.
+  base::flat_map<std::string, std::string> filenames_and_hashes_;
 
   base::RepeatingClosure done_closure_;
 };
 
 // Helper functions that set Connector policies for testing.
-void SetAnalysisConnector(enterprise_connectors::AnalysisConnector connector,
-                          const std::string& pref_value);
-void SetOnSecurityEventReporting(bool enabled);
-void ClearAnalysisConnector(enterprise_connectors::AnalysisConnector connector);
+void SetAnalysisConnector(PrefService* prefs,
+                          enterprise_connectors::AnalysisConnector connector,
+                          const std::string& pref_value,
+                          bool machine_scope = true);
+void SetOnSecurityEventReporting(
+    PrefService* prefs,
+    bool enabled,
+    const std::set<std::string>& enabled_event_names = std::set<std::string>(),
+    bool machine_scope = true);
+void ClearAnalysisConnector(PrefService* prefs,
+                            enterprise_connectors::AnalysisConnector connector);
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+// Helper function to set the profile DM token. It installs a
+// MockCloudPolicyClient with |dm_token| into |profile|'s UserCloudPolicyManager
+// to simulate |profile|'s DM token.
+void SetProfileDMToken(Profile* profile, const std::string& dm_token);
+#endif
 
 }  // namespace safe_browsing
 

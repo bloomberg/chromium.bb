@@ -12,6 +12,7 @@
 #include "ipc/ipc_message.h"
 #include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/mojom/print.mojom.h"
 
 namespace printing {
 
@@ -52,10 +53,11 @@ void PrintingHandler::OnGetPrinterCapsAndDefaults(
   crash_keys::ScopedPrinterInfo crash_key(
       print_backend->GetPrinterDriverInfo(printer_name));
 
-  if (print_backend->GetPrinterCapsAndDefaults(printer_name, &printer_info)) {
+  if (print_backend->GetPrinterCapsAndDefaults(printer_name, &printer_info) ==
+      mojom::ResultCode::kSuccess) {
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded(
         printer_name, printer_info));
-  } else  {
+  } else {
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed(
         printer_name));
   }
@@ -71,8 +73,8 @@ void PrintingHandler::OnGetPrinterSemanticCapsAndDefaults(
   crash_keys::ScopedPrinterInfo crash_key(
       print_backend->GetPrinterDriverInfo(printer_name));
 
-  if (print_backend->GetPrinterSemanticCapsAndDefaults(printer_name,
-                                                       &printer_info)) {
+  if (print_backend->GetPrinterSemanticCapsAndDefaults(
+          printer_name, &printer_info) == mojom::ResultCode::kSuccess) {
     Send(new ChromeUtilityHostMsg_GetPrinterSemanticCapsAndDefaults_Succeeded(
         printer_name, printer_info));
   } else {

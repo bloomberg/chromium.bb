@@ -9,8 +9,8 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_instructions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/qpack/qpack_instructions.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -77,9 +77,6 @@ class QUIC_EXPORT_PRIVATE QpackInstructionEncoder {
 
   // Field currently being decoded.
   QpackInstructionFields::const_iterator field_;
-
-  // Latched value of gfe2_reloadable_flag_quic_use_fast_huffman_encoder.
-  const bool use_fast_huffman_encoder_;
 };
 
 }  // namespace quic

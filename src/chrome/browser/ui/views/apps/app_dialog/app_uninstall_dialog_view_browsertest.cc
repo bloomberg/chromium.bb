@@ -7,13 +7,12 @@
 #include <string>
 
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/arc/arc_util.h"
@@ -54,8 +54,8 @@ class AppUninstallDialogViewBrowserTest : public DialogBrowserTest {
     ASSERT_NE(nullptr, ActiveView());
     EXPECT_EQ(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
               ActiveView()->GetDialogButtons());
-    base::string16 title =
-        base::ASCIIToUTF16("Uninstall \"" + app_name_ + "\"?");
+    std::u16string title =
+        u"Uninstall \"" + base::ASCIIToUTF16(app_name_) + u"\"?";
     EXPECT_EQ(title, ActiveView()->GetWindowTitle());
 
     if (name == "accept") {
@@ -173,8 +173,8 @@ class WebAppsUninstallDialogViewBrowserTest
     web_app_info->start_url = GetAppURL();
     web_app_info->scope = GetAppURL().GetWithoutFilename();
 
-    app_id_ =
-        web_app::InstallWebApp(browser()->profile(), std::move(web_app_info));
+    app_id_ = web_app::test::InstallWebApp(browser()->profile(),
+                                           std::move(web_app_info));
     content::TestNavigationObserver navigation_observer(GetAppURL());
     navigation_observer.StartWatchingNewWebContents();
     web_app::LaunchWebAppBrowser(browser()->profile(), app_id_);

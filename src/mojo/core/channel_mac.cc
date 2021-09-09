@@ -23,8 +23,8 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_mach_vm.h"
 #include "base/message_loop/message_pump_for_io.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/current_thread.h"
+#include "base/trace_event/typed_macros.h"
 
 extern "C" {
 kern_return_t fileport_makeport(int fd, mach_port_t*);
@@ -287,7 +287,7 @@ class ChannelMac : public Channel,
     // Record the audit token of the sender. All messages received by the
     // channel must be from this same sender.
     auto* trailer = buffer.Object<mach_msg_audit_trailer_t>();
-    peer_audit_token_.reset(new audit_token_t);
+    peer_audit_token_ = std::make_unique<audit_token_t>();
     memcpy(peer_audit_token_.get(), &trailer->msgh_audit,
            sizeof(audit_token_t));
 
@@ -476,6 +476,8 @@ class ChannelMac : public Channel,
 
   // base::MessagePumpKqueue::MachPortWatcher:
   void OnMachMessageReceived(mach_port_t port) override {
+    TRACE_EVENT(TRACE_DISABLED_BY_DEFAULT("toplevel.ipc"), "Mojo read message");
+
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
     base::BufferIterator<const char> buffer(

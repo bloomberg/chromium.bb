@@ -59,7 +59,7 @@ class SingleClientVideoCaptureHost final
   void RequestRefreshFrame(const base::UnguessableToken& device_id) override;
   void ReleaseBuffer(const base::UnguessableToken& device_id,
                      int32_t buffer_id,
-                     const media::VideoFrameFeedback& feedback) override;
+                     const media::VideoCaptureFeedback& feedback) override;
   void GetDeviceSupportedFormats(
       const base::UnguessableToken& device_id,
       const base::UnguessableToken& session_id,
@@ -77,12 +77,8 @@ class SingleClientVideoCaptureHost final
   void OnNewBuffer(int buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnFrameReadyInBuffer(
-      int buffer_id,
-      int frame_feedback_id,
-      std::unique_ptr<
-          VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
-          buffer_read_permission,
-      media::mojom::VideoFrameInfoPtr frame_info) override;
+      media::ReadyFrameInBuffer frame,
+      std::vector<media::ReadyFrameInBuffer> scaled_frames) override;
   void OnBufferRetired(int buffer_id) override;
   void OnError(media::VideoCaptureError error) override;
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
@@ -99,7 +95,7 @@ class SingleClientVideoCaptureHost final
  private:
   // Reports the |consumer_resource_utilization| and removes the buffer context.
   void OnFinishedConsumingBuffer(int buffer_context_id,
-                                 const media::VideoFrameFeedback& feedback);
+                                 const media::VideoCaptureFeedback& feedback);
 
   const std::string device_id_;
   const blink::mojom::MediaStreamType type_;

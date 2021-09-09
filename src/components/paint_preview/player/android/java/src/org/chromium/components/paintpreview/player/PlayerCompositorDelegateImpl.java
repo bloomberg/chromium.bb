@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.SysUtils;
@@ -16,6 +17,7 @@ import org.chromium.base.UnguessableToken;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.paint_preview.common.proto.PaintPreview.PaintPreviewProto;
 import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
 import org.chromium.url.GURL;
 
@@ -27,21 +29,22 @@ import java.util.List;
  * Preview compositor.
  */
 @JNINamespace("paint_preview")
-class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
+public class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     private static final int LOW_MEMORY_THRESHOLD_KB = 2048;
 
     private CompositorListener mCompositorListener;
     private long mNativePlayerCompositorDelegate;
     private List<Runnable> mMemoryPressureListeners = new ArrayList<>();
 
-    PlayerCompositorDelegateImpl(NativePaintPreviewServiceProvider service, GURL url,
-            String directoryKey, @NonNull CompositorListener compositorListener,
+    public PlayerCompositorDelegateImpl(NativePaintPreviewServiceProvider service,
+            @Nullable PaintPreviewProto proto, GURL url, String directoryKey, boolean mainFrameMode,
+            @NonNull CompositorListener compositorListener,
             Callback<Integer> compositorErrorCallback) {
         mCompositorListener = compositorListener;
-        if (service != null && service.getNativeService() != 0) {
+        if (service != null && service.getNativeBaseService() != 0) {
             mNativePlayerCompositorDelegate = PlayerCompositorDelegateImplJni.get().initialize(this,
-                    service.getNativeService(), url.getSpec(), directoryKey,
-                    compositorErrorCallback,
+                    service.getNativeBaseService(), (proto != null) ? proto.toByteArray() : null,
+                    url.getSpec(), directoryKey, mainFrameMode, compositorErrorCallback,
                     SysUtils.amountOfPhysicalMemoryKB() < LOW_MEMORY_THRESHOLD_KB);
         }
         // TODO(crbug.com/1021590): Handle initialization errors when
@@ -51,9 +54,9 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     @CalledByNative
     void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
             int[] frameContentSize, int[] scrollOffsets, int[] subFramesCount,
-            UnguessableToken[] subFrameGuids, int[] subFrameClipRects) {
+            UnguessableToken[] subFrameGuids, int[] subFrameClipRects, long nativeAxTree) {
         mCompositorListener.onCompositorReady(rootFrameGuid, frameGuids, frameContentSize,
-                scrollOffsets, subFramesCount, subFrameGuids, subFrameClipRects);
+                scrollOffsets, subFramesCount, subFrameGuids, subFrameClipRects, nativeAxTree);
     }
 
     @CalledByNative
@@ -78,6 +81,12 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
         return PlayerCompositorDelegateImplJni.get().requestBitmap(mNativePlayerCompositorDelegate,
                 frameGuid, bitmapCallback, errorCallback, scaleFactor, clipRect.left, clipRect.top,
                 clipRect.width(), clipRect.height());
+    }
+
+    @Override
+    public int requestBitmap(Rect clipRect, float scaleFactor, Callback<Bitmap> bitmapCallback,
+            Runnable errorCallback) {
+        return requestBitmap(null, clipRect, scaleFactor, bitmapCallback, errorCallback);
     }
 
     @Override
@@ -136,8 +145,8 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     @NativeMethods
     interface Natives {
         long initialize(PlayerCompositorDelegateImpl caller, long nativePaintPreviewBaseService,
-                String urlSpec, String directoryKey, Callback<Integer> compositorErrorCallback,
-                boolean isLowMemory);
+                byte[] proto, String urlSpec, String directoryKey, boolean mainFrameMode,
+                Callback<Integer> compositorErrorCallback, boolean isLowMemory);
         void destroy(long nativePlayerCompositorDelegateAndroid);
         int requestBitmap(long nativePlayerCompositorDelegateAndroid, UnguessableToken frameGuid,
                 Callback<Bitmap> bitmapCallback, Runnable errorCallback, float scaleFactor,

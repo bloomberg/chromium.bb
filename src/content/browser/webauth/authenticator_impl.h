@@ -11,9 +11,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/browser/webauth/authenticator_common.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/frame_service_base.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -38,29 +37,25 @@ class Origin;
 
 namespace content {
 
+class AuthenticatorCommon;
 class RenderFrameHost;
 
 // Implementation of the public Authenticator interface.
-class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
-                                         public WebContentsObserver {
+class CONTENT_EXPORT AuthenticatorImpl
+    : public FrameServiceBase<blink::mojom::Authenticator> {
  public:
-  explicit AuthenticatorImpl(RenderFrameHost* render_frame_host);
-
-  // Constructs an AuthenticatorImpl with an injected AuthenticatorCommon for
-  // testing.
-  AuthenticatorImpl(RenderFrameHost* render_frame_host,
-                    std::unique_ptr<AuthenticatorCommon> authenticator_common);
-  ~AuthenticatorImpl() override;
-
-  // Creates a binding between this implementation and |request|.
-  //
-  // Note that one AuthenticatorImpl instance can be bound to exactly one
-  // interface connection at a time, and disconnected when the frame navigates
-  // to a new active document.
-  void Bind(mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
+  static void Create(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 
  private:
   friend class AuthenticatorImplTest;
+  friend class AuthenticatorImplRequestDelegateTest;
+
+  AuthenticatorImpl(RenderFrameHost* render_frame_host,
+                    mojo::PendingReceiver<blink::mojom::Authenticator> receiver,
+                    std::unique_ptr<AuthenticatorCommon> authenticator_common);
+  ~AuthenticatorImpl() override;
 
   AuthenticatorCommon* get_authenticator_common_for_testing() {
     return authenticator_common_.get();
@@ -76,10 +71,6 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
       IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) override;
   void Cancel() override;
 
-  // WebContentsObserver:
-  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
-
-  RenderFrameHost* const render_frame_host_;
   std::unique_ptr<AuthenticatorCommon> authenticator_common_;
 
   // Owns pipes to this Authenticator from |render_frame_host_|.

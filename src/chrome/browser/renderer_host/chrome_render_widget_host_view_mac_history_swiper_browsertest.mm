@@ -335,7 +335,7 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
   // Replays the events from the queue.
   void RunQueuedEvents() {
     while ([event_queue_ count] > 0) {
-      QueuedEvent* queued_event = [event_queue_ objectAtIndex:0];
+      QueuedEvent* queued_event = [event_queue_ firstObject];
       NSEvent* event = queued_event.event;
       NSView* view = GetWebContents()
                          ->GetRenderViewHost()
@@ -744,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
 // Initial movements are vertical, and scroll the iframe. Subsequent movements
 // are horizontal, and should not trigger history swiping.
 IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
-                       TestIframeHistorySwiping) {
+                       DISABLED_TestIframeHistorySwiping) {
   if (!IsHistorySwipingSupported())
     return;
 

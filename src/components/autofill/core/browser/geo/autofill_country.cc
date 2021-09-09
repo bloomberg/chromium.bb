@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/browser/geo/country_data.h"
 #include "components/autofill/core/browser/geo/country_names.h"
@@ -75,9 +75,9 @@ const std::string AutofillCountry::CountryCodeForLocale(
 }
 
 AutofillCountry::AutofillCountry(const std::string& country_code,
-                                 const base::string16& name,
-                                 const base::string16& postal_code_label,
-                                 const base::string16& state_label)
+                                 const std::u16string& name,
+                                 const std::u16string& postal_code_label,
+                                 const std::u16string& state_label)
     : country_code_(country_code), name_(name) {}
 
 // Prints a formatted log of a |AutofillCountry| to a |LogBuffer|.

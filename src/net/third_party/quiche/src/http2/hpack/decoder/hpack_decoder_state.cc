@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_state.h"
+#include "http2/hpack/decoder/hpack_decoder_state.h"
 
-#include "net/third_party/quiche/src/http2/hpack/hpack_string.h"
-#include "net/third_party/quiche/src/http2/http2_constants.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_macros.h"
+#include <utility>
+
+#include "http2/http2_constants.h"
+#include "http2/platform/api/http2_logging.h"
+#include "http2/platform/api/http2_macros.h"
 
 namespace http2 {
 namespace {
 
-HpackString ExtractHpackString(HpackDecoderStringBuffer* string_buffer) {
+std::string ExtractString(HpackDecoderStringBuffer* string_buffer) {
   if (string_buffer->IsBuffered()) {
-    return HpackString(string_buffer->ReleaseString());
+    return string_buffer->ReleaseString();
   } else {
-    auto result = HpackString(string_buffer->str());
+    auto result = std::string(string_buffer->str());
     string_buffer->Reset();
     return result;
   }
@@ -34,16 +35,11 @@ HpackDecoderState::HpackDecoderState(HpackDecoderListener* listener)
       error_(HpackDecodingError::kOk) {}
 HpackDecoderState::~HpackDecoderState() = default;
 
-void HpackDecoderState::set_tables_debug_listener(
-    HpackDecoderTablesDebugListener* debug_listener) {
-  decoder_tables_.set_debug_listener(debug_listener);
-}
-
 void HpackDecoderState::ApplyHeaderTableSizeSetting(
     uint32_t header_table_size) {
   HTTP2_DVLOG(2) << "HpackDecoderState::ApplyHeaderTableSizeSetting("
                  << header_table_size << ")";
-  DCHECK_LE(lowest_header_table_size_, final_header_table_size_);
+  QUICHE_DCHECK_LE(lowest_header_table_size_, final_header_table_size_);
   if (header_table_size < lowest_header_table_size_) {
     lowest_header_table_size_ = header_table_size;
   }
@@ -59,9 +55,9 @@ void HpackDecoderState::OnHeaderBlockStart() {
   // This instance can't be reused after an error has been detected, as we must
   // assume that the encoder and decoder compression states are no longer
   // synchronized.
-  DCHECK(error_ == HpackDecodingError::kOk)
+  QUICHE_DCHECK(error_ == HpackDecodingError::kOk)
       << HpackDecodingErrorToString(error_);
-  DCHECK_LE(lowest_header_table_size_, final_header_table_size_);
+  QUICHE_DCHECK_LE(lowest_header_table_size_, final_header_table_size_);
   allow_dynamic_table_size_update_ = true;
   saw_dynamic_table_size_update_ = false;
   // If the peer has acknowledged a HEADER_TABLE_SIZE smaller than that which
@@ -114,10 +110,10 @@ void HpackDecoderState::OnNameIndexAndLiteralValue(
   allow_dynamic_table_size_update_ = false;
   const HpackStringPair* entry = decoder_tables_.Lookup(name_index);
   if (entry != nullptr) {
-    HpackString value(ExtractHpackString(value_buffer));
+    std::string value(ExtractString(value_buffer));
     listener_->OnHeader(entry->name, value);
     if (entry_type == HpackEntryType::kIndexedLiteralHeader) {
-      decoder_tables_.Insert(entry->name, value);
+      decoder_tables_.Insert(entry->name, std::move(value));
     }
   } else {
     ReportError(HpackDecodingError::kInvalidNameIndex, "");
@@ -138,11 +134,11 @@ void HpackDecoderState::OnLiteralNameAndValue(
     return;
   }
   allow_dynamic_table_size_update_ = false;
-  HpackString name(ExtractHpackString(name_buffer));
-  HpackString value(ExtractHpackString(value_buffer));
+  std::string name(ExtractString(name_buffer));
+  std::string value(ExtractString(value_buffer));
   listener_->OnHeader(name, value);
   if (entry_type == HpackEntryType::kIndexedLiteralHeader) {
-    decoder_tables_.Insert(name, value);
+    decoder_tables_.Insert(std::move(name), std::move(value));
   }
 }
 
@@ -155,7 +151,7 @@ void HpackDecoderState::OnDynamicTableSizeUpdate(size_t size_limit) {
   if (error_ != HpackDecodingError::kOk) {
     return;
   }
-  DCHECK_LE(lowest_header_table_size_, final_header_table_size_);
+  QUICHE_DCHECK_LE(lowest_header_table_size_, final_header_table_size_);
   if (!allow_dynamic_table_size_update_) {
     // At most two dynamic table size updates allowed at the start, and not
     // after a header.

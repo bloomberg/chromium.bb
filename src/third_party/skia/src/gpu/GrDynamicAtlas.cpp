@@ -13,7 +13,7 @@
 #include "src/gpu/GrRectanizerPow2.h"
 #include "src/gpu/GrRectanizerSkyline.h"
 #include "src/gpu/GrRenderTarget.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 
 // Each Node covers a sub-rectangle of the final atlas. When a GrDynamicAtlas runs out of room, we
 // create a new Node the same size as all combined nodes in the atlas as-is, and then place the new
@@ -56,7 +56,7 @@ sk_sp<GrTextureProxy> GrDynamicAtlas::MakeLazyAtlasProxy(
     GrBackendFormat format = caps.getDefaultBackendFormat(colorType, GrRenderable::kYes);
 
     int sampleCount = 1;
-    if (!caps.mixedSamplesSupport() && InternalMultisample::kYes == internalMultisample) {
+    if (InternalMultisample::kYes == internalMultisample) {
         sampleCount = caps.internalMultisampleCount(format);
     }
 
@@ -166,7 +166,7 @@ bool GrDynamicAtlas::internalPlaceRect(int w, int h, SkIPoint16* loc) {
     return true;
 }
 
-std::unique_ptr<GrRenderTargetContext> GrDynamicAtlas::instantiate(
+std::unique_ptr<GrSurfaceDrawContext> GrDynamicAtlas::instantiate(
         GrOnFlushResourceProvider* onFlushRP, sk_sp<GrTexture> backingTexture) {
     SkASSERT(!this->isInstantiated());  // This method should only be called once.
     // Caller should have cropped any paths to the destination render target instead of asking for
@@ -190,7 +190,7 @@ std::unique_ptr<GrRenderTargetContext> GrDynamicAtlas::instantiate(
         fBackingTexture = std::move(backingTexture);
     }
     auto rtc = onFlushRP->makeRenderTargetContext(fTextureProxy, kTextureOrigin, fColorType,
-                                                  nullptr, nullptr);
+                                                  nullptr, SkSurfaceProps());
     if (!rtc) {
         onFlushRP->printWarningMessage(SkStringPrintf(
                 "WARNING: failed to allocate a %ix%i atlas. Some masks will not be drawn.\n",
@@ -199,6 +199,6 @@ std::unique_ptr<GrRenderTargetContext> GrDynamicAtlas::instantiate(
     }
 
     SkIRect clearRect = SkIRect::MakeSize(fDrawBounds);
-    rtc->priv().clearAtLeast(clearRect, SK_PMColor4fTRANSPARENT);
+    rtc->clearAtLeast(clearRect, SK_PMColor4fTRANSPARENT);
     return rtc;
 }

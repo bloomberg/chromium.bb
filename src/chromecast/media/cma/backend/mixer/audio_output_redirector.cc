@@ -51,6 +51,10 @@ constexpr int kAudioMessageHeaderSize =
   return DecoderConfigAdapter::ToMediaChannelLayout(layout);
 }
 
+enum MessageTypes : int {
+  kStreamConfig = 1,
+};
+
 }  // namespace
 
 class AudioOutputRedirector::RedirectionConnection
@@ -58,7 +62,7 @@ class AudioOutputRedirector::RedirectionConnection
  public:
   explicit RedirectionConnection(
       std::unique_ptr<mixer_service::MixerSocket> socket,
-      scoped_refptr<base::SequencedTaskRunner> mixer_task_runner,
+      scoped_refptr<base::TaskRunner> mixer_task_runner,
       base::WeakPtr<AudioOutputRedirector> redirector)
       : socket_(std::move(socket)),
         mixer_task_runner_(std::move(mixer_task_runner)),
@@ -82,7 +86,7 @@ class AudioOutputRedirector::RedirectionConnection
     config->set_sample_rate(sample_rate);
     config->set_num_channels(num_channels);
     config->set_data_size(data_size);
-    socket_->SendProto(message);
+    socket_->SendProto(kStreamConfig, message);
 
     sent_stream_config_ = true;
   }
@@ -131,7 +135,7 @@ class AudioOutputRedirector::RedirectionConnection
   }
 
   const std::unique_ptr<mixer_service::MixerSocket> socket_;
-  const scoped_refptr<base::SequencedTaskRunner> mixer_task_runner_;
+  const scoped_refptr<base::TaskRunner> mixer_task_runner_;
   const base::WeakPtr<AudioOutputRedirector> redirector_;
 
   bool error_ = false;

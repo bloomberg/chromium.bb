@@ -70,9 +70,9 @@ void WebMainLoop::EarlyInitialization() {
   }
 }
 
-void WebMainLoop::MainMessageLoopStart() {
+void WebMainLoop::CreateMainMessageLoop() {
   if (parts_) {
-    parts_->PreMainMessageLoopStart();
+    parts_->PreCreateMainMessageLoop();
   }
 
   ios_global_state::BuildSingleThreadTaskExecutor();
@@ -87,7 +87,7 @@ void WebMainLoop::MainMessageLoopStart() {
   ios_global_state::CreateNetworkChangeNotifier();
 
   if (parts_) {
-    parts_->PostMainMessageLoopStart();
+    parts_->PostCreateMainMessageLoop();
   }
 }
 
@@ -124,7 +124,7 @@ int WebMainLoop::CreateThreads() {
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_pump_type = base::MessagePumpType::IO;
   io_thread_ = std::make_unique<WebSubThread>(WebThread::IO);
-  if (!io_thread_->StartWithOptions(io_message_loop_options))
+  if (!io_thread_->StartWithOptions(std::move(io_message_loop_options)))
     LOG(FATAL) << "Failed to start WebThread::IO";
   io_thread_->RegisterAsWebThread();
 

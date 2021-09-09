@@ -83,15 +83,17 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
         ConvertToBaseRepeatingCallback(
             CrossThreadBindRepeating(&FakeMediaStreamVideoSink::OnVideoFrame,
                                      WTF::CrossThreadUnretained(this))),
-        true);
+        MediaStreamVideoSink::IsSecure::kYes,
+        MediaStreamVideoSink::UsesAlpha::kDefault);
   }
 
   void DisconnectFromTrack() { MediaStreamVideoSink::DisconnectFromTrack(); }
 
   void OnVideoFrame(scoped_refptr<media::VideoFrame> frame,
+                    std::vector<scoped_refptr<media::VideoFrame>> scaled_frames,
                     base::TimeTicks capture_time) {
     *capture_time_ = capture_time;
-    *metadata_ = *frame->metadata();
+    *metadata_ = frame->metadata();
     std::move(got_frame_cb_).Run();
   }
 
@@ -137,15 +139,15 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
   WebMediaStreamTrack StartSource(
       const VideoTrackAdapterSettings& adapter_settings,
-      const base::Optional<bool>& noise_reduction,
+      const absl::optional<bool>& noise_reduction,
       bool is_screencast,
       double min_frame_rate) {
     bool enabled = true;
     // CreateVideoTrack will trigger OnConstraintsApplied.
     return MediaStreamVideoTrack::CreateVideoTrack(
         video_capturer_source_, adapter_settings, noise_reduction,
-        is_screencast, min_frame_rate, base::nullopt, base::nullopt,
-        base::nullopt, false,
+        is_screencast, min_frame_rate, absl::nullopt, absl::nullopt,
+        absl::nullopt, false,
         WTF::Bind(&MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
                   base::Unretained(this)),
         enabled);
@@ -197,7 +199,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
   InSequence s;
   EXPECT_CALL(mock_delegate(), MockStartCapture(_, _, _));
   WebMediaStreamTrack track =
-      StartSource(VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
+      StartSource(VideoTrackAdapterSettings(), absl::nullopt, false, 0.0);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(MediaStreamSource::kReadyStateLive,
             stream_source_->GetReadyState());
@@ -234,7 +236,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   EXPECT_CALL(mock_delegate(), RequestRefreshFrame());
   EXPECT_CALL(mock_delegate(), MockStopCapture());
   WebMediaStreamTrack track =
-      StartSource(VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
+      StartSource(VideoTrackAdapterSettings(), absl::nullopt, false, 0.0);
   running_cb.Run(true);
 
   base::RunLoop run_loop;
@@ -248,10 +250,12 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   fake_sink.ConnectToTrack(track);
   const scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2));
-  frame->metadata()->frame_rate = 30.0;
+  frame->metadata().frame_rate = 30.0;
   PostCrossThreadTask(
       *Platform::Current()->GetIOTaskRunner(), FROM_HERE,
-      CrossThreadBindOnce(deliver_frame_cb, frame, reference_capture_time));
+      CrossThreadBindOnce(deliver_frame_cb, frame,
+                          std::vector<scoped_refptr<media::VideoFrame>>(),
+                          reference_capture_time));
   run_loop.Run();
   fake_sink.DisconnectFromTrack();
   EXPECT_EQ(reference_capture_time, capture_time);
@@ -262,7 +266,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Restart) {
   InSequence s;
   EXPECT_CALL(mock_delegate(), MockStartCapture(_, _, _));
   WebMediaStreamTrack track =
-      StartSource(VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
+      StartSource(VideoTrackAdapterSettings(), absl::nullopt, false, 0.0);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(MediaStreamSource::kReadyStateLive,
@@ -343,7 +347,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartStopAndNotify) {
   InSequence s;
   EXPECT_CALL(mock_delegate(), MockStartCapture(_, _, _));
   WebMediaStreamTrack web_track =
-      StartSource(VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
+      StartSource(VideoTrackAdapterSettings(), absl::nullopt, false, 0.0);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(MediaStreamSource::kReadyStateLive,
             stream_source_->GetReadyState());
@@ -374,7 +378,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, ChangeSource) {
   InSequence s;
   EXPECT_CALL(mock_delegate(), MockStartCapture(_, _, _));
   WebMediaStreamTrack track =
-      StartSource(VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
+      StartSource(VideoTrackAdapterSettings(), absl::nullopt, false, 0.0);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(MediaStreamSource::kReadyStateLive,
             stream_source_->GetReadyState());

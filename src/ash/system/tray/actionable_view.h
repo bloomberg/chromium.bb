@@ -48,10 +48,6 @@ class ASH_EXPORT ActionableView : public views::Button {
   const char* GetClassName() const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
 
  private:
   void ButtonPressed(const ui::Event& event);
@@ -59,7 +55,7 @@ class ASH_EXPORT ActionableView : public views::Button {
   // Used by ButtonPressed() to determine whether |this| has been destroyed as a
   // result of performing the associated action. This is necessary because in
   // the not-destroyed case ButtonPressed() uses member variables.
-  bool* destroyed_;
+  bool* destroyed_ = nullptr;
 
   // Defines the flavor of ink drop ripple/highlight that should be constructed.
   const TrayPopupInkDropStyle ink_drop_style_;

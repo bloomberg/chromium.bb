@@ -4,10 +4,13 @@
 
 #include "content/browser/xr/service/xr_device_service.h"
 
+#include "base/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "content/browser/service_sandbox_type.h"
+#include "content/public/browser/gpu_client.h"
 #include "content/public/browser/service_process_host.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
 
@@ -17,6 +20,26 @@ base::RepeatingClosure& GetStartupCallback() {
   static base::NoDestructor<base::RepeatingClosure> callback;
   return *callback;
 }
+
+// XRDeviceServiceHostImpl is the browser process implementation of
+// XRDeviceServiceHost
+class XRDeviceServiceHostImpl : public device::mojom::XRDeviceServiceHost {
+ public:
+  XRDeviceServiceHostImpl()
+      : gpu_client_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {}
+
+  // BindGpu is called from the XR process to establish a connection to the GPU
+  // process.
+  void BindGpu(::mojo::PendingReceiver<::viz::mojom::Gpu> receiver) override {
+    gpu_client_ =
+        content::CreateGpuClient(std::move(receiver), base::DoNothing());
+  }
+
+ private:
+  // The GpuClient associated with the XRDeviceService's GPU connection, if
+  // any.
+  std::unique_ptr<viz::GpuClient, base::OnTaskRunnerDeleter> gpu_client_;
+};
 
 }  // namespace
 
@@ -44,6 +67,16 @@ const mojo::Remote<device::mojom::XRDeviceService>& GetXRDeviceService() {
   }
 
   return *remote;
+}
+
+mojo::PendingRemote<device::mojom::XRDeviceServiceHost>
+CreateXRDeviceServiceHost() {
+  mojo::PendingRemote<device::mojom::XRDeviceServiceHost> device_service_host;
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<XRDeviceServiceHostImpl>(),
+      device_service_host.InitWithNewPipeAndPassReceiver());
+
+  return device_service_host;
 }
 
 void SetXRDeviceServiceStartupCallbackForTestingInternal(

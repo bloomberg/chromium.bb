@@ -7,8 +7,9 @@ goog.provide('__crWeb.mainFrameWebBundle');
 
 // Requires __crWeb.form provided by __crWeb.allFramesWebBundle.
 
-goog.require('__crWeb.error');
-goog.require('__crWeb.mainFrameContextMenu');
+// DEPRECATED
+// Do NOT add new features here, but rather add them using an instance of
+// JavaScriptFeature. Please see the documentation at
+// //ios/web/public/js_messaging/README.md
 goog.require('__crWeb.navigation');
-goog.require('__crWeb.scrollWorkaround');
 goog.require('__crWeb.textFragments');

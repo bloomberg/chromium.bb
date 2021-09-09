@@ -173,8 +173,13 @@ class PerformanceManagerImpl : public PerformanceManager {
 
   static void SetOnDestroyedCallbackImpl(base::OnceClosure callback);
 
-  GraphImpl graph_;
-  base::OnceClosure on_destroyed_callback_;
+  GraphImpl graph_ GUARDED_BY_CONTEXT(sequence_checker_);
+  base::OnceClosure on_destroyed_callback_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // If the PM is running on the UI sequence, this is its task runner.
+  // Otherwise it uses a thread pool task runner defined in the .cc file.
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

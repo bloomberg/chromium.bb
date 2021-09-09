@@ -6,6 +6,7 @@
 
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/input_method/ui/border_factory.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -17,7 +18,7 @@ namespace ui {
 namespace ime {
 
 namespace {
-const char kUndoButtonText[] = "Undo";
+const char16_t kUndoButtonText[] = u"Undo";
 // TODO(crbug/1099044): Update and use cros_colors.json5
 constexpr SkColor kButtonHighlightColor =
     SkColorSetA(SK_ColorBLACK, 0x0F);  // 6% Black.
@@ -39,7 +40,7 @@ UndoWindow::UndoWindow(gfx::NativeView parent, AssistiveDelegate* delegate)
   undo_button_ = AddChildView(std::make_unique<views::LabelButton>(
       base::BindRepeating(&UndoWindow::UndoButtonPressed,
                           base::Unretained(this)),
-      base::UTF8ToUTF16(kUndoButtonText)));
+      kUndoButtonText));
   undo_button_->SetImageLabelSpacing(
       views::LayoutProvider::Get()->GetDistanceMetric(
           views::DistanceMetric::DISTANCE_RELATED_BUTTON_HORIZONTAL));
@@ -100,16 +101,15 @@ views::Button* UndoWindow::GetUndoButtonForTesting() {
   return undo_button_;
 }
 
-const char* UndoWindow::GetClassName() const {
-  return "UndoWindow";
-}
-
 void UndoWindow::UndoButtonPressed() {
   const AssistiveWindowButton button = {
       .id = ButtonId::kUndo, .window_type = AssistiveWindowType::kUndoWindow};
   SetButtonHighlighted(button, true);
   delegate_->AssistiveWindowButtonClicked(button);
 }
+
+BEGIN_METADATA(UndoWindow, views::BubbleDialogDelegateView)
+END_METADATA
 
 }  // namespace ime
 }  // namespace ui

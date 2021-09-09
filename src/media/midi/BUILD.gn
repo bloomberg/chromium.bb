@@ -48,10 +48,7 @@ usb_midi_sources = [
 # Android specific Java source files that are used to generate jni header files.
 if (is_android) {
   android_library("midi_java") {
-    deps = [
-      "//base:base_java",
-      "//base:jni_java",
-    ]
+    deps = [ "//base:base_java" ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
     sources = [
@@ -220,7 +217,7 @@ test("midi_unittests") {
 
   # On LaCrOS, tests use ash-chrome as a window manager, thus the dependency.
   # On other platforms, this target should not require the Chrome to run.
-  if (!is_lacros) {
+  if (!is_chromeos_lacros) {
     assert_no_deps = [ "//chrome" ]
   }
 }

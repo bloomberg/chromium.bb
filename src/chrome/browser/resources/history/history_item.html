@@ -95,6 +95,17 @@
         --cr-icon-button-size: 32px;
       }
 
+      #debug-container {
+        color: var(--history-item-time-color);
+        display: flex;
+        padding-inline-start: 22px;
+        pointer-events: auto;
+      }
+
+      .debug-info:not(:first-child) {
+        margin-inline-start: 15px;
+      }
+
       #time-gap-separator {
         border-inline-start: 1px solid #888;
         height: 15px;
@@ -166,8 +177,9 @@
               on-mousedown="onCheckboxClick_" on-keydown="onCheckboxClick_"
               on-change="onCheckboxChange_" class="no-label"
               hidden="[[selectionNotAllowed_]]"
-              disabled="[[selectionNotAllowed_]]"
-              aria-label$="[[getEntrySummary_(item)]]"></cr-checkbox>
+              disabled="[[selectionNotAllowed_]]">
+            [[getEntrySummary_(item)]]
+          </cr-checkbox>
         </div>
         <!-- ARIA hidden to avoid redundancy since timestamp is already part of
              |getEntrySummary_|. -->
@@ -178,7 +190,8 @@
           <a href="[[item.url]]" id="link" class="website-link"
               focus-row-control focus-type="link"
               title="[[item.title]]" on-click="onLinkClick_"
-              on-contextmenu="onLinkRightClick_">
+              on-contextmenu="onLinkRightClick_"
+              aria-describedby$="[[ariaDescribedByForHeading_]]">
             <div class="website-icon" id="icon"></div>
             <history-searched-label class="website-title" title="[[item.title]]"
                 search-term="[[searchTerm]]"></history-searched-label>
@@ -191,7 +204,8 @@
               <cr-icon-button id="bookmark-star" iron-icon="cr:star"
                   focus-row-control focus-type="star"
                   title="$i18n{removeBookmark}"
-                  on-click="onRemoveBookmarkTap_">
+                  on-click="onRemoveBookmarkTap_"
+                  aria-describedby$="[[ariaDescribedByForHeading_]]">
               </cr-icon-button>
             </div>
           </template>
@@ -200,8 +214,30 @@
           <cr-icon-button id="menu-button" iron-icon="cr:more-vert"
               focus-row-control focus-type="cr-menu-button"
               title="$i18n{actionMenuDescription}" on-click="onMenuButtonTap_"
-              aria-haspopup="menu"></cr-icon-button>
+              aria-haspopup="menu"
+              aria-describedby$="[[ariaDescribedByForHeading_]]">
+          </cr-icon-button>
         </div>
       </div>
+      <template is="dom-if" if="[[item.debug]]">
+        <div id="debug-container" aria-hidden="true">
+          <div class="debug-info">DEBUG</div>
+          <div class="debug-info"
+               hidden="[[!item.debug.isUrlInLocalDatabase]]">
+            in local data
+          </div>
+          <div class="debug-info" hidden="[[!item.isUrlInRemoteUserData]]">
+            in remote data
+          </div>
+          <div class="debug-info"
+               hidden="[[!item.debug.isUrlInLocalDatabase]]">
+            typed count: [[item.debug.typedCount]]
+          </div>
+          <div class="debug-info"
+               hidden="[[!item.debug.isUrlInLocalDatabase]]">
+            visit count: [[item.debug.visitCount]]
+          </div>
+        </div>
+      </template>
       <div id="time-gap-separator" hidden="[[!hasTimeGap]]"></div>
     </div>

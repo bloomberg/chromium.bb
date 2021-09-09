@@ -29,39 +29,36 @@ namespace gpu {
 
 std::unique_ptr<VulkanImplementation> CreateVulkanImplementation(
     bool use_swiftshader,
-    bool allow_protected_memory,
-    bool enforce_protected_memory) {
+    bool allow_protected_memory) {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    return ui::OzonePlatform::GetInstance()
+        ->GetSurfaceFactoryOzone()
+        ->CreateVulkanImplementation(use_swiftshader, allow_protected_memory);
+  }
+#endif
+
 #if !defined(USE_X11) && !defined(OS_WIN)
   // TODO(samans): Support Swiftshader on more platforms.
   // https://crbug.com/963988
   DCHECK(!use_swiftshader)
       << "Vulkan Swiftshader is not supported on this platform.";
 #endif  // USE_X11
-#if !defined(OS_FUCHSIA)
-  DCHECK(!allow_protected_memory && !enforce_protected_memory)
+
+  // Protected memory is supported only on Fuchsia, which uses Ozone, i.e.
+  // VulkanImplementation is initialized above.
+  DCHECK(!allow_protected_memory)
       << "Protected memory is not supported on this platform.";
-#endif  // !defined(OS_FUCHSIA)
+
 #if defined(USE_X11)
-#if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    return ui::OzonePlatform::GetInstance()
-        ->GetSurfaceFactoryOzone()
-        ->CreateVulkanImplementation(allow_protected_memory,
-                                     enforce_protected_memory);
-  }
-#endif
   return std::make_unique<VulkanImplementationX11>(use_swiftshader);
 #elif defined(OS_ANDROID)
   return std::make_unique<VulkanImplementationAndroid>();
-#elif defined(USE_OZONE)
-  return ui::OzonePlatform::GetInstance()
-      ->GetSurfaceFactoryOzone()
-      ->CreateVulkanImplementation(allow_protected_memory,
-                                   enforce_protected_memory);
 #elif defined(OS_WIN)
   return std::make_unique<VulkanImplementationWin32>(use_swiftshader);
 #else
-#error Unsupported Vulkan Platform.
+  NOTREACHED();
+  return {};
 #endif
 }
 

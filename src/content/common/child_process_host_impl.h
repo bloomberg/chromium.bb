@@ -14,9 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/optional.h"
 #include "base/process/process.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/child_process.mojom.h"
 #include "content/public/common/child_process_host.h"
@@ -24,6 +22,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace IPC {
 class MessageFilter;
@@ -70,14 +69,14 @@ class CONTENT_EXPORT ChildProcessHostImpl
   // ChildProcessHost implementation
   bool Send(IPC::Message* message) override;
   void ForceShutdown() override;
-  base::Optional<mojo::OutgoingInvitation>& GetMojoInvitation() override;
+  absl::optional<mojo::OutgoingInvitation>& GetMojoInvitation() override;
   void CreateChannelMojo() override;
   bool IsChannelOpening() override;
   void AddFilter(IPC::MessageFilter* filter) override;
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
-  void RunService(
+  void RunServiceDeprecated(
       const std::string& service_name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
+      mojo::ScopedMessagePipeHandle service_pipe) override;
 
   base::Process& peer_process() { return peer_process_; }
   mojom::ChildProcess* child_process() { return child_process_.get(); }
@@ -106,7 +105,7 @@ class CONTENT_EXPORT ChildProcessHostImpl
 
   // The outgoing Mojo invitation which must be consumed to bootstrap Mojo IPC
   // to the child process.
-  base::Optional<mojo::OutgoingInvitation> mojo_invitation_{base::in_place};
+  absl::optional<mojo::OutgoingInvitation> mojo_invitation_{absl::in_place};
 
   const IpcMode ipc_mode_;
   ChildProcessHostDelegate* delegate_;

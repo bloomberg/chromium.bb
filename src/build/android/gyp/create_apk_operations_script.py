@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -87,7 +87,7 @@ def main(args):
         'TARGET_CPU': repr(args.target_cpu),
     }
     script.write(SCRIPT_TEMPLATE.substitute(script_dict))
-  os.chmod(args.script_output_path, 0750)
+  os.chmod(args.script_output_path, 0o750)
   return 0
 
 

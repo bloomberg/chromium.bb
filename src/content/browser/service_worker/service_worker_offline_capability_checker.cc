@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
@@ -19,8 +21,9 @@
 namespace content {
 
 ServiceWorkerOfflineCapabilityChecker::ServiceWorkerOfflineCapabilityChecker(
-    const GURL& url)
-    : url_(url) {
+    const GURL& url,
+    const storage::StorageKey& key)
+    : url_(url), key_(key) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 }
 
@@ -32,11 +35,12 @@ void ServiceWorkerOfflineCapabilityChecker::Start(
     ServiceWorkerContext::CheckOfflineCapabilityCallback callback) {
   callback_ = std::move(callback);
   registry->FindRegistrationForClientUrl(
-      url_, base::BindOnce(
-                &ServiceWorkerOfflineCapabilityChecker::DidFindRegistration,
-                // We can use base::Unretained(this) because |this| is expected
-                // to be alive until the |callback_| is called.
-                base::Unretained(this)));
+      url_, key_,
+      base::BindOnce(
+          &ServiceWorkerOfflineCapabilityChecker::DidFindRegistration,
+          // We can use base::Unretained(this) because |this| is expected
+          // to be alive until the |callback_| is called.
+          base::Unretained(this)));
 }
 
 void ServiceWorkerOfflineCapabilityChecker::DidFindRegistration(
@@ -131,12 +135,14 @@ void ServiceWorkerOfflineCapabilityChecker::OnFetchResult(
     blink::mojom::ServiceWorkerFetchEventTimingPtr /* timing */,
     scoped_refptr<ServiceWorkerVersion> version) {
   // The sites are considered as "offline capable" when the response finished
-  // successfully and returns 200 or the timeout happens.
+  // successfully and returns successful responses (200–299) or redirects
+  // (300–399). Also considered as "offline capable" when the timeout happens.
   if ((status == blink::ServiceWorkerStatusCode::kOk &&
        result == ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse &&
-       // TODO(hayato): Investigate whether any 2xx should be accepted or not.
-       response->status_code == 200) ||
+       (200 <= response->status_code && response->status_code <= 399)) ||
       status == blink::ServiceWorkerStatusCode::kErrorTimeout) {
+    ServiceWorkerMetrics::RecordOfflineCapableReason(status,
+                                                     response->status_code);
     std::move(callback_).Run(OfflineCapability::kSupported,
                              version->registration_id());
   } else {

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_sender.h"
+#include "quic/core/congestion_control/bbr2_sender.h"
 
 #include <cstddef>
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bandwidth_sampler.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_drain.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_misc.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_tag.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/congestion_control/bandwidth_sampler.h"
+#include "quic/core/congestion_control/bbr2_drain.h"
+#include "quic/core/congestion_control/bbr2_misc.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/quic_bandwidth.h"
+#include "quic/core/quic_tag.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -76,9 +76,8 @@ Bbr2Sender::Bbr2Sender(QuicTime now,
              /*pacing_gain=*/kInitialPacingGain,
              old_sender ? &old_sender->sampler_ : nullptr),
       initial_cwnd_(cwnd_limits().ApplyLimits(
-          (GetQuicReloadableFlag(quic_copy_bbr_cwnd_to_bbr2) && old_sender)
-              ? old_sender->GetCongestionWindow()
-              : (initial_cwnd_in_packets * kDefaultTCPMSS))),
+          (old_sender) ? old_sender->GetCongestionWindow()
+                       : (initial_cwnd_in_packets * kDefaultTCPMSS))),
       cwnd_(initial_cwnd_),
       pacing_rate_(kInitialPacingGain * QuicBandwidth::FromBytesAndTimeDelta(
                                             cwnd_,
@@ -88,14 +87,10 @@ Bbr2Sender::Bbr2Sender(QuicTime now,
       probe_bw_(this, &model_),
       probe_rtt_(this, &model_),
       last_sample_is_app_limited_(false) {
-  if (GetQuicReloadableFlag(quic_copy_bbr_cwnd_to_bbr2) && old_sender) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_copy_bbr_cwnd_to_bbr2);
-  }
-
   QUIC_DVLOG(2) << this << " Initializing Bbr2Sender. mode:" << mode_
                 << ", PacingRate:" << pacing_rate_ << ", Cwnd:" << cwnd_
                 << ", CwndLimits:" << cwnd_limits() << "  @ " << now;
-  DCHECK_EQ(mode_, Bbr2Mode::STARTUP);
+  QUICHE_DCHECK_EQ(mode_, Bbr2Mode::STARTUP);
 }
 
 void Bbr2Sender::SetFromConfig(const QuicConfig& config,
@@ -110,27 +105,16 @@ void Bbr2Sender::SetFromConfig(const QuicConfig& config,
       config.HasClientRequestedIndependentOption(kB2CL, perspective)) {
     params_.avoid_too_low_probe_bw_cwnd = false;
   }
-  if (GetQuicReloadableFlag(quic_bbr2_fewer_startup_round_trips) &&
-      config.HasClientRequestedIndependentOption(k1RTT, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_fewer_startup_round_trips, 1, 2);
+  if (config.HasClientRequestedIndependentOption(k1RTT, perspective)) {
     params_.startup_full_bw_rounds = 1;
   }
-  if (GetQuicReloadableFlag(quic_bbr2_fewer_startup_round_trips) &&
-      config.HasClientRequestedIndependentOption(k2RTT, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_fewer_startup_round_trips, 2, 2);
+  if (config.HasClientRequestedIndependentOption(k2RTT, perspective)) {
     params_.startup_full_bw_rounds = 2;
   }
-  if (config.HasClientRequestedIndependentOption(kB2LO, perspective)) {
-    params_.ignore_inflight_lo = true;
-  }
-  if (GetQuicReloadableFlag(quic_bbr2_use_tcp_inflight_hi_headroom) &&
-      config.HasClientRequestedIndependentOption(kB2HR, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_bbr2_use_tcp_inflight_hi_headroom);
+  if (config.HasClientRequestedIndependentOption(kB2HR, perspective)) {
     params_.inflight_hi_headroom = 0.15;
   }
-  if (GetQuicReloadableFlag(quic_bbr2_support_max_bootstrap_cwnd) &&
-      config.HasClientRequestedIndependentOption(kICW1, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_support_max_bootstrap_cwnd, 1, 4);
+  if (config.HasClientRequestedIndependentOption(kICW1, perspective)) {
     max_cwnd_when_network_parameters_adjusted_ = 100 * kDefaultTCPMSS;
   }
 
@@ -142,23 +126,40 @@ void Bbr2Sender::ApplyConnectionOptions(
   if (ContainsQuicTag(connection_options, kBBQ2)) {
     params_.startup_cwnd_gain = 2.885;
     params_.drain_cwnd_gain = 2.885;
+    model_.set_cwnd_gain(params_.startup_cwnd_gain);
   }
-  if (GetQuicReloadableFlag(quic_bbr2_no_exit_startup_on_loss_with_bw_growth) &&
-      ContainsQuicTag(connection_options, kB2NE)) {
-    QUIC_RELOADABLE_FLAG_COUNT(
-        quic_bbr2_no_exit_startup_on_loss_with_bw_growth);
-    params_.always_exit_startup_on_excess_loss = false;
+  if (ContainsQuicTag(connection_options, kB2LO)) {
+    params_.ignore_inflight_lo = true;
   }
-  if (GetQuicReloadableFlag(quic_bbr2_startup_loss_exit_use_max_delivered) &&
-      ContainsQuicTag(connection_options, kB2SL)) {
-    params_.startup_loss_exit_use_max_delivered_for_inflight_hi = true;
+  if (ContainsQuicTag(connection_options, kB2NE)) {
+    params_.always_exit_startup_on_excess_loss = true;
   }
-  if (GetQuicReloadableFlag(quic_bbr2_startup_loss_exit_use_max_delivered) &&
-      ContainsQuicTag(connection_options, kB2H2)) {
+  if (ContainsQuicTag(connection_options, kB2SL)) {
+    params_.startup_loss_exit_use_max_delivered_for_inflight_hi = false;
+  }
+  if (ContainsQuicTag(connection_options, kB2H2)) {
     params_.limit_inflight_hi_by_max_delivered = true;
+  }
+  if (ContainsQuicTag(connection_options, kB2DL)) {
+    params_.use_bytes_delivered_for_inflight_hi = true;
+  }
+  if (ContainsQuicTag(connection_options, kB2RC)) {
+    params_.enable_reno_coexistence = false;
   }
   if (ContainsQuicTag(connection_options, kBSAO)) {
     model_.EnableOverestimateAvoidance();
+  }
+  if (ContainsQuicTag(connection_options, kBBQ6)) {
+    params_.decrease_startup_pacing_at_end_of_round = true;
+  }
+  if (ContainsQuicTag(connection_options, kBBQ7)) {
+    params_.bw_lo_mode_ = Bbr2Params::QuicBandwidthLoMode::MIN_RTT_REDUCTION;
+  }
+  if (ContainsQuicTag(connection_options, kBBQ8)) {
+    params_.bw_lo_mode_ = Bbr2Params::QuicBandwidthLoMode::INFLIGHT_REDUCTION;
+  }
+  if (ContainsQuicTag(connection_options, kBBQ9)) {
+    params_.bw_lo_mode_ = Bbr2Params::QuicBandwidthLoMode::CWND_REDUCTION;
   }
 }
 
@@ -192,22 +193,14 @@ void Bbr2Sender::AdjustNetworkParameters(const NetworkParams& params) {
         std::max(params.bandwidth, model_.BandwidthEstimate());
     connection_stats_->cwnd_bootstrapping_rtt_us =
         model_.MinRtt().ToMicroseconds();
-    if (GetQuicReloadableFlag(quic_bbr2_support_max_bootstrap_cwnd)) {
-      if (params.max_initial_congestion_window > 0) {
-        QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_support_max_bootstrap_cwnd, 2,
-                                     4);
-        max_cwnd_when_network_parameters_adjusted_ =
-            params.max_initial_congestion_window * kDefaultTCPMSS;
-      } else {
-        QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_support_max_bootstrap_cwnd, 3,
-                                     4);
-      }
-      cwnd_ = cwnd_limits().ApplyLimits(
-          std::min(max_cwnd_when_network_parameters_adjusted_,
-                   model_.BDP(effective_bandwidth)));
-    } else {
-      cwnd_ = cwnd_limits().ApplyLimits(model_.BDP(effective_bandwidth));
+
+    if (params.max_initial_congestion_window > 0) {
+      max_cwnd_when_network_parameters_adjusted_ =
+          params.max_initial_congestion_window * kDefaultTCPMSS;
     }
+    cwnd_ = cwnd_limits().ApplyLimits(
+        std::min(max_cwnd_when_network_parameters_adjusted_,
+                 model_.BDP(effective_bandwidth)));
 
     if (!params.allow_cwnd_to_decrease) {
       cwnd_ = std::max(cwnd_, prior_cwnd);
@@ -243,6 +236,16 @@ void Bbr2Sender::OnCongestionEvent(bool /*rtt_updated*/,
   model_.OnCongestionEventStart(event_time, acked_packets, lost_packets,
                                 &congestion_event);
 
+  if (InSlowStart()) {
+    if (!lost_packets.empty()) {
+      connection_stats_->slowstart_packets_lost += lost_packets.size();
+      connection_stats_->slowstart_bytes_lost += congestion_event.bytes_lost;
+    }
+    if (congestion_event.end_of_round_trip) {
+      ++connection_stats_->slowstart_num_rtts;
+    }
+  }
+
   // Number of mode changes allowed for this congestion event.
   int mode_changes_allowed = kMaxModeChangesPerCongestionEvent;
   while (true) {
@@ -261,16 +264,19 @@ void Bbr2Sender::OnCongestionEvent(bool /*rtt_updated*/,
     BBR2_MODE_DISPATCH(Enter(event_time, &congestion_event));
     --mode_changes_allowed;
     if (mode_changes_allowed < 0) {
-      QUIC_BUG << "Exceeded max number of mode changes per congestion event.";
+      QUIC_BUG(quic_bug_10443_1)
+          << "Exceeded max number of mode changes per congestion event.";
       break;
     }
   }
 
   UpdatePacingRate(congestion_event.bytes_acked);
-  QUIC_BUG_IF(pacing_rate_.IsZero()) << "Pacing rate must not be zero!";
+  QUIC_BUG_IF(quic_bug_10443_2, pacing_rate_.IsZero())
+      << "Pacing rate must not be zero!";
 
   UpdateCongestionWindow(congestion_event.bytes_acked);
-  QUIC_BUG_IF(cwnd_ == 0u) << "Congestion window must not be zero!";
+  QUIC_BUG_IF(quic_bug_10443_3, cwnd_ == 0u)
+      << "Congestion window must not be zero!";
 
   model_.OnCongestionEventFinish(unacked_packets_->GetLeastUnacked(),
                                  congestion_event);
@@ -315,11 +321,22 @@ void Bbr2Sender::UpdatePacingRate(QuicByteCount bytes_acked) {
   }
 
   QuicBandwidth target_rate = model_.pacing_gain() * model_.BandwidthEstimate();
-  if (startup_.FullBandwidthReached()) {
+  if (model_.full_bandwidth_reached()) {
+    pacing_rate_ = target_rate;
+    return;
+  }
+  if (params_.decrease_startup_pacing_at_end_of_round &&
+      model_.pacing_gain() < Params().startup_pacing_gain) {
+    pacing_rate_ = target_rate;
+    return;
+  }
+  if (params_.bw_lo_mode_ != Bbr2Params::DEFAULT &&
+      model_.loss_events_in_round() > 0) {
     pacing_rate_ = target_rate;
     return;
   }
 
+  // By default, the pacing rate never decreases in STARTUP.
   if (target_rate > pacing_rate_) {
     pacing_rate_ = target_rate;
   }
@@ -329,7 +346,7 @@ void Bbr2Sender::UpdateCongestionWindow(QuicByteCount bytes_acked) {
   QuicByteCount target_cwnd = GetTargetCongestionWindow(model_.cwnd_gain());
 
   const QuicByteCount prior_cwnd = cwnd_;
-  if (startup_.FullBandwidthReached()) {
+  if (model_.full_bandwidth_reached()) {
     target_cwnd += model_.MaxAckHeight();
     cwnd_ = std::min(prior_cwnd + bytes_acked, target_cwnd);
   } else if (prior_cwnd < target_cwnd || prior_cwnd < 2 * initial_cwnd_) {
@@ -344,7 +361,7 @@ void Bbr2Sender::UpdateCongestionWindow(QuicByteCount bytes_acked) {
 
   QUIC_DVLOG(3) << this << " Updating CWND. target_cwnd:" << target_cwnd
                 << ", max_ack_height:" << model_.MaxAckHeight()
-                << ", full_bw:" << startup_.FullBandwidthReached()
+                << ", full_bw:" << model_.full_bandwidth_reached()
                 << ", bytes_acked:" << bytes_acked
                 << ", inflight_lo:" << model_.inflight_lo()
                 << ", inflight_hi:" << model_.inflight_hi() << ". (prior_cwnd) "
@@ -370,6 +387,10 @@ void Bbr2Sender::OnPacketSent(QuicTime sent_time,
                 << ", total_acked:" << model_.total_bytes_acked()
                 << ", total_lost:" << model_.total_bytes_lost() << "  @ "
                 << sent_time;
+  if (InSlowStart()) {
+    ++connection_stats_->slowstart_packets_sent;
+    connection_stats_->slowstart_bytes_sent += bytes;
+  }
   if (bytes_in_flight == 0 && params().avoid_unnecessary_probe_rtt) {
     OnExitQuiescence(sent_time);
   }

@@ -8,6 +8,7 @@
 
 #include "base/check.h"
 #include "base/time/default_tick_clock.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -27,18 +28,14 @@ void OutOfMemoryReporter::RemoveObserver(Observer* observer) {
 
 OutOfMemoryReporter::OutOfMemoryReporter(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      tick_clock_(std::make_unique<base::DefaultTickClock>())
+      tick_clock_(std::make_unique<base::DefaultTickClock>()) {
 #if defined(OS_ANDROID)
-      ,
-      scoped_observer_(this) {
   // This adds N async observers for N WebContents, which isn't great but
   // probably won't be a big problem on Android, where many multiple tabs are
   // rarer.
   auto* crash_manager = crash_reporter::CrashMetricsReporter::GetInstance();
   DCHECK(crash_manager);
-  scoped_observer_.Add(crash_manager);
-#else
-{
+  scoped_observation_.Observe(crash_manager);
 #endif
 }
 
@@ -95,10 +92,10 @@ void OutOfMemoryReporter::RenderProcessGone(base::TerminationStatus status) {
 // deterine OOM.
 #if !defined(OS_ANDROID)
   if (status == base::TERMINATION_STATUS_OOM
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       || status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM
 #endif
-      ) {
+  ) {
     OnForegroundOOMDetected(web_contents()->GetLastCommittedURL(),
                             *last_committed_source_id_);
   }

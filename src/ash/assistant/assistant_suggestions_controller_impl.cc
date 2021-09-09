@@ -22,8 +22,8 @@
 #include "base/stl_util.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/services/libassistant/public/cpp/assistant_suggestion.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -80,7 +80,7 @@ AssistantSuggestionsControllerImpl::AssistantSuggestionsControllerImpl() {
   if (!IsConversationStartersV2Enabled())
     UpdateConversationStarters();
 
-  assistant_controller_observer_.Add(AssistantController::Get());
+  assistant_controller_observation_.Observe(AssistantController::Get());
 }
 
 AssistantSuggestionsControllerImpl::~AssistantSuggestionsControllerImpl() =
@@ -104,8 +104,8 @@ void AssistantSuggestionsControllerImpl::OnAssistantControllerDestroying() {
 void AssistantSuggestionsControllerImpl::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    base::Optional<AssistantEntryPoint> entry_point,
-    base::Optional<AssistantExitPoint> exit_point) {
+    absl::optional<AssistantEntryPoint> entry_point,
+    absl::optional<AssistantExitPoint> exit_point) {
   if (IsConversationStartersV2Enabled()) {
     // When Assistant is starting a session, we update our cache of conversation
     // starters so that they are as fresh as possible. Note that we may need to

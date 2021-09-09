@@ -8,15 +8,14 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
-#include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 
@@ -131,9 +130,9 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
   scoped_refptr<base::SequencedTaskRunner> result_task_runner_;
   gfx::Vector2d scale_from_;
   gfx::Vector2d scale_to_;
-  base::Optional<base::UnguessableToken> source_;
-  base::Optional<gfx::Rect> area_;
-  base::Optional<gfx::Rect> result_selection_;
+  absl::optional<base::UnguessableToken> source_;
+  absl::optional<gfx::Rect> area_;
+  absl::optional<gfx::Rect> result_selection_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyOutputRequest);
 };

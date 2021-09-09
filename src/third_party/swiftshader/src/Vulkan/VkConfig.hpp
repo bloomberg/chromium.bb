@@ -27,11 +27,11 @@ namespace vk {
 #define SWIFTSHADER_DEVICE_NAME "SwiftShader Device"  // Max length: VK_MAX_PHYSICAL_DEVICE_NAME_SIZE
 #define SWIFTSHADER_UUID "SwiftShaderUUID"            // Max length: VK_UUID_SIZE (16)
 
-const spv_target_env SPIRV_VERSION = SPV_ENV_VULKAN_1_1;
+const spv_target_env SPIRV_VERSION = SPV_ENV_VULKAN_1_2;
 
 enum
 {
-	API_VERSION = VK_API_VERSION_1_1,
+	API_VERSION = VK_API_VERSION_1_2,
 	DRIVER_VERSION = VK_MAKE_VERSION(MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION),
 	VENDOR_ID = 0x1AE0,  // Google, Inc.: https://pcisig.com/google-inc-1
 	DEVICE_ID = 0xC0DE,  // SwiftShader (placeholder)
@@ -91,6 +91,9 @@ constexpr int SUBPIXEL_PRECISION_MASK = 0xFFFFFFFF >> (32 - SUBPIXEL_PRECISION_B
 #	define SWIFTSHADER_EXTERNAL_SEMAPHORE_OPAQUE_FD 1
 #elif defined(__ANDROID__)
 #	define SWIFTSHADER_EXTERNAL_SEMAPHORE_OPAQUE_FD 1
+#endif
+#if defined(__APPLE__)
+#	define SWIFTSHADER_EXTERNAL_MEMORY_OPAQUE_FD 1
 #endif
 
 constexpr VkDeviceSize MAX_MEMORY_ALLOCATION_SIZE = 0x40000000ull;  // 0x40000000 = 1 GiB

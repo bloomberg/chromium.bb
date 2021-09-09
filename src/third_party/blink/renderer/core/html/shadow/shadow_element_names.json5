@@ -53,7 +53,7 @@
       Symbol: "kIdSearchClearButton",
     },
     {
-      name: "passwrod-reveal",
+      name: "password-reveal",
       Symbol: "kIdPasswordRevealButton",
     },
     {
@@ -88,6 +88,10 @@
     {
       name: "-webkit-input-placeholder",
       Symbol: "kPseudoInputPlaceholder",
+    },
+    {
+      name: "-webkit-file-upload-button",
+      Symbol: "kPseudoFileUploadButton",
     },
     {
       name: "-internal-input-suggested",

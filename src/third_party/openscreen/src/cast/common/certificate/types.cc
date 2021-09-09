@@ -88,7 +88,13 @@ std::chrono::seconds DateTimeToSeconds(const DateTime& time) {
   tm.tm_mday = time.day;
   tm.tm_mon = time.month - 1;
   tm.tm_year = time.year - 1900;
-  return std::chrono::seconds(mktime(&tm));
+  time_t sec;
+#if defined(_WIN32)
+  sec = _mkgmtime(&tm);
+#else
+  sec = timegm(&tm);
+#endif
+  return std::chrono::seconds(sec);
 }
 
 }  // namespace cast

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/state_store.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
@@ -87,14 +88,14 @@ void StateStore::Transaction::ClearForType(IncidentType type) {
 
 void StateStore::Transaction::ClearAll() {
   // Clear the preference if it exists and contains any values.
-  if (store_->incidents_sent_ && !store_->incidents_sent_->empty())
+  if (store_->incidents_sent_ && !store_->incidents_sent_->DictEmpty())
     GetPrefDict()->Clear();
 }
 
 base::DictionaryValue* StateStore::Transaction::GetPrefDict() {
   if (!pref_update_) {
-    pref_update_.reset(new DictionaryPrefUpdate(
-        store_->profile_->GetPrefs(), prefs::kSafeBrowsingIncidentsSent));
+    pref_update_ = std::make_unique<DictionaryPrefUpdate>(
+        store_->profile_->GetPrefs(), prefs::kSafeBrowsingIncidentsSent);
     // Getting the dict will cause it to be created if it doesn't exist.
     // Unconditionally refresh the store's read-only view on the preference so
     // that it will always be correct.
@@ -130,9 +131,9 @@ StateStore::StateStore(Profile* profile)
   std::unique_ptr<base::DictionaryValue> value_dict(
       platform_state_store::Load(profile_));
   if (value_dict) {
-    if (value_dict->empty())
+    if (value_dict->DictEmpty())
       transaction.ClearAll();
-    else if (!incidents_sent_ || !incidents_sent_->Equals(value_dict.get()))
+    else if (!incidents_sent_ || *incidents_sent_ != *value_dict)
       transaction.ReplacePrefDict(std::move(value_dict));
   }
 
@@ -160,7 +161,7 @@ bool StateStore::HasBeenReported(IncidentType type,
 
 void StateStore::CleanLegacyValues(Transaction* transaction) {
   static const IncidentType kLegacyTypes[] = {
-      IncidentType::OBSOLETE_BLACKLIST_LOAD,
+      IncidentType::OBSOLETE_BLOCKLIST_LOAD,
       IncidentType::OBSOLETE_SUSPICIOUS_MODULE};
 
   for (IncidentType type : kLegacyTypes)

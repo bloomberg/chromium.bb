@@ -96,6 +96,11 @@ suite('DiscoveryPageTest', function() {
       id: {high: BigInt(0), low: BigInt(nextId++)},
       name,
       type: nearbyShare.mojom.ShareTargetType.kPhone,
+      payloadPreview: {
+        description: '',
+        fileCount: 0,
+        shareType: /** @type {!nearbyShare.mojom.ShareType} */ (0),
+      },
     };
   }
 
@@ -142,10 +147,37 @@ suite('DiscoveryPageTest', function() {
   test('renders component', async function() {
     assertEquals('NEARBY-DISCOVERY-PAGE', discoveryPageElement.tagName);
     discoveryPageElement.fire('view-enter-start');
-    await discoveryManager.whenCalled('getSendPreview');
+    await discoveryManager.whenCalled('getPayloadPreview');
     assertEquals(
         discoveryManager.shareDescription,
-        discoveryPageElement.$$('nearby-preview').sendPreview.description);
+        discoveryPageElement.$$('nearby-preview').payloadPreview.description);
+  });
+
+  test('error state with generic error', async function() {
+    discoveryManager.startDiscoveryResult =
+        nearbyShare.mojom.StartDiscoveryResult.kErrorGeneric;
+    discoveryPageElement.fire('view-enter-start');
+    await discoveryManager.whenCalled('startDiscovery');
+    flush();
+
+    const expectedMessage = 'Something went wrong. Please try again.';
+    assertEquals(
+        expectedMessage,
+        discoveryPageElement.$$('#errorDescription').textContent.trim());
+  });
+
+  test('error state with in progress transfer', async function() {
+    discoveryManager.startDiscoveryResult =
+        nearbyShare.mojom.StartDiscoveryResult.kErrorInProgressTransferring;
+    discoveryPageElement.fire('view-enter-start');
+    await discoveryManager.whenCalled('startDiscovery');
+    flush();
+
+    const expectedMessage = 'You can only share one file at a time.' +
+        ' Try again when the current transfer is complete.';
+    assertEquals(
+        expectedMessage,
+        discoveryPageElement.$$('#errorDescription').textContent.trim());
   });
 
   test('selects share target with success', async function() {
@@ -177,6 +209,28 @@ suite('DiscoveryPageTest', function() {
     });
 
     getButton('#actionButton').click();
+
+    await discoveryManager.whenCalled('selectShareTarget');
+    assertEquals('confirmation', eventDetail.page);
+  });
+
+  test('selects share target using testing methods', async function() {
+    const created = await setupShareTarget();
+    const targets = discoveryPageElement.getShareTargetsForTesting();
+    assertEquals(targets.length, 1);
+
+    discoveryManager.selectShareTargetResult.token = 'test token';
+    discoveryManager.selectShareTargetResult.confirmationManager =
+        new FakeConfirmationManagerRemote();
+
+    let eventDetail = null;
+    discoveryPageElement.addEventListener('change-page', (event) => {
+      eventDetail = event.detail;
+    });
+
+    discoveryPageElement.selectShareTargetForTesting(targets[0]);
+    const selectedId = await discoveryManager.whenCalled('selectShareTarget');
+    assertTokensEqual(created.id, selectedId);
 
     await discoveryManager.whenCalled('selectShareTarget');
     assertEquals('confirmation', eventDetail.page);
@@ -272,7 +326,7 @@ suite('DiscoveryPageTest', function() {
 
     assertEquals(null, discoveryPageElement.selectedShareTarget);
 
-    // Click on fist share target and expect it to be selected.
+    // Click on first share target and expect it to be selected.
     assertTrue(clickOnDevice(0));
     assertShareTargetsEqual(
         targets[0], discoveryPageElement.selectedShareTarget);
@@ -281,6 +335,16 @@ suite('DiscoveryPageTest', function() {
     assertTrue(clickOnDevice(2));
     assertShareTargetsEqual(
         targets[2], discoveryPageElement.selectedShareTarget);
+
+    const shareTarget = discoveryPageElement.selectedShareTarget;
+    const onConnectionClosedPromise = new Promise(
+        (resolve) => listener.onConnectionError.addListener(resolve));
+    discoveryPageElement.fire('view-exit-finish');
+    await onConnectionClosedPromise;
+
+    // Stopping discovery does not clear selected share target.
+    assertShareTargetsEqual(
+        shareTarget, discoveryPageElement.selectedShareTarget);
   });
 
   test('loosing selected device disables next button', async function() {

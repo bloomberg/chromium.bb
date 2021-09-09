@@ -13,12 +13,14 @@
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
+#include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/skia_limits.h"
+#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
 #include "ui/gl/gl_bindings.h"
@@ -251,10 +253,11 @@ SharedContextState::~SharedContextState() {
 bool SharedContextState::InitializeGrContext(
     const GpuPreferences& gpu_preferences,
     const GpuDriverBugWorkarounds& workarounds,
-    GrContextOptions::PersistentCache* cache,
+    gpu::raster::GrShaderCache* cache,
     GpuProcessActivityFlags* activity_flags,
     gl::ProgressReporter* progress_reporter) {
   progress_reporter_ = progress_reporter;
+  gr_shader_cache_ = cache;
 
 #if defined(OS_MAC)
   if (metal_context_provider_)
@@ -275,6 +278,12 @@ bool SharedContextState::InitializeGrContext(
   options.fShaderErrorHandler = this;
   if (gpu_preferences.force_max_texture_size)
     options.fMaxTextureSizeOverride = gpu_preferences.force_max_texture_size;
+
+  if (base::FeatureList::IsEnabled(features::kReduceOpsTaskSplitting)) {
+    options.fReduceOpsTaskSplitting = GrContextOptions::Enable::kYes;
+  } else {
+    options.fReduceOpsTaskSplitting = GrContextOptions::Enable::kNo;
+  }
 
   if (gr_context_type_ == GrContextType::kGL) {
     DCHECK(context_->IsCurrent(nullptr));
@@ -309,7 +318,19 @@ bool SharedContextState::InitializeGrContext(
           GrContextOptions::ShaderCacheStrategy::kBackendSource;
     }
     options.fPreferExternalImagesOverES3 = true;
-    owned_gr_context_ = GrDirectContext::MakeGL(std::move(interface), options);
+
+    if (gl::GetGLImplementation() == gl::kGLImplementationStubGL) {
+      // gl::kGLImplementationStubGL doesn't implement enough functions for
+      // successful GrContext::MakeGL initialization. Fallback to mock context
+      // instead.
+      GrMockOptions mock_options;
+      owned_gr_context_ = GrDirectContext::MakeMock(&mock_options, options);
+      DCHECK(owned_gr_context_);
+    } else {
+      owned_gr_context_ =
+          GrDirectContext::MakeGL(std::move(interface), options);
+    }
+
     gr_context_ = owned_gr_context_.get();
   } else if (gr_context_type_ == GrContextType::kVulkan) {
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -538,9 +559,18 @@ void SharedContextState::MarkContextLost(error::ContextLostReason reason) {
   if (!context_lost()) {
     scoped_refptr<SharedContextState> prevent_last_ref_drop = this;
     context_lost_reason_ = reason;
+
+    // Notify |context_lost_callback_| and |context_lost_observers_| first,
+    // since maybe they still need the GrDirectContext for releasing some skia
+    // resources.
+    std::move(context_lost_callback_).Run(!device_needs_reset_);
+    for (auto& observer : context_lost_observers_)
+      observer.OnContextLost();
+
     // context_state_ could be nullptr for some unittests.
     if (context_state_)
       context_state_->MarkContextLost();
+
     // Only abandon the GrContext if it is owned by SharedContextState, because
     // the passed in GrContext will be reused.
     // TODO(https://crbug.com/1048692): always abandon GrContext to release all
@@ -551,14 +581,11 @@ void SharedContextState::MarkContextLost(error::ContextLostReason reason) {
       gr_context_ = nullptr;
     }
     UpdateSkiaOwnedMemorySize();
-    std::move(context_lost_callback_).Run(!device_needs_reset_);
-    for (auto& observer : context_lost_observers_)
-      observer.OnContextLost();
   }
 }
 
-bool SharedContextState::IsCurrent(gl::GLSurface* surface) {
-  if (!GrContextIsGL())
+bool SharedContextState::IsCurrent(gl::GLSurface* surface, bool needs_gl) {
+  if (!GrContextIsGL() && !needs_gl)
     return true;
   if (context_lost())
     return false;
@@ -578,7 +605,7 @@ bool SharedContextState::OnMemoryDump(
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
     raster::DumpBackgroundGrMemoryStatistics(gr_context_, pmd);
   } else {
-    raster::DumpGrMemoryStatistics(gr_context_, pmd, base::nullopt);
+    raster::DumpGrMemoryStatistics(gr_context_, pmd, absl::nullopt);
   }
 
   return true;
@@ -657,6 +684,14 @@ void SharedContextState::PessimisticallyResetGrContext() const {
   // performance becomes an issue.
   if (gr_context_ && GrContextIsGL())
     gr_context_->resetContext();
+}
+
+void SharedContextState::StoreVkPipelineCacheIfNeeded() {
+  if (gr_context_ && GrContextIsVulkan()) {
+    gpu::raster::GrShaderCache::ScopedCacheUse use(gr_shader_cache_,
+                                                   kDisplayCompositorClientId);
+    gr_shader_cache_->StoreVkPipelineCacheIfNeeded(gr_context_);
+  }
 }
 
 bool SharedContextState::initialized() const {
@@ -746,7 +781,7 @@ QueryManager* SharedContextState::GetQueryManager() {
   return nullptr;
 }
 
-base::Optional<error::ContextLostReason> SharedContextState::GetResetStatus(
+absl::optional<error::ContextLostReason> SharedContextState::GetResetStatus(
     bool needs_gl) {
   DCHECK(!context_lost());
 
@@ -765,11 +800,11 @@ base::Optional<error::ContextLostReason> SharedContextState::GetResetStatus(
 
   // Not using GL.
   if (!GrContextIsGL() && !needs_gl)
-    return base::nullopt;
+    return absl::nullopt;
 
   // GL is not initialized.
   if (!context_state_)
-    return base::nullopt;
+    return absl::nullopt;
 
   GLenum error;
   while ((error = context_state_->api()->glGetErrorFn()) != GL_NO_ERROR) {
@@ -787,13 +822,13 @@ base::Optional<error::ContextLostReason> SharedContextState::GetResetStatus(
   base::Time now = base::Time::Now();
   if (!disable_check_reset_status_throttling_for_test_ &&
       now < last_gl_check_graphics_reset_status_ + kMinCheckDelay) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   last_gl_check_graphics_reset_status_ = now;
 
   GLenum driver_status = context()->CheckStickyGraphicsResetStatus();
   if (driver_status == GL_NO_ERROR)
-    return base::nullopt;
+    return absl::nullopt;
   LOG(ERROR) << "SharedContextState context lost via ARB/EXT_robustness. Reset "
                 "status = "
              << gles2::GLES2Util::GetStringEnum(driver_status);
@@ -809,7 +844,7 @@ base::Optional<error::ContextLostReason> SharedContextState::GetResetStatus(
       NOTREACHED();
       break;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool SharedContextState::CheckResetStatus(bool need_gl) {

@@ -21,10 +21,12 @@ public:
     GrGLAttachment(
             GrGpu* gpu, const IDDesc& idDesc, SkISize dimensions, UsageFlags supportedUsages,
             int sampleCnt, GrGLFormat format)
-            : GrAttachment(gpu, dimensions, supportedUsages, sampleCnt, GrProtected::kNo)
+            : GrAttachment(gpu, dimensions, supportedUsages, sampleCnt, GrMipmapped::kNo,
+                           GrProtected::kNo)
             , fFormat(format)
             , fRenderbufferID(idDesc.fRenderbufferID) {
-        SkASSERT(supportedUsages == UsageFlags::kStencilAttachment);
+        SkASSERT(supportedUsages == UsageFlags::kStencilAttachment ||
+                 supportedUsages == UsageFlags::kColorAttachment);
         this->registerWithCache(SkBudgeted::kYes);
     }
 

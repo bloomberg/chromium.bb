@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chrome_browser_nearby_sharing_instantmessaging {
 class StreamBody;
@@ -27,7 +27,7 @@ class StreamParser {
   void Append(base::StringPiece data);
 
  private:
-  base::Optional<chrome_browser_nearby_sharing_instantmessaging::StreamBody>
+  absl::optional<chrome_browser_nearby_sharing_instantmessaging::StreamBody>
   GetNextMessage();
   void DelegateMessage(
       const chrome_browser_nearby_sharing_instantmessaging::StreamBody&
@@ -36,6 +36,7 @@ class StreamParser {
   base::RepeatingCallback<void(const std::string& message)> listener_;
   base::OnceClosure fastpath_ready_callback_;
   std::string data_;
+  int parsing_counter_for_metrics_ = 0;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_INSTANTMESSAGING_STREAM_PARSER_H_

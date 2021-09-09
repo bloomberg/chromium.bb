@@ -14,6 +14,7 @@ component("cursor_base") {
     "cursor_factory.cc",
     "cursor_factory.h",
     "cursor_size.h",
+    "platform_cursor.h",
   ]
   defines = [ "IS_UI_BASE_CURSOR_BASE_IMPL" ]
   public_deps = [
@@ -23,14 +24,6 @@ component("cursor_base") {
     "//ui/gfx/geometry",
   ]
   deps = [ "//ui/gfx:geometry_skia" ]
-
-  if (is_win) {
-    sources += [ "cursor_win.cc" ]
-  }
-
-  if (use_x11 || use_ozone) {
-    sources += [ "cursor_ozone.cc" ]
-  }
 }
 
 component("theme_manager") {
@@ -48,6 +41,7 @@ if (use_aura) {
   component("cursor") {
     output_name = "ui_base_cursor"
     sources = [
+      "cursor_loader.cc",
       "cursor_loader.h",
       "cursor_lookup.cc",
       "cursor_lookup.h",
@@ -75,8 +69,10 @@ if (use_aura) {
 
     if (is_win) {
       sources += [
-        "cursor_loader_win.cc",
-        "cursor_loader_win.h",
+        "win/win_cursor.cc",
+        "win/win_cursor.h",
+        "win/win_cursor_factory.cc",
+        "win/win_cursor_factory.h",
       ]
       deps += [ "//ui/resources:ui_unscaled_resources_grd" ]
     }
@@ -91,13 +87,6 @@ if (use_aura) {
         "//ui/gfx/geometry",
       ]
       deps += [ "//build:chromeos_buildflags" ]
-    }
-
-    if (use_x11 || use_ozone) {
-      sources += [
-        "cursor_loader_ozone.cc",
-        "cursor_loader_ozone.h",
-      ]
     }
   }
 }

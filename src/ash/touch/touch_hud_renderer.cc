@@ -4,6 +4,9 @@
 
 #include "ash/touch/touch_hud_renderer.h"
 
+#include <memory>
+
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/compositor/layer.h"
@@ -40,7 +43,7 @@ class TouchPointView : public views::View,
 
     SetSize(gfx::Size(2 * kPointRadius + 2, 2 * kPointRadius + 2));
 
-    widget_observer_.Add(parent_widget);
+    widget_observation_.Observe(parent_widget);
   }
 
   ~TouchPointView() override = default;
@@ -51,8 +54,8 @@ class TouchPointView : public views::View,
   void FadeOut(std::unique_ptr<TouchPointView> self) {
     DCHECK_EQ(this, self.get());
     owned_self_reference_ = std::move(self);
-    fadeout_.reset(
-        new gfx::LinearAnimation(kFadeoutDuration, kFadeoutFrameRate, this));
+    fadeout_ = std::make_unique<gfx::LinearAnimation>(kFadeoutDuration,
+                                                      kFadeoutFrameRate, this);
     fadeout_->Start();
   }
 
@@ -118,7 +121,8 @@ class TouchPointView : public views::View,
   // itself. This should be non-null when fading out, and null otherwise.
   std::unique_ptr<TouchPointView> owned_self_reference_;
 
-  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
+  base::ScopedObservation<views::Widget, views::WidgetObserver>
+      widget_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TouchPointView);
 };

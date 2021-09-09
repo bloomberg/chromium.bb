@@ -47,7 +47,7 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
 
   // views::WidgetDelegateView:
   bool ShouldShowCloseButton() const override;
-  base::string16 GetWindowTitle() const override;
+  std::u16string GetWindowTitle() const override;
   void WindowClosing() override;
 
   // LocationBarBubbleDelegateView:
@@ -77,13 +77,13 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
   SendTabToSelfBubbleController* controller_;  // Weak reference.
 
   // Title shown at the top of the bubble.
-  base::string16 bubble_title_;
+  std::u16string bubble_title_;
 
   // ScrollView containing the list of device buttons.
   views::ScrollView* scroll_view_ = nullptr;
 
   // The device that the user has selected to share tab to.
-  base::Optional<size_t> selected_device_index_;
+  absl::optional<size_t> selected_device_index_;
 
   base::WeakPtrFactory<SendTabToSelfBubbleViewImpl> weak_factory_{this};
 

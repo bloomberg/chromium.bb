@@ -12,11 +12,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -104,19 +102,10 @@ typedef NS_ENUM(NSInteger, SafetyCheckItemType) {
   TimestampFooterItem,
 };
 
-using password_manager::CompromisedCredentials;
-using password_manager::CompromiseType;
+using password_manager::InsecureCredential;
+using password_manager::InsecureType;
 using password_manager::TestPasswordStore;
 using l10n_util::GetNSString;
-
-// Sets test sync setup service and returns pointer to it.
-std::unique_ptr<KeyedService> BuildMockSyncSetupService(
-    web::BrowserState* context) {
-  ChromeBrowserState* browser_state =
-      ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<SyncSetupServiceMock>(
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state));
-}
 
 // Sets test password store and returns pointer to it.
 scoped_refptr<TestPasswordStore> BuildTestPasswordStore(
@@ -143,9 +132,6 @@ PrefService* SetPrefService() {
 class SafetyCheckMediatorTest : public PlatformTest {
  public:
   SafetyCheckMediatorTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::kPasswordCheck);
-
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
@@ -153,7 +139,7 @@ class SafetyCheckMediatorTest : public PlatformTest {
             &AuthenticationServiceFake::CreateAuthenticationService));
     test_cbs_builder.AddTestingFactory(
         SyncSetupServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildMockSyncSetupService));
+        base::BindRepeating(&SyncSetupServiceMock::CreateKeyedService));
     browser_state_ = test_cbs_builder.Build();
     auth_service_ = static_cast<AuthenticationServiceFake*>(
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
@@ -197,26 +183,15 @@ class SafetyCheckMediatorTest : public PlatformTest {
     auto form = std::make_unique<password_manager::PasswordForm>();
     form->url = GURL("http://www.example.com/accounts/LoginAuth");
     form->action = GURL("http://www.example.com/accounts/Login");
-    form->username_element = base::ASCIIToUTF16("Email");
-    form->username_value = base::ASCIIToUTF16("test@egmail.com");
-    form->password_element = base::ASCIIToUTF16("Passwd");
-    form->password_value = base::ASCIIToUTF16("test");
-    form->submit_element = base::ASCIIToUTF16("signIn");
+    form->username_element = u"Email";
+    form->username_value = u"test@egmail.com";
+    form->password_element = u"Passwd";
+    form->password_value = u"test";
+    form->submit_element = u"signIn";
     form->signon_realm = "http://www.example.com/";
     form->scheme = password_manager::PasswordForm::Scheme::kHtml;
     form->blocked_by_user = false;
     AddPasswordForm(std::move(form));
-  }
-
-  password_manager::CompromisedCredentials MakeCompromised(
-      base::StringPiece signon_realm,
-      base::StringPiece username) {
-    return {
-        std::string(signon_realm),
-        base::ASCIIToUTF16(username),
-        base::Time::Now(),
-        CompromiseType::kLeaked,
-    };
   }
 
   TestPasswordStore& GetTestStore() {
@@ -227,14 +202,14 @@ class SafetyCheckMediatorTest : public PlatformTest {
   }
 
   void AddCompromisedCredential() {
-    GetTestStore().AddCompromisedCredentials(
-        MakeCompromised("http://www.example.com/", "test@egmail.com"));
+    GetTestStore().AddInsecureCredential(password_manager::InsecureCredential(
+        "http://www.example.com/", u"test@egmail.com", base::Time::Now(),
+        InsecureType::kLeaked, password_manager::IsMuted(false)));
     RunUntilIdle();
   }
 
  protected:
   web::WebTaskEnvironment environment_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   scoped_refptr<TestPasswordStore> store_;
   AuthenticationServiceFake* auth_service_;

@@ -29,11 +29,11 @@ namespace grpc {
 namespace testing {
 /* This interceptor does nothing. Just keeps a global count on the number of
  * times it was invoked. */
-class DummyInterceptor : public experimental::Interceptor {
+class PhonyInterceptor : public experimental::Interceptor {
  public:
-  DummyInterceptor() {}
+  PhonyInterceptor() {}
 
-  virtual void Intercept(experimental::InterceptorBatchMethods* methods) {
+  void Intercept(experimental::InterceptorBatchMethods* methods) override {
     if (methods->QueryInterceptionHookPoint(
             experimental::InterceptionHookPoints::PRE_SEND_INITIAL_METADATA)) {
       num_times_run_++;
@@ -67,18 +67,18 @@ class DummyInterceptor : public experimental::Interceptor {
   static std::atomic<int> num_times_cancel_;
 };
 
-class DummyInterceptorFactory
+class PhonyInterceptorFactory
     : public experimental::ClientInterceptorFactoryInterface,
       public experimental::ServerInterceptorFactoryInterface {
  public:
-  virtual experimental::Interceptor* CreateClientInterceptor(
-      experimental::ClientRpcInfo* info) override {
-    return new DummyInterceptor();
+  experimental::Interceptor* CreateClientInterceptor(
+      experimental::ClientRpcInfo* /*info*/) override {
+    return new PhonyInterceptor();
   }
 
-  virtual experimental::Interceptor* CreateServerInterceptor(
-      experimental::ServerRpcInfo* info) override {
-    return new DummyInterceptor();
+  experimental::Interceptor* CreateServerInterceptor(
+      experimental::ServerRpcInfo* /*info*/) override {
+    return new PhonyInterceptor();
   }
 };
 
@@ -87,13 +87,13 @@ class NullInterceptorFactory
     : public experimental::ClientInterceptorFactoryInterface,
       public experimental::ServerInterceptorFactoryInterface {
  public:
-  virtual experimental::Interceptor* CreateClientInterceptor(
-      experimental::ClientRpcInfo* info) override {
+  experimental::Interceptor* CreateClientInterceptor(
+      experimental::ClientRpcInfo* /*info*/) override {
     return nullptr;
   }
 
-  virtual experimental::Interceptor* CreateServerInterceptor(
-      experimental::ServerRpcInfo* info) override {
+  experimental::Interceptor* CreateServerInterceptor(
+      experimental::ServerRpcInfo* /*info*/) override {
     return nullptr;
   }
 };
@@ -101,6 +101,16 @@ class NullInterceptorFactory
 class EchoTestServiceStreamingImpl : public EchoTestService::Service {
  public:
   ~EchoTestServiceStreamingImpl() override {}
+
+  Status Echo(ServerContext* context, const EchoRequest* request,
+              EchoResponse* response) override {
+    auto client_metadata = context->client_metadata();
+    for (const auto& pair : client_metadata) {
+      context->AddTrailingMetadata(ToString(pair.first), ToString(pair.second));
+    }
+    response->set_message(request->message());
+    return Status::OK;
+  }
 
   Status BidiStream(
       ServerContext* context,
@@ -162,18 +172,26 @@ void MakeServerStreamingCall(const std::shared_ptr<Channel>& channel);
 
 void MakeBidiStreamingCall(const std::shared_ptr<Channel>& channel);
 
+void MakeAsyncCQCall(const std::shared_ptr<Channel>& channel);
+
+void MakeAsyncCQClientStreamingCall(const std::shared_ptr<Channel>& channel);
+
+void MakeAsyncCQServerStreamingCall(const std::shared_ptr<Channel>& channel);
+
+void MakeAsyncCQBidiStreamingCall(const std::shared_ptr<Channel>& channel);
+
 void MakeCallbackCall(const std::shared_ptr<Channel>& channel);
 
 bool CheckMetadata(const std::multimap<grpc::string_ref, grpc::string_ref>& map,
                    const string& key, const string& value);
 
-bool CheckMetadata(const std::multimap<grpc::string, grpc::string>& map,
+bool CheckMetadata(const std::multimap<std::string, std::string>& map,
                    const string& key, const string& value);
 
 std::vector<std::unique_ptr<experimental::ClientInterceptorFactoryInterface>>
-CreateDummyClientInterceptors();
+CreatePhonyClientInterceptors();
 
-inline void* tag(int i) { return (void*)static_cast<intptr_t>(i); }
+inline void* tag(int i) { return reinterpret_cast<void*>(i); }
 inline int detag(void* p) {
   return static_cast<int>(reinterpret_cast<intptr_t>(p));
 }

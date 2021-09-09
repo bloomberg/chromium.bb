@@ -90,7 +90,8 @@ void SecurityKeyMessageWriterImplTest::OnReadComplete(
 
 void SecurityKeyMessageWriterImplTest::SetUp() {
   ASSERT_TRUE(MakePipe(&read_file_, &write_file_));
-  writer_.reset(new SecurityKeyMessageWriterImpl(std::move(write_file_)));
+  writer_ =
+      std::make_unique<SecurityKeyMessageWriterImpl>(std::move(write_file_));
 }
 
 void SecurityKeyMessageWriterImplTest::WriteMessageToOutput(
@@ -100,7 +101,7 @@ void SecurityKeyMessageWriterImplTest::WriteMessageToOutput(
 
   base::Thread::Options options;
   options.message_pump_type = base::MessagePumpType::IO;
-  reader_thread.StartWithOptions(options);
+  reader_thread.StartWithOptions(std::move(options));
 
   // Used to block until the read complete callback is triggered.
   base::test::SingleThreadTaskEnvironment task_environment(

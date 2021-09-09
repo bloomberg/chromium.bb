@@ -4,6 +4,7 @@
 
 #include "components/history/core/browser/in_memory_history_backend.h"
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -19,7 +20,7 @@ InMemoryHistoryBackend::InMemoryHistoryBackend() = default;
 InMemoryHistoryBackend::~InMemoryHistoryBackend() = default;
 
 bool InMemoryHistoryBackend::Init(const base::FilePath& history_filename) {
-  db_.reset(new InMemoryDatabase);
+  db_ = std::make_unique<InMemoryDatabase>();
   return db_->InitFromDisk(history_filename);
 }
 
@@ -59,7 +60,7 @@ void InMemoryHistoryBackend::OnURLsDeleted(HistoryService* history_service,
   if (deletion_info.IsAllHistory()) {
     // When all history is deleted, the individual URLs won't be listed. Just
     // create a new database to quickly clear everything out.
-    db_.reset(new InMemoryDatabase);
+    db_ = std::make_unique<InMemoryDatabase>();
     if (!db_->InitFromScratch())
       db_.reset();
     return;
@@ -77,7 +78,7 @@ void InMemoryHistoryBackend::OnKeywordSearchTermUpdated(
     HistoryService* history_service,
     const URLRow& row,
     KeywordID keyword_id,
-    const base::string16& term) {
+    const std::u16string& term) {
   DCHECK(row.id());
   db_->InsertOrUpdateURLRowByID(row);
   db_->SetKeywordSearchTermsForURL(row.id(), keyword_id, term);

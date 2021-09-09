@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {str, util} from '../../../common/js/util.m.js';
+// #import {ConfirmDialog} from 'chrome://resources/js/cr/ui/dialogs.m.js';
+
 /**
  * ImportCrostiniImageDialog is used as the handler for .tini files.
  */
@@ -9,7 +12,8 @@ cr.define('cr.filebrowser', () => {
   /**
    * Creates dialog in DOM.
    */
-  class ImportCrostiniImageDialog extends cr.ui.dialogs.ConfirmDialog {
+  /* #export */ class ImportCrostiniImageDialog extends
+      cr.ui.dialogs.ConfirmDialog {
     /**
      * @param {HTMLElement} parentNode Node to be parent for this dialog.
      */
@@ -17,9 +21,7 @@ cr.define('cr.filebrowser', () => {
       super(parentNode);
       super.setOkLabel(str('IMPORT_CROSTINI_IMAGE_DIALOG_OK_LABEL'));
 
-      if (util.isFilesNg()) {
-        this.container.classList.add('files-ng');
-      }
+      this.container.classList.add('files-ng');
     }
 
     /**
@@ -35,5 +37,6 @@ cr.define('cr.filebrowser', () => {
     }
   }
 
+  // #cr_define_end
   return {ImportCrostiniImageDialog};
 });

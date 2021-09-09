@@ -188,6 +188,12 @@ void TtsPlatformImplBackgroundWorker::ProcessSpeech(
     float pitch,
     SPDChromeVoice voice,
     base::OnceCallback<void(bool)> on_speak_finished) {
+  if (!conn_) {
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(on_speak_finished), false));
+    return;
+  }
+
   libspeechd_loader_.spd_set_output_module(conn_, voice.module.c_str());
   libspeechd_loader_.spd_set_synthesis_voice(conn_, voice.name.c_str());
 
@@ -216,17 +222,17 @@ void TtsPlatformImplBackgroundWorker::ProcessSpeech(
 }
 
 void TtsPlatformImplBackgroundWorker::Pause() {
-  if (msg_uid_ != kInvalidMessageUid)
+  if (conn_ && msg_uid_ != kInvalidMessageUid)
     libspeechd_loader_.spd_pause(conn_);
 }
 
 void TtsPlatformImplBackgroundWorker::Resume() {
-  if (msg_uid_ != kInvalidMessageUid)
+  if (conn_ && msg_uid_ != kInvalidMessageUid)
     libspeechd_loader_.spd_resume(conn_);
 }
 
 void TtsPlatformImplBackgroundWorker::StopSpeaking() {
-  if (msg_uid_ != kInvalidMessageUid) {
+  if (conn_ && msg_uid_ != kInvalidMessageUid) {
     int result = libspeechd_loader_.spd_stop(conn_);
     if (result == -1) {
       CloseConnection();
@@ -312,7 +318,7 @@ void TtsPlatformImplBackgroundWorker::CloseConnection() {
 void TtsPlatformImplBackgroundWorker::OnSpeechEvent(int msg_id,
                                                     SPDNotificationType type) {
   DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (msg_id != msg_uid_)
+  if (!conn_ || msg_id != msg_uid_)
     return;
 
   switch (type) {
@@ -368,8 +374,10 @@ void TtsPlatformImplBackgroundWorker::NotificationCallback(
     size_t msg_id,
     size_t client_id,
     SPDNotificationType type) {
-  TtsPlatformImplLinux::GetInstance()->worker()->Post(
-      FROM_HERE, &TtsPlatformImplBackgroundWorker::OnSpeechEvent, msg_id, type);
+  TtsPlatformImplLinux::GetInstance()
+      ->worker()
+      ->AsyncCall(&TtsPlatformImplBackgroundWorker::OnSpeechEvent)
+      .WithArgs(msg_id, type);
 }
 
 // static
@@ -381,8 +389,10 @@ void TtsPlatformImplBackgroundWorker::IndexMarkCallback(
   // TODO(dtseng): index_mark appears to specify an index type supplied by a
   // client. Need to explore how this is used before hooking it up with existing
   // word, sentence events.
-  TtsPlatformImplLinux::GetInstance()->worker()->Post(
-      FROM_HERE, &TtsPlatformImplBackgroundWorker::OnSpeechEvent, msg_id, type);
+  TtsPlatformImplLinux::GetInstance()
+      ->worker()
+      ->AsyncCall(&TtsPlatformImplBackgroundWorker::OnSpeechEvent)
+      .WithArgs(msg_id, type);
 }
 
 //
@@ -400,7 +410,7 @@ TtsPlatformImplLinux::TtsPlatformImplLinux()
   // The TTS platform is supported. The Tts platform initialisation will happen
   // on a worker thread and it will become initialized.
   is_supported_ = true;
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::Initialize);
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::Initialize);
 }
 
 bool TtsPlatformImplLinux::PlatformImplSupported() {
@@ -446,7 +456,7 @@ bool TtsPlatformImplLinux::StopSpeaking() {
   DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(PlatformImplInitialized());
 
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::StopSpeaking);
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::StopSpeaking);
   paused_ = false;
 
   is_speaking_ = false;
@@ -462,7 +472,7 @@ void TtsPlatformImplLinux::Pause() {
   if (paused_ || !is_speaking_)
     return;
 
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::Pause);
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::Pause);
   paused_ = true;
 }
 
@@ -473,7 +483,7 @@ void TtsPlatformImplLinux::Resume() {
   if (!paused_ || !is_speaking_)
     return;
 
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::Resume);
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::Resume);
   paused_ = false;
 }
 
@@ -501,7 +511,7 @@ void TtsPlatformImplLinux::GetVoices(std::vector<VoiceData>* out_voices) {
 }
 
 void TtsPlatformImplLinux::Shutdown() {
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::Shutdown);
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::Shutdown);
 }
 
 void TtsPlatformImplLinux::OnInitialized(bool success, PlatformVoices voices) {
@@ -560,9 +570,9 @@ void TtsPlatformImplLinux::ProcessSpeech(
   if (it != voices_.end())
     matched_voice = it->second;
 
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::ProcessSpeech,
-               utterance_id, parsed_utterance, lang, rate, pitch, matched_voice,
-               std::move(on_speak_finished));
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::ProcessSpeech)
+      .WithArgs(utterance_id, parsed_utterance, lang, rate, pitch,
+                matched_voice, std::move(on_speak_finished));
 }
 
 // static

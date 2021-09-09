@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -23,6 +24,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_observer.h"
@@ -32,9 +34,9 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/display/unified_desktop_utils.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/cancelable_callback.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/touch_device_manager.h"
 #endif
@@ -59,7 +61,7 @@ class DisplayManagerTestApi;
 // DisplayManager maintains the current display configurations,
 // and notifies observers when configuration changes.
 class DISPLAY_MANAGER_EXPORT DisplayManager
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     : public DisplayConfigurator::SoftwareMirroringController
 #endif
 {
@@ -108,7 +110,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   };
 
   explicit DisplayManager(std::unique_ptr<Screen> screen);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ~DisplayManager() override;
 #else
   ~DisplayManager();
@@ -135,7 +137,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // Returns the display id of the first display in the outupt list.
   int64_t first_display_id() const { return first_display_id_; }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   TouchDeviceManager* touch_device_manager() const {
     return touch_device_manager_.get();
   }
@@ -349,7 +351,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     should_restore_mirror_mode_from_display_prefs_ = value;
   }
 
-  const base::Optional<MixedMirrorModeParams>& mixed_mirror_mode_params()
+  const absl::optional<MixedMirrorModeParams>& mixed_mirror_mode_params()
       const {
     return mixed_mirror_mode_params_;
   }
@@ -358,7 +360,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // mixed mirror mode in the next display configuration. (Use SetMirrorMode()
   // to immediately switch to mixed mirror mode.)
   void set_mixed_mirror_mode_params(
-      const base::Optional<MixedMirrorModeParams> mixed_params) {
+      const absl::optional<MixedMirrorModeParams> mixed_params) {
     mixed_mirror_mode_params_ = mixed_params;
   }
 
@@ -426,7 +428,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // the specified destination displays and all other connected displays will be
   // extended.
   void SetMirrorMode(MirrorMode mode,
-                     const base::Optional<MixedMirrorModeParams>& mixed_params);
+                     const absl::optional<MixedMirrorModeParams>& mixed_params);
 
   // Used to emulate display change when run in a desktop environment instead
   // of on a device.
@@ -434,7 +436,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
       ManagedDisplayInfo::ManagedDisplayModeList display_modes = {});
   void ToggleDisplayScaleFactor();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void InitConfigurator(std::unique_ptr<NativeDisplayDelegate> delegate);
   void ForceInitialConfigureWithObservers(
       display::DisplayChangeObserver* display_change_observer,
@@ -451,7 +453,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
       const ui::TouchscreenDevice& touchdevice);
   void ClearTouchCalibrationData(
       int64_t display_id,
-      base::Optional<ui::TouchscreenDevice> touchdevice);
+      absl::optional<ui::TouchscreenDevice> touchdevice);
   void UpdateZoomFactor(int64_t display_id, float zoom_factor);
   bool HasUnassociatedDisplay() const;
 #endif
@@ -682,14 +684,14 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // Not empty if mixed mirror mode should be turned on (the specified source
   // display is mirrored to the specified destination displays). Empty if mixed
   // mirror mode is disabled.
-  base::Optional<MixedMirrorModeParams> mixed_mirror_mode_params_;
+  absl::optional<MixedMirrorModeParams> mixed_mirror_mode_params_;
 
   // This is incremented whenever a BeginEndNotifier is created and decremented
   // when destroyed. BeginEndNotifier uses this to track when it should call
   // OnWillProcessDisplayChanges() and OnDidProcessDisplayChanges().
   int notify_depth_ = 0;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<display::DisplayConfigurator> display_configurator_;
 
   std::unique_ptr<TouchDeviceManager> touch_device_manager_;
@@ -699,7 +701,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // to record UMA metrics for changes to the display zoom that are temporary.
   // Temporary changes may include things like the user trying out different
   // zoom levels before making the final decision.
-  base::CancelableCallback<void()> on_display_zoom_modify_timeout_;
+  base::CancelableOnceClosure on_display_zoom_modify_timeout_;
 #endif
 
   base::WeakPtrFactory<DisplayManager> weak_ptr_factory_{this};

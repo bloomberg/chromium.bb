@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -12,6 +13,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -19,10 +22,12 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/response_body_loader.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
@@ -100,9 +105,9 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
           memcpy(copy_for_resource.get(), buffer, num_bytes);
           PostCrossThreadTask(
               *loading_task_runner_, FROM_HERE,
-              CrossThreadBindOnce(
-                  NotifyClientDidReceiveData, response_body_loader_client_,
-                  WTF::Passed(std::move(copy_for_resource)), num_bytes));
+              CrossThreadBindOnce(NotifyClientDidReceiveData,
+                                  response_body_loader_client_,
+                                  std::move(copy_for_resource), num_bytes));
 
           result = data_pipe_->EndReadData(num_bytes);
           CHECK_EQ(result, MOJO_RESULT_OK);
@@ -266,6 +271,110 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
 
 size_t ScriptStreamer::small_script_threshold_ = 30 * 1024;
 
+std::tuple<ScriptStreamer*, ScriptStreamer::NotStreamingReason>
+ScriptStreamer::TakeFrom(ScriptResource* script_resource,
+                         mojom::blink::ScriptType expected_type) {
+  ScriptStreamer::NotStreamingReason not_streamed_reason =
+      script_resource->NoStreamerReason();
+  ScriptStreamer* streamer = script_resource->TakeStreamer();
+  if (streamer) {
+    if (streamer->IsStreamingSuppressed()) {
+      not_streamed_reason = streamer->StreamingSuppressedReason();
+      streamer = nullptr;
+    } else {
+      DCHECK_EQ(not_streamed_reason,
+                ScriptStreamer::NotStreamingReason::kInvalid);
+      mojom::blink::ScriptType streamer_script_type =
+          streamer->GetScriptType() == v8::ScriptType::kClassic
+              ? mojom::blink::ScriptType::kClassic
+              : mojom::blink::ScriptType::kModule;
+      if (streamer_script_type != expected_type) {
+        streamer = nullptr;
+        not_streamed_reason =
+            ScriptStreamer::NotStreamingReason::kErrorScriptTypeMismatch;
+      }
+    }
+  }
+  return std::make_tuple(streamer, not_streamed_reason);
+}
+
+namespace {
+
+enum class StreamedBoolean {
+  // Must match BooleanStreamed in enums.xml.
+  kNotStreamed = 0,
+  kStreamed = 1,
+  kMaxValue = kStreamed
+};
+
+void RecordStartedStreamingHistogram(ScriptSchedulingType type,
+                                     bool did_use_streamer) {
+  StreamedBoolean streamed = did_use_streamer ? StreamedBoolean::kStreamed
+                                              : StreamedBoolean::kNotStreamed;
+  switch (type) {
+    case ScriptSchedulingType::kParserBlocking: {
+      UMA_HISTOGRAM_ENUMERATION(
+          "WebCore.Scripts.ParsingBlocking.StartedStreaming", streamed);
+      break;
+    }
+    case ScriptSchedulingType::kDefer: {
+      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Deferred.StartedStreaming",
+                                streamed);
+      break;
+    }
+    case ScriptSchedulingType::kAsync: {
+      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Async.StartedStreaming",
+                                streamed);
+      break;
+    }
+    default: {
+      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Other.StartedStreaming",
+                                streamed);
+      break;
+    }
+  }
+}
+
+void RecordNotStreamingReasonHistogram(
+    ScriptSchedulingType type,
+    ScriptStreamer::NotStreamingReason reason) {
+  switch (type) {
+    case ScriptSchedulingType::kParserBlocking: {
+      UMA_HISTOGRAM_ENUMERATION(
+          "WebCore.Scripts.ParsingBlocking.NotStreamingReason", reason);
+      break;
+    }
+    case ScriptSchedulingType::kDefer: {
+      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Deferred.NotStreamingReason",
+                                reason);
+      break;
+    }
+    case ScriptSchedulingType::kAsync: {
+      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Async.NotStreamingReason",
+                                reason);
+      break;
+    }
+    default: {
+      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Other.NotStreamingReason",
+                                reason);
+      break;
+    }
+  }
+}
+
+}  // namespace
+
+void ScriptStreamer::RecordStreamingHistogram(
+    ScriptSchedulingType type,
+    bool can_use_streamer,
+    ScriptStreamer::NotStreamingReason reason) {
+  RecordStartedStreamingHistogram(type, can_use_streamer);
+  if (!can_use_streamer) {
+    DCHECK_NE(ScriptStreamer::NotStreamingReason::kInvalid, reason);
+    RecordNotStreamingReasonHistogram(type, reason);
+  }
+}
+
 bool ScriptStreamer::ConvertEncoding(
     const char* encoding_name,
     v8::ScriptCompiler::StreamedSource::Encoding* encoding) {
@@ -274,7 +383,7 @@ bool ScriptStreamer::ConvertEncoding(
   if (strcmp(encoding_name, "windows-1252") == 0 ||
       strcmp(encoding_name, "ISO-8859-1") == 0 ||
       strcmp(encoding_name, "US-ASCII") == 0) {
-    *encoding = v8::ScriptCompiler::StreamedSource::ONE_BYTE;
+    *encoding = v8::ScriptCompiler::StreamedSource::WINDOWS_1252;
     return true;
   }
   if (strcmp(encoding_name, "UTF-8") == 0) {
@@ -362,9 +471,11 @@ void ScriptStreamer::RunScriptStreamingTask(
   // TODO(leszeks): Add flow event data again
   TRACE_EVENT_BEGIN1(
       "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
-      "v8.parseOnBackground", "data",
-      inspector_parse_script_event::Data(streamer->ScriptResourceIdentifier(),
-                                         streamer->ScriptURLString()));
+      "v8.parseOnBackground", "data", [&](perfetto::TracedValue context) {
+        inspector_parse_script_event::Data(std::move(context),
+                                           streamer->ScriptResourceIdentifier(),
+                                           streamer->ScriptURLString());
+      });
 
   TRACE_EVENT_BEGIN0(
       "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
@@ -429,6 +540,16 @@ bool ScriptStreamer::TryStartStreamingTask() {
   if (!CanStartStreaming())
     return false;
 
+  // Skip non-JS modules based on the mime-type.
+  // TODO(crbug/1132413),TODO(crbug/1061857): Disable streaming for non-JS
+  // based the specific import statements.
+  if (script_type_ == v8::ScriptType::kModule &&
+      !MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
+          script_resource_->GetResponse().HttpContentType())) {
+    SuppressStreaming(NotStreamingReason::kNonJavascriptModule);
+    return false;
+  }
+
   // Even if the first data chunk is small, the script can still be big enough -
   // wait until the next data chunk comes before deciding whether to start the
   // streaming.
@@ -486,10 +607,11 @@ bool ScriptStreamer::TryStartStreamingTask() {
       std::move(stream_ptr), encoding_);
 
   std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>
-      script_streaming_task(
-          base::WrapUnique(v8::ScriptCompiler::StartStreamingScript(
+      script_streaming_task =
+          base::WrapUnique(v8::ScriptCompiler::StartStreaming(
               V8PerIsolateData::MainThreadIsolate(), source_.get(),
-              compile_options_)));
+              script_type_));
+
   if (!script_streaming_task) {
     // V8 cannot stream the script.
     stream_ = nullptr;
@@ -501,8 +623,10 @@ bool ScriptStreamer::TryStartStreamingTask() {
   TRACE_EVENT_WITH_FLOW1(
       TRACE_DISABLED_BY_DEFAULT("v8.compile"), "v8.streamingCompile.start",
       this, TRACE_EVENT_FLAG_FLOW_OUT, "data",
-      inspector_parse_script_event::Data(this->ScriptResourceIdentifier(),
-                                         this->ScriptURLString()));
+      [&](perfetto::TracedValue context) {
+        inspector_parse_script_event::Data(
+            std::move(context), ScriptResourceIdentifier(), ScriptURLString());
+      });
 
   stream_->TakeDataAndPipeOnMainThread(
       script_resource_, this, std::move(data_pipe_),
@@ -518,28 +642,51 @@ bool ScriptStreamer::TryStartStreamingTask() {
   worker_pool::PostTask(
       FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       CrossThreadBindOnce(RunScriptStreamingTask,
-                          WTF::Passed(std::move(script_streaming_task)),
+                          std::move(script_streaming_task),
                           WrapCrossThreadPersistent(this),
                           WTF::CrossThreadUnretained(stream_)));
 
   return true;
 }
 
+v8::ScriptType ScriptStreamer::ScriptTypeForStreamingTask(
+    ScriptResource* script_resource) {
+  switch (script_resource->GetInitialRequestScriptType()) {
+    case mojom::blink::ScriptType::kModule:
+      return v8::ScriptType::kModule;
+    case mojom::blink::ScriptType::kClassic: {
+      // <link rel=preload as=script ref=module.mjs> is a common pattern instead
+      // of <link rel=modulepreload>. Try streaming parsing as module instead in
+      // these cases (https://crbug.com/1178198).
+      if (script_resource->IsUnusedPreload()) {
+        if (script_resource->Url().GetPath().EndsWithIgnoringCase(".mjs")) {
+          return v8::ScriptType::kModule;
+        }
+      }
+      return v8::ScriptType::kClassic;
+    }
+  }
+  NOTREACHED();
+}
+
+v8::ScriptType ScriptStreamer::GetScriptType() const {
+  return script_type_;
+}
+
 ScriptStreamer::ScriptStreamer(
     ScriptResource* script_resource,
     mojo::ScopedDataPipeConsumerHandle data_pipe,
     ResponseBodyLoaderClient* response_body_loader_client,
-    v8::ScriptCompiler::CompileOptions compile_options,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
     : script_resource_(script_resource),
       response_body_loader_client_(response_body_loader_client),
       data_pipe_(std::move(data_pipe)),
-      compile_options_(compile_options),
       script_url_string_(script_resource->Url().Copy().GetString()),
       script_resource_identifier_(script_resource->InspectorId()),
       // Unfortunately there's no dummy encoding value in the enum; let's use
       // one we don't stream.
       encoding_(v8::ScriptCompiler::StreamedSource::TWO_BYTE),
+      script_type_(ScriptTypeForStreamingTask(script_resource)),
       loading_task_runner_(std::move(loading_task_runner)) {
   watcher_ = std::make_unique<mojo::SimpleWatcher>(
       FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL,
@@ -655,9 +802,10 @@ void ScriptStreamer::StreamingComplete(LoadingState loading_state) {
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("v8.compile"), "v8.streamingCompile.complete",
       this, TRACE_EVENT_FLAG_FLOW_IN, "streaming_suppressed",
-      IsStreamingSuppressed(), "data",
-      inspector_parse_script_event::Data(this->ScriptResourceIdentifier(),
-                                         this->ScriptURLString()));
+      IsStreamingSuppressed(), "data", [&](perfetto::TracedValue context) {
+        inspector_parse_script_event::Data(
+            std::move(context), ScriptResourceIdentifier(), ScriptURLString());
+      });
 
   // The background task is completed; do the necessary ramp-down in the main
   // thread.

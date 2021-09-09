@@ -18,8 +18,10 @@ namespace angle
 bool GetSystemInfo_ios(SystemInfo *info)
 {
     {
-        // TODO(anglebug.com/4275): Get the actual system version.
+        // TODO(anglebug.com/4275): Get the actual system version and GPU info.
         info->machineModelVersion = "0.0";
+        info->gpus.emplace_back();
+        info->gpus[0].vendorId = kVendorID_Apple;
     }
 
     return true;

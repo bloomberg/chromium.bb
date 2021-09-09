@@ -59,10 +59,10 @@ void RenderPageImpl(CPDF_PageRenderContext* pContext,
   pContext->m_pDevice->SetBaseClip(clipping_rect);
   pContext->m_pDevice->SetClip_Rect(clipping_rect);
   pContext->m_pContext = std::make_unique<CPDF_RenderContext>(
-      pPage->GetDocument(), pPage->m_pPageResources.Get(),
+      pPage->GetDocument(), pPage->GetPageResources(),
       static_cast<CPDF_PageRenderCache*>(pPage->GetRenderCache()));
 
-  pContext->m_pContext->AppendLayer(pPage, &matrix);
+  pContext->m_pContext->AppendLayer(pPage, matrix);
 
   if (flags & FPDF_ANNOT) {
     auto pOwnedList = std::make_unique<CPDF_AnnotList>(pPage);
@@ -71,7 +71,7 @@ void RenderPageImpl(CPDF_PageRenderContext* pContext,
     bool bPrinting =
         pContext->m_pDevice->GetDeviceType() != DeviceType::kDisplay;
     pList->DisplayAnnots(pPage, pContext->m_pDevice.get(),
-                         pContext->m_pContext.get(), bPrinting, &matrix, false,
+                         pContext->m_pContext.get(), bPrinting, matrix, false,
                          nullptr);
   }
 

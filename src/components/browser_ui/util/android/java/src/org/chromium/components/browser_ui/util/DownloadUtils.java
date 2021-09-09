@@ -15,6 +15,10 @@ import androidx.core.app.NotificationManagerCompat;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.url_formatter.SchemeDisplay;
+import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.url.GURL;
 
 /**
  * A class containing some utility static methods.
@@ -22,6 +26,10 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 public class DownloadUtils {
     private static final int[] BYTES_STRINGS = {
             R.string.download_ui_kb, R.string.download_ui_mb, R.string.download_ui_gb};
+
+    // Limit the origin length so that the eTLD+1 cannot be hidden. If the origin exceeds this
+    // length the eTLD+1 is extracted and shown.
+    private static final int MAX_ORIGIN_LENGTH = 40;
 
     /**
      * Format the number of bytes into KB, MB, or GB and return the corresponding generated string.
@@ -67,6 +75,8 @@ public class DownloadUtils {
     public static long addCompletedDownload(String fileName, String description, String mimeType,
             String filePath, long fileSizeBytes, String originalUrl, String referer) {
         assert !ThreadUtils.runningOnUiThread();
+        assert Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+            : "addCompletedDownload is deprecated in Q, may cause crash.";
         Context context = ContextUtils.getApplicationContext();
         DownloadManager manager =
                 (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
@@ -101,5 +111,23 @@ public class DownloadUtils {
             }
         }
         return originalUri;
+    }
+
+    /**
+     * Adjusts a URL for display to the user in the subtext of an Android notification.
+     *
+     * @param url The full URL.
+     * @param return The URL that should be displayed, or null if the input was invalid.
+     */
+    public static String formatUrlForDisplayInNotification(GURL url) {
+        if (GURL.isEmptyOrInvalid(url)) return null;
+
+        String formattedUrl =
+                UrlFormatter.formatUrlForSecurityDisplay(url, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
+        if (formattedUrl.length() <= MAX_ORIGIN_LENGTH) return formattedUrl;
+
+        // The origin is too long. Strip down to eTLD+1.
+        return UrlUtilities.getDomainAndRegistry(
+                url.getSpec(), false /* includePrivateRegistries */);
     }
 }

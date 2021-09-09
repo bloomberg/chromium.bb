@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/renderer/modules/mediastream/testing_platform_support_with_mock_audio_capture_source.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
@@ -50,10 +51,10 @@ constexpr int kExpectedSourceBufferSize = kRequestedBufferSize;
 // output end of its FIFO.
 constexpr int kExpectedOutputBufferSize = kSampleRate / 100;
 
-class MockMediaStreamAudioSink : public WebMediaStreamAudioSink {
+class FormatCheckingMockAudioSink : public WebMediaStreamAudioSink {
  public:
-  MockMediaStreamAudioSink() {}
-  ~MockMediaStreamAudioSink() override {}
+  FormatCheckingMockAudioSink() = default;
+  ~FormatCheckingMockAudioSink() override = default;
 
   void OnData(const media::AudioBus& audio_bus,
               base::TimeTicks estimated_capture_time) override {
@@ -76,13 +77,14 @@ class MockMediaStreamAudioSink : public WebMediaStreamAudioSink {
 
 }  // namespace
 
-class ProcessedLocalAudioSourceTest : public testing::Test {
+class ProcessedLocalAudioSourceTest : public SimTest {
  protected:
-  ProcessedLocalAudioSourceTest() {}
+  ProcessedLocalAudioSourceTest() = default;
 
-  ~ProcessedLocalAudioSourceTest() override {}
+  ~ProcessedLocalAudioSourceTest() override = default;
 
   void SetUp() override {
+    SimTest::SetUp();
     audio_source_ = MakeGarbageCollected<MediaStreamSource>(
         String::FromUTF8("audio_label"), MediaStreamSource::kTypeAudio,
         String::FromUTF8("audio_track"), false /* remote */);
@@ -91,21 +93,24 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
   }
 
   void TearDown() override {
+    SimTest::TearDown();
     audio_source_ = nullptr;
     audio_component_ = nullptr;
     WebHeap::CollectAllGarbageForTesting();
   }
 
   void CreateProcessedLocalAudioSource(
-      const AudioProcessingProperties& properties) {
+      const AudioProcessingProperties& properties,
+      int num_requested_channels) {
     std::unique_ptr<blink::ProcessedLocalAudioSource> source =
         std::make_unique<blink::ProcessedLocalAudioSource>(
-            nullptr /* consumer_web_frame is N/A for non-browser tests */,
+            *MainFrame().GetFrame(),
             MediaStreamDevice(mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
                               "mock_audio_device_id", "Mock audio device",
                               kSampleRate, kChannelLayout,
                               kRequestedBufferSize),
-            false /* disable_local_echo */, properties, base::DoNothing(),
+            false /* disable_local_echo */, properties, num_requested_channels,
+            base::DoNothing(),
             scheduler::GetSingleThreadTaskRunnerForTesting());
     source->SetAllowInvalidRenderFrameIdForTesting(true);
     audio_source_->SetPlatformSource(std::move(source));
@@ -157,7 +162,7 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
   // the native buffer size.
   AudioProcessingProperties properties;
   properties.DisableDefaultProperties();
-  CreateProcessedLocalAudioSource(properties);
+  CreateProcessedLocalAudioSource(properties, 1 /* num_requested_channels */);
 
   // Connect the track, and expect the MockAudioCapturerSource to be initialized
   // and started by ProcessedLocalAudioSource.
@@ -173,8 +178,7 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
   CheckOutputFormatMatches(audio_source()->GetAudioParameters());
 
   // Connect a sink to the track.
-  std::unique_ptr<MockMediaStreamAudioSink> sink(
-      new MockMediaStreamAudioSink());
+  auto sink = std::make_unique<FormatCheckingMockAudioSink>();
   EXPECT_CALL(*sink, FormatIsSet(_))
       .WillOnce(Invoke(this, &ThisTest::CheckOutputFormatMatches));
   MediaStreamAudioTrack::From(audio_track())->AddSink(sink.get());

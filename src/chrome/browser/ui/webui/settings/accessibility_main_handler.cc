@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/accessibility_labels_bubble_model.h"
@@ -37,19 +38,18 @@ void AccessibilityMainHandler::RegisterMessages() {
 }
 
 void AccessibilityMainHandler::OnJavascriptAllowed() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   accessibility_subscription_ =
-      chromeos::AccessibilityManager::Get()->RegisterCallback(
-          base::BindRepeating(
-              &AccessibilityMainHandler::OnAccessibilityStatusChanged,
-              base::Unretained(this)));
-#endif  // defined(OS_CHROMEOS)
+      ash::AccessibilityManager::Get()->RegisterCallback(base::BindRepeating(
+          &AccessibilityMainHandler::OnAccessibilityStatusChanged,
+          base::Unretained(this)));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void AccessibilityMainHandler::OnJavascriptDisallowed() {
-#if defined(OS_CHROMEOS)
-  accessibility_subscription_.reset();
-#endif  // defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  accessibility_subscription_ = {};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void AccessibilityMainHandler::HandleA11yPageReady(
@@ -64,7 +64,7 @@ void AccessibilityMainHandler::HandleCheckAccessibilityImageLabels(
   // dialog will disable the feature again if it is not accepted.
   content::WebContents* web_contents = web_ui()->GetWebContents();
   content::RenderWidgetHostView* view =
-      web_contents->GetRenderViewHost()->GetWidget()->GetView();
+      web_contents->GetMainFrame()->GetRenderViewHost()->GetWidget()->GetView();
   gfx::Rect rect = view->GetViewBounds();
   auto model = std::make_unique<AccessibilityLabelsBubbleModel>(
       Profile::FromWebUI(web_ui()), web_contents, true /* enable always */);
@@ -78,14 +78,14 @@ void AccessibilityMainHandler::SendScreenReaderStateChanged() {
   FireWebUIListener("screen-reader-state-changed", result);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void AccessibilityMainHandler::OnAccessibilityStatusChanged(
-    const chromeos::AccessibilityStatusEventDetails& details) {
+    const ash::AccessibilityStatusEventDetails& details) {
   if (details.notification_type ==
-      chromeos::ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
+      ash::AccessibilityNotificationType::kToggleSpokenFeedback) {
     SendScreenReaderStateChanged();
   }
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace settings

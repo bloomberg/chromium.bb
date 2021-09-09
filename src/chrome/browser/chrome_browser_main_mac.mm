@@ -32,7 +32,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
-#include "components/crash/core/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/version_info/channel.h"
@@ -74,10 +73,10 @@ int ChromeBrowserMainPartsMac::PreEarlyInitialization() {
   return ChromeBrowserMainPartsPosix::PreEarlyInitialization();
 }
 
-void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
+void ChromeBrowserMainPartsMac::PreCreateMainMessageLoop() {
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::PRE_MAIN_MESSAGE_LOOP_START);
-  ChromeBrowserMainPartsPosix::PreMainMessageLoopStart();
+  ChromeBrowserMainPartsPosix::PreCreateMainMessageLoop();
 
   // ChromeBrowserMainParts should have loaded the resource bundle by this
   // point (needed to load the nib).
@@ -134,13 +133,12 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   }
 }
 
-void ChromeBrowserMainPartsMac::PostMainMessageLoopStart() {
+void ChromeBrowserMainPartsMac::PostCreateMainMessageLoop() {
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::POST_MAIN_MESSAGE_LOOP_START);
-  ChromeBrowserMainPartsPosix::PostMainMessageLoopStart();
+  ChromeBrowserMainPartsPosix::PostCreateMainMessageLoop();
 
-  if (base::FeatureList::IsEnabled(network::features::kCertVerifierService) &&
-      base::FeatureList::IsEnabled(
+  if (base::FeatureList::IsEnabled(
           net::features::kCertVerifierBuiltinFeature)) {
     net::InitializeTrustStoreMacCache();
   }
@@ -160,9 +158,6 @@ void ChromeBrowserMainPartsMac::PostProfileInit() {
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::POST_PROFILE_INIT);
   ChromeBrowserMainPartsPosix::PostProfileInit();
-
-  g_browser_process->metrics_service()->RecordBreakpadRegistration(
-      crash_reporter::GetUploadsEnabled());
 
   // Activation of Keystone is not automatic but done in response to the
   // counting and reporting of profiles.

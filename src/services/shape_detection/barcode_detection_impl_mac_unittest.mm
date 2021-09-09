@@ -10,13 +10,13 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision.h"
@@ -120,16 +120,10 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
   }
 
   impl_ = GetParam().factory.Run(mojom::BarcodeDetectorOptions::New());
-  if (!impl_) {
-    LOG(WARNING) << "Barcode Detection is not supported before Mac OSX 10.10."
-                 << "Skipping test.";
-    return;
-  }
 
   // Generate a barcode image as a CIImage by using |qr_code_generator|.
-  NSData* const qr_code_data =
-      [[NSString stringWithUTF8String:kInfoString.c_str()]
-          dataUsingEncoding:NSISOLatin1StringEncoding];
+  NSData* const qr_code_data = [base::SysUTF8ToNSString(kInfoString)
+      dataUsingEncoding:NSISOLatin1StringEncoding];
 
   CIFilter* qr_code_generator =
       [CIFilter filterWithName:GetParam().test_code_generator];

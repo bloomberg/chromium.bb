@@ -14,6 +14,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -102,7 +103,7 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
   if (!dialog || dialog->use_custom_frame()) {
     params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
     params.remove_standard_frame = true;
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
     // Except on Mac, the bubble frame includes its own shadow; remove any
     // native shadowing. On Mac, the window server provides the shadow.
     params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
@@ -131,7 +132,7 @@ int DialogDelegate::GetDefaultDialogButton() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-base::string16 DialogDelegate::GetDialogButtonLabel(
+std::u16string DialogDelegate::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (!GetParams().button_labels[button].empty())
     return GetParams().button_labels[button];
@@ -144,7 +145,7 @@ base::string16 DialogDelegate::GetDialogButtonLabel(
     return l10n_util::GetStringUTF16(IDS_APP_CLOSE);
   }
   NOTREACHED();
-  return base::string16();
+  return std::u16string();
 }
 
 bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
@@ -349,7 +350,7 @@ void DialogDelegate::SetButtonEnabled(ui::DialogButton button, bool enabled) {
 }
 
 void DialogDelegate::SetButtonLabel(ui::DialogButton button,
-    base::string16 label) {
+                                    std::u16string label) {
   if (params_.button_labels[button] == label)
     return;
   params_.button_labels[button] = label;
@@ -417,11 +418,14 @@ ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() {
 }
 
 int DialogDelegate::GetCornerRadius() const {
-  return base::FeatureList::IsEnabled(
-             features::kEnableMDRoundedCornersOnDialogs)
-             ? LayoutProvider::Get()->GetCornerRadiusMetric(
-                   views::EMPHASIS_MEDIUM)
-             : 2;
+#if defined(OS_MAC)
+  // TODO(crbug.com/1116680): On Mac MODAL_TYPE_WINDOW is implemented using
+  // sheets which causes visual artifacts when corner radius is increased for
+  // modal types. Remove this after this issue has been addressed.
+  if (GetModalType() == ui::MODAL_TYPE_WINDOW)
+    return 2;
+#endif
+  return LayoutProvider::Get()->GetCornerRadiusMetric(views::Emphasis::kMedium);
 }
 
 std::unique_ptr<View> DialogDelegate::DisownFootnoteView() {
@@ -454,5 +458,8 @@ const Widget* DialogDelegateView::GetWidget() const {
 View* DialogDelegateView::GetContentsView() {
   return this;
 }
+
+BEGIN_METADATA(DialogDelegateView, View)
+END_METADATA
 
 }  // namespace views

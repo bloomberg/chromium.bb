@@ -1,0 +1,6 @@
+uniform half a;
+uniform half4 b;
+void main() {
+    sk_FragColor.x = length(a);
+    sk_FragColor.x = length(b);
+}
