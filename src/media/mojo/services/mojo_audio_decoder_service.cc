@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/mojo_audio_decoder_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -35,7 +36,7 @@ void MojoAudioDecoderService::Construct(
 
 void MojoAudioDecoderService::Initialize(
     const AudioDecoderConfig& config,
-    const base::Optional<base::UnguessableToken>& cdm_id,
+    const absl::optional<base::UnguessableToken>& cdm_id,
     InitializeCallback callback) {
   DVLOG(1) << __func__ << " " << config.AsHumanReadableString();
 
@@ -74,16 +75,17 @@ void MojoAudioDecoderService::Initialize(
       config, cdm_context,
       base::BindOnce(&MojoAudioDecoderService::OnInitialized, weak_this_,
                      std::move(callback)),
-      base::Bind(&MojoAudioDecoderService::OnAudioBufferReady, weak_this_),
-      base::Bind(&MojoAudioDecoderService::OnWaiting, weak_this_));
+      base::BindRepeating(&MojoAudioDecoderService::OnAudioBufferReady,
+                          weak_this_),
+      base::BindRepeating(&MojoAudioDecoderService::OnWaiting, weak_this_));
 }
 
 void MojoAudioDecoderService::SetDataSource(
     mojo::ScopedDataPipeConsumerHandle receive_pipe) {
   DVLOG(1) << __func__;
 
-  mojo_decoder_buffer_reader_.reset(
-      new MojoDecoderBufferReader(std::move(receive_pipe)));
+  mojo_decoder_buffer_reader_ =
+      std::make_unique<MojoDecoderBufferReader>(std::move(receive_pipe));
 }
 
 void MojoAudioDecoderService::Decode(mojom::DecoderBufferPtr buffer,
@@ -109,12 +111,15 @@ void MojoAudioDecoderService::OnInitialized(InitializeCallback callback,
 
   if (!status.is_ok()) {
     // Do not call decoder_->NeedsBitstreamConversion() if init failed.
-    std::move(callback).Run(std::move(status), false);
+    std::move(callback).Run(
+        std::move(status), false,
+        decoder_ ? decoder_->GetDecoderType() : AudioDecoderType::kUnknown);
     return;
   }
 
   std::move(callback).Run(std::move(status),
-                          decoder_->NeedsBitstreamConversion());
+                          decoder_->NeedsBitstreamConversion(),
+                          decoder_->GetDecoderType());
 }
 
 // The following methods are needed so that we can bind them with a weak pointer
@@ -130,8 +135,9 @@ void MojoAudioDecoderService::OnReadDone(DecodeCallback callback,
     return;
   }
 
-  decoder_->Decode(buffer, base::Bind(&MojoAudioDecoderService::OnDecodeStatus,
-                                      weak_this_, base::Passed(&callback)));
+  decoder_->Decode(buffer,
+                   base::BindOnce(&MojoAudioDecoderService::OnDecodeStatus,
+                                  weak_this_, std::move(callback)));
 }
 
 void MojoAudioDecoderService::OnReaderFlushDone(ResetCallback callback) {

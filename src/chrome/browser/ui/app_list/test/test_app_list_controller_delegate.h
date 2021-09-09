@@ -18,7 +18,7 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
 
   int64_t GetAppListDisplayId() override;
   void DismissView() override;
-  gfx::NativeWindow GetAppListWindow() override;
+  aura::Window* GetAppListWindow() override;
   bool IsAppPinned(const std::string& app_id) override;
   void PinApp(const std::string& app_id) override;
   void UnpinApp(const std::string& app_id) override;
@@ -31,15 +31,6 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
                const GURL& url,
                ui::PageTransition transition,
                WindowOpenDisposition deposition) override;
-  void ActivateApp(Profile* profile,
-                   const extensions::Extension* extension,
-                   AppListSource source,
-                   int event_flags) override;
-  void LaunchApp(Profile* profile,
-                 const extensions::Extension* extension,
-                 AppListSource source,
-                 int event_flags,
-                 int64_t display_id) override;
 
   void Reset();
 

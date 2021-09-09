@@ -19,13 +19,14 @@ class TtsPlatformImpl : public TtsPlatform {
   static TtsPlatformImpl* GetInstance();
 
   // TtsPlatform overrides.
-  bool LoadBuiltInTtsEngine(BrowserContext* browser_context) override;
+  void LoadBuiltInTtsEngine(BrowserContext* browser_context) override;
   void WillSpeakUtteranceWithVoice(TtsUtterance* utterance,
                                    const VoiceData& voice_data) override;
   std::string GetError() override;
   void ClearError() override;
   void SetError(const std::string& error) override;
   void Shutdown() override;
+  bool PreferEngineDelegateVoices() override;
 
  protected:
   TtsPlatformImpl() {}

@@ -25,7 +25,9 @@ void FakeLocalFrameHost::EnterFullscreen(
 
 void FakeLocalFrameHost::ExitFullscreen() {}
 
-void FakeLocalFrameHost::FullscreenStateChanged(bool is_fullscreen) {}
+void FakeLocalFrameHost::FullscreenStateChanged(
+    bool is_fullscreen,
+    mojom::blink::FullscreenOptionsPtr options) {}
 
 void FakeLocalFrameHost::RegisterProtocolHandler(const WTF::String& scheme,
                                                  const ::blink::KURL& url,
@@ -37,8 +39,6 @@ void FakeLocalFrameHost::UnregisterProtocolHandler(const WTF::String& scheme,
 
 void FakeLocalFrameHost::DidDisplayInsecureContent() {}
 
-void FakeLocalFrameHost::DidAddContentSecurityPolicies(
-    WTF::Vector<::network::mojom::blink::ContentSecurityPolicyPtr>) {}
 void FakeLocalFrameHost::DidContainInsecureFormAction() {}
 
 void FakeLocalFrameHost::DocumentAvailableInMainFrame(
@@ -52,7 +52,7 @@ void FakeLocalFrameHost::VisibilityChanged(
     mojom::blink::FrameVisibility visibility) {}
 
 void FakeLocalFrameHost::DidChangeThemeColor(
-    base::Optional<::SkColor> theme_color) {}
+    absl::optional<::SkColor> theme_color) {}
 
 void FakeLocalFrameHost::DidChangeBackgroundColor(SkColor background_color,
                                                   bool color_adjust) {}
@@ -104,8 +104,6 @@ void FakeLocalFrameHost::DispatchLoad() {}
 void FakeLocalFrameHost::GoToEntryAtOffset(int32_t offset,
                                            bool has_user_gesture) {}
 
-void FakeLocalFrameHost::RenderFallbackContentInParentProcess() {}
-
 void FakeLocalFrameHost::UpdateTitle(
     const WTF::String& title,
     base::i18n::TextDirection title_direction) {}
@@ -128,12 +126,14 @@ void FakeLocalFrameHost::DidFinishDocumentLoad() {}
 
 void FakeLocalFrameHost::RunModalAlertDialog(
     const WTF::String& alert_message,
+    bool disable_third_party_subframe_suppresion,
     RunModalAlertDialogCallback callback) {
   std::move(callback).Run();
 }
 
 void FakeLocalFrameHost::RunModalConfirmDialog(
     const WTF::String& alert_message,
+    bool disable_third_party_subframe_suppresion,
     RunModalConfirmDialogCallback callback) {
   std::move(callback).Run(true);
 }
@@ -141,6 +141,7 @@ void FakeLocalFrameHost::RunModalConfirmDialog(
 void FakeLocalFrameHost::RunModalPromptDialog(
     const WTF::String& alert_message,
     const WTF::String& default_value,
+    bool disable_third_party_subframe_suppresion,
     RunModalPromptDialogCallback callback) {
   std::move(callback).Run(true, g_empty_string);
 }
@@ -175,6 +176,17 @@ void FakeLocalFrameHost::ShowPopupMenu(
     bool right_aligned,
     bool allow_multiple_selection) {}
 
+void FakeLocalFrameHost::CreateNewPopupWidget(
+    mojo::PendingAssociatedReceiver<mojom::blink::PopupWidgetHost>
+        popup_widget_host,
+    mojo::PendingAssociatedReceiver<mojom::blink::WidgetHost> widget_host,
+    mojo::PendingAssociatedRemote<mojom::blink::Widget> widget) {}
+
+void FakeLocalFrameHost::ShowContextMenu(
+    mojo::PendingAssociatedRemote<mojom::blink::ContextMenuClient>
+        context_menu_client,
+    const blink::UntrustworthyContextMenuParams& params) {}
+
 void FakeLocalFrameHost::DidLoadResourceFromMemoryCache(
     const KURL& url,
     const WTF::String& http_method,
@@ -182,29 +194,42 @@ void FakeLocalFrameHost::DidLoadResourceFromMemoryCache(
     network::mojom::blink::RequestDestination request_destination) {}
 
 void FakeLocalFrameHost::DidChangeFrameOwnerProperties(
-    const base::UnguessableToken& child_frame_token,
+    const blink::FrameToken& child_frame_token,
     mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) {}
 
 void FakeLocalFrameHost::DidChangeOpener(
-    const base::Optional<base::UnguessableToken>& opener_frame) {}
+    const absl::optional<LocalFrameToken>& opener_frame) {}
 
 void FakeLocalFrameHost::DidChangeCSPAttribute(
-    const base::UnguessableToken& child_frame_token,
+    const blink::FrameToken& child_frame_token,
     network::mojom::blink::ContentSecurityPolicyPtr) {}
 
 void FakeLocalFrameHost::DidChangeFramePolicy(
-    const base::UnguessableToken& child_frame_token,
+    const blink::FrameToken& child_frame_token,
     const FramePolicy& frame_policy) {}
-
-void FakeLocalFrameHost::BindPolicyContainer(
-    mojo::PendingAssociatedReceiver<mojom::blink::PolicyContainerHost>
-        receiver) {}
 
 void FakeLocalFrameHost::CapturePaintPreviewOfSubframe(
     const gfx::Rect& clip_rect,
     const base::UnguessableToken& guid) {}
 
+void FakeLocalFrameHost::SetModalCloseListener(
+    mojo::PendingRemote<mojom::blink::ModalCloseListener>) {}
+
 void FakeLocalFrameHost::Detach() {}
+
+void FakeLocalFrameHost::GetKeepAliveHandleFactory(
+    mojo::PendingReceiver<mojom::blink::KeepAliveHandleFactory> receiver) {}
+
+void FakeLocalFrameHost::DidAddMessageToConsole(
+    mojom::ConsoleMessageLevel log_level,
+    const WTF::String& message,
+    int32_t line_no,
+    const WTF::String& source_id,
+    const WTF::String& untrusted_stack_trace) {}
+
+void FakeLocalFrameHost::FrameSizeChanged(const gfx::Size& frame_size) {}
+
+void FakeLocalFrameHost::DidActivateForPrerendering() {}
 
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

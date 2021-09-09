@@ -37,7 +37,7 @@ class CORE_EXPORT PaintWorkletStylePropertyMap
   // TODO(xidachen): consider making the input_property_ids as part of the
   // return value. Or make both CrossThreadData and input_property_ids as
   // params and return a bool.
-  static base::Optional<CrossThreadData> BuildCrossThreadData(
+  static absl::optional<CrossThreadData> BuildCrossThreadData(
       const Document&,
       UniqueObjectId unique_object_id,
       const ComputedStyle&,
@@ -81,4 +81,4 @@ class CORE_EXPORT PaintWorkletStylePropertyMap
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_PAINT_WORKLET_STYLE_PROPERTY_MAP_H_

@@ -5,12 +5,12 @@
 import './strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {CustomElement} from 'chrome://resources/js/custom_element.js';
 import {getFavicon} from 'chrome://resources/js/icon.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
 
 import {AlertIndicatorsElement} from './alert_indicators.js';
-import {CustomElement} from './custom_element.js';
 import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from './tab_strip_embedder_proxy.js';
 import {TabSwiper} from './tab_swiper.js';
 import {CloseTabAction, TabData, TabNetworkState, TabsApiProxy, TabsApiProxyImpl} from './tabs_api_proxy.js';
@@ -270,6 +270,7 @@ export class TabElement extends CustomElement {
    * @private
    */
   onPointerUp_(event) {
+    event.stopPropagation();
     if (event.pointerType !== 'touch' && event.button === 2) {
       this.embedderApi_.showTabContextMenu(
           this.tab.id, event.clientX, event.clientY);
@@ -295,6 +296,11 @@ export class TabElement extends CustomElement {
   /** @return {boolean} */
   isDraggedOut() {
     return this.hasAttribute('dragged-out_');
+  }
+
+  /** @param {boolean} isTouchPressed */
+  setTouchPressed(isTouchPressed) {
+    this.toggleAttribute('touch_pressed_', isTouchPressed);
   }
 
   /**

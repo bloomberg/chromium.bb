@@ -76,7 +76,7 @@ const char kInputFile[] = "input-file";
 // of an uncompressed archive).
 const char kInstallArchive[] = "install-archive";
 
-// Specify the file path of Chrome master preference file.
+// Specify the file path of Chrome initial preference file.
 const char kInstallerData[] = "installerdata";
 
 // If present, specify file path to write logging info.
@@ -133,6 +133,11 @@ const char kRegisterDevChrome[] = "register-dev-chrome";
 // in addition to the standard set of protocols.
 const char kRegisterURLProtocol[] = "register-url-protocol";
 
+// Specifies a comma-separated list of protocols to add as protocol associations
+// for a web application, preceded by the prog_id of that web application.
+// --register-web-app-url-protocols=<progid>:<protocol>,<protocol>,<protocol>..]
+const char kRegisterWebAppURLProtocols[] = "register-web-app-url-protocols";
+
 // Removes Chrome registration from current machine. Requires admin rights.
 const char kRemoveChromeRegistration[] = "remove-chrome-registration";
 
@@ -171,6 +176,10 @@ const char kUninstall[] = "uninstall";
 // that setup.exe will apply to itself and store the resulting binary in the
 // path given by --new-setup-exe.
 const char kUpdateSetupExe[] = "update-setup-exe";
+
+// Switch to pass the ProdId of a web application to be unregistered for
+// protocol handling.
+const char kUnregisterWebAppProgId[] = "unregister-web-app-prog-id";
 
 // Enable verbose logging (info level).
 const char kVerboseLogging[] = "verbose-logging";
@@ -212,6 +221,13 @@ const wchar_t kInstallTempDir[] = L"Temp";
 const wchar_t kLnkExt[] = L".lnk";
 const wchar_t kNaClExe[] = L"nacl64.exe";
 const wchar_t kNotificationHelperExe[] = L"notification_helper.exe";
+
+// DowngradeVersion holds the version from which Chrome was downgraded. In case
+// of multiple downgrades (e.g., 75->74->73), it retains the highest version
+// installed prior to any downgrades. DowngradeVersion is deleted on upgrade
+// once Chrome reaches the version from which it was downgraded.
+const wchar_t kRegDowngradeVersion[] = L"DowngradeVersion";
+
 const wchar_t kSetupExe[] = L"setup.exe";
 const wchar_t kUninstallStringField[] = L"UninstallString";
 const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";

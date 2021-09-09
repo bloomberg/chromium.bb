@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_VR_ELEMENTS_BUTTON_H_
 #define CHROME_BROWSER_VR_ELEMENTS_BUTTON_H_
 
-#include <memory>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
@@ -65,9 +63,9 @@ class VR_UI_EXPORT Button : public UiElement {
   void OnSetName() override;
   void OnSetSize(const gfx::SizeF& size) override;
   void OnSetCornerRadii(const CornerRadii& radii) override;
-  void NotifyClientSizeAnimated(const gfx::SizeF& size,
-                                int target_property_id,
-                                cc::KeyframeModel* keyframe_model) override;
+  void OnSizeAnimated(const gfx::SizeF& size,
+                      int target_property_id,
+                      gfx::KeyframeModel* keyframe_model) override;
   virtual void OnStateUpdated();
 
  private:

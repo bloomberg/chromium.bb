@@ -1,0 +1,27 @@
+{
+    "86": {
+        "name": "m86",
+        "project": "chromium-m86",
+        "ref": "refs/branch-heads/4240"
+    },
+    "88": {
+        "name": "m88",
+        "project": "chromium-m88",
+        "ref": "refs/branch-heads/4324"
+    },
+    "90": {
+        "name": "m90",
+        "project": "chromium-m90",
+        "ref": "refs/branch-heads/4430"
+    },
+    "90-lts": {
+        "name": "m90-lts",
+        "project": "chromium-m90-lts",
+        "ref": "refs/branch-heads/4430_101"
+    },
+    "91": {
+        "name": "m91",
+        "project": "chromium-m91",
+        "ref": "refs/branch-heads/4472"
+    }
+}

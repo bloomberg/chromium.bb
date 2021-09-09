@@ -96,17 +96,9 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
     return orientation_ == ImageOrientationEnum::kDefault;
   }
 
-  static base::CheckedNumeric<size_t> GetSizeInBytes(
-      const IntRect& rect,
-      const CanvasColorParams& color_params);
-
-  static bool MayHaveStrayArea(scoped_refptr<StaticBitmapImage> src_image,
-                               const IntRect& rect);
-
-  static bool CopyToByteArray(scoped_refptr<StaticBitmapImage> src_image,
-                              base::span<uint8_t> dst,
-                              const IntRect&,
-                              const CanvasColorParams&);
+  void SetOrientation(ImageOrientation orientation) {
+    orientation_ = orientation;
+  }
 
  protected:
   // Helper for sub-classes
@@ -114,6 +106,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
                   const cc::PaintFlags&,
                   const FloatRect&,
                   const FloatRect&,
+                  const SkSamplingOptions&,
                   ImageClampingMode,
                   RespectImageOrientationEnum,
                   const PaintImage&);
@@ -140,4 +133,4 @@ struct DowncastTraits<StaticBitmapImage> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_STATIC_BITMAP_IMAGE_H_

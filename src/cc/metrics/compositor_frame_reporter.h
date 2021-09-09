@@ -7,11 +7,11 @@
 
 #include <bitset>
 #include <memory>
+#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/optional.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "cc/base/devtools_instrumentation.h"
@@ -22,6 +22,7 @@
 #include "cc/scheduler/scheduler.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_timing_details.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace viz {
 struct FrameTimingDetails;
@@ -140,14 +141,94 @@ class CC_EXPORT CompositorFrameReporter {
     kSmoothBoth
   };
 
-  using ActiveTrackers =
-      std::bitset<static_cast<size_t>(FrameSequenceTrackerType::kMaxType)>;
+  // Holds a processed list of Blink breakdowns with an `Iterator` class to
+  // easily iterator over them.
+  class CC_EXPORT ProcessedBlinkBreakdown {
+   public:
+    class Iterator {
+     public:
+      explicit Iterator(const ProcessedBlinkBreakdown* owner);
+      ~Iterator();
+
+      bool IsValid() const;
+      void Advance();
+      BlinkBreakdown GetBreakdown() const;
+      base::TimeDelta GetLatency() const;
+
+     private:
+      const ProcessedBlinkBreakdown* owner_;
+
+      size_t index_ = 0;
+    };
+
+    ProcessedBlinkBreakdown(base::TimeTicks blink_start_time,
+                            base::TimeTicks begin_main_frame_start,
+                            const BeginMainFrameMetrics& blink_breakdown);
+    ~ProcessedBlinkBreakdown();
+
+    ProcessedBlinkBreakdown(const ProcessedBlinkBreakdown&) = delete;
+    ProcessedBlinkBreakdown& operator=(const ProcessedBlinkBreakdown&) = delete;
+
+    // Returns a new iterator for the Blink breakdowns.
+    Iterator CreateIterator() const;
+
+   private:
+    base::TimeDelta list_[static_cast<int>(BlinkBreakdown::kBreakdownCount)];
+  };
+
+  // Holds a processed list of Viz breakdowns with an `Iterator` class to easily
+  // iterate over them.
+  class CC_EXPORT ProcessedVizBreakdown {
+   public:
+    class Iterator {
+     public:
+      Iterator(const ProcessedVizBreakdown* owner,
+               bool skip_swap_start_to_swap_end);
+      ~Iterator();
+
+      bool IsValid() const;
+      void Advance();
+      VizBreakdown GetBreakdown() const;
+      base::TimeTicks GetStartTime() const;
+      base::TimeTicks GetEndTime() const;
+      base::TimeDelta GetDuration() const;
+
+     private:
+      const ProcessedVizBreakdown* owner_;
+      const bool skip_swap_start_to_swap_end_;
+
+      size_t index_ = 0;
+    };
+
+    ProcessedVizBreakdown(base::TimeTicks viz_start_time,
+                          const viz::FrameTimingDetails& viz_breakdown);
+    ~ProcessedVizBreakdown();
+
+    ProcessedVizBreakdown(const ProcessedVizBreakdown&) = delete;
+    ProcessedVizBreakdown& operator=(const ProcessedVizBreakdown&) = delete;
+
+    // Returns a new iterator for the Viz breakdowns. If buffer ready breakdowns
+    // are available, `skip_swap_start_to_swap_end_if_breakdown_available` can
+    // be used to skip `kSwapStartToSwapEnd` breakdown.
+    Iterator CreateIterator(
+        bool skip_swap_start_to_swap_end_if_breakdown_available) const;
+
+    base::TimeTicks swap_start() const { return swap_start_; }
+
+   private:
+    absl::optional<std::pair<base::TimeTicks, base::TimeTicks>>
+        list_[static_cast<int>(VizBreakdown::kBreakdownCount)];
+
+    bool buffer_ready_available_ = false;
+    base::TimeTicks swap_start_;
+  };
 
   CompositorFrameReporter(const ActiveTrackers& active_trackers,
                           const viz::BeginFrameArgs& args,
                           LatencyUkmReporter* latency_ukm_reporter,
                           bool should_report_metrics,
                           SmoothThread smooth_thread,
+                          FrameSequenceMetrics::ThreadType scrolling_thread,
                           int layer_tree_host_id,
                           DroppedFrameCounter* dropped_frame_counter);
   ~CompositorFrameReporter();
@@ -156,6 +237,11 @@ class CC_EXPORT CompositorFrameReporter {
   CompositorFrameReporter& operator=(const CompositorFrameReporter& reporter) =
       delete;
 
+  // Creates and returns a clone of the reporter, only if it is currently in the
+  // 'begin impl frame' stage. For any other state, it returns null.
+  // This is used only when there is a partial update. So the cloned reporter
+  // depends in this reporter to decide whether it contains be partial updates
+  // or complete updates.
   std::unique_ptr<CompositorFrameReporter> CopyReporterAtBeginImplStage();
 
   // Note that the started stage may be reported to UMA. If the histogram is
@@ -166,9 +252,11 @@ class CC_EXPORT CompositorFrameReporter {
   void SetBlinkBreakdown(std::unique_ptr<BeginMainFrameMetrics> blink_breakdown,
                          base::TimeTicks begin_main_start);
   void SetVizBreakdown(const viz::FrameTimingDetails& viz_breakdown);
-  void SetEventsMetrics(EventMetrics::List events_metrics);
 
-  int StageHistorySizeForTesting() { return stage_history_.size(); }
+  void AddEventsMetrics(EventMetrics::List events_metrics);
+  EventMetrics::List TakeEventsMetrics();
+
+  int stage_history_size_for_testing() const { return stage_history_.size(); }
 
   void OnFinishImplFrame(base::TimeTicks timestamp);
   void OnAbortBeginMainFrame(base::TimeTicks timestamp);
@@ -200,9 +288,18 @@ class CC_EXPORT CompositorFrameReporter {
     tick_clock_ = tick_clock;
   }
 
-  bool has_partial_update() const { return has_partial_update_; }
-  void set_has_partial_update(bool has_partial_update) {
-    has_partial_update_ = has_partial_update;
+  void set_has_missing_content(bool has_missing_content) {
+    has_missing_content_ = has_missing_content;
+  }
+
+  void SetPartialUpdateDecider(CompositorFrameReporter* decider);
+
+  size_t partial_update_dependents_size_for_testing() const {
+    return partial_update_dependents_.size();
+  }
+
+  size_t owned_partial_update_dependents_size_for_testing() const {
+    return owned_partial_update_dependents_.size();
   }
 
   const viz::BeginFrameId& frame_id() const { return args_.frame_id; }
@@ -214,10 +311,15 @@ class CC_EXPORT CompositorFrameReporter {
 
   // If this is a cloned reporter, then this returns a weak-ptr to the original
   // reporter this was cloned from (using |CopyReporterAtBeginImplStage()|).
-  base::WeakPtr<CompositorFrameReporter> cloned_from() { return cloned_from_; }
+
+  CompositorFrameReporter* partial_update_decider() const {
+    return partial_update_decider_.get();
+  }
 
  protected:
-  base::WeakPtr<CompositorFrameReporter> GetWeakPtr();
+  void set_has_partial_update(bool has_partial_update) {
+    has_partial_update_ = has_partial_update;
+  }
 
  private:
   void TerminateReporter();
@@ -238,16 +340,6 @@ class CC_EXPORT CompositorFrameReporter {
       base::TimeDelta time_delta) const;
 
   void ReportEventLatencyHistograms() const;
-  void ReportEventLatencyBlinkBreakdowns(
-      int histogram_base_index,
-      const std::string& histogram_base_name) const;
-  void ReportEventLatencyVizBreakdowns(
-      int histogram_base_index,
-      const std::string& histogram_base_name) const;
-  void ReportEventLatencyHistogram(int histogram_base_index,
-                                   const std::string& histogram_base_name,
-                                   int stage_type_index,
-                                   base::TimeDelta latency) const;
 
   void ReportCompositorLatencyTraceEvents() const;
   void ReportEventLatencyTraceEvents() const;
@@ -259,15 +351,17 @@ class CC_EXPORT CompositorFrameReporter {
     return report_types_.test(static_cast<size_t>(report_type));
   }
 
-  void PopulateBlinkBreakdownList();
-  void PopulateVizBreakdownList();
-
   // This method is only used for DCheck
   base::TimeDelta SumOfStageHistory() const;
+
+  // Terminating reporters in partial_update_dependents_ after a limit.
+  void DiscardOldPartialUpdateReporters();
 
   base::TimeTicks Now() const;
 
   bool IsDroppedFrameAffectingSmoothness() const;
+
+  base::WeakPtr<CompositorFrameReporter> GetWeakPtr();
 
   const bool should_report_metrics_;
   const viz::BeginFrameArgs args_;
@@ -276,13 +370,11 @@ class CC_EXPORT CompositorFrameReporter {
 
   BeginMainFrameMetrics blink_breakdown_;
   base::TimeTicks blink_start_time_;
-  base::TimeDelta
-      blink_breakdown_list_[static_cast<int>(BlinkBreakdown::kBreakdownCount)];
+  std::unique_ptr<ProcessedBlinkBreakdown> processed_blink_breakdown_;
 
   viz::FrameTimingDetails viz_breakdown_;
   base::TimeTicks viz_start_time_;
-  base::Optional<std::pair<base::TimeTicks, base::TimeTicks>>
-      viz_breakdown_list_[static_cast<int>(VizBreakdown::kBreakdownCount)];
+  std::unique_ptr<ProcessedVizBreakdown> processed_viz_breakdown_;
 
   // Stage data is recorded here. On destruction these stages will be reported
   // to UMA if the termination status is |kPresentedFrame|. Reported data will
@@ -301,6 +393,7 @@ class CC_EXPORT CompositorFrameReporter {
       FrameTerminationStatus::kUnknown;
 
   const ActiveTrackers active_trackers_;
+  const FrameSequenceMetrics::ThreadType scrolling_thread_;
 
   LatencyUkmReporter* latency_ukm_reporter_;
 
@@ -312,9 +405,9 @@ class CC_EXPORT CompositorFrameReporter {
 
   // The timestamp of when the frame was marked as not having produced a frame
   // (through a call to DidNotProduceFrame()).
-  base::Optional<base::TimeTicks> did_not_produce_frame_time_;
-  base::Optional<FrameSkippedReason> frame_skip_reason_;
-  base::Optional<base::TimeTicks> main_frame_abort_time_;
+  absl::optional<base::TimeTicks> did_not_produce_frame_time_;
+  absl::optional<FrameSkippedReason> frame_skip_reason_;
+  absl::optional<base::TimeTicks> main_frame_abort_time_;
 
   const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
 
@@ -324,18 +417,28 @@ class CC_EXPORT CompositorFrameReporter {
   const SmoothThread smooth_thread_;
   const int layer_tree_host_id_;
 
-  // If this is a cloned pointer, then |cloned_from_| is a weak pointer to the
-  // original reporter this was cloned from.
-  base::WeakPtr<CompositorFrameReporter> cloned_from_;
+  // Indicates whether the submitted frame had any missing content (i.e. content
+  // with checkerboarding).
+  bool has_missing_content_ = false;
 
-  // If this reporter was cloned, then |cloned_to_| is a weak pointer to the
-  // cloned repoter.
-  base::WeakPtr<CompositorFrameReporter> cloned_to_;
+  // For a reporter A, if the main-thread takes a long time to respond
+  // to a begin-main-frame, then all reporters created (and terminated) until
+  // the main-thread responds depends on this reporter to decide whether those
+  // frames contained partial updates (i.e. main-thread made some visual
+  // updates, but were not included in the frame), or complete updates.
+  // In such cases, |partial_update_dependents_| for A contains all the frames
+  // that depend on A for deciding whether they had partial updates or not, and
+  // |partial_update_decider_| is set to A for all these reporters.
+  std::queue<base::WeakPtr<CompositorFrameReporter>> partial_update_dependents_;
+  base::WeakPtr<CompositorFrameReporter> partial_update_decider_;
+  uint32_t discarded_partial_update_dependents_count_ = 0;
 
-  // A cloned reporter is not originally owned by the original reporter.
-  // However, it can 'adopt' it (using |AdoptReporter()| if the cloned reporter
-  // needs to stay alive until the original reporter terminates.
-  std::unique_ptr<CompositorFrameReporter> own_cloned_to_;
+  // From the above example, it may be necessary for A to keep all the
+  // dependents alive until A terminates, so that the dependents can set their
+  // |has_partial_update_| flags correctly. This is done by passing ownership of
+  // these reporters (using |AdoptReporter()|).
+  std::queue<std::unique_ptr<CompositorFrameReporter>>
+      owned_partial_update_dependents_;
 
   base::WeakPtrFactory<CompositorFrameReporter> weak_factory_{this};
 };

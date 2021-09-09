@@ -5,9 +5,8 @@
 #ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_VIDEO_CAPTURE_CAPTURABLE_FRAME_SINK_H_
 #define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_VIDEO_CAPTURE_CAPTURABLE_FRAME_SINK_H_
 
-#include <memory>
-
 #include "base/time/time.h"
+#include "components/viz/service/surfaces/pending_copy_output_request.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -17,7 +16,6 @@ class Rect;
 namespace viz {
 
 class CompositorFrameMetadata;
-class CopyOutputRequest;
 class LocalSurfaceId;
 
 // Interface for CompositorFrameSink implementations that support frame sink
@@ -41,6 +39,10 @@ class CapturableFrameSink {
         const gfx::Rect& damage_rect,
         base::TimeTicks expected_display_time,
         const CompositorFrameMetadata& frame_metadata) = 0;
+
+    // Called from SurfaceAggregator to get the video capture status on the
+    // surface which is going to be drawn to.
+    virtual bool IsVideoCaptureStarted() = 0;
   };
 
   virtual ~CapturableFrameSink() = default;
@@ -51,6 +53,10 @@ class CapturableFrameSink {
   virtual void AttachCaptureClient(Client* client) = 0;
   virtual void DetachCaptureClient(Client* client) = 0;
 
+  // Called when a video capture client starts or stops capturing.
+  virtual void OnClientCaptureStarted() = 0;
+  virtual void OnClientCaptureStopped() = 0;
+
   // Returns the currently-active frame size, or an empty size if there is no
   // active frame.
   virtual gfx::Size GetActiveFrameSize() = 0;
@@ -60,8 +66,7 @@ class CapturableFrameSink {
   // default constructed, then the next surface will provide the copy output
   // regardless of its LocalSurfaceId.
   virtual void RequestCopyOfOutput(
-      const LocalSurfaceId& local_surface_id,
-      std::unique_ptr<CopyOutputRequest> request) = 0;
+      PendingCopyOutputRequest pending_copy_output_request) = 0;
 
   // Returns the CompositorFrameMetadata of the last activated CompositorFrame.
   // Return null if no CompositorFrame has activated yet.

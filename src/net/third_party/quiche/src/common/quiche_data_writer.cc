@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/common/quiche_data_writer.h"
+#include "common/quiche_data_writer.h"
 
 #include <algorithm>
 #include <limits>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
+#include "common/quiche_endian.h"
 
 namespace quiche {
 
@@ -89,7 +89,7 @@ char* QuicheDataWriter::BeginWrite(size_t length) {
   }
 
 #ifdef ARCH_CPU_64_BITS
-  DCHECK_LE(length, std::numeric_limits<uint32_t>::max());
+  QUICHE_DCHECK_LE(length, std::numeric_limits<uint32_t>::max());
 #endif
 
   return buffer_ + length_;
@@ -120,7 +120,7 @@ bool QuicheDataWriter::WriteRepeatedByte(uint8_t byte, size_t count) {
 }
 
 void QuicheDataWriter::WritePadding() {
-  DCHECK_LE(length_, capacity_);
+  QUICHE_DCHECK_LE(length_, capacity_);
   if (length_ > capacity_) {
     return;
   }
@@ -145,8 +145,7 @@ bool QuicheDataWriter::Seek(size_t length) {
 }
 
 std::string QuicheDataWriter::DebugString() const {
-  return quiche::QuicheStrCat(" { capacity: ", capacity_, ", length: ", length_,
-                              " }");
+  return absl::StrCat(" { capacity: ", capacity_, ", length: ", length_, " }");
 }
 
 }  // namespace quiche

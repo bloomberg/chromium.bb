@@ -160,6 +160,9 @@ suite('SiteDetails', function() {
           createContentSettingTypeToValuePair(
               ContentSettingsTypes.IDLE_DETECTION,
               [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.FILE_HANDLING,
+              [createRawSiteException('https://foo.com:443')]),
         ],
         [
           createContentSettingTypeToValuePair(
@@ -225,13 +228,10 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
                                                 .BLUETOOTH_DEVICES] =
         'enableWebBluetoothNewPermissionsBackend';
-    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.FONT_ACCESS] =
-        'enableFontAccessContentSetting';
 
     const controlledSettingsCount = /** @type{string : int } */ ({});
 
     controlledSettingsCount['enableExperimentalWebPlatformFeatures'] = 2;
-    controlledSettingsCount['enableFontAccessContentSetting'] = 1;
     controlledSettingsCount['enablePaymentHandlerContentSetting'] = 1;
     controlledSettingsCount['enableSafeBrowsingSubresourceFilter'] = 1;
     controlledSettingsCount['enableWebBluetoothNewPermissionsBackend'] = 1;
@@ -368,7 +368,6 @@ suite('SiteDetails', function() {
     loadTimeData.overrideValues({
       enableExperimentalWebPlatformFeatures: true,
       enableFileSystemWriteContentSetting: true,
-      enableFontAccessContentSetting: true,
       enablePaymentHandlerContentSetting: true,
       enableSafeBrowsingSubresourceFilter: true,
       enableWebBluetoothNewPermissionsBackend: true,

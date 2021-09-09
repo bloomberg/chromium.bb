@@ -45,7 +45,8 @@ void CFWL_Barcode::DrawWidget(CFGAS_GEGraphics* pGraphics,
     mt.f = GetRTClient().top;
     mt.Concat(matrix);
 
-    m_pBarcodeEngine->RenderDevice(pGraphics->GetRenderDevice(), &matrix);
+    // TODO(tsepez): Curious as to why |mt| is unused?
+    m_pBarcodeEngine->RenderDevice(pGraphics->GetRenderDevice(), matrix);
     return;
   }
   CFWL_Edit::DrawWidget(pGraphics, matrix);
@@ -155,8 +156,7 @@ void CFWL_Barcode::GenerateBarcodeImageCache() {
     return;
 
   IFWL_ThemeProvider* pTheme = GetThemeProvider();
-  CFWL_ThemePart part;
-  part.m_pWidget = this;
+  CFWL_ThemePart part(this);
   if (RetainPtr<CFGAS_GEFont> pFont = pTheme->GetFont(part)) {
     if (CFX_Font* pCXFont = pFont->GetDevFont())
       m_pBarcodeEngine->SetFont(pCXFont);

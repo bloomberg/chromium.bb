@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
@@ -39,12 +40,12 @@ LaunchMode GetLaunchModeSlow();
 #if defined(OS_WIN)
 // Returns the path to the shortcut from which Chrome was launched, or null if
 // not launched via a shortcut.
-base::Optional<const wchar_t*> GetShortcutPath() {
+absl::optional<const wchar_t*> GetShortcutPath() {
   STARTUPINFOW si = {sizeof(si)};
   GetStartupInfoW(&si);
   if (!(si.dwFlags & STARTF_TITLEISLINKNAME))
-    return base::nullopt;
-  return base::Optional<const wchar_t*>(si.lpTitle);
+    return absl::nullopt;
+  return absl::optional<const wchar_t*>(si.lpTitle);
 }
 
 LaunchMode GetLaunchModeFast() {
@@ -61,10 +62,11 @@ LaunchMode GetLaunchModeSlow() {
   DCHECK(shortcut_path);
   DCHECK(shortcut_path.value());
 
-  const base::string16 shortcut(base::i18n::ToLower(shortcut_path.value()));
+  const std::u16string shortcut(
+      base::i18n::ToLower(base::WideToUTF16(shortcut_path.value())));
 
   // The windows quick launch path is not localized.
-  if (shortcut.find(L"\\quick launch\\") != base::StringPiece16::npos)
+  if (shortcut.find(u"\\quick launch\\") != base::StringPiece16::npos)
     return LaunchMode::kShortcutTaskbar;
 
   // Check the common shortcut locations.
@@ -80,7 +82,8 @@ LaunchMode GetLaunchModeSlow() {
   base::FilePath candidate;
   for (const auto& item : kPathKeysAndModes) {
     if (base::PathService::Get(item.path_key, &candidate) &&
-        base::StartsWith(shortcut, base::i18n::ToLower(candidate.value()),
+        base::StartsWith(shortcut,
+                         base::i18n::ToLower(candidate.AsUTF16Unsafe()),
                          base::CompareCase::SENSITIVE)) {
       return item.launch_mode;
     }

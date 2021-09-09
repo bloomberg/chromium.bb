@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -193,7 +192,10 @@ TEST_P(PaintControllerPaintTestForCAP, BlockScrollingNonLayeredContents) {
   auto& div3 = *GetLayoutObjectByElementId("div3");
   auto& div4 = *GetLayoutObjectByElementId("div4");
 
-  // Initial cull rect: (0,0 4200x4200)
+  if (RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
+    EXPECT_EQ(IntRect(0, 0, 4200, 4200),
+              container.FirstFragment().GetContentsCullRect().Rect());
+  }
   EXPECT_THAT(ContentDisplayItems(),
               ElementsAre(VIEW_SCROLLING_BACKGROUND_DISPLAY_ITEM,
                           IsSameId(&div1, kBackgroundType),
@@ -224,7 +226,10 @@ TEST_P(PaintControllerPaintTestForCAP, BlockScrollingNonLayeredContents) {
       ScrollOffset(5000, 5000), mojom::blink::ScrollType::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
-  // Cull rect after scroll: (1000,1000 8100x8100)
+  if (RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
+    EXPECT_EQ(IntRect(1000, 1000, 8100, 8100),
+              container.FirstFragment().GetContentsCullRect().Rect());
+  }
   EXPECT_THAT(ContentDisplayItems(),
               ElementsAre(VIEW_SCROLLING_BACKGROUND_DISPLAY_ITEM,
                           IsSameId(&div2, kBackgroundType),

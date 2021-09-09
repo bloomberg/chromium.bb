@@ -6,7 +6,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -14,6 +13,7 @@
 #include "components/web_package/test_support/web_bundle_builder.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_package {
 
@@ -46,7 +46,7 @@ class TestDataSource : public mojom::BundleDataSource {
 
   void Read(uint64_t offset, uint64_t length, ReadCallback callback) override {
     if (offset >= data_.size()) {
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
     const uint8_t* start =
@@ -288,6 +288,32 @@ TEST_F(WebBundleParserTest, RequestURLHasCredentials) {
 TEST_F(WebBundleParserTest, RequestURLHasFragment) {
   test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/#fragment",
+                      {{":status", "200"}, {"content-type", "text/plain"}},
+                      "payload");
+  TestDataSource data_source(builder.CreateBundle());
+
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
+}
+
+TEST_F(WebBundleParserTest, RequestURLIsValidUrnUuid) {
+  const char urn_uuid[] = "urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6";
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
+  builder.AddExchange(urn_uuid,
+                      {{":status", "200"}, {"content-type", "text/plain"}},
+                      "payload");
+  TestDataSource data_source(builder.CreateBundle());
+
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
+  ASSERT_TRUE(metadata);
+  ASSERT_EQ(metadata->requests.size(), 1u);
+  auto location = FindResponse(metadata, GURL(urn_uuid));
+  ASSERT_TRUE(location);
+}
+
+TEST_F(WebBundleParserTest, RequestURLIsInvalidUrnUuid) {
+  const char urn_uuid[] = "urn:uuid:invalid";
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
+  builder.AddExchange(urn_uuid,
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
   TestDataSource data_source(builder.CreateBundle());

@@ -5,18 +5,23 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 
 #include <memory>
+
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_result.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/core/permissions_policy/permissions_policy_parser.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
@@ -43,8 +48,7 @@ const char kTokenPlaceholder[] = "The token contents are not used";
 
 class MockTokenValidator : public TrialTokenValidator {
  public:
-  MockTokenValidator()
-      : response_(OriginTrialTokenStatus::kNotSupported), call_count_(0) {}
+  MockTokenValidator() = default;
   ~MockTokenValidator() override = default;
 
   // blink::WebTrialTokenValidator implementation
@@ -52,7 +56,17 @@ class MockTokenValidator : public TrialTokenValidator {
                                  const url::Origin& origin,
                                  base::Time current_time) const override {
     call_count_++;
-    return response_;
+    // Note: There are other status code which correspond to unparsable token,
+    // but only |OriginTrialTokenStatus::kMalformed| is used in test.
+    bool token_parsable = status_ != OriginTrialTokenStatus::kMalformed;
+    return token_parsable
+               ? TrialTokenResult(
+                     status_,
+                     TrialToken::CreateTrialTokenForTesting(
+                         url::Origin(),
+                         /* match_subdomains */ true, feature_, expiry_,
+                         is_third_party_, TrialToken::UsageRestriction::kNone))
+               : TrialTokenResult(status_);
   }
   TrialTokenResult ValidateToken(base::StringPiece token,
                                  const url::Origin& origin,
@@ -66,21 +80,25 @@ class MockTokenValidator : public TrialTokenValidator {
                    const std::string& feature,
                    base::Time expiry = base::Time(),
                    bool is_third_party = false) {
-    response_.status = status;
-    response_.feature_name = feature;
-    response_.expiry_time = expiry;
-    response_.is_third_party = is_third_party;
+    status_ = status;
+    feature_ = feature;
+    expiry_ = expiry;
+    is_third_party_ = is_third_party;
   }
+
   int CallCount() { return call_count_; }
 
  private:
-  TrialTokenResult response_;
+  // Mocking response data members.
+  OriginTrialTokenStatus status_ = OriginTrialTokenStatus::kNotSupported;
+  std::string feature_;
+  base::Time expiry_;
+  bool is_third_party_;
 
-  mutable int call_count_;
+  mutable int call_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MockTokenValidator);
 };
-
 }  // namespace
 
 class OriginTrialContextTest : public testing::Test {
@@ -92,6 +110,9 @@ class OriginTrialContextTest : public testing::Test {
     execution_context_->GetOriginTrialContext()
         ->SetTrialTokenValidatorForTesting(
             std::unique_ptr<MockTokenValidator>(token_validator_));
+  }
+  ~OriginTrialContextTest() override {
+    execution_context_->NotifyContextDestroyed();
   }
 
   MockTokenValidator* TokenValidator() { return token_validator_; }
@@ -155,7 +176,7 @@ class OriginTrialContextTest : public testing::Test {
     histogram_tester_->ExpectTotalCount(kResultHistogram, total);
   }
 
- private:
+ protected:
   MockTokenValidator* token_validator_;
   Persistent<NullExecutionContext> execution_context_;
   std::unique_ptr<HistogramTester> histogram_tester_;
@@ -404,7 +425,7 @@ TEST_F(OriginTrialContextTest, ParseHeaderValue_NotCommaSeparated) {
   EXPECT_FALSE(OriginTrialContext::ParseHeaderValue("\"foo\" bar"));
 }
 
-TEST_F(OriginTrialContextTest, FeaturePolicy) {
+TEST_F(OriginTrialContextTest, PermissionsPolicy) {
   // Create a dummy window/document with an OriginTrialContext.
   auto dummy = std::make_unique<DummyPageHolder>();
   LocalDOMWindow* window = dummy->GetFrame().DomWindow();
@@ -417,20 +438,22 @@ TEST_F(OriginTrialContextTest, FeaturePolicy) {
 
   // Make a mock feature name map with "frobulate".
   FeatureNameMap feature_map;
-  feature_map.Set("frobulate", mojom::blink::FeaturePolicyFeature::kFrobulate);
+  feature_map.Set("frobulate",
+                  mojom::blink::PermissionsPolicyFeature::kFrobulate);
 
-  // Attempt to parse the "frobulate" feature policy. This will only work if the
-  // feature policy is successfully enabled via the origin trial.
+  // Attempt to parse the "frobulate" permissions policy. This will only work if
+  // the permissions policy is successfully enabled via the origin trial.
   scoped_refptr<const SecurityOrigin> security_origin =
       SecurityOrigin::CreateFromString(kFrobulateEnabledOrigin);
 
   PolicyParserMessageBuffer logger;
-  ParsedFeaturePolicy result;
-  result = FeaturePolicyParser::ParseFeaturePolicyForTest(
-      "frobulate", security_origin, nullptr, logger, feature_map, window);
+  ParsedPermissionsPolicy result;
+  result = PermissionsPolicyParser::ParsePermissionsPolicyForTest(
+      "frobulate=*", security_origin, nullptr, logger, feature_map, window);
   EXPECT_TRUE(logger.GetMessages().IsEmpty());
   ASSERT_EQ(1u, result.size());
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFrobulate, result[0].feature);
+  EXPECT_EQ(mojom::blink::PermissionsPolicyFeature::kFrobulate,
+            result[0].feature);
 }
 
 TEST_F(OriginTrialContextTest, GetEnabledNavigationFeatures) {
@@ -519,6 +542,147 @@ TEST_F(OriginTrialContextTest, ImpliedFeatureExpiryTimesAreUpdated) {
   EXPECT_TRUE(IsFeatureEnabled(OriginTrialFeature::kOriginTrialsSampleAPI));
   EXPECT_EQ(tomorrow, GetFeatureExpiry(
                           OriginTrialFeature::kOriginTrialsSampleAPIImplied));
+}
+
+class OriginTrialContextDevtoolsTest : public OriginTrialContextTest {
+ public:
+  OriginTrialContextDevtoolsTest() {
+    UpdateSecurityOrigin(kFrobulateEnabledOrigin);
+  }
+
+  const HashMap<String, OriginTrialResult> GetOriginTrialResultsForDevtools()
+      const {
+    return execution_context_->GetOriginTrialContext()
+        ->GetOriginTrialResultsForDevtools();
+  }
+
+  struct ExpectedOriginTrialTokenResult {
+    OriginTrialTokenStatus status;
+    bool token_parsable;
+  };
+
+  void ExpectTrialResultContains(
+      const HashMap<String, OriginTrialResult>& trial_results,
+      const String& trial_name,
+      OriginTrialStatus trial_status,
+      const Vector<ExpectedOriginTrialTokenResult>& expected_token_results)
+      const {
+    auto trial_result = trial_results.find(trial_name);
+    ASSERT_TRUE(trial_result != trial_results.end());
+    EXPECT_EQ(trial_result->value.trial_name, trial_name);
+    EXPECT_EQ(trial_result->value.status, trial_status);
+    EXPECT_EQ(trial_result->value.token_results.size(),
+              expected_token_results.size());
+
+    for (size_t i = 0; i < expected_token_results.size(); i++) {
+      const auto& expected_token_result = expected_token_results[i];
+      const auto& actual_token_result = trial_result->value.token_results[i];
+
+      // Note: `OriginTrialTokenResult::raw_token` is not checked
+      // as the mocking class uses `kTokenPlaceholder` as raw token string.
+      // Further content of `OriginTrialTokenResult::raw_token` is
+      // also not checked, as it is generated by the mocking class.
+      EXPECT_EQ(actual_token_result.status, expected_token_result.status);
+      EXPECT_EQ(actual_token_result.parsed_token.has_value(),
+                expected_token_result.token_parsable);
+      EXPECT_NE(actual_token_result.raw_token, g_empty_string);
+    }
+  }
+};
+
+TEST_F(OriginTrialContextDevtoolsTest, DependentFeatureNotEnabled) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndDisableFeature(blink::features::kPortals);
+
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess, "Portals");
+
+  EXPECT_FALSE(IsFeatureEnabled(OriginTrialFeature::kPortals));
+  HashMap<String, OriginTrialResult> origin_trial_results =
+      GetOriginTrialResultsForDevtools();
+  EXPECT_EQ(origin_trial_results.size(), 1u);
+  ExpectTrialResultContains(
+      origin_trial_results,
+      /* trial_name */ "Portals", OriginTrialStatus::kTrialNotAllowed,
+      {{OriginTrialTokenStatus::kSuccess, /* token_parsable */ true}});
+}
+
+TEST_F(OriginTrialContextDevtoolsTest, NoValidToken) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kExpired,
+                                kFrobulateTrialName);
+
+  EXPECT_FALSE(IsFeatureEnabled(OriginTrialFeature::kOriginTrialsSampleAPI));
+
+  HashMap<String, OriginTrialResult> origin_trial_results =
+      GetOriginTrialResultsForDevtools();
+
+  // Receiving invalid token should set feature status to
+  // kValidTokenNotProvided.
+  EXPECT_EQ(origin_trial_results.size(), 1u);
+  ExpectTrialResultContains(
+      origin_trial_results,
+      /* trial_name */ kFrobulateTrialName,
+      OriginTrialStatus::kValidTokenNotProvided,
+      {{OriginTrialTokenStatus::kExpired, /* token_parsable */ true}});
+
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
+                                kFrobulateTrialName);
+
+  // Receiving valid token should change feature status to kEnabled.
+  EXPECT_TRUE(IsFeatureEnabled(OriginTrialFeature::kOriginTrialsSampleAPI));
+  origin_trial_results = GetOriginTrialResultsForDevtools();
+  EXPECT_EQ(origin_trial_results.size(), 1u);
+  ExpectTrialResultContains(
+      origin_trial_results,
+      /* trial_name */ kFrobulateTrialName, OriginTrialStatus::kEnabled,
+      {
+          {OriginTrialTokenStatus::kExpired, /* token_parsable */ true},
+          {OriginTrialTokenStatus::kSuccess, /* token_parsable */ true},
+      });
+}
+
+TEST_F(OriginTrialContextDevtoolsTest, Enabled) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
+                                kFrobulateTrialName);
+
+  // Receiving valid token when feature is enabled should set feature status
+  // to kEnabled.
+  EXPECT_TRUE(IsFeatureEnabled(OriginTrialFeature::kOriginTrialsSampleAPI));
+  HashMap<String, OriginTrialResult> origin_trial_results =
+      GetOriginTrialResultsForDevtools();
+  EXPECT_EQ(origin_trial_results.size(), 1u);
+  ExpectTrialResultContains(
+      origin_trial_results,
+      /* trial_name */ kFrobulateTrialName, OriginTrialStatus::kEnabled,
+      {{OriginTrialTokenStatus::kSuccess, /* token_parsable */ true}});
+
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kExpired,
+                                kFrobulateTrialName);
+
+  // Receiving invalid token when a valid token already exists should
+  // not change feature status.
+  EXPECT_TRUE(IsFeatureEnabled(OriginTrialFeature::kOriginTrialsSampleAPI));
+  origin_trial_results = GetOriginTrialResultsForDevtools();
+  EXPECT_EQ(origin_trial_results.size(), 1u);
+  ExpectTrialResultContains(
+      origin_trial_results,
+      /* trial_name */ kFrobulateTrialName, OriginTrialStatus::kEnabled,
+      {
+          {OriginTrialTokenStatus::kSuccess, /* token_parsable */ true},
+          {OriginTrialTokenStatus::kExpired, /* token_parsable */ true},
+      });
+}
+
+TEST_F(OriginTrialContextDevtoolsTest, UnparsableToken) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kMalformed,
+                                kFrobulateTrialName);
+  EXPECT_FALSE(IsFeatureEnabled(OriginTrialFeature::kOriginTrialsSampleAPI));
+  HashMap<String, OriginTrialResult> origin_trial_results =
+      GetOriginTrialResultsForDevtools();
+  EXPECT_EQ(origin_trial_results.size(), 1u);
+  ExpectTrialResultContains(
+      origin_trial_results,
+      /* trial_name */ "UNKNOWN", OriginTrialStatus::kValidTokenNotProvided,
+      {{OriginTrialTokenStatus::kMalformed, /* token_parsable */ false}});
 }
 
 }  // namespace blink

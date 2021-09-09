@@ -22,18 +22,19 @@
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/tray/tray_toggle_button.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -96,7 +97,6 @@ constexpr int kComputedCheckboxSize =
 constexpr gfx::Insets kTopLabelPadding(16, 18, 15, 18);
 const int kToggleButtonRowViewSpacing = 18;
 
-constexpr gfx::Insets kHeaderViewPadding(4, 0);
 constexpr gfx::Insets kToggleButtonRowViewPadding(0, 18, 0, 0);
 constexpr gfx::Insets kToggleButtonRowLabelPadding(16, 0, 15, 0);
 constexpr SkColor kTopBorderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
@@ -316,7 +316,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   auto icon_view = std::make_unique<views::ImageView>();
   auto name_view = std::make_unique<views::Label>(notifier.name);
   auto checkbox = std::make_unique<NotifierViewCheckbox>(
-      base::string16(),
+      std::u16string(),
       base::BindRepeating(
           [](NotifierButton* button, const ui::Event& event) {
             // The checkbox state has already changed at this point, but we'll
@@ -443,9 +443,9 @@ NotifierSettingsView::NotifierSettingsView() {
 
   auto header_view = std::make_unique<views::View>();
   header_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, kHeaderViewPadding, 0));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
   header_view->SetBorder(
-      views::CreateSolidSidedBorder(1, 0, 0, 0, kTopBorderColor));
+      views::CreateSolidSidedBorder(0, 0, 4, 0, kTopBorderColor));
 
   const SkColor text_color = AshColorProvider::Get()->GetContentLayerColor(
       ContentLayerType::kTextColorPrimary);
@@ -462,8 +462,8 @@ NotifierSettingsView::NotifierSettingsView() {
     auto app_badging_label =
         std::make_unique<views::Label>(l10n_util::GetStringUTF16(
             IDS_ASH_MESSAGE_CENTER_APP_BADGING_BUTTON_TOOLTIP));
-    auto app_badging_toggle = base::WrapUnique<views::ToggleButton>(
-        TrayPopupUtils::CreateToggleButton(
+    auto app_badging_toggle =
+        base::WrapUnique<views::ToggleButton>(new TrayToggleButton(
             base::BindRepeating(&NotifierSettingsView::AppBadgingTogglePressed,
                                 base::Unretained(this)),
             IDS_ASH_MESSAGE_CENTER_APP_BADGING_BUTTON_TOOLTIP));
@@ -497,7 +497,7 @@ NotifierSettingsView::NotifierSettingsView() {
       std::make_unique<views::Label>(l10n_util::GetStringUTF16(
           IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
   auto quiet_mode_toggle =
-      base::WrapUnique<views::ToggleButton>(TrayPopupUtils::CreateToggleButton(
+      base::WrapUnique<views::ToggleButton>(new TrayToggleButton(
           base::BindRepeating(&NotifierSettingsView::QuietModeTogglePressed,
                               base::Unretained(this)),
           IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
@@ -525,7 +525,7 @@ NotifierSettingsView::NotifierSettingsView() {
   header_view_ = AddChildView(std::move(header_view));
 
   auto scroller = std::make_unique<views::ScrollView>();
-  scroller->SetBackgroundColor(base::nullopt);
+  scroller->SetBackgroundColor(absl::nullopt);
   scroll_bar_ = scroller->SetVerticalScrollBar(
       std::make_unique<views::OverlayScrollBar>(/*horizontal=*/false));
   scroller->SetDrawOverflowIndicator(false);
@@ -552,10 +552,10 @@ void NotifierSettingsView::SetQuietModeState(bool is_quiet_mode) {
       ContentLayerType::kIconColorPrimary);
   if (is_quiet_mode) {
     quiet_mode_icon_->SetImage(gfx::CreateVectorIcon(
-        kNotificationCenterDoNotDisturbOnIcon, kMenuIconSize, icon_color));
+        kSystemTrayDoNotDisturbIcon, kMenuIconSize, icon_color));
   } else {
     quiet_mode_icon_->SetImage(gfx::CreateVectorIcon(
-        kNotificationCenterDoNotDisturbOffIcon, kMenuIconSize, icon_color));
+        kDoNotDisturbDisabledIcon, kMenuIconSize, icon_color));
   }
 }
 

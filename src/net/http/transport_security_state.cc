@@ -13,6 +13,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/build_time.h"
+#include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
@@ -21,8 +22,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,11 +44,9 @@
 #include "net/http/http_security_headers.h"
 #include "net/net_buildflags.h"
 #include "net/ssl/ssl_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
-
-const base::Feature kEnforceCTForNewCerts{"EnforceCTForNewCerts",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -75,20 +72,9 @@ const size_t kReportCacheKeyLength = 16;
 //   true: Unless a delegate says otherwise, require CT.
 bool g_ct_required_for_testing = false;
 
-// The date (as the number of seconds since the Unix Epoch) to enforce CT for
-// new certificates.
-constexpr base::FeatureParam<int> kEnforceCTForNewCertsDate{
-    &kEnforceCTForNewCerts, "date", 0};
-
 bool IsDynamicExpectCTEnabled() {
   return base::FeatureList::IsEnabled(
       TransportSecurityState::kDynamicExpectCTFeature);
-}
-
-void RecordUMAForHPKPReportFailure(const GURL& report_uri,
-                                   int net_error,
-                                   int http_response_code) {
-  base::UmaHistogramSparse("Net.PublicKeyPinReportSendingFailure2", -net_error);
 }
 
 base::Value GetPEMEncodedChainAsList(const net::X509Certificate* cert_chain) {
@@ -551,22 +537,6 @@ TransportSecurityState::CheckCTRequirements(
       break;
   }
 
-  // This is provided as a means for CAs to test their own issuance practices
-  // prior to Certificate Transparency becoming mandatory. A parameterized
-  // Feature/FieldTrial is provided, with a single parameter, "date", that
-  // allows a CA to simulate an enforcement date. The expected use case is
-  // that a CA will simulate a date of today/yesterday to see if their newly
-  // issued certificates comply.
-  if (base::FeatureList::IsEnabled(kEnforceCTForNewCerts)) {
-    base::Time enforcement_date =
-        base::Time::UnixEpoch() +
-        base::TimeDelta::FromSeconds(kEnforceCTForNewCertsDate.Get());
-    if (enforcement_date > base::Time::UnixEpoch() &&
-        validated_certificate_chain->valid_start() > enforcement_date) {
-      return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
-    }
-  }
-
   const base::Time epoch = base::Time::UnixEpoch();
   const CTRequiredPolicies& ct_required_policies = GetCTRequiredPolicies();
 
@@ -790,7 +760,7 @@ TransportSecurityState::CheckPinsAndMaybeSendReport(
   report_sender_->Send(pkp_state.report_uri, "application/json; charset=utf-8",
                        serialized_report, network_isolation_key,
                        base::OnceCallback<void()>(),
-                       base::BindOnce(RecordUMAForHPKPReportFailure));
+                       base::OnceCallback<void(const GURL&, int, int)>());
   return PKPStatus::VIOLATED;
 }
 
@@ -1102,6 +1072,10 @@ size_t TransportSecurityState::num_expect_ct_entries() const {
   return enabled_expect_ct_hosts_.size();
 }
 
+size_t TransportSecurityState::num_sts_entries() const {
+  return enabled_sts_hosts_.size();
+}
+
 // static
 bool TransportSecurityState::IsBuildTimely() {
   const base::Time build_time = base::GetBuildTime();
@@ -1224,7 +1198,7 @@ bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
     // An entry matches if it is either an exact match, or if it is a prefix
     // match and the includeSubDomains directive was included.
     if (i == 0 || j->second.include_subdomains) {
-      base::Optional<std::string> dotted_name =
+      absl::optional<std::string> dotted_name =
           DnsDomainToString(host_sub_chunk);
       if (!dotted_name)
         return false;
@@ -1270,7 +1244,7 @@ bool TransportSecurityState::GetDynamicPKPState(const std::string& host,
     // implement HPKP, so this logic is only used via AddHPKP(), reachable from
     // Cronet.
     if (i == 0 || j->second.include_subdomains) {
-      base::Optional<std::string> dotted_name =
+      absl::optional<std::string> dotted_name =
           DnsDomainToString(host_sub_chunk);
       if (!dotted_name)
         return false;

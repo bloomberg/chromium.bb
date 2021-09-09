@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -37,13 +38,13 @@ AppId WebAppControllerBrowserTestBase::InstallPWA(const GURL& start_url) {
   web_app_info->start_url = start_url;
   web_app_info->scope = start_url.GetWithoutFilename();
   web_app_info->open_as_window = true;
-  web_app_info->title = base::ASCIIToUTF16("A Web App");
-  return web_app::InstallWebApp(profile(), std::move(web_app_info));
+  web_app_info->title = u"A Web App";
+  return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
 }
 
 AppId WebAppControllerBrowserTestBase::InstallWebApp(
     std::unique_ptr<WebApplicationInfo> web_app_info) {
-  return web_app::InstallWebApp(profile(), std::move(web_app_info));
+  return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
 }
 
 Browser* WebAppControllerBrowserTestBase::LaunchWebAppBrowser(
@@ -60,7 +61,7 @@ Browser*
 WebAppControllerBrowserTestBase::LaunchWebAppBrowserAndAwaitInstallabilityCheck(
     const AppId& app_id) {
   Browser* browser = web_app::LaunchWebAppBrowserAndWait(profile(), app_id);
-  banners::TestAppBannerManagerDesktop::FromWebContents(
+  webapps::TestAppBannerManagerDesktop::FromWebContents(
       browser->tab_strip_model()->GetActiveWebContents())
       ->WaitForInstallableCheck();
   return browser;
@@ -75,7 +76,7 @@ Browser* WebAppControllerBrowserTestBase::LaunchBrowserForWebAppInTab(
 bool WebAppControllerBrowserTestBase::NavigateAndAwaitInstallabilityCheck(
     Browser* browser,
     const GURL& url) {
-  auto* manager = banners::TestAppBannerManagerDesktop::FromWebContents(
+  auto* manager = webapps::TestAppBannerManagerDesktop::FromWebContents(
       browser->tab_strip_model()->GetActiveWebContents());
   NavigateToURLAndWait(browser, url);
   return manager->WaitForInstallableCheck();
@@ -91,7 +92,7 @@ WebAppControllerBrowserTestBase::NavigateInNewWindowAndAwaitInstallabilityCheck(
   return new_browser;
 }
 
-base::Optional<AppId> WebAppControllerBrowserTestBase::FindAppWithUrlInScope(
+absl::optional<AppId> WebAppControllerBrowserTestBase::FindAppWithUrlInScope(
     const GURL& url) {
   return provider().registrar().FindAppWithUrlInScope(url);
 }
@@ -106,7 +107,7 @@ WebAppControllerBrowserTest::~WebAppControllerBrowserTest() = default;
 
 void WebAppControllerBrowserTest::SetUp() {
   https_server_.AddDefaultHandlers(GetChromeTestDataDir());
-  banners::TestAppBannerManagerDesktop::SetUp();
+  webapps::TestAppBannerManagerDesktop::SetUp();
 
   extensions::ExtensionBrowserTest::SetUp();
 }

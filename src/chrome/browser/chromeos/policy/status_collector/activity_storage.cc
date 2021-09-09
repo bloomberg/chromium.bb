@@ -250,8 +250,8 @@ bool ActivityStorage::ParseActivityPeriodPrefKey(const std::string& key,
 }
 
 void ActivityStorage::ForEachActivityPeriodFromPref(
-    base::Callback<void(const int64_t, const int64_t, const std::string&)> f)
-    const {
+    const base::RepeatingCallback<
+        void(const int64_t, const int64_t, const std::string&)>& f) const {
   const base::DictionaryValue* stored_activity_periods =
       pref_service_->GetDictionary(pref_name_);
   for (const auto& item : stored_activity_periods->DictItems()) {
@@ -262,14 +262,13 @@ void ActivityStorage::ForEachActivityPeriodFromPref(
                    << "'";
       continue;
     }
-    int duration;
-    if (!item.second.GetAsInteger(&duration)) {
+    if (!item.second.is_int()) {
       LOG(WARNING) << "Cannot parse recorded activity duration: '"
                    << item.second << "'";
       continue;
     }
-    if (duration > 0) {
-      f.Run(timestamp, timestamp + duration, activity_id);
+    if (item.second.GetInt() > 0) {
+      f.Run(timestamp, timestamp + item.second.GetInt(), activity_id);
     }
   }
 }

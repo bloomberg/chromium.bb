@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "cast/streaming/resolution.h"
 #include "cast/streaming/ssrc.h"
 #include "json/value.h"
 #include "platform/base/error.h"
@@ -41,20 +42,9 @@ struct AudioConstraints {
 
   int max_sample_rate = 0;
   int max_channels = 0;
-  // Technically optional, sender will assume 32kbps if omitted.
-  int min_bit_rate = 0;
+  int min_bit_rate = 0;  // optional
   int max_bit_rate = 0;
-  std::chrono::milliseconds max_delay = {};
-};
-
-struct Dimensions {
-  static bool ParseAndValidate(const Json::Value& value, Dimensions* out);
-  Json::Value ToJson() const;
-  bool IsValid() const;
-
-  int width = 0;
-  int height = 0;
-  SimpleFraction frame_rate;
+  absl::optional<std::chrono::milliseconds> max_delay = {};
 };
 
 struct VideoConstraints {
@@ -62,13 +52,12 @@ struct VideoConstraints {
   Json::Value ToJson() const;
   bool IsValid() const;
 
-  double max_pixels_per_second = {};
-  absl::optional<Dimensions> min_dimensions = {};
+  absl::optional<double> max_pixels_per_second = {};
+  absl::optional<Dimensions> min_resolution = {};
   Dimensions max_dimensions = {};
-  // Technically optional, sender will assume 300kbps if omitted.
-  int min_bit_rate = 0;
+  int min_bit_rate = 0;  // optional
   int max_bit_rate = 0;
-  std::chrono::milliseconds max_delay = {};
+  absl::optional<std::chrono::milliseconds> max_delay = {};
 };
 
 struct Constraints {
@@ -125,7 +114,6 @@ struct Answer {
   absl::optional<DisplayDescription> display;
   std::vector<int> receiver_rtcp_event_log;
   std::vector<int> receiver_rtcp_dscp;
-  bool supports_wifi_status_reporting = false;
 
   // RTP extensions should be empty, but not null.
   std::vector<std::string> rtp_extensions = {};

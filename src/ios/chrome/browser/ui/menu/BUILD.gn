@@ -12,20 +12,27 @@ source_set("menu") {
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
+    "resources:bookmark",
+    "resources:close",
     "resources:copy_link_url",
     "resources:delete",
     "resources:edit",
     "resources:mark_read",
     "resources:move_folder",
     "resources:offline",
+    "resources:open",
     "resources:open_in_incognito",
     "resources:open_in_new_tab",
     "resources:open_new_window",
+    "resources:read_later",
     "resources:remove",
     "resources:share",
     "//base",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/incognito_reauth:incognito_reauth_scene_agent",
+    "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/window_activities",
@@ -35,21 +42,31 @@ source_set("menu") {
   ]
 }
 
+source_set("context_menu_delegate") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  sources = [ "tab_context_menu_delegate.h" ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [ "action_factory_unittest.mm" ]
   deps = [
     ":menu",
+    "resources:bookmark",
+    "resources:close",
     "resources:copy_link_url",
     "resources:delete",
     "resources:edit",
     "resources:mark_read",
     "resources:move_folder",
     "resources:offline",
+    "resources:open",
     "resources:open_in_incognito",
     "resources:open_in_new_tab",
     "resources:open_new_window",
+    "resources:read_later",
     "resources:remove",
     "resources:share",
     "//base",

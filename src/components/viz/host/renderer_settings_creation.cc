@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/viz/common/display/overlay_strategy.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
@@ -55,10 +56,17 @@ RendererSettings CreateRendererSettings() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   renderer_settings.partial_swap_enabled =
       !command_line->HasSwitch(switches::kUIDisablePartialSwap);
+
+#if defined(OS_APPLE) || defined(OS_LINUX)
+  // Simple frame rate throttling only works on macOS and Linux
+  renderer_settings.apply_simple_frame_rate_throttling =
+      features::IsSimpleFrameRateThrottlingEnabled();
+#endif
+
 #if defined(OS_APPLE)
   renderer_settings.release_overlay_resources_after_gpu_query = true;
   renderer_settings.auto_resize_output_surface = false;
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   renderer_settings.auto_resize_output_surface = false;
 #endif
   renderer_settings.allow_antialiasing =
@@ -104,6 +112,8 @@ DebugRendererSettings CreateDefaultDebugRendererSettings() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   result.tint_composited_content =
       command_line->HasSwitch(switches::kTintCompositedContent);
+  result.tint_composited_content_modulate =
+      command_line->HasSwitch(switches::kTintCompositedContentModulate);
   result.show_overdraw_feedback =
       command_line->HasSwitch(switches::kShowOverdrawFeedback);
   result.show_dc_layer_debug_borders =

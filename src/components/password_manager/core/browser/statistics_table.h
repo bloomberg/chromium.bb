@@ -25,7 +25,7 @@ struct InteractionsStats {
   GURL origin_domain;
 
   // The value of the username.
-  base::string16 username_value;
+  std::u16string username_value;
 
   // Number of times the user dismissed the bubble.
   int dismissal_count = 0;
@@ -79,7 +79,7 @@ class StatisticsTable {
   int GetNumAccounts();
 
  private:
-  sql::Database* db_;
+  sql::Database* db_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(StatisticsTable);
 };

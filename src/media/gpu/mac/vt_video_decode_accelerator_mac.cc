@@ -28,6 +28,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/system/sys_info.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -46,7 +48,6 @@
 #include "media/base/media_switches.h"
 #include "media/filters/vp9_parser.h"
 #include "media/gpu/mac/vp9_super_frame_bitstream_filter.h"
-#include "media/gpu/mac/vt_beta_stubs.h"
 #include "media/gpu/mac/vt_config_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
@@ -195,7 +196,7 @@ base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateVideoFormatH264(
 base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateVideoFormatVP9(
     media::VideoColorSpace color_space,
     media::VideoCodecProfile profile,
-    base::Optional<gfx::HDRMetadata> hdr_metadata,
+    absl::optional<gfx::HDRMetadata> hdr_metadata,
     const gfx::Size& coded_size) {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> format_config(
       CreateFormatExtensions(kCMVideoCodecType_VP9, profile, color_space,
@@ -318,25 +319,13 @@ bool InitializeVideoToolboxInternal() {
 
   session.reset();
 
-  if (base::mac::IsAtLeastOS11()) {
-    // Until our target sdk version is 11.0 we need to dynamically link the
-    // VTRegisterSupplementalVideoDecoderIfAvailable() symbol in.
-    media_gpu_mac::StubPathMap paths;
-    paths[media_gpu_mac::kModuleVt_beta].push_back(FILE_PATH_LITERAL(
-        "/System/Library/Frameworks/VideoToolbox.framework/VideoToolbox"));
-    if (!media_gpu_mac::InitializeStubs(paths))
-      return true;  // VP9 support is optional.
-
-// __builtin_available doesn't work for 11.0 yet; https://crbug.com/1115294
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+  if (__builtin_available(macOS 11.0, *)) {
     VTRegisterSupplementalVideoDecoderIfAvailable(kCMVideoCodecType_VP9);
-#pragma clang diagnostic pop
 
     // Create a VP9 decoding session.
     if (!CreateVideoToolboxSession(
             CreateVideoFormatVP9(VideoColorSpace::REC709(), VP9PROFILE_PROFILE0,
-                                 base::nullopt, gfx::Size(720, 480)),
+                                 absl::nullopt, gfx::Size(720, 480)),
             /*require_hardware=*/true, /*is_hbd=*/false, &callback, &session,
             &configured_size)) {
       DVLOG(1) << "Hardware VP9 decoding with VideoToolbox is not supported";
@@ -492,14 +481,18 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
     MediaLog* media_log)
     : gl_client_(gl_client),
       workarounds_(workarounds),
-      media_log_(media_log),
+      // Non media/ use cases like PPAPI may not provide a MediaLog.
+      media_log_(media_log ? media_log->Clone() : nullptr),
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      decoder_thread_("VTDecoderThread"),
+      decoder_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::USER_VISIBLE})),
+      decoder_weak_this_factory_(this),
       weak_this_factory_(this) {
   DCHECK(gl_client_.bind_image);
 
   callback_.decompressionOutputCallback = OutputThunk;
   callback_.decompressionOutputRefCon = this;
+  decoder_weak_this_ = decoder_weak_this_factory_.GetWeakPtr();
   weak_this_ = weak_this_factory_.GetWeakPtr();
 
   memory_dump_id_ = g_memory_dump_ids.GetNext();
@@ -635,13 +628,6 @@ bool VTVideoDecodeAccelerator::Initialize(const Config& config,
       NOTREACHED() << "Unsupported profile.";
   };
 
-  // Spawn a thread to handle parsing and calling VideoToolbox.
-  // TODO(sandersd): This should probably use a base::ThreadPool thread instead.
-  if (!decoder_thread_.Start()) {
-    DLOG(ERROR) << "Failed to start decoder thread";
-    return false;
-  }
-
   // Count the session as successfully initialized.
   UMA_HISTOGRAM_ENUMERATION("Media.VTVDA.SessionFailureReason",
                             SFT_SUCCESSFULLY_INITIALIZED, SFT_MAX + 1);
@@ -650,7 +636,7 @@ bool VTVideoDecodeAccelerator::Initialize(const Config& config,
 
 bool VTVideoDecodeAccelerator::FinishDelayedFrames() {
   DVLOG(3) << __func__;
-  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
   if (session_) {
     OSStatus status = VTDecompressionSessionWaitForAsynchronousFrames(session_);
     if (status) {
@@ -664,7 +650,7 @@ bool VTVideoDecodeAccelerator::FinishDelayedFrames() {
 
 bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   DVLOG(2) << __func__;
-  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
 
   base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
   switch (codec_) {
@@ -735,7 +721,7 @@ void VTVideoDecodeAccelerator::DecodeTaskVp9(
     Frame* frame) {
   DVLOG(2) << __func__ << ": bit_stream=" << frame->bitstream_id
            << ", buffer=" << buffer->AsHumanReadableString();
-  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
 
   if (!cc_detector_)
     cc_detector_ = std::make_unique<VP9ConfigChangeDetector>();
@@ -805,7 +791,7 @@ void VTVideoDecodeAccelerator::DecodeTaskVp9(
 void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
                                           Frame* frame) {
   DVLOG(2) << __func__ << "(" << frame->bitstream_id << ")";
-  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
 
   // NALUs are stored with Annex B format in the bitstream buffer (start codes),
   // but VideoToolbox expects AVC format (length headers), so we must rewrite
@@ -881,6 +867,21 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
         break;
       }
 
+      case H264NALU::kSEIMessage: {
+        H264SEIMessage sei_msg;
+        result = parser_.ParseSEI(&sei_msg);
+        if (result == H264Parser::kOk &&
+            sei_msg.type == H264SEIMessage::kSEIRecoveryPoint &&
+            sei_msg.recovery_point.recovery_frame_cnt == 0) {
+          // We only support immediate recovery points. Supporting future points
+          // would require dropping |recovery_frame_cnt| frames when needed.
+          frame->has_recovery_point = true;
+        }
+        nalus.push_back(nalu);
+        data_size += kNALUHeaderLength + nalu.size;
+        break;
+      }
+
       case H264NALU::kSliceDataA:
       case H264NALU::kSliceDataB:
       case H264NALU::kSliceDataC:
@@ -932,7 +933,7 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
 
           // Compute and store frame properties. |image_size| gets filled in
           // later, since it comes from the decoder configuration.
-          base::Optional<int32_t> pic_order_cnt =
+          absl::optional<int32_t> pic_order_cnt =
               poc_.ComputePicOrderCnt(sps, slice_hdr);
           if (!pic_order_cnt.has_value()) {
             WriteToMediaLog(MediaLogMessageLevel::kERROR,
@@ -956,7 +957,7 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
     }
   }
 
-  if (frame->is_idr)
+  if (frame->is_idr || frame->has_recovery_point)
     waiting_for_idr_ = false;
 
   // If no IDR has been seen yet, skip decoding. Note that Flash sends
@@ -1166,7 +1167,7 @@ void VTVideoDecodeAccelerator::DecodeDone(Frame* frame) {
 
 void VTVideoDecodeAccelerator::FlushTask(TaskType type) {
   DVLOG(3) << __func__;
-  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
 
   FinishDelayedFrames();
 
@@ -1175,10 +1176,15 @@ void VTVideoDecodeAccelerator::FlushTask(TaskType type) {
   if (vp9_bsf_)
     vp9_bsf_->Flush();
 
-  if (type == TASK_DESTROY && session_) {
-    // Destroy the decoding session before returning from the decoder thread.
-    VTDecompressionSessionInvalidate(session_);
-    session_.reset();
+  if (type == TASK_DESTROY) {
+    if (session_) {
+      // Destroy the decoding session before returning from the decoder thread.
+      VTDecompressionSessionInvalidate(session_);
+      session_.reset();
+    }
+
+    // This must be done on |decoder_task_runner_|.
+    decoder_weak_this_factory_.InvalidateWeakPtrs();
   }
 
   // Queue a task even if flushing fails, so that destruction always completes.
@@ -1221,15 +1227,15 @@ void VTVideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,
   pending_frames_[bitstream_id] = base::WrapUnique(frame);
 
   if (codec_ == kCodecVP9) {
-    decoder_thread_.task_runner()->PostTask(
+    decoder_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&VTVideoDecodeAccelerator::DecodeTaskVp9,
-                       base::Unretained(this), std::move(buffer), frame));
+                       decoder_weak_this_, std::move(buffer), frame));
   } else {
-    decoder_thread_.task_runner()->PostTask(
+    decoder_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&VTVideoDecodeAccelerator::DecodeTask,
-                       base::Unretained(this), std::move(buffer), frame));
+                       decoder_weak_this_, std::move(buffer), frame));
   }
 }
 
@@ -1524,8 +1530,10 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
                   SFT_PLATFORM_ERROR);
   }
   gl_image->DisableInUseByWindowServer();
+
   gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
   gl_image->SetColorSpaceForYUVToRGBConversion(color_space);
+  gl_image->SetColorSpaceShallow(color_space);
 
   scoped_refptr<Picture::ScopedSharedImage> scoped_shared_image;
   if (picture_info->uses_shared_images) {
@@ -1653,9 +1661,9 @@ void VTVideoDecodeAccelerator::WriteToMediaLog(MediaLogMessageLevel level,
 void VTVideoDecodeAccelerator::QueueFlush(TaskType type) {
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   pending_flush_tasks_.push(type);
-  decoder_thread_.task_runner()->PostTask(
+  decoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VTVideoDecodeAccelerator::FlushTask,
-                                base::Unretained(this), type));
+                                decoder_weak_this_, type));
 
   // If this is a new flush request, see if we can make progress.
   if (pending_flush_tasks_.size() == 1)
@@ -1678,12 +1686,6 @@ void VTVideoDecodeAccelerator::Destroy() {
   DVLOG(1) << __func__;
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
-  // In a forceful shutdown, the decoder thread may be dead already.
-  if (!decoder_thread_.IsRunning()) {
-    delete this;
-    return;
-  }
-
   // For a graceful shutdown, return assigned buffers and flush before
   // destructing |this|.
   for (int32_t bitstream_id : assigned_bitstream_ids_)
@@ -1691,9 +1693,6 @@ void VTVideoDecodeAccelerator::Destroy() {
   assigned_bitstream_ids_.clear();
   state_ = STATE_DESTROYING;
   QueueFlush(TASK_DESTROY);
-
-  // Prevent calling into a deleted MediaLog.
-  media_log_ = nullptr;
 }
 
 bool VTVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
@@ -1704,6 +1703,12 @@ bool VTVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
 
 bool VTVideoDecodeAccelerator::SupportsSharedImagePictureBuffers() const {
   return true;
+}
+
+VideoDecodeAccelerator::TextureAllocationMode
+VTVideoDecodeAccelerator::GetSharedImageTextureAllocationMode() const {
+  return VideoDecodeAccelerator::TextureAllocationMode::
+      kDoNotAllocateGLTextures;
 }
 
 // static
@@ -1720,8 +1725,6 @@ VTVideoDecodeAccelerator::GetSupportedProfiles(
       if (workarounds.disable_accelerated_vp9_decode)
         continue;
       if (!base::mac::IsAtLeastOS11())
-        continue;
-      if (!base::FeatureList::IsEnabled(kVideoToolboxVp9Decoding))
         continue;
       if (__builtin_available(macOS 10.13, *)) {
         if ((supported_profile == VP9PROFILE_PROFILE0 ||

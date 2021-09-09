@@ -9,11 +9,11 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
-#include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/sessions/session_restore_stats_collector.h"
 #include "chrome/browser/sessions/tab_loader.h"
 #include "chrome/common/url_constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/graph/policies/background_tab_loading_policy.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
@@ -47,7 +47,7 @@ SessionRestoreDelegate::RestoredTab::RestoredTab(
     bool is_active,
     bool is_app,
     bool is_pinned,
-    const base::Optional<tab_groups::TabGroupId>& group)
+    const absl::optional<tab_groups::TabGroupId>& group)
     : contents_(contents),
       is_active_(is_active),
       is_app_(is_app),
@@ -78,6 +78,9 @@ bool SessionRestoreDelegate::RestoredTab::operator<(
 void SessionRestoreDelegate::RestoreTabs(
     const std::vector<RestoredTab>& tabs,
     const base::TimeTicks& restore_started) {
+  if (tabs.empty())
+    return;
+
   // Restore the favicon for all tabs. Any tab may end up being deferred due
   // to memory pressure so it's best to have some visual indication of its
   // contents.
@@ -88,6 +91,12 @@ void SessionRestoreDelegate::RestoreTabs(
     favicon_driver->FetchFavicon(favicon_driver->GetActiveURL(),
                                  /*is_same_document=*/false);
   }
+
+  SessionRestoreStatsCollector::GetOrCreateInstance(
+      restore_started,
+      std::make_unique<
+          SessionRestoreStatsCollector::UmaStatsReportingDelegate>())
+      ->TrackTabs(tabs);
 
   // Don't start a TabLoader here if background tab loading is done by
   // PerformanceManager.

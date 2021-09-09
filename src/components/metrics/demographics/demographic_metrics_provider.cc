@@ -6,8 +6,9 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
+#include "build/chromeos_buildflags.h"
 #include "components/sync/driver/sync_service_utils.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
 
 namespace metrics {
@@ -50,33 +51,42 @@ DemographicMetricsProvider::DemographicMetricsProvider(
 
 DemographicMetricsProvider::~DemographicMetricsProvider() {}
 
-base::Optional<UserDemographics>
+absl::optional<UserDemographics>
 DemographicMetricsProvider::ProvideSyncedUserNoisedBirthYearAndGender() {
   // Skip if feature disabled.
   if (!base::FeatureList::IsEnabled(kDemographicMetricsReporting))
-    return base::nullopt;
+    return absl::nullopt;
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   // Skip if not exactly one Profile on disk. Having more than one Profile that
   // is using the browser can make demographics less relevant. This approach
   // cannot determine if there is more than 1 distinct user using the Profile.
+
+  // ChromeOS almost always has more than one profile on disk, so this check
+  // doesn't work. We have a profile selection strategy for ChromeOS, so skip
+  // this check for ChromeOS.
+  // TODO(crbug/1145655): LaCros will behave similarly to desktop Chrome and
+  // reduce the number of profiles on disk to one, so remove these #if guards
+  // after LaCros release.
   if (profile_client_->GetNumberOfProfilesOnDisk() != 1) {
     LogUserDemographicsStatusInHistogram(
         UserDemographicsStatus::kMoreThanOneProfile);
-    return base::nullopt;
+    return absl::nullopt;
   }
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   syncer::SyncService* sync_service = profile_client_->GetSyncService();
   // Skip if no sync service.
   if (!sync_service) {
     LogUserDemographicsStatusInHistogram(
         UserDemographicsStatus::kNoSyncService);
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   if (!CanUploadDemographicsToGoogle(sync_service)) {
     LogUserDemographicsStatusInHistogram(
         UserDemographicsStatus::kSyncNotEnabled);
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   UserDemographicsResult demographics_result =
@@ -87,7 +97,7 @@ DemographicMetricsProvider::ProvideSyncedUserNoisedBirthYearAndGender() {
   if (demographics_result.IsSuccess())
     return demographics_result.value();
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void DemographicMetricsProvider::ProvideCurrentSessionData(
@@ -105,6 +115,11 @@ void DemographicMetricsProvider::LogUserDemographicsStatusInHistogram(
   switch (metrics_service_type_) {
     case MetricsLogUploader::MetricServiceType::UMA:
       base::UmaHistogramEnumeration("UMA.UserDemographics.Status", status);
+      // If the user demographics data was retrieved successfully, then the user
+      // must be between the ages of |kUserDemographicsMinAgeInYears|+1=21 and
+      // |kUserDemographicsMaxAgeinYears|=85, so the user is not a minor.
+      base::UmaHistogramBoolean("UMA.UserDemographics.IsNoisedAgeOver21Under85",
+                                status == UserDemographicsStatus::kSuccess);
       return;
     case MetricsLogUploader::MetricServiceType::UKM:
       base::UmaHistogramEnumeration("UKM.UserDemographics.Status", status);

@@ -13,22 +13,22 @@
 #include "base/time/time.h"
 #include "base/util/timer/wall_clock_timer.h"
 #include "base/version.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/upgrade_detector/build_state_observer.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 class PrefRegistrySimple;
 
+namespace ash {
+class UpdateRequiredNotification;
+}  // namespace ash
+
 namespace base {
 class Clock;
 class DictionaryValue;
 class Time;
 }  // namespace base
-
-namespace chromeos {
-class UpdateRequiredNotification;
-}  // namespace chromeos
 
 namespace policy {
 
@@ -132,7 +132,7 @@ class MinimumVersionPolicyHandler
   };
 
   explicit MinimumVersionPolicyHandler(Delegate* delegate,
-                                       chromeos::CrosSettings* cros_settings);
+                                       ash::CrosSettings* cros_settings);
   ~MinimumVersionPolicyHandler() override;
 
   // BuildStateObserver:
@@ -167,7 +167,7 @@ class MinimumVersionPolicyHandler
 
   // Returns the number of days to deadline if update is required and deadline
   // has not been reached. Returns null if update is not required.
-  base::Optional<int> GetTimeRemainingInDays();
+  absl::optional<int> GetTimeRemainingInDays();
 
   // Callback used in tests and invoked after end-of-life status has been
   // fetched from the update_engine.
@@ -295,18 +295,17 @@ class MinimumVersionPolicyHandler
 
   // Non-owning reference to CrosSettings. This class have shorter lifetime than
   // CrosSettings.
-  chromeos::CrosSettings* cros_settings_;
+  ash::CrosSettings* cros_settings_;
 
   base::Clock* const clock_;
 
   base::OnceClosure fetch_eol_callback_;
 
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      policy_subscription_;
+  base::CallbackListSubscription policy_subscription_;
 
   // Handles showing in-session update required notifications on the basis of
   // current network and time to reach the deadline.
-  std::unique_ptr<chromeos::UpdateRequiredNotification> notification_handler_;
+  std::unique_ptr<ash::UpdateRequiredNotification> notification_handler_;
 
   // List of registered observers.
   base::ObserverList<Observer>::Unchecked observers_;

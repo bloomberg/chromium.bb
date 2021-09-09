@@ -7,11 +7,9 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/arc/process/arc_process.h"
+#include "chrome/browser/ash/arc/process/arc_process.h"
 #include "chrome/browser/task_manager/providers/task.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/mojom/intent_helper.mojom-forward.h"
@@ -26,6 +24,8 @@ class ArcProcessTask
       public arc::ConnectionObserver<arc::mojom::IntentHelperInstance> {
  public:
   explicit ArcProcessTask(arc::ArcProcess arc_process);
+  ArcProcessTask(const ArcProcessTask&) = delete;
+  ArcProcessTask& operator=(const ArcProcessTask&) = delete;
   ~ArcProcessTask() override;
 
   // task_manager::Task:
@@ -55,8 +55,6 @@ class ArcProcessTask
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<ArcProcessTask> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcProcessTask);
 };
 
 }  // namespace task_manager

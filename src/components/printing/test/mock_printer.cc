@@ -4,13 +4,13 @@
 
 #include "components/printing/test/mock_printer.h"
 
+#include <string>
+
 #include "base/files/file_util.h"
 #include "base/memory/shared_memory_mapping.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/printing/common/print.mojom.h"
-#include "components/printing/common/print_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "printing/metafile_skia.h"
 #include "printing/mojom/print.mojom.h"
@@ -82,8 +82,8 @@ MockPrinter::MockPrinter()
       preview_request_id_(0),
       print_scaling_option_(printing::mojom::PrintScalingOption::kSourceSize),
       display_header_footer_(false),
-      title_(base::ASCIIToUTF16("title")),
-      url_(base::ASCIIToUTF16("url")),
+      title_(u"title"),
+      url_(u"url"),
       use_invalid_settings_(false) {
   page_size_.SetSize(static_cast<int>(8.5 * dpi_),
                      static_cast<int>(11.0 * dpi_));
@@ -204,18 +204,17 @@ void MockPrinter::SetPrintedPagesCount(int cookie, uint32_t number_pages) {
   pages_.clear();
 }
 
-void MockPrinter::PrintPage(
-    const printing::mojom::DidPrintDocumentParams& params) {
+void MockPrinter::PrintPage(printing::mojom::DidPrintDocumentParamsPtr params) {
   // Verify the input parameter and update the printer status so that the
   // RenderViewTest class can verify the this function finishes without errors.
   EXPECT_EQ(PRINTER_PRINTING, printer_status_);
-  EXPECT_EQ(document_cookie_, params.document_cookie);
+  EXPECT_EQ(document_cookie_, params->document_cookie);
 
 #if defined(OS_WIN) || defined(OS_APPLE)
   // Load the data sent from a RenderView object and create a PageData object.
-  ASSERT_TRUE(params.content->metafile_data_region.IsValid());
+  ASSERT_TRUE(params->content->metafile_data_region.IsValid());
   base::ReadOnlySharedMemoryMapping mapping =
-      params.content->metafile_data_region.Map();
+      params->content->metafile_data_region.Map();
   ASSERT_TRUE(mapping.IsValid());
   EXPECT_GT(mapping.size(), 0U);
 

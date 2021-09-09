@@ -46,8 +46,6 @@ class TrustedVaultClient {
   // Attempts to fetch decryption keys, required by sync to resume.
   // Implementations are expected to NOT prompt the user for actions. |cb| is
   // called on completion with known keys or an empty list if none known.
-  // Concurrent calls to FetchKeys() must not be issued since implementations
-  // may not support them.
   virtual void FetchKeys(
       const CoreAccountInfo& account_info,
       base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)>
@@ -58,8 +56,10 @@ class TrustedVaultClient {
   // the provided keys are not up-to-date. |cb| is run upon completion and
   // returns false if the call did not make any difference (e.g. the operation
   // is unsupported) or true if some change may have occurred (which indicates a
-  // second FetchKeys() attempt is worth). Concurrent calls to MarkKeysAsStale()
-  // must not be issued since implementations may not support them.
+  // second FetchKeys() attempt is worth). During the execution, before |cb| is
+  // invoked, the behavior is unspecified if FetchKeys() is invoked, that is,
+  // FetchKeys() may or may not treat existing keys as stale (only guaranteed
+  // upon completion of MarkKeysAsStale()).
   virtual void MarkKeysAsStale(const CoreAccountInfo& account_info,
                                base::OnceCallback<void(bool)> cb) = 0;
 
@@ -86,9 +86,12 @@ class TrustedVaultClient {
 
   // Registers a new trusted recovery method that can be used to retrieve keys,
   // usually for the purpose of resolving a recoverability-degraded case
-  // surfaced by GetIsRecoverabilityDegraded().
+  // surfaced by GetIsRecoverabilityDegraded(). |method_type_hint| is an opaque
+  // value provided server-side that may be used for related future
+  // interactions with the server.
   virtual void AddTrustedRecoveryMethod(const std::string& gaia_id,
                                         const std::vector<uint8_t>& public_key,
+                                        int method_type_hint,
                                         base::OnceClosure cb) = 0;
 
  private:

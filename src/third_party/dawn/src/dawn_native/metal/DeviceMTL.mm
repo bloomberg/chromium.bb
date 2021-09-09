@@ -44,18 +44,17 @@ namespace dawn_native { namespace metal {
 
     // static
     ResultOrError<Device*> Device::Create(AdapterBase* adapter,
-                                          id<MTLDevice> mtlDevice,
+                                          NSPRef<id<MTLDevice>> mtlDevice,
                                           const DeviceDescriptor* descriptor) {
-        Ref<Device> device = AcquireRef(new Device(adapter, mtlDevice, descriptor));
+        Ref<Device> device = AcquireRef(new Device(adapter, std::move(mtlDevice), descriptor));
         DAWN_TRY(device->Initialize());
         return device.Detach();
     }
 
     Device::Device(AdapterBase* adapter,
-                   id<MTLDevice> mtlDevice,
+                   NSPRef<id<MTLDevice>> mtlDevice,
                    const DeviceDescriptor* descriptor)
-        : DeviceBase(adapter, descriptor), mMtlDevice([mtlDevice retain]), mCompletedSerial(0) {
-        [mMtlDevice retain];
+        : DeviceBase(adapter, descriptor), mMtlDevice(std::move(mtlDevice)), mCompletedSerial(0) {
     }
 
     Device::~Device() {
@@ -69,7 +68,7 @@ namespace dawn_native { namespace metal {
             ForceSetToggle(Toggle::MetalEnableVertexPulling, false);
         }
 
-        mCommandQueue = [mMtlDevice newCommandQueue];
+        mCommandQueue.Acquire([*mMtlDevice newCommandQueue]);
 
         return DeviceBase::Initialize(new Queue(this));
     }
@@ -80,18 +79,18 @@ namespace dawn_native { namespace metal {
 #if defined(DAWN_PLATFORM_MACOS)
             if (@available(macOS 10.12, *)) {
                 haveStoreAndMSAAResolve =
-                    [mMtlDevice supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v2];
+                    [*mMtlDevice supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v2];
             }
 #elif defined(DAWN_PLATFORM_IOS)
             haveStoreAndMSAAResolve =
-                [mMtlDevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v2];
+                [*mMtlDevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v2];
 #endif
             // On tvOS, we would need MTLFeatureSet_tvOS_GPUFamily2_v1.
             SetToggle(Toggle::EmulateStoreAndMSAAResolve, !haveStoreAndMSAAResolve);
 
             bool haveSamplerCompare = true;
 #if defined(DAWN_PLATFORM_IOS)
-            haveSamplerCompare = [mMtlDevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1];
+            haveSamplerCompare = [*mMtlDevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1];
 #endif
             // TODO(crbug.com/dawn/342): Investigate emulation -- possibly expensive.
             SetToggle(Toggle::MetalDisableSamplerCompare, !haveSamplerCompare);
@@ -99,7 +98,7 @@ namespace dawn_native { namespace metal {
             bool haveBaseVertexBaseInstance = true;
 #if defined(DAWN_PLATFORM_IOS)
             haveBaseVertexBaseInstance =
-                [mMtlDevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1];
+                [*mMtlDevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1];
 #endif
             // TODO(crbug.com/dawn/343): Investigate emulation.
             SetToggle(Toggle::DisableBaseVertex, !haveBaseVertexBaseInstance);
@@ -118,63 +117,66 @@ namespace dawn_native { namespace metal {
         }
     }
 
-    ResultOrError<BindGroupBase*> Device::CreateBindGroupImpl(
+    ResultOrError<Ref<BindGroupBase>> Device::CreateBindGroupImpl(
         const BindGroupDescriptor* descriptor) {
         return BindGroup::Create(this, descriptor);
     }
-    ResultOrError<BindGroupLayoutBase*> Device::CreateBindGroupLayoutImpl(
+    ResultOrError<Ref<BindGroupLayoutBase>> Device::CreateBindGroupLayoutImpl(
         const BindGroupLayoutDescriptor* descriptor) {
-        return new BindGroupLayout(this, descriptor);
+        return BindGroupLayout::Create(this, descriptor);
     }
     ResultOrError<Ref<BufferBase>> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return Buffer::Create(this, descriptor);
     }
-    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoder* encoder,
-                                                   const CommandBufferDescriptor* descriptor) {
-        return new CommandBuffer(encoder, descriptor);
+    ResultOrError<Ref<CommandBufferBase>> Device::CreateCommandBuffer(
+        CommandEncoder* encoder,
+        const CommandBufferDescriptor* descriptor) {
+        return CommandBuffer::Create(encoder, descriptor);
     }
-    ResultOrError<ComputePipelineBase*> Device::CreateComputePipelineImpl(
+    ResultOrError<Ref<ComputePipelineBase>> Device::CreateComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
         return ComputePipeline::Create(this, descriptor);
     }
-    ResultOrError<PipelineLayoutBase*> Device::CreatePipelineLayoutImpl(
+    ResultOrError<Ref<PipelineLayoutBase>> Device::CreatePipelineLayoutImpl(
         const PipelineLayoutDescriptor* descriptor) {
-        return new PipelineLayout(this, descriptor);
+        return PipelineLayout::Create(this, descriptor);
     }
-    ResultOrError<QuerySetBase*> Device::CreateQuerySetImpl(const QuerySetDescriptor* descriptor) {
+    ResultOrError<Ref<QuerySetBase>> Device::CreateQuerySetImpl(
+        const QuerySetDescriptor* descriptor) {
         return QuerySet::Create(this, descriptor);
     }
-    ResultOrError<RenderPipelineBase*> Device::CreateRenderPipelineImpl(
-        const RenderPipelineDescriptor* descriptor) {
+    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
+        const RenderPipelineDescriptor2* descriptor) {
         return RenderPipeline::Create(this, descriptor);
     }
-    ResultOrError<SamplerBase*> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
+    ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
         return Sampler::Create(this, descriptor);
     }
-    ResultOrError<ShaderModuleBase*> Device::CreateShaderModuleImpl(
-        const ShaderModuleDescriptor* descriptor) {
-        return ShaderModule::Create(this, descriptor);
+    ResultOrError<Ref<ShaderModuleBase>> Device::CreateShaderModuleImpl(
+        const ShaderModuleDescriptor* descriptor,
+        ShaderModuleParseResult* parseResult) {
+        return ShaderModule::Create(this, descriptor, parseResult);
     }
-    ResultOrError<SwapChainBase*> Device::CreateSwapChainImpl(
+    ResultOrError<Ref<SwapChainBase>> Device::CreateSwapChainImpl(
         const SwapChainDescriptor* descriptor) {
-        return new OldSwapChain(this, descriptor);
+        return OldSwapChain::Create(this, descriptor);
     }
-    ResultOrError<NewSwapChainBase*> Device::CreateSwapChainImpl(
+    ResultOrError<Ref<NewSwapChainBase>> Device::CreateSwapChainImpl(
         Surface* surface,
         NewSwapChainBase* previousSwapChain,
         const SwapChainDescriptor* descriptor) {
         return SwapChain::Create(this, surface, previousSwapChain, descriptor);
     }
     ResultOrError<Ref<TextureBase>> Device::CreateTextureImpl(const TextureDescriptor* descriptor) {
-        return AcquireRef(new Texture(this, descriptor));
+        return Texture::Create(this, descriptor);
     }
-    ResultOrError<TextureViewBase*> Device::CreateTextureViewImpl(
+    ResultOrError<Ref<TextureViewBase>> Device::CreateTextureViewImpl(
         TextureBase* texture,
         const TextureViewDescriptor* descriptor) {
-        return new TextureView(texture, descriptor);
+        return TextureView::Create(texture, descriptor);
     }
 
-    ExecutionSerial Device::CheckAndUpdateCompletedSerials() {
+    ResultOrError<ExecutionSerial> Device::CheckAndUpdateCompletedSerials() {
         uint64_t frontendCompletedSerial{GetCompletedCommandSerial()};
         if (frontendCompletedSerial > mCompletedSerial) {
             // sometimes we increase the serials, in which case the completed serial in
@@ -187,7 +189,7 @@ namespace dawn_native { namespace metal {
     }
 
     MaybeError Device::TickImpl() {
-        if (mCommandContext.GetCommands() != nil) {
+        if (mCommandContext.GetCommands() != nullptr) {
             SubmitPendingCommandBuffer();
         }
 
@@ -195,33 +197,33 @@ namespace dawn_native { namespace metal {
     }
 
     id<MTLDevice> Device::GetMTLDevice() {
-        return mMtlDevice;
+        return mMtlDevice.Get();
     }
 
     id<MTLCommandQueue> Device::GetMTLQueue() {
-        return mCommandQueue;
+        return mCommandQueue.Get();
     }
 
     CommandRecordingContext* Device::GetPendingCommandContext() {
-        if (mCommandContext.GetCommands() == nil) {
+        if (mCommandContext.GetCommands() == nullptr) {
             TRACE_EVENT0(GetPlatform(), General, "[MTLCommandQueue commandBuffer]");
             // The MTLCommandBuffer will be autoreleased by default.
             // The autorelease pool may drain before the command buffer is submitted. Retain so it
             // stays alive.
-            mCommandContext = CommandRecordingContext([[mCommandQueue commandBuffer] retain]);
+            mCommandContext = CommandRecordingContext([*mCommandQueue commandBuffer]);
         }
         return &mCommandContext;
     }
 
     void Device::SubmitPendingCommandBuffer() {
-        if (mCommandContext.GetCommands() == nil) {
+        if (mCommandContext.GetCommands() == nullptr) {
             return;
         }
 
         IncrementLastSubmittedCommandSerial();
 
         // Acquire the pending command buffer, which is retained. It must be released later.
-        id<MTLCommandBuffer> pendingCommands = mCommandContext.AcquireCommands();
+        NSPRef<id<MTLCommandBuffer>> pendingCommands = mCommandContext.AcquireCommands();
 
         // Replace mLastSubmittedCommands with the mutex held so we avoid races between the
         // schedule handler and this code.
@@ -230,12 +232,15 @@ namespace dawn_native { namespace metal {
             mLastSubmittedCommands = pendingCommands;
         }
 
-        [pendingCommands addScheduledHandler:^(id<MTLCommandBuffer>) {
+        // Make a local copy of the pointer to the commands because it's not clear how ObjC blocks
+        // handle types with copy / move constructors being referenced in the block..
+        id<MTLCommandBuffer> pendingCommandsPointer = pendingCommands.Get();
+        [*pendingCommands addScheduledHandler:^(id<MTLCommandBuffer>) {
             // This is DRF because we hold the mutex for mLastSubmittedCommands and pendingCommands
             // is a local value (and not the member itself).
             std::lock_guard<std::mutex> lock(mLastSubmittedCommandsMutex);
-            if (this->mLastSubmittedCommands == pendingCommands) {
-                this->mLastSubmittedCommands = nil;
+            if (this->mLastSubmittedCommands.Get() == pendingCommandsPointer) {
+                this->mLastSubmittedCommands = nullptr;
             }
         }];
 
@@ -243,7 +248,7 @@ namespace dawn_native { namespace metal {
         // mLastSubmittedSerial so it is captured by value.
         ExecutionSerial pendingSerial = GetLastSubmittedCommandSerial();
         // this ObjC block runs on a different thread
-        [pendingCommands addCompletedHandler:^(id<MTLCommandBuffer>) {
+        [*pendingCommands addCompletedHandler:^(id<MTLCommandBuffer>) {
             TRACE_EVENT_ASYNC_END0(GetPlatform(), GPUWork, "DeviceMTL::SubmitPendingCommandBuffer",
                                    uint64_t(pendingSerial));
             ASSERT(uint64_t(pendingSerial) > mCompletedSerial.load());
@@ -252,8 +257,7 @@ namespace dawn_native { namespace metal {
 
         TRACE_EVENT_ASYNC_BEGIN0(GetPlatform(), GPUWork, "DeviceMTL::SubmitPendingCommandBuffer",
                                  uint64_t(pendingSerial));
-        [pendingCommands commit];
-        [pendingCommands release];
+        [*pendingCommands commit];
     }
 
     ResultOrError<std::unique_ptr<StagingBufferBase>> Device::CreateStagingBuffer(size_t size) {
@@ -294,46 +298,13 @@ namespace dawn_native { namespace metal {
                                                 TextureCopy* dst,
                                                 const Extent3D& copySizePixels) {
         Texture* texture = ToBackend(dst->texture.Get());
+        EnsureDestinationTextureInitialized(GetPendingCommandContext(), texture, *dst,
+                                            copySizePixels);
 
-        // This function assumes data is perfectly aligned. Otherwise, it might be necessary
-        // to split copying to several stages: see ComputeTextureBufferCopySplit.
-        const TexelBlockInfo& blockInfo = texture->GetFormat().GetAspectInfo(dst->aspect).block;
-        ASSERT(dataLayout.rowsPerImage == copySizePixels.height / blockInfo.height);
-        ASSERT(dataLayout.bytesPerRow ==
-               copySizePixels.width / blockInfo.width * blockInfo.byteSize);
-
-        EnsureDestinationTextureInitialized(texture, *dst, copySizePixels);
-
-        // Metal validation layer requires that if the texture's pixel format is a compressed
-        // format, the sourceSize must be a multiple of the pixel format's block size or be
-        // clamped to the edge of the texture if the block extends outside the bounds of a
-        // texture.
-        const Extent3D clampedSize =
-            texture->ClampToMipLevelVirtualSize(dst->mipLevel, dst->origin, copySizePixels);
-        const uint32_t copyBaseLayer = dst->origin.z;
-        const uint32_t copyLayerCount = copySizePixels.depth;
-        const uint64_t bytesPerImage = dataLayout.rowsPerImage * dataLayout.bytesPerRow;
-
-        MTLBlitOption blitOption = ComputeMTLBlitOption(texture->GetFormat(), dst->aspect);
-
-        uint64_t bufferOffset = dataLayout.offset;
-        for (uint32_t copyLayer = copyBaseLayer; copyLayer < copyBaseLayer + copyLayerCount;
-             ++copyLayer) {
-            [GetPendingCommandContext()->EnsureBlit()
-                     copyFromBuffer:ToBackend(source)->GetBufferHandle()
-                       sourceOffset:bufferOffset
-                  sourceBytesPerRow:dataLayout.bytesPerRow
-                sourceBytesPerImage:bytesPerImage
-                         sourceSize:MTLSizeMake(clampedSize.width, clampedSize.height, 1)
-                          toTexture:texture->GetMTLTexture()
-                   destinationSlice:copyLayer
-                   destinationLevel:dst->mipLevel
-                  destinationOrigin:MTLOriginMake(dst->origin.x, dst->origin.y, 0)
-                            options:blitOption];
-
-            bufferOffset += bytesPerImage;
-        }
-
+        RecordCopyBufferToTexture(GetPendingCommandContext(), ToBackend(source)->GetBufferHandle(),
+                                  source->GetSize(), dataLayout.offset, dataLayout.bytesPerRow,
+                                  dataLayout.rowsPerImage, texture, dst->mipLevel, dst->origin,
+                                  dst->aspect, copySizePixels);
         return {};
     }
 
@@ -356,17 +327,27 @@ namespace dawn_native { namespace metal {
 
     void Device::WaitForCommandsToBeScheduled() {
         SubmitPendingCommandBuffer();
-        [mLastSubmittedCommands waitUntilScheduled];
+
+        // Only lock the object while we take a reference to it, otherwise we could block further
+        // progress if the driver calls the scheduled handler (which also acquires the lock) before
+        // finishing the waitUntilScheduled.
+        NSPRef<id<MTLCommandBuffer>> lastSubmittedCommands;
+        {
+            std::lock_guard<std::mutex> lock(mLastSubmittedCommandsMutex);
+            lastSubmittedCommands = mLastSubmittedCommands;
+        }
+        [*lastSubmittedCommands waitUntilScheduled];
     }
 
     MaybeError Device::WaitForIdleForDestruction() {
-        [mCommandContext.AcquireCommands() release];
-        CheckPassedSerials();
+        // Forget all pending commands.
+        mCommandContext.AcquireCommands();
+        DAWN_TRY(CheckPassedSerials());
 
         // Wait for all commands to be finished so we can free resources
         while (GetCompletedCommandSerial() != GetLastSubmittedCommandSerial()) {
             usleep(100);
-            CheckPassedSerials();
+            DAWN_TRY(CheckPassedSerials());
         }
 
         return {};
@@ -375,13 +356,11 @@ namespace dawn_native { namespace metal {
     void Device::ShutDownImpl() {
         ASSERT(GetState() == State::Disconnected);
 
-        [mCommandContext.AcquireCommands() release];
+        // Forget all pending commands.
+        mCommandContext.AcquireCommands();
 
-        [mCommandQueue release];
-        mCommandQueue = nil;
-
-        [mMtlDevice release];
-        mMtlDevice = nil;
+        mCommandQueue = nullptr;
+        mMtlDevice = nullptr;
     }
 
     uint32_t Device::GetOptimalBytesPerRowAlignment() const {
@@ -390,6 +369,10 @@ namespace dawn_native { namespace metal {
 
     uint64_t Device::GetOptimalBufferToTextureCopyOffsetAlignment() const {
         return 1;
+    }
+
+    float Device::GetTimestampPeriodInNS() const {
+        return 1.0f;
     }
 
 }}  // namespace dawn_native::metal

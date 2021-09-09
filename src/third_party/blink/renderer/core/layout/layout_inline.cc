@@ -32,13 +32,11 @@
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
-#include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -46,7 +44,6 @@
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
@@ -56,16 +53,6 @@
 namespace blink {
 
 namespace {
-
-// TODO(layout-dev): Once we generate fragment for all inline element, we should
-// use |LayoutObject::EnclosingBlockFlowFragment()|.
-// TODO(crbug.com/1061423): Shouldn't assume that there's only one fragment.
-const NGPhysicalBoxFragment* ContainingBlockFlowFragmentOf(
-    const LayoutInline& node) {
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return nullptr;
-  return node.ContainingBlockFlowFragment();
-}
 
 // TODO(xiaochengh): Deduplicate with a similar function in ng_paint_fragment.cc
 // ::before, ::after and ::first-letter can be hit test targets.
@@ -140,10 +127,7 @@ void LayoutInline::WillBeDestroyed() {
     } else {
       if (Parent())
         Parent()->DirtyLinesFromChangedChild(this);
-      if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-        if (NGPaintFragment* first_inline_fragment = FirstInlineFragment())
-          first_inline_fragment->LayoutObjectWillBeDestroyed();
-      } else if (FirstInlineFragmentItemIndex()) {
+      if (FirstInlineFragmentItemIndex()) {
         NGFragmentItems::LayoutObjectWillBeDestroyed(*this);
         ClearFirstInlineFragmentItemIndex();
       }
@@ -161,55 +145,36 @@ void LayoutInline::DeleteLineBoxes() {
     MutableLineBoxes()->DeleteLineBoxes();
 }
 
-void LayoutInline::SetFirstInlineFragment(NGPaintFragment* fragment) {
-  NOT_DESTROYED();
-  CHECK(IsInLayoutNGInlineFormattingContext()) << *this;
-  DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
-  first_paint_fragment_ = fragment;
-}
-
 void LayoutInline::ClearFirstInlineFragmentItemIndex() {
   NOT_DESTROYED();
   CHECK(IsInLayoutNGInlineFormattingContext()) << *this;
-  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   first_fragment_item_index_ = 0u;
 }
 
 void LayoutInline::SetFirstInlineFragmentItemIndex(wtf_size_t index) {
   NOT_DESTROYED();
   CHECK(IsInLayoutNGInlineFormattingContext()) << *this;
-  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   DCHECK_NE(index, 0u);
   first_fragment_item_index_ = index;
 }
 
 bool LayoutInline::HasInlineFragments() const {
   NOT_DESTROYED();
-  if (!IsInLayoutNGInlineFormattingContext())
-    return FirstLineBox();
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    return first_paint_fragment_;
-  return first_fragment_item_index_;
+  if (IsInLayoutNGInlineFormattingContext())
+    return first_fragment_item_index_;
+  return FirstLineBox();
 }
 
 void LayoutInline::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
   NOT_DESTROYED();
-  if (IsInLayoutNGInlineFormattingContext()) {
-    if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-      SetFirstInlineFragment(nullptr);
-    } else {
-      ClearFirstInlineFragmentItemIndex();
-    }
-  } else {
+  if (IsInLayoutNGInlineFormattingContext())
+    ClearFirstInlineFragmentItemIndex();
+  else
     DeleteLineBoxes();
-  }
 
-  // Because |first_paint_fragment_| and |line_boxes_| are union, when one is
-  // deleted, the other should be initialized to nullptr.
-  DCHECK(new_value ? (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()
-                          ? !first_fragment_item_index_
-                          : !first_paint_fragment_)
-                   : !line_boxes_.First());
+  // Because |first_fragment_item_index_| and |line_boxes_| are union, when one
+  // is deleted, the other should be initialized to nullptr.
+  DCHECK(new_value ? !first_fragment_item_index_ : !line_boxes_.First());
 }
 
 LayoutInline* LayoutInline::InlineElementContinuation() const {
@@ -492,7 +457,7 @@ LayoutRect LayoutInline::LocalCaretRect(
     cursor.MoveTo(*this);
     if (cursor) {
       caret_rect.MoveBy(
-          cursor.Current().OffsetInContainerBlock().ToLayoutPoint());
+          cursor.Current().OffsetInContainerFragment().ToLayoutPoint());
     }
   }
 
@@ -759,8 +724,8 @@ LayoutBlockFlow* LayoutInline::CreateAnonymousContainerForBlockChildren() {
   // inline. We take all of the children after |beforeChild| and put them in a
   // clone of this object.
   scoped_refptr<ComputedStyle> new_style =
-      ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
-                                                     EDisplay::kBlock);
+      GetDocument().GetStyleResolver().CreateAnonymousStyleWithDisplay(
+          StyleRef(), EDisplay::kBlock);
   const LayoutBlock* containing_block = ContainingBlock();
   // The anon block we create here doesn't exist in the CSS spec, so we need to
   // ensure that any blocks it contains inherit properly from its true
@@ -843,15 +808,6 @@ void LayoutInline::CollectLineBoxRects(
     const PhysicalRectCollector& yield) const {
   NOT_DESTROYED();
   if (IsInLayoutNGInlineFormattingContext()) {
-    if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-      const auto* box_fragment = ContainingBlockFlowFragmentOf(*this);
-      if (!box_fragment)
-        return;
-      for (const auto& fragment :
-           NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this))
-        yield(fragment.RectInContainerBox());
-      return;
-    }
     NGInlineCursor cursor;
     cursor.MoveToIncludingCulledInline(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject())
@@ -987,26 +943,76 @@ void LayoutInline::CollectCulledLineBoxRectsInFlippedBlocksDirection(
   }
 }
 
-void LayoutInline::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
-                                        MapCoordinatesFlags mode) const {
-  NOT_DESTROYED();
-  LayoutGeometryMap geometry_map(mode);
-  geometry_map.PushMappingsToAncestor(this, nullptr);
-  CollectLineBoxRects([&quads, &geometry_map](const PhysicalRect& r) {
-    quads.push_back(geometry_map.AbsoluteQuad(r));
-  });
-  if (quads.IsEmpty())
-    quads.push_back(geometry_map.AbsoluteQuad(PhysicalRect()));
+bool LayoutInline::AbsoluteTransformDependsOnPoint(
+    const LayoutObject& object) const {
+  const LayoutObject* current = &object;
+  const LayoutObject* container = object.Container();
+  while (container) {
+    if (current->OffsetForContainerDependsOnPoint(container))
+      return true;
+    current = container;
+    container = container->Container();
+  }
+  return false;
 }
 
-base::Optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
+void LayoutInline::LocalQuadsForSelf(Vector<FloatQuad>& quads) const {
+  QuadsForSelfInternal(quads, 0, false);
+}
+
+void LayoutInline::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
+                                        MapCoordinatesFlags mode) const {
+  QuadsForSelfInternal(quads, mode, true);
+}
+
+void LayoutInline::QuadsForSelfInternal(Vector<FloatQuad>& quads,
+                                        MapCoordinatesFlags mode,
+                                        bool map_to_absolute) const {
+  NOT_DESTROYED();
+  absl::optional<TransformationMatrix> mapping_to_absolute;
+  // Set to true if the transform to absolute space depends on the point
+  // being mapped (in which case we can't use LocalToAbsoluteTransform).
+  bool transform_depends_on_point = false;
+  bool transform_depends_on_point_computed = false;
+  auto PushAbsoluteQuad = [&transform_depends_on_point,
+                           &transform_depends_on_point_computed,
+                           &mapping_to_absolute, &quads, mode,
+                           this](const PhysicalRect& rect) {
+    if (!transform_depends_on_point_computed) {
+      transform_depends_on_point_computed = true;
+      transform_depends_on_point = AbsoluteTransformDependsOnPoint(*this);
+      if (!transform_depends_on_point)
+        mapping_to_absolute.emplace(LocalToAbsoluteTransform(mode));
+    }
+    if (transform_depends_on_point)
+      quads.push_back(LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)), mode));
+    else
+      quads.push_back(mapping_to_absolute->MapQuad(FloatQuad(FloatRect(rect))));
+  };
+
+  CollectLineBoxRects(
+      [&PushAbsoluteQuad, &map_to_absolute, &quads](const PhysicalRect& rect) {
+        if (map_to_absolute)
+          PushAbsoluteQuad(rect);
+        else
+          quads.push_back(FloatQuad(FloatRect(rect)));
+      });
+  if (quads.IsEmpty()) {
+    if (map_to_absolute)
+      PushAbsoluteQuad(PhysicalRect());
+    else
+      quads.push_back(FloatQuad());
+  }
+}
+
+absl::optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
     const {
   NOT_DESTROYED();
   if (IsInLayoutNGInlineFormattingContext()) {
     NGInlineCursor cursor;
     cursor.MoveToIncludingCulledInline(*this);
     if (!cursor)
-      return base::nullopt;
+      return absl::nullopt;
     return cursor.CurrentOffsetInBlockFlow();
   }
   if (const InlineBox* first_box = FirstLineBoxIncludingCulling()) {
@@ -1017,7 +1023,7 @@ base::Optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
     }
     return PhysicalOffset(location);
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 PhysicalOffset LayoutInline::AnchorPhysicalLocation() const {
@@ -1043,7 +1049,8 @@ PhysicalOffset LayoutInline::AnchorPhysicalLocation() const {
   return PhysicalOffset();
 }
 
-PhysicalRect LayoutInline::AbsoluteBoundingBoxRectHandlingEmptyInline() const {
+PhysicalRect LayoutInline::AbsoluteBoundingBoxRectHandlingEmptyInline(
+    MapCoordinatesFlags flags) const {
   NOT_DESTROYED();
   Vector<PhysicalRect> rects = OutlineRects(
       PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
@@ -1126,25 +1133,12 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
     // inline may not start in the first fragment generated for the inline
     // formatting context.
     if (target_fragment_idx != -1)
-      target_fragment_idx += cursor.CurrentContainerFragmentIndex();
+      target_fragment_idx += cursor.ContainerFragmentIndex();
 
     for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
       if (target_fragment_idx != -1 &&
-          wtf_size_t(target_fragment_idx) !=
-              cursor.CurrentContainerFragmentIndex())
+          wtf_size_t(target_fragment_idx) != cursor.ContainerFragmentIndex())
         continue;
-      if (const NGPaintFragment* paint_fragment =
-              cursor.Current().PaintFragment()) {
-        // NGBoxFragmentPainter::NodeAtPoint() takes an offset that is
-        // accumulated up to the fragment itself. Compute this offset.
-        const PhysicalOffset child_offset =
-            accumulated_offset + paint_fragment->OffsetInContainerBlock();
-        if (NGBoxFragmentPainter(*paint_fragment)
-                .NodeAtPoint(result, hit_test_location, child_offset,
-                             hit_test_action))
-          return true;
-        continue;
-      }
       DCHECK(cursor.Current().Item());
       const NGFragmentItem& item = *cursor.Current().Item();
       const NGPhysicalBoxFragment* box_fragment = item.BoxFragment();
@@ -1152,15 +1146,10 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
       // NGBoxFragmentPainter::NodeAtPoint() takes an offset that is accumulated
       // up to the fragment itself. Compute this offset.
       const PhysicalOffset child_offset =
-          accumulated_offset + item.OffsetInContainerBlock();
+          accumulated_offset + item.OffsetInContainerFragment();
       if (NGBoxFragmentPainter(cursor, item, *box_fragment)
               .NodeAtPoint(result, hit_test_location, child_offset,
                            accumulated_offset, hit_test_action)) {
-        // TODO(layout-dev): Make this work with block fragmentation. We should
-        // ideally store the containing box fragment in the hit-test result
-        // here, but doing that might prevent us from finding the right fragment
-        // item later on in PositionForPoint(), if the inline has been offset
-        // from its static position.
         return true;
       }
     }
@@ -1202,7 +1191,7 @@ bool LayoutInline::HitTestCulledInline(HitTestResult& result,
     NGInlineCursor cursor(*parent_cursor);
     cursor.MoveToIncludingCulledInline(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject())
-      yield(cursor.Current().RectInContainerBlock());
+      yield(cursor.Current().RectInContainerFragment());
   } else {
     DCHECK(!ContainingNGBlockFlow());
     CollectCulledLineBoxRects(yield);
@@ -1235,7 +1224,7 @@ PositionWithAffinity LayoutInline::PositionForPoint(
   }
 
   if (const LayoutBlockFlow* ng_block_flow = ContainingNGBlockFlow())
-    return ng_block_flow->PositionForPoint(*this, point);
+    return ng_block_flow->PositionForPoint(point);
 
   DCHECK(CanUseInlineBox(*this));
 
@@ -1256,7 +1245,7 @@ PhysicalRect LayoutInline::PhysicalLinesBoundingBox() const {
     cursor.MoveToIncludingCulledInline(*this);
     PhysicalRect bounding_box;
     for (; cursor; cursor.MoveToNextForSameLayoutObject())
-      bounding_box.UniteIfNonZero(cursor.Current().RectInContainerBlock());
+      bounding_box.UniteIfNonZero(cursor.Current().RectInContainerFragment());
     return bounding_box;
   }
 
@@ -1409,7 +1398,7 @@ PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
     cursor.MoveToIncludingCulledInline(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
       PhysicalRect child_rect = cursor.Current().InkOverflow();
-      child_rect.offset += cursor.Current().OffsetInContainerBlock();
+      child_rect.offset += cursor.Current().OffsetInContainerFragment();
       result.Unite(child_rect);
     }
     return result;
@@ -1466,11 +1455,7 @@ PhysicalRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
   NOT_DESTROYED();
   if (IsInLayoutNGInlineFormattingContext()) {
     DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
-    if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-      return NGFragmentItem::LocalVisualRectFor(*this);
-
-    if (const auto& visual_rect = NGPaintFragment::LocalVisualRectFor(*this))
-      return *visual_rect;
+    return NGFragmentItem::LocalVisualRectFor(*this);
   }
 
   // If we don't create line boxes, we don't have any invalidations to do.
@@ -1485,7 +1470,8 @@ PhysicalRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
 PhysicalRect LayoutInline::PhysicalVisualOverflowRect() const {
   NOT_DESTROYED();
   PhysicalRect overflow_rect = LinesVisualOverflowBoundingBox();
-  LayoutUnit outline_outset(StyleRef().OutlineOutsetExtent());
+  const ComputedStyle& style = StyleRef();
+  LayoutUnit outline_outset(style.OutlineOutsetExtent());
   if (outline_outset) {
     Vector<PhysicalRect> rects;
     if (GetDocument().InNoQuirksMode()) {
@@ -1494,14 +1480,14 @@ PhysicalRect LayoutInline::PhysicalVisualOverflowRect() const {
       // rects for children and continuations.
       AddOutlineRectsForChildrenAndContinuations(
           rects, PhysicalOffset(),
-          OutlineRectsShouldIncludeBlockVisualOverflow());
+          style.OutlineRectsShouldIncludeBlockVisualOverflow());
     } else {
       // In non-standard mode, because the difference in
       // LayoutBlock::minLineHeightForReplacedObject(),
       // linesVisualOverflowBoundingBox() may not cover outline rects of lines
       // containing replaced objects.
       AddOutlineRects(rects, PhysicalOffset(),
-                      OutlineRectsShouldIncludeBlockVisualOverflow());
+                      style.OutlineRectsShouldIncludeBlockVisualOverflow());
     }
     if (!rects.IsEmpty()) {
       PhysicalRect outline_rect = UnionRect(rects);
@@ -1524,7 +1510,7 @@ PhysicalRect LayoutInline::ReferenceBoxForClipPath() const {
     NGInlineCursor cursor;
     cursor.MoveTo(*this);
     if (cursor)
-      return cursor.Current().RectInContainerBlock();
+      return cursor.Current().RectInContainerFragment();
   }
   if (const InlineFlowBox* flow_box = FirstLineBox())
     return FlipForWritingMode(flow_box->FrameRect());
@@ -1683,12 +1669,8 @@ void LayoutInline::DirtyLinesFromChangedChild(
     MarkingBehavior marking_behavior) {
   NOT_DESTROYED();
   if (IsInLayoutNGInlineFormattingContext()) {
-    if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
-      if (const LayoutBlockFlow* container = FragmentItemsContainer())
-        NGFragmentItems::DirtyLinesFromChangedChild(*child, *container);
-      return;
-    }
-    SetAncestorLineBoxDirty();
+    if (const LayoutBlockFlow* container = FragmentItemsContainer())
+      NGFragmentItems::DirtyLinesFromChangedChild(*child, *container);
     return;
   }
   MutableLineBoxes()->DirtyLinesFromChangedChild(
@@ -1887,16 +1869,6 @@ void LayoutInline::InvalidateDisplayItemClients(
   if (IsInLayoutNGInlineFormattingContext()) {
     if (!ShouldCreateBoxFragment())
       return;
-    if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-      NGInlineCursor cursor;
-      for (cursor.MoveTo(*this); cursor;
-           cursor.MoveToNextForSameLayoutObject()) {
-        DCHECK_EQ(cursor.Current().GetLayoutObject(), this);
-        paint_invalidator.InvalidateDisplayItemClient(
-            *cursor.Current().GetDisplayItemClient(), invalidation_reason);
-      }
-      return;
-    }
 #if DCHECK_IS_ON()
     NGInlineCursor cursor;
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())

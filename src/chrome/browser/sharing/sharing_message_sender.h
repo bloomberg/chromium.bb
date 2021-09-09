@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chrome_browser_sharing {
 enum MessageType : int;
@@ -41,7 +41,7 @@ class SharingMessageSender {
    public:
     using SendMessageCallback =
         base::OnceCallback<void(SharingSendMessageResult result,
-                                base::Optional<std::string> message_id,
+                                absl::optional<std::string> message_id,
                                 SharingChannelType channel_type)>;
     virtual ~SendMessageDelegate() = default;
 
@@ -64,7 +64,7 @@ class SharingMessageSender {
   SharingMessageSender& operator=(const SharingMessageSender&) = delete;
   virtual ~SharingMessageSender();
 
-  virtual void SendMessageToDevice(
+  virtual base::OnceClosure SendMessageToDevice(
       const syncer::DeviceInfo& device,
       base::TimeDelta response_timeout,
       chrome_browser_sharing::SharingMessage message,
@@ -89,7 +89,6 @@ class SharingMessageSender {
                         base::TimeTicks timestamp,
                         chrome_browser_sharing::MessageType type,
                         SharingDevicePlatform receiver_device_platform,
-                        base::TimeDelta last_updated_age,
                         int trace_id,
                         SharingChannelType channel_type,
                         base::TimeDelta receiver_pulse_interval);
@@ -101,7 +100,6 @@ class SharingMessageSender {
     base::TimeTicks timestamp;
     chrome_browser_sharing::MessageType type;
     SharingDevicePlatform receiver_device_platform;
-    base::TimeDelta last_updated_age;
     int trace_id;
     SharingChannelType channel_type;
     base::TimeDelta receiver_pulse_interval;
@@ -109,7 +107,7 @@ class SharingMessageSender {
 
   void OnMessageSent(const std::string& message_guid,
                      SharingSendMessageResult result,
-                     base::Optional<std::string> message_id,
+                     absl::optional<std::string> message_id,
                      SharingChannelType channel_type);
 
   void InvokeSendMessageCallback(

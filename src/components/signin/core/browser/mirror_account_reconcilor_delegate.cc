@@ -28,10 +28,6 @@ bool MirrorAccountReconcilorDelegate::IsReconcileEnabled() const {
   return reconcile_enabled_;
 }
 
-bool MirrorAccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
-  return true;
-}
-
 gaia::GaiaSource MirrorAccountReconcilorDelegate::GetGaiaApiSource() const {
   return gaia::GaiaSource::kAccountReconcilorMirror;
 }
@@ -43,12 +39,19 @@ bool MirrorAccountReconcilorDelegate::ShouldAbortReconcileIfPrimaryHasError()
 
 ConsentLevel MirrorAccountReconcilorDelegate::GetConsentLevelForPrimaryAccount()
     const {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   if (base::FeatureList::IsEnabled(kMobileIdentityConsistency)) {
-    return ConsentLevel::kNotRequired;
+    return ConsentLevel::kSignin;
   }
-#endif
   return ConsentLevel::kSync;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Whenever Mirror is enabled on a Lacros Profile, the Primary Account may or
+  // may not have consented to Chrome Sync. But we want to enable
+  // `AccountReconcilor` regardless - for minting Gaia cookies.
+  return ConsentLevel::kSignin;
+#else
+  return ConsentLevel::kSync;
+#endif
 }
 
 CoreAccountId MirrorAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
@@ -77,25 +80,8 @@ MirrorAccountReconcilorDelegate::GetChromeAccountsForReconcile(
                                            gaia_accounts);
 }
 
-// TODO(https://crbug.com/1046746): Replace separate IdentityManager::Observer
-// method overrides below with a single OnPrimaryAccountChanged method and
-// inline UpdateReconcilorStatus.
-void MirrorAccountReconcilorDelegate::OnPrimaryAccountSet(
-    const CoreAccountInfo& primary_account_info) {
-  UpdateReconcilorStatus();
-}
-
-void MirrorAccountReconcilorDelegate::OnPrimaryAccountCleared(
-    const CoreAccountInfo& previous_primary_account_info) {
-  UpdateReconcilorStatus();
-}
-
-void MirrorAccountReconcilorDelegate::OnUnconsentedPrimaryAccountChanged(
-    const CoreAccountInfo& unconsented_primary_account_info) {
-  UpdateReconcilorStatus();
-}
-
-void MirrorAccountReconcilorDelegate::UpdateReconcilorStatus() {
+void MirrorAccountReconcilorDelegate::OnPrimaryAccountChanged(
+    const PrimaryAccountChangeEvent& event) {
   // Have to check whether the state has actually changed, as calling
   // DisableReconcile logs out all accounts even if it was already disabled.
   bool should_enable_reconcile =

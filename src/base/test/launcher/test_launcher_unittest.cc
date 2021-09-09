@@ -23,6 +23,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -264,6 +265,29 @@ TEST_F(TestLauncherTest, FilterIncludePreTest) {
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
+// Test TestLauncher gtest filter works when both include and exclude filter
+// are defined.
+TEST_F(TestLauncherTest, FilterIncludeExclude) {
+  AddMockedTests("Test", {"firstTest", "PRE_firstTest", "secondTest",
+                          "PRE_secondTest", "thirdTest", "DISABLED_Disable1"});
+  SetUpExpectCalls();
+  command_line->AppendSwitchASCII("gtest_filter",
+                                  "Test.*Test:-Test.secondTest");
+  std::vector<std::string> tests_names = {
+      "Test.PRE_firstTest",
+      "Test.firstTest",
+      "Test.thirdTest",
+  };
+  using ::testing::_;
+  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
+                                 _,
+                                 testing::ElementsAreArray(tests_names.cbegin(),
+                                                           tests_names.cend()),
+                                 _, _))
+      .Times(1);
+  EXPECT_TRUE(test_launcher.Run(command_line.get()));
+}
+
 // Test TestLauncher "gtest_repeat" switch.
 TEST_F(TestLauncherTest, RepeatTest) {
   AddMockedTests("Test", {"firstTest"});
@@ -441,6 +465,27 @@ TEST_F(TestLauncherTest, RedirectStdio) {
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
+// Sharding should be stable and always selecting the same tests.
+TEST_F(TestLauncherTest, StableSharding) {
+  AddMockedTests("Test", {"firstTest", "secondTest", "thirdTest"});
+  SetUpExpectCalls();
+  command_line->AppendSwitchASCII("test-launcher-total-shards", "2");
+  command_line->AppendSwitchASCII("test-launcher-shard-index", "0");
+  command_line->AppendSwitch("test-launcher-stable-sharding");
+  std::vector<std::string> tests_names = {"Test.firstTest", "Test.secondTest"};
+  using ::testing::_;
+  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
+                                 _,
+                                 testing::ElementsAreArray(tests_names.cbegin(),
+                                                           tests_names.cend()),
+                                 _, _))
+      .WillOnce(::testing::DoAll(OnTestResult(&test_launcher, "Test.firstTest",
+                                              TestResult::TEST_SUCCESS),
+                                 OnTestResult(&test_launcher, "Test.secondTest",
+                                              TestResult::TEST_SUCCESS)));
+  EXPECT_TRUE(test_launcher.Run(command_line.get()));
+}
+
 // Validate |iteration_data| contains one test result matching |result|.
 bool ValidateTestResultObject(const Value* iteration_data,
                               TestResult& test_result) {
@@ -499,7 +544,7 @@ bool ValidateTestResultObject(const Value* iteration_data,
 
 // Validate |root| dictionary value contains a list with |values|
 // at |key| value.
-bool ValidateStringList(const Optional<Value>& root,
+bool ValidateStringList(const absl::optional<Value>& root,
                         const std::string& key,
                         std::vector<const char*> values) {
   const Value* val = root->FindListKey(key);
@@ -557,7 +602,7 @@ TEST_F(TestLauncherTest, JsonSummary) {
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 
   // Validate the resulting JSON file is the expected output.
-  Optional<Value> root = test_launcher_utils::ReadSummary(path);
+  absl::optional<Value> root = test_launcher_utils::ReadSummary(path);
   ASSERT_TRUE(root);
   EXPECT_TRUE(
       ValidateStringList(root, "all_tests",
@@ -610,7 +655,7 @@ TEST_F(TestLauncherTest, JsonSummaryWithDisabledTests) {
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 
   // Validate the resulting JSON file is the expected output.
-  Optional<Value> root = test_launcher_utils::ReadSummary(path);
+  absl::optional<Value> root = test_launcher_utils::ReadSummary(path);
   ASSERT_TRUE(root);
   Value* val = root->FindDictKey("test_locations");
   ASSERT_TRUE(val);
@@ -759,7 +804,7 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   GetAppOutputAndError(command_line, &output);
 
   // Validate the resulting JSON file is the expected output.
-  Optional<Value> root = test_launcher_utils::ReadSummary(path);
+  absl::optional<Value> root = test_launcher_utils::ReadSummary(path);
   ASSERT_TRUE(root);
 
   Value* val = root->FindDictKey("test_locations");
@@ -831,7 +876,7 @@ TEST_F(UnitTestLauncherDelegateTester, LeakedChildProcess) {
   GetAppOutputWithExitCode(command_line, &output, &exit_code);
 
   // Validate that we actually ran a test.
-  Optional<Value> root = test_launcher_utils::ReadSummary(path);
+  absl::optional<Value> root = test_launcher_utils::ReadSummary(path);
   ASSERT_TRUE(root);
 
   Value* val = root->FindDictKey("test_locations");

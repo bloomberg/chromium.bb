@@ -10,11 +10,14 @@
 
 #if defined(ANGLE_ENABLE_EAGL)
 
+// OpenGL ES is technically deprecated on iOS. Silence associated warnings.
+#    define GLES_SILENCE_DEPRECATION
+
 #    import <OpenGLES/EAGL.h>
 #    import <OpenGLES/EAGLDrawable.h>
 #    import <OpenGLES/EAGLIOSurface.h>
 
-#    include "libANGLE/renderer/gl/apple/SoftLinking.h"
+#    include "common/apple/SoftLinking.h"
 
 SOFT_LINK_FRAMEWORK_SOURCE(OpenGLES)
 

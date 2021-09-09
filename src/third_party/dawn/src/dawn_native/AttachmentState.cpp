@@ -15,8 +15,8 @@
 #include "dawn_native/AttachmentState.h"
 
 #include "common/BitSetIterator.h"
-#include "common/HashUtils.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/ObjectContentHasher.h"
 #include "dawn_native/Texture.h"
 
 namespace dawn_native {
@@ -46,12 +46,29 @@ namespace dawn_native {
         }
     }
 
+    AttachmentStateBlueprint::AttachmentStateBlueprint(const RenderPipelineDescriptor2* descriptor)
+        : mSampleCount(descriptor->multisample.count) {
+        ASSERT(descriptor->fragment->targetCount <= kMaxColorAttachments);
+        for (ColorAttachmentIndex i(uint8_t(0));
+             i < ColorAttachmentIndex(static_cast<uint8_t>(descriptor->fragment->targetCount));
+             ++i) {
+            mColorAttachmentsSet.set(i);
+            mColorFormats[i] = descriptor->fragment->targets[static_cast<uint8_t>(i)].format;
+        }
+        if (descriptor->depthStencil != nullptr) {
+            mDepthStencilFormat = descriptor->depthStencil->format;
+        }
+    }
+
     AttachmentStateBlueprint::AttachmentStateBlueprint(const RenderPassDescriptor* descriptor) {
         for (ColorAttachmentIndex i(uint8_t(0));
              i < ColorAttachmentIndex(static_cast<uint8_t>(descriptor->colorAttachmentCount));
              ++i) {
             TextureViewBase* attachment =
-                descriptor->colorAttachments[static_cast<uint8_t>(i)].attachment;
+                descriptor->colorAttachments[static_cast<uint8_t>(i)].view;
+            if (attachment == nullptr) {
+                attachment = descriptor->colorAttachments[static_cast<uint8_t>(i)].attachment;
+            }
             mColorAttachmentsSet.set(i);
             mColorFormats[i] = attachment->GetFormat().format;
             if (mSampleCount == 0) {
@@ -61,7 +78,10 @@ namespace dawn_native {
             }
         }
         if (descriptor->depthStencilAttachment != nullptr) {
-            TextureViewBase* attachment = descriptor->depthStencilAttachment->attachment;
+            TextureViewBase* attachment = descriptor->depthStencilAttachment->view;
+            if (attachment == nullptr) {
+                attachment = descriptor->depthStencilAttachment->attachment;
+            }
             mDepthStencilFormat = attachment->GetFormat().format;
             if (mSampleCount == 0) {
                 mSampleCount = attachment->GetTexture()->GetSampleCount();
@@ -128,6 +148,11 @@ namespace dawn_native {
 
     AttachmentState::~AttachmentState() {
         GetDevice()->UncacheAttachmentState(this);
+    }
+
+    size_t AttachmentState::ComputeContentHash() {
+        // TODO(dawn:549): skip this traversal and reuse the blueprint.
+        return AttachmentStateBlueprint::HashFunc()(this);
     }
 
     ityp::bitset<ColorAttachmentIndex, kMaxColorAttachments>

@@ -19,7 +19,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/notreached.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -39,7 +38,11 @@ namespace {
 // Templatized base::Value::GetAs*().
 template <typename T> bool GetAs(const base::Value& in, T* out);
 template<> bool GetAs(const base::Value& in, bool* out) {
-  return in.GetAsBoolean(out);
+  if (out && in.is_bool()) {
+    *out = in.GetBool();
+    return true;
+  }
+  return in.is_bool();
 }
 template <>
 bool GetAs(const base::Value& in, double* out) {
@@ -48,16 +51,18 @@ bool GetAs(const base::Value& in, double* out) {
 template<> bool GetAs(const base::Value& in, std::string* out) {
   return in.GetAsString(out);
 }
-template<> bool GetAs(const base::Value& in, base::string16* out) {
+template <>
+bool GetAs(const base::Value& in, std::u16string* out) {
   return in.GetAsString(out);
 }
-template<> bool GetAs(const base::Value& in, std::vector<base::string16>* out) {
+template <>
+bool GetAs(const base::Value& in, std::vector<std::u16string>* out) {
   out->clear();
   const base::ListValue* list = NULL;
   if (!in.GetAsList(&list))
     return false;
   for (size_t i = 0; i < list->GetSize(); ++i) {
-    base::string16 element;
+    std::u16string element;
     if (!list->GetString(i, &element)) {
       out->clear();
       return false;
@@ -95,7 +100,7 @@ bool GetExists(const DownloadItem& item) {
   return !item.GetFileExternallyRemoved();
 }
 
-base::string16 GetFilename(const DownloadItem& item) {
+std::u16string GetFilename(const DownloadItem& item) {
   // This filename will be compared with strings that could be passed in by the
   // user, who only sees LossyDisplayNames.
   return item.GetTargetFilePath().LossyDisplayName();
@@ -171,7 +176,7 @@ template <typename ValueType> DownloadQuery::FilterCallback BuildFilter(
 // Returns true if |accessor.Run(item)| matches |pattern|.
 bool FindRegex(
     RE2* pattern,
-    const base::Callback<std::string(const DownloadItem&)>& accessor,
+    const base::RepeatingCallback<std::string(const DownloadItem&)>& accessor,
     const DownloadItem& item) {
   return RE2::PartialMatch(accessor.Run(item), *pattern);
 }
@@ -184,16 +189,17 @@ DownloadQuery::FilterCallback BuildRegexFilter(
   if (!GetAs(regex_value, &regex_str)) return DownloadQuery::FilterCallback();
   std::unique_ptr<RE2> pattern(new RE2(regex_str));
   if (!pattern->ok()) return DownloadQuery::FilterCallback();
-  return base::Bind(&FindRegex, base::Owned(pattern.release()),
-                    base::Bind(accessor));
+  return base::BindRepeating(&FindRegex, base::Owned(pattern.release()),
+                             base::BindRepeating(accessor));
 }
 
 // Returns a ComparisonType to indicate whether a field in |left| is less than,
 // greater than or equal to the same field in |right|.
-template<typename ValueType>
+template <typename ValueType>
 ComparisonType Compare(
-    const base::Callback<ValueType(const DownloadItem&)>& accessor,
-    const DownloadItem& left, const DownloadItem& right) {
+    const base::RepeatingCallback<ValueType(const DownloadItem&)>& accessor,
+    const DownloadItem& left,
+    const DownloadItem& right) {
   ValueType left_value = accessor.Run(left);
   ValueType right_value = accessor.Run(right);
   if (left_value > right_value) return GT;
@@ -205,26 +211,26 @@ ComparisonType Compare(
 }  // anonymous namespace
 
 // static
-bool DownloadQuery::MatchesQuery(const std::vector<base::string16>& query_terms,
+bool DownloadQuery::MatchesQuery(const std::vector<std::u16string>& query_terms,
                                  const DownloadItem& item) {
   if (query_terms.empty())
     return true;
 
-  base::string16 original_url_raw(
+  std::u16string original_url_raw(
       base::UTF8ToUTF16(item.GetOriginalUrl().spec()));
-  base::string16 url_raw(base::UTF8ToUTF16(item.GetURL().spec()));
+  std::u16string url_raw(base::UTF8ToUTF16(item.GetURL().spec()));
   // Try to also match query with above URLs formatted in user display friendly
   // way. This will unescape characters (including spaces) and trim all extra
   // data (like username and password) from raw url so that for example raw url
   // "http://some.server.org/example%20download/file.zip" will be matched with
   // search term "example download".
-  base::string16 original_url_formatted(
+  std::u16string original_url_formatted(
       url_formatter::FormatUrl(item.GetOriginalUrl()));
-  base::string16 url_formatted(url_formatter::FormatUrl(item.GetURL()));
-  base::string16 path(item.GetTargetFilePath().LossyDisplayName());
+  std::u16string url_formatted(url_formatter::FormatUrl(item.GetURL()));
+  std::u16string path(item.GetTargetFilePath().LossyDisplayName());
 
   for (auto it = query_terms.begin(); it != query_terms.end(); ++it) {
-    base::string16 term = base::i18n::ToLower(*it);
+    std::u16string term = base::i18n::ToLower(*it);
     if (!base::i18n::StringSearchIgnoringCaseAndAccents(
             term, original_url_raw, NULL, NULL) &&
         !base::i18n::StringSearchIgnoringCaseAndAccents(
@@ -275,7 +281,7 @@ bool DownloadQuery::AddFilter(DownloadQuery::FilterType type,
     case FILTER_EXISTS:
       return AddFilter(BuildFilter<bool>(value, EQ, &GetExists));
     case FILTER_FILENAME:
-      return AddFilter(BuildFilter<base::string16>(value, EQ, &GetFilename));
+      return AddFilter(BuildFilter<std::u16string>(value, EQ, &GetFilename));
     case FILTER_FILENAME_REGEX:
       return AddFilter(BuildRegexFilter(value, &GetFilenameUTF8));
     case FILTER_MIME:
@@ -283,7 +289,7 @@ bool DownloadQuery::AddFilter(DownloadQuery::FilterType type,
     case FILTER_PAUSED:
       return AddFilter(BuildFilter<bool>(value, EQ, &IsPaused));
     case FILTER_QUERY: {
-      std::vector<base::string16> query_terms;
+      std::vector<std::u16string> query_terms;
       return GetAs(value, &query_terms) &&
              (query_terms.empty() ||
               AddFilter(base::BindRepeating(&MatchesQuery, query_terms)));
@@ -339,8 +345,8 @@ bool DownloadQuery::Matches(const DownloadItem& item) const {
 // Sorters, but there is one DownloadComparator per call to Search().
 
 struct DownloadQuery::Sorter {
-  typedef base::Callback<ComparisonType(
-      const DownloadItem&, const DownloadItem&)> SortType;
+  using SortType = base::RepeatingCallback<ComparisonType(const DownloadItem&,
+                                                          const DownloadItem&)>;
 
   template<typename ValueType>
   static Sorter Build(DownloadQuery::SortDirection adirection,
@@ -350,12 +356,9 @@ struct DownloadQuery::Sorter {
                                       base::BindRepeating(accessor)));
   }
 
-  Sorter(DownloadQuery::SortDirection adirection,
-            const SortType& asorter)
-    : direction(adirection),
-      sorter(asorter) {
-  }
-  ~Sorter() {}
+  Sorter(DownloadQuery::SortDirection adirection, const SortType& asorter)
+      : direction(adirection), sorter(asorter) {}
+  ~Sorter() = default;
 
   DownloadQuery::SortDirection direction;
   SortType sorter;
@@ -408,7 +411,7 @@ void DownloadQuery::AddSorter(DownloadQuery::SortType type,
       break;
     case SORT_FILENAME:
       sorters_.push_back(
-          Sorter::Build<base::string16>(direction, &GetFilename));
+          Sorter::Build<std::u16string>(direction, &GetFilename));
       break;
     case SORT_DANGER:
       sorters_.push_back(Sorter::Build<DownloadDangerType>(

@@ -20,7 +20,7 @@ namespace libgav1 {
 
 // Each set of 7 taps is padded with a 0 to easily align and pack into the high
 // and low 8 bytes. This way, we can load 16 at a time to fit mulhi and mullo.
-const int8_t kFilterIntraTaps[kNumFilterIntraPredictors][8][8] = {
+alignas(16) const int8_t kFilterIntraTaps[kNumFilterIntraPredictors][8][8] = {
     {{-6, 10, 0, 0, 0, 12, 0, 0},
      {-5, 2, 10, 0, 0, 9, 0, 0},
      {-3, 1, 1, 10, 0, 7, 0, 0},

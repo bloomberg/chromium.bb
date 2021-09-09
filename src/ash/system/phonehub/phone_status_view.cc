@@ -4,6 +4,8 @@
 
 #include "ash/system/phonehub/phone_status_view.h"
 
+#include <string>
+
 #include "ash/public/cpp/network_icon_image_source.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -18,9 +20,9 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
@@ -41,12 +43,19 @@ namespace {
 constexpr int kTitleContainerSpacing = 16;
 constexpr int kStatusSpacing = 4;
 constexpr gfx::Size kStatusIconSize(kUnifiedTrayIconSize, kUnifiedTrayIconSize);
+constexpr gfx::Size kSignalIconSize(15, 15);
 constexpr int kSeparatorHeight = 18;
 constexpr int kPhoneNameLabelWidthMax = 160;
 constexpr gfx::Insets kBorderInsets(0, 16);
+constexpr gfx::Insets kBatteryLabelBorderInsets(0, 0, 0, 4);
 
 // Typograph in dip.
 constexpr int kBatteryLabelFontSize = 11;
+
+// Multiplied by the int returned by GetSignalStrengthAsInt() to obtain a
+// percentage for the signal strength displayed by the tooltip when hovering
+// over the signal strength icon, and verbalized by ChromeVox.
+constexpr int kSignalStrengthToPercentageMultiplier = 25;
 
 int GetSignalStrengthAsInt(PhoneStatusModel::SignalStrength signal_strength) {
   switch (signal_strength) {
@@ -146,6 +155,8 @@ PhoneStatusView::PhoneStatusView(chromeos::phonehub::PhoneModel* phone_model,
   auto default_font = battery_label_->font_list();
   battery_label_->SetFontList(default_font.DeriveWithSizeDelta(
       kBatteryLabelFontSize - default_font.GetFontSize()));
+  battery_label_->SetBorder(
+      views::CreateEmptyBorder(kBatteryLabelBorderInsets));
   AddView(TriView::Container::CENTER, battery_label_);
 
   separator_ = new views::Separator();
@@ -157,7 +168,8 @@ PhoneStatusView::PhoneStatusView(chromeos::phonehub::PhoneModel* phone_model,
   settings_button_ = new TopShortcutButton(
       base::BindRepeating(&Delegate::OpenConnectedDevicesSettings,
                           base::Unretained(delegate)),
-      kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_SETTINGS);
+      kSystemMenuSettingsIcon,
+      IDS_ASH_PHONE_HUB_CONNECTED_DEVICE_SETTINGS_LABEL);
   AddView(TriView::Container::END, settings_button_);
 
   separator_->SetVisible(delegate->CanOpenConnectedDeviceSettings());
@@ -177,7 +189,7 @@ void PhoneStatusView::OnModelChanged() {
 void PhoneStatusView::Update() {
   // Set phone name text and elide it if needed.
   phone_name_label_->SetText(
-      gfx::ElideText(phone_model_->phone_name().value_or(base::string16()),
+      gfx::ElideText(phone_model_->phone_name().value_or(std::u16string()),
                      phone_name_label_->font_list(), kPhoneNameLabelWidthMax,
                      gfx::ELIDE_TAIL));
 
@@ -202,18 +214,20 @@ void PhoneStatusView::UpdateMobileStatus() {
       AshColorProvider::ContentLayerType::kIconColorPrimary);
 
   gfx::ImageSkia signal_image;
-  base::string16 tooltip_text;
+  std::u16string tooltip_text;
   switch (phone_status.mobile_status()) {
     case PhoneStatusModel::MobileStatus::kNoSim:
       signal_image = CreateVectorIcon(kPhoneHubMobileNoSimIcon, primary_color);
       tooltip_text =
           l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_MOBILE_STATUS_NO_SIM);
+      signal_icon_->SetImageSize(kStatusIconSize);
       break;
     case PhoneStatusModel::MobileStatus::kSimButNoReception:
       signal_image =
           CreateVectorIcon(kPhoneHubMobileNoConnectionIcon, primary_color);
       tooltip_text =
           l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_MOBILE_STATUS_NO_NETWORK);
+      signal_icon_->SetImageSize(kStatusIconSize);
       break;
     case PhoneStatusModel::MobileStatus::kSimWithReception:
       const PhoneStatusModel::MobileConnectionMetadata& metadata =
@@ -221,16 +235,18 @@ void PhoneStatusView::UpdateMobileStatus() {
       int signal_strength = GetSignalStrengthAsInt(metadata.signal_strength);
       signal_image = gfx::CanvasImageSource::MakeImageSkia<
           network_icon::SignalStrengthImageSource>(
-          network_icon::ImageType::BARS, primary_color, kStatusIconSize,
+          network_icon::ImageType::BARS, primary_color, kSignalIconSize,
           signal_strength);
+      signal_icon_->SetImageSize(kSignalIconSize);
       tooltip_text = l10n_util::GetStringFUTF16(
-          IDS_ASH_PHONE_HUB_MOBILE_STATUS_NETWORK_STRENGTH,
-          base::NumberToString16(signal_strength));
+          IDS_ASH_PHONE_HUB_MOBILE_STATUS_NETWORK_NAME_AND_STRENGTH,
+          metadata.mobile_provider,
+          base::NumberToString16(signal_strength *
+                                 kSignalStrengthToPercentageMultiplier));
       break;
   }
 
   signal_icon_->SetImage(signal_image);
-  signal_icon_->SetImageSize(kStatusIconSize);
   signal_icon_->SetTooltipText(tooltip_text);
 }
 
@@ -257,6 +273,9 @@ void PhoneStatusView::UpdateBatteryStatus() {
   SetBatteryTooltipText();
   battery_label_->SetText(
       base::FormatPercent(phone_status.battery_percentage()));
+  battery_label_->SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_ASH_PHONE_HUB_BATTERY_PERCENTAGE_ACCESSIBLE_TEXT,
+      base::NumberToString16(phone_status.battery_percentage())));
 }
 
 PowerStatus::BatteryImageInfo PhoneStatusView::CalculateBatteryInfo() {
@@ -304,12 +323,12 @@ void PhoneStatusView::SetBatteryTooltipText() {
       charging_tooltip_id = IDS_ASH_PHONE_HUB_BATTERY_STATUS_CHARGING_USB;
       break;
   }
-  base::string16 charging_tooltip =
+  std::u16string charging_tooltip =
       l10n_util::GetStringUTF16(charging_tooltip_id);
 
   bool battery_saver_on = phone_status.battery_saver_state() ==
                           PhoneStatusModel::BatterySaverState::kOn;
-  base::string16 batter_saver_tooltip =
+  std::u16string batter_saver_tooltip =
       battery_saver_on
           ? l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_BATTERY_SAVER_ON)
           : l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_BATTERY_SAVER_OFF);
@@ -325,7 +344,7 @@ void PhoneStatusView::ClearExistingStatus() {
 
   // Clear battery status.
   battery_icon_->SetImage(gfx::ImageSkia());
-  battery_label_->SetText(base::string16());
+  battery_label_->SetText(std::u16string());
 }
 
 void PhoneStatusView::ConfigureTriViewContainer(TriView::Container container) {

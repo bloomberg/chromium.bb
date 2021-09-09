@@ -5,7 +5,9 @@
 #include "components/cast/message_port/message_port_fuchsia.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
+#include "base/strings/string_piece.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 
@@ -61,6 +63,7 @@ class MessagePortFuchsiaClient : public MessagePortFuchsia {
       LOG(ERROR) << "PostMessage failed, reason: "
                  << static_cast<int32_t>(result.err());
       ReportPipeError();
+      return;
     }
 
     message_queue_.pop_front();
@@ -80,7 +83,11 @@ class MessagePortFuchsiaClient : public MessagePortFuchsia {
 
   // Helpers for reading and writing messages on the |port_|
   void OnMessageReady(fuchsia::web::WebMessage message) {
-    auto status = ReceiveMessageFromFidl(std::move(message));
+    base::WeakPtr<MessagePortFuchsia> weak_this = weak_factory_.GetWeakPtr();
+    auto status = ExtractAndHandleMessageFromFidl(std::move(message));
+    if (!weak_this)
+      return;
+
     if (status) {
       LOG(WARNING) << "Received bad message, error: "
                    << static_cast<int32_t>(*status);
@@ -100,6 +107,8 @@ class MessagePortFuchsiaClient : public MessagePortFuchsia {
   }
 
   fuchsia::web::MessagePortPtr port_;
+
+  const base::WeakPtrFactory<MessagePortFuchsia> weak_factory_{this};
 };
 
 // A MessagePortFuchsia instantiated with an
@@ -165,7 +174,11 @@ class MessagePortFuchsiaServer : public MessagePortFuchsia,
   // fuchsia::web::MessagePort implementation.
   void PostMessage(fuchsia::web::WebMessage message,
                    PostMessageCallback callback) final {
-    auto status = ReceiveMessageFromFidl(std::move(message));
+    base::WeakPtr<MessagePortFuchsia> weak_this = weak_factory_.GetWeakPtr();
+    auto status = ExtractAndHandleMessageFromFidl(std::move(message));
+    if (!weak_this)
+      return;
+
     if (status) {
       LOG(WARNING) << "Received bad message, error: "
                    << static_cast<int32_t>(*status);
@@ -192,6 +205,8 @@ class MessagePortFuchsiaServer : public MessagePortFuchsia,
 
   fidl::Binding<fuchsia::web::MessagePort> binding_;
   ReceiveMessageCallback pending_receive_message_callback_;
+
+  const base::WeakPtrFactory<MessagePortFuchsia> weak_factory_{this};
 };
 }  // namespace
 
@@ -228,8 +243,7 @@ fuchsia::web::WebMessage MessagePortFuchsia::CreateWebMessage(
     base::StringPiece message,
     std::vector<std::unique_ptr<MessagePort>> ports) {
   fuchsia::web::WebMessage message_fidl;
-  message_fidl.set_data(cr_fuchsia::MemBufferFromString(message.as_string(),
-                                                        message.as_string()));
+  message_fidl.set_data(cr_fuchsia::MemBufferFromString(message, message));
   if (!ports.empty()) {
     PortType expected_port_type = FromMessagePort(ports[0].get())->port_type_;
     std::vector<fuchsia::web::IncomingTransferable> incoming_transferables;
@@ -276,8 +290,9 @@ MessagePortFuchsia::MessagePortFuchsia(PortType port_type)
     : receiver_(nullptr), port_type_(port_type) {}
 MessagePortFuchsia::~MessagePortFuchsia() = default;
 
-base::Optional<fuchsia::web::FrameError>
-MessagePortFuchsia::ReceiveMessageFromFidl(fuchsia::web::WebMessage message) {
+absl::optional<fuchsia::web::FrameError>
+MessagePortFuchsia::ExtractAndHandleMessageFromFidl(
+    fuchsia::web::WebMessage message) {
   DCHECK(receiver_);
   if (!message.has_data()) {
     return fuchsia::web::FrameError::NO_DATA_IN_MESSAGE;
@@ -307,7 +322,7 @@ MessagePortFuchsia::ReceiveMessageFromFidl(fuchsia::web::WebMessage message) {
     return fuchsia::web::FrameError::INTERNAL_ERROR;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void MessagePortFuchsia::OnZxError(zx_status_t status) {

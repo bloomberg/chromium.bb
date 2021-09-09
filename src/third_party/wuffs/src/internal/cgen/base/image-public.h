@@ -21,6 +21,20 @@
 // 0xAARRGGBB (Alpha most significant, Blue least), regardless of endianness.
 typedef uint32_t wuffs_base__color_u32_argb_premul;
 
+// wuffs_base__color_u32_argb_premul__is_valid returns whether c's Red, Green
+// and Blue channels are all less than or equal to its Alpha channel. c uses
+// premultiplied alpha, so 50% opaque 100% saturated red is 0x7F7F_0000 and a
+// value like 0x7F80_0000 is invalid.
+static inline bool  //
+wuffs_base__color_u32_argb_premul__is_valid(
+    wuffs_base__color_u32_argb_premul c) {
+  uint32_t a = 0xFF & (c >> 24);
+  uint32_t r = 0xFF & (c >> 16);
+  uint32_t g = 0xFF & (c >> 8);
+  uint32_t b = 0xFF & (c >> 0);
+  return (a >= r) && (a >= g) && (a >= b);
+}
+
 static inline uint16_t  //
 wuffs_base__color_u32_argb_premul__as__color_u16_rgb_565(
     wuffs_base__color_u32_argb_premul c) {
@@ -57,6 +71,22 @@ wuffs_base__color_u32_argb_premul__as__color_u8_gray(
   // 16-bit color.
   uint32_t weighted_average = (19595 * cr) + (38470 * cg) + (7471 * cb) + 32768;
   return (uint8_t)(weighted_average >> 24);
+}
+
+static inline uint16_t  //
+wuffs_base__color_u32_argb_premul__as__color_u16_gray(
+    wuffs_base__color_u32_argb_premul c) {
+  // Work in 16-bit color.
+  uint32_t cr = 0x101 * (0xFF & (c >> 16));
+  uint32_t cg = 0x101 * (0xFF & (c >> 8));
+  uint32_t cb = 0x101 * (0xFF & (c >> 0));
+
+  // These coefficients (the fractions 0.299, 0.587 and 0.114) are the same
+  // as those given by the JFIF specification.
+  //
+  // Note that 19595 + 38470 + 7471 equals 65536, also known as (1 << 16).
+  uint32_t weighted_average = (19595 * cr) + (38470 * cg) + (7471 * cb) + 32768;
+  return (uint16_t)(weighted_average >> 16);
 }
 
 // wuffs_base__color_u32_argb_nonpremul__as__color_u32_argb_premul converts
@@ -109,6 +139,68 @@ wuffs_base__color_u32_argb_premul__as__color_u32_argb_nonpremul(
   return (a << 24) | (r << 16) | (g << 8) | (b << 0);
 }
 
+// wuffs_base__color_u64_argb_nonpremul__as__color_u32_argb_premul converts
+// from 4x16LE non-premultiplied alpha to 4x8 premultiplied alpha.
+static inline wuffs_base__color_u32_argb_premul  //
+wuffs_base__color_u64_argb_nonpremul__as__color_u32_argb_premul(
+    uint64_t argb_nonpremul) {
+  uint32_t a16 = ((uint32_t)(0xFFFF & (argb_nonpremul >> 48)));
+
+  uint32_t r16 = ((uint32_t)(0xFFFF & (argb_nonpremul >> 32)));
+  r16 = (r16 * a16) / 0xFFFF;
+  uint32_t g16 = ((uint32_t)(0xFFFF & (argb_nonpremul >> 16)));
+  g16 = (g16 * a16) / 0xFFFF;
+  uint32_t b16 = ((uint32_t)(0xFFFF & (argb_nonpremul >> 0)));
+  b16 = (b16 * a16) / 0xFFFF;
+
+  return ((a16 >> 8) << 24) | ((r16 >> 8) << 16) | ((g16 >> 8) << 8) |
+         ((b16 >> 8) << 0);
+}
+
+// wuffs_base__color_u32_argb_premul__as__color_u64_argb_nonpremul converts
+// from 4x8 premultiplied alpha to 4x16LE non-premultiplied alpha.
+static inline uint64_t  //
+wuffs_base__color_u32_argb_premul__as__color_u64_argb_nonpremul(
+    wuffs_base__color_u32_argb_premul c) {
+  uint32_t a = 0xFF & (c >> 24);
+  if (a == 0xFF) {
+    uint64_t r16 = 0x101 * (0xFF & (c >> 16));
+    uint64_t g16 = 0x101 * (0xFF & (c >> 8));
+    uint64_t b16 = 0x101 * (0xFF & (c >> 0));
+    return 0xFFFF000000000000u | (r16 << 32) | (g16 << 16) | (b16 << 0);
+  } else if (a == 0) {
+    return 0;
+  }
+  uint64_t a16 = a * 0x101;
+
+  uint64_t r = 0xFF & (c >> 16);
+  uint64_t r16 = (r * (0x101 * 0xFFFF)) / a16;
+  uint64_t g = 0xFF & (c >> 8);
+  uint64_t g16 = (g * (0x101 * 0xFFFF)) / a16;
+  uint64_t b = 0xFF & (c >> 0);
+  uint64_t b16 = (b * (0x101 * 0xFFFF)) / a16;
+
+  return (a16 << 48) | (r16 << 32) | (g16 << 16) | (b16 << 0);
+}
+
+static inline uint64_t  //
+wuffs_base__color_u32__as__color_u64(uint32_t c) {
+  uint64_t a16 = 0x101 * (0xFF & (c >> 24));
+  uint64_t r16 = 0x101 * (0xFF & (c >> 16));
+  uint64_t g16 = 0x101 * (0xFF & (c >> 8));
+  uint64_t b16 = 0x101 * (0xFF & (c >> 0));
+  return (a16 << 48) | (r16 << 32) | (g16 << 16) | (b16 << 0);
+}
+
+static inline uint32_t  //
+wuffs_base__color_u64__as__color_u32(uint64_t c) {
+  uint32_t a = ((uint32_t)(0xFF & (c >> 56)));
+  uint32_t r = ((uint32_t)(0xFF & (c >> 40)));
+  uint32_t g = ((uint32_t)(0xFF & (c >> 24)));
+  uint32_t b = ((uint32_t)(0xFF & (c >> 8)));
+  return (a << 24) | (r << 16) | (g << 8) | (b << 0);
+}
+
 // --------
 
 typedef uint8_t wuffs_base__pixel_blend;
@@ -129,9 +221,13 @@ typedef uint8_t wuffs_base__pixel_blend;
 typedef uint32_t wuffs_base__pixel_alpha_transparency;
 
 #define WUFFS_BASE__PIXEL_ALPHA_TRANSPARENCY__OPAQUE 0
-#define WUFFS_BASE__PIXEL_ALPHA_TRANSPARENCY__NON_PREMULTIPLIED_ALPHA 1
+#define WUFFS_BASE__PIXEL_ALPHA_TRANSPARENCY__NONPREMULTIPLIED_ALPHA 1
 #define WUFFS_BASE__PIXEL_ALPHA_TRANSPARENCY__PREMULTIPLIED_ALPHA 2
 #define WUFFS_BASE__PIXEL_ALPHA_TRANSPARENCY__BINARY_ALPHA 3
+
+// Deprecated: use WUFFS_BASE__PIXEL_ALPHA_TRANSPARENCY__NONPREMULTIPLIED_ALPHA
+// instead.
+#define WUFFS_BASE__PIXEL_ALPHA_TRANSPARENCY__NON_PREMULTIPLIED_ALPHA 1
 
 // --------
 
@@ -143,11 +239,11 @@ typedef uint32_t wuffs_base__pixel_alpha_transparency;
 // wuffs_base__pixel_format encodes the format of the bytes that constitute an
 // image frame's pixel data.
 //
-// See https://github.com/google/wuffs/blob/master/doc/note/pixel-formats.md
+// See https://github.com/google/wuffs/blob/main/doc/note/pixel-formats.md
 //
 // Do not manipulate its bits directly; they are private implementation
 // details. Use methods such as wuffs_base__pixel_format__num_planes instead.
-typedef struct {
+typedef struct wuffs_base__pixel_format__struct {
   uint32_t repr;
 
 #ifdef __cplusplus
@@ -178,6 +274,8 @@ wuffs_base__make_pixel_format(uint32_t repr) {
 #define WUFFS_BASE__PIXEL_FORMAT__A 0x02000008
 
 #define WUFFS_BASE__PIXEL_FORMAT__Y 0x20000008
+#define WUFFS_BASE__PIXEL_FORMAT__Y_16LE 0x2000000B
+#define WUFFS_BASE__PIXEL_FORMAT__Y_16BE 0x2010000B
 #define WUFFS_BASE__PIXEL_FORMAT__YA_NONPREMUL 0x21000008
 #define WUFFS_BASE__PIXEL_FORMAT__YA_PREMUL 0x22000008
 
@@ -196,13 +294,17 @@ wuffs_base__make_pixel_format(uint32_t repr) {
 #define WUFFS_BASE__PIXEL_FORMAT__BGR_565 0x80000565
 #define WUFFS_BASE__PIXEL_FORMAT__BGR 0x80000888
 #define WUFFS_BASE__PIXEL_FORMAT__BGRA_NONPREMUL 0x81008888
+#define WUFFS_BASE__PIXEL_FORMAT__BGRA_NONPREMUL_4X16LE 0x8100BBBB
 #define WUFFS_BASE__PIXEL_FORMAT__BGRA_PREMUL 0x82008888
+#define WUFFS_BASE__PIXEL_FORMAT__BGRA_PREMUL_4X16LE 0x8200BBBB
 #define WUFFS_BASE__PIXEL_FORMAT__BGRA_BINARY 0x83008888
 #define WUFFS_BASE__PIXEL_FORMAT__BGRX 0x90008888
 
 #define WUFFS_BASE__PIXEL_FORMAT__RGB 0xA0000888
 #define WUFFS_BASE__PIXEL_FORMAT__RGBA_NONPREMUL 0xA1008888
+#define WUFFS_BASE__PIXEL_FORMAT__RGBA_NONPREMUL_4X16LE 0xA100BBBB
 #define WUFFS_BASE__PIXEL_FORMAT__RGBA_PREMUL 0xA2008888
+#define WUFFS_BASE__PIXEL_FORMAT__RGBA_PREMUL_4X16LE 0xA200BBBB
 #define WUFFS_BASE__PIXEL_FORMAT__RGBA_BINARY 0xA3008888
 #define WUFFS_BASE__PIXEL_FORMAT__RGBX 0xB0008888
 
@@ -308,11 +410,11 @@ wuffs_base__pixel_format::transparency() const {
 // wuffs_base__pixel_subsampling encodes whether sample values cover one pixel
 // or cover multiple pixels.
 //
-// See https://github.com/google/wuffs/blob/master/doc/note/pixel-subsampling.md
+// See https://github.com/google/wuffs/blob/main/doc/note/pixel-subsampling.md
 //
 // Do not manipulate its bits directly; they are private implementation
 // details. Use methods such as wuffs_base__pixel_subsampling__bias_x instead.
-typedef struct {
+typedef struct wuffs_base__pixel_subsampling__struct {
   uint32_t repr;
 
 #ifdef __cplusplus
@@ -396,7 +498,7 @@ wuffs_base__pixel_subsampling::denominator_y(uint32_t plane) const {
 
 // --------
 
-typedef struct {
+typedef struct wuffs_base__pixel_config__struct {
   // Do not access the private_impl's fields directly. There is no API/ABI
   // compatibility or safety guarantee if you do so.
   struct {
@@ -606,7 +708,7 @@ wuffs_base__pixel_config::pixbuf_len() const {
 
 // --------
 
-typedef struct {
+typedef struct wuffs_base__image_config__struct {
   wuffs_base__pixel_config pixcfg;
 
   // Do not access the private_impl's fields directly. There is no API/ABI
@@ -736,28 +838,6 @@ wuffs_base__image_config::first_frame_is_opaque() const {
 
 // --------
 
-// Deprecated: use wuffs_base__pixel_blend instead.
-//
-// wuffs_base__animation_blend encodes, for an animated image, how to blend the
-// transparent pixels of this frame with the existing canvas. In Porter-Duff
-// compositing operator terminology:
-//  - 0 means the frame may be transparent, and should be blended "src over
-//    dst", also known as just "over".
-//  - 1 means the frame may be transparent, and should be blended "src".
-//  - 2 means the frame is completely opaque, so that "src over dst" and "src"
-//    are equivalent.
-//
-// These semantics are conservative. It is valid for a completely opaque frame
-// to have a blend value other than 2.
-typedef uint8_t wuffs_base__animation_blend;
-
-#define WUFFS_BASE__ANIMATION_BLEND__SRC_OVER_DST \
-  ((wuffs_base__animation_blend)0)
-#define WUFFS_BASE__ANIMATION_BLEND__SRC ((wuffs_base__animation_blend)1)
-#define WUFFS_BASE__ANIMATION_BLEND__OPAQUE ((wuffs_base__animation_blend)2)
-
-// --------
-
 // wuffs_base__animation_disposal encodes, for an animated image, how to
 // dispose of a frame after displaying it:
 //  - None means to draw the next frame on top of this one.
@@ -776,7 +856,7 @@ typedef uint8_t wuffs_base__animation_disposal;
 
 // --------
 
-typedef struct {
+typedef struct wuffs_base__frame_config__struct {
   // Do not access the private_impl's fields directly. There is no API/ABI
   // compatibility or safety guarantee if you do so.
   struct {
@@ -1010,7 +1090,7 @@ wuffs_base__frame_config::background_color() const {
 
 // --------
 
-typedef struct {
+typedef struct wuffs_base__pixel_buffer__struct {
   wuffs_base__pixel_config pixcfg;
 
   // Do not access the private_impl's fields directly. There is no API/ABI
@@ -1028,6 +1108,7 @@ typedef struct {
       const wuffs_base__pixel_config* pixcfg,
       wuffs_base__table_u8 pixbuf_memory);
   inline wuffs_base__slice_u8 palette();
+  inline wuffs_base__slice_u8 palette_or_else(wuffs_base__slice_u8 fallback);
   inline wuffs_base__pixel_format pixel_format() const;
   inline wuffs_base__table_u8 plane(uint32_t p);
   inline wuffs_base__color_u32_argb_premul color_u32_at(uint32_t x,
@@ -1035,6 +1116,9 @@ typedef struct {
   inline wuffs_base__status set_color_u32_at(
       uint32_t x,
       uint32_t y,
+      wuffs_base__color_u32_argb_premul color);
+  inline wuffs_base__status set_color_u32_fill_rect(
+      wuffs_base__rect_ie_u32 rect,
       wuffs_base__color_u32_argb_premul color);
 #endif  // __cplusplus
 
@@ -1104,7 +1188,7 @@ wuffs_base__pixel_buffer__set_from_slice(wuffs_base__pixel_buffer* pb,
     return wuffs_base__make_status(wuffs_base__error__bad_argument);
   }
   wh *= bytes_per_pixel;
-  width *= bytes_per_pixel;
+  width = ((size_t)(width * bytes_per_pixel));
   if (wh > len) {
     return wuffs_base__make_status(
         wuffs_base__error__bad_argument_length_too_short);
@@ -1167,6 +1251,21 @@ wuffs_base__pixel_buffer__palette(wuffs_base__pixel_buffer* pb) {
   return wuffs_base__make_slice_u8(NULL, 0);
 }
 
+static inline wuffs_base__slice_u8  //
+wuffs_base__pixel_buffer__palette_or_else(wuffs_base__pixel_buffer* pb,
+                                          wuffs_base__slice_u8 fallback) {
+  if (pb &&
+      wuffs_base__pixel_format__is_indexed(&pb->pixcfg.private_impl.pixfmt)) {
+    wuffs_base__table_u8* tab =
+        &pb->private_impl
+             .planes[WUFFS_BASE__PIXEL_FORMAT__INDEXED__COLOR_PLANE];
+    if ((tab->width == 1024) && (tab->height == 1)) {
+      return wuffs_base__make_slice_u8(tab->ptr, 1024);
+    }
+  }
+  return fallback;
+}
+
 static inline wuffs_base__pixel_format  //
 wuffs_base__pixel_buffer__pixel_format(const wuffs_base__pixel_buffer* pb) {
   if (pb) {
@@ -1201,6 +1300,12 @@ wuffs_base__pixel_buffer__set_color_u32_at(
     uint32_t y,
     wuffs_base__color_u32_argb_premul color);
 
+WUFFS_BASE__MAYBE_STATIC wuffs_base__status  //
+wuffs_base__pixel_buffer__set_color_u32_fill_rect(
+    wuffs_base__pixel_buffer* pb,
+    wuffs_base__rect_ie_u32 rect,
+    wuffs_base__color_u32_argb_premul color);
+
 #ifdef __cplusplus
 
 inline wuffs_base__status  //
@@ -1224,6 +1329,11 @@ wuffs_base__pixel_buffer::palette() {
   return wuffs_base__pixel_buffer__palette(this);
 }
 
+inline wuffs_base__slice_u8  //
+wuffs_base__pixel_buffer::palette_or_else(wuffs_base__slice_u8 fallback) {
+  return wuffs_base__pixel_buffer__palette_or_else(this, fallback);
+}
+
 inline wuffs_base__pixel_format  //
 wuffs_base__pixel_buffer::pixel_format() const {
   return wuffs_base__pixel_buffer__pixel_format(this);
@@ -1239,6 +1349,12 @@ wuffs_base__pixel_buffer::color_u32_at(uint32_t x, uint32_t y) const {
   return wuffs_base__pixel_buffer__color_u32_at(this, x, y);
 }
 
+WUFFS_BASE__MAYBE_STATIC wuffs_base__status  //
+wuffs_base__pixel_buffer__set_color_u32_fill_rect(
+    wuffs_base__pixel_buffer* pb,
+    wuffs_base__rect_ie_u32 rect,
+    wuffs_base__color_u32_argb_premul color);
+
 inline wuffs_base__status  //
 wuffs_base__pixel_buffer::set_color_u32_at(
     uint32_t x,
@@ -1247,11 +1363,18 @@ wuffs_base__pixel_buffer::set_color_u32_at(
   return wuffs_base__pixel_buffer__set_color_u32_at(this, x, y, color);
 }
 
+inline wuffs_base__status  //
+wuffs_base__pixel_buffer::set_color_u32_fill_rect(
+    wuffs_base__rect_ie_u32 rect,
+    wuffs_base__color_u32_argb_premul color) {
+  return wuffs_base__pixel_buffer__set_color_u32_fill_rect(this, rect, color);
+}
+
 #endif  // __cplusplus
 
 // --------
 
-typedef struct {
+typedef struct wuffs_base__decode_frame_options__struct {
   // Do not access the private_impl's fields directly. There is no API/ABI
   // compatibility or safety guarantee if you do so.
   struct {
@@ -1294,11 +1417,21 @@ typedef uint64_t (*wuffs_base__pixel_swizzler__func)(uint8_t* dst_ptr,
                                                      const uint8_t* src_ptr,
                                                      size_t src_len);
 
-typedef struct {
+typedef uint64_t (*wuffs_base__pixel_swizzler__transparent_black_func)(
+    uint8_t* dst_ptr,
+    size_t dst_len,
+    uint8_t* dst_palette_ptr,
+    size_t dst_palette_len,
+    uint64_t num_pixels,
+    uint32_t dst_pixfmt_bytes_per_pixel);
+
+typedef struct wuffs_base__pixel_swizzler__struct {
   // Do not access the private_impl's fields directly. There is no API/ABI
   // compatibility or safety guarantee if you do so.
   struct {
     wuffs_base__pixel_swizzler__func func;
+    wuffs_base__pixel_swizzler__transparent_black_func transparent_black_func;
+    uint32_t dst_pixfmt_bytes_per_pixel;
     uint32_t src_pixfmt_bytes_per_pixel;
   } private_impl;
 

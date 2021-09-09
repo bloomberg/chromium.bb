@@ -9,17 +9,16 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/test/gmock_callback_support.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager_impl.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/mock_key_permissions_manager.h"
 #include "chrome/browser/chromeos/platform_keys/mock_platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
-#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/policy/core/common/mock_policy_service.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
-#include "extensions/browser/state_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using ::testing::_;
 
@@ -77,12 +76,14 @@ class ExecutionWaiter {
 };
 
 // Supports waiting for the result of KeyPermissionsService::IsCorporateKey.
-class IsCorporateKeyExecutionWaiter : public ExecutionWaiter<bool> {
+class IsCorporateKeyExecutionWaiter
+    : public ExecutionWaiter<absl::optional<bool>, Status> {
  public:
   IsCorporateKeyExecutionWaiter() = default;
   ~IsCorporateKeyExecutionWaiter() = default;
 
-  bool corporate() const { return std::get<0>(result_callback_args()); }
+  bool corporate() const { return std::get<0>(result_callback_args()).value(); }
+  Status status() const { return std::get<1>(result_callback_args()); }
 };
 
 // Supports waiting for the result of KeyPermissionsService::SetCorporateKey.
@@ -105,28 +106,37 @@ class KeyPermissionsServiceImplTest : public ::testing::Test {
   ~KeyPermissionsServiceImplTest() override = default;
 
   void SetUp() override {
-    auto mock_policy_service = std::make_unique<policy::MockPolicyService>();
-    policy_service_ = mock_policy_service.get();
-    TestingProfile::Builder builder;
-    builder.SetPolicyService(std::move(mock_policy_service));
-    profile_ = builder.Build();
-
-    extensions::TestExtensionSystem* extension_system =
-        static_cast<extensions::TestExtensionSystem*>(
-            extensions::ExtensionSystem::Get(profile_.get()));
-    extension_system->CreateExtensionService(
-        base::CommandLine::ForCurrentProcess(),
-        /*install_directory=*/base::FilePath(),
-        /*autoupdate_enabled=*/false);
-    extensions_state_store_ = extension_system->state_store();
+    profile_ = std::make_unique<TestingProfile>();
 
     platform_keys_service_ = std::make_unique<MockPlatformKeysService>();
-    key_permissions_manager_ = std::make_unique<MockKeyPermissionsManager>();
+    user_token_key_permissions_manager_ =
+        std::make_unique<MockKeyPermissionsManager>();
 
     key_permissions_service_ = std::make_unique<KeyPermissionsServiceImpl>(
         /*is_regular_profile=*/true, /*profile_is_managed=*/true,
-        profile_->GetPrefs(), policy_service_, extensions_state_store_,
-        platform_keys_service_.get(), key_permissions_manager_.get());
+        platform_keys_service_.get(),
+        user_token_key_permissions_manager_.get());
+
+    // All test keys that reside on user token only are not marked as corporate
+    // by default unless specified.
+    EXPECT_CALL(*user_token_key_permissions_manager_,
+                IsKeyAllowedForUsage(_, _, _))
+        .WillRepeatedly(base::test::RunOnceCallback<0>(/*allowed=*/false,
+                                                       Status::kSuccess));
+
+    system_token_key_permissions_manager_ =
+        std::make_unique<platform_keys::MockKeyPermissionsManager>();
+
+    // All test keys that reside on system token are marked for corporate usage
+    // by default unless specified.
+    EXPECT_CALL(*system_token_key_permissions_manager_,
+                IsKeyAllowedForUsage(_, _, _))
+        .WillRepeatedly(
+            base::test::RunOnceCallback<0>(/*allowed=*/true, Status::kSuccess));
+
+    platform_keys::KeyPermissionsManagerImpl::
+        SetSystemTokenKeyPermissionsManagerForTesting(
+            system_token_key_permissions_manager_.get());
   }
 
  protected:
@@ -146,13 +156,19 @@ class KeyPermissionsServiceImplTest : public ::testing::Test {
     key_permissions_service_->IsCorporateKey(
         public_key, is_corporate_key_waiter.GetCallback());
     is_corporate_key_waiter.Wait();
+    DCHECK_EQ(is_corporate_key_waiter.status(), Status::kSuccess);
     return is_corporate_key_waiter.corporate();
   }
 
   void SetCorporateKey(const std::string& public_key) {
-    EXPECT_CALL(*key_permissions_manager_, AllowKeyForUsage(_, _, _))
+    EXPECT_CALL(*user_token_key_permissions_manager_,
+                AllowKeyForUsage(_, KeyUsage::kCorporate, public_key))
         .Times(1)
         .WillOnce(base::test::RunOnceCallback<0>(Status::kSuccess));
+    EXPECT_CALL(*user_token_key_permissions_manager_,
+                IsKeyAllowedForUsage(_, KeyUsage::kCorporate, public_key))
+        .WillOnce(
+            base::test::RunOnceCallback<0>(/*allowed=*/true, Status::kSuccess));
     SetCorporateKeyExecutionWaiter set_corporate_key_waiter;
     key_permissions_service_->SetCorporateKey(
         public_key, set_corporate_key_waiter.GetCallback());
@@ -161,14 +177,13 @@ class KeyPermissionsServiceImplTest : public ::testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
-  // Owned by |profile_|.
-  policy::MockPolicyService* policy_service_ = nullptr;
-  // Owned by |profile_|.
-  extensions::StateStore* extensions_state_store_ = nullptr;
 
   std::unique_ptr<KeyPermissionsServiceImpl> key_permissions_service_;
   std::unique_ptr<MockPlatformKeysService> platform_keys_service_;
-  std::unique_ptr<MockKeyPermissionsManager> key_permissions_manager_;
+  std::unique_ptr<MockKeyPermissionsManager>
+      user_token_key_permissions_manager_;
+  std::unique_ptr<MockKeyPermissionsManager>
+      system_token_key_permissions_manager_;
 };
 
 TEST_F(KeyPermissionsServiceImplTest, SystemTokenKeyIsImplicitlyCorporate) {

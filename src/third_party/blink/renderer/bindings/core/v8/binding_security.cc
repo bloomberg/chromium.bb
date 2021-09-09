@@ -30,11 +30,12 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -146,14 +147,17 @@ bool CanAccessWindowInternal(
                    : WebFeature::kDocumentDomainBlockedCrossOriginAccess);
   }
   if (!can_access) {
-    // Ensure that if we got a cluster mismatch that it was due to a feature
+    // Ensure that if we got a cluster mismatch that it was due to a permissions
     // policy being enabled and not a logic bug.
     if (detail == SecurityOrigin::AccessResultDomainDetail::
                       kDomainNotRelevantAgentClusterMismatch) {
       // Assert that because the agent clusters are different than the
-      // WindowAgentFactories must also be different.
+      // WindowAgentFactories must also be different unless they differ in
+      // being explicitly origin keyed.
       SECURITY_CHECK(
           !IsSameWindowAgentFactory(accessing_window, local_target_window) ||
+          (accessing_window->GetAgent()->IsExplicitlyOriginKeyed() !=
+           local_target_window->GetAgent()->IsExplicitlyOriginKeyed()) ||
           (WebTestSupport::IsRunningWebTest() &&
            local_target_window->GetFrame()->PagePopupOwner()));
 

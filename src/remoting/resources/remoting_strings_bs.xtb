@@ -24,6 +24,7 @@ Za davanje odobrenja, kliknite '<ph name="BUTTON_NAME" />' ispod da otvorite okn
 Ako je skripta "<ph name="SERVICE_SCRIPT_NAME" />" već označena, uklonite oznaku i ponovo je označite.</translation>
 <translation id="225614027745146050">Dobro došli</translation>
 <translation id="2320166752086256636">Sakrij tastaturu</translation>
+<translation id="2333212046079545895">Autorska prava 2021. Google LLC. Sva prava su zadržana.</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2366718077645204424">Nije moguće povezati se s host računarom. Uzrok je vjerovatno konfiguracija mreže koju koristite.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Poslednji put na mreži <ph name="RELATIVE_TIMESTAMP" />.</translation>
@@ -54,7 +55,6 @@ Ako je skripta "<ph name="SERVICE_SCRIPT_NAME" />" već označena, uklonite ozna
 <translation id="369442766917958684">Van mreže.</translation>
 <translation id="3695446226812920698">Saznajte kako</translation>
 <translation id="3776024066357219166">Završila je vaša sesija u aplikaciji Udaljena radna površina Chrome.</translation>
-<translation id="3870154837782082782">Google LLC</translation>
 <translation id="3897092660631435901">Meni</translation>
 <translation id="3905196214175737742">Nevažeća domena vlasnika host računara.</translation>
 <translation id="3931191050278863510">Host računar je zaustavljen.</translation>
@@ -72,6 +72,7 @@ Ako je skripta "<ph name="SERVICE_SCRIPT_NAME" />" već označena, uklonite ozna
 <translation id="4405930547258349619">Osnovna biblioteka</translation>
 <translation id="443560535555262820">Otvori postavke pristupačnosti</translation>
 <translation id="4450893287417543264">Ne prikazuj ponovo</translation>
+<translation id="4512952200932940229">Autorska prava 2021. Autori Chromiuma. Sva prava su zadržana.</translation>
 <translation id="4513946894732546136">Povratne informacije</translation>
 <translation id="4563926062592110512">Veza klijenta je prekinuta: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4635770493235256822">Uređaji za daljinsko upravljanje</translation>
@@ -99,6 +100,7 @@ Ako je skripta "<ph name="SERVICE_SCRIPT_NAME" />" već označena, uklonite ozna
 <translation id="5419418238395129586">Posljednji put na mreži: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host je isključen.</translation>
 <translation id="5601503069213153581">PIN</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5708869785009007625">Trenutno dijelite svoju radnu površinu s korisnikom <ph name="USER" />.</translation>
 <translation id="5750083143895808682">Prijavljeni ste s računom <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="579702532610384533">Poveži ponovo</translation>
@@ -118,7 +120,6 @@ Ako je skripta "<ph name="SERVICE_SCRIPT_NAME" />" već označena, uklonite ozna
 <translation id="6583902294974160967">Podrška</translation>
 <translation id="6612717000975622067">Pošalji Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Dijeli</translation>
-<translation id="6681800064886881394">Autorska prava 2013 Google LLC Sva prava su zadržana.</translation>
 <translation id="677755392401385740">Host je pokrenut za korisnika: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6939719207673461467">Prikaži/sakrij tastaturu.</translation>
 <translation id="6963936880795878952">Povezivanje s udaljenim računarom je trenutno blokirano jer se neko pokušao povezati na njega koristeći nevažeći PIN. Pokušajte ponovo kasnije.</translation>
@@ -155,7 +156,6 @@ Ako je skripta "<ph name="SERVICE_SCRIPT_NAME" />" već označena, uklonite ozna
 <translation id="8073845705237259513">Za korištenje Chrome udaljenog računara, morate dodati Google račun na svoj uređaj.</translation>
 <translation id="809687642899217504">Moji računari</translation>
 <translation id="8116630183974937060">Došlo je do greške na mreži. Provjerite je li vaš uređaj na mreži i pokušajte ponovo.</translation>
-<translation id="8187079423890319756">Autorska prava 2013. Autori Chromiuma. Sva prava zadržana.</translation>
 <translation id="8295077433896346116">Da koristite <ph name="PRODUCT_NAME" />, morate dati odobrenje za "Pristupačnost" kako bi se unos s udaljenog računara mogao ubaciti na ovaj Mac računar.
 
 Za davanje odobrenja, kliknite "<ph name="BUTTON_NAME" />" u nastavku. U oknu s postavkama "Pristupačnost" koje se otvori označite polje pored stavke "<ph name="SERVICE_SCRIPT_NAME" />".
@@ -174,7 +174,8 @@ Ako je stavka "<ph name="SERVICE_SCRIPT_NAME" />" već označena, uklonite oznak
 <translation id="8743328882720071828">Želite li dopustiti da <ph name="CLIENT_USERNAME" /> vidi ovo računalo i upravlja njime?</translation>
 <translation id="8747048596626351634">Sesija je pala ili njeno pokretanje nije uspjelo. Ako ~/.chrome-remote-desktop-session postoji na udaljenom računaru, provjerite je li pokrenuo dugotrajan postupak u prednjem planu kao što je okruženje radne površine ili upravitelj prozora.</translation>
 <translation id="8804164990146287819">Pravila privatnosti</translation>
-<translation id="9111855907838866522">Povezani ste sa svojim uređajem za daljinsko upravljanje. Da otvorite meni, dodirnite ekran s četiri prsta.</translation>
+<translation id="8906511416443321782">Pristup mikrofonu je potreban za snimanje zvuka i njegov prijenos na klijenta Chrome udaljenog računara.</translation>
+<translation id="9111855907838866522">Povezani ste s udaljenim uređajem. Da otvorite meni, dodirnite ekran s četiri prsta.</translation>
 <translation id="9126115402994542723">Nemoj ponovo tražiti PIN prilikom povezivanja na host računar s ovog uređaja.</translation>
 <translation id="916856682307586697">Pokreni zadani XSession</translation>
 <translation id="9187628920394877737">Dajte odobrenje za "Snimanje ekrana" za <ph name="PRODUCT_NAME" /></translation>

@@ -5,12 +5,13 @@
 #include "components/performance_manager/execution_context/execution_context_impl.h"
 
 #include "base/sequence_checker.h"
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/node_attached_data_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/graph/worker_node_impl.h"
 #include "components/performance_manager/public/execution_context/execution_context.h"
+#include "components/performance_manager/public/execution_context/execution_context_registry.h"
 
 namespace performance_manager {
 namespace execution_context {
@@ -19,7 +20,7 @@ namespace execution_context {
 // implementations.
 class ExecutionContextAccess {
  public:
-  using PassKey = util::PassKey<ExecutionContextAccess>;
+  using PassKey = base::PassKey<ExecutionContextAccess>;
 
   template <typename NodeImplType>
   static std::unique_ptr<NodeAttachedData>* GetExecutionAccessStorage(
@@ -177,6 +178,19 @@ blink::ExecutionContextToken ToExecutionContextToken(
   // that all types are handled.
   NOTREACHED();
   return blink::ExecutionContextToken();
+}
+
+// Declared in execution_context.h.
+// static
+const ExecutionContext* ExecutionContext::From(const FrameNode* frame_node) {
+  return ExecutionContextRegistry::GetExecutionContextForFrameNode(frame_node);
+}
+
+// Declared in execution_context.h.
+// static
+const ExecutionContext* ExecutionContext::From(const WorkerNode* worker_node) {
+  return ExecutionContextRegistry::GetExecutionContextForWorkerNode(
+      worker_node);
 }
 
 const ExecutionContext* GetOrCreateExecutionContextForFrameNode(

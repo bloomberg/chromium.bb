@@ -46,7 +46,12 @@ class LogBuffer;
   T(ImportAddressProfileFromFormAddressRequirements,                           \
     "Requirements for the address import: ")                                   \
   T(FormSubmissionDetected, "Form submission detected: ")                      \
-  T(SendFillingData, "Sending data to fill to renderer: ")
+  T(SendFillingData, "Sending data to fill to renderer: ")                     \
+  T(CreditCardUploadEnabled, "Credit card upload is enabled.")                 \
+  T(CreditCardUploadDisabled, "Credit card upload is disabled. Reason: ")      \
+  T(CardUploadDecisionUploadOffered, "Credit card upload was offered.")        \
+  T(CardUploadDecisionUploadNotOffered, "Credit card upload was not offered.") \
+  T(SuggestionSuppressed, "Autofill suggestion(s) suppressed.")
 
 // Log messages for chrome://autofill-internals.
 

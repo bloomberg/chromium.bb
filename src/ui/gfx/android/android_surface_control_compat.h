@@ -47,8 +47,20 @@ class GFX_EXPORT SurfaceControl {
   // Returns true if tagging a surface with a frame rate value is supported.
   static bool SupportsSetFrameRate();
 
+  // Returns true if OnCommit callback is supported.
+  static bool SupportsOnCommit();
+
+  // Applies transaction. Used to emulate webview functor interface, where we
+  // pass raw ASurfaceTransaction object. For use inside Chromium use
+  // Transaction class below instead.
+  static void ApplyTransaction(ASurfaceTransaction* transaction);
+
   class GFX_EXPORT Surface : public base::RefCounted<Surface> {
    public:
+    // Wraps ASurfaceControl, but doesn't transfer ownership. Will not release
+    // in dtor.
+    static scoped_refptr<Surface> WrapUnowned(ASurfaceControl* surface);
+
     Surface();
     Surface(const Surface& parent, const char* name);
     Surface(ANativeWindow* parent, const char* name);
@@ -60,6 +72,7 @@ class GFX_EXPORT SurfaceControl {
     ~Surface();
 
     ASurfaceControl* surface_ = nullptr;
+    ASurfaceControl* owned_surface_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(Surface);
   };
@@ -118,6 +131,7 @@ class GFX_EXPORT SurfaceControl {
     void SetColorSpace(const Surface& surface,
                        const gfx::ColorSpace& color_space);
     void SetFrameRate(const Surface& surface, float frame_rate);
+    void SetParent(const Surface& surface, Surface* new_parent);
 
     // Sets the callback which will be dispatched when the transaction is acked
     // by the framework.
@@ -128,11 +142,18 @@ class GFX_EXPORT SurfaceControl {
         OnCompleteCb cb,
         scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
+    using OnCommitCb = base::OnceClosure;
+    void SetOnCommitCb(OnCommitCb cb,
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
     void Apply();
+    ASurfaceTransaction* transaction() { return transaction_; }
 
    private:
     int id_;
     ASurfaceTransaction* transaction_;
+    OnCommitCb on_commit_cb_;
+    OnCompleteCb on_complete_cb_;
 
     DISALLOW_COPY_AND_ASSIGN(Transaction);
   };

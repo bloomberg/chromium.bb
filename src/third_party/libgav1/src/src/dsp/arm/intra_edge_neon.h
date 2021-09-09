@@ -34,6 +34,9 @@ void IntraEdgeInit_NEON();
 #define LIBGAV1_Dsp8bpp_IntraEdgeFilter LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_IntraEdgeUpsampler LIBGAV1_CPU_NEON
 
+#define LIBGAV1_Dsp10bpp_IntraEdgeFilter LIBGAV1_CPU_NEON
+#define LIBGAV1_Dsp10bpp_IntraEdgeUpsampler LIBGAV1_CPU_NEON
+
 #endif  // LIBGAV1_ENABLE_NEON
 
 #endif  // LIBGAV1_SRC_DSP_ARM_INTRA_EDGE_NEON_H_

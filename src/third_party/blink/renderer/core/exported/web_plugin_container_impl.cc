@@ -36,7 +36,6 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -107,7 +106,6 @@
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
 
@@ -224,22 +222,14 @@ void WebPluginContainerImpl::UpdateGeometry() {
     layout->UpdateGeometry(*this);
 }
 
-void WebPluginContainerImpl::InvalidateRect(const IntRect& rect) {
-  // InvalidateRect can be called from Dispose when this plugin is no longer
-  // attached.  In this case, we return immediately.
+void WebPluginContainerImpl::Invalidate() {
+  // This can be called from Dispose when this plugin is no longer attached.
+  // In this case, we return immediately.
   if (!IsAttached())
     return;
 
-  auto* layout_object = To<LayoutBox>(element_->GetLayoutObject());
-  if (!layout_object)
-    return;
-
-  IntRect dirty_rect = rect;
-  dirty_rect.Move(
-      (layout_object->BorderLeft() + layout_object->PaddingLeft()).ToInt(),
-      (layout_object->BorderTop() + layout_object->PaddingTop()).ToInt());
-
-  layout_object->InvalidatePaintRectangle(PhysicalRect(dirty_rect));
+  if (auto* layout_object = element_->GetLayoutObject())
+    layout_object->SetShouldDoFullPaintInvalidation();
 }
 
 void WebPluginContainerImpl::SetFocused(bool focused,
@@ -361,15 +351,10 @@ float WebPluginContainerImpl::PageZoomFactor() {
   return frame->PageZoomFactor();
 }
 
-void WebPluginContainerImpl::SetCcLayer(cc::Layer* new_layer,
-                                        bool prevent_contents_opaque_changes) {
-  if (layer_ == new_layer &&
-      prevent_contents_opaque_changes == prevent_contents_opaque_changes_)
+void WebPluginContainerImpl::SetCcLayer(cc::Layer* new_layer) {
+  if (layer_ == new_layer)
     return;
-
   layer_ = new_layer;
-  prevent_contents_opaque_changes_ = prevent_contents_opaque_changes;
-
   if (element_)
     element_->SetNeedsCompositingUpdate();
 }
@@ -538,14 +523,6 @@ void WebPluginContainerImpl::EnqueueMessageEvent(
   element_->EnqueueEvent(*event, TaskType::kInternalDefault);
 }
 
-void WebPluginContainerImpl::Invalidate() {
-  InvalidateRect(IntRect(0, 0, Size().Width(), Size().Height()));
-}
-
-void WebPluginContainerImpl::InvalidateRect(const WebRect& rect) {
-  InvalidateRect(static_cast<IntRect>(rect));
-}
-
 void WebPluginContainerImpl::ScheduleAnimation() {
   if (auto* frame_view = element_->GetDocument().View())
     frame_view->ScheduleAnimation();
@@ -599,7 +576,7 @@ void WebPluginContainerImpl::LoadFrameRequest(const WebURLRequest& request,
     target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
 }
 
-bool WebPluginContainerImpl::IsRectTopmost(const WebRect& rect) {
+bool WebPluginContainerImpl::IsRectTopmost(const gfx::Rect& rect) {
   // Disallow access to the frame during Dispose(), because it is not guaranteed
   // to be valid memory once this object has started disposal. In particular,
   // we might be being disposed because the frame has already be deleted and
@@ -612,7 +589,7 @@ bool WebPluginContainerImpl::IsRectTopmost(const WebRect& rect) {
   if (!frame)
     return false;
 
-  IntRect frame_rect = rect;
+  IntRect frame_rect(rect);
   frame_rect.MoveBy(Location());
   HitTestLocation location((PhysicalRect(frame_rect)));
   HitTestResult result = frame->GetEventHandler().HitTestResultAtLocation(
@@ -735,10 +712,6 @@ cc::Layer* WebPluginContainerImpl::CcLayer() const {
   return layer_;
 }
 
-bool WebPluginContainerImpl::PreventContentsOpaqueChangesToCcLayer() const {
-  return prevent_contents_opaque_changes_;
-}
-
 v8::Local<v8::Object> WebPluginContainerImpl::ScriptableObject(
     v8::Isolate* isolate) {
   // With Oilpan, on plugin element detach dispose() will be called to safely
@@ -783,7 +756,6 @@ WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement& element,
       web_plugin_(web_plugin),
       layer_(nullptr),
       touch_event_request_type_(kTouchEventRequestTypeNone),
-      prevent_contents_opaque_changes_(false),
       wants_wheel_events_(false) {}
 
 WebPluginContainerImpl::~WebPluginContainerImpl() {

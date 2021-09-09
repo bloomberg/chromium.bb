@@ -11,8 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
@@ -59,7 +59,7 @@ static base::FilePath CreateExtensionFile(const base::FilePath& dir,
 class ExtensionCacheTest : public testing::Test {
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+  ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 };
 
 TEST_F(ExtensionCacheTest, SizePolicy) {
@@ -92,7 +92,7 @@ TEST_F(ExtensionCacheTest, SizePolicy) {
   cache_impl.Start(run_loop->QuitClosure());
   run_loop->Run();
 
-  run_loop.reset(new base::RunLoop);
+  run_loop = std::make_unique<base::RunLoop>();
   cache_impl.Shutdown(run_loop->QuitClosure());
   run_loop->Run();
 

@@ -42,13 +42,15 @@ class CORE_EXPORT WorkletModuleResponsesMap final
   // class-level comment.
   // Called on worklet threads.
   bool GetEntry(const KURL&,
+                ModuleType,
                 ModuleScriptFetcher::Client*,
                 scoped_refptr<base::SingleThreadTaskRunner> client_task_runner)
       LOCKS_EXCLUDED(mutex_);
 
   // Called on worklet threads.
   void SetEntryParams(const KURL&,
-                      const base::Optional<ModuleScriptCreationParams>&)
+                      ModuleType,
+                      const absl::optional<ModuleScriptCreationParams>&)
       LOCKS_EXCLUDED(mutex_);
 
   // Called when the associated document is destroyed and clears the map.
@@ -74,11 +76,11 @@ class CORE_EXPORT WorkletModuleResponsesMap final
     void AddClient(
         ModuleScriptFetcher::Client* client,
         scoped_refptr<base::SingleThreadTaskRunner> client_task_runner);
-    void SetParams(const base::Optional<ModuleScriptCreationParams>& params);
+    void SetParams(const absl::optional<ModuleScriptCreationParams>& params);
 
    private:
     State state_ = State::kFetching;
-    base::Optional<ModuleScriptCreationParams> params_;
+    absl::optional<ModuleScriptCreationParams> params_;
     HashMap<CrossThreadPersistent<ModuleScriptFetcher::Client>,
             scoped_refptr<base::SingleThreadTaskRunner>>
         clients_;
@@ -92,7 +94,8 @@ class CORE_EXPORT WorkletModuleResponsesMap final
   // addModule() calls for a newly created global scope.
   // See https://drafts.css-houdini.org/worklets/#creating-a-workletglobalscope
   // Can be read/written by any thread.
-  HashMap<KURL, std::unique_ptr<Entry>> entries_ GUARDED_BY(mutex_);
+  using Key = std::pair<KURL, ModuleType>;
+  HashMap<Key, std::unique_ptr<Entry>> entries_ GUARDED_BY(mutex_);
 
   Mutex mutex_;
 };

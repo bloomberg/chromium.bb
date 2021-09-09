@@ -29,8 +29,8 @@ constexpr char kExpectedMountPath[] = "/media/drivefsroot/mountdir";
 constexpr char kExpectedDataDir[] = "/path/to/profile/GCache/v2/salt-g-ID";
 constexpr char kExpectedMyFilesDir[] = "/path/to/profile/MyFiles";
 
-static const base::Optional<base::TimeDelta> kEmptyDelay;
-static const base::Optional<base::TimeDelta> kDefaultDelay =
+static const absl::optional<base::TimeDelta> kEmptyDelay;
+static const absl::optional<base::TimeDelta> kDefaultDelay =
     base::TimeDelta::FromSeconds(5);
 
 using testing::_;
@@ -268,6 +268,8 @@ class DriveFsSessionForTest : public DriveFsSession {
       mojo::PendingReceiver<mojom::NativeMessagingPort> port,
       mojo::PendingRemote<mojom::NativeMessagingHost> host,
       ConnectToExtensionCallback callback) override {}
+  void DisplayConfirmDialog(mojom::DialogReasonPtr error,
+                            DisplayConfirmDialogCallback callback) override {}
   DISALLOW_COPY_AND_ASSIGN(DriveFsSessionForTest);
 };
 
@@ -278,10 +280,10 @@ class DriveFsSessionTest : public ::testing::Test,
 
  protected:
   MOCK_METHOD1(OnMounted, void(const base::FilePath& path));
-  MOCK_METHOD1(OnUnmounted, void(base::Optional<base::TimeDelta> delay));
+  MOCK_METHOD1(OnUnmounted, void(absl::optional<base::TimeDelta> delay));
   MOCK_METHOD2(OnMountFailed,
                void(MountFailure failure,
-                    base::Optional<base::TimeDelta> delay));
+                    absl::optional<base::TimeDelta> delay));
 
   void StartMounting() {
     DCHECK(!holder_);

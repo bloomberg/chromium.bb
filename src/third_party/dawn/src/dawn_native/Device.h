@@ -27,20 +27,24 @@
 #include "dawn_native/dawn_platform.h"
 
 #include <memory>
+#include <utility>
 
 namespace dawn_native {
     class AdapterBase;
     class AttachmentState;
     class AttachmentStateBlueprint;
     class BindGroupLayoutBase;
-    class CreateReadyPipelineTracker;
+    class CallbackTaskManager;
     class DynamicUploader;
-    class ErrorScope;
-    class ErrorScopeTracker;
+    class ErrorScopeStack;
+    class ExternalTextureBase;
+    class OwnedCompilationMessages;
+    class PersistentCache;
     class StagingBufferBase;
     struct InternalPipelineStore;
+    struct ShaderModuleParseResult;
 
-    class DeviceBase {
+    class DeviceBase : public RefCounted {
       public:
         DeviceBase(AdapterBase* adapter, const DeviceDescriptor* descriptor);
         virtual ~DeviceBase();
@@ -70,8 +74,6 @@ namespace dawn_native {
         AdapterBase* GetAdapter() const;
         dawn_platform::Platform* GetPlatform() const;
 
-        ErrorScopeTracker* GetErrorScopeTracker() const;
-
         // Returns the Format corresponding to the wgpu::TextureFormat or an error if the format
         // isn't a valid wgpu::TextureFormat or isn't supported by this device.
         // The pointer returned has the same lifetime as the device.
@@ -82,7 +84,7 @@ namespace dawn_native {
         // The reference returned has the same lifetime as the device.
         const Format& GetValidInternalFormat(wgpu::TextureFormat format) const;
 
-        virtual CommandBufferBase* CreateCommandBuffer(
+        virtual ResultOrError<Ref<CommandBufferBase>> CreateCommandBuffer(
             CommandEncoder* encoder,
             const CommandBufferDescriptor* descriptor) = 0;
 
@@ -90,7 +92,6 @@ namespace dawn_native {
         ExecutionSerial GetLastSubmittedCommandSerial() const;
         ExecutionSerial GetFutureSerial() const;
         ExecutionSerial GetPendingCommandSerial() const;
-        virtual MaybeError TickImpl() = 0;
 
         // Many Dawn objects are completely immutable once created which means that if two
         // creations are given the same arguments, they can return the same object. Reusing
@@ -112,76 +113,106 @@ namespace dawn_native {
 
         BindGroupLayoutBase* GetEmptyBindGroupLayout();
 
-        ResultOrError<ComputePipelineBase*> GetOrCreateComputePipeline(
-            const ComputePipelineDescriptor* descriptor);
         void UncacheComputePipeline(ComputePipelineBase* obj);
 
-        ResultOrError<PipelineLayoutBase*> GetOrCreatePipelineLayout(
+        ResultOrError<Ref<PipelineLayoutBase>> GetOrCreatePipelineLayout(
             const PipelineLayoutDescriptor* descriptor);
         void UncachePipelineLayout(PipelineLayoutBase* obj);
 
-        ResultOrError<RenderPipelineBase*> GetOrCreateRenderPipeline(
-            const RenderPipelineDescriptor* descriptor);
+        ResultOrError<Ref<RenderPipelineBase>> GetOrCreateRenderPipeline(
+            const RenderPipelineDescriptor2* descriptor);
         void UncacheRenderPipeline(RenderPipelineBase* obj);
 
-        ResultOrError<SamplerBase*> GetOrCreateSampler(const SamplerDescriptor* descriptor);
+        ResultOrError<Ref<SamplerBase>> GetOrCreateSampler(const SamplerDescriptor* descriptor);
         void UncacheSampler(SamplerBase* obj);
 
-        ResultOrError<ShaderModuleBase*> GetOrCreateShaderModule(
-            const ShaderModuleDescriptor* descriptor);
+        ResultOrError<Ref<ShaderModuleBase>> GetOrCreateShaderModule(
+            const ShaderModuleDescriptor* descriptor,
+            ShaderModuleParseResult* parseResult);
         void UncacheShaderModule(ShaderModuleBase* obj);
 
         Ref<AttachmentState> GetOrCreateAttachmentState(AttachmentStateBlueprint* blueprint);
         Ref<AttachmentState> GetOrCreateAttachmentState(
             const RenderBundleEncoderDescriptor* descriptor);
         Ref<AttachmentState> GetOrCreateAttachmentState(const RenderPipelineDescriptor* descriptor);
+        Ref<AttachmentState> GetOrCreateAttachmentState(
+            const RenderPipelineDescriptor2* descriptor);
         Ref<AttachmentState> GetOrCreateAttachmentState(const RenderPassDescriptor* descriptor);
         void UncacheAttachmentState(AttachmentState* obj);
 
-        // Dawn API
-        BindGroupBase* CreateBindGroup(const BindGroupDescriptor* descriptor);
-        BindGroupLayoutBase* CreateBindGroupLayout(const BindGroupLayoutDescriptor* descriptor);
-        BufferBase* CreateBuffer(const BufferDescriptor* descriptor);
-        CommandEncoder* CreateCommandEncoder(const CommandEncoderDescriptor* descriptor);
-        ComputePipelineBase* CreateComputePipeline(const ComputePipelineDescriptor* descriptor);
-        PipelineLayoutBase* CreatePipelineLayout(const PipelineLayoutDescriptor* descriptor);
-        QuerySetBase* CreateQuerySet(const QuerySetDescriptor* descriptor);
-        void CreateReadyComputePipeline(const ComputePipelineDescriptor* descriptor,
-                                        WGPUCreateReadyComputePipelineCallback callback,
-                                        void* userdata);
-        void CreateReadyRenderPipeline(const RenderPipelineDescriptor* descriptor,
-                                       WGPUCreateReadyRenderPipelineCallback callback,
-                                       void* userdata);
-        RenderBundleEncoder* CreateRenderBundleEncoder(
+        // Object creation methods that be used in a reentrant manner.
+        ResultOrError<Ref<BindGroupBase>> CreateBindGroup(const BindGroupDescriptor* descriptor);
+        ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayout(
+            const BindGroupLayoutDescriptor* descriptor);
+        ResultOrError<Ref<BufferBase>> CreateBuffer(const BufferDescriptor* descriptor);
+        ResultOrError<Ref<ComputePipelineBase>> CreateComputePipeline(
+            const ComputePipelineDescriptor* descriptor);
+        MaybeError CreateComputePipelineAsync(
+            const ComputePipelineDescriptor* descriptor,
+            WGPUCreateComputePipelineAsyncCallback callback,
+            void* userdata);
+        ResultOrError<Ref<ExternalTextureBase>> CreateExternalTexture(
+            const ExternalTextureDescriptor* descriptor);
+        ResultOrError<Ref<PipelineLayoutBase>> CreatePipelineLayout(
+            const PipelineLayoutDescriptor* descriptor);
+        ResultOrError<Ref<QuerySetBase>> CreateQuerySet(const QuerySetDescriptor* descriptor);
+        ResultOrError<Ref<RenderBundleEncoder>> CreateRenderBundleEncoder(
             const RenderBundleEncoderDescriptor* descriptor);
-        RenderPipelineBase* CreateRenderPipeline(const RenderPipelineDescriptor* descriptor);
-        SamplerBase* CreateSampler(const SamplerDescriptor* descriptor);
-        ShaderModuleBase* CreateShaderModule(const ShaderModuleDescriptor* descriptor);
-        SwapChainBase* CreateSwapChain(Surface* surface, const SwapChainDescriptor* descriptor);
-        TextureBase* CreateTexture(const TextureDescriptor* descriptor);
-        TextureViewBase* CreateTextureView(TextureBase* texture,
-                                           const TextureViewDescriptor* descriptor);
+        ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipeline(
+            const RenderPipelineDescriptor2* descriptor);
+        ResultOrError<Ref<SamplerBase>> CreateSampler(const SamplerDescriptor* descriptor);
+        ResultOrError<Ref<ShaderModuleBase>> CreateShaderModule(
+            const ShaderModuleDescriptor* descriptor,
+            ShaderModuleParseResult* parseResult = nullptr);
+        ResultOrError<Ref<SwapChainBase>> CreateSwapChain(Surface* surface,
+                                                          const SwapChainDescriptor* descriptor);
+        ResultOrError<Ref<TextureBase>> CreateTexture(const TextureDescriptor* descriptor);
+        ResultOrError<Ref<TextureViewBase>> CreateTextureView(
+            TextureBase* texture,
+            const TextureViewDescriptor* descriptor);
+
+        // Implementation of API object creation methods. DO NOT use them in a reentrant manner.
+        BindGroupBase* APICreateBindGroup(const BindGroupDescriptor* descriptor);
+        BindGroupLayoutBase* APICreateBindGroupLayout(const BindGroupLayoutDescriptor* descriptor);
+        BufferBase* APICreateBuffer(const BufferDescriptor* descriptor);
+        CommandEncoder* APICreateCommandEncoder(const CommandEncoderDescriptor* descriptor);
+        ComputePipelineBase* APICreateComputePipeline(const ComputePipelineDescriptor* descriptor);
+        PipelineLayoutBase* APICreatePipelineLayout(const PipelineLayoutDescriptor* descriptor);
+        QuerySetBase* APICreateQuerySet(const QuerySetDescriptor* descriptor);
+        void APICreateComputePipelineAsync(const ComputePipelineDescriptor* descriptor,
+                                           WGPUCreateComputePipelineAsyncCallback callback,
+                                           void* userdata);
+        void APICreateRenderPipelineAsync(const RenderPipelineDescriptor2* descriptor,
+                                          WGPUCreateRenderPipelineAsyncCallback callback,
+                                          void* userdata);
+        RenderBundleEncoder* APICreateRenderBundleEncoder(
+            const RenderBundleEncoderDescriptor* descriptor);
+        RenderPipelineBase* APICreateRenderPipeline(const RenderPipelineDescriptor* descriptor);
+        RenderPipelineBase* APICreateRenderPipeline2(const RenderPipelineDescriptor2* descriptor);
+        ExternalTextureBase* APICreateExternalTexture(const ExternalTextureDescriptor* descriptor);
+        SamplerBase* APICreateSampler(const SamplerDescriptor* descriptor);
+        ShaderModuleBase* APICreateShaderModule(const ShaderModuleDescriptor* descriptor);
+        SwapChainBase* APICreateSwapChain(Surface* surface, const SwapChainDescriptor* descriptor);
+        TextureBase* APICreateTexture(const TextureDescriptor* descriptor);
+
         InternalPipelineStore* GetInternalPipelineStore();
 
         // For Dawn Wire
-        BufferBase* CreateErrorBuffer();
+        BufferBase* APICreateErrorBuffer();
 
-        QueueBase* GetDefaultQueue();
+        QueueBase* APIGetQueue();
 
-        void InjectError(wgpu::ErrorType type, const char* message);
-        bool Tick();
+        void APIInjectError(wgpu::ErrorType type, const char* message);
+        bool APITick();
 
-        void SetDeviceLostCallback(wgpu::DeviceLostCallback callback, void* userdata);
-        void SetUncapturedErrorCallback(wgpu::ErrorCallback callback, void* userdata);
-        void PushErrorScope(wgpu::ErrorFilter filter);
-        bool PopErrorScope(wgpu::ErrorCallback callback, void* userdata);
+        void APISetDeviceLostCallback(wgpu::DeviceLostCallback callback, void* userdata);
+        void APISetUncapturedErrorCallback(wgpu::ErrorCallback callback, void* userdata);
+        void APIPushErrorScope(wgpu::ErrorFilter filter);
+        bool APIPopErrorScope(wgpu::ErrorCallback callback, void* userdata);
 
         MaybeError ValidateIsAlive() const;
 
-        ErrorScope* GetCurrentErrorScope();
-
-        void Reference();
-        void Release();
+        PersistentCache* GetPersistentCache();
 
         virtual ResultOrError<std::unique_ptr<StagingBufferBase>> CreateStagingBuffer(
             size_t size) = 0;
@@ -228,7 +259,8 @@ namespace dawn_native {
         void IncrementLazyClearCountForTesting();
         size_t GetDeprecationWarningCountForTesting();
         void EmitDeprecationWarning(const char* warning);
-        void LoseForTesting();
+        void APILoseForTesting();
+        QueueBase* GetQueue() const;
 
         // AddFutureSerial is used to update the mFutureSerial with the max serial needed to be
         // ticked in order to clean up all pending callback work or to execute asynchronous resource
@@ -238,9 +270,15 @@ namespace dawn_native {
         // still check if we have pending work to take care of, rather than hanging and never
         // reaching the serial the work will be executed on.
         void AddFutureSerial(ExecutionSerial serial);
+        // Check for passed fences and set the new completed serial
+        MaybeError CheckPassedSerials();
+
+        MaybeError Tick();
 
         virtual uint32_t GetOptimalBytesPerRowAlignment() const = 0;
         virtual uint64_t GetOptimalBufferToTextureCopyOffsetAlignment() const = 0;
+
+        virtual float GetTimestampPeriodInNS() const = 0;
 
       protected:
         void SetToggle(Toggle toggle, bool isEnabled);
@@ -251,69 +289,55 @@ namespace dawn_native {
 
         // Incrememt mLastSubmittedSerial when we submit the next serial
         void IncrementLastSubmittedCommandSerial();
-        // Check for passed fences and set the new completed serial
-        void CheckPassedSerials();
 
       private:
-        virtual ResultOrError<BindGroupBase*> CreateBindGroupImpl(
+        virtual ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) = 0;
-        virtual ResultOrError<BindGroupLayoutBase*> CreateBindGroupLayoutImpl(
+        virtual ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayoutImpl(
             const BindGroupLayoutDescriptor* descriptor) = 0;
         virtual ResultOrError<Ref<BufferBase>> CreateBufferImpl(
             const BufferDescriptor* descriptor) = 0;
-        virtual ResultOrError<ComputePipelineBase*> CreateComputePipelineImpl(
+        virtual ResultOrError<Ref<ComputePipelineBase>> CreateComputePipelineImpl(
             const ComputePipelineDescriptor* descriptor) = 0;
-        virtual ResultOrError<PipelineLayoutBase*> CreatePipelineLayoutImpl(
+        virtual ResultOrError<Ref<PipelineLayoutBase>> CreatePipelineLayoutImpl(
             const PipelineLayoutDescriptor* descriptor) = 0;
-        virtual ResultOrError<QuerySetBase*> CreateQuerySetImpl(
+        virtual ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) = 0;
-        virtual ResultOrError<RenderPipelineBase*> CreateRenderPipelineImpl(
-            const RenderPipelineDescriptor* descriptor) = 0;
-        virtual ResultOrError<SamplerBase*> CreateSamplerImpl(
+        virtual ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
+            const RenderPipelineDescriptor2* descriptor) = 0;
+        virtual ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) = 0;
-        virtual ResultOrError<ShaderModuleBase*> CreateShaderModuleImpl(
-            const ShaderModuleDescriptor* descriptor) = 0;
-        virtual ResultOrError<SwapChainBase*> CreateSwapChainImpl(
+        virtual ResultOrError<Ref<ShaderModuleBase>> CreateShaderModuleImpl(
+            const ShaderModuleDescriptor* descriptor,
+            ShaderModuleParseResult* parseResult) = 0;
+        virtual ResultOrError<Ref<SwapChainBase>> CreateSwapChainImpl(
             const SwapChainDescriptor* descriptor) = 0;
         // Note that previousSwapChain may be nullptr, or come from a different backend.
-        virtual ResultOrError<NewSwapChainBase*> CreateSwapChainImpl(
+        virtual ResultOrError<Ref<NewSwapChainBase>> CreateSwapChainImpl(
             Surface* surface,
             NewSwapChainBase* previousSwapChain,
             const SwapChainDescriptor* descriptor) = 0;
         virtual ResultOrError<Ref<TextureBase>> CreateTextureImpl(
             const TextureDescriptor* descriptor) = 0;
-        virtual ResultOrError<TextureViewBase*> CreateTextureViewImpl(
+        virtual ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) = 0;
 
+        virtual MaybeError TickImpl() = 0;
+
         ResultOrError<Ref<BindGroupLayoutBase>> CreateEmptyBindGroupLayout();
 
-        MaybeError CreateBindGroupInternal(BindGroupBase** result,
-                                           const BindGroupDescriptor* descriptor);
-        MaybeError CreateBindGroupLayoutInternal(BindGroupLayoutBase** result,
-                                                 const BindGroupLayoutDescriptor* descriptor);
-        ResultOrError<Ref<BufferBase>> CreateBufferInternal(const BufferDescriptor* descriptor);
-        MaybeError CreateComputePipelineInternal(ComputePipelineBase** result,
-                                                 const ComputePipelineDescriptor* descriptor);
-        MaybeError CreatePipelineLayoutInternal(PipelineLayoutBase** result,
-                                                const PipelineLayoutDescriptor* descriptor);
-        MaybeError CreateQuerySetInternal(QuerySetBase** result,
-                                          const QuerySetDescriptor* descriptor);
-        MaybeError CreateRenderBundleEncoderInternal(
-            RenderBundleEncoder** result,
-            const RenderBundleEncoderDescriptor* descriptor);
-        MaybeError CreateRenderPipelineInternal(RenderPipelineBase** result,
-                                                const RenderPipelineDescriptor* descriptor);
-        MaybeError CreateSamplerInternal(SamplerBase** result, const SamplerDescriptor* descriptor);
-        MaybeError CreateShaderModuleInternal(ShaderModuleBase** result,
-                                              const ShaderModuleDescriptor* descriptor);
-        MaybeError CreateSwapChainInternal(SwapChainBase** result,
-                                           Surface* surface,
-                                           const SwapChainDescriptor* descriptor);
-        ResultOrError<Ref<TextureBase>> CreateTextureInternal(const TextureDescriptor* descriptor);
-        MaybeError CreateTextureViewInternal(TextureViewBase** result,
-                                             TextureBase* texture,
-                                             const TextureViewDescriptor* descriptor);
+        ResultOrError<Ref<PipelineLayoutBase>> ValidateAndGetComputePipelineDescriptorWithDefaults(
+            const ComputePipelineDescriptor& descriptor,
+            ComputePipelineDescriptor* outDescriptor);
+        std::pair<Ref<ComputePipelineBase>, size_t> GetCachedComputePipeline(
+            const ComputePipelineDescriptor* descriptor);
+        Ref<ComputePipelineBase> AddOrGetCachedPipeline(Ref<ComputePipelineBase> computePipeline,
+                                                        size_t blueprintHash);
+        void CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
+                                            size_t blueprintHash,
+                                            WGPUCreateComputePipelineAsyncCallback callback,
+                                            void* userdata);
 
         void ApplyToggleOverrides(const DeviceDescriptor* deviceDescriptor);
         void ApplyExtensions(const DeviceDescriptor* deviceDescriptor);
@@ -324,7 +348,7 @@ namespace dawn_native {
 
         // Each backend should implement to check their passed fences if there are any and return a
         // completed serial. Return 0 should indicate no fences to check.
-        virtual ExecutionSerial CheckAndUpdateCompletedSerials() = 0;
+        virtual ResultOrError<ExecutionSerial> CheckAndUpdateCompletedSerials() = 0;
         // During shut down of device, some operations might have been started since the last submit
         // and waiting on a serial that doesn't have a corresponding fence enqueued. Fake serials to
         // make all commands look completed.
@@ -353,13 +377,20 @@ namespace dawn_native {
         // resources.
         virtual MaybeError WaitForIdleForDestruction() = 0;
 
+        wgpu::ErrorCallback mUncapturedErrorCallback = nullptr;
+        void* mUncapturedErrorUserdata = nullptr;
+
         wgpu::DeviceLostCallback mDeviceLostCallback = nullptr;
         void* mDeviceLostUserdata = nullptr;
 
-        AdapterBase* mAdapter = nullptr;
+        std::unique_ptr<ErrorScopeStack> mErrorScopeStack;
 
-        Ref<ErrorScope> mRootErrorScope;
-        Ref<ErrorScope> mCurrentErrorScope;
+        // The Device keeps a ref to the Instance so that any live Device keeps the Instance alive.
+        // The Instance shouldn't need to ref child objects so this shouldn't introduce ref cycles.
+        // The Device keeps a simple pointer to the Adapter because the Adapter is owned by the
+        // Instance.
+        Ref<InstanceBase> mInstance;
+        AdapterBase* mAdapter = nullptr;
 
         // The object caches aren't exposed in the header as they would require a lot of
         // additional includes.
@@ -369,14 +400,12 @@ namespace dawn_native {
         Ref<BindGroupLayoutBase> mEmptyBindGroupLayout;
 
         std::unique_ptr<DynamicUploader> mDynamicUploader;
-        std::unique_ptr<ErrorScopeTracker> mErrorScopeTracker;
-        std::unique_ptr<CreateReadyPipelineTracker> mCreateReadyPipelineTracker;
-        Ref<QueueBase> mDefaultQueue;
+        std::unique_ptr<CallbackTaskManager> mCallbackTaskManager;
+        Ref<QueueBase> mQueue;
 
         struct DeprecationWarnings;
         std::unique_ptr<DeprecationWarnings> mDeprecationWarnings;
 
-        uint32_t mRefCount = 1;
         State mState = State::BeingCreated;
 
         FormatTable mFormatTable;
@@ -388,6 +417,8 @@ namespace dawn_native {
         ExtensionsSet mEnabledExtensions;
 
         std::unique_ptr<InternalPipelineStore> mInternalPipelineStore;
+
+        std::unique_ptr<PersistentCache> mPersistentCache;
     };
 
 }  // namespace dawn_native

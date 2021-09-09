@@ -29,9 +29,16 @@ void WarpInit_SSE4_1();
 }  // namespace dsp
 }  // namespace libgav1
 
-#if LIBGAV1_ENABLE_SSE4_1
+#if LIBGAV1_TARGETING_SSE4_1
+
+#ifndef LIBGAV1_Dsp8bpp_Warp
 #define LIBGAV1_Dsp8bpp_Warp LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp8bpp_WarpCompound
 #define LIBGAV1_Dsp8bpp_WarpCompound LIBGAV1_CPU_SSE4_1
-#endif  // LIBGAV1_ENABLE_SSE4_1
+#endif
+
+#endif  // LIBGAV1_TARGETING_SSE4_1
 
 #endif  // LIBGAV1_SRC_DSP_X86_WARP_SSE4_H_

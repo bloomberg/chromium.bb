@@ -70,10 +70,46 @@ class WebAppShortcutCreatorSortingMock : public WebAppShortcutCreator {
       const WebAppShortcutCreatorSortingMock&) = delete;
 };
 
+class WebAppAutoLoginUtilMock : public WebAppAutoLoginUtil {
+ public:
+  WebAppAutoLoginUtilMock() = default;
+  WebAppAutoLoginUtilMock(const WebAppAutoLoginUtilMock&) = delete;
+  WebAppAutoLoginUtilMock& operator=(const WebAppAutoLoginUtilMock&) = delete;
+
+  void AddToLoginItems(const base::FilePath& app_bundle_path,
+                       bool hide_on_startup) override {
+    EXPECT_TRUE(base::PathExists(app_bundle_path));
+    EXPECT_FALSE(hide_on_startup);
+    add_to_login_items_called_count_++;
+  }
+
+  void RemoveFromLoginItems(const base::FilePath& app_bundle_path) override {
+    EXPECT_TRUE(base::PathExists(app_bundle_path));
+    remove_from_login_items_called_count_++;
+  }
+
+  void ResetCounts() {
+    add_to_login_items_called_count_ = 0;
+    remove_from_login_items_called_count_ = 0;
+  }
+
+  int GetAddToLoginItemsCalledCount() const {
+    return add_to_login_items_called_count_;
+  }
+
+  int GetRemoveFromLoginItemsCalledCount() const {
+    return remove_from_login_items_called_count_;
+  }
+
+ private:
+  int add_to_login_items_called_count_ = 0;
+  int remove_from_login_items_called_count_ = 0;
+};
+
 std::unique_ptr<ShortcutInfo> GetShortcutInfo() {
   std::unique_ptr<ShortcutInfo> info(new ShortcutInfo);
   info->extension_id = "extensionid";
-  info->title = base::ASCIIToUTF16("Shortcut Title");
+  info->title = u"Shortcut Title";
   info->url = GURL("http://example.com/");
   info->profile_path = base::FilePath("user_data_dir").Append("Profile 1");
   info->profile_name = "profile name";
@@ -120,9 +156,13 @@ class WebAppShortcutCreatorTest : public testing::Test {
 
     shim_base_name_ = base::FilePath(base::UTF16ToUTF8(info_->title) + ".app");
     shim_path_ = destination_dir_.Append(shim_base_name_);
+
+    auto_login_util_mock_ = std::make_unique<WebAppAutoLoginUtilMock>();
+    WebAppAutoLoginUtil::SetInstanceForTesting(auto_login_util_mock_.get());
   }
 
   void TearDown() override {
+    WebAppAutoLoginUtil::SetInstanceForTesting(nullptr);
     SetChromeAppsFolderForTesting(base::FilePath());
     testing::Test::TearDown();
   }
@@ -136,6 +176,7 @@ class WebAppShortcutCreatorTest : public testing::Test {
   base::FilePath destination_dir_;
   base::FilePath user_data_dir_;
 
+  std::unique_ptr<WebAppAutoLoginUtilMock> auto_login_util_mock_;
   std::unique_ptr<ShortcutInfo> info_;
   base::FilePath fallback_shim_base_name_;
   base::FilePath shim_base_name_;
@@ -169,27 +210,30 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
   // Delete it here, just to test that it is not recreated.
   EXPECT_TRUE(base::DeletePathRecursively(strings_file));
 
+  auto_login_util_mock_->ResetCounts();
+
   // Ensure the strings file wasn't recreated. It's not needed for any other
   // tests.
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
                                                ShortcutLocations()));
   EXPECT_FALSE(base::PathExists(strings_file));
+  EXPECT_EQ(auto_login_util_mock_->GetAddToLoginItemsCalledCount(), 0);
 
   base::FilePath plist_path =
       shim_path_.Append("Contents").Append("Info.plist");
   NSDictionary* plist = [NSDictionary
       dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
   EXPECT_NSEQ(base::SysUTF8ToNSString(info_->extension_id),
-              [plist objectForKey:app_mode::kCrAppModeShortcutIDKey]);
+              plist[app_mode::kCrAppModeShortcutIDKey]);
   EXPECT_NSEQ(base::SysUTF16ToNSString(info_->title),
-              [plist objectForKey:app_mode::kCrAppModeShortcutNameKey]);
+              plist[app_mode::kCrAppModeShortcutNameKey]);
   EXPECT_NSEQ(base::SysUTF8ToNSString(info_->url.spec()),
-              [plist objectForKey:app_mode::kCrAppModeShortcutURLKey]);
+              plist[app_mode::kCrAppModeShortcutURLKey]);
 
   EXPECT_NSEQ(base::SysUTF8ToNSString(version_info::GetVersionNumber()),
-              [plist objectForKey:app_mode::kCrBundleVersionKey]);
+              plist[app_mode::kCrBundleVersionKey]);
   EXPECT_NSEQ(base::SysUTF8ToNSString(info_->version_for_display),
-              [plist objectForKey:app_mode::kCFBundleShortVersionStringKey]);
+              plist[app_mode::kCFBundleShortVersionStringKey]);
 
   // Make sure all values in the plist are actually filled in.
   for (id key in plist) {
@@ -217,8 +261,7 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
   {
     NSDictionary* plist = [NSDictionary
         dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
-    NSArray* doc_types_array =
-        [plist objectForKey:app_mode::kCFBundleDocumentTypesKey];
+    NSArray* doc_types_array = plist[app_mode::kCFBundleDocumentTypesKey];
     EXPECT_EQ(doc_types_array, nil);
   }
   EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
@@ -234,24 +277,21 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
   {
     NSDictionary* plist = [NSDictionary
         dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
-    NSArray* doc_types_array =
-        [plist objectForKey:app_mode::kCFBundleDocumentTypesKey];
+    NSArray* doc_types_array = plist[app_mode::kCFBundleDocumentTypesKey];
     EXPECT_NE(doc_types_array, nil);
     EXPECT_EQ(1u, [doc_types_array count]);
-    NSDictionary* doc_types_dict = [doc_types_array objectAtIndex:0];
+    NSDictionary* doc_types_dict = doc_types_array[0];
     EXPECT_NE(doc_types_dict, nil);
-    NSArray* mime_types =
-        [doc_types_dict objectForKey:app_mode::kCFBundleTypeMIMETypesKey];
+    NSArray* mime_types = doc_types_dict[app_mode::kCFBundleTypeMIMETypesKey];
     EXPECT_NE(mime_types, nil);
-    NSArray* extensions =
-        [doc_types_dict objectForKey:app_mode::kCFBundleTypeExtensionsKey];
+    NSArray* extensions = doc_types_dict[app_mode::kCFBundleTypeExtensionsKey];
     EXPECT_EQ(extensions, nil);
 
     // The mime types should be listed in sorted order (note that sorted order
     // does matter for correct behavior).
     EXPECT_EQ(2u, [mime_types count]);
-    EXPECT_NSEQ([mime_types objectAtIndex:0], @"foo/bar");
-    EXPECT_NSEQ([mime_types objectAtIndex:1], @"moo/cow");
+    EXPECT_NSEQ(mime_types[0], @"foo/bar");
+    EXPECT_NSEQ(mime_types[1], @"moo/cow");
   }
   EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 
@@ -264,26 +304,23 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
   {
     NSDictionary* plist = [NSDictionary
         dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
-    NSArray* doc_types_array =
-        [plist objectForKey:app_mode::kCFBundleDocumentTypesKey];
+    NSArray* doc_types_array = plist[app_mode::kCFBundleDocumentTypesKey];
     EXPECT_NE(doc_types_array, nil);
     EXPECT_EQ(1u, [doc_types_array count]);
-    NSDictionary* doc_types_dict = [doc_types_array objectAtIndex:0];
+    NSDictionary* doc_types_dict = doc_types_array[0];
     EXPECT_NE(doc_types_dict, nil);
-    NSArray* mime_types =
-        [doc_types_dict objectForKey:app_mode::kCFBundleTypeMIMETypesKey];
+    NSArray* mime_types = doc_types_dict[app_mode::kCFBundleTypeMIMETypesKey];
     EXPECT_NE(mime_types, nil);
-    NSArray* extensions =
-        [doc_types_dict objectForKey:app_mode::kCFBundleTypeExtensionsKey];
+    NSArray* extensions = doc_types_dict[app_mode::kCFBundleTypeExtensionsKey];
     EXPECT_NE(extensions, nil);
 
     EXPECT_EQ(2u, [mime_types count]);
-    EXPECT_NSEQ([mime_types objectAtIndex:0], @"foo/bar");
-    EXPECT_NSEQ([mime_types objectAtIndex:1], @"moo/cow");
+    EXPECT_NSEQ(mime_types[0], @"foo/bar");
+    EXPECT_NSEQ(mime_types[1], @"moo/cow");
     EXPECT_EQ(3u, [extensions count]);
-    EXPECT_NSEQ([extensions objectAtIndex:0], @"bbq");
-    EXPECT_NSEQ([extensions objectAtIndex:1], @"cow");
-    EXPECT_NSEQ([extensions objectAtIndex:2], @"pig");
+    EXPECT_NSEQ(extensions[0], @"bbq");
+    EXPECT_NSEQ(extensions[1], @"cow");
+    EXPECT_NSEQ(extensions[2], @"pig");
   }
   EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 
@@ -294,23 +331,68 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
   {
     NSDictionary* plist = [NSDictionary
         dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
-    NSArray* doc_types_array =
-        [plist objectForKey:app_mode::kCFBundleDocumentTypesKey];
+    NSArray* doc_types_array = plist[app_mode::kCFBundleDocumentTypesKey];
     EXPECT_NE(doc_types_array, nil);
     EXPECT_EQ(1u, [doc_types_array count]);
-    NSDictionary* doc_types_dict = [doc_types_array objectAtIndex:0];
+    NSDictionary* doc_types_dict = doc_types_array[0];
     EXPECT_NE(doc_types_dict, nil);
-    NSArray* mime_types =
-        [doc_types_dict objectForKey:app_mode::kCFBundleTypeMIMETypesKey];
+    NSArray* mime_types = doc_types_dict[app_mode::kCFBundleTypeMIMETypesKey];
     EXPECT_EQ(mime_types, nil);
-    NSArray* extensions =
-        [doc_types_dict objectForKey:app_mode::kCFBundleTypeExtensionsKey];
+    NSArray* extensions = doc_types_dict[app_mode::kCFBundleTypeExtensionsKey];
     EXPECT_NE(extensions, nil);
 
     EXPECT_EQ(3u, [extensions count]);
-    EXPECT_NSEQ([extensions objectAtIndex:0], @"bbq");
-    EXPECT_NSEQ([extensions objectAtIndex:1], @"cow");
-    EXPECT_NSEQ([extensions objectAtIndex:2], @"pig");
+    EXPECT_NSEQ(extensions[0], @"bbq");
+    EXPECT_NSEQ(extensions[1], @"cow");
+    EXPECT_NSEQ(extensions[2], @"pig");
+  }
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
+}
+
+TEST_F(WebAppShortcutCreatorTest, ProtocolHandlers) {
+  const base::FilePath plist_path =
+      shim_path_.Append("Contents").Append("Info.plist");
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
+                                                       info_.get());
+
+  // CFBundleURLTypes should not be set, because we set no protocol
+  // handlers.
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               ShortcutLocations()));
+  {
+    NSDictionary* plist = [NSDictionary
+        dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
+    NSArray* protocol_types_value = plist[app_mode::kCFBundleURLTypesKey];
+    EXPECT_EQ(protocol_types_value, nil);
+  }
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
+
+  // Register 2 valid protocol handlers.
+  info_->protocol_handlers.insert("mailto");
+  info_->protocol_handlers.insert("web+testing");
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               ShortcutLocations()));
+  {
+    NSDictionary* plist = [NSDictionary
+        dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
+    NSArray* protocol_types_value = plist[app_mode::kCFBundleURLTypesKey];
+    EXPECT_NE(protocol_types_value, nil);
+    EXPECT_EQ(1u, [protocol_types_value count]);
+    NSDictionary* protocol_types_dict = protocol_types_value[0];
+    EXPECT_NE(protocol_types_dict, nil);
+
+    // Verify CFBundleURLName is set.
+    EXPECT_NSEQ(
+        protocol_types_dict[app_mode::kCFBundleURLNameKey],
+        base::SysUTF8ToNSString(base::mac::BaseBundleID() +
+                                std::string(".app.") + info_->extension_id));
+
+    // Verify CFBundleURLSchemes is set, and contains the expected values.
+    NSArray* handlers = protocol_types_dict[app_mode::kCFBundleURLSchemesKey];
+    EXPECT_NE(handlers, nil);
+    EXPECT_EQ(2u, [handlers count]);
+    EXPECT_NSEQ(handlers[0], @"mailto");
+    EXPECT_NSEQ(handlers[1], @"web+testing");
   }
   EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 }
@@ -339,15 +421,31 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcutsConflict) {
   EXPECT_TRUE(base::PathExists(destination_dir_));
 }
 
+TEST_F(WebAppShortcutCreatorTest, CreateShortcutsStartup) {
+  WebAppShortcutCreatorMock shortcut_creator(app_data_dir_, info_.get());
+
+  ShortcutLocations locations;
+  locations.in_startup = true;
+
+  auto_login_util_mock_->ResetCounts();
+  EXPECT_FALSE(base::PathExists(shim_path_));
+  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder(_)).Times(0);
+  EXPECT_TRUE(
+      shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED, locations));
+  EXPECT_TRUE(base::PathExists(shim_path_));
+  EXPECT_EQ(auto_login_util_mock_->GetAddToLoginItemsCalledCount(), 1);
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
+}
+
 TEST_F(WebAppShortcutCreatorTest, NormalizeTitle) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
                                                        info_.get());
 
-  info_->title = base::UTF8ToUTF16("../../Evil/");
+  info_->title = u"../../Evil/";
   EXPECT_EQ(destination_dir_.Append(":..:Evil:.app"),
             shortcut_creator.GetApplicationsShortcutPath(false));
 
-  info_->title = base::UTF8ToUTF16("....");
+  info_->title = u"....";
   EXPECT_EQ(destination_dir_.Append(fallback_shim_base_name_),
             shortcut_creator.GetApplicationsShortcutPath(false));
 }
@@ -454,10 +552,15 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcutsSingleProfile) {
   // Ensure the paths were created, and that they are destroyed.
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(other_shim_path));
+  auto_login_util_mock_->ResetCounts();
   internals::DeleteMultiProfileShortcutsForApp(info_->extension_id);
+  EXPECT_EQ(auto_login_util_mock_->GetRemoveFromLoginItemsCalledCount(), 0);
+
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(other_shim_path));
+  auto_login_util_mock_->ResetCounts();
   internals::DeletePlatformShortcuts(app_data_dir_, *info_);
+  EXPECT_EQ(auto_login_util_mock_->GetRemoveFromLoginItemsCalledCount(), 2);
   EXPECT_FALSE(base::PathExists(shim_path_));
   EXPECT_FALSE(base::PathExists(other_shim_path));
 }
@@ -481,10 +584,14 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
   // Ensure the paths were created, and that they are destroyed.
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(other_shim_path));
+  auto_login_util_mock_->ResetCounts();
   internals::DeletePlatformShortcuts(app_data_dir_, *info_);
+  EXPECT_EQ(auto_login_util_mock_->GetRemoveFromLoginItemsCalledCount(), 0);
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(other_shim_path));
+  auto_login_util_mock_->ResetCounts();
   internals::DeleteMultiProfileShortcutsForApp(info_->extension_id);
+  EXPECT_EQ(auto_login_util_mock_->GetRemoveFromLoginItemsCalledCount(), 2);
   EXPECT_FALSE(base::PathExists(shim_path_));
   EXPECT_FALSE(base::PathExists(other_shim_path));
 }
@@ -503,10 +610,14 @@ TEST_F(WebAppShortcutCreatorTest, DeleteAllShortcutsForProfile) {
                                                ShortcutLocations()));
   EXPECT_TRUE(base::PathExists(shim_path_));
 
+  auto_login_util_mock_->ResetCounts();
   internals::DeleteAllShortcutsForProfile(other_profile_path);
+  EXPECT_EQ(auto_login_util_mock_->GetRemoveFromLoginItemsCalledCount(), 0);
   EXPECT_TRUE(base::PathExists(shim_path_));
 
+  auto_login_util_mock_->ResetCounts();
   internals::DeleteAllShortcutsForProfile(profile_path);
+  EXPECT_EQ(auto_login_util_mock_->GetRemoveFromLoginItemsCalledCount(), 1);
   EXPECT_FALSE(base::PathExists(shim_path_));
 }
 
@@ -580,6 +691,31 @@ TEST_F(WebAppShortcutCreatorTest, SortAppBundles) {
       .WillOnce(Return(unsorted));
   std::vector<base::FilePath> result = shortcut_creator.GetAppBundlesById();
   EXPECT_EQ(result, sorted);
+}
+
+TEST_F(WebAppShortcutCreatorTest, RemoveAppShimFromLoginItems) {
+  WebAppShortcutCreatorMock shortcut_creator(app_data_dir_, info_.get());
+
+  ShortcutLocations locations;
+  locations.in_startup = true;
+
+  auto_login_util_mock_->ResetCounts();
+  EXPECT_FALSE(base::PathExists(shim_path_));
+  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder(_)).Times(0);
+  EXPECT_TRUE(
+      shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED, locations));
+  EXPECT_TRUE(base::PathExists(shim_path_));
+  EXPECT_EQ(auto_login_util_mock_->GetAddToLoginItemsCalledCount(), 1);
+
+  auto_login_util_mock_->ResetCounts();
+  RemoveAppShimFromLoginItems("does-not-exist-app");
+  EXPECT_EQ(auto_login_util_mock_->GetRemoveFromLoginItemsCalledCount(), 0);
+
+  auto_login_util_mock_->ResetCounts();
+  RemoveAppShimFromLoginItems(info_->extension_id);
+  EXPECT_EQ(auto_login_util_mock_->GetRemoveFromLoginItemsCalledCount(), 1);
+
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 }
 
 }  // namespace web_app

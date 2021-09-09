@@ -11,10 +11,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/cloud_policy.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -23,7 +24,6 @@ class SharedURLLoaderFactory;
 namespace policy {
 
 class CloudPolicyClient;
-class DMAuth;
 
 // A configuration for sending enterprise_management::DeviceManagementRequest to
 // the DM server.
@@ -39,10 +39,10 @@ class POLICY_EXPORT DMServerJobConfiguration : public JobConfigurationBase {
   DMServerJobConfiguration(
       DeviceManagementService* service,
       JobType type,
-      const std::string& cliend_id,
+      const std::string& client_id,
       bool critical,
-      std::unique_ptr<DMAuth> auth_data,
-      base::Optional<std::string> oauth_token,
+      DMAuth auth_data,
+      absl::optional<std::string> oauth_token,
       scoped_refptr<network::SharedURLLoaderFactory> factory,
       Callback callback);
 
@@ -51,8 +51,8 @@ class POLICY_EXPORT DMServerJobConfiguration : public JobConfigurationBase {
   DMServerJobConfiguration(JobType type,
                            CloudPolicyClient* client,
                            bool critical,
-                           std::unique_ptr<DMAuth> auth_data,
-                           base::Optional<std::string> oauth_token,
+                           DMAuth auth_data,
+                           absl::optional<std::string> oauth_token,
                            Callback callback);
 
   ~DMServerJobConfiguration() override;
@@ -97,8 +97,8 @@ class POLICY_EXPORT RegistrationJobConfiguration
  public:
   RegistrationJobConfiguration(JobType type,
                                CloudPolicyClient* client,
-                               std::unique_ptr<DMAuth> auth_data,
-                               base::Optional<std::string> oauth_token,
+                               DMAuth auth_data,
+                               absl::optional<std::string> oauth_token,
                                Callback callback);
 
  private:

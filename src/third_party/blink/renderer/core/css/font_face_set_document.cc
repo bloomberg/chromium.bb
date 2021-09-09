@@ -135,7 +135,7 @@ ScriptPromise FontFaceSetDocument::ready(ScriptState* script_state) {
 
 const HeapLinkedHashSet<Member<FontFace>>&
 FontFaceSetDocument::CSSConnectedFontFaceList() const {
-  Document* document = this->GetDocument();
+  Document* document = GetDocument();
   document->GetStyleEngine().UpdateActiveStyle();
   return GetFontSelector()->GetFontFaceCache()->CssConnectedFontFaces();
 }
@@ -178,7 +178,8 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
     return true;
   }
 
-  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> style =
+      GetDocument()->GetStyleResolver().CreateComputedStyle();
 
   FontFamily font_family;
   font_family.SetFamily(FontFaceSet::kDefaultFontFamily);
@@ -265,6 +266,7 @@ void FontFaceSetDocument::LCPLimitReached(TimerBase*) {
 }
 
 void FontFaceSetDocument::Trace(Visitor* visitor) const {
+  visitor->Trace(lcp_limit_timer_);
   Supplement<Document>::Trace(visitor);
   FontFaceSet::Trace(visitor);
 }

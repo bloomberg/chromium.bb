@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/sensor/ambient_light_sensor.h"
 
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 
@@ -55,18 +55,18 @@ AmbientLightSensor::AmbientLightSensor(ExecutionContext* execution_context,
              options,
              exception_state,
              SensorType::AMBIENT_LIGHT,
-             {mojom::blink::FeaturePolicyFeature::kAmbientLightSensor}) {}
+             {mojom::blink::PermissionsPolicyFeature::kAmbientLightSensor}) {}
 
 bool AmbientLightSensor::hasReading() const {
   return latest_reading_.has_value() && Sensor::hasReading();
 }
 
-base::Optional<double> AmbientLightSensor::illuminance() const {
+absl::optional<double> AmbientLightSensor::illuminance() const {
   if (hasReading()) {
     DCHECK(latest_reading_.has_value());
     return RoundIlluminance(latest_reading_.value());
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // When the reading we get does not differ significantly from our current

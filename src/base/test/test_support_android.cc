@@ -96,8 +96,7 @@ class MessagePumpForUIStub : public base::MessagePumpForUI {
     if (g_state->run_depth > 1) {
       RunNested(delegate);
     } else {
-      ResetShouldQuit();
-
+      SetQuit(false);
       SetDelegate(delegate);
 
       // Pump the loop once in case we're starting off idle as ALooper_pollOnce
@@ -203,18 +202,6 @@ void InitPathProvider(int key) {
 }  // namespace
 
 namespace base {
-
-void InitAndroidTestLogging() {
-  logging::LoggingSettings settings;
-  settings.logging_dest =
-      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
-  logging::InitLogging(settings);
-  // To view log output with IDs and timestamps use "adb logcat -v threadtime".
-  logging::SetLogItems(false,    // Process ID
-                       false,    // Thread ID
-                       false,    // Timestamp
-                       false);   // Tick count
-}
 
 void InitAndroidTestPaths(const FilePath& test_data_dir) {
   if (g_test_data_dir) {

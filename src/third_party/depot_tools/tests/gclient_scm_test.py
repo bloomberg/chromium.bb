@@ -196,6 +196,11 @@ from :3
         stderr=STDOUT, cwd=path).communicate()
     Popen([GIT, 'config', 'user.name', 'Some User'], stdout=PIPE,
         stderr=STDOUT, cwd=path).communicate()
+    # Set HEAD back to master
+    Popen([GIT, 'checkout', 'master', '-q'],
+          stdout=PIPE,
+          stderr=STDOUT,
+          cwd=path).communicate()
     return True
 
   def _GetAskForDataCallback(self, expected_prompt, return_value):
@@ -640,7 +645,7 @@ class ManagedGitWrapperTestCaseMock(unittest.TestCase):
       self, mockCheckOutput, mockExists, mockIsdir, mockClone):
     mockIsdir.side_effect = lambda path: path == self.base_path
     mockExists.side_effect = lambda path: path == self.base_path
-    mockCheckOutput.return_value = b''
+    mockCheckOutput.side_effect = [b'refs/remotes/origin/main', b'', b'']
 
     options = self.Options()
     scm = gclient_scm.GitWrapper(
@@ -648,18 +653,21 @@ class ManagedGitWrapperTestCaseMock(unittest.TestCase):
     scm.update(options, None, [])
 
     env = gclient_scm.scm.GIT.ApplyEnvVars({})
-    self.assertEqual(
-        mockCheckOutput.mock_calls,
-        [
-            mock.call(
-                ['git', '-c', 'core.quotePath=false', 'ls-files'],
-                cwd=self.base_path, env=env, stderr=-1),
-            mock.call(
-                ['git', 'rev-parse', '--verify', 'HEAD'],
-                cwd=self.base_path, env=env, stderr=-1),
-        ])
-    mockClone.assert_called_with(
-        'refs/remotes/origin/master', self.url, options)
+    self.assertEqual(mockCheckOutput.mock_calls, [
+        mock.call(['git', 'symbolic-ref', 'refs/remotes/origin/HEAD'],
+                  cwd=self.base_path,
+                  env=env,
+                  stderr=-1),
+        mock.call(['git', '-c', 'core.quotePath=false', 'ls-files'],
+                  cwd=self.base_path,
+                  env=env,
+                  stderr=-1),
+        mock.call(['git', 'rev-parse', '--verify', 'HEAD'],
+                  cwd=self.base_path,
+                  env=env,
+                  stderr=-1),
+    ])
+    mockClone.assert_called_with('refs/remotes/origin/main', self.url, options)
     self.checkstdout('\n')
 
   @mock.patch('gclient_scm.GitWrapper._Clone')
@@ -670,7 +678,7 @@ class ManagedGitWrapperTestCaseMock(unittest.TestCase):
       self, mockCheckOutput, mockExists, mockIsdir, mockClone):
     mockIsdir.side_effect = lambda path: path == self.base_path
     mockExists.side_effect = lambda path: path == self.base_path
-    mockCheckOutput.return_value = b''
+    mockCheckOutput.side_effect = [b'refs/remotes/origin/main', b'', b'']
     mockClone.side_effect = [
         gclient_scm.subprocess2.CalledProcessError(
             None, None, None, None, None),
@@ -683,18 +691,21 @@ class ManagedGitWrapperTestCaseMock(unittest.TestCase):
     scm.update(options, None, [])
 
     env = gclient_scm.scm.GIT.ApplyEnvVars({})
-    self.assertEqual(
-        mockCheckOutput.mock_calls,
-        [
-            mock.call(
-                ['git', '-c', 'core.quotePath=false', 'ls-files'],
-                cwd=self.base_path, env=env, stderr=-1),
-            mock.call(
-                ['git', 'rev-parse', '--verify', 'HEAD'],
-                cwd=self.base_path, env=env, stderr=-1),
-        ])
-    mockClone.assert_called_with(
-        'refs/remotes/origin/master', self.url, options)
+    self.assertEqual(mockCheckOutput.mock_calls, [
+        mock.call(['git', 'symbolic-ref', 'refs/remotes/origin/HEAD'],
+                  cwd=self.base_path,
+                  env=env,
+                  stderr=-1),
+        mock.call(['git', '-c', 'core.quotePath=false', 'ls-files'],
+                  cwd=self.base_path,
+                  env=env,
+                  stderr=-1),
+        mock.call(['git', 'rev-parse', '--verify', 'HEAD'],
+                  cwd=self.base_path,
+                  env=env,
+                  stderr=-1),
+    ])
+    mockClone.assert_called_with('refs/remotes/origin/main', self.url, options)
     self.checkstdout('\n')
 
 

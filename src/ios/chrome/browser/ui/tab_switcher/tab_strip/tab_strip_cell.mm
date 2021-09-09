@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_cell.h"
 
+#import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,63 +16,60 @@ namespace {
 const CGFloat kTabBackgroundLeftCapInset = 34.0;
 const CGFloat kFaviconInset = 28;
 const CGFloat kTitleInset = 10.0;
+const CGFloat kFontSize = 14.0;
 }  // namespace
 
 @implementation TabStripCell
 
 - (instancetype)initWithFrame:(CGRect)frame {
   if ((self = [super initWithFrame:frame])) {
-    NSString* imageName = @"tabstrip_background_tab";
-    UIImage* image = [UIImage imageNamed:imageName];
-    UIEdgeInsets insets =
-        UIEdgeInsetsMake(0, kTabBackgroundLeftCapInset, image.size.height + 1.0,
-                         image.size.width - kTabBackgroundLeftCapInset + 1.0);
-    self.backgroundView = [[UIImageView alloc]
-        initWithImage:[image resizableImageWithCapInsets:insets]];
+    [self setupBackgroundViews];
 
     UIImage* favicon = [[UIImage imageNamed:@"default_world_favicon"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    UIImageView* faviconView = [[UIImageView alloc] initWithImage:favicon];
-    faviconView.tintColor = [UIColor colorNamed:kGrey500Color];
-    [self.contentView addSubview:faviconView];
-    faviconView.translatesAutoresizingMaskIntoConstraints = NO;
+    _faviconView = [[UIImageView alloc] initWithImage:favicon];
+    [self.contentView addSubview:_faviconView];
+    _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-      [faviconView.leadingAnchor
+      [_faviconView.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kFaviconInset],
-      [faviconView.centerYAnchor
+      [_faviconView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
     ]];
 
     UIImage* close = [[UIImage imageNamed:@"grid_cell_close_button"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [closeButton setImage:close forState:UIControlStateNormal];
-    closeButton.tintColor = [UIColor colorNamed:kGrey500Color];
-    [self.contentView addSubview:closeButton];
-    closeButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_closeButton setImage:close forState:UIControlStateNormal];
+    [self.contentView addSubview:_closeButton];
+    _closeButton.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-      [closeButton.trailingAnchor
+      [_closeButton.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kFaviconInset],
-      [closeButton.centerYAnchor
+      [_closeButton.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
     ]];
+    [_closeButton addTarget:self
+                     action:@selector(closeButtonTapped:)
+           forControlEvents:UIControlEventTouchUpInside];
 
-    UILabel* titleLabel = [[UILabel alloc] init];
-    [self.contentView addSubview:titleLabel];
-    titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _titleLabel = [[UILabel alloc] init];
+    _titleLabel.font = [UIFont systemFontOfSize:kFontSize
+                                         weight:UIFontWeightMedium];
+    [self.contentView addSubview:_titleLabel];
+    _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-      [titleLabel.leadingAnchor
-          constraintEqualToAnchor:faviconView.trailingAnchor
+      [_titleLabel.leadingAnchor
+          constraintEqualToAnchor:_faviconView.trailingAnchor
                          constant:kTitleInset],
-      [titleLabel.trailingAnchor
-          constraintLessThanOrEqualToAnchor:closeButton.leadingAnchor
+      [_titleLabel.trailingAnchor
+          constraintLessThanOrEqualToAnchor:_closeButton.leadingAnchor
                                    constant:-kTitleInset],
-      [titleLabel.centerYAnchor
-          constraintEqualToAnchor:faviconView.centerYAnchor],
+      [_titleLabel.centerYAnchor
+          constraintEqualToAnchor:_faviconView.centerYAnchor],
     ]];
-    self.titleLabel = titleLabel;
   }
   return self;
 }
@@ -80,6 +78,82 @@ const CGFloat kTitleInset = 10.0;
   [super prepareForReuse];
   self.titleLabel.text = nil;
   self.itemIdentifier = nil;
+  self.selected = NO;
+  self.faviconView = nil;
+}
+
+- (void)setupBackgroundViews {
+  self.backgroundView = [self resizeableBackgroundImageForStateSelected:NO];
+  self.selectedBackgroundView =
+      [self resizeableBackgroundImageForStateSelected:YES];
+}
+
+#pragma mark - UIView
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  [self setupBackgroundViews];
+}
+
+#pragma mark - Private
+
+// Updates this tab's style based on the value of |selected| and the current
+// incognito style.
+- (UIView*)resizeableBackgroundImageForStateSelected:(BOOL)selected {
+  // Style the background image first.
+  NSString* state = (selected ? @"foreground" : @"background");
+  NSString* incognito = self.useIncognitoFallback ? @"incognito_" : @"";
+  NSString* imageName =
+      [NSString stringWithFormat:@"tabstrip_%@%@_tab", incognito, state];
+
+  // As of iOS 13 Beta 4, resizable images are flaky for dark mode.
+  // Radar filled: b/137942721.
+  UIImage* resolvedImage = [UIImage imageNamed:imageName
+                                      inBundle:nil
+                 compatibleWithTraitCollection:self.traitCollection];
+  UIEdgeInsets insets = UIEdgeInsetsMake(
+      0, kTabBackgroundLeftCapInset, resolvedImage.size.height + 1.0,
+      resolvedImage.size.width - kTabBackgroundLeftCapInset + 1.0);
+  UIImage* backgroundImage =
+      StretchableImageFromUIImage(resolvedImage, kTabBackgroundLeftCapInset, 0);
+  return [[UIImageView alloc]
+      initWithImage:[backgroundImage resizableImageWithCapInsets:insets]];
+}
+
+// Selector registered to the close button.
+- (void)closeButtonTapped:(id)sender {
+  [self.delegate closeButtonTappedForCell:self];
+}
+
+- (void)setSelected:(BOOL)selected {
+  [super setSelected:selected];
+  // Style the favicon tint color.
+  self.faviconView.tintColor = selected ? [UIColor colorNamed:kCloseButtonColor]
+                                        : [UIColor colorNamed:kGrey500Color];
+  // Style the close button tint color.
+  self.closeButton.tintColor = selected ? [UIColor colorNamed:kCloseButtonColor]
+                                        : [UIColor colorNamed:kGrey500Color];
+  // Style the title tint color.
+  self.titleLabel.textColor = selected ? [UIColor colorNamed:kTextPrimaryColor]
+                                       : [UIColor colorNamed:kGrey600Color];
+  // These dark-theme specific colorsets should only be used for iOS 12
+  // dark theme, as they will be removed along with iOS 12.
+  // TODO (crbug.com/981889): The following lines will be removed
+  // along with iOS 12
+  if (self.useIncognitoFallback) {
+    // Style the favicon tint color.
+    self.faviconView.tintColor =
+        selected ? [UIColor colorNamed:kCloseButtonDarkColor]
+                 : [UIColor colorNamed:kGrey500Color];
+    // Style the close button tint color.
+    self.closeButton.tintColor =
+        selected ? [UIColor colorNamed:kCloseButtonDarkColor]
+                 : [UIColor colorNamed:kGrey500Color];
+    // Style the title tint color.
+    self.titleLabel.textColor = selected
+                                    ? [UIColor colorNamed:kTextPrimaryDarkColor]
+                                    : [UIColor colorNamed:kGrey600Color];
+  }
 }
 
 @end

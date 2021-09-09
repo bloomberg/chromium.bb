@@ -58,7 +58,7 @@ public:
     virtual void onAsyncRescaleAndReadPixels(const SkImageInfo&,
                                              const SkIRect& srcRect,
                                              RescaleGamma,
-                                             SkFilterQuality,
+                                             RescaleMode,
                                              ReadPixelsCallback,
                                              ReadPixelsContext);
     /**
@@ -69,7 +69,7 @@ public:
                                                    const SkIRect& srcRect,
                                                    const SkISize& dstSize,
                                                    RescaleGamma,
-                                                   SkFilterQuality,
+                                                   RescaleMode,
                                                    ReadPixelsCallback,
                                                    ReadPixelsContext);
 
@@ -82,7 +82,7 @@ public:
      *      image->unref();
      *  }
      */
-    virtual void onDraw(SkCanvas*, SkScalar x, SkScalar y, const SkPaint*);
+    virtual void onDraw(SkCanvas*, SkScalar x, SkScalar y, const SkSamplingOptions&,const SkPaint*);
 
     /**
      * Called as a performance hint when the Surface is allowed to make it's contents
@@ -125,7 +125,7 @@ public:
 
     virtual bool onCharacterize(SkSurfaceCharacterization*) const { return false; }
     virtual bool onIsCompatible(const SkSurfaceCharacterization&) const { return false; }
-    virtual bool onDraw(sk_sp<const SkDeferredDisplayList>, int xOffset, int yOffset) {
+    virtual bool onDraw(sk_sp<const SkDeferredDisplayList>, SkIPoint offset) {
         return false;
     }
 

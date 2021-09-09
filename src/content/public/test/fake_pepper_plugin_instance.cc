@@ -4,6 +4,7 @@
 
 #include "content/public/test/fake_pepper_plugin_instance.h"
 
+#include "base/files/file_path.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
@@ -67,7 +68,7 @@ int FakePepperPluginInstance::MakePendingFileRefRendererHost(
 void FakePepperPluginInstance::SetEmbedProperty(PP_Var key, PP_Var value) {}
 
 void FakePepperPluginInstance::SetSelectedText(
-    const base::string16& selected_text) {}
+    const std::u16string& selected_text) {}
 
 void FakePepperPluginInstance::SetLinkUnderCursor(const std::string& url) {}
 void FakePepperPluginInstance::SetTextInputType(ui::TextInputType type) {}

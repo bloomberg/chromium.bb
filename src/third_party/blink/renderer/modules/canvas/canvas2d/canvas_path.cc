@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_dompoint_unrestricteddouble.h"
 #include "third_party/blink/renderer/core/geometry/dom_point.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -50,10 +51,7 @@ namespace blink {
 void CanvasPath::closePath() {
   if (path_.IsEmpty())
     return;
-
-  FloatRect bound_rect = path_.BoundingRect();
-  if (bound_rect.Width() || bound_rect.Height())
-    path_.CloseSubpath();
+  path_.CloseSubpath();
 }
 
 void CanvasPath::moveTo(double double_x, double double_y) {
@@ -450,12 +448,17 @@ void CanvasPath::rect(double double_x,
   path_.AddRect(FloatRect(x, y, width, height));
 }
 
-void CanvasPath::roundRect(double double_x,
-                           double double_y,
-                           double double_width,
-                           double double_height,
-                           const HeapVector<DoubleOrDOMPoint, 0> radii,
-                           ExceptionState& exception_state) {
+void CanvasPath::roundRect(
+    double double_x,
+    double double_y,
+    double double_width,
+    double double_height,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<Member<V8UnionDOMPointOrUnrestrictedDouble>>& radii,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<UnrestrictedDoubleOrDOMPoint, 0> radii,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    ExceptionState& exception_state) {
   const int num_radii = radii.size();
   if (num_radii < 1 || num_radii > 4) {
     exception_state.ThrowDOMException(
@@ -475,34 +478,138 @@ void CanvasPath::roundRect(double double_x,
       !std::isfinite(height))
     return;
 
-  FloatRect rect = FloatRect(x, y, width, height);
-
   FloatSize r[num_radii];
   for (int i = 0; i < num_radii; ++i) {
-    if (radii[i].IsDouble()) {
-      float a = base::saturated_cast<float>(radii[i].GetAsDouble());
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    switch (radii[i]->GetContentType()) {
+      case V8UnionDOMPointOrUnrestrictedDouble::ContentType::kDOMPoint: {
+        DOMPoint* p = radii[i]->GetAsDOMPoint();
+        float r_x = base::saturated_cast<float>(p->x());
+        float r_y = base::saturated_cast<float>(p->y());
+        if (UNLIKELY(!std::isfinite(r_x)) || UNLIKELY(!std::isfinite(r_y)))
+          return;
+        if (UNLIKELY(r_x < 0.0f)) {
+          exception_state.ThrowDOMException(
+              DOMExceptionCode::kIndexSizeError,
+              "X-radius value " + String::Number(r_x) + " is negative.");
+        }
+        if (UNLIKELY(r_y < 0.0f)) {
+          exception_state.ThrowDOMException(
+              DOMExceptionCode::kIndexSizeError,
+              "Y-radius value " + String::Number(r_y) + " is negative.");
+        }
+        r[i] = FloatSize(base::saturated_cast<float>(p->x()),
+                         base::saturated_cast<float>(p->y()));
+        break;
+      }
+      case V8UnionDOMPointOrUnrestrictedDouble::ContentType::
+          kUnrestrictedDouble: {
+        float a =
+            base::saturated_cast<float>(radii[i]->GetAsUnrestrictedDouble());
+        if (UNLIKELY(!std::isfinite(a)))
+          return;
+        if (UNLIKELY(a < 0.0f)) {
+          exception_state.ThrowDOMException(
+              DOMExceptionCode::kIndexSizeError,
+              "Radius value " + String::Number(a) + " is negative.");
+        }
+        r[i] = FloatSize(a, a);
+        break;
+      }
+    }
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    if (radii[i].IsUnrestrictedDouble()) {
+      float a = base::saturated_cast<float>(radii[i].GetAsUnrestrictedDouble());
+      if (UNLIKELY(!std::isfinite(a)))
+        return;
+      if (UNLIKELY(a < 0.0f)) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kIndexSizeError,
+            "Radius value " + String::Number(a) + " is negative.");
+      }
       r[i] = FloatSize(a, a);
     } else {  // This radius is a DOMPoint
       DOMPoint* p = radii[i].GetAsDOMPoint();
+      float r_x = base::saturated_cast<float>(p->x());
+      float r_y = base::saturated_cast<float>(p->y());
+      if (UNLIKELY(!std::isfinite(r_x)) || UNLIKELY(!std::isfinite(r_y)))
+        return;
+      if (UNLIKELY(r_x < 0.0f)) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kIndexSizeError,
+            "X-radius value " + String::Number(r_x) + " is negative.");
+      }
+      if (UNLIKELY(r_y < 0.0f)) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kIndexSizeError,
+            "Y-radius value " + String::Number(r_y) + " is negative.");
+      }
       r[i] = FloatSize(base::saturated_cast<float>(p->x()),
                        base::saturated_cast<float>(p->y()));
     }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   }
 
-  // Order of arguments here is so that this function behaves the same as the
-  // CSS border-radius property
+  if (UNLIKELY(width == 0) || UNLIKELY(height == 0)) {
+    // AddRoundRect does not handle flat rects, correctly.  But since there are
+    // no rounded corners on a flat rect, we can just use AddRect.
+    path_.AddRect(FloatRect(x, y, width, height));
+    return;
+  }
+
+  FloatSize corner_radii[4];  // row-wise ordering
   switch (num_radii) {
     case 1:
-      path_.AddRoundedRect(rect, r[0]);
+      corner_radii[0] = corner_radii[1] = corner_radii[2] = corner_radii[3] =
+          r[0];
       break;
     case 2:
-      path_.AddRoundedRect(rect, r[0], r[1], r[1], r[0]);
+      corner_radii[0] = corner_radii[3] = r[0];
+      corner_radii[1] = corner_radii[2] = r[1];
       break;
     case 3:
-      path_.AddRoundedRect(rect, r[0], r[1], r[1], r[2]);
+      corner_radii[0] = r[0];
+      corner_radii[1] = corner_radii[2] = r[1];
+      corner_radii[3] = r[2];
       break;
     case 4:
-      path_.AddRoundedRect(rect, r[0], r[1], r[3], r[2]);
+      corner_radii[0] = r[0];
+      corner_radii[1] = r[1];
+      corner_radii[2] = r[3];
+      corner_radii[3] = r[2];
   }
+
+  bool clockwise = true;
+  if (UNLIKELY(width < 0)) {
+    // Horizontal flip
+    clockwise = false;
+    x += width;
+    width = -width;
+    FloatSize tmp = corner_radii[1];
+    corner_radii[1] = corner_radii[0];
+    corner_radii[0] = tmp;
+    tmp = corner_radii[3];
+    corner_radii[3] = corner_radii[2];
+    corner_radii[2] = tmp;
+  }
+
+  if (UNLIKELY(height < 0)) {
+    // Vertical flip
+    clockwise = !clockwise;
+    y += height;
+    height = -height;
+    FloatSize tmp = corner_radii[2];
+    corner_radii[2] = corner_radii[0];
+    corner_radii[0] = tmp;
+    tmp = corner_radii[3];
+    corner_radii[3] = corner_radii[1];
+    corner_radii[1] = tmp;
+  }
+
+  FloatRect rect(x, y, width, height);
+  path_.AddPathForRoundedRect(rect, corner_radii[0], corner_radii[1],
+                              corner_radii[2], corner_radii[3], clockwise);
+  path_.MoveTo(FloatPoint(x, y));
 }
+
 }  // namespace blink

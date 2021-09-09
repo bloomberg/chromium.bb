@@ -10,11 +10,11 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -108,7 +108,7 @@ std::unique_ptr<base::Value> Validator::MapValue(
         << "', but type '" << base::Value::GetTypeName(signature.onc_type)
         << "' is required.";
     AddValidationIssue(true /* is_error */, msg.str());
-    return std::unique_ptr<base::Value>();
+    return nullptr;
   }
 
   std::unique_ptr<base::Value> repaired =
@@ -179,7 +179,7 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
 
   DCHECK(!validation_issues_.empty());
   *error = true;
-  return std::unique_ptr<base::DictionaryValue>();
+  return nullptr;
 }
 
 std::unique_ptr<base::Value> Validator::MapField(
@@ -269,7 +269,7 @@ bool Validator::ValidateRecommendedField(
     base::DictionaryValue* result) {
   CHECK(result);
 
-  base::Optional<base::Value> recommended_value =
+  absl::optional<base::Value> recommended_value =
       result->ExtractKey(::onc::kRecommended);
   // This remove passes ownership to |recommended_value|.
   if (!recommended_value) {
@@ -289,7 +289,7 @@ bool Validator::ValidateRecommendedField(
   }
 
   std::unique_ptr<base::ListValue> repaired_recommended(new base::ListValue);
-  for (const auto& entry : *recommended_list) {
+  for (const auto& entry : recommended_list->GetList()) {
     std::string field_name;
     if (!entry.GetAsString(&field_name)) {
       NOTREACHED();  // The types of field values are already verified.
@@ -494,7 +494,7 @@ bool Validator::ListFieldContainsValidValues(
   const base::ListValue* list = NULL;
   if (object.GetListWithoutPathExpansion(field_name, &list)) {
     path_.push_back(field_name);
-    for (const auto& entry : *list) {
+    for (const auto& entry : list->GetList()) {
       std::string value;
       if (!entry.GetAsString(&value)) {
         NOTREACHED();  // The types of field values are already verified.
@@ -1021,7 +1021,7 @@ bool Validator::ValidateGlobalNetworkConfiguration(
     base::DictionaryValue* result) {
   // Replace the deprecated kBlacklistedHexSSIDs with kBlockedHexSSIDs.
   if (!result->HasKey(::onc::global_network_config::kBlockedHexSSIDs)) {
-    base::Optional<base::Value> blocked =
+    absl::optional<base::Value> blocked =
         result->ExtractKey(::onc::global_network_config::kBlacklistedHexSSIDs);
     if (blocked) {
       result->SetKey(::onc::global_network_config::kBlockedHexSSIDs,

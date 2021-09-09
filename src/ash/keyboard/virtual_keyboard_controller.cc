@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
@@ -17,6 +18,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/strings/string_util.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/display/display.h"
@@ -31,11 +33,15 @@ namespace {
 void ResetVirtualKeyboard() {
   keyboard::SetKeyboardEnabledFromShelf(false);
 
-  // Reset the keyset after disabling the virtual keyboard to prevent the IME
-  // extension from accidentally loading the default keyset while it's shutting
-  // down. See https://crbug.com/875456.
-  Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
-      chromeos::input_method::ImeKeyset::kNone);
+  // This function can get called asynchronously after the shell has been
+  // destroyed, so check for an instance.
+  if (Shell::HasInstance()) {
+    // Reset the keyset after disabling the virtual keyboard to prevent the IME
+    // extension from accidentally loading the default keyset while it's
+    // shutting down. See https://crbug.com/875456.
+    Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
+        chromeos::input_method::ImeKeyset::kNone);
+  }
 }
 
 }  // namespace
@@ -51,10 +57,15 @@ VirtualKeyboardController::VirtualKeyboardController()
   UpdateDevices();
 
   // Set callback to show the emoji panel
-  ui::SetShowEmojiKeyboardCallback(base::BindRepeating(
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kImeSystemEmojiPicker)) {
+    ui::SetShowEmojiKeyboardCallback(base::BindRepeating(
+        &VirtualKeyboardController::ForceShowKeyboardWithKeyset,
+        base::Unretained(this), chromeos::input_method::ImeKeyset::kEmoji));
+  }
+  ui::SetTabletModeShowEmojiKeyboardCallback(base::BindRepeating(
       &VirtualKeyboardController::ForceShowKeyboardWithKeyset,
       base::Unretained(this), chromeos::input_method::ImeKeyset::kEmoji));
-
   keyboard::KeyboardUIController::Get()->AddObserver(this);
 
   bluetooth_devices_observer_ =

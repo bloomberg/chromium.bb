@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -33,15 +34,15 @@
 #include "extensions/common/manifest_constants.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -53,7 +54,7 @@ namespace policy {
 
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 Value GetIdentityFieldsFromPolicy(
     const enterprise_management::PolicyData* policy) {
   Value identity_fields(Value::Type::DICTIONARY);
@@ -81,7 +82,7 @@ Value GetIdentityFieldsFromPolicy(
   return identity_fields;
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -123,13 +124,13 @@ Value ChromePolicyConversionsClient::GetExtensionPolicies(
 
   const bool for_signin_screen =
       policy_domain == POLICY_DOMAIN_SIGNIN_EXTENSIONS;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   Profile* extension_profile = for_signin_screen
                                    ? chromeos::ProfileHelper::GetSigninProfile()
                                    : profile_;
-#else   // defined(OS_CHROMEOS)
+#else   // BUILDFLAG(IS_CHROMEOS_ASH)
   Profile* extension_profile = profile_;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   const extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(extension_profile);
@@ -175,7 +176,7 @@ Value ChromePolicyConversionsClient::GetExtensionPolicies(
   return policies;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 Value ChromePolicyConversionsClient::GetDeviceLocalAccountPolicies() {
   Value policies(Value::Type::LIST);
   // DeviceLocalAccount policies are only available for affiliated users and for
@@ -200,7 +201,7 @@ Value ChromePolicyConversionsClient::GetDeviceLocalAccountPolicies() {
   DCHECK(device_local_account_policy_service);  // always non null for
                                                 // affiliated users.
   std::vector<DeviceLocalAccount> device_local_accounts =
-      GetDeviceLocalAccounts(chromeos::CrosSettings::Get());
+      GetDeviceLocalAccounts(ash::CrosSettings::Get());
   for (const auto& account : device_local_accounts) {
     const std::string user_id = account.user_id;
 
@@ -226,8 +227,7 @@ Value ChromePolicyConversionsClient::GetDeviceLocalAccountPolicies() {
 
     // Make a copy that can be modified, since some policy values are modified
     // before being displayed.
-    PolicyMap map;
-    map.CopyFrom(cloud_policy_store->policy_map());
+    PolicyMap map = cloud_policy_store->policy_map().Clone();
 
     // Get a list of all the errors in the policy values.
     const ConfigurationPolicyHandlerList* handler_list =

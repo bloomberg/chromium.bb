@@ -94,10 +94,13 @@ class FakeAppInstance : public mojom::AppInstance {
             InitCallback callback) override;
   void LaunchAppDeprecated(const std::string& package_name,
                            const std::string& activity,
-                           const base::Optional<gfx::Rect>& dimension) override;
+                           const absl::optional<gfx::Rect>& dimension) override;
   void LaunchApp(const std::string& package_name,
                  const std::string& activity,
                  int64_t display_id) override;
+  void LaunchAppWithWindowInfo(const std::string& package_name,
+                               const std::string& activity,
+                               arc::mojom::WindowInfoPtr window_info) override;
   void LaunchAppShortcutItem(const std::string& package_name,
                              const std::string& shortcut_id,
                              int64_t display_id) override;
@@ -111,8 +114,12 @@ class FakeAppInstance : public mojom::AppInstance {
                   GetAppIconCallback callback) override;
   void LaunchIntentDeprecated(
       const std::string& intent_uri,
-      const base::Optional<gfx::Rect>& dimension_on_screen) override;
+      const absl::optional<gfx::Rect>& dimension_on_screen) override;
   void LaunchIntent(const std::string& intent_uri, int64_t display_id) override;
+  void LaunchIntentWithWindowInfo(
+      const std::string& intent_uri,
+      arc::mojom::WindowInfoPtr window_info) override;
+  void UpdateWindowInfo(arc::mojom::WindowInfoPtr window_info) override;
   void RequestShortcutIcon(const std::string& icon_resource_id,
                            int dimension,
                            RequestShortcutIconCallback callback) override;
@@ -202,8 +209,7 @@ class FakeAppInstance : public mojom::AppInstance {
   void SendPackageUninstalled(const std::string& pacakge_name);
 
   void SendInstallationStarted(const std::string& package_name);
-  void SendInstallationFinished(const std::string& package_name,
-                                bool success);
+  void SendInstallationFinished(const std::string& package_name, bool success);
 
   // Returns latest icon response for particular dimension. Returns true and
   // fill |png_data_as_string| if icon for |dimension| was generated.

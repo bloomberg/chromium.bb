@@ -27,7 +27,7 @@ class SwapChainValidationTests : public DawnTest {
     void SetUp() override {
         DawnTest::SetUp();
         DAWN_SKIP_TEST_IF(UsesWire());
-        DAWN_SKIP_TEST_IF(IsDawnValidationSkipped());
+        DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
 
         glfwSetErrorCallback([](int code, const char* message) {
             dawn::ErrorLog() << "GLFW error " << code << " " << message;
@@ -69,17 +69,17 @@ class SwapChainValidationTests : public DawnTest {
     wgpu::SwapChainDescriptor goodDescriptor;
     wgpu::SwapChainDescriptor badDescriptor;
 
-    // Checks that an RenderAttachment view is an error by trying to create a render pass on it.
+    // Checks that a RenderAttachment view is an error by trying to create a render pass on it.
     void CheckTextureViewIsError(wgpu::TextureView view) {
         CheckTextureView(view, true, false);
     }
 
-    // Checks that an RenderAttachment view is an error by trying to submit a render pass on it.
+    // Checks that a RenderAttachment view is an error by trying to submit a render pass on it.
     void CheckTextureViewIsDestroyed(wgpu::TextureView view) {
         CheckTextureView(view, false, true);
     }
 
-    // Checks that an OutputAttachment view is valid by submitting a render pass on it.
+    // Checks that a RenderAttachment view is valid by submitting a render pass on it.
     void CheckTextureViewIsValid(wgpu::TextureView view) {
         CheckTextureView(view, false, false);
     }
@@ -128,23 +128,23 @@ TEST_P(SwapChainValidationTests, InvalidCreationSize) {
         ASSERT_DEVICE_ERROR(device.CreateSwapChain(surface, &desc));
     }
 
-    // A width of kMaxTextureSize is valid but kMaxTextureSize + 1 isn't.
+    // A width of kMaxTextureDimension2D is valid but kMaxTextureDimension2D + 1 isn't.
     {
         wgpu::SwapChainDescriptor desc = goodDescriptor;
-        desc.width = kMaxTextureSize;
+        desc.width = kMaxTextureDimension2D;
         device.CreateSwapChain(surface, &desc);
 
-        desc.width = kMaxTextureSize + 1;
+        desc.width = kMaxTextureDimension2D + 1;
         ASSERT_DEVICE_ERROR(device.CreateSwapChain(surface, &desc));
     }
 
-    // A height of kMaxTextureSize is valid but kMaxTextureSize + 1 isn't.
+    // A height of kMaxTextureDimension2D is valid but kMaxTextureDimension2D + 1 isn't.
     {
         wgpu::SwapChainDescriptor desc = goodDescriptor;
-        desc.height = kMaxTextureSize;
+        desc.height = kMaxTextureDimension2D;
         device.CreateSwapChain(surface, &desc);
 
-        desc.height = kMaxTextureSize + 1;
+        desc.height = kMaxTextureDimension2D + 1;
         ASSERT_DEVICE_ERROR(device.CreateSwapChain(surface, &desc));
     }
 }
@@ -220,27 +220,22 @@ TEST_P(SwapChainValidationTests, ViewDestroyedAfterPresent) {
 
 // Check that returned view is of the current format / usage / dimension / size / sample count
 TEST_P(SwapChainValidationTests, ReturnedViewCharacteristics) {
-    utils::ComboRenderPipelineDescriptor pipelineDesc(device);
-    pipelineDesc.vertexStage.module =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                void main() {
-                    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
-                })");
-    pipelineDesc.cFragmentStage.module =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-                })");
+    utils::ComboRenderPipelineDescriptor2 pipelineDesc;
+    pipelineDesc.vertex.module = utils::CreateShaderModule(device, R"(
+        [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>(0.0, 0.0, 0.0, 1.0);
+        })");
+    pipelineDesc.cFragment.module = utils::CreateShaderModule(device, R"(
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(0.0, 1.0, 0.0, 1.0);
+        })");
     // Validation will check that the sample count of the view matches this format.
-    pipelineDesc.sampleCount = 1;
-    pipelineDesc.colorStateCount = 2;
+    pipelineDesc.multisample.count = 1;
+    pipelineDesc.cFragment.targetCount = 2;
     // Validation will check that the format of the view matches this format.
-    pipelineDesc.cColorStates[0].format = wgpu::TextureFormat::BGRA8Unorm;
-    pipelineDesc.cColorStates[1].format = wgpu::TextureFormat::R8Unorm;
-    device.CreateRenderPipeline(&pipelineDesc);
+    pipelineDesc.cTargets[0].format = wgpu::TextureFormat::BGRA8Unorm;
+    pipelineDesc.cTargets[1].format = wgpu::TextureFormat::R8Unorm;
+    device.CreateRenderPipeline2(&pipelineDesc);
 
     // Create a second texture to be used as render pass attachment. Validation will check that the
     // size of the view matches the size of this texture.
@@ -269,7 +264,7 @@ TEST_P(SwapChainValidationTests, ReturnedViewCharacteristics) {
     // Check that view doesn't have extra formats like Sampled.
     // TODO(cwallez@chromium.org): also check for [Readonly]Storage once that's implemented.
     wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float}});
     ASSERT_DEVICE_ERROR(utils::MakeBindGroup(device, bgl, {{0, view}}));
 }
 

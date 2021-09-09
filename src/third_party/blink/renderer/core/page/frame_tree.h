@@ -20,6 +20,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_FRAME_TREE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_FRAME_TREE_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -49,7 +50,7 @@ class CORE_EXPORT FrameTree final {
   };
 
   // TODO(shuuran): remove this once we have gathered the data
-  void CrossBrowsingContextGroupSetNulledName();
+  void CrossSiteCrossBrowsingContextGroupSetNulledName();
 
   void SetName(const AtomicString&, ReplicationPolicy = kDoNotReplicate);
 
@@ -107,7 +108,7 @@ class CORE_EXPORT FrameTree final {
   bool experimental_set_nulled_name_;
 
   // TODO(shuuran): remove this once we have gathered the data
-  bool cross_browsing_context_group_set_nulled_name_;
+  bool cross_site_cross_browsing_context_group_set_nulled_name_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTree);
 };

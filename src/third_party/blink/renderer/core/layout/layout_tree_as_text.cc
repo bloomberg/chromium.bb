@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/layout_details_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -231,24 +230,6 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
         ToInterface<LayoutNGTableCellInterface>(o);
     ts << " [r=" << c.RowIndex() << " c=" << c.AbsoluteColumnIndex()
        << " rs=" << c.ResolvedRowSpan() << " cs=" << c.ColSpan() << "]";
-  }
-
-  if (o.IsDetailsMarker()) {
-    ts << ": ";
-    switch (To<LayoutDetailsMarker>(o).GetOrientation()) {
-      case LayoutDetailsMarker::kLeft:
-        ts << "left";
-        break;
-      case LayoutDetailsMarker::kRight:
-        ts << "right";
-        break;
-      case LayoutDetailsMarker::kUp:
-        ts << "up";
-        break;
-      case LayoutDetailsMarker::kDown:
-        ts << "down";
-        break;
-    }
   }
 
   if (o.IsListMarkerForNormalContent()) {
@@ -447,27 +428,13 @@ static void WriteTextFragment(WTF::TextStream& ts,
 
 static void WriteTextFragment(WTF::TextStream& ts,
                               const NGInlineCursor& cursor) {
-  if (const NGPaintFragment* const paint_fragment =
-          cursor.CurrentPaintFragment()) {
-    const auto* physical_text_fragment =
-        DynamicTo<NGPhysicalTextFragment>(paint_fragment->PhysicalFragment());
-    if (!physical_text_fragment)
-      return;
-    const NGFragment fragment(paint_fragment->Style().GetWritingDirection(),
-                              *physical_text_fragment);
-    WriteTextFragment(ts, paint_fragment->GetLayoutObject(),
-                      paint_fragment->RectInContainerBlock(),
-                      paint_fragment->Style(), physical_text_fragment->Text(),
-                      fragment.InlineSize());
-    return;
-  }
   DCHECK(cursor.CurrentItem());
   const NGFragmentItem& item = *cursor.CurrentItem();
   DCHECK(item.Type() == NGFragmentItem::kText ||
          item.Type() == NGFragmentItem::kGeneratedText);
   const LayoutUnit inline_size =
       item.IsHorizontal() ? item.Size().width : item.Size().height;
-  WriteTextFragment(ts, item.GetLayoutObject(), item.RectInContainerBlock(),
+  WriteTextFragment(ts, item.GetLayoutObject(), item.RectInContainerFragment(),
                     item.Style(), item.Text(cursor.Items()), inline_size);
 }
 
@@ -491,6 +458,11 @@ static void WritePaintProperties(WTF::TextStream& ts,
       // the tree using ShowAllPropertyTrees(frame_view).
       ts << " state=(" << fragment->LocalBorderBoxProperties().ToString()
          << ")";
+    }
+    if (RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
+      ts << " cull_rect=(" << fragment->GetCullRect().ToString()
+         << ") contents_cull_rect=("
+         << fragment->GetContentsCullRect().ToString() << ")";
     }
     ts << "\n";
   }
@@ -710,15 +682,13 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
     layer->Clipper(PaintLayer::GeometryMapperOption::kUseGeometryMapper)
         .CalculateRects(
             ClipRectsContext(root_layer,
-                             &root_layer->GetLayoutObject().FirstFragment(),
-                             kUncachedClipRects),
+                             &root_layer->GetLayoutObject().FirstFragment()),
             &layer->GetLayoutObject().FirstFragment(), nullptr, layer_bounds,
             damage_rect, clip_rect_to_apply);
   } else {
     layer->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
-        .CalculateRects(
-            ClipRectsContext(root_layer, nullptr, kUncachedClipRects), nullptr,
-            nullptr, layer_bounds, damage_rect, clip_rect_to_apply);
+        .CalculateRects(ClipRectsContext(root_layer, nullptr), nullptr, nullptr,
+                        layer_bounds, damage_rect, clip_rect_to_apply);
   }
 
   PhysicalOffset offset_from_root;

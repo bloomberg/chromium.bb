@@ -4,7 +4,7 @@
  *
  *   AFM parser (body).
  *
- * Copyright (C) 2006-2020 by
+ * Copyright (C) 2006-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -667,7 +667,7 @@
 
 
   /* compare two kerning pairs */
-  FT_CALLBACK_DEF( int )
+  FT_COMPARE_DEF( int )
   afm_compare_kern_pairs( const void*  a,
                           const void*  b )
   {

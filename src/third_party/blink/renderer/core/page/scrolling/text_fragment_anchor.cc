@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 
+#include "components/shared_highlighting/core/common/shared_highlighting_features.h"
+#include "components/shared_highlighting/core/common/text_fragments_utils.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -16,6 +18,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
@@ -70,20 +73,18 @@ bool CheckSecurityRestrictions(LocalFrame& frame) {
   // conditions. See the TODO in the relevant spec section:
   // https://wicg.github.io/ScrollToTextFragment/#restricting-the-text-fragment
 
-  // We only allow text fragment anchors for user navigations, e.g. link
-  // clicks, omnibox navigations, no script navigations.
   if (!frame.Loader().GetDocumentLoader()->ConsumeTextFragmentToken())
     return false;
 
-  // Allow text fragments on same-origin initiated navigations.
-  if (frame.Loader().GetDocumentLoader()->IsSameOriginNavigation())
-    return true;
-
-  // Otherwise, for cross origin initiated navigations, we only allow text
+  // For cross origin initiated navigations, we only allow text
   // fragments if the frame is not script accessible by another frame, i.e. no
   // cross origin iframes or window.open.
-  if (frame.Tree().Parent() || frame.GetPage()->RelatedPages().size())
-    return false;
+  if (!frame.Loader()
+           .GetDocumentLoader()
+           ->LastNavigationHadTrustedInitiator()) {
+    if (frame.Tree().Parent() || frame.GetPage()->RelatedPages().size())
+      return false;
+  }
 
   return true;
 }
@@ -96,46 +97,44 @@ bool TextFragmentAnchor::GenerateNewToken(const DocumentLoader& loader) {
   // clobbered by scroll restoration anyway. In particular, history navigation
   // is considered browser initiated even if performed via non-activated script
   // so we don't want this case to produce a token. See
-  // https://crbug.com/1042986 for details. This will also block form
-  // navigations but that's fine since the intent is to generate a token in
-  // real cross-page navigations only.
+  // https://crbug.com/1042986 for details. Note: this also blocks form
+  // navigations.
   if (loader.GetNavigationType() != kWebNavigationTypeLinkClicked &&
       loader.GetNavigationType() != kWebNavigationTypeOther) {
     return false;
   }
 
   // A new permission to invoke should only be granted if the navigation had a
-  // user gesture attached to it. Browser initiated navigations (e.g. typed
-  // address in the omnibox) don't carry the |had_transient_activation_| bit so
-  // we have to check that separately but we consider that user initiated as
-  // well.
-  return loader.HadTransientActivation() || loader.IsBrowserInitiated();
+  // transient user activation attached to it. Browser initiated navigations
+  // (e.g. typed address in the omnibox) don't carry the transient user
+  // activation bit so we have to check that separately but we consider that
+  // user initiated as well.
+  return loader.LastNavigationHadTransientUserActivation() ||
+         loader.IsBrowserInitiated();
 }
 
 // static
 bool TextFragmentAnchor::GenerateNewTokenForSameDocument(
-    const String& fragment,
+    const DocumentLoader& loader,
     WebFrameLoadType load_type,
-    bool is_content_initiated,
     SameDocumentNavigationSource source) {
-  if (load_type != WebFrameLoadType::kStandard ||
+  if ((load_type != WebFrameLoadType::kStandard &&
+       load_type != WebFrameLoadType::kReplaceCurrentItem) ||
       source != kSameDocumentNavigationDefault)
     return false;
 
-  // Only allow browser-initiated navigations are allowed for same-document
-  // navigations (e.g. typing in the omnibox). This is restricted by the spec:
+  // Same-document text fragment navigations are allowed only when initiated
+  // from the browser process (e.g. typing in the omnibox) or a same-origin
+  // document. This is restricted by the spec:
   // https://wicg.github.io/scroll-to-text-fragment/#restricting-the-text-fragment.
-  // Note: this could change in the future but we should ensure in that case we
-  // look for the user gesture on the LocalFrame, rather than DocumentLoader,
-  // since the latter's state isn't updated by same document navigations (and
-  // hence why we pass individual properties to this method rather than a
-  // DocumentLoader reference).
-  if (is_content_initiated)
+  if (!loader.LastNavigationHadTrustedInitiator()) {
     return false;
+  }
 
   // Only generate a token if it's going to be consumed (i.e. the new fragment
   // has a text fragment in it).
   {
+    String fragment = loader.Url().FragmentIdentifier();
     wtf_size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
     if (start_pos == kNotFound)
       return false;
@@ -160,16 +159,30 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
   if (!frame.GetDocument()->GetFragmentDirective())
     return nullptr;
 
-  if (!CheckSecurityRestrictions(frame))
-    return nullptr;
-
   Vector<TextFragmentSelector> selectors;
-
   if (!ParseTextDirective(frame.GetDocument()->GetFragmentDirective(),
                           &selectors)) {
     UseCounter::Count(frame.GetDocument(),
                       WebFeature::kInvalidFragmentDirective);
     return nullptr;
+  }
+
+  if (!CheckSecurityRestrictions(frame)) {
+    return nullptr;
+  } else if (!should_scroll) {
+    if (frame.Loader().GetDocumentLoader() &&
+        !frame.Loader().GetDocumentLoader()->NavigationScrollAllowed()) {
+      // We want to record a use counter whenever a text-fragment is blocked by
+      // ForceLoadAtTop.  If we passed security checks but |should_scroll| was
+      // passed in false, we must have calculated |block_fragment_scroll| in
+      // FragmentLoader::ProcessFragment. This can happen in one of two cases:
+      //   1) Blocked by ForceLoadAtTop - what we want to measure
+      //   2) Blocked because we're restoring from history. However, in this
+      //      case we'd not pass security restrictions because we filter out
+      //      history navigations.
+      UseCounter::Count(frame.GetDocument(),
+                        WebFeature::kTextFragmentBlockedByForceLoadAtTop);
+    }
   }
 
   return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame,
@@ -192,8 +205,11 @@ TextFragmentAnchor::TextFragmentAnchor(
       frame.GetDocument()->GetFragmentDirective().length());
 
   text_fragment_finders_.ReserveCapacity(text_fragment_selectors.size());
-  for (TextFragmentSelector selector : text_fragment_selectors)
-    text_fragment_finders_.emplace_back(*this, selector);
+  for (TextFragmentSelector selector : text_fragment_selectors) {
+    text_fragment_finders_.push_back(MakeGarbageCollected<TextFragmentFinder>(
+        *this, selector, frame_->GetDocument(),
+        TextFragmentFinder::FindBufferRunnerType::kSynchronous));
+  }
 }
 
 bool TextFragmentAnchor::Invoke() {
@@ -239,10 +255,6 @@ bool TextFragmentAnchor::Invoke() {
   frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
       DocumentMarker::MarkerTypes::TextFragment());
 
-  // TODO(bokan): Once BlockHTMLParserOnStyleSheets is launched, there won't be
-  // a way for the user to scroll before we invoke and scroll the anchor. We
-  // should confirm if we can remove tracking this after that point or if we
-  // need a replacement metric.
   if (user_scrolled_ && !did_scroll_into_view_)
     metrics_->ScrollCancelled();
 
@@ -259,7 +271,7 @@ bool TextFragmentAnchor::Invoke() {
 
     metrics_->ResetMatchCount();
     for (auto& finder : text_fragment_finders_)
-      finder.FindMatch(*frame_->GetDocument());
+      finder->FindMatch();
   }
 
   if (beforematch_state_ != kEventQueued)
@@ -286,7 +298,8 @@ void TextFragmentAnchor::DidScroll(mojom::blink::ScrollType type) {
     return;
   }
 
-  Dismiss();
+  if (ShouldDismissOnScrollOrClick())
+    Dismiss();
   user_scrolled_ = true;
 
   if (did_non_zero_scroll_ &&
@@ -308,6 +321,7 @@ void TextFragmentAnchor::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(element_fragment_anchor_);
   visitor->Trace(metrics_);
+  visitor->Trace(text_fragment_finders_);
   FragmentAnchor::Trace(visitor);
 }
 
@@ -378,7 +392,6 @@ void TextFragmentAnchor::DidFindMatch(
   did_find_match_ = true;
 
   if (first_match_needs_scroll_) {
-    metrics_->SetSearchEngineSource(HasSearchEngineSource());
     first_match_needs_scroll_ = false;
 
     PhysicalRect bounding_box(ComputeTextRect(range));
@@ -435,6 +448,7 @@ void TextFragmentAnchor::DidFinishSearch() {
   DCHECK(!search_finished_);
   search_finished_ = true;
 
+  metrics_->SetSearchEngineSource(HasSearchEngineSource());
   metrics_->ReportMetrics();
 
   if (!did_find_match_) {
@@ -468,6 +482,16 @@ bool TextFragmentAnchor::Dismiss() {
       DocumentMarker::MarkerTypes::TextFragment());
   dismissed_ = true;
   metrics_->Dismissed();
+
+  KURL url(
+      shared_highlighting::RemoveTextFragments(frame_->GetDocument()->Url()));
+
+  // Replace the current history entry with the new url, so that the text
+  // fragment shown in the URL matches the state of the highlight on the page.
+  // This is equivalent to history.replaceState in javascript.
+  frame_->DomWindow()->document()->Loader()->RunURLAndHistoryUpdateSteps(
+      url, /*data=*/nullptr, WebFrameLoadType::kReplaceCurrentItem,
+      mojom::blink::ScrollRestorationType::kAuto);
 
   return dismissed_;
 }
@@ -507,6 +531,11 @@ bool TextFragmentAnchor::HasSearchEngineSource() {
     return false;
 
   return IsKnownSearchEngine(referrer);
+}
+
+bool TextFragmentAnchor::ShouldDismissOnScrollOrClick() {
+  return !base::FeatureList::IsEnabled(
+      shared_highlighting::kSharedHighlightingV2);
 }
 
 }  // namespace blink

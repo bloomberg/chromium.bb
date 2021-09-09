@@ -201,6 +201,13 @@ TEST(ImplicitCastTest, CanUseImplicitConstructor) {
   EXPECT_TRUE(converted);
 }
 
+// The following code intentionally tests a suboptimal syntax.
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-else"
+#pragma GCC diagnostic ignored "-Wempty-body"
+#pragma GCC diagnostic ignored "-Wpragmas"
+#endif
 TEST(GtestCheckSyntaxTest, BehavesLikeASingleStatement) {
   if (AlwaysFalse())
     GTEST_CHECK_(false) << "This should never be executed; "
@@ -216,6 +223,9 @@ TEST(GtestCheckSyntaxTest, BehavesLikeASingleStatement) {
   else
     GTEST_CHECK_(true) << "";
 }
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 TEST(GtestCheckSyntaxTest, WorksWithSwitch) {
   switch (0) {
@@ -363,8 +373,6 @@ TEST(RegexEngineSelectionTest, SelectsCorrectRegexEngine) {
 
 #if GTEST_USES_POSIX_RE
 
-# if GTEST_HAS_TYPED_TEST
-
 template <typename Str>
 class RETest : public ::testing::Test {};
 
@@ -419,8 +427,6 @@ TYPED_TEST(RETest, PartialMatchWorks) {
   EXPECT_TRUE(RE::PartialMatch(TypeParam("azy"), re));
   EXPECT_FALSE(RE::PartialMatch(TypeParam("zza"), re));
 }
-
-# endif  // GTEST_HAS_TYPED_TEST
 
 #elif GTEST_USES_SIMPLE_RE
 

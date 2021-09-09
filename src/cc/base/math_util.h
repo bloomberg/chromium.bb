@@ -13,6 +13,7 @@
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "cc/base/base_export.h"
+#include "third_party/skia/include/core/SkM44.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -234,13 +235,6 @@ class CC_BASE_EXPORT MathUtil {
                                      const gfx::PointF& point,
                                      bool* clipped);
 
-  static gfx::Vector2dF ComputeTransform2dScaleComponents(const gfx::Transform&,
-                                                          float fallbackValue);
-  // Returns an approximate max scale value of the transform even if it has
-  // perspective. Prefer to use ComputeTransform2dScaleComponents if there is no
-  // perspective, since it can produce more accurate results.
-  static float ComputeApproximateMaxScale(const gfx::Transform& transform);
-
   // Makes a rect that has the same relationship to input_outer_rect as
   // scale_inner_rect has to scale_outer_rect. scale_inner_rect should be
   // contained within scale_outer_rect, and likewise the rectangle that is
@@ -324,6 +318,12 @@ class CC_BASE_EXPORT MathUtil {
                                         const gfx::PointF& r);
   static bool IsNearlyTheSameForTesting(const gfx::Point3F& l,
                                         const gfx::Point3F& r);
+
+  // Helper functions for migration from SkMatrix->SkM44. It may make sense to
+  // move these to skia itself at some point.
+  static bool SkM44HasPerspective(const SkM44& m);
+  static bool SkM44Is2D(const SkM44& m);
+  static bool SkM44Preserves2DAxisAlignment(const SkM44& m);
 
  private:
   template <typename T>

@@ -61,10 +61,17 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
                             base::span<const uint8_t> pixel_data) override;
   Mailbox CreateSharedImage(gfx::GpuMemoryBuffer* gpu_memory_buffer,
                             GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                            gfx::BufferPlane plane,
                             const gfx::ColorSpace& color_space,
                             GrSurfaceOrigin surface_origin,
                             SkAlphaType alpha_type,
                             uint32_t usage) override;
+#if defined(OS_WIN)
+  std::vector<Mailbox> CreateSharedImageVideoPlanes(
+      gfx::GpuMemoryBuffer* gpu_memory_buffer,
+      GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      uint32_t usage) override;
+#endif
 #if defined(OS_ANDROID)
   Mailbox CreateSharedImageWithAHB(const Mailbox& mailbox,
                                    uint32_t usage,

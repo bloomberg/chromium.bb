@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -29,6 +28,7 @@
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class ExtensionServiceTest;
 class SkBitmap;
@@ -150,10 +150,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   const base::FilePath& source_file() const { return source_file_; }
 
-  Manifest::Location install_source() const {
-    return install_source_;
-  }
-  void set_install_source(Manifest::Location source) {
+  mojom::ManifestLocation install_source() const { return install_source_; }
+  void set_install_source(mojom::ManifestLocation source) {
     install_source_ = source;
   }
 
@@ -237,6 +235,9 @@ class CrxInstaller : public SandboxedUnpackerClient {
   void set_do_not_sync(bool val) {
     set_install_flag(kInstallFlagDoNotSync, val);
   }
+  void set_bypassed_safebrowsing_friction_for_testing(bool val) {
+    set_install_flag(kInstallFlagBypassedSafeBrowsingFriction, val);
+  }
 
   // Virtual for testing.
   virtual void set_installer_callback(InstallerResultCallback callback);
@@ -275,11 +276,11 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // Called after OnUnpackSuccess check to see whether the install expectations
   // are met and the install process should continue.
-  base::Optional<CrxInstallError> CheckExpectations(const Extension* extension);
+  absl::optional<CrxInstallError> CheckExpectations(const Extension* extension);
 
   // Called after OnUnpackSuccess as a last check to see whether the install
   // should complete.
-  base::Optional<CrxInstallError> AllowInstall(const Extension* extension);
+  absl::optional<CrxInstallError> AllowInstall(const Extension* extension);
 
   // To check whether we need to compute hashes or not, we have to make a query
   // to ContentVerifier, and that should be done on the UI thread.
@@ -317,7 +318,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // Runs on File thread. Install the unpacked extension into the profile and
   // notify the frontend.
-  void CompleteInstall();
+  void CompleteInstall(bool updates_from_webstore);
 
   // Reloads extension on File thread and reports installation result back
   // to UI thread.
@@ -331,7 +332,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // Always report from the UI thread.
   void ReportInstallationStage(InstallationStage stage);
   void NotifyCrxInstallBegin();
-  void NotifyCrxInstallComplete(const base::Optional<CrxInstallError>& error);
+  void NotifyCrxInstallComplete(const absl::optional<CrxInstallError>& error);
 
   // Deletes temporary directory and crx file if needed.
   void CleanupTempFiles();
@@ -382,7 +383,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // The location the installation came from (bundled with Chromium, registry,
   // manual install, etc). This metadata is saved with the installation if
   // successful. Defaults to INTERNAL.
-  Manifest::Location install_source_;
+  mojom::ManifestLocation install_source_;
 
   // Indicates whether the user has already approved the extension to be
   // installed. If true, |expected_manifest_| and |expected_id_| must match
@@ -400,10 +401,10 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // mismatch.
   bool verification_check_failed_;
 
-  // A parsed copy of the expected manifest, before any transformations like
-  // localization have taken place. If |approved_| is true, then the
-  // extension's manifest must match this for the install to proceed.
-  std::unique_ptr<Manifest> expected_manifest_;
+  // A copy of the expected manifest, before any transformations like
+  // localization have taken place. If |approved_| is true, then the extension's
+  // manifest must match this for the install to proceed.
+  std::unique_ptr<base::DictionaryValue> expected_manifest_;
 
   // The level of checking when comparing the actual manifest against
   // the |expected_manifest_|.
@@ -436,9 +437,9 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // The ordinal of the NTP apps page |extension_| will be shown on.
   syncer::StringOrdinal page_ordinal_;
 
-  // A parsed copy of the unmodified original manifest, before any
-  // transformations like localization have taken place.
-  std::unique_ptr<Manifest> original_manifest_;
+  // A copy of the unmodified original manifest, before any transformations like
+  // localization have taken place.
+  std::unique_ptr<base::DictionaryValue> original_manifest_;
 
   // If valid, contains the current version of the extension we're
   // installing (for upgrades).
@@ -510,7 +511,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // separate task runner per instance (for better performance).
   //
   // Lazily initialized by GetUnpackerTaskRunner().
-  scoped_refptr<base::SequencedTaskRunner> unpacker_task_runner_ = nullptr;
+  scoped_refptr<base::SequencedTaskRunner> unpacker_task_runner_;
 
   // Used to show the install dialog.
   ExtensionInstallPrompt::ShowDialogCallback show_dialog_callback_;

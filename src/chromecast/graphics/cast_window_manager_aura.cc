@@ -23,6 +23,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/display_transform.h"
 #include "ui/display/screen.h"
@@ -135,10 +136,10 @@ void CastLayoutManager::ReorderChildWindows(aura::Window* changed_window) {
                    [changed_window](aura::Window* lhs, aura::Window* rhs) {
                      // Promote |changed_window| to the top of the stack of
                      // windows with the same ID.
-                     if (lhs->id() == rhs->id() && rhs == changed_window)
+                     if (lhs->GetId() == rhs->GetId() && rhs == changed_window)
                        return true;
 
-                     return lhs->id() < rhs->id();
+                     return lhs->GetId() < rhs->GetId();
                    });
 
   std::vector<CastWindowManager::WindowId> visible_window_order;
@@ -147,7 +148,7 @@ void CastLayoutManager::ReorderChildWindows(aura::Window* changed_window) {
       // static_cast is safe since the window ID value is originally derived
       // from CastWindowManager::WindowId.
       visible_window_order.push_back(
-          static_cast<CastWindowManager::WindowId>(windows[i]->id()));
+          static_cast<CastWindowManager::WindowId>(windows[i]->GetId()));
     }
     if (i == 0) {
       parent_->StackChildAtBottom(windows[i]);
@@ -279,7 +280,7 @@ void CastWindowManagerAura::SetZOrder(gfx::NativeView window,
   // Use aura::Window ID to maintain z-order. When the window's visibility
   // changes, we stack sibling windows based on this ID. Windows with higher
   // IDs are stacked on top.
-  window->set_id(static_cast<int>(z_order));
+  window->SetId(static_cast<int>(z_order));
 }
 
 void CastWindowManagerAura::InjectEvent(ui::Event* event) {
@@ -314,7 +315,7 @@ aura::Window* CastWindowManagerAura::GetDefaultParent(aura::Window* window,
 }
 
 void CastWindowManagerAura::AddWindow(gfx::NativeView child) {
-  LOG(INFO) << "Adding window: " << child->id() << ": " << child->GetName();
+  LOG(INFO) << "Adding window: " << child->GetId() << ": " << child->GetName();
   Setup();
 
   DCHECK(child);

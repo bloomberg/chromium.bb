@@ -64,10 +64,26 @@ bool HasKeyPairExpired(const IssuanceKeyPair& p) {
   return p.expiry <= base::Time::Now();
 }
 
+std::string UnavailableLocalOperationFallbackToString(
+    mojom::TrustTokenKeyCommitmentResult::UnavailableLocalOperationFallback
+        fallback) {
+  switch (fallback) {
+    case mojom::TrustTokenKeyCommitmentResult::
+        UnavailableLocalOperationFallback::kReturnWithError:
+      return "return_with_error";
+    case mojom::TrustTokenKeyCommitmentResult::
+        UnavailableLocalOperationFallback::kWebIssuance:
+      return "web_issuance";
+  };
+}
+
 }  // namespace
 
 TrustTokenRequestHandler::Options::Options() = default;
 TrustTokenRequestHandler::Options::~Options() = default;
+TrustTokenRequestHandler::Options::Options(const Options&) = default;
+TrustTokenRequestHandler::Options& TrustTokenRequestHandler::Options::operator=(
+    const Options&) = default;
 
 struct TrustTokenRequestHandler::Rep {
   // The protocol version to use.
@@ -78,6 +94,13 @@ struct TrustTokenRequestHandler::Rep {
 
   // Issue at most this many tokens per issuance.
   int batch_size;
+
+  // These values determine which Platform Provided Trust Tokens-related
+  // arguments should be included in returned key commitments:
+  std::set<mojom::TrustTokenKeyCommitmentResult::Os>
+      specify_platform_issuance_on;
+  mojom::TrustTokenKeyCommitmentResult::UnavailableLocalOperationFallback
+      unavailable_local_operation_fallback;
 
   // Expect that client-side signing operations succeeded or failed according to
   // the value of this field.
@@ -114,7 +137,7 @@ struct TrustTokenRequestHandler::Rep {
 
   // This is a structured representation of the most recent input to
   // RecordSignedRequest.
-  base::Optional<TrustTokenSignedRequest> last_incoming_signed_request;
+  absl::optional<TrustTokenSignedRequest> last_incoming_signed_request;
 };
 
 bssl::UniquePtr<TRUST_TOKEN_ISSUER>
@@ -159,7 +182,7 @@ bool TrustTokenRequestHandler::Rep::ConfirmClientDataIntegrityAndStoreKeyHash(
   if (!error)
     error = &dummy_error;
 
-  base::Optional<cbor::Value> maybe_value = cbor::Reader::Read(client_data);
+  absl::optional<cbor::Value> maybe_value = cbor::Reader::Read(client_data);
   if (!maybe_value) {
     *error = "client data was invalid CBOR";
     return false;
@@ -225,18 +248,38 @@ std::string TrustTokenRequestHandler::GetKeyCommitmentRecord() const {
   JSONStringValueSerializer serializer(&ret);
 
   base::Value value(base::Value::Type::DICTIONARY);
-  value.SetStringKey("protocol_version", rep_->protocol_version);
-  value.SetIntKey("id", rep_->id);
-  value.SetIntKey("batchsize", rep_->batch_size);
+  value.SetStringPath("TrustTokenV3PMB.protocol_version",
+                      rep_->protocol_version);
+  value.SetIntPath("TrustTokenV3PMB.id", rep_->id);
+  value.SetIntPath("TrustTokenV3PMB.batchsize", rep_->batch_size);
 
   for (size_t i = 0; i < rep_->issuance_keys.size(); ++i) {
-    value.SetStringPath(base::NumberToString(i) + ".Y",
-                        base::Base64Encode(base::make_span(
-                            rep_->issuance_keys[i].verification)));
-    value.SetStringPath(base::NumberToString(i) + ".expiry",
-                        base::NumberToString((rep_->issuance_keys[i].expiry -
-                                              base::Time::UnixEpoch())
-                                                 .InMicroseconds()));
+    value.SetStringPath(
+        "TrustTokenV3PMB.keys." + base::NumberToString(i) + ".Y",
+        base::Base64Encode(
+            base::make_span(rep_->issuance_keys[i].verification)));
+    value.SetStringPath(
+        "TrustTokenV3PMB.keys." + base::NumberToString(i) + ".expiry",
+        base::NumberToString(
+            (rep_->issuance_keys[i].expiry - base::Time::UnixEpoch())
+                .InMicroseconds()));
+  }
+
+  if (!rep_->specify_platform_issuance_on.empty()) {
+    value.SetStringPath("TrustTokenV3PMB.unavailable_local_operation_fallback",
+                        UnavailableLocalOperationFallbackToString(
+                            rep_->unavailable_local_operation_fallback));
+
+    base::Value oses(base::Value::Type::LIST);
+    for (auto os : rep_->specify_platform_issuance_on) {
+      switch (os) {
+        case mojom::TrustTokenKeyCommitmentResult::Os::kAndroid:
+          oses.Append("android");
+          break;
+      };
+    }
+    value.SetPath("TrustTokenV3PMB.request_issuance_locally_on",
+                  std::move(oses));
   }
 
   // It's OK to be a bit crashy in exceptional failure cases because it
@@ -246,12 +289,12 @@ std::string TrustTokenRequestHandler::GetKeyCommitmentRecord() const {
   return ret;
 }
 
-base::Optional<std::string> TrustTokenRequestHandler::Issue(
+absl::optional<std::string> TrustTokenRequestHandler::Issue(
     base::StringPiece issuance_request) {
   base::AutoLock lock(mutex_);
 
   if (rep_->issuance_outcome == ServerOperationOutcome::kUnconditionalFailure) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   bssl::UniquePtr<TRUST_TOKEN_ISSUER> issuer_ctx =
@@ -259,7 +302,7 @@ base::Optional<std::string> TrustTokenRequestHandler::Issue(
 
   std::string decoded_issuance_request;
   if (!base::Base64Decode(issuance_request, &decoded_issuance_request))
-    return base::nullopt;
+    return absl::nullopt;
 
   // TODO(davidvc): Perhaps make this configurable? Not a high priority, though.
   constexpr uint8_t kPrivateMetadata = 0;
@@ -285,20 +328,20 @@ base::Optional<std::string> TrustTokenRequestHandler::Issue(
   }
 
   if (!ok)
-    return base::nullopt;
+    return absl::nullopt;
 
   return base::Base64Encode(decoded_issuance_response.as_span());
 }
 
 constexpr base::TimeDelta TrustTokenRequestHandler::kRrLifetime =
     base::TimeDelta::FromDays(100);
-base::Optional<std::string> TrustTokenRequestHandler::Redeem(
+absl::optional<std::string> TrustTokenRequestHandler::Redeem(
     base::StringPiece redemption_request) {
   base::AutoLock lock(mutex_);
 
   if (rep_->redemption_outcome ==
       ServerOperationOutcome::kUnconditionalFailure) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   bssl::UniquePtr<TRUST_TOKEN_ISSUER> issuer_ctx =
@@ -306,7 +349,7 @@ base::Optional<std::string> TrustTokenRequestHandler::Redeem(
 
   std::string decoded_redemption_request;
   if (!base::Base64Decode(redemption_request, &decoded_redemption_request))
-    return base::nullopt;
+    return absl::nullopt;
 
   ScopedBoringsslBytes decoded_redemption_response;
   TRUST_TOKEN* redeemed_token;
@@ -319,7 +362,7 @@ base::Optional<std::string> TrustTokenRequestHandler::Redeem(
           redeemed_client_data.mutable_len(), &received_redemption_timestamp,
           base::as_bytes(base::make_span(decoded_redemption_request)).data(),
           decoded_redemption_request.size(), kRrLifetime.InSeconds())) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   rep_->ConfirmClientDataIntegrityAndStoreKeyHash(
@@ -347,7 +390,7 @@ TrustTokenRequestHandler::hashes_of_redemption_bound_public_keys() const {
   return rep_->hashes_of_redemption_bound_public_keys;
 }
 
-base::Optional<TrustTokenSignedRequest>
+absl::optional<TrustTokenSignedRequest>
 TrustTokenRequestHandler::last_incoming_signed_request() const {
   base::AutoLock lock(mutex_);
   return rep_->last_incoming_signed_request;
@@ -368,6 +411,10 @@ void TrustTokenRequestHandler::UpdateOptions(Options options) {
   for (int i = 0; i < options.num_keys; ++i) {
     rep_->issuance_keys.push_back(GenerateIssuanceKeyPair(i));
   }
+
+  rep_->specify_platform_issuance_on = options.specify_platform_issuance_on;
+  rep_->unavailable_local_operation_fallback =
+      options.unavailable_local_operation_fallback;
 }
 
 }  // namespace test

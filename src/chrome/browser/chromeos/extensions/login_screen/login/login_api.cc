@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/existing_user_controller.h"
+#include "chrome/browser/ash/login/signin_specifics.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login/login_api_lock_handler.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/signin_specifics.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/extensions/api/login.h"
 #include "chrome/common/pref_names.h"
@@ -25,6 +25,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 namespace extensions {
 
@@ -74,6 +75,8 @@ LoginLaunchManagedGuestSessionFunction::
 
 ExtensionFunction::ResponseAction
 LoginLaunchManagedGuestSessionFunction::Run() {
+  ui::UserActivityDetector::Get()->HandleExternalUserActivity();
+
   std::unique_ptr<api::login::LaunchManagedGuestSession::Params> parameters =
       api::login::LaunchManagedGuestSession::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);
@@ -150,6 +153,8 @@ LoginLockManagedGuestSessionFunction::~LoginLockManagedGuestSessionFunction() =
     default;
 
 ExtensionFunction::ResponseAction LoginLockManagedGuestSessionFunction::Run() {
+  ui::UserActivityDetector::Get()->HandleExternalUserActivity();
+
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
   const user_manager::User* active_user = user_manager->GetActiveUser();
@@ -175,6 +180,8 @@ LoginUnlockManagedGuestSessionFunction::
 
 ExtensionFunction::ResponseAction
 LoginUnlockManagedGuestSessionFunction::Run() {
+  ui::UserActivityDetector::Get()->HandleExternalUserActivity();
+
   std::unique_ptr<api::login::UnlockManagedGuestSession::Params> parameters =
       api::login::UnlockManagedGuestSession::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);

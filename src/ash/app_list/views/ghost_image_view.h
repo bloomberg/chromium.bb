@@ -5,10 +5,17 @@
 #ifndef ASH_APP_LIST_VIEWS_GHOST_IMAGE_VIEW_H_
 #define ASH_APP_LIST_VIEWS_GHOST_IMAGE_VIEW_H_
 
+#include <vector>
+
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/image_view.h"
+
+namespace gfx {
+class ImageSkia;
+class Point;
+}  // namespace gfx
 
 namespace ash {
 
@@ -70,7 +77,7 @@ class GhostImageView : public views::ImageView,
   gfx::Rect icon_bounds_;
 
   // The number of items within the GhostImageView folder.
-  base::Optional<size_t> num_items_;
+  absl::optional<size_t> num_items_;
 
   // The outline of the dragged item's icon. Used as the ghost image.
   gfx::ImageSkia outline_;
@@ -78,6 +85,10 @@ class GhostImageView : public views::ImageView,
   // The outlines of the top icons within a folder. Used for the folder ghost
   // image.
   std::vector<gfx::ImageSkia> inner_folder_icon_outlines_;
+
+  // The origins of the top icons within a folder icon. Used for the folder
+  // ghost image.
+  std::vector<gfx::Point> inner_folder_icon_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(GhostImageView);
 };

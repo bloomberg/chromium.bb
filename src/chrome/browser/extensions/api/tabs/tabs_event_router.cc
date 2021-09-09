@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/values.h"
@@ -169,7 +170,7 @@ TabsEventRouter::TabsEventRouter(Profile* profile)
   BrowserList::AddObserver(this);
   browser_tab_strip_tracker_.Init();
 
-  tab_manager_scoped_observer_.Add(g_browser_process->GetTabManager());
+  tab_manager_scoped_observation_.Observe(g_browser_process->GetTabManager());
 }
 
 TabsEventRouter::~TabsEventRouter() {
@@ -203,9 +204,8 @@ void TabsEventRouter::OnTabStripModelChanged(
       break;
     }
     case TabStripModelChange::kRemoved: {
-      const bool will_be_deleted = change.GetRemove()->will_be_deleted;
       for (const auto& contents : change.GetRemove()->contents) {
-        if (will_be_deleted) {
+        if (contents.will_be_deleted) {
           DispatchTabClosingAt(tab_strip_model, contents.contents,
                                contents.index);
         }
@@ -262,7 +262,7 @@ void TabsEventRouter::TabPinnedStateChanged(TabStripModel* tab_strip_model,
 }
 
 void TabsEventRouter::TabGroupedStateChanged(
-    base::Optional<tab_groups::TabGroupId> group,
+    absl::optional<tab_groups::TabGroupId> group,
     content::WebContents* contents,
     int index) {
   std::set<std::string> changed_property_names;
@@ -291,7 +291,8 @@ void TabsEventRouter::OnZoomChanged(
       Profile::FromBrowserContext(data.web_contents->GetBrowserContext());
   DispatchEvent(profile, events::TABS_ON_ZOOM_CHANGE,
                 api::tabs::OnZoomChange::kEventName,
-                api::tabs::OnZoomChange::Create(zoom_change_info),
+                std::make_unique<base::ListValue>(
+                    api::tabs::OnZoomChange::Create(zoom_change_info)),
                 EventRouter::USER_GESTURE_UNKNOWN);
 }
 
@@ -454,8 +455,7 @@ void TabsEventRouter::DispatchTabSelectionChanged(
       tab_strip_model->selection_model().selected_indices();
   std::unique_ptr<base::ListValue> all_tabs(new base::ListValue);
 
-  for (size_t i = 0; i < new_selection.size(); ++i) {
-    int index = new_selection[i];
+  for (int index : new_selection) {
     WebContents* contents = tab_strip_model->GetWebContentsAt(index);
     if (!contents)
       break;
@@ -532,10 +532,9 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
                                    int index,
                                    bool active) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  std::unique_ptr<base::ListValue> args(new base::ListValue);
   auto event = std::make_unique<Event>(events::TABS_ON_CREATED,
                                        api::tabs::OnCreated::kEventName,
-                                       std::move(args), profile);
+                                       std::vector<base::Value>(), profile);
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
       base::BindRepeating(&WillDispatchTabCreatedEvent, contents, active);
@@ -584,7 +583,7 @@ void TabsEventRouter::DispatchEvent(
     return;
 
   auto event = std::make_unique<Event>(histogram_value, event_name,
-                                       std::move(args), profile);
+                                       args->TakeList(), profile);
   event->user_gesture = user_gesture;
   event_router->BroadcastEvent(std::move(event));
 }
@@ -612,7 +611,7 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
 
   auto event = std::make_unique<Event>(events::TABS_ON_UPDATED,
                                        api::tabs::OnUpdated::kEventName,
-                                       std::move(args_base), profile);
+                                       args_base->TakeList(), profile);
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
       base::BindRepeating(&WillDispatchTabUpdatedEvent, contents,
@@ -621,7 +620,7 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
 }
 
 void TabsEventRouter::RegisterForTabNotifications(WebContents* contents) {
-  favicon_scoped_observer_.Add(
+  favicon_scoped_observations_.AddObservation(
       favicon::ContentFaviconDriver::FromWebContents(contents));
 
   ZoomController::FromWebContents(contents)->AddObserver(this);
@@ -632,7 +631,7 @@ void TabsEventRouter::RegisterForTabNotifications(WebContents* contents) {
 }
 
 void TabsEventRouter::UnregisterForTabNotifications(WebContents* contents) {
-  favicon_scoped_observer_.Remove(
+  favicon_scoped_observations_.RemoveObservation(
       favicon::ContentFaviconDriver::FromWebContents(contents));
 
   ZoomController::FromWebContents(contents)->RemoveObserver(this);

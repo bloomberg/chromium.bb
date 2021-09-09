@@ -35,15 +35,19 @@
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_element_or_long.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_option_element_or_html_opt_group_element.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlelement_long.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_htmloptgroupelement_htmloptionelement.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
@@ -231,6 +235,41 @@ HTMLOptionElement* HTMLSelectElement::ActiveSelectionEnd() const {
   return select_type_->ActiveSelectionEnd();
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+void HTMLSelectElement::add(
+    const V8UnionHTMLOptGroupElementOrHTMLOptionElement* element,
+    const V8UnionHTMLElementOrLong* before,
+    ExceptionState& exception_state) {
+  DCHECK(element);
+
+  HTMLElement* element_to_insert = nullptr;
+  switch (element->GetContentType()) {
+    case V8UnionHTMLOptGroupElementOrHTMLOptionElement::ContentType::
+        kHTMLOptGroupElement:
+      element_to_insert = element->GetAsHTMLOptGroupElement();
+      break;
+    case V8UnionHTMLOptGroupElementOrHTMLOptionElement::ContentType::
+        kHTMLOptionElement:
+      element_to_insert = element->GetAsHTMLOptionElement();
+      break;
+  }
+
+  HTMLElement* before_element = nullptr;
+  if (before) {
+    switch (before->GetContentType()) {
+      case V8UnionHTMLElementOrLong::ContentType::kHTMLElement:
+        before_element = before->GetAsHTMLElement();
+        break;
+      case V8UnionHTMLElementOrLong::ContentType::kLong:
+        before_element = options()->item(before->GetAsLong());
+        break;
+    }
+  }
+
+  InsertBefore(element_to_insert, before_element, exception_state);
+  SetNeedsValidityCheck();
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void HTMLSelectElement::add(
     const HTMLOptionElementOrHTMLOptGroupElement& element,
     const HTMLElementOrLong& before,
@@ -253,6 +292,7 @@ void HTMLSelectElement::add(
   InsertBefore(element_to_insert, before_element, exception_state);
   SetNeedsValidityCheck();
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void HTMLSelectElement::remove(int option_index) {
   if (HTMLOptionElement* option = item(option_index))
@@ -391,10 +431,10 @@ void HTMLSelectElement::OptionElementChildrenChanged(
   }
 }
 
-void HTMLSelectElement::AccessKeyAction(bool send_mouse_events) {
+void HTMLSelectElement::AccessKeyAction(
+    SimulatedClickCreationScope creation_scope) {
   focus();
-  DispatchSimulatedClick(
-      nullptr, send_mouse_events ? kSendMouseUpDownEvents : kSendNoEvents);
+  DispatchSimulatedClick(nullptr, creation_scope);
 }
 
 Element* HTMLSelectElement::namedItem(const AtomicString& name) {
@@ -420,6 +460,26 @@ void HTMLSelectElement::SetOption(unsigned index,
                        index, kMaxListItems)));
     return;
   }
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  auto* element =
+      MakeGarbageCollected<V8UnionHTMLOptGroupElementOrHTMLOptionElement>(
+          option);
+  V8UnionHTMLElementOrLong* before = nullptr;
+  // Out of array bounds? First insert empty dummies.
+  if (diff > 0) {
+    setLength(index, exception_state);
+    if (exception_state.HadException())
+      return;
+    // Replace an existing entry?
+  } else if (diff < 0) {
+    if (auto* before_element = options()->item(index + 1))
+      before = MakeGarbageCollected<V8UnionHTMLElementOrLong>(before_element);
+    remove(index);
+  }
+  // Finally add the new element.
+  EventQueueScope scope;
+  add(element, before, exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   HTMLOptionElementOrHTMLOptGroupElement element;
   element.SetHTMLOptionElement(option);
   HTMLElementOrLong before;
@@ -436,6 +496,9 @@ void HTMLSelectElement::SetOption(unsigned index,
   // Finally add the new element.
   EventQueueScope scope;
   add(element, before, exception_state);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  if (exception_state.HadException())
+    return;
   if (diff >= 0 && option->Selected())
     OptionSelectionStateChanged(option, true);
 }
@@ -709,8 +772,7 @@ void HTMLSelectElement::ChildrenChanged(const ChildrenChange& change) {
         OptionRemoved(child_option);
     }
   } else if (change.type == ChildrenChangeType::kAllChildrenRemoved) {
-    DCHECK(change.removed_nodes);
-    for (Node* node : *change.removed_nodes) {
+    for (Node* node : change.removed_nodes) {
       if (auto* option = DynamicTo<HTMLOptionElement>(node)) {
         OptionRemoved(*option);
       } else if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(node)) {
@@ -1109,7 +1171,7 @@ void HTMLSelectElement::TypeAheadFind(const KeyboardEvent& event) {
 void HTMLSelectElement::SelectOptionByAccessKey(HTMLOptionElement* option) {
   // First bring into focus the list box.
   if (!IsFocused())
-    AccessKeyAction(false);
+    AccessKeyAction(SimulatedClickCreationScope::kFromUserAgent);
 
   if (!option || option->OwnerSelectElement() != this)
     return;
@@ -1272,7 +1334,8 @@ void HTMLSelectElement::SetIndexToSelectOnCancel(int list_index) {
   select_type_->UpdateTextStyleAndContent();
 }
 
-HTMLOptionElement* HTMLSelectElement::OptionToBeShownForTesting() const {
+HTMLOptionElement* HTMLSelectElement::OptionToBeShown() const {
+  DCHECK(!IsMultiple());
   return select_type_->OptionToBeShown();
 }
 
@@ -1369,12 +1432,7 @@ void HTMLSelectElement::ChangeRendering() {
   }
   if (!InActiveDocument())
     return;
-  // TODO(futhark): SetForceReattachLayoutTree() should be the correct way to
-  // create a new layout tree, but the code for updating the selected index
-  // relies on the layout tree to be nuked.
-  DetachLayoutTree();
-  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                             style_change_reason::kControl));
+  GetDocument().GetStyleEngine().ChangeRenderingForHTMLSelect(*this);
 }
 
 const ComputedStyle* HTMLSelectElement::OptionStyle() const {

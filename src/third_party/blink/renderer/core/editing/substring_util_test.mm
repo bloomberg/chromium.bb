@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -46,7 +46,7 @@ TEST_F(SubStringUtilTest, SubstringUtil) {
       base_url_ + "content_editable_populated.html"));
 
   web_view->GetSettings()->SetDefaultFontSize(12);
-  web_view->Resize(gfx::Size(400, 400));
+  web_view->MainFrameWidget()->Resize(gfx::Size(400, 400));
   WebLocalFrameImpl* frame =
       static_cast<WebLocalFrameImpl*>(web_view->MainFrame());
 
@@ -77,7 +77,7 @@ TEST_F(SubStringUtilTest, SubstringUtilBaselinePoint) {
   WebView* web_view = static_cast<WebView*>(web_view_helper_.InitializeAndLoad(
       base_url_ + "content_editable_multiline.html"));
   web_view->GetSettings()->SetDefaultFontSize(12);
-  web_view->Resize(gfx::Size(400, 400));
+  web_view->MainFrameWidget()->Resize(gfx::Size(400, 400));
   WebLocalFrameImpl* frame =
       static_cast<WebLocalFrameImpl*>(web_view->MainFrame());
 
@@ -98,7 +98,7 @@ TEST_F(SubStringUtilTest, SubstringUtilPinchZoom) {
   WebView* web_view = static_cast<WebView*>(web_view_helper_.InitializeAndLoad(
       base_url_ + "content_editable_populated.html"));
   web_view->GetSettings()->SetDefaultFontSize(12);
-  web_view->Resize(gfx::Size(400, 400));
+  web_view->MainFrameWidget()->Resize(gfx::Size(400, 400));
   WebLocalFrameImpl* frame =
       static_cast<WebLocalFrameImpl*>(web_view->MainFrame());
   NSAttributedString* result = nil;
@@ -128,7 +128,7 @@ TEST_F(SubStringUtilTest, SubstringUtilIframe) {
       web_view_helper_.InitializeAndLoad(base_url_ + "single_iframe.html"));
   web_view->GetSettings()->SetDefaultFontSize(12);
   web_view->GetSettings()->SetJavaScriptEnabled(true);
-  web_view->Resize(gfx::Size(400, 400));
+  web_view->MainFrameWidget()->Resize(gfx::Size(400, 400));
   WebLocalFrameImpl* main_frame =
       static_cast<WebLocalFrameImpl*>(web_view->MainFrame());
   WebLocalFrameImpl* child_frame = WebLocalFrameImpl::FromFrame(
