@@ -37,7 +37,7 @@
     },
     "src/cef/include": {
       "cef_config.h": "1823b097730d382b7cf5502923116ccb481bd50d",
-      "cef_version.h": "fe141921a396c09bd8b7a50430478241439a661c"
+      "cef_version.h": "d977ec546b824410397e782dacffea7f77b6538f"
     },
     "src/gpu/config": {
       "gpu_lists_version.h": "a7a17b2cf124a63f5ff15006fba440b52bd5c388"
