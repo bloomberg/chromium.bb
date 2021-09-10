@@ -27,9 +27,11 @@ class RefCounted {
     uint64_t GetRefCountForTesting() const;
     uint64_t GetRefCountPayload() const;
 
-    // Dawn API
     void Reference();
     void Release();
+
+    void APIReference();
+    void APIRelease();
 
   protected:
     virtual ~RefCounted() = default;
@@ -42,7 +44,6 @@ class RefCounted {
 
 template <typename T>
 struct RefCountedTraits {
-    using PointedType = T;
     static constexpr T* kNullValue = nullptr;
     static void Reference(T* value) {
         value->Reference();
@@ -60,8 +61,8 @@ class Ref : public RefBase<T*, RefCountedTraits<T>> {
 
 template <typename T>
 Ref<T> AcquireRef(T* pointee) {
-    Ref<T> ref(pointee);
-    ref->Release();
+    Ref<T> ref;
+    ref.Acquire(pointee);
     return ref;
 }
 

@@ -45,6 +45,9 @@ bool IsLegacyCastPresentationUrl(const GURL& url);
 // Returns true if |url| is a valid presentation URL.
 bool IsValidPresentationUrl(const GURL& url);
 
+// Returns true if |media_source| has a valid presentation URL.
+bool IsValidStandardPresentationSource(const std::string& media_source);
+
 // Returns true if |presentation_id| is an ID used by auto-join requests.
 bool IsAutoJoinPresentationId(const std::string& presentation_id);
 
@@ -129,8 +132,8 @@ class MediaSource {
 
   // When this source was created by ForDesktop(), returns the stream ID to pass
   // to content::DesktopStreamsRegistry::RequestMediaForStreamId(). Otherwise,
-  // returns base::nullopt.
-  base::Optional<std::string> DesktopStreamId() const;
+  // returns absl::nullopt.
+  absl::optional<std::string> DesktopStreamId() const;
 
   // Returns true if this source represents desktop capture that also provides
   // audio loopback capture. Returns false otherwise.

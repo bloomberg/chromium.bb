@@ -9,8 +9,10 @@
       "fuchsia.accessibility.semantics.SemanticsManager",
       "fuchsia.camera3.DeviceWatcher",
       "fuchsia.device.NameProvider",
+      "fuchsia.feedback.ComponentDataRegister",
       "fuchsia.feedback.CrashReportingProductRegister",
       "fuchsia.fonts.Provider",
+      "fuchsia.input.virtualkeyboard.ControllerCreator",
       "fuchsia.intl.PropertyProvider",
       "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",
@@ -20,16 +22,16 @@
       "fuchsia.mediacodec.CodecFactory",
       "fuchsia.memorypressure.Provider",
       "fuchsia.net.NameLookup",
-      "fuchsia.netstack.Netstack",
+      "fuchsia.net.interfaces.State",
       "fuchsia.posix.socket.Provider",
       "fuchsia.process.Launcher",
       "fuchsia.settings.Display",
+      "fuchsia.sys.Environment",
+      "fuchsia.sys.Loader",
       "fuchsia.sysmem.Allocator",
-      "fuchsia.ui.input.ImeService",
-      "fuchsia.ui.input.ImeVisibilityService",
+      "fuchsia.ui.input3.Keyboard",
       "fuchsia.ui.scenic.Scenic",
-      "fuchsia.vulkan.loader.Loader",
-      "fuchsia.web.ContextProvider"
+      "fuchsia.vulkan.loader.Loader"
     ]
   }
 }

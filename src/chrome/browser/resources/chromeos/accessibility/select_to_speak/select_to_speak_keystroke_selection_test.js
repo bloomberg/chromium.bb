@@ -16,21 +16,17 @@ SelectToSpeakKeystrokeSelectionTest = class extends SelectToSpeakE2ETest {
     chrome.tts = this.mockTts;
   }
 
-  /**
-   * Function to trigger select-to-speak to read selected text at a
-   * keystroke.
-   */
-  triggerReadSelectedText() {
-    assertFalse(this.mockTts.currentlySpeaking());
-    assertEquals(this.mockTts.pendingUtterances().length, 0);
-    selectToSpeak.fireMockKeyDownEvent(
-        {keyCode: SelectToSpeak.SEARCH_KEY_CODE});
-    selectToSpeak.fireMockKeyDownEvent(
-        {keyCode: SelectToSpeak.READ_SELECTION_KEY_CODE});
-    assertTrue(selectToSpeak.inputHandler_.isSelectionKeyDown_);
-    selectToSpeak.fireMockKeyUpEvent(
-        {keyCode: SelectToSpeak.READ_SELECTION_KEY_CODE});
-    selectToSpeak.fireMockKeyUpEvent({keyCode: SelectToSpeak.SEARCH_KEY_CODE});
+  /** @override */
+  setUp() {
+    var runTest = this.deferRunTest(WhenTestDone.EXPECT);
+    (async function() {
+      await importModule(
+          'selectToSpeak', '/select_to_speak/select_to_speak_main.js');
+      await importModule(
+          'SelectToSpeakConstants',
+          '/select_to_speak/select_to_speak_constants.js');
+      runTest();
+    })();
   }
 
   /**
@@ -196,9 +192,11 @@ TEST_F(
                   assertTrue(this.mockTts.currentlySpeaking());
                   this.assertEqualsCollapseWhitespace(
                       this.mockTts.pendingUtterances()[0], 'Selected text');
-                  if (this.mockTts.pendingUtterances().length === 2) {
+
+                  this.mockTts.finishPendingUtterance();
+                  if (this.mockTts.pendingUtterances().length === 1) {
                     this.assertEqualsCollapseWhitespace(
-                        this.mockTts.pendingUtterances()[1], '');
+                        this.mockTts.pendingUtterances()[0], '');
                   }
                 }),
                 false);
@@ -338,11 +336,14 @@ TEST_F(
           function() {
             this.triggerReadSelectedText();
             assertTrue(this.mockTts.currentlySpeaking());
-            assertEquals(this.mockTts.pendingUtterances().length, 2);
+            assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
                 this.mockTts.pendingUtterances()[0], 'paragraph');
+
+            this.mockTts.finishPendingUtterance();
+            assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
-                this.mockTts.pendingUtterances()[1], 'text field');
+                this.mockTts.pendingUtterances()[0], 'text field');
           });
     });
 
@@ -360,11 +361,14 @@ TEST_F(
           function() {
             this.triggerReadSelectedText();
             assertTrue(this.mockTts.currentlySpeaking());
-            assertEquals(this.mockTts.pendingUtterances().length, 2);
+            assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
                 this.mockTts.pendingUtterances()[0], 'one');
+
+            this.mockTts.finishPendingUtterance();
+            assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
-                this.mockTts.pendingUtterances()[1], 'two three');
+                this.mockTts.pendingUtterances()[0], 'two three');
           });
     });
 
@@ -487,9 +491,11 @@ TEST_F(
             assertTrue(this.mockTts.pendingUtterances().length > 0);
             this.assertEqualsCollapseWhitespace(
                 this.mockTts.pendingUtterances()[0], 'Some text');
-            if (this.mockTts.pendingUtterances().length > 1) {
+
+            this.mockTts.finishPendingUtterance();
+            if (this.mockTts.pendingUtterances().length > 0) {
               this.assertEqualsCollapseWhitespace(
-                  this.mockTts.pendingUtterances()[1], '');
+                  this.mockTts.pendingUtterances()[0], '');
             }
           });
     });
@@ -559,11 +565,14 @@ TEST_F(
       this.runWithLoadedTree(html, function() {
         this.triggerReadSelectedText();
         assertTrue(this.mockTts.currentlySpeaking());
-        assertEquals(this.mockTts.pendingUtterances().length, 2);
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
         this.assertEqualsCollapseWhitespace(
             this.mockTts.pendingUtterances()[0], 'b c');
+
+        this.mockTts.finishPendingUtterance();
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
         this.assertEqualsCollapseWhitespace(
-            this.mockTts.pendingUtterances()[1], 'd e');
+            this.mockTts.pendingUtterances()[0], 'd e');
       });
     });
 
@@ -584,8 +593,10 @@ TEST_F(
             assertTrue(this.mockTts.currentlySpeaking());
             this.assertEqualsCollapseWhitespace(
                 this.mockTts.pendingUtterances()[0], 'a b c');
+
+            this.mockTts.finishPendingUtterance();
             this.assertEqualsCollapseWhitespace(
-                this.mockTts.pendingUtterances()[1], 'd e f');
+                this.mockTts.pendingUtterances()[0], 'd e f');
           });
     });
 
@@ -636,12 +647,18 @@ TEST_F(
             assertTrue(this.mockTts.currentlySpeaking());
             this.assertEqualsCollapseWhitespace(
                 this.mockTts.pendingUtterances()[0], 'Column 1, Text 1');
+
+            this.mockTts.finishPendingUtterance();
             this.assertEqualsCollapseWhitespace(
-                this.mockTts.pendingUtterances()[1], 'Column 1, Text 2');
+                this.mockTts.pendingUtterances()[0], 'Column 1, Text 2');
+
+            this.mockTts.finishPendingUtterance();
             this.assertEqualsCollapseWhitespace(
-                this.mockTts.pendingUtterances()[2], 'Column 2, Text 1');
+                this.mockTts.pendingUtterances()[0], 'Column 2, Text 1');
+
+            this.mockTts.finishPendingUtterance();
             this.assertEqualsCollapseWhitespace(
-                this.mockTts.pendingUtterances()[3], 'Column 2, Text 2');
+                this.mockTts.pendingUtterances()[0], 'Column 2, Text 2');
           });
     });
 TEST_F(

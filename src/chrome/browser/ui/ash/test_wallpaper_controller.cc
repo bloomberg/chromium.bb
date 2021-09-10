@@ -5,6 +5,10 @@
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 
 #include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/public/cpp/wallpaper_types.h"
+#include "base/notreached.h"
+#include "components/account_id/account_id.h"
+#include "url/gurl.h"
 
 TestWallpaperController::TestWallpaperController() = default;
 
@@ -18,6 +22,7 @@ void TestWallpaperController::ShowWallpaperImage(const gfx::ImageSkia& image) {
 
 void TestWallpaperController::ClearCounts() {
   remove_user_wallpaper_count_ = 0;
+  collection_id_ = std::string();
 }
 
 void TestWallpaperController::SetClient(
@@ -43,12 +48,21 @@ void TestWallpaperController::SetCustomWallpaper(
   ++set_custom_wallpaper_count_;
 }
 
+void TestWallpaperController::SetOnlineWallpaper(
+    const AccountId& account_id,
+    const GURL& url,
+    ash::WallpaperLayout layout,
+    bool preview_mode,
+    SetOnlineWallpaperCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void TestWallpaperController::SetOnlineWallpaperIfExists(
     const AccountId& account_id,
     const std::string& url,
     ash::WallpaperLayout layout,
     bool preview_mode,
-    SetOnlineWallpaperIfExistsCallback callback) {
+    SetOnlineWallpaperCallback callback) {
   NOTIMPLEMENTED();
 }
 
@@ -58,7 +72,7 @@ void TestWallpaperController::SetOnlineWallpaperFromData(
     const std::string& url,
     ash::WallpaperLayout layout,
     bool preview_mode,
-    SetOnlineWallpaperFromDataCallback callback) {
+    SetOnlineWallpaperCallback callback) {
   NOTIMPLEMENTED();
 }
 
@@ -207,4 +221,9 @@ ash::WallpaperInfo TestWallpaperController::GetActiveUserWallpaperInfo() {
 bool TestWallpaperController::ShouldShowWallpaperSetting() {
   NOTIMPLEMENTED();
   return false;
+}
+
+void TestWallpaperController::SetDailyRefreshCollectionId(
+    const std::string& collection_id) {
+  collection_id_ = collection_id;
 }

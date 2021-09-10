@@ -13,8 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
@@ -28,6 +27,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/session_manager/core/session_manager_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GoogleServiceAuthError;
 class PrefService;
@@ -141,9 +141,6 @@ class UserCloudPolicyManagerChromeOS
   // uploading status report) for child user.
   bool RequiresOAuthTokenForChildUser() const;
 
-  // Returns true if the underlying CloudPolicyClient is already registered.
-  bool IsClientRegistered() const;
-
   // Indicates a wildcard login check should be performed once an access token
   // is available.
   void EnableWildcardLoginCheck(const std::string& username);
@@ -231,10 +228,15 @@ class UserCloudPolicyManagerChromeOS
 
   // Cancels waiting for the initial policy fetch/refresh and flags the
   // ConfigurationPolicyProvider ready (assuming all other initialization tasks
-  // have completed). Pass |true| if policy fetch was successful (either because
-  // policy was successfully fetched, or if DMServer has notified us that the
-  // user is not managed).
-  void CancelWaitForPolicyFetch(bool success);
+  // have completed). Pass |true| and |std::string()| if policy fetch was
+  // successful (either because policy was successfully fetched, or if DMServer
+  // has notified us that the user is not managed). Otherwise, pass |false| and
+  // a string indicating the failure reason.
+  //
+  // Note: |failure_reason| will get passed to syslog in case of |success| being
+  // false. Make sure it does not contain any privacy-sensitive information.
+  void CancelWaitForPolicyFetch(bool success,
+                                const std::string& failure_reason);
 
   // Starts refresh scheduler if all the required conditions are fullfilled.
   // Exits immediately if refresh scheduler is already started, so it is safe to
@@ -321,8 +323,7 @@ class UserCloudPolicyManagerChromeOS
   std::unique_ptr<RemoteCommandsInvalidator> invalidator_;
 
   // Listening to notification that profile is destroyed.
-  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
-      shutdown_notifier_;
+  base::CallbackListSubscription shutdown_subscription_;
 
   // The SharedURLLoaderFactory used in some tests to simulate network requests.
   scoped_refptr<network::SharedURLLoaderFactory>
@@ -330,12 +331,12 @@ class UserCloudPolicyManagerChromeOS
   scoped_refptr<network::SharedURLLoaderFactory>
       signin_url_loader_factory_for_tests_;
 
-  ScopedObserver<ProfileManager, ProfileManagerObserver>
+  base::ScopedObservation<ProfileManager, ProfileManagerObserver>
       observed_profile_manager_{this};
 
   // Refresh token used in tests instead of the user context refresh token to
   // fetch the policy OAuth token.
-  base::Optional<std::string> user_context_refresh_token_for_tests_;
+  absl::optional<std::string> user_context_refresh_token_for_tests_;
 
   // Used to track the reregistration state of the CloudPolicyClient, i.e.
   // whether this class has triggered a re-registration after the client failed

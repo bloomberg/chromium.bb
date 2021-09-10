@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/conversions/conversion_page_metrics.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "net/base/schemeful_site.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/origin.h"
@@ -84,7 +86,7 @@ ConversionHost::~ConversionHost() {
 }
 
 void ConversionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
-  // Navigations with an impression set should only occur in the main frame.
+  // Impression navigations need to navigate the main frame to be valid.
   if (!navigation_handle->GetImpression() ||
       !navigation_handle->IsInMainFrame() ||
       !conversion_manager_provider_->GetManager(web_contents())) {
@@ -92,12 +94,18 @@ void ConversionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
   }
 
   RenderFrameHostImpl* initiator_frame_host =
-      RenderFrameHostImpl::FromID(navigation_handle->GetInitiatorRoutingId());
+      navigation_handle->GetInitiatorFrameToken().has_value()
+          ? RenderFrameHostImpl::FromFrameToken(
+                navigation_handle->GetInitiatorProcessID(),
+                navigation_handle->GetInitiatorFrameToken().value())
+          : nullptr;
 
   // The initiator frame host may be deleted by this point. In that case, ignore
   // this navigation and drop the impression associated with it.
-  // TODO(https://crbug.com/1056907): Record metrics on how often impressions
-  // are dropped because the initiator is destroyed.
+
+  UMA_HISTOGRAM_BOOLEAN("Conversions.ImpressionNavigationHasDeadInitiator",
+                        initiator_frame_host == nullptr);
+
   if (!initiator_frame_host)
     return;
 
@@ -115,6 +123,17 @@ void ConversionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
           ->current_origin();
   navigation_impression_origins_.emplace(navigation_handle->GetNavigationId(),
                                          initiator_root_frame_origin);
+
+  if (auto* initiator_web_contents =
+          WebContents::FromRenderFrameHost(initiator_frame_host)) {
+    if (auto* initiator_conversion_host =
+            ConversionHost::FromWebContents(initiator_web_contents)) {
+      // This doesn't necessarily mean that the browser will store the report,
+      // due to the additional logic in DidFinishNavigation(). This records
+      // that a page /attempted/ to register an impression for a navigation.
+      initiator_conversion_host->NotifyImpressionNavigationInitiatedByPage();
+    }
+  }
 }
 
 void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
@@ -145,20 +164,25 @@ void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
     return;
   url::Origin impression_origin = std::move((*it.get())->second);
   DCHECK(navigation_handle->GetImpression());
-  const Impression& impression = *(navigation_handle->GetImpression());
+  const blink::Impression& impression = *(navigation_handle->GetImpression());
 
   // If the impression's conversion destination does not match the final top
   // frame origin of this new navigation ignore it.
-  if (impression.conversion_destination !=
-      navigation_handle->GetRenderFrameHost()->GetLastCommittedOrigin()) {
+  if (net::SchemefulSite(impression.conversion_destination) !=
+      net::SchemefulSite(
+          navigation_handle->GetRenderFrameHost()->GetLastCommittedOrigin())) {
     return;
   }
 
-  if (!GetContentClient()->browser()->AllowConversionMeasurement(
-          web_contents()->GetBrowserContext())) {
-    return;
-  }
+  VerifyAndStoreImpression(StorableImpression::SourceType::kNavigation,
+                           impression_origin, impression, *conversion_manager);
+}
 
+void ConversionHost::VerifyAndStoreImpression(
+    StorableImpression::SourceType source_type,
+    const url::Origin& impression_origin,
+    const blink::Impression& impression,
+    ConversionManager& conversion_manager) {
   // Convert |impression| into a StorableImpression that can be forwarded to
   // storage. If a reporting origin was not provided, default to the conversion
   // destination for reporting.
@@ -166,38 +190,40 @@ void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
                                             ? impression_origin
                                             : *impression.reporting_origin;
 
+  if (!GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
+          web_contents()->GetBrowserContext(),
+          ContentBrowserClient::ConversionMeasurementOperation::kImpression,
+          &impression_origin, nullptr /* conversion_origin */,
+          &reporting_origin)) {
+    return;
+  }
+
   // Conversion measurement is only allowed in secure contexts.
   if (!network::IsOriginPotentiallyTrustworthy(impression_origin) ||
       !network::IsOriginPotentiallyTrustworthy(reporting_origin) ||
       !network::IsOriginPotentiallyTrustworthy(
           impression.conversion_destination)) {
-    // TODO (1049654): This should log a console error when it occurs.
     return;
   }
 
   base::Time impression_time = base::Time::Now();
-  const ConversionPolicy& policy = conversion_manager->GetConversionPolicy();
+
+  const ConversionPolicy& policy = conversion_manager.GetConversionPolicy();
   StorableImpression storable_impression(
       policy.GetSanitizedImpressionData(impression.impression_data),
       impression_origin, impression.conversion_destination, reporting_origin,
       impression_time,
       policy.GetExpiryTimeForImpression(impression.expiry, impression_time),
-      /*impression_id=*/base::nullopt);
+      source_type, impression.priority,
+      /*impression_id=*/absl::nullopt);
 
-  conversion_manager->HandleImpression(storable_impression);
+  conversion_manager.HandleImpression(storable_impression);
 }
 
 void ConversionHost::RegisterConversion(
     blink::mojom::ConversionPtr conversion) {
   content::RenderFrameHost* render_frame_host =
       receiver_.GetCurrentTargetFrame();
-
-  // Conversion registration is only allowed in the main frame.
-  if (render_frame_host->GetParent()) {
-    mojo::ReportBadMessage(
-        "blink.mojom.ConversionHost can only be used by the main frame.");
-    return;
-  }
 
   // If there is no conversion manager available, ignore any conversion
   // registrations.
@@ -206,36 +232,66 @@ void ConversionHost::RegisterConversion(
   if (!conversion_manager)
     return;
 
+  const url::Origin& conversion_origin =
+      render_frame_host->GetLastCommittedOrigin();
+  const url::Origin& main_frame_origin =
+      render_frame_host->GetMainFrame()->GetLastCommittedOrigin();
+
   // Only allow conversion registration on secure pages with a secure conversion
   // redirects.
-  if (!network::IsOriginPotentiallyTrustworthy(
-          render_frame_host->GetLastCommittedOrigin()) ||
-      !network::IsOriginPotentiallyTrustworthy(conversion->reporting_origin)) {
+  if (!network::IsOriginPotentiallyTrustworthy(conversion_origin) ||
+      !network::IsOriginPotentiallyTrustworthy(conversion->reporting_origin) ||
+      !network::IsOriginPotentiallyTrustworthy(main_frame_origin)) {
     mojo::ReportBadMessage(
         "blink.mojom.ConversionHost can only be used in secure contexts with a "
         "secure conversion registration origin.");
     return;
   }
 
-  if (!GetContentClient()->browser()->AllowConversionMeasurement(
-          web_contents()->GetBrowserContext())) {
+  if (!GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
+          web_contents()->GetBrowserContext(),
+          ContentBrowserClient::ConversionMeasurementOperation::kConversion,
+          nullptr /* impression_origin */, &main_frame_origin,
+          &conversion->reporting_origin)) {
     return;
   }
+
+  net::SchemefulSite conversion_destination(main_frame_origin);
 
   StorableConversion storable_conversion(
       conversion_manager->GetConversionPolicy().GetSanitizedConversionData(
           conversion->conversion_data),
-      render_frame_host->GetLastCommittedOrigin(),
-      conversion->reporting_origin);
+      conversion_destination, conversion->reporting_origin);
 
   if (conversion_page_metrics_)
     conversion_page_metrics_->OnConversion(storable_conversion);
   conversion_manager->HandleConversion(storable_conversion);
 }
 
+void ConversionHost::NotifyImpressionNavigationInitiatedByPage() {
+  if (conversion_page_metrics_)
+    conversion_page_metrics_->OnImpression();
+}
+
+void ConversionHost::RegisterImpression(const blink::Impression& impression) {
+  // If there is no conversion manager available, ignore any impression
+  // registrations.
+  ConversionManager* conversion_manager =
+      conversion_manager_provider_->GetManager(web_contents());
+  if (!conversion_manager)
+    return;
+  const url::Origin& impression_origin = receiver_.GetCurrentTargetFrame()
+                                             ->GetMainFrame()
+                                             ->GetLastCommittedOrigin();
+  VerifyAndStoreImpression(StorableImpression::SourceType::kEvent,
+                           impression_origin, impression, *conversion_manager);
+}
+
 void ConversionHost::SetCurrentTargetFrameForTesting(
     RenderFrameHost* render_frame_host) {
   receiver_.SetCurrentTargetFrameForTesting(render_frame_host);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ConversionHost)
 
 }  // namespace content

@@ -36,6 +36,7 @@ namespace bindings {
 
 class DictionaryBase;
 class EnumerationBase;
+class UnionBase;
 
 CORE_EXPORT void NativeValueTraitsInterfaceNotOfType(
     const WrapperTypeInfo* wrapper_type_info,
@@ -58,13 +59,34 @@ struct CORE_EXPORT NativeValueTraits<IDLAny>
     return ScriptValue(isolate, value);
   }
 };
+
 // IDLNullable<IDLAny> must not be used.
 template <>
 struct NativeValueTraits<IDLNullable<IDLAny>>;
 
+template <>
+struct CORE_EXPORT NativeValueTraits<IDLOptional<IDLAny>>
+    : public NativeValueTraitsBase<IDLAny> {
+  static ScriptValue NativeValue(v8::Isolate* isolate,
+                                 v8::Local<v8::Value> value,
+                                 ExceptionState& exception_state) {
+    return ScriptValue(isolate, value);
+  }
+};
+
 // boolean
 template <>
 struct CORE_EXPORT NativeValueTraits<IDLBoolean>
+    : public NativeValueTraitsBase<IDLBoolean> {
+  static bool NativeValue(v8::Isolate* isolate,
+                          v8::Local<v8::Value> value,
+                          ExceptionState& exception_state) {
+    return ToBoolean(isolate, value, exception_state);
+  }
+};
+
+template <>
+struct CORE_EXPORT NativeValueTraits<IDLOptional<IDLBoolean>>
     : public NativeValueTraitsBase<IDLBoolean> {
   static bool NativeValue(v8::Isolate* isolate,
                           v8::Local<v8::Value> value,
@@ -387,6 +409,19 @@ struct CORE_EXPORT NativeValueTraits<IDLNullable<IDLByteStringV2>>
   }
 };
 
+template <>
+struct CORE_EXPORT NativeValueTraits<IDLOptional<IDLByteStringV2>>
+    : public NativeValueTraitsBase<IDLByteStringV2> {
+  static decltype(auto) NativeValue(v8::Isolate* isolate,
+                                    v8::Local<v8::Value> value,
+                                    ExceptionState& exception_state) {
+    if (value->IsUndefined())
+      return bindings::NativeValueTraitsStringAdapter();
+    return NativeValueTraits<IDLByteStringV2>::NativeValue(isolate, value,
+                                                           exception_state);
+  }
+};
+
 template <bindings::IDLStringConvMode mode>
 struct NativeValueTraits<IDLStringBaseV2<mode>>
     : public NativeValueTraitsBase<IDLStringBaseV2<mode>> {
@@ -433,6 +468,19 @@ struct CORE_EXPORT NativeValueTraits<IDLNullable<IDLStringV2>>
   }
 };
 
+template <>
+struct CORE_EXPORT NativeValueTraits<IDLOptional<IDLStringV2>>
+    : public NativeValueTraitsBase<IDLStringV2> {
+  static decltype(auto) NativeValue(v8::Isolate* isolate,
+                                    v8::Local<v8::Value> value,
+                                    ExceptionState& exception_state) {
+    if (value->IsUndefined())
+      return bindings::NativeValueTraitsStringAdapter();
+    return NativeValueTraits<IDLStringV2>::NativeValue(isolate, value,
+                                                       exception_state);
+  }
+};
+
 template <bindings::IDLStringConvMode mode>
 struct NativeValueTraits<IDLUSVStringBaseV2<mode>>
     : public NativeValueTraitsBase<IDLUSVStringBaseV2<mode>> {
@@ -460,6 +508,19 @@ struct CORE_EXPORT NativeValueTraits<IDLNullable<IDLUSVStringV2>>
     return NativeValueTraits<IDLUSVStringBaseV2<
         bindings::IDLStringConvMode::kNullable>>::NativeValue(isolate, value,
                                                               exception_state);
+  }
+};
+
+template <>
+struct CORE_EXPORT NativeValueTraits<IDLOptional<IDLUSVStringV2>>
+    : public NativeValueTraitsBase<IDLUSVStringV2> {
+  static decltype(auto) NativeValue(v8::Isolate* isolate,
+                                    v8::Local<v8::Value> value,
+                                    ExceptionState& exception_state) {
+    if (value->IsUndefined())
+      return bindings::NativeValueTraitsStringAdapter();
+    return NativeValueTraits<IDLUSVStringV2>::NativeValue(isolate, value,
+                                                          exception_state);
   }
 };
 
@@ -586,6 +647,7 @@ struct CORE_EXPORT NativeValueTraits<DOMArrayBuffer>
                                        v8::Local<v8::Value> value,
                                        ExceptionState& exception_state);
 };
+
 template <>
 struct CORE_EXPORT NativeValueTraits<IDLNullable<DOMArrayBuffer>>
     : public NativeValueTraitsBase<DOMArrayBuffer*> {
@@ -613,6 +675,7 @@ struct NativeValueTraits<
                                     v8::Local<v8::Value> value,
                                     ExceptionState& exception_state);
 };
+
 template <typename T>
 struct NativeValueTraits<
     IDLNullable<NotShared<T>>,
@@ -642,6 +705,7 @@ struct NativeValueTraits<
                                       v8::Local<v8::Value> value,
                                       ExceptionState& exception_state);
 };
+
 template <typename T>
 struct NativeValueTraits<
     IDLNullable<MaybeShared<T>>,
@@ -673,6 +737,7 @@ struct NativeValueTraits<
                          v8::Local<v8::Value> value,
                          ExceptionState& exception_state);
 };
+
 template <typename T>
 struct NativeValueTraits<
     IDLNullable<T>,
@@ -756,11 +821,91 @@ struct CORE_EXPORT NativeValueTraits<IDLPromise>
                                value);
   }
 };
+
 // IDLNullable<IDLPromise> must not be used.
 template <>
 struct NativeValueTraits<IDLNullable<IDLPromise>>;
 
 // Sequence types
+
+namespace bindings {
+
+// Fast case: we're iterating over an Array that adheres to
+// %ArrayIteratorPrototype%'s protocol.
+template <typename T>
+typename NativeValueTraits<IDLSequence<T>>::ImplType
+CreateIDLSequenceFromV8Array(v8::Isolate* isolate,
+                             v8::Local<v8::Array> v8_array,
+                             ExceptionState& exception_state) {
+  // https://heycam.github.io/webidl/#create-sequence-from-iterable
+  const uint32_t length = v8_array->Length();
+  if (length > NativeValueTraits<IDLSequence<T>>::ImplType::MaxCapacity()) {
+    exception_state.ThrowRangeError("Array length exceeds supported limit.");
+    return {};
+  }
+
+  typename NativeValueTraits<IDLSequence<T>>::ImplType result;
+  result.ReserveInitialCapacity(length);
+  v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
+  v8::TryCatch try_block(isolate);
+  // Array length may change if array is mutated during iteration.
+  for (uint32_t i = 0; i < v8_array->Length(); ++i) {
+    v8::Local<v8::Value> v8_element;
+    if (!v8_array->Get(current_context, i).ToLocal(&v8_element)) {
+      exception_state.RethrowV8Exception(try_block.Exception());
+      return {};
+    }
+    // 3.4. Initialize Si to the result of converting nextItem to an IDL value
+    //   of type T.
+    auto&& element =
+        NativeValueTraits<T>::NativeValue(isolate, v8_element, exception_state);
+    if (exception_state.HadException())
+      return {};
+    result.push_back(std::move(element));
+  }
+  // 3.2. If next is false, then return an IDL sequence value of type
+  //   sequence<T> of length i, where the value of the element at index j is Sj.
+  return result;
+}
+
+// Slow case: follow WebIDL's "Creating a sequence from an iterable" steps to
+// iterate through each element.
+template <typename T>
+typename NativeValueTraits<IDLSequence<T>>::ImplType
+CreateIDLSequenceFromIterator(v8::Isolate* isolate,
+                              ScriptIterator script_iterator,
+                              ExceptionState& exception_state) {
+  // https://heycam.github.io/webidl/#create-sequence-from-iterable
+  ExecutionContext* execution_context =
+      ToExecutionContext(isolate->GetCurrentContext());
+  typename NativeValueTraits<IDLSequence<T>>::ImplType result;
+  // 3. Repeat:
+  while (script_iterator.Next(execution_context, exception_state)) {
+    // 3.1. Let next be ? IteratorStep(iter).
+    DCHECK(!exception_state.HadException());
+    // 3.3. Let nextItem be ? IteratorValue(next).
+    //
+    // The value should already be non-empty, as guaranteed by the call to
+    // Next() and the |exception_state| check above.
+    v8::Local<v8::Value> v8_element =
+        script_iterator.GetValue().ToLocalChecked();
+    // 3.4. Initialize Si to the result of converting nextItem to an IDL value
+    //   of type T.
+    auto&& element =
+        NativeValueTraits<T>::NativeValue(isolate, v8_element, exception_state);
+    if (exception_state.HadException())
+      return {};
+    result.push_back(std::move(element));
+  }
+  if (exception_state.HadException())
+    return {};
+  // 3.2. If next is false, then return an IDL sequence value of type
+  //   sequence<T> of length i, where the value of the element at index j is Sj.
+  return result;
+}
+
+}  // namespace bindings
+
 template <typename T>
 struct NativeValueTraits<IDLSequence<T>>
     : public NativeValueTraitsBase<IDLSequence<T>> {
@@ -771,6 +916,15 @@ struct NativeValueTraits<IDLSequence<T>>
   static ImplType NativeValue(v8::Isolate* isolate,
                               v8::Local<v8::Value> value,
                               ExceptionState& exception_state) {
+    // TODO(https://crbug.com/715122): Checking for IsArray() may not be
+    // enough. Other engines also prefer regular array iteration over a custom
+    // @@iterator when the latter is defined, but it is not clear if this is a
+    // valid optimization.
+    if (value->IsArray()) {
+      return bindings::CreateIDLSequenceFromV8Array<T>(
+          isolate, value.As<v8::Array>(), exception_state);
+    }
+
     // 1. If Type(V) is not Object, throw a TypeError.
     if (!value->IsObject()) {
       exception_state.ThrowTypeError(
@@ -778,36 +932,22 @@ struct NativeValueTraits<IDLSequence<T>>
       return ImplType();
     }
 
-    ImplType result;
-    // TODO(https://crbug.com/715122): Checking for IsArray() may not be
-    // enough. Other engines also prefer regular array iteration over a custom
-    // @@iterator when the latter is defined, but it is not clear if this is a
-    // valid optimization.
-    if (value->IsArray()) {
-      ConvertSequenceFast(isolate, value.As<v8::Array>(), exception_state,
-                          result);
-    } else {
-      // 2. Let method be ? GetMethod(V, @@iterator).
-      // 3. If method is undefined, throw a TypeError.
-      // 4. Return the result of creating a sequence from V and method.
-      auto script_iterator = ScriptIterator::FromIterable(
-          isolate, value.As<v8::Object>(), exception_state);
-      if (exception_state.HadException())
-        return ImplType();
-      if (script_iterator.IsNull()) {
-        // A null ScriptIterator with an empty |exception_state| means the
-        // object is lacking a callable @@iterator property.
-        exception_state.ThrowTypeError(
-            "The object must have a callable @@iterator property.");
-        return ImplType();
-      }
-      ConvertSequenceSlow(isolate, std::move(script_iterator), exception_state,
-                          result);
-    }
-
+    // 2. Let method be ? GetMethod(V, @@iterator).
+    // 3. If method is undefined, throw a TypeError.
+    // 4. Return the result of creating a sequence from V and method.
+    auto script_iterator = ScriptIterator::FromIterable(
+        isolate, value.As<v8::Object>(), exception_state);
     if (exception_state.HadException())
       return ImplType();
-    return result;
+    if (script_iterator.IsNull()) {
+      // A null ScriptIterator with an empty |exception_state| means the
+      // object is lacking a callable @@iterator property.
+      exception_state.ThrowTypeError(
+          "The object must have a callable @@iterator property.");
+      return ImplType();
+    }
+    return bindings::CreateIDLSequenceFromIterator<T>(
+        isolate, std::move(script_iterator), exception_state);
   }
 
   // https://heycam.github.io/webidl/#es-sequence
@@ -817,76 +957,29 @@ struct NativeValueTraits<IDLSequence<T>>
                               ScriptIterator script_iterator,
                               ExceptionState& exception_state) {
     DCHECK(!script_iterator.IsNull());
-    ImplType result;
-    ConvertSequenceSlow(isolate, std::move(script_iterator), exception_state,
-                        result);
-    return result;
-  }
-
- private:
-  // Fast case: we're interating over an Array that adheres to
-  // %ArrayIteratorPrototype%'s protocol.
-  static void ConvertSequenceFast(v8::Isolate* isolate,
-                                  v8::Local<v8::Array> v8_array,
-                                  ExceptionState& exception_state,
-                                  ImplType& result) {
-    const uint32_t length = v8_array->Length();
-    if (length > ImplType::MaxCapacity()) {
-      exception_state.ThrowRangeError("Array length exceeds supported limit.");
-      return;
-    }
-    result.ReserveInitialCapacity(length);
-    v8::TryCatch block(isolate);
-    // Array length may change if array is mutated during iteration.
-    for (uint32_t i = 0; i < v8_array->Length(); ++i) {
-      v8::Local<v8::Value> element;
-      if (!v8_array->Get(isolate->GetCurrentContext(), i).ToLocal(&element)) {
-        exception_state.RethrowV8Exception(block.Exception());
-        return;
-      }
-      result.push_back(
-          NativeValueTraits<T>::NativeValue(isolate, element, exception_state));
-      if (exception_state.HadException())
-        return;
-    }
-  }
-
-  // Slow case: follow WebIDL's "Creating a sequence from an iterable" steps to
-  // iterate through each element.
-  static void ConvertSequenceSlow(v8::Isolate* isolate,
-                                  ScriptIterator script_iterator,
-                                  ExceptionState& exception_state,
-                                  ImplType& result) {
-    // https://heycam.github.io/webidl/#create-sequence-from-iterable
-    // 2. Initialize i to be 0.
-    // 3. Repeat:
-    ExecutionContext* execution_context =
-        ToExecutionContext(isolate->GetCurrentContext());
-    while (script_iterator.Next(execution_context, exception_state)) {
-      // 3.1. Let next be ? IteratorStep(iter).
-      // 3.2. If next is false, then return an IDL sequence value of type
-      //      sequence<T> of length i, where the value of the element at index
-      //      j is Sj.
-      // 3.3. Let nextItem be ? IteratorValue(next).
-      if (exception_state.HadException())
-        return;
-
-      // The value should already be non-empty, as guaranteed by the call to
-      // Next() and the |exception_state| check above.
-      v8::Local<v8::Value> element =
-          script_iterator.GetValue().ToLocalChecked();
-      DCHECK(!element.IsEmpty());
-
-      // 3.4. Initialize Si to the result of converting nextItem to an IDL
-      //      value of type T.
-      // 3.5. Set i to i + 1.
-      result.push_back(
-          NativeValueTraits<T>::NativeValue(isolate, element, exception_state));
-      if (exception_state.HadException())
-        return;
-    }
+    return bindings::CreateIDLSequenceFromIterator<T>(
+        isolate, std::move(script_iterator), exception_state);
   }
 };
+
+template <typename T>
+struct NativeValueTraits<IDLOptional<IDLSequence<T>>>
+    : public NativeValueTraitsBase<IDLSequence<T>> {
+  static typename NativeValueTraits<IDLSequence<T>>::ImplType NativeValue(
+      v8::Isolate* isolate,
+      v8::Local<v8::Value> value,
+      ExceptionState& exception_state) {
+    if (value->IsUndefined())
+      return {};
+    return NativeValueTraits<IDLSequence<T>>::NativeValue(isolate, value,
+                                                          exception_state);
+  }
+};
+
+// Frozen array types
+template <typename T>
+struct NativeValueTraits<IDLArray<T>>
+    : public NativeValueTraits<IDLSequence<T>> {};
 
 // Record types
 template <typename K, typename V>
@@ -1140,35 +1233,20 @@ struct NativeValueTraits<
   }
 };
 
+// We don't support nullable dictionary types for the time being since it's
+// quite confusing.
 template <typename T>
 struct NativeValueTraits<
     IDLNullable<T>,
-    typename std::enable_if_t<std::is_base_of<IDLDictionaryBase, T>::value>>
-    : public NativeValueTraitsBase<IDLNullable<T>> {
-  static T* NativeValue(v8::Isolate* isolate,
-                        v8::Local<v8::Value> value,
-                        ExceptionState& exception_state) {
-    if (value->IsObject())
-      return NativeValueTraits<T>::NativeValue(isolate, value, exception_state);
-    if (value->IsNullOrUndefined())
-      return nullptr;
-    exception_state.ThrowTypeError("The given value is not an object.");
-    return nullptr;
-  }
+    typename std::enable_if_t<
+        std::is_base_of<bindings::DictionaryBase, T>::value>>;
 
-  static T* ArgumentValue(v8::Isolate* isolate,
-                          int argument_index,
-                          v8::Local<v8::Value> value,
-                          ExceptionState& exception_state) {
-    if (value->IsObject())
-      return NativeValueTraits<T>::NativeValue(isolate, value, exception_state);
-    if (value->IsNullOrUndefined())
-      return nullptr;
-    exception_state.ThrowTypeError(
-        ExceptionMessages::ArgumentNotOfType(argument_index, "Object"));
-    return nullptr;
-  }
-};
+// Migration Adapters: Nullable dictionary types generated by the old bindings
+// generator.
+template <typename T>
+struct NativeValueTraits<
+    IDLNullable<T>,
+    typename std::enable_if_t<std::is_base_of<IDLDictionaryBase, T>::value>>;
 
 // Enumeration types
 template <typename T>
@@ -1253,6 +1331,41 @@ struct NativeValueTraits<
   }
 };
 
+template <typename T>
+struct NativeValueTraits<
+    T,
+    typename std::enable_if_t<std::is_base_of<bindings::UnionBase, T>::value>>
+    : public NativeValueTraitsBase<T*> {
+  static T* NativeValue(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state) {
+    return T::Create(isolate, value, exception_state);
+  }
+};
+
+template <typename T>
+struct NativeValueTraits<
+    IDLNullable<T>,
+    typename std::enable_if_t<std::is_base_of<bindings::UnionBase, T>::value>>
+    : public NativeValueTraitsBase<T*> {
+  static T* NativeValue(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state) {
+    if (value->IsNullOrUndefined())
+      return nullptr;
+    return T::Create(isolate, value, exception_state);
+  }
+
+  static T* ArgumentValue(v8::Isolate* isolate,
+                          int argument_index,
+                          v8::Local<v8::Value> value,
+                          ExceptionState& exception_state) {
+    if (value->IsNullOrUndefined())
+      return nullptr;
+    return T::Create(isolate, value, exception_state);
+  }
+};
+
 // Migration Adapters: union types generated by the old bindings generator.
 template <typename T>
 struct NativeValueTraits<IDLUnionNotINT<T>> : public NativeValueTraitsBase<T> {
@@ -1318,6 +1431,44 @@ struct NativeValueTraits<IDLNullable<IDLUnionNotINT<T>>>
 template <typename T>
 struct NativeValueTraits<IDLNullable<IDLUnionINT<T>>>;
 
+template <typename T>
+struct NativeValueTraits<IDLOptional<IDLUnionNotINT<T>>>
+    : public NativeValueTraitsBase<T> {
+  static T NativeValue(v8::Isolate* isolate,
+                       v8::Local<v8::Value> value,
+                       ExceptionState& exception_state) {
+    if (value->IsUndefined())
+      return T();
+    return NativeValueTraits<IDLUnionNotINT<T>>::NativeValue(isolate, value,
+                                                             exception_state);
+  }
+
+  static T ArgumentValue(v8::Isolate* isolate,
+                         int argument_index,
+                         v8::Local<v8::Value> value,
+                         ExceptionState& exception_state) {
+    return NativeValue(isolate, value, exception_state);
+  }
+};
+
+template <typename T>
+struct NativeValueTraits<IDLOptional<IDLUnionINT<T>>>
+    : public NativeValueTraitsBase<T> {
+  static T NativeValue(v8::Isolate* isolate,
+                       v8::Local<v8::Value> value,
+                       ExceptionState& exception_state) {
+    return NativeValueTraits<IDLUnionINT<T>>::NativeValue(isolate, value,
+                                                          exception_state);
+  }
+
+  static T ArgumentValue(v8::Isolate* isolate,
+                         int argument_index,
+                         v8::Local<v8::Value> value,
+                         ExceptionState& exception_state) {
+    return NativeValue(isolate, value, exception_state);
+  }
+};
+
 // Nullable types
 template <typename InnerType>
 struct NativeValueTraits<
@@ -1326,13 +1477,13 @@ struct NativeValueTraits<
     : public NativeValueTraitsBase<IDLNullable<InnerType>> {
   // https://heycam.github.io/webidl/#es-nullable-type
   using ImplType =
-      base::Optional<typename NativeValueTraits<InnerType>::ImplType>;
+      absl::optional<typename NativeValueTraits<InnerType>::ImplType>;
 
   static ImplType NativeValue(v8::Isolate* isolate,
                               v8::Local<v8::Value> value,
                               ExceptionState& exception_state) {
     if (value->IsNullOrUndefined())
-      return base::nullopt;
+      return absl::nullopt;
     return NativeValueTraits<InnerType>::NativeValue(isolate, value,
                                                      exception_state);
   }
@@ -1342,21 +1493,73 @@ struct NativeValueTraits<
                                 v8::Local<v8::Value> value,
                                 ExceptionState& exception_state) {
     if (value->IsNullOrUndefined())
-      return base::nullopt;
+      return absl::nullopt;
     return NativeValueTraits<InnerType>::ArgumentValue(isolate, argument_index,
                                                        value, exception_state);
   }
 };
+
 // IDLNullable<IDLNullable<T>> must not be used.
 template <typename T>
 struct NativeValueTraits<IDLNullable<IDLNullable<T>>>;
+
+// Optional types
+template <typename T>
+struct NativeValueTraits<IDLOptional<T>,
+                         typename std::enable_if_t<std::is_arithmetic<
+                             typename NativeValueTraits<T>::ImplType>::value>>
+    : public NativeValueTraitsBase<typename NativeValueTraits<T>::ImplType> {
+  using ImplType = typename NativeValueTraits<T>::ImplType;
+
+  static ImplType NativeValue(v8::Isolate* isolate,
+                              v8::Local<v8::Value> value,
+                              ExceptionState& exception_state) {
+    // Just let ES undefined to be converted into 0.
+    return NativeValueTraits<T>::NativeValue(isolate, value, exception_state);
+  }
+
+  static ImplType ArgumentValue(v8::Isolate* isolate,
+                                int argument_index,
+                                v8::Local<v8::Value> value,
+                                ExceptionState& exception_state) {
+    // Just let ES undefined to be converted into 0.
+    return NativeValueTraits<T>::ArgumentValue(isolate, argument_index, value,
+                                               exception_state);
+  }
+};
+
+template <typename T>
+struct NativeValueTraits<IDLOptional<T>,
+                         typename std::enable_if_t<std::is_pointer<
+                             typename NativeValueTraits<T>::ImplType>::value>>
+    : public NativeValueTraitsBase<typename NativeValueTraits<T>::ImplType> {
+  using ImplType = typename NativeValueTraits<T>::ImplType;
+
+  static ImplType NativeValue(v8::Isolate* isolate,
+                              v8::Local<v8::Value> value,
+                              ExceptionState& exception_state) {
+    if (value->IsUndefined())
+      return nullptr;
+    return NativeValueTraits<T>::NativeValue(isolate, value, exception_state);
+  }
+
+  static ImplType ArgumentValue(v8::Isolate* isolate,
+                                int argument_index,
+                                v8::Local<v8::Value> value,
+                                ExceptionState& exception_state) {
+    if (value->IsUndefined())
+      return nullptr;
+    return NativeValueTraits<T>::ArgumentValue(isolate, argument_index, value,
+                                               exception_state);
+  }
+};
 
 // Date
 template <>
 struct CORE_EXPORT NativeValueTraits<IDLDate>
     : public NativeValueTraitsBase<IDLDate> {
   // IDLDate must be always used as IDLNullable<IDLDate>.
-  static base::Optional<base::Time> NativeValue(
+  static absl::optional<base::Time> NativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exception_state) = delete;
@@ -1365,7 +1568,7 @@ struct CORE_EXPORT NativeValueTraits<IDLDate>
 template <>
 struct CORE_EXPORT NativeValueTraits<IDLNullable<IDLDate>>
     : public NativeValueTraitsBase<IDLNullable<IDLDate>> {
-  static base::Optional<base::Time> NativeValue(
+  static absl::optional<base::Time> NativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exception_state) {
@@ -1420,6 +1623,7 @@ struct CORE_EXPORT NativeValueTraits<XPathNSResolver>
                                         v8::Local<v8::Value> value,
                                         ExceptionState& exception_state);
 };
+
 template <>
 struct CORE_EXPORT NativeValueTraits<IDLNullable<XPathNSResolver>>
     : public NativeValueTraitsBase<IDLNullable<XPathNSResolver>> {

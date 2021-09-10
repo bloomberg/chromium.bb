@@ -234,7 +234,7 @@ for review, run:
 
 This will take the diff of your branch against its upstream branch (in that
 case origin/master), and will post it to the
-link:https://codereview.chromium.org[Chromium code review site].
+link:https://chromium-review.googlesource.com[Chromium code review site].
 
 
 UPDATING THE CODE

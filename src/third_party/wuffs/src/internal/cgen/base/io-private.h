@@ -24,15 +24,34 @@ wuffs_base__io__count_since(uint64_t mark, uint64_t index) {
   return 0;
 }
 
+// TODO: drop the "const" in "const uint8_t* ptr". Some though required about
+// the base.io_reader.since method returning a mutable "slice base.u8".
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
 static inline wuffs_base__slice_u8  //
-wuffs_base__io__since(uint64_t mark, uint64_t index, uint8_t* ptr) {
+wuffs_base__io__since(uint64_t mark, uint64_t index, const uint8_t* ptr) {
   if (index >= mark) {
-    return wuffs_base__make_slice_u8(ptr + mark, index - mark);
+    return wuffs_base__make_slice_u8(((uint8_t*)ptr) + mark,
+                                     ((size_t)(index - mark)));
   }
   return wuffs_base__make_slice_u8(NULL, 0);
 }
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 // --------
+
+static inline void  //
+wuffs_base__io_reader__limit(const uint8_t** ptr_io2_r,
+                             const uint8_t* iop_r,
+                             uint64_t limit) {
+  if (((uint64_t)(*ptr_io2_r - iop_r)) > limit) {
+    *ptr_io2_r = iop_r + limit;
+  }
+}
 
 static inline uint32_t  //
 wuffs_base__io_reader__limited_copy_u32_to_slice(const uint8_t** ptr_iop_r,
@@ -76,7 +95,7 @@ wuffs_base__io_reader__match7(const uint8_t* iop_r,
   uint32_t n = a & 7;
   a >>= 8;
   if ((io2_r - iop_r) >= 8) {
-    uint64_t x = wuffs_base__load_u64le__no_bounds_check(iop_r);
+    uint64_t x = wuffs_base__peek_u64le__no_bounds_check(iop_r);
     uint32_t shift = 8 * (8 - n);
     return ((a << shift) == (x << shift)) ? 0 : 2;
   }
@@ -131,6 +150,15 @@ wuffs_base__io_writer__copy_from_slice(uint8_t** ptr_iop_w,
   return (uint64_t)(n);
 }
 
+static inline void  //
+wuffs_base__io_writer__limit(uint8_t** ptr_io2_w,
+                             uint8_t* iop_w,
+                             uint64_t limit) {
+  if (((uint64_t)(*ptr_io2_w - iop_w)) > limit) {
+    *ptr_io2_w = iop_w + limit;
+  }
+}
+
 static inline uint32_t  //
 wuffs_base__io_writer__limited_copy_u32_from_history(uint8_t** ptr_iop_w,
                                                      uint8_t* io1_w,
@@ -176,10 +204,12 @@ wuffs_base__io_writer__limited_copy_u32_from_history(uint8_t** ptr_iop_w,
 
 // wuffs_base__io_writer__limited_copy_u32_from_history_fast is like the
 // wuffs_base__io_writer__limited_copy_u32_from_history function above, but has
-// stronger pre-conditions. The caller needs to prove that:
-//  - distance >  0
-//  - distance <= (*ptr_iop_w - io1_w)
+// stronger pre-conditions.
+//
+// The caller needs to prove that:
 //  - length   <= (io2_w      - *ptr_iop_w)
+//  - distance >= 1
+//  - distance <= (*ptr_iop_w - io1_w)
 static inline uint32_t  //
 wuffs_base__io_writer__limited_copy_u32_from_history_fast(uint8_t** ptr_iop_w,
                                                           uint8_t* io1_w,
@@ -196,6 +226,44 @@ wuffs_base__io_writer__limited_copy_u32_from_history_fast(uint8_t** ptr_iop_w,
   }
   for (; n; n--) {
     *p++ = *q++;
+  }
+  *ptr_iop_w = p;
+  return length;
+}
+
+// wuffs_base__io_writer__limited_copy_u32_from_history_8_byte_chunks_fast is
+// like the wuffs_base__io_writer__limited_copy_u32_from_history_fast function
+// above, but copies 8 byte chunks at a time.
+//
+// In terms of number of bytes copied, length is rounded up to a multiple of 8.
+// As a special case, a zero length rounds up to 8 (even though 0 is already a
+// multiple of 8), since there is always at least one 8 byte chunk copied.
+//
+// In terms of advancing *ptr_iop_w, length is not rounded up.
+//
+// The caller needs to prove that:
+//  - (length + 8) <= (io2_w      - *ptr_iop_w)
+//  - distance     >= 8
+//  - distance     <= (*ptr_iop_w - io1_w)
+static inline uint32_t  //
+wuffs_base__io_writer__limited_copy_u32_from_history_8_byte_chunks_fast(
+    uint8_t** ptr_iop_w,
+    uint8_t* io1_w,
+    uint8_t* io2_w,
+    uint32_t length,
+    uint32_t distance) {
+  uint8_t* p = *ptr_iop_w;
+  uint8_t* q = p - distance;
+  uint32_t n = length;
+  while (1) {
+    memcpy(p, q, 8);
+    if (n <= 8) {
+      p += n;
+      break;
+    }
+    p += 8;
+    q += 8;
+    n -= 8;
   }
   *ptr_iop_w = p;
   return length;

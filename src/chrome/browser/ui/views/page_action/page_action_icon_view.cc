@@ -13,6 +13,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -62,7 +63,7 @@ PageActionIconView::PageActionIconView(
   DCHECK(delegate_);
 
   image()->SetFlipCanvasOnPaintForRTLUI(true);
-  SetInkDropMode(InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   // Only shows bubble after mouse is released.
   button_controller()->set_notify_action(
@@ -95,19 +96,19 @@ void PageActionIconView::ExecuteForTesting() {
 
 void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
-  const base::string16 name_text = GetTextForTooltipAndAccessibleName();
+  const std::u16string name_text = GetTextForTooltipAndAccessibleName();
   node_data->SetName(name_text);
 }
 
-base::string16 PageActionIconView::GetTooltipText(const gfx::Point& p) const {
-  return IsBubbleShowing() ? base::string16()
+std::u16string PageActionIconView::GetTooltipText(const gfx::Point& p) const {
+  return IsBubbleShowing() ? std::u16string()
                            : GetTextForTooltipAndAccessibleName();
 }
 
 void PageActionIconView::ViewHierarchyChanged(
     const views::ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
-  if (details.is_add && details.child == this && GetNativeTheme()) {
+  if (details.is_add && details.child == this) {
     UpdateIconImage();
     UpdateBorder();
   }
@@ -181,13 +182,16 @@ void PageActionIconView::OnTouchUiChanged() {
   IconLabelBubbleView::OnTouchUiChanged();
 }
 
-const char* PageActionIconView::GetClassName() const {
-  return "PageActionIconView";
-}
-
 void PageActionIconView::SetIconColor(SkColor icon_color) {
+  if (icon_color_ == icon_color)
+    return;
   icon_color_ = icon_color;
   UpdateIconImage();
+  OnPropertyChanged(&icon_color_, views::kPropertyEffectsNone);
+}
+
+SkColor PageActionIconView::GetIconColor() const {
+  return icon_color_;
 }
 
 void PageActionIconView::SetActive(bool active) {
@@ -195,6 +199,11 @@ void PageActionIconView::SetActive(bool active) {
     return;
   active_ = active;
   UpdateIconImage();
+  OnPropertyChanged(&active_, views::kPropertyEffectsNone);
+}
+
+bool PageActionIconView::GetActive() const {
+  return active_;
 }
 
 void PageActionIconView::Update() {
@@ -209,6 +218,14 @@ void PageActionIconView::Update() {
 }
 
 void PageActionIconView::UpdateIconImage() {
+  // If PageActionIconView is not hosted within a Widget hierarchy early return
+  // here. `UpdateIconImage()` is called in OnThemeChanged() and will update as
+  // needed when added to a Widget and on theme changes. Returning early avoids
+  // a call to GetNativeTheme() when no hosting Widget is present which falls
+  // through to the deprecated global NativeTheme accessor.
+  if (!GetWidget())
+    return;
+
   const ui::NativeTheme* theme = GetNativeTheme();
   const SkColor icon_color =
       active_ ? theme->GetSystemColor(
@@ -231,11 +248,8 @@ void PageActionIconView::InstallLoadingIndicator() {
 }
 
 void PageActionIconView::SetIsLoading(bool is_loading) {
-  if (!loading_indicator_)
-    return;
-
-  is_loading ? loading_indicator_->ShowAnimation()
-             : loading_indicator_->StopAnimation();
+  if (loading_indicator_)
+    loading_indicator_->SetAnimating(is_loading);
 }
 
 content::WebContents* PageActionIconView::GetWebContents() const {
@@ -247,3 +261,8 @@ void PageActionIconView::UpdateBorder() {
   if (new_insets != GetInsets())
     SetBorder(views::CreateEmptyBorder(new_insets));
 }
+
+BEGIN_METADATA(PageActionIconView, IconLabelBubbleView)
+ADD_PROPERTY_METADATA(SkColor, IconColor, ui::metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(bool, Active)
+END_METADATA

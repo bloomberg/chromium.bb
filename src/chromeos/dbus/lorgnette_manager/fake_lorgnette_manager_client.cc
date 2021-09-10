@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -36,7 +35,7 @@ void FakeLorgnetteManagerClient::GetScannerCapabilities(
 void FakeLorgnetteManagerClient::StartScan(
     const std::string& device_name,
     const lorgnette::ScanSettings& settings,
-    VoidDBusMethodCallback completion_callback,
+    base::OnceCallback<void(lorgnette::ScanFailureMode)> completion_callback,
     base::RepeatingCallback<void(std::string, uint32_t)> page_callback,
     base::RepeatingCallback<void(uint32_t, uint32_t)> progress_callback) {
   if (scan_response_.has_value()) {
@@ -58,8 +57,10 @@ void FakeLorgnetteManagerClient::StartScan(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(completion_callback),
-                                scan_response_.has_value()));
-  scan_response_ = base::nullopt;
+                                scan_response_.has_value()
+                                    ? lorgnette::SCAN_FAILURE_MODE_NO_FAILURE
+                                    : lorgnette::SCAN_FAILURE_MODE_UNKNOWN));
+  scan_response_ = absl::nullopt;
 }
 
 void FakeLorgnetteManagerClient::CancelScan(
@@ -69,19 +70,19 @@ void FakeLorgnetteManagerClient::CancelScan(
 }
 
 void FakeLorgnetteManagerClient::SetListScannersResponse(
-    const base::Optional<lorgnette::ListScannersResponse>&
+    const absl::optional<lorgnette::ListScannersResponse>&
         list_scanners_response) {
   list_scanners_response_ = list_scanners_response;
 }
 
 void FakeLorgnetteManagerClient::SetScannerCapabilitiesResponse(
-    const base::Optional<lorgnette::ScannerCapabilities>&
+    const absl::optional<lorgnette::ScannerCapabilities>&
         capabilities_response) {
   capabilities_response_ = capabilities_response;
 }
 
 void FakeLorgnetteManagerClient::SetScanResponse(
-    const base::Optional<std::vector<std::string>>& scan_response) {
+    const absl::optional<std::vector<std::string>>& scan_response) {
   scan_response_ = scan_response;
 }
 

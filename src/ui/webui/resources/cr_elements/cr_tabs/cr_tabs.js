@@ -19,8 +19,15 @@
  *   - no horizontal scrolling, it is assumed that tabs always fit in the
  *     available space
  */
+import '../hidden_style_css.m.js';
+import '../shared_vars_css.m.js';
+
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 Polymer({
   is: 'cr-tabs',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
@@ -118,6 +125,18 @@ Polymer({
     const leftPercent = 100 * left / containerWidth;
     const widthRatio = width / containerWidth;
 
+    if (this.hasAttribute('new-material')) {
+      // Initiate with initial transform and width, then add |initiated| class
+      // in a timeout so that only all subsequent updates to transform and width
+      // are transitioned.
+      this.$.selectionBar.style.transform = `translateX(${left}px)`;
+      this.$.selectionBar.style.width = `${width}px`;
+      setTimeout(() => {
+        this.$.selectionBar.classList.add('initiated');
+      });
+      return;
+    }
+
     // When there are two tabs, the selection bar will expand to underline both
     // tabs. If a user quickly changes tabs multiple times, the selection bar
     // will no longer have any room to expand the transitionend event will be
@@ -172,6 +191,12 @@ Polymer({
         const {offsetLeft, offsetWidth} = tabs[this.selected];
         this.updateSelectionBar_(offsetLeft, offsetWidth);
       });
+      return;
+    }
+
+    if (this.hasAttribute('new-material')) {
+      const selectedTab = tabs[this.selected];
+      this.updateSelectionBar_(selectedTab.offsetLeft, selectedTab.offsetWidth);
       return;
     }
 

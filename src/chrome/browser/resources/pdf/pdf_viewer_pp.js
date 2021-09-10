@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './elements/viewer-error-screen.js';
+import './elements/viewer-error-dialog.js';
 import './elements/viewer-page-indicator.js';
-import './elements/viewer-zoom-toolbar.js';
 import './elements/shared-vars.js';
 import './pdf_viewer_shared_style.js';
 
@@ -16,9 +15,10 @@ import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.
 import {BrowserApi} from './browser_api.js';
 import {FittingType} from './constants.js';
 import {MessageData, PluginController, PrintPreviewParams} from './controller.js';
+import {ViewerZoomToolbarElement} from './elements/viewer-zoom-toolbar.js';
 import {DeserializeKeyEvent, LoadState, SerializeKeyEvent} from './pdf_scripting_api.js';
 import {PDFViewerBaseElement} from './pdf_viewer_base.js';
-import {DestinationMessageData, DocumentDimensionsMessageData, MessageObject, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
+import {DestinationMessageData, DocumentDimensionsMessageData, hasCtrlModifier, MessageObject, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
 import {ToolbarManager} from './toolbar_manager.js';
 
 class PDFViewerPPElement extends PDFViewerBaseElement {
@@ -57,11 +57,6 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
   }
 
   /** @override */
-  getErrorScreen() {
-    return /** @type {!ViewerErrorScreenElement} */ (this.$$('#error-screen'));
-  }
-
-  /** @override */
   getBackgroundColor() {
     return PRINT_PREVIEW_BACKGROUND_COLOR;
   }
@@ -81,8 +76,7 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
     /** @private {?PluginController} */
     this.pluginController_ = PluginController.getInstance();
 
-    this.toolbarManager_ =
-        new ToolbarManager(window, null, this.getZoomToolbar_());
+    this.toolbarManager_ = new ToolbarManager(window, this.getZoomToolbar_());
 
     // Setup the keyboard event listener.
     document.addEventListener(
@@ -97,11 +91,11 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
    * @private
    */
   handleKeyEvent_(e) {
-    if (shouldIgnoreKeyEvents(document.activeElement) || e.defaultPrevented) {
+    if (shouldIgnoreKeyEvents() || e.defaultPrevented) {
       return;
     }
 
-    this.toolbarManager_.hideToolbarsAfterTimeout();
+    this.toolbarManager_.hideToolbarAfterTimeout();
     // Let the viewport handle directional key events.
     if (this.viewport.handleDirectionalKeyEvent(e, false)) {
       return;
@@ -109,12 +103,12 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
 
     switch (e.key) {
       case 'Tab':
-        this.toolbarManager_.showToolbarsForKeyboardNavigation();
+        this.toolbarManager_.showToolbarForKeyboardNavigation();
         return;
       case 'Escape':
         break;  // Ensure escape falls through to the print-preview handler.
       case 'a':
-        if (e.ctrlKey || e.metaKey) {
+        if (hasCtrlModifier(e)) {
           this.pluginController_.selectAll();
           // Since we do selection ourselves.
           e.preventDefault();
@@ -132,16 +126,16 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
       this.sendScriptingMessage(
           {type: 'sendKeyEvent', keyEvent: SerializeKeyEvent(e)});
     } else {
-      // Show toolbars as a fallback.
+      // Show toolbar as a fallback.
       if (!(e.shiftKey || e.ctrlKey || e.altKey)) {
-        this.toolbarManager_.showToolbars();
+        this.getZoomToolbar_().show();
       }
     }
   }
 
   /** @private */
-  sendBackgroundColorForPrintPreview_() {
-    this.pluginController_.backgroundColorChanged(
+  setBackgroundColorForPrintPreview_() {
+    this.pluginController_.setBackgroundColor(
         this.dark_ ? PRINT_PREVIEW_DARK_BACKGROUND_COLOR :
                      PRINT_PREVIEW_BACKGROUND_COLOR);
   }
@@ -248,12 +242,12 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
         this.handleKeyEvent_(/** @type {!KeyboardEvent} */ (DeserializeKeyEvent(
             /** @type {{ keyEvent: Object }} */ (message.data).keyEvent)));
         return true;
-      case 'hideToolbars':
-        this.toolbarManager_.resetKeyboardNavigationAndHideToolbars();
+      case 'hideToolbar':
+        this.toolbarManager_.resetKeyboardNavigationAndHideToolbar();
         return true;
       case 'darkModeChanged':
         this.dark_ = /** @type {{darkMode: boolean}} */ (message.data).darkMode;
-        this.sendBackgroundColorForPrintPreview_();
+        this.setBackgroundColorForPrintPreview_();
         return true;
       case 'scrollPosition':
         const position = this.viewport.position;
@@ -346,29 +340,29 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
     if (!strings) {
       return;
     }
-    this.sendBackgroundColorForPrintPreview_();
+    this.setBackgroundColorForPrintPreview_();
   }
 
   /** @override */
   updateProgress(progress) {
     super.updateProgress(progress);
     if (progress === 100) {
-      this.toolbarManager_.hideToolbarsAfterTimeout();
+      this.toolbarManager_.hideToolbarAfterTimeout();
     }
   }
 }
 
 /**
  * The background color used for print preview (--google-grey-refresh-300).
- * @type {string}
+ * @type {number}
  */
-const PRINT_PREVIEW_BACKGROUND_COLOR = '0xFFDADCE0';
+const PRINT_PREVIEW_BACKGROUND_COLOR = 0xffdadce0;
 
 /**
  * The background color used for print preview when dark mode is enabled
  * (--google-grey-refresh-700).
- * @type {string}
+ * @type {number}
  */
-const PRINT_PREVIEW_DARK_BACKGROUND_COLOR = '0xFF5F6368';
+const PRINT_PREVIEW_DARK_BACKGROUND_COLOR = 0xff5f6368;
 
 customElements.define(PDFViewerPPElement.is, PDFViewerPPElement);

@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -341,7 +342,7 @@ constexpr base::FilePath::CharType kHighResAvatarFolderName[] =
 // The size of the function-static kDefaultAvatarIconResources array below.
 #if defined(OS_ANDROID)
 constexpr size_t kDefaultAvatarIconsCount = 1;
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr size_t kDefaultAvatarIconsCount = 27;
 #else
 constexpr size_t kDefaultAvatarIconsCount = 56;
@@ -428,10 +429,11 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
 
 #if defined(OS_MAC)
 gfx::Image GetAvatarIconForNSMenu(const base::FilePath& profile_path) {
-  ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()
-           ->GetProfileAttributesStorage()
-           .GetProfileAttributesWithPath(profile_path, &entry)) {
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_path);
+  if (!entry) {
     // This can happen if the user deletes the current profile.
     return gfx::Image();
   }
@@ -475,7 +477,7 @@ size_t GetPlaceholderAvatarIndex() {
 }
 
 size_t GetModernAvatarIconStartIndex() {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
   return GetPlaceholderAvatarIndex() + 1;
 #else
   // Only use the placeholder avatar on ChromeOS and Android.
@@ -554,7 +556,7 @@ const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
     // Placeholder avatar icon:
     {IDR_PROFILE_AVATAR_26, nullptr, IDS_DEFAULT_AVATAR_LABEL_26},
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
     // Modern avatar icons:
     {IDR_PROFILE_AVATAR_27, "avatar_origami_cat.png",
      IDS_DEFAULT_AVATAR_LABEL_27},
@@ -677,9 +679,8 @@ bool IsDefaultAvatarIconUrl(const std::string& url, size_t* icon_index) {
     return false;
 
   int int_value = -1;
-  if (base::StringToInt(base::StringPiece(url.begin() +
-                                          strlen(kDefaultUrlPrefix),
-                                          url.end()),
+  if (base::StringToInt(base::MakeStringPiece(
+                            url.begin() + strlen(kDefaultUrlPrefix), url.end()),
                         &int_value)) {
     if (int_value < 0 ||
         int_value >= static_cast<int>(kDefaultAvatarIconsCount))
@@ -691,28 +692,25 @@ bool IsDefaultAvatarIconUrl(const std::string& url, size_t* icon_index) {
   return false;
 }
 
-std::unique_ptr<base::DictionaryValue> GetAvatarIconAndLabelDict(
+base::flat_map<std::string, base::Value> GetAvatarIconAndLabelDict(
     const std::string& url,
-    const base::string16& label,
+    const std::u16string& label,
     size_t index,
     bool selected,
     bool is_gaia_avatar) {
-  std::unique_ptr<base::DictionaryValue> avatar_info(
-      new base::DictionaryValue());
-  avatar_info->SetStringPath("url", url);
-  avatar_info->SetStringPath("label", label);
-  avatar_info->SetIntPath("index", index);
-  avatar_info->SetBoolPath("selected", selected);
-  avatar_info->SetBoolPath("isGaiaAvatar", is_gaia_avatar);
+  base::flat_map<std::string, base::Value> avatar_info;
+  avatar_info.emplace("url", url);
+  avatar_info.emplace("label", label);
+  avatar_info.emplace("index", static_cast<int>(index));
+  avatar_info.emplace("selected", selected);
+  avatar_info.emplace("isGaiaAvatar", is_gaia_avatar);
   return avatar_info;
 }
 
-std::unique_ptr<base::DictionaryValue> GetDefaultProfileAvatarIconAndLabel(
+base::flat_map<std::string, base::Value> GetDefaultProfileAvatarIconAndLabel(
     SkColor fill_color,
     SkColor stroke_color,
     bool selected) {
-  std::unique_ptr<base::DictionaryValue> avatar_info(
-      new base::DictionaryValue());
   gfx::Image icon = profiles::GetPlaceholderAvatarIconWithColors(
       fill_color, stroke_color, kAvatarIconSize);
   size_t index = profiles::GetPlaceholderAvatarIndex();
@@ -723,13 +721,13 @@ std::unique_ptr<base::DictionaryValue> GetDefaultProfileAvatarIconAndLabel(
       index, selected, /*is_gaia_avatar=*/false);
 }
 
-std::unique_ptr<base::ListValue> GetCustomProfileAvatarIconsAndLabels(
+std::vector<base::Value> GetCustomProfileAvatarIconsAndLabels(
     size_t selected_avatar_idx) {
-  std::unique_ptr<base::ListValue> avatars(new base::ListValue());
+  std::vector<base::Value> avatars;
 
   for (size_t i = GetModernAvatarIconStartIndex();
        i < GetDefaultAvatarIconCount(); ++i) {
-    avatars->Append(GetAvatarIconAndLabelDict(
+    avatars.emplace_back(GetAvatarIconAndLabelDict(
         profiles::GetDefaultAvatarIconUrl(i),
         l10n_util::GetStringUTF16(
             profiles::GetDefaultAvatarLabelResourceIDAtIndex(i)),
@@ -812,7 +810,7 @@ SkBitmap GetBadgedWinIconBitmapForAvatar(const SkBitmap& app_icon_bitmap,
                                app_icon_bitmap.height());
   SkCanvas offscreen_canvas(badged_bitmap, SkSurfaceProps{});
   offscreen_canvas.clear(SK_ColorTRANSPARENT);
-  offscreen_canvas.drawBitmap(app_icon_bitmap, 0, 0);
+  offscreen_canvas.drawImage(app_icon_bitmap.asImage(), 0, 0);
 
   // Render the avatar in a cutout circle. If the avatar is not square, center
   // it in the circle but favor pushing it further down.
@@ -826,7 +824,7 @@ SkBitmap GetBadgedWinIconBitmapForAvatar(const SkBitmap& app_icon_bitmap,
       SkRect::MakeXYWH(cutout_left, cutout_top, cutout_size, cutout_size));
 
   offscreen_canvas.clipRRect(clip_circle, true);
-  offscreen_canvas.drawBitmap(sk_icon, icon_left, icon_top);
+  offscreen_canvas.drawImage(sk_icon.asImage(), icon_left, icon_top);
   return badged_bitmap;
 }
 #endif  // OS_WIN

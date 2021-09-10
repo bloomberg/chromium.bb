@@ -10,11 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "components/services/app_service/public/cpp/url_handler_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -46,9 +47,10 @@ class TestAppRegistrar : public AppRegistrar {
   bool IsInstalled(const AppId& app_id) const override;
   bool IsLocallyInstalled(const AppId& app_id) const override;
   bool WasInstalledByUser(const AppId& app_id) const override;
+  bool WasInstalledByOem(const AppId& app_id) const override;
   std::map<AppId, GURL> GetExternallyInstalledApps(
       ExternalInstallSource install_source) const override;
-  base::Optional<AppId> LookupExternalAppId(
+  absl::optional<AppId> LookupExternalAppId(
       const GURL& install_url) const override;
   bool HasExternalAppWithInstallSource(
       const AppId& app_id,
@@ -56,32 +58,44 @@ class TestAppRegistrar : public AppRegistrar {
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const AppId& app_id) const override;
   std::string GetAppDescription(const AppId& app_id) const override;
-  base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
-  base::Optional<SkColor> GetAppBackgroundColor(
+  absl::optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
+  absl::optional<SkColor> GetAppBackgroundColor(
       const AppId& app_id) const override;
   const GURL& GetAppStartUrl(const AppId& app_id) const override;
   const std::string* GetAppLaunchQueryParams(
       const AppId& app_id) const override;
   const apps::ShareTarget* GetAppShareTarget(
       const AppId& app_id) const override;
-  base::Optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
+  blink::mojom::CaptureLinks GetAppCaptureLinks(
+      const AppId& app_id) const override;
+  const apps::FileHandlers* GetAppFileHandlers(
+      const AppId& app_id) const override;
+  const apps::ProtocolHandlers* GetAppProtocolHandlers(
+      const AppId& app_id) const override;
+  bool IsAppFileHandlerPermissionBlocked(
+      const web_app::AppId& app_id) const override;
+  absl::optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
   DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
   DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
   std::vector<DisplayMode> GetAppDisplayModeOverride(
       const AppId& app_id) const override;
-  base::Time GetAppLastLaunchTime(const web_app::AppId& app_id) const override;
-  base::Time GetAppInstallTime(const web_app::AppId& app_id) const override;
+  apps::UrlHandlers GetAppUrlHandlers(const AppId& app_id) const override;
+  GURL GetAppManifestUrl(const AppId& app_id) const override;
+  base::Time GetAppLastBadgingTime(const AppId& app_id) const override;
+  base::Time GetAppLastLaunchTime(const AppId& app_id) const override;
+  base::Time GetAppInstallTime(const AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const AppId& app_id) const override;
   SortedSizesPx GetAppDownloadedIconSizesAny(
       const AppId& app_id) const override;
   std::vector<WebApplicationShortcutsMenuItemInfo> GetAppShortcutsMenuItemInfos(
       const AppId& app_id) const override;
-  std::vector<std::vector<SquareSizePx>>
-  GetAppDownloadedShortcutsMenuIconsSizes(const AppId& app_id) const override;
+  std::vector<IconSizes> GetAppDownloadedShortcutsMenuIconsSizes(
+      const AppId& app_id) const override;
   RunOnOsLoginMode GetAppRunOnOsLoginMode(const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
   WebAppRegistrar* AsWebAppRegistrar() override;
+  const WebAppRegistrar* AsWebAppRegistrar() const override;
 
  private:
   std::map<AppId, AppInfo> installed_apps_;

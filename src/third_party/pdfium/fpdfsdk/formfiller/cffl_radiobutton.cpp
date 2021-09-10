@@ -14,6 +14,7 @@
 #include "fpdfsdk/formfiller/cffl_formfiller.h"
 #include "fpdfsdk/pwl/cpwl_special_button.h"
 #include "public/fpdf_fwlevent.h"
+#include "third_party/base/check.h"
 
 CFFL_RadioButton::CFFL_RadioButton(CPDFSDK_FormFillEnvironment* pApp,
                                    CPDFSDK_Widget* pWidget)
@@ -47,7 +48,7 @@ bool CFFL_RadioButton::OnChar(CPDFSDK_Annot* pAnnot,
     case FWL_VKEY_Return:
     case FWL_VKEY_Space: {
       CPDFSDK_PageView* pPageView = pAnnot->GetPageView();
-      ASSERT(pPageView);
+      DCHECK(pPageView);
 
       ObservedPtr<CPDFSDK_Annot> pObserved(m_pWidget.Get());
       if (m_pFormFillEnv->GetInteractiveFormFiller()->OnButtonUp(
@@ -105,7 +106,7 @@ void CFFL_RadioButton::SaveData(CPDFSDK_PageView* pPageView) {
   }
   ObservedPtr<CPDFSDK_Widget> observed_widget(m_pWidget.Get());
   ObservedPtr<CFFL_RadioButton> observed_this(this);
-  m_pWidget->SetCheck(bNewChecked, NotificationOption::kDoNotNotify);
+  m_pWidget->SetCheck(bNewChecked);
   if (!observed_widget)
     return;
 

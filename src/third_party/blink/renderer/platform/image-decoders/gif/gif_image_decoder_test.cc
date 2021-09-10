@@ -33,7 +33,6 @@
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -286,11 +285,6 @@ TEST(GIFImageDecoderTest, randomDecodeAfterClearFrameBufferCache) {
   TestRandomDecodeAfterClearFrameBufferCache(
       &CreateDecoder, kWebTestsResourcesDir, "animated-gif-with-offsets.gif");
   TestRandomDecodeAfterClearFrameBufferCache(
-      &CreateDecoder, kWebTestsResourcesDir, "animated-10color.gif");
-}
-
-TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache) {
-  TestResumePartialDecodeAfterClearFrameBufferCache(
       &CreateDecoder, kWebTestsResourcesDir, "animated-10color.gif");
 }
 

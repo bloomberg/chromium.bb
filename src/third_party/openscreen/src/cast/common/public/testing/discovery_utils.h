@@ -5,6 +5,8 @@
 #ifndef CAST_COMMON_PUBLIC_TESTING_DISCOVERY_UTILS_H_
 #define CAST_COMMON_PUBLIC_TESTING_DISCOVERY_UTILS_H_
 
+#include <string>
+
 #include "cast/common/public/service_info.h"
 #include "discovery/dnssd/public/dns_sd_txt_record.h"
 #include "gmock/gmock.h"
@@ -15,22 +17,21 @@ namespace openscreen {
 namespace cast {
 
 // Constants used for testing.
-static const IPAddress kAddressV4(192, 168, 0, 0);
-static const IPAddress kAddressV6(1, 2, 3, 4, 5, 6, 7, 8);
-static constexpr uint16_t kPort = 80;
-static const IPEndpoint kEndpointV4{kAddressV4, kPort};
-static const IPEndpoint kEndpointV6{kAddressV6, kPort};
-static constexpr char kTestUniqueId[] = "1234";
-static constexpr char kFriendlyName[] = "Friendly Name 123";
-static constexpr char kModelName[] = "Openscreen";
-static constexpr char kInstanceId[] = "Openscreen-1234";
-static constexpr uint8_t kTestVersion = 0;
-static constexpr char kCapabilitiesString[] = "3";
-static constexpr char kCapabilitiesStringLong[] = "000003";
-static constexpr ReceiverCapabilities kCapabilitiesParsed =
-    static_cast<ReceiverCapabilities>(0x03);
-static constexpr uint8_t kStatus = 0x01;
-static constexpr ReceiverStatus kStatusParsed = ReceiverStatus::kBusy;
+extern const IPAddress kAddressV4;
+extern const IPAddress kAddressV6;
+constexpr uint16_t kPort = 80;
+extern const IPEndpoint kEndpointV4;
+extern const IPEndpoint kEndpointV6;
+constexpr char kTestUniqueId[] = "1234";
+constexpr char kFriendlyName[] = "Friendly Name 123";
+constexpr char kModelName[] = "Openscreen";
+constexpr char kInstanceId[] = "Openscreen-1234";
+constexpr uint8_t kTestVersion = 5;
+constexpr char kCapabilitiesString[] = "3";
+constexpr char kCapabilitiesStringLong[] = "000003";
+constexpr uint64_t kCapabilitiesParsed = 0x03;
+constexpr uint8_t kStatus = 0x01;
+constexpr ReceiverStatus kStatusParsed = ReceiverStatus::kBusy;
 
 discovery::DnsSdTxtRecord CreateValidTxt();
 
@@ -40,7 +41,7 @@ void CompareTxtString(const discovery::DnsSdTxtRecord& txt,
 
 void CompareTxtInt(const discovery::DnsSdTxtRecord& txt,
                    const std::string& key,
-                   uint8_t expected);
+                   int expected);
 
 }  // namespace cast
 }  // namespace openscreen

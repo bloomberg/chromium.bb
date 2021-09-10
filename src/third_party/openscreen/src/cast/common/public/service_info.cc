@@ -5,7 +5,7 @@
 #include "cast/common/public/service_info.h"
 
 #include <cctype>
-#include <memory>
+#include <cinttypes>
 #include <string>
 #include <vector>
 
@@ -16,9 +16,6 @@
 namespace openscreen {
 namespace cast {
 namespace {
-
-// The mask for the set of supported capabilities in v2 of the Cast protocol.
-const uint16_t kCapabilitiesMask = 0x1F;
 
 // Maximum size for registered MDNS service instance names.
 const size_t kMaxDeviceNameSize = 63;
@@ -59,75 +56,17 @@ std::string CalculateInstanceId(const ServiceInfo& info) {
   return std::string(instance_name, 0, kMaxDeviceNameSize);
 }
 
-// NOTE: Eureka uses base::StringToUint64 which takes in a string and reads it
-// left to right, converts it to a number sequence, and uses the sequence to
-// calculate the resulting integer. This process assumes that the input is in
-// base 10. For example, ['1', '2', '3'] converts to 123.
-//
-// The below 2 functions re-create this logic for converting to and from this
-// encoding scheme.
-inline std::string EncodeIntegerString(uint64_t value) {
-  return std::to_string(value);
-}
-
-ErrorOr<uint64_t> DecodeIntegerString(const std::string& value) {
-  uint64_t result;
-  if (!absl::SimpleAtoi(value, &result)) {
-    return Error::Code::kParameterInvalid;
+// Returns the value for the provided |key| in the |txt| record if it exists;
+// otherwise, returns an empty string.
+std::string GetStringFromRecord(const discovery::DnsSdTxtRecord& txt,
+                                const std::string& key) {
+  std::string result;
+  const ErrorOr<discovery::DnsSdTxtRecord::ValueRef> value = txt.GetValue(key);
+  if (value.is_value()) {
+    const std::vector<uint8_t>& txt_value = value.value().get();
+    result.assign(txt_value.begin(), txt_value.end());
   }
-
   return result;
-}
-
-// Attempts to parse the string present at the provided |key| in the TXT record
-// |txt|, placing the result into |result| on success and error into |error| on
-// failure.
-bool TryParseString(const discovery::DnsSdTxtRecord& txt,
-                    const std::string& key,
-                    Error* error,
-                    std::string* result) {
-  const ErrorOr<discovery::DnsSdTxtRecord::ValueRef> value = txt.GetValue(key);
-  if (value.is_error()) {
-    *error = value.error();
-    return false;
-  }
-
-  const std::vector<uint8_t>& txt_value = value.value().get();
-  *result = std::string(txt_value.begin(), txt_value.end());
-  return true;
-}
-// Attempts to parse the uint8_t present at the provided |key| in the TXT record
-// |txt|, placing the result into |result| on success and error into |error| on
-// failure.
-bool TryParseInt(const discovery::DnsSdTxtRecord& txt,
-                 const std::string& key,
-                 Error* error,
-                 uint8_t* result) {
-  const ErrorOr<discovery::DnsSdTxtRecord::ValueRef> value = txt.GetValue(key);
-  if (value.is_error()) {
-    *error = value.error();
-    return false;
-  }
-
-  const std::vector<uint8_t>& txt_value = value.value().get();
-  if (txt_value.size() != 1) {
-    *error = Error::Code::kParameterInvalid;
-    return false;
-  }
-
-  *result = txt_value[0];
-  return true;
-}
-
-// Simplifies logic below by changing error into an output parameter instead of
-// a return value.
-bool IsError(Error error, Error* result) {
-  if (error.ok()) {
-    return false;
-  } else {
-    *result = error;
-    return true;
-  }
 }
 
 }  // namespace
@@ -141,62 +80,54 @@ const std::string& ServiceInfo::GetInstanceId() const {
 }
 
 bool ServiceInfo::IsValid() const {
-  std::string instance_id = GetInstanceId();
-  if (!discovery::IsInstanceValid(instance_id)) {
-    return false;
-  }
-
-  const std::string capabilities_str = EncodeIntegerString(capabilities);
-  if (!discovery::DnsSdTxtRecord::IsValidTxtValue(kUniqueIdKey, unique_id) ||
-      !discovery::DnsSdTxtRecord::IsValidTxtValue(kVersionId,
-                                                  protocol_version) ||
-      !discovery::DnsSdTxtRecord::IsValidTxtValue(kCapabilitiesId,
-                                                  capabilities_str) ||
-      !discovery::DnsSdTxtRecord::IsValidTxtValue(kStatusId, status) ||
-      !discovery::DnsSdTxtRecord::IsValidTxtValue(kFriendlyNameId,
-                                                  friendly_name) ||
-      !discovery::DnsSdTxtRecord::IsValidTxtValue(kModelNameId, model_name)) {
-    return false;
-  }
-
-  return port;
+  return (
+      discovery::IsInstanceValid(GetInstanceId()) && port != 0 &&
+      !unique_id.empty() &&
+      discovery::DnsSdTxtRecord::IsValidTxtValue(kUniqueIdKey, unique_id) &&
+      protocol_version >= 2 &&
+      discovery::DnsSdTxtRecord::IsValidTxtValue(
+          kVersionKey, std::to_string(static_cast<int>(protocol_version))) &&
+      discovery::DnsSdTxtRecord::IsValidTxtValue(
+          kCapabilitiesKey, std::to_string(capabilities)) &&
+      (status == ReceiverStatus::kIdle || status == ReceiverStatus::kBusy) &&
+      discovery::DnsSdTxtRecord::IsValidTxtValue(
+          kStatusKey, std::to_string(static_cast<int>(status))) &&
+      discovery::DnsSdTxtRecord::IsValidTxtValue(kModelNameKey, model_name) &&
+      !friendly_name.empty() &&
+      discovery::DnsSdTxtRecord::IsValidTxtValue(kFriendlyNameKey,
+                                                 friendly_name));
 }
 
-discovery::DnsSdInstance ServiceInfoToDnsSdInstance(
-    const ServiceInfo& service) {
+discovery::DnsSdInstance ServiceInfoToDnsSdInstance(const ServiceInfo& info) {
   OSP_DCHECK(discovery::IsServiceValid(kCastV2ServiceId));
   OSP_DCHECK(discovery::IsDomainValid(kCastV2DomainId));
 
-  std::string instance_id = service.GetInstanceId();
-  OSP_DCHECK(discovery::IsInstanceValid(instance_id));
-
-  const std::string capabilities_str =
-      EncodeIntegerString(service.capabilities);
+  OSP_DCHECK(info.IsValid());
 
   discovery::DnsSdTxtRecord txt;
-  Error error;
-  const bool set_txt =
-      !IsError(txt.SetValue(kUniqueIdKey, service.unique_id), &error) &&
-      !IsError(txt.SetValue(kVersionId, service.protocol_version), &error) &&
-      !IsError(txt.SetValue(kCapabilitiesId, capabilities_str), &error) &&
-      !IsError(txt.SetValue(kStatusId, service.status), &error) &&
-      !IsError(txt.SetValue(kFriendlyNameId, service.friendly_name), &error) &&
-      !IsError(txt.SetValue(kModelNameId, service.model_name), &error);
-  OSP_DCHECK(set_txt);
+  const bool did_set_everything =
+      txt.SetValue(kUniqueIdKey, info.unique_id).ok() &&
+      txt.SetValue(kVersionKey,
+                   std::to_string(static_cast<int>(info.protocol_version)))
+          .ok() &&
+      txt.SetValue(kCapabilitiesKey, std::to_string(info.capabilities)).ok() &&
+      txt.SetValue(kStatusKey, std::to_string(static_cast<int>(info.status)))
+          .ok() &&
+      txt.SetValue(kModelNameKey, info.model_name).ok() &&
+      txt.SetValue(kFriendlyNameKey, info.friendly_name).ok();
+  OSP_DCHECK(did_set_everything);
 
-  return discovery::DnsSdInstance(instance_id, kCastV2ServiceId,
-                                  kCastV2DomainId, std::move(txt),
-                                  service.port);
+  return discovery::DnsSdInstance(info.GetInstanceId(), kCastV2ServiceId,
+                                  kCastV2DomainId, std::move(txt), info.port);
 }
 
 ErrorOr<ServiceInfo> DnsSdInstanceEndpointToServiceInfo(
     const discovery::DnsSdInstanceEndpoint& endpoint) {
   if (endpoint.service_id() != kCastV2ServiceId) {
-    return Error::Code::kParameterInvalid;
+    return {Error::Code::kParameterInvalid, "Not a Cast device."};
   }
 
   ServiceInfo record;
-  record.port = endpoint.port();
   for (const IPAddress& address : endpoint.addresses()) {
     if (!record.v4_address && address.IsV4()) {
       record.v4_address = address;
@@ -204,31 +135,71 @@ ErrorOr<ServiceInfo> DnsSdInstanceEndpointToServiceInfo(
       record.v6_address = address;
     }
   }
-  OSP_DCHECK(record.v4_address || record.v6_address);
-
-  const auto& txt = endpoint.txt();
-  std::string capabilities_base64;
-  std::string unique_id;
-  uint8_t status;
-  Error error;
-  if (!TryParseInt(txt, kVersionId, &error, &record.protocol_version) ||
-      !TryParseInt(txt, kStatusId, &error, &status) ||
-      !TryParseString(txt, kFriendlyNameId, &error, &record.friendly_name) ||
-      !TryParseString(txt, kModelNameId, &error, &record.model_name) ||
-      !TryParseString(txt, kCapabilitiesId, &error, &capabilities_base64) ||
-      !TryParseString(txt, kUniqueIdKey, &error, &record.unique_id)) {
-    return error;
+  if (!record.v4_address && !record.v6_address) {
+    return {Error::Code::kParameterInvalid,
+            "No IPv4 nor IPv6 address in record."};
+  }
+  record.port = endpoint.port();
+  if (record.port == 0) {
+    return {Error::Code::kParameterInvalid, "Invalid TCP port in record."};
   }
 
-  record.status = static_cast<ReceiverStatus>(status);
-
-  const ErrorOr<uint64_t> capabilities_flags =
-      DecodeIntegerString(capabilities_base64);
-  if (capabilities_flags.is_error()) {
-    return capabilities_flags.error();
+  // 128-bit integer in hexadecimal format.
+  record.unique_id = GetStringFromRecord(endpoint.txt(), kUniqueIdKey);
+  if (record.unique_id.empty()) {
+    return {Error::Code::kParameterInvalid,
+            "Missing device unique ID in record."};
   }
-  record.capabilities = static_cast<ReceiverCapabilities>(
-      capabilities_flags.value() & kCapabilitiesMask);
+
+  // Cast protocol version supported. Begins at 2 and is incremented by 1 with
+  // each version.
+  std::string a_decimal_number =
+      GetStringFromRecord(endpoint.txt(), kVersionKey);
+  if (a_decimal_number.empty()) {
+    return {Error::Code::kParameterInvalid,
+            "Missing Cast protocol version in record."};
+  }
+  constexpr int kMinVersion = 2;   // According to spec.
+  constexpr int kMaxVersion = 99;  // Implied by spec (field is max of 2 bytes).
+  int version;
+  if (!absl::SimpleAtoi(a_decimal_number, &version) || version < kMinVersion ||
+      version > kMaxVersion) {
+    return {Error::Code::kParameterInvalid,
+            "Invalid Cast protocol version in record."};
+  }
+  record.protocol_version = static_cast<uint8_t>(version);
+
+  // A bitset of device capabilities.
+  a_decimal_number = GetStringFromRecord(endpoint.txt(), kCapabilitiesKey);
+  if (a_decimal_number.empty()) {
+    return {Error::Code::kParameterInvalid,
+            "Missing device capabilities in record."};
+  }
+  if (!absl::SimpleAtoi(a_decimal_number, &record.capabilities)) {
+    return {Error::Code::kParameterInvalid,
+            "Invalid device capabilities field in record."};
+  }
+
+  // Receiver status flag.
+  a_decimal_number = GetStringFromRecord(endpoint.txt(), kStatusKey);
+  if (a_decimal_number == "0") {
+    record.status = ReceiverStatus::kIdle;
+  } else if (a_decimal_number == "1") {
+    record.status = ReceiverStatus::kBusy;
+  } else {
+    return {Error::Code::kParameterInvalid,
+            "Missing/Invalid receiver status flag in record."};
+  }
+
+  // [Optional] Receiver model name.
+  record.model_name = GetStringFromRecord(endpoint.txt(), kModelNameKey);
+
+  // The friendly name of the device.
+  record.friendly_name = GetStringFromRecord(endpoint.txt(), kFriendlyNameKey);
+  if (record.friendly_name.empty()) {
+    return {Error::Code::kParameterInvalid,
+            "Missing device friendly name in record."};
+  }
 
   return record;
 }

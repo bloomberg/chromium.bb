@@ -21,6 +21,7 @@
 #include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
@@ -179,8 +180,7 @@ base::File OpenV8File(const char* file_name,
   }
 #endif  // defined(OS_ANDROID)
 
-  UMA_HISTOGRAM_ENUMERATION("V8.Initializer.OpenV8File.Result",
-                            result,
+  UMA_HISTOGRAM_ENUMERATION("V8.Initializer.OpenV8File.Result", result,
                             OpenV8FileResult::MAX_VALUE);
   return file;
 }
@@ -194,6 +194,24 @@ enum LoadV8FileResult {
 };
 
 #endif  // defined(V8_USE_EXTERNAL_STARTUP_DATA)
+
+template <int LENGTH>
+void SetV8Flags(const char (&flag)[LENGTH]) {
+  v8::V8::SetFlagsFromString(flag, LENGTH - 1);
+}
+
+void SetV8FlagsFormatted(const char* format, ...) {
+  char buffer[128];
+  va_list args;
+  va_start(args, format);
+  int length = base::vsnprintf(buffer, sizeof(buffer), format, args);
+  if (length <= 0 || sizeof(buffer) <= static_cast<unsigned>(length)) {
+    PLOG(ERROR) << "Invalid formatted V8 flag: " << format;
+    return;
+  }
+  v8::V8::SetFlagsFromString(buffer, length - 1);
+  ;
+}
 
 }  // namespace
 
@@ -209,88 +227,108 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
     // We avoid explicitly passing --opt if kV8OptimizeJavascript is enabled
     // since it is the default, and doing so would override flags passed
     // explicitly, e.g., via --js-flags=--no-opt.
-    static const char no_optimize[] = "--no-opt";
-    v8::V8::SetFlagsFromString(no_optimize, sizeof(no_optimize) - 1);
+    SetV8Flags("--no-opt");
   }
 
   if (!base::FeatureList::IsEnabled(features::kV8FlushBytecode)) {
-    static const char no_flush_bytecode[] = "--no-flush-bytecode";
-    v8::V8::SetFlagsFromString(no_flush_bytecode,
-                               sizeof(no_flush_bytecode) - 1);
+    SetV8Flags("--no-flush-bytecode");
   }
 
   if (base::FeatureList::IsEnabled(features::kV8OffThreadFinalization)) {
-    static const char finalize_streaming_on_background[] =
-        "--finalize-streaming-on-background";
-    v8::V8::SetFlagsFromString(finalize_streaming_on_background,
-                               sizeof(finalize_streaming_on_background) - 1);
+    SetV8Flags("--finalize-streaming-on-background");
   }
 
   if (!base::FeatureList::IsEnabled(features::kV8LazyFeedbackAllocation)) {
-    static const char no_lazy_feedback_allocation[] =
-        "--no-lazy-feedback-allocation";
-    v8::V8::SetFlagsFromString(no_lazy_feedback_allocation,
-                               sizeof(no_lazy_feedback_allocation) - 1);
+    SetV8Flags("--no-lazy-feedback-allocation");
   }
 
   if (base::FeatureList::IsEnabled(features::kV8ConcurrentInlining)) {
-    static const char tf_experiment_concurrent_inlining[] =
-        "--concurrent_inlining";
-    v8::V8::SetFlagsFromString(tf_experiment_concurrent_inlining,
-                               sizeof(tf_experiment_concurrent_inlining) - 1);
+    SetV8Flags("--concurrent_inlining");
   }
 
   if (base::FeatureList::IsEnabled(features::kV8PerContextMarkingWorklist)) {
-    static const char stress_per_context_marking_worklist[] =
-        "--stress-per-context-marking-worklist";
-    v8::V8::SetFlagsFromString(stress_per_context_marking_worklist,
-                               sizeof(stress_per_context_marking_worklist) - 1);
+    SetV8Flags("--stress-per-context-marking-worklist");
   }
 
   if (base::FeatureList::IsEnabled(features::kV8FlushEmbeddedBlobICache)) {
-    static const char experimental_flush_embedded_blob_icache[] =
-        "--experimental-flush-embedded-blob-icache";
-    v8::V8::SetFlagsFromString(
-        experimental_flush_embedded_blob_icache,
-        sizeof(experimental_flush_embedded_blob_icache) - 1);
+    SetV8Flags("--experimental-flush-embedded-blob-icache");
   }
 
   if (base::FeatureList::IsEnabled(features::kV8ReduceConcurrentMarkingTasks)) {
-    static const char gc_experiment_reduce_concurrent_marking_tasks[] =
-        "--gc-experiment-reduce-concurrent-marking-tasks";
-    v8::V8::SetFlagsFromString(
-        gc_experiment_reduce_concurrent_marking_tasks,
-        sizeof(gc_experiment_reduce_concurrent_marking_tasks) - 1);
+    SetV8Flags("--gc-experiment-reduce-concurrent-marking-tasks");
   }
 
   if (base::FeatureList::IsEnabled(features::kV8NoReclaimUnmodifiedWrappers)) {
-    static constexpr char no_reclaim_unmodified_wrappers[] =
-        "--no-reclaim-unmodified-wrappers";
-    v8::V8::SetFlagsFromString(no_reclaim_unmodified_wrappers,
-                               sizeof(no_reclaim_unmodified_wrappers) - 1);
+    SetV8Flags("--no-reclaim-unmodified-wrappers");
   }
 
   if (!base::FeatureList::IsEnabled(features::kV8LocalHeaps)) {
     // The --local-heaps flag is enabled by default, so we need to explicitly
     // disable it if kV8LocalHeaps is disabled.
-    static constexpr char no_local_heaps[] = "--no-local-heaps";
-    v8::V8::SetFlagsFromString(no_local_heaps, sizeof(no_local_heaps) - 1);
-
     // Also disable TurboFan's direct access if local heaps are not enabled.
-    static constexpr char no_direct_access[] = "--no-turbo-direct-heap-access";
-    v8::V8::SetFlagsFromString(no_direct_access, sizeof(no_direct_access) - 1);
+    SetV8Flags("--no-local-heaps --no-turbo-direct-heap-access");
   }
 
   if (!base::FeatureList::IsEnabled(features::kV8TurboDirectHeapAccess)) {
     // The --turbo-direct-heap-access flag is enabled by default, so we need to
     // explicitly disable it if kV8TurboDirectHeapAccess is disabled.
-    static constexpr char no_direct_access[] = "--no-turbo-direct-heap-access";
-    v8::V8::SetFlagsFromString(no_direct_access, sizeof(no_direct_access) - 1);
+    SetV8Flags("--no-turbo-direct-heap-access");
+  }
+
+  if (!base::FeatureList::IsEnabled(features::kV8ExperimentalRegexpEngine)) {
+    // The --enable-experimental-regexp-engine-on-excessive-backtracks flag is
+    // enabled by default, so we need to explicitly disable it if
+    // kV8ExperimentalRegexpEngine is disabled.
+    SetV8Flags(
+        "--no-enable-experimental-regexp-engine-on-excessive-backtracks");
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8TurboFastApiCalls)) {
+    SetV8Flags("--turbo-fast-api-calls");
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8Turboprop)) {
+    SetV8Flags("--turboprop");
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8Sparkplug)) {
+    SetV8Flags("--sparkplug");
+  }
+
+  if (base::FeatureList::IsEnabled(
+          features::kV8SparkplugNeedsShortBuiltinCalls)) {
+    SetV8Flags("--sparkplug-needs-short-builtins");
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8UntrustedCodeMitigations)) {
+    SetV8Flags("--untrusted-code-mitigations");
+  } else {
+    SetV8Flags("--no-untrusted-code-mitigations");
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8ScriptAblation)) {
+    if (int delay = features::kV8ScriptDelayMs.Get()) {
+      SetV8FlagsFormatted("--script-delay=%i", delay);
+    }
+    if (int delay = features::kV8ScriptDelayOnceMs.Get()) {
+      SetV8FlagsFormatted("--script-delay-once=%i", delay);
+    }
+    if (double fraction = features::kV8ScriptDelayFraction.Get()) {
+      SetV8FlagsFormatted("--script-delay-fraction=%f", fraction);
+    }
+  }
+
+  if (!base::FeatureList::IsEnabled(features::kV8ShortBuiltinCalls)) {
+    // The --short-builtin-calls flag is enabled by default on x64 and arm64
+    // desktop configurations, so we need to explicitly disable it if
+    // kV8ShortBuiltinCalls is disabled.
+    // On other configurations it's not supported, so we don't try to enable
+    // it if the feature flag is on.
+    SetV8Flags("--no-short-builtin-calls");
   }
 
   if (IsolateHolder::kStrictMode == mode) {
-    static const char use_strict[] = "--use_strict";
-    v8::V8::SetFlagsFromString(use_strict, sizeof(use_strict) - 1);
+    SetV8Flags("--use_strict");
   }
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)

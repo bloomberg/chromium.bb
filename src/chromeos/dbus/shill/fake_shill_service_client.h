@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -108,7 +109,10 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   void ClearServices() override;
   void SetConnectBehavior(const std::string& service_path,
                           const base::RepeatingClosure& behavior) override;
+  void SetErrorForNextConnectionAttempt(const std::string& error_name) override;
   void SetHoldBackServicePropertyUpdates(bool hold_back) override;
+  void SetRequireServiceToGetProperties(
+      bool require_service_to_get_properties) override;
 
  private:
   typedef base::ObserverList<ShillPropertyChangedObserver>::Unchecked
@@ -131,6 +135,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   // order to simulate a connection failure.
   std::map<std::string, base::RepeatingClosure> connect_behavior_;
 
+  // If set the next Connect call will fail with this error_name.
+  absl::optional<std::string> connect_error_name_;
+
   // Observer list for each service.
   std::map<dbus::ObjectPath, std::unique_ptr<PropertyObserverList>>
       observer_list_;
@@ -143,6 +150,10 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   // Property updates that were held back while
   // |hold_back_service_property_updates_| was true.
   std::vector<base::OnceClosure> recorded_property_updates_;
+
+  // Whether or not this class should fail if GetProperties() is called for an
+  // unknown service.
+  bool require_service_to_get_properties_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

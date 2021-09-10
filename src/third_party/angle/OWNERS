@@ -8,11 +8,9 @@ syoussefi@chromium.org
 syoussefi@google.com
 ynovikov@chromium.org
 ynovikov@google.com
+timvp@google.com
 
 per-file AUTHORS=*
 per-file CONTRIBUTORS=*
 per-file DEPS=*
 per-file WATCHLISTS=*
-
-# COMPONENT: Internals>GPU>ANGLE
-# TEAM: angleproject@googlegroups.com

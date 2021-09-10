@@ -141,6 +141,7 @@ private:
     void addIRectPtr(const SkIRect* rect);
     void addRRect(const SkRRect&);
     void addRegion(const SkRegion& region);
+    void addSampling(const SkSamplingOptions&);
     void addText(const void* text, size_t byteLength);
     void addTextBlob(const SkTextBlob* blob);
     void addVertices(const SkVertices*);
@@ -164,8 +165,7 @@ protected:
 
     void onMarkCTM(const char*) override;
     void didConcat44(const SkM44&) override;
-    void didConcat(const SkMatrix&) override;
-    void didSetMatrix(const SkMatrix&) override;
+    void didSetM44(const SkM44&) override;
     void didScale(SkScalar, SkScalar) override;
     void didTranslate(SkScalar, SkScalar) override;
 
@@ -176,8 +176,6 @@ protected:
 
     void onDrawPatch(const SkPoint cubics[12], const SkColor colors[4],
                      const SkPoint texCoords[4], SkBlendMode, const SkPaint& paint) override;
-    void onDrawAtlas(const SkImage*, const SkRSXform[], const SkRect[], const SkColor[], int,
-                     SkBlendMode, const SkRect*, const SkPaint*) override;
 
     void onDrawPaint(const SkPaint&) override;
     void onDrawBehind(const SkPaint&) override;
@@ -188,13 +186,15 @@ protected:
     void onDrawArc(const SkRect&, SkScalar, SkScalar, bool, const SkPaint&) override;
     void onDrawRRect(const SkRRect&, const SkPaint&) override;
     void onDrawPath(const SkPath&, const SkPaint&) override;
-    void onDrawImage(const SkImage*, SkScalar left, SkScalar top, const SkPaint*) override;
-    void onDrawImageRect(const SkImage*, const SkRect* src, const SkRect& dst,
-                         const SkPaint*, SrcRectConstraint) override;
-    void onDrawImageNine(const SkImage*, const SkIRect& center, const SkRect& dst,
-                         const SkPaint*) override;
-    void onDrawImageLattice(const SkImage*, const SkCanvas::Lattice& lattice, const SkRect& dst,
-                            const SkPaint*) override;
+
+    void onDrawImage2(const SkImage*, SkScalar, SkScalar, const SkSamplingOptions&,
+                      const SkPaint*) override;
+    void onDrawImageRect2(const SkImage*, const SkRect&, const SkRect&, const SkSamplingOptions&,
+                          const SkPaint*, SrcRectConstraint) override;
+    void onDrawImageLattice2(const SkImage*, const Lattice&, const SkRect&, SkFilterMode,
+                             const SkPaint*) override;
+    void onDrawAtlas2(const SkImage*, const SkRSXform[], const SkRect[], const SkColor[], int,
+                     SkBlendMode, const SkSamplingOptions&, const SkRect*, const SkPaint*) override;
 
     void onDrawShadowRec(const SkPath&, const SkDrawShadowRec&) override;
     void onDrawVerticesObject(const SkVertices*, SkBlendMode, const SkPaint&) override;
@@ -212,8 +212,8 @@ protected:
 
     void onDrawEdgeAAQuad(const SkRect&, const SkPoint[4], QuadAAFlags, const SkColor4f&,
                           SkBlendMode) override;
-    void onDrawEdgeAAImageSet(const ImageSetEntry[], int count, const SkPoint[], const SkMatrix[],
-                              const SkPaint*, SrcRectConstraint) override;
+    void onDrawEdgeAAImageSet2(const ImageSetEntry[], int count, const SkPoint[], const SkMatrix[],
+                               const SkSamplingOptions&,const SkPaint*, SrcRectConstraint) override;
 
     int addPathToHeap(const SkPath& path);  // does not write to ops stream
 

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
+#include "chrome/browser/ash/crostini/crostini_simple_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
@@ -47,6 +47,7 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.openTerminalProcess",
                              TERMINALPRIVATE_OPENTERMINALPROCESS)
+  TerminalPrivateOpenTerminalProcessFunction();
 
  protected:
   ~TerminalPrivateOpenTerminalProcessFunction() override;
@@ -60,7 +61,6 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
 
  private:
   void OnCrostiniRestarted(
-      std::unique_ptr<CrostiniStartupStatus> startup_status,
       const std::string& user_id_hash,
       base::CommandLine cmdline,
       crostini::CrostiniResult result);
@@ -70,7 +70,7 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
 
   void OnGetVshSession(const std::string& user_id_hash,
                        base::CommandLine cmdline,
-                       int32_t vsh_pid,
+                       const std::string& terminal_id,
                        bool success,
                        const std::string& failure_reason,
                        int32_t container_shell_pid);
@@ -79,16 +79,17 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
                    base::CommandLine cmdline);
 
   using ProcessOutputCallback =
-      base::Callback<void(const std::string& terminal_id,
-                          const std::string& output_type,
-                          const std::string& output)>;
+      base::RepeatingCallback<void(const std::string& terminal_id,
+                                   const std::string& output_type,
+                                   const std::string& output)>;
   using OpenProcessCallback =
-      base::Callback<void(bool success, const std::string& terminal_id)>;
-  void OpenOnRegistryTaskRunner(const ProcessOutputCallback& output_callback,
-                                const OpenProcessCallback& callback,
+      base::OnceCallback<void(bool success, const std::string& terminal_id)>;
+  void OpenOnRegistryTaskRunner(ProcessOutputCallback output_callback,
+                                OpenProcessCallback callback,
                                 base::CommandLine cmdline,
                                 const std::string& user_id_hash);
   void RespondOnUIThread(bool success, const std::string& terminal_id);
+  std::unique_ptr<CrostiniStartupStatus> startup_status_;
 };
 
 // Opens new vmshell process. Returns the new terminal id.

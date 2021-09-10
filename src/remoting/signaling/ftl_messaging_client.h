@@ -49,7 +49,7 @@ class FtlMessagingClient final : public MessagingClient {
   ~FtlMessagingClient() override;
 
   // MessagingClient implementations.
-  std::unique_ptr<MessageCallbackSubscription> RegisterMessageCallback(
+  base::CallbackListSubscription RegisterMessageCallback(
       const MessageCallback& callback) override;
   void PullMessages(DoneCallback on_done) override;
   void SendMessage(const std::string& destination,
@@ -84,13 +84,13 @@ class FtlMessagingClient final : public MessagingClient {
                              const ProtobufHttpStatus& status,
                              std::unique_ptr<ftl::InboxSendResponse> response);
 
-  void AckMessages(const ftl::AckMessagesRequest& request,
-                   DoneCallback on_done);
+  void BatchAckMessages(const ftl::BatchAckMessagesRequest& request,
+                        DoneCallback on_done);
 
-  void OnAckMessagesResponse(
+  void OnBatchAckMessagesResponse(
       DoneCallback on_done,
       const ProtobufHttpStatus& status,
-      std::unique_ptr<ftl::AckMessagesResponse> response);
+      std::unique_ptr<ftl::BatchAckMessagesResponse> response);
 
   std::unique_ptr<ScopedProtobufHttpRequest> OpenReceiveMessagesStream(
       base::OnceClosure on_channel_ready,

@@ -5,7 +5,9 @@
 #ifndef OSP_IMPL_TESTING_FAKE_MDNS_RESPONDER_ADAPTER_H_
 #define OSP_IMPL_TESTING_FAKE_MDNS_RESPONDER_ADAPTER_H_
 
+#include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "osp/impl/discovery/mdns/mdns_responder_adapter.h"
@@ -75,7 +77,7 @@ class FakeMdnsResponderAdapter final : public MdnsResponderAdapter {
     virtual void OnDestroyed() = 0;
   };
 
-  virtual ~FakeMdnsResponderAdapter() override;
+  ~FakeMdnsResponderAdapter() override;
 
   void SetLifetimeObserver(LifetimeObserver* observer) { observer_ = observer; }
 
@@ -102,6 +104,7 @@ class FakeMdnsResponderAdapter final : public MdnsResponderAdapter {
   void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override;
   void OnSendError(UdpSocket* socket, Error error) override;
   void OnError(UdpSocket* socket, Error error) override;
+  void OnBound(UdpSocket* socket) override;
 
   // MdnsResponderAdapter overrides.
   Error Init() override;

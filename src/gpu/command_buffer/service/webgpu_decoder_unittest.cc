@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
@@ -29,8 +31,8 @@ class WebGPUDecoderTest : public ::testing::Test {
     if (!WebGPUSupported()) {
       return;
     }
-    decoder_client_.reset(new FakeDecoderClient());
-    command_buffer_service_.reset(new FakeCommandBufferServiceBase());
+    decoder_client_ = std::make_unique<FakeDecoderClient>();
+    command_buffer_service_ = std::make_unique<FakeCommandBufferServiceBase>();
     decoder_.reset(WebGPUDecoder::Create(
         decoder_client_.get(), command_buffer_service_.get(), nullptr, nullptr,
         &outputter_, GpuPreferences()));
@@ -45,7 +47,7 @@ class WebGPUDecoderTest : public ::testing::Test {
 
     constexpr uint32_t kAdapterServiceID = 0;
     cmds::RequestDevice requestDeviceCmd;
-    requestDeviceCmd.Init(kDeviceClientID, kAdapterServiceID, 0, 0, 0);
+    requestDeviceCmd.Init(0, kAdapterServiceID, 1, 0, 0, 0, 0);
     ASSERT_EQ(error::kNoError, ExecuteCmd(requestDeviceCmd));
   }
 
@@ -69,7 +71,6 @@ class WebGPUDecoderTest : public ::testing::Test {
   std::unique_ptr<WebGPUDecoder> decoder_;
   std::unique_ptr<FakeDecoderClient> decoder_client_;
   gles2::TraceOutputter outputter_;
-  static const DawnDeviceClientID kDeviceClientID = 0u;
 };
 
 TEST_F(WebGPUDecoderTest, DawnCommands) {
@@ -79,7 +80,7 @@ TEST_F(WebGPUDecoderTest, DawnCommands) {
   }
 
   cmds::DawnCommands cmd;
-  cmd.Init(kDeviceClientID, 0, 0, 0);
+  cmd.Init(0, 0, 0);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 

@@ -91,18 +91,12 @@ WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsLifetimeHelper)
 std::unique_ptr<WellKnownChangePasswordNavigationThrottle>
 WellKnownChangePasswordNavigationThrottle::MaybeCreateThrottleFor(
     NavigationHandle* handle) {
-  const GURL& url = handle->GetURL();
-  // The order is important. We have to check if it as a well-known change
-  // password url first. We should only check the feature flag when the feature
-  // would be used. Otherwise the we would not see a difference between control
-  // and experiment groups on the dashboards.
-  if (handle->IsInMainFrame() && IsWellKnownChangePasswordUrl(url) &&
-      IsTriggeredByGoogleOwnedUI(handle) &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kWellKnownChangePassword)) {
-    return base::WrapUnique(
-        new WellKnownChangePasswordNavigationThrottle(handle));
+  if (handle->IsInMainFrame() &&
+      IsWellKnownChangePasswordUrl(handle->GetURL()) &&
+      IsTriggeredByGoogleOwnedUI(handle)) {
+    return std::make_unique<WellKnownChangePasswordNavigationThrottle>(handle);
   }
+
   return nullptr;
 }
 
@@ -112,6 +106,11 @@ WellKnownChangePasswordNavigationThrottle::
       request_url_(handle->GetURL()),
       source_id_(
           ukm::GetSourceIdForWebContentsDocument(handle->GetWebContents())) {
+  // If we're in a non-primary frame tree (e.g. prerendering) we're only
+  // constructing the throttle so it can cancel the prerender.
+  if (!handle->IsInPrimaryMainFrame())
+    return;
+
   if (base::FeatureList::IsEnabled(
           password_manager::features::kChangePasswordAffiliationInfo)) {
     affiliation_service_ =
@@ -134,10 +133,18 @@ WellKnownChangePasswordNavigationThrottle::
 
 NavigationThrottle::ThrottleCheckResult
 WellKnownChangePasswordNavigationThrottle::WillStartRequest() {
-  auto url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(
-          navigation_handle()->GetWebContents()->GetBrowserContext())
-          ->GetURLLoaderFactoryForBrowserProcess();
+  // The logic in Redirect will navigate the primary FrameTree if we're in a
+  // prerender. We don't have a way to navigate the prerendered page so just
+  // cancel the prerender.
+  if (!navigation_handle()->IsInPrimaryMainFrame()) {
+    return NavigationThrottle::CANCEL;
+  }
+
+  auto url_loader_factory = navigation_handle()
+                                ->GetWebContents()
+                                ->GetBrowserContext()
+                                ->GetDefaultStoragePartition()
+                                ->GetURLLoaderFactoryForBrowserProcess();
   // In order to avoid bypassing Sec-Fetch-Site headers and extracting user data
   // across redirects, we need to set both the initiator origin and network
   // isolation key when fetching the well-known non-existing resource.

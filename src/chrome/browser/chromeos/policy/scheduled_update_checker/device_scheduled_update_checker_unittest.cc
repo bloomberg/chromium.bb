@@ -20,10 +20,10 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/os_and_policies_update_checker.h"
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/scoped_wake_lock.h"
-#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -221,7 +221,7 @@ class DeviceScheduledUpdateCheckerForTest
     : public DeviceScheduledUpdateChecker {
  public:
   DeviceScheduledUpdateCheckerForTest(
-      chromeos::CrosSettings* cros_settings,
+      ash::CrosSettings* cros_settings,
       chromeos::NetworkStateHandler* network_state_handler,
       const base::Clock* clock,
       const base::TickClock* tick_clock)
@@ -315,6 +315,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     auto fake_update_engine_client =
         std::make_unique<chromeos::FakeUpdateEngineClient>();
     fake_update_engine_client_ = fake_update_engine_client.get();
+    chromeos::DBusThreadManager::Initialize();
     chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::move(fake_update_engine_client));
 
@@ -328,7 +329,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
 
     device_scheduled_update_checker_ =
         std::make_unique<DeviceScheduledUpdateCheckerForTest>(
-            chromeos::CrosSettings::Get(),
+            ash::CrosSettings::Get(),
             network_state_test_helper_->network_state_handler(),
             task_environment_.GetMockClock(),
             task_environment_.GetMockTickClock());
@@ -336,9 +337,9 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
 
   ~DeviceScheduledUpdateCheckerTest() override {
     device_scheduled_update_checker_.reset();
+    network_state_test_helper_.reset();
     chromeos::PowerManagerClient::Shutdown();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
-        nullptr);
+    chromeos::DBusThreadManager::Shutdown();
     ScopedWakeLock::OverrideWakeLockProviderBinderForTesting(
         base::NullCallback());
   }
@@ -586,7 +587,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<DeviceScheduledUpdateCheckerForTest>
       device_scheduled_update_checker_;
-  chromeos::ScopedTestingCrosSettings cros_settings_;
+  ash::ScopedTestingCrosSettings cros_settings_;
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
   std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;
   device::TestWakeLockProvider wake_lock_provider_;
@@ -1165,10 +1166,10 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckWakeLockAcquireAndRelease) {
       std::move(policy_and_next_update_check_time.first));
   task_environment_.FastForwardBy(delay_from_now);
 
-  base::Optional<int> active_wake_locks_before_update_check;
+  absl::optional<int> active_wake_locks_before_update_check;
   wake_lock_provider_.GetActiveWakeLocksForTests(
       device::mojom::WakeLockType::kPreventAppSuspension,
-      base::BindOnce([](base::Optional<int>* result,
+      base::BindOnce([](absl::optional<int>* result,
                         int32_t wake_lock_count) { *result = wake_lock_count; },
                      &active_wake_locks_before_update_check));
   EXPECT_TRUE(active_wake_locks_before_update_check);
@@ -1179,10 +1180,10 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckWakeLockAcquireAndRelease) {
   // Simulate update check succeeding.
   NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
 
-  base::Optional<int> active_wake_locks_after_update_check;
+  absl::optional<int> active_wake_locks_after_update_check;
   wake_lock_provider_.GetActiveWakeLocksForTests(
       device::mojom::WakeLockType::kPreventAppSuspension,
-      base::BindOnce([](base::Optional<int>* result,
+      base::BindOnce([](absl::optional<int>* result,
                         int32_t wake_lock_count) { *result = wake_lock_count; },
                      &active_wake_locks_after_update_check));
   // After all steps are completed the wake lock should be released.

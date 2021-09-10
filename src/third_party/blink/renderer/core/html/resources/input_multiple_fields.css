@@ -56,7 +56,7 @@ input::-webkit-datetime-edit-year-field {
     padding: 1px;
 }
 
-/* Remove focus ring from fields and use highlight color */
+/* Use highlight color. */
 input::-webkit-datetime-edit-ampm-field:focus,
 input::-webkit-datetime-edit-day-field:focus,
 input::-webkit-datetime-edit-hour-field:focus,
@@ -68,7 +68,6 @@ input::-webkit-datetime-edit-week-field:focus,
 input::-webkit-datetime-edit-year-field:focus {
     background-color: highlight;
     color: highlighttext;
-    outline: none;
 }
 
 input::-webkit-datetime-edit-year-field[disabled],

@@ -2,18 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/lazy_load.js';
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+
+// #import {TestGuestOsBrowserProxy} from './test_guest_os_browser_proxy.m.js';
+// #import {TestCrostiniBrowserProxy} from './test_crostini_browser_proxy.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {flush} from'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {Router, Route, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {eventToPromise, flushTasks, waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {GuestOsBrowserProxyImpl, CrostiniBrowserProxy, CrostiniBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
+// #import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 /** @type {?SettingsCrostiniPageElement} */
 let crostiniPage = null;
+
+/** @type {?TestGuestOsBrowserProxy} */
+let guestOsBrowserProxy = null;
 
 /** @type {?TestCrostiniBrowserProxy} */
 let crostiniBrowserProxy = null;
 
+const MIC_ALLOWED_PATH = 'prefs.crostini.mic_allowed.value';
+
 function setCrostiniPrefs(enabled, optional = {}) {
   const {
     sharedPaths = {},
-    sharedUsbDevices = [],
     forwardedPorts = [],
-    crostiniMicSharingEnabled = false,
+    micAllowed = false,
     arcEnabled = false,
   } = optional;
   crostiniPage.prefs = {
@@ -22,14 +43,13 @@ function setCrostiniPrefs(enabled, optional = {}) {
     },
     crostini: {
       enabled: {value: enabled},
+      mic_allowed: {value: micAllowed},
       port_forwarding: {ports: {value: forwardedPorts}},
     },
     guest_os: {
       paths_shared_to_vms: {value: sharedPaths},
     },
   };
-  crostiniBrowserProxy.sharedUsbDevices = sharedUsbDevices;
-  crostiniBrowserProxy.crostiniMicSharingEnabled = crostiniMicSharingEnabled;
   Polymer.dom.flush();
 }
 
@@ -46,6 +66,8 @@ suite('CrostiniPageTests', function() {
   setup(function() {
     crostiniBrowserProxy = new TestCrostiniBrowserProxy();
     settings.CrostiniBrowserProxyImpl.instance_ = crostiniBrowserProxy;
+    guestOsBrowserProxy = new TestGuestOsBrowserProxy();
+    settings.GuestOsBrowserProxyImpl.instance_ = guestOsBrowserProxy;
     PolymerTest.clearBody();
     crostiniPage = document.createElement('settings-crostini-page');
     document.body.appendChild(crostiniPage);
@@ -55,6 +77,55 @@ suite('CrostiniPageTests', function() {
   teardown(function() {
     crostiniPage.remove();
     settings.Router.getInstance().resetRouteForTesting();
+  });
+
+  suite('<settings-crostini-confirmation-dialog>', function() {
+    let dialog;
+    let cancelOrCloseEvents;
+    let closeEventPromise;
+
+    setup(function() {
+      cancelOrCloseEvents = [];
+      dialog = document.createElement('settings-crostini-confirmation-dialog');
+
+      dialog.addEventListener('cancel', (e) => {
+        cancelOrCloseEvents.push(e);
+      });
+      closeEventPromise =
+          new Promise((resolve) => dialog.addEventListener('close', (e) => {
+            cancelOrCloseEvents.push(e);
+            resolve();
+          }));
+
+      document.body.appendChild(dialog);
+    });
+
+    teardown(function() {
+      dialog.remove();
+    });
+
+    test('accept', async function() {
+      assertTrue(dialog.$$('cr-dialog').open);
+      dialog.$$('.action-button').click();
+
+      await closeEventPromise;
+      assertEquals(cancelOrCloseEvents.length, 1);
+      assertEquals(cancelOrCloseEvents[0].type, 'close');
+      assertTrue(cancelOrCloseEvents[0].detail.accepted);
+      assertFalse(dialog.$$('cr-dialog').open);
+    });
+
+    test('cancel', async function() {
+      assertTrue(dialog.$$('cr-dialog').open);
+      dialog.$$('.cancel-button').click();
+
+      await closeEventPromise;
+      assertEquals(cancelOrCloseEvents.length, 2);
+      assertEquals(cancelOrCloseEvents[0].type, 'cancel');
+      assertEquals(cancelOrCloseEvents[1].type, 'close');
+      assertFalse(cancelOrCloseEvents[1].detail.accepted);
+      assertFalse(dialog.$$('cr-dialog').open);
+    });
   });
 
   suite('MainPage', function() {
@@ -133,7 +204,7 @@ suite('CrostiniPageTests', function() {
     });
 
     suite('SubPageDefault', function() {
-      test('Sanity', function() {
+      test('Basic', function() {
         assertTrue(!!subpage.$$('#crostini-shared-paths'));
         assertTrue(!!subpage.$$('#crostini-shared-usb-devices'));
         assertTrue(!!subpage.$$('#crostini-export-import'));
@@ -141,7 +212,7 @@ suite('CrostiniPageTests', function() {
         assertTrue(!!subpage.$$('#remove'));
         assertTrue(!!subpage.$$('#container-upgrade'));
         assertTrue(!!subpage.$$('#crostini-port-forwarding'));
-        assertTrue(!!subpage.$$('#crostini-mic-sharing-toggle'));
+        assertTrue(!!subpage.$$('#crostini-mic-permission-toggle'));
         assertTrue(!!subpage.$$('#crostini-disk-resize'));
       });
 
@@ -150,7 +221,7 @@ suite('CrostiniPageTests', function() {
         subpage.$$('#crostini-shared-paths').click();
 
         await test_util.flushTasks();
-        subpage = crostiniPage.$$('settings-crostini-shared-paths');
+        subpage = crostiniPage.$$('settings-guest-os-shared-paths');
         assertTrue(!!subpage);
       });
 
@@ -298,68 +369,56 @@ suite('CrostiniPageTests', function() {
             assertFalse(subpage.$$('#import cr-button').disabled);
           });
 
-      test('ToggleCrostiniMicSharingCancel', async function() {
+      test('ToggleCrostiniMicPermissionCancel', async function() {
         // Crostini is assumed to be running when the page is loaded.
-        assertTrue(!!subpage.$$('#crostini-mic-sharing-toggle'));
-        assertFalse(!!subpage.$$('settings-crostini-mic-sharing-dialog'));
+        assertTrue(!!subpage.$$('#crostini-mic-permission-toggle'));
+        assertFalse(!!subpage.$$('#crostini-mic-permission-dialog'));
 
-        setCrostiniPrefs(true, {crostiniMicSharingEnabled: true});
-        cr.webUIListenerCallback(
-            'crostini-mic-sharing-enabled-changed',
-            crostiniBrowserProxy.crostiniMicSharingEnabled);
-        assertTrue(subpage.$$('#crostini-mic-sharing-toggle').checked);
+        setCrostiniPrefs(true, {micAllowed: true});
+        assertTrue(subpage.$$('#crostini-mic-permission-toggle').checked);
 
-        subpage.$$('#crostini-mic-sharing-toggle').click();
+        subpage.$$('#crostini-mic-permission-toggle').click();
         await test_util.flushTasks();
-        assertTrue(!!subpage.$$('settings-crostini-mic-sharing-dialog'));
-        const dialog = subpage.$$('settings-crostini-mic-sharing-dialog');
+        assertTrue(!!subpage.$$('#crostini-mic-permission-dialog'));
+        const dialog = subpage.$$('#crostini-mic-permission-dialog');
         const dialogClosedPromise = test_util.eventToPromise('close', dialog);
-        dialog.$$('#cancel').click();
+        dialog.$$('.cancel-button').click();
         await Promise.all([dialogClosedPromise, test_util.flushTasks()]);
 
         // Because the dialog was cancelled, the toggle should not have changed.
-        assertFalse(!!subpage.$$('settings-crostini-mic-sharing-dialog'));
-        assertTrue(subpage.$$('#crostini-mic-sharing-toggle').checked);
+        assertFalse(!!subpage.$$('#crostini-mic-permission-dialog'));
+        assertTrue(subpage.$$('#crostini-mic-permission-toggle').checked);
+        assertTrue(crostiniPage.get(MIC_ALLOWED_PATH));
       });
 
-      test('ToggleCrostiniMicSharingShutdown', async function() {
+      test('ToggleCrostiniMicPermissionShutdown', async function() {
         // Crostini is assumed to be running when the page is loaded.
-        assertTrue(!!subpage.$$('#crostini-mic-sharing-toggle'));
-        assertFalse(!!subpage.$$('settings-crostini-mic-sharing-dialog'));
+        assertTrue(!!subpage.$$('#crostini-mic-permission-toggle'));
+        assertFalse(!!subpage.$$('#crostini-mic-permission-dialog'));
 
-        setCrostiniPrefs(true, {crostiniMicSharingEnabled: false});
-        cr.webUIListenerCallback(
-            'crostini-mic-sharing-enabled-changed',
-            crostiniBrowserProxy.crostiniMicSharingEnabled);
-        assertFalse(subpage.$$('#crostini-mic-sharing-toggle').checked);
+        setCrostiniPrefs(true, {micAllowed: false});
+        assertFalse(subpage.$$('#crostini-mic-permission-toggle').checked);
 
-        subpage.$$('#crostini-mic-sharing-toggle').click();
+        subpage.$$('#crostini-mic-permission-toggle').click();
         await test_util.flushTasks();
-        assertTrue(!!subpage.$$('settings-crostini-mic-sharing-dialog'));
-        const dialog = subpage.$$('settings-crostini-mic-sharing-dialog');
+        assertTrue(!!subpage.$$('#crostini-mic-permission-dialog'));
+        const dialog = subpage.$$('#crostini-mic-permission-dialog');
         const dialogClosedPromise = test_util.eventToPromise('close', dialog);
-        dialog.$$('#shutdown').click();
+        dialog.$$('.action-button').click();
         await Promise.all([dialogClosedPromise, test_util.flushTasks()]);
         assertEquals(1, crostiniBrowserProxy.getCallCount('shutdownCrostini'));
-        assertEquals(
-            1,
-            crostiniBrowserProxy.getCallCount('setCrostiniMicSharingEnabled'));
-        cr.webUIListenerCallback(
-            'crostini-mic-sharing-enabled-changed',
-            crostiniBrowserProxy.crostiniMicSharingEnabled);
-        assertFalse(!!subpage.$$('settings-crostini-mic-sharing-dialog'));
-        assertTrue(subpage.$$('#crostini-mic-sharing-toggle').checked);
+        assertFalse(!!subpage.$$('#crostini-mic-permission-dialog'));
+        assertTrue(subpage.$$('#crostini-mic-permission-toggle').checked);
+        assertTrue(crostiniPage.get(MIC_ALLOWED_PATH));
 
         // Crostini is now shutdown, this means that it doesn't need to be
         // restarted in order for changes to take effect, therefore no dialog is
         // needed and the mic sharing settings can be changed immediately.
-        subpage.$$('#crostini-mic-sharing-toggle').click();
+        subpage.$$('#crostini-mic-permission-toggle').click();
         await test_util.flushTasks();
-        cr.webUIListenerCallback(
-            'crostini-mic-sharing-enabled-changed',
-            crostiniBrowserProxy.crostiniMicSharingEnabled);
-        assertFalse(!!subpage.$$('settings-crostini-mic-sharing-dialog'));
-        assertFalse(subpage.$$('#crostini-mic-sharing-toggle').checked);
+        assertFalse(!!subpage.$$('#crostini-mic-permission-dialog'));
+        assertFalse(subpage.$$('#crostini-mic-permission-toggle').checked);
+        assertFalse(crostiniPage.get(MIC_ALLOWED_PATH));
       });
 
       test('Remove', async function() {
@@ -970,12 +1029,14 @@ suite('CrostiniPageTests', function() {
     });
   });
 
+  // Functionality is already tested in OSSettingsGuestOsSharedPathsTest,
+  // so just check that we correctly set up the page for our 'termina' VM.
   suite('SubPageSharedPaths', function() {
     let subpage;
 
     setup(async function() {
       setCrostiniPrefs(
-          true, {sharedPaths: {path1: ['termina'], path2: ['termina']}});
+          true, {sharedPaths: {path1: ['termina'], path2: ['some-other-vm']}});
 
       await test_util.flushTasks();
       settings.Router.getInstance().navigateTo(
@@ -983,169 +1044,51 @@ suite('CrostiniPageTests', function() {
 
       await test_util.flushTasks();
       Polymer.dom.flush();
-      subpage = crostiniPage.$$('settings-crostini-shared-paths');
+      subpage = crostiniPage.$$('settings-guest-os-shared-paths');
       assertTrue(!!subpage);
     });
 
-    test('Sanity', function() {
-      assertEquals(
-          3, subpage.shadowRoot.querySelectorAll('.settings-box').length);
-      assertEquals(2, subpage.shadowRoot.querySelectorAll('.list-item').length);
-    });
-
-    test('Remove', async function() {
-      assertFalse(subpage.$.crostiniInstructionsRemove.hidden);
-      assertFalse(subpage.$.crostiniList.hidden);
-      assertTrue(subpage.$.crostiniListEmpty.hidden);
-      assertTrue(!!subpage.$$('.list-item cr-icon-button'));
-      const rows = '.list-item:not([hidden])';
-      assertEquals(2, subpage.shadowRoot.querySelectorAll(rows).length);
-
-      {
-        // Remove first shared path, still one left.
-        subpage.$$('.list-item cr-icon-button').click();
-        const [vmName, path] =
-            await crostiniBrowserProxy.whenCalled('removeCrostiniSharedPath');
-        assertEquals('termina', vmName);
-        assertEquals('path1', path);
-        setCrostiniPrefs(true, {sharedPaths: {path2: ['termina']}});
-      }
-
-      await test_util.flushTasks();
-      Polymer.dom.flush();
-      assertEquals(1, subpage.shadowRoot.querySelectorAll(rows).length);
-      assertFalse(subpage.$.crostiniInstructionsRemove.hidden);
-
-      {
-        // Remove remaining shared path, none left.
-        crostiniBrowserProxy.resetResolver('removeCrostiniSharedPath');
-        subpage.$$(`${rows} cr-icon-button`).click();
-        const [vmName, path] =
-            await crostiniBrowserProxy.whenCalled('removeCrostiniSharedPath');
-        assertEquals('termina', vmName);
-        assertEquals('path2', path);
-        setCrostiniPrefs(true, {sharedPaths: {}});
-      }
-
-      await test_util.flushTasks();
-      Polymer.dom.flush();
-      // Verify remove instructions are hidden, and empty list message is shown.
-      assertTrue(subpage.$.crostiniInstructionsRemove.hidden);
-      assertTrue(subpage.$.crostiniList.hidden);
-      assertFalse(subpage.$.crostiniListEmpty.hidden);
-    });
-
-    test('RemoveFailedRetry', async function() {
-      // Remove shared path fails.
-      crostiniBrowserProxy.removeSharedPathResult = false;
-      subpage.$$('.list-item cr-icon-button').click();
-
-      await crostiniBrowserProxy.whenCalled('removeCrostiniSharedPath');
-      Polymer.dom.flush();
-      assertTrue(subpage.$$('#removeSharedPathFailedDialog').open);
-
-      // Click retry and make sure 'removeCrostiniSharedPath' is called
-      // and dialog is closed/removed.
-      crostiniBrowserProxy.removeSharedPathResult = true;
-      subpage.$$('#removeSharedPathFailedDialog')
-          .querySelector('.action-button')
-          .click();
-      await crostiniBrowserProxy.whenCalled('removeCrostiniSharedPath');
-      assertFalse(!!subpage.$$('#removeSharedPathFailedDialog'));
+    test('Basic', function() {
+      assertEquals(1, subpage.shadowRoot.querySelectorAll('.list-item').length);
     });
   });
 
+  // Functionality is already tested in OSSettingsGuestOsSharedUsbDevicesTest,
+  // so just check that we correctly set up the page for our 'termina' VM.
   suite('SubPageSharedUsbDevices', function() {
     let subpage;
 
     setup(async function() {
-      setCrostiniPrefs(true, {
-        sharedUsbDevices: [
-          {
-            guid: '0001',
-            name: 'usb_dev1',
-            shared: false,
-            shareWillReassign: false
-          },
-          {
-            guid: '0002',
-            name: 'usb_dev2',
-            shared: true,
-            shareWillReassign: false
-          },
-          {
-            guid: '0003',
-            name: 'usb_dev3',
-            shared: false,
-            shareWillReassign: true
-          },
-        ]
-      });
+      setCrostiniPrefs(true);
+      guestOsBrowserProxy.sharedUsbDevices = [
+        {
+          guid: '0001',
+          name: 'usb_dev1',
+          sharedWith: 'termina',
+          promptBeforeSharing: false
+        },
+        {
+          guid: '0002',
+          name: 'usb_dev2',
+          sharedWith: null,
+          promptBeforeSharing: false
+        },
+      ];
 
       await test_util.flushTasks();
       settings.Router.getInstance().navigateTo(
           settings.routes.CROSTINI_SHARED_USB_DEVICES);
 
       await test_util.flushTasks();
-      subpage = crostiniPage.$$('settings-crostini-shared-usb-devices');
+      subpage = crostiniPage.$$('settings-guest-os-shared-usb-devices');
       assertTrue(!!subpage);
     });
 
     test('USB devices are shown', function() {
-      assertEquals(3, subpage.shadowRoot.querySelectorAll('.toggle').length);
-    });
-
-    test('USB shared state is updated by toggling', async function() {
-      assertTrue(!!subpage.$$('.toggle'));
-      subpage.$$('.toggle').click();
-
-      await test_util.flushTasks();
-      Polymer.dom.flush();
-
-      const args =
-          await crostiniBrowserProxy.whenCalled('setCrostiniUsbDeviceShared');
-      assertEquals('0001', args[0]);
-      assertEquals(true, args[1]);
-
-      // Simulate a change in the underlying model.
-      cr.webUIListenerCallback('crostini-shared-usb-devices-changed', [
-        {
-          guid: '0001',
-          name: 'usb_dev1',
-          shared: true,
-          shareWillReassign: false
-        },
-      ]);
-      Polymer.dom.flush();
-      assertEquals(1, subpage.shadowRoot.querySelectorAll('.toggle').length);
-    });
-
-    test('Show dialog for reassign', async function() {
       const items = subpage.shadowRoot.querySelectorAll('.toggle');
-      assertEquals(3, items.length);
-
-      // Clicking on item[2] should show dialog.
-      assertFalse(!!subpage.$$('#reassignDialog'));
-      items[2].click();
-      Polymer.dom.flush();
-      assertTrue(subpage.$$('#reassignDialog').open);
-
-      // Clicking cancel will close the dialog.
-      subpage.$$('#cancel').click();
-      Polymer.dom.flush();
-      assertFalse(!!subpage.$$('#reassignDialog'));
-
-      // Clicking continue will call the proxy and close the dialog.
-      items[2].click();
-      Polymer.dom.flush();
-      assertTrue(subpage.$$('#reassignDialog').open);
-      subpage.$$('#continue').click();
-      Polymer.dom.flush();
-      assertFalse(!!subpage.$$('#reassignDialog'));
-      const args =
-          await crostiniBrowserProxy.whenCalled('setCrostiniUsbDeviceShared');
-      assertEquals('0003', args[0]);
-      assertEquals(true, args[1]);
+      assertEquals(2, items.length);
+      assertTrue(items[0].checked);
+      assertFalse(items[1].checked);
     });
   });
 

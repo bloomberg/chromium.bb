@@ -5,6 +5,7 @@
 #include "net/log/net_log.h"
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -56,13 +57,13 @@ void NetLog::ThreadSafeCaptureModeObserver::
 
 // static
 NetLog* NetLog::Get() {
-  static base::NoDestructor<NetLog> instance{util::PassKey<NetLog>()};
+  static base::NoDestructor<NetLog> instance{base::PassKey<NetLog>()};
   return instance.get();
 }
 
-NetLog::NetLog(util::PassKey<NetLog>) {}
-NetLog::NetLog(util::PassKey<NetLogWithSource>) {}
-NetLog::NetLog(util::PassKey<TestNetLog>) {}
+NetLog::NetLog(base::PassKey<NetLog>) {}
+NetLog::NetLog(base::PassKey<NetLogWithSource>) {}
+NetLog::NetLog(base::PassKey<TestNetLog>) {}
 
 NetLog::~NetLog() = default;
 

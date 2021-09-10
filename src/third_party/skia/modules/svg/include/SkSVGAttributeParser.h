@@ -8,6 +8,8 @@
 #ifndef SkSVGAttributeParser_DEFINED
 #define SkSVGAttributeParser_DEFINED
 
+#include <vector>
+
 #include "include/private/SkNoncopyable.h"
 #include "modules/svg/include/SkSVGTypes.h"
 #include "src/core/SkTLazy.h"
@@ -16,18 +18,12 @@ class SkSVGAttributeParser : public SkNoncopyable {
 public:
     SkSVGAttributeParser(const char[]);
 
-    bool parseColor(SkSVGColorType*);
-    bool parseFilter(SkSVGFilterType*);
-    bool parseNumber(SkSVGNumberType*);
     bool parseInteger(SkSVGIntegerType*);
     bool parseViewBox(SkSVGViewBoxType*);
-    bool parsePoints(SkSVGPointsType*);
-    bool parseStopColor(SkSVGStopColor*);
     bool parsePreserveAspectRatio(SkSVGPreserveAspectRatio*);
 
     // TODO: Migrate all parse*() functions to this style (and delete the old version)
     //      so they can be used by parse<T>():
-    bool parse(SkSVGNumberType* v) { return parseNumber(v); }
     bool parse(SkSVGIntegerType* v) { return parseInteger(v); }
 
     template <typename T> using ParseResult = SkTLazy<T>;
@@ -52,6 +48,27 @@ public:
         return ParseResult<T>();
     }
 
+    template <typename PropertyT>
+    static ParseResult<PropertyT> parseProperty(const char* expectedName,
+                                                const char* name,
+                                                const char* value) {
+        if (strcmp(name, expectedName) != 0) {
+            return ParseResult<PropertyT>();
+        }
+
+        if (!strcmp(value, "inherit")) {
+            PropertyT result(SkSVGPropertyState::kInherit);
+            return ParseResult<PropertyT>(&result);
+        }
+
+        auto pr = parse<typename PropertyT::ValueT>(value);
+        if (pr.isValid()) {
+            PropertyT result(*pr);
+            return ParseResult<PropertyT>(&result);
+        }
+
+        return ParseResult<PropertyT>();
+    }
 
 private:
     // Stack-only
@@ -63,6 +80,8 @@ private:
 
     template <typename F>
     bool advanceWhile(F func);
+
+    bool matchStringToken(const char* token, const char** newPos = nullptr) const;
 
     bool parseWSToken();
     bool parseEOSToken();
@@ -77,7 +96,7 @@ private:
     bool parseHexColorToken(SkColor*);
     bool parseColorComponentToken(int32_t*);
     bool parseRGBColorToken(SkColor*);
-    bool parseFuncIRI(SkSVGStringType*);
+    bool parseFuncIRI(SkSVGFuncIRI*);
 
     // Transform helpers
     bool parseMatrixToken(SkMatrix*);
@@ -91,6 +110,9 @@ private:
     // is handled by the passed functor.
     template <typename Func, typename T>
     bool parseParenthesized(const char* prefix, Func, T* result);
+
+    template <typename T>
+    bool parseList(std::vector<T>*);
 
     template <typename T, typename TArray>
     bool parseEnumMap(const TArray& arr, T* result) {

@@ -7,18 +7,17 @@
 
 #include <stdint.h>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
-#include "components/optimization_guide/optimization_guide_decider.h"
-#include "components/optimization_guide/optimization_guide_enums.h"
+#include "components/optimization_guide/content/browser/optimization_guide_decider.h"
+#include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // A representation of optimization guide information related to a navigation.
 // Metrics will be recorded upon this object's destruction.
@@ -68,50 +67,10 @@ class OptimizationGuideNavigationData {
     registered_optimization_targets_ = registered_optimization_targets;
   }
 
-  // Returns the latest decision made for |optimmization_target|.
-  base::Optional<optimization_guide::OptimizationTargetDecision>
-  GetDecisionForOptimizationTarget(
-      optimization_guide::proto::OptimizationTarget optimization_target) const;
-  // Sets the |decision| for |optimization_target|.
-  void SetDecisionForOptimizationTarget(
-      optimization_guide::proto::OptimizationTarget optimization_target,
-      optimization_guide::OptimizationTargetDecision decision);
-
-  // Returns the version of the model evaluated for |optimization_target|.
-  base::Optional<int64_t> GetModelVersionForOptimizationTarget(
-      optimization_guide::proto::OptimizationTarget optimization_target) const;
-  // Sets the |model_version| for |optimization_target|.
-  void SetModelVersionForOptimizationTarget(
-      optimization_guide::proto::OptimizationTarget optimization_target,
-      int64_t model_version);
-
-  // Returns the prediction score of the model evaluated for
-  // |optimization_target|.
-  base::Optional<double> GetModelPredictionScoreForOptimizationTarget(
-      optimization_guide::proto::OptimizationTarget optimization_target) const;
-  // Sets the |model_prediction_score| for |optimization_target|.
-  void SetModelPredictionScoreForOptimizationTarget(
-      optimization_guide::proto::OptimizationTarget optimization_target,
-      double model_prediction_score);
-
-  // Returns the value of the model feature if it has been provided.
-  base::Optional<float> GetValueForModelFeatureForTesting(
-      optimization_guide::proto::ClientModelFeature model_feature);
-  // Sets the value provided to the model for a particular model feature.
-  void SetValueForModelFeature(
-      optimization_guide::proto::ClientModelFeature model_feature,
-      float value);
-
-  // Whether the initiation of the navigation was from a same origin URL or not.
-  bool is_same_origin_navigation() const { return is_same_origin_navigation_; }
-  void set_is_same_origin_navigation(bool is_same_origin_navigation) {
-    is_same_origin_navigation_ = is_same_origin_navigation;
-  }
-
   // The duration between the fetch for a hint for the navigation going out to
   // when it was received by the client if a fetch was initiated for the
   // navigation.
-  base::Optional<base::TimeDelta> hints_fetch_latency() const;
+  absl::optional<base::TimeDelta> hints_fetch_latency() const;
   void set_hints_fetch_start(base::TimeTicks hints_fetch_start) {
     hints_fetch_start_ = hints_fetch_start;
   }
@@ -121,7 +80,7 @@ class OptimizationGuideNavigationData {
 
   // The status for whether a hint for the page load was attempted to be fetched
   // from the remote Optimization Guide Service.
-  base::Optional<optimization_guide::RaceNavigationFetchAttemptStatus>
+  absl::optional<optimization_guide::RaceNavigationFetchAttemptStatus>
   hints_fetch_attempt_status() const {
     return hints_fetch_attempt_status_;
   }
@@ -157,44 +116,21 @@ class OptimizationGuideNavigationData {
                  optimization_guide::OptimizationTypeDecision>
       optimization_type_decisions_;
 
-  // The map from optimization target to the last decision made for that target.
-  base::flat_map<optimization_guide::proto::OptimizationTarget,
-                 optimization_guide::OptimizationTargetDecision>
-      optimization_target_decisions_;
-
-  // The version of the painful page load model that was evaluated for the
-  // page load.
-  base::flat_map<optimization_guide::proto::OptimizationTarget, int64_t>
-      optimization_target_model_versions_;
-
-  // The score output after evaluating the painful page load model. If
-  // populated, this is 100x the fractional value output by the model
-  // evaluation.
-  base::flat_map<optimization_guide::proto::OptimizationTarget, double>
-      optimization_target_model_prediction_scores_;
-
-  // The features used to make a prediction for any target.
-  base::flat_map<optimization_guide::proto::ClientModelFeature, float>
-      prediction_model_features_;
-
   // The page hint for the navigation.
-  base::Optional<std::unique_ptr<optimization_guide::proto::PageHint>>
+  absl::optional<std::unique_ptr<optimization_guide::proto::PageHint>>
       page_hint_;
-
-  // Whether the initiation of the navigation was from a same origin URL or not.
-  bool is_same_origin_navigation_ = false;
 
   // The time that the hints fetch for this navigation started. Is only present
   // if a fetch was initiated for this navigation.
-  base::Optional<base::TimeTicks> hints_fetch_start_;
+  absl::optional<base::TimeTicks> hints_fetch_start_;
 
   // The time that the hints fetch for the navigation ended. Is only present if
   // a fetch was initiated and successfully completed for this navigation.
-  base::Optional<base::TimeTicks> hints_fetch_end_;
+  absl::optional<base::TimeTicks> hints_fetch_end_;
 
   // The status for whether a hint for the page load was attempted to be fetched
   // from the remote Optimization Guide Service.
-  base::Optional<optimization_guide::RaceNavigationFetchAttemptStatus>
+  absl::optional<optimization_guide::RaceNavigationFetchAttemptStatus>
       hints_fetch_attempt_status_;
 
   // Used to get |weak_ptr_| to self on the UI thread.

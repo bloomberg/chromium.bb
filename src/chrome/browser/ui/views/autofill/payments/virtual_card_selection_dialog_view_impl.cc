@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/grit/components_scaled_resources.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
@@ -27,6 +28,7 @@ namespace autofill {
 VirtualCardSelectionDialogViewImpl::VirtualCardSelectionDialogViewImpl(
     VirtualCardSelectionDialogController* controller)
     : controller_(controller) {
+  SetShowTitle(true);
   SetButtonLabel(ui::DIALOG_BUTTON_OK, controller_->GetOkButtonLabel());
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, controller_->GetCancelButtonLabel());
   SetAcceptCallback(
@@ -35,6 +37,11 @@ VirtualCardSelectionDialogViewImpl::VirtualCardSelectionDialogViewImpl(
   SetCancelCallback(base::BindOnce(
       &VirtualCardSelectionDialogController::OnCancelButtonClicked,
       base::Unretained(controller_)));
+
+  SetModalType(ui::MODAL_TYPE_CHILD);
+  SetShowCloseButton(false);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 }
 
 VirtualCardSelectionDialogViewImpl::~VirtualCardSelectionDialogViewImpl() {
@@ -65,12 +72,6 @@ void VirtualCardSelectionDialogViewImpl::Hide() {
   GetWidget()->Close();
 }
 
-gfx::Size VirtualCardSelectionDialogViewImpl::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
-  return gfx::Size(width, GetHeightForWidth(width));
-}
-
 void VirtualCardSelectionDialogViewImpl::AddedToWidget() {
   // TODO(crbug.com/1020740): The header image is not ready. Implement it later.
 }
@@ -79,10 +80,6 @@ bool VirtualCardSelectionDialogViewImpl::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK ? controller_->IsOkButtonEnabled()
                                         : true;
-}
-
-ui::ModalType VirtualCardSelectionDialogViewImpl::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
 }
 
 views::View* VirtualCardSelectionDialogViewImpl::GetContentsView() {
@@ -94,7 +91,8 @@ views::View* VirtualCardSelectionDialogViewImpl::GetContentsView() {
           views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   SetBorder(views::CreateEmptyBorder(
       ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-          views::TEXT, views::CONTROL)));
+          views::DialogContentType::kText,
+          views::DialogContentType::kControl)));
 
   auto* instructions = AddChildView(std::make_unique<views::Label>(
       controller_->GetContentExplanation(),
@@ -107,16 +105,11 @@ views::View* VirtualCardSelectionDialogViewImpl::GetContentsView() {
   return this;
 }
 
-base::string16 VirtualCardSelectionDialogViewImpl::GetWindowTitle() const {
+std::u16string VirtualCardSelectionDialogViewImpl::GetWindowTitle() const {
   return controller_->GetContentTitle();
 }
 
-bool VirtualCardSelectionDialogViewImpl::ShouldShowWindowTitle() const {
-  return true;
-}
-
-bool VirtualCardSelectionDialogViewImpl::ShouldShowCloseButton() const {
-  return false;
-}
+BEGIN_METADATA(VirtualCardSelectionDialogViewImpl, views::DialogDelegateView)
+END_METADATA
 
 }  // namespace autofill

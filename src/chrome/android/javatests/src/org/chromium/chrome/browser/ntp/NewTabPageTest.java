@@ -10,8 +10,11 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
@@ -22,7 +25,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
@@ -34,6 +36,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.MemoryPressureListener;
@@ -42,7 +46,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
@@ -52,7 +55,9 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
+import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -77,7 +82,8 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.ui.test.util.UiDisableIf;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
+import org.chromium.url.GURL;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -96,14 +102,14 @@ import java.util.concurrent.TimeUnit;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "disable-features=IPH_FeedHeaderMenu"})
-@Features.DisableFeatures({ChromeFeatureList.EXPLORE_SITES,
-        ChromeFeatureList.REPORT_FEED_USER_ACTIONS, ChromeFeatureList.QUERY_TILES,
-        ChromeFeatureList.VIDEO_TUTORIALS, ChromeFeatureList.INTEREST_FEED_V2})
+@Features.DisableFeatures({ChromeFeatureList.EXPLORE_SITES, ChromeFeatureList.QUERY_TILES,
+        ChromeFeatureList.VIDEO_TUTORIALS, ChromeFeatureList.DEPRECATE_MENAGERIE_API})
+@Features.EnableFeatures({ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY_PROMOS})
 public class NewTabPageTest {
     private static final int ARTICLE_SECTION_HEADER_POSITION = 1;
     private static final int SIGNIN_PROMO_POSITION = 2;
 
-    private static final int RENDER_TEST_REVISION = 2;
+    private static final int RENDER_TEST_REVISION = 3;
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -112,11 +118,17 @@ public class NewTabPageTest {
     @Rule
     public AccountManagerTestRule mAccountManagerTestRule =
             new AccountManagerTestRule(new FakeProfileDataSource());
+    @Rule
+    public final DisableAnimationsTestRule mNoAnimationRule = new DisableAnimationsTestRule();
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule = ChromeRenderTestRule.Builder.withPublicCorpus()
                                                           .setRevision(RENDER_TEST_REVISION)
                                                           .build();
+    @Mock
+    OmniboxStub mOmniboxStub;
+    @Mock
+    VoiceRecognitionHandler mVoiceRecognitionHandler;
 
     private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
     private static final String TEST_FEED =
@@ -132,6 +144,7 @@ public class NewTabPageTest {
 
     @Before
     public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityWithURL("about:blank");
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
@@ -160,7 +173,6 @@ public class NewTabPageTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
-    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testRender_FocusFakeBox() throws Exception {
         ScrimCoordinator scrimCoordinator = mActivityTestRule.getActivity()
                                                     .getRootUiCoordinatorForTesting()
@@ -175,22 +187,9 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
-    @Features.DisableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
-    public void testRender_SignInPromoLegacy() throws Exception {
+    public void testRender_SignInPromoNoAccounts() throws Exception {
         // Scroll to the sign in promo in case it is not visible.
-        onView(instanceOf(RecyclerView.class))
-                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
-        mRenderTestRule.render(mNtp.getCoordinatorForTesting().getSignInPromoViewForTesting(),
-                "sign_in_promo_legacy");
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
-    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
-    public void testRender_SignInPromo() throws Exception {
-        // Scroll to the sign in promo in case it is not visible.
-        onView(instanceOf(RecyclerView.class))
+        onView(withId(R.id.feed_stream_recycler_view))
                 .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
         mRenderTestRule.render(
                 mNtp.getCoordinatorForTesting().getSignInPromoViewForTesting(), "sign_in_promo");
@@ -199,11 +198,23 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
-    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testRender_SignInPromoWithAccount() throws Exception {
+        mAccountManagerTestRule.addAccount(mAccountManagerTestRule.createProfileDataFromName(
+                AccountManagerTestRule.TEST_ACCOUNT_EMAIL));
+        // Scroll to the sign in promo in case it is not visible.
+        onView(withId(R.id.feed_stream_recycler_view))
+                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
+        mRenderTestRule.render(mNtp.getCoordinatorForTesting().getSignInPromoViewForTesting(),
+                "sign_in_promo_with_account");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
     public void testRender_SyncPromo() throws Exception {
         mAccountManagerTestRule.addTestAccountThenSignin();
         // Scroll to the sign in promo in case it is not visible.
-        onView(instanceOf(RecyclerView.class))
+        onView(withId(R.id.feed_stream_recycler_view))
                 .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
         mRenderTestRule.render(
                 mNtp.getCoordinatorForTesting().getSignInPromoViewForTesting(), "sync_promo");
@@ -214,7 +225,7 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
     public void testRender_ArticleSectionHeader() throws Exception {
         // Scroll to the article section header in case it is not visible.
-        onView(instanceOf(RecyclerView.class))
+        onView(withId(R.id.feed_stream_recycler_view))
                 .perform(RecyclerViewActions.scrollToPosition(ARTICLE_SECTION_HEADER_POSITION));
         waitForView((ViewGroup) mNtp.getView(), allOf(withId(R.id.header_title), isDisplayed()));
         View view = mNtp.getCoordinatorForTesting().getSectionHeaderViewForTesting();
@@ -222,7 +233,7 @@ public class NewTabPageTest {
         mRenderTestRule.render(view, "expandable_header_expanded");
 
         // Toggle header on the current tab.
-        onView(instanceOf(RecyclerView.class))
+        onView(withId(R.id.feed_stream_recycler_view))
                 .perform(RecyclerViewActions.scrollToPosition(ARTICLE_SECTION_HEADER_POSITION));
         waitForView((ViewGroup) mNtp.getView(), allOf(withId(R.id.header_title), isDisplayed()));
         onView(withId(R.id.header_title)).perform(click());
@@ -236,18 +247,19 @@ public class NewTabPageTest {
      */
     @Test
     @SmallTest
-    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1145195
     @Feature({"NewTabPage", "FeedNewTabPage"})
     public void testFocusFakebox() {
         int initialFakeboxTop = getFakeboxTop(mNtp);
 
         TouchCommon.singleClickView(mFakebox);
+
         waitForFakeboxFocusAnimationComplete(mNtp);
         UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
-        int afterFocusFakeboxTop = getFakeboxTop(mNtp);
-        Assert.assertTrue(afterFocusFakeboxTop < initialFakeboxTop);
-
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            int afterFocusFakeboxTop = getFakeboxTop(mNtp);
+            Assert.assertTrue(afterFocusFakeboxTop < initialFakeboxTop);
+        }
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
         waitForFakeboxTopPosition(mNtp, initialFakeboxTop);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, false);
@@ -260,24 +272,20 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @DisabledTest(message = "Test is flaky. crbug.com/593007, crbug.com/1033654")
+    @DisabledTest(message = "https://crbug.com/1033654")
     public void testSearchFromFakebox() {
         TouchCommon.singleClickView(mFakebox);
         waitForFakeboxFocusAnimationComplete(mNtp);
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
 
-        InstrumentationRegistry.getInstrumentation().sendStringSync(TEST_PAGE);
+        InstrumentationRegistry.getInstrumentation().sendStringSync(UrlConstants.CHROME_BLANK_URL);
         LocationBarLayout locationBar =
                 (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
-
-        ChromeTabUtils.waitForTabPageLoaded(mTab, null, new Runnable() {
-            @Override
-            public void run() {
-                KeyUtils.singleKeyEventView(InstrumentationRegistry.getInstrumentation(), urlBar,
-                        KeyEvent.KEYCODE_ENTER);
-            }
+        ChromeTabUtils.waitForTabPageLoaded(mTab, null, () -> {
+            KeyUtils.singleKeyEventView(
+                    InstrumentationRegistry.getInstrumentation(), urlBar, KeyEvent.KEYCODE_ENTER);
         });
     }
 
@@ -403,7 +411,7 @@ public class NewTabPageTest {
             final CallbackHelper loadedCallback = new CallbackHelper();
             mTab.addObserver(new EmptyTabObserver() {
                 @Override
-                public void onPageLoadFinished(Tab tab, String url) {
+                public void onPageLoadFinished(Tab tab, GURL url) {
                     loadedCallback.notifyCalled();
                     tab.removeObserver(this);
                 }
@@ -533,6 +541,25 @@ public class NewTabPageTest {
         Assert.assertTrue(GarbageCollectionTestUtils.canBeGarbageCollected(ntpRef));
     }
 
+    @Test
+    @SmallTest
+    @Feature({"NewTabPage", "FeedNewTabPage"})
+    public void testSettingOmniboxStubAddsVoiceObserver() throws IOException {
+        when(mOmniboxStub.getVoiceRecognitionHandler()).thenReturn(mVoiceRecognitionHandler);
+        when(mVoiceRecognitionHandler.isVoiceSearchEnabled()).thenReturn(true);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mNtp.setOmniboxStub(mOmniboxStub);
+            verify(mVoiceRecognitionHandler).addObserver(eq(mNtp));
+            View micButton = mNtp.getView().findViewById(R.id.voice_search_button);
+            assertEquals(View.VISIBLE, micButton.getVisibility());
+
+            when(mVoiceRecognitionHandler.isVoiceSearchEnabled()).thenReturn(false);
+            mNtp.onVoiceAvailabilityImpacted();
+            assertEquals(View.GONE, micButton.getVisibility());
+        });
+    }
+
     private void assertThumbnailInvalidAndRecapture() {
         Assert.assertTrue(mNtp.shouldCaptureThumbnail());
         captureThumbnail();
@@ -563,6 +590,9 @@ public class NewTabPageTest {
     }
 
     private void waitForFakeboxFocusAnimationComplete(NewTabPage ntp) {
+        // Tablet doesn't animate fakebox but simply focuses Omnibox upon click.
+        // Skip the check on animation.
+        if (mActivityTestRule.getActivity().isTablet()) return;
         waitForUrlFocusPercent(ntp, 1f);
     }
 

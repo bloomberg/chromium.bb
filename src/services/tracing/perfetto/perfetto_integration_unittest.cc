@@ -11,12 +11,11 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
-#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
+#include "base/tracing/perfetto_platform.h"
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/perfetto/test_utils.h"
-#include "services/tracing/public/cpp/perfetto/perfetto_platform.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/perfetto/include/perfetto/tracing/tracing.h"
@@ -42,38 +41,26 @@ std::string GetPerfettoProducerName() {
   return base::StrCat({mojom::kPerfettoProducerNamePrefix, "123"});
 }
 
-RebindableTaskRunner* GetPerfettoTaskRunner() {
-  static base::NoDestructor<RebindableTaskRunner> task_runner;
-  return task_runner.get();
-}
-
-class PerfettoIntegrationTest : public testing::Test {
+class PerfettoIntegrationTest : public TracingUnitTest {
  public:
   void SetUp() override {
-    auto* perfetto_task_runner = GetPerfettoTaskRunner();
-    auto* perfetto_platform =
-        PerfettoTracedProcess::Get()->perfetto_platform_for_testing();
-    if (!perfetto_platform->did_start_task_runner())
-      perfetto_platform->StartTaskRunner(perfetto_task_runner);
-    perfetto_task_runner->set_task_runner(base::ThreadTaskRunnerHandle::Get());
-
-    PerfettoTracedProcess::ResetTaskRunnerForTesting();
-    PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
+    TracingUnitTest::SetUp();
     data_source_ = TestDataSource::CreateAndRegisterDataSource(
         kPerfettoTestDataSourceName, 0);
     perfetto_service_ = std::make_unique<PerfettoService>();
     RunUntilIdle();
   }
 
-  void TearDown() override { perfetto_service_.reset(); }
+  void TearDown() override {
+    perfetto_service_.reset();
+    TracingUnitTest::TearDown();
+  }
 
   PerfettoService* perfetto_service() const { return perfetto_service_.get(); }
-  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  protected:
   std::unique_ptr<TestDataSource> data_source_;
   std::unique_ptr<PerfettoService> perfetto_service_;
-  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PerfettoIntegrationTest, ProducerDatasourceInitialized) {
@@ -361,7 +348,7 @@ TEST_F(PerfettoIntegrationTest,
   // client2 will trigger a StartTracing call without shutting down the data
   // source first, to prevent this hitting a DCHECK set the previous producer to
   // null.
-  data_source_->SetSystemProducerToNullptr();
+  data_source_->ClearProducerForTesting();
 
   std::unique_ptr<MockProducerClient::Handle> client2 =
       MockProducerClient::Create(
@@ -398,7 +385,6 @@ TEST_F(PerfettoIntegrationTest, PerfettoPlatformTest) {
 }
 
 TEST_F(PerfettoIntegrationTest, PerfettoClientLibraryTest) {
-  PerfettoTracedProcess::Get()->SetupClientLibrary();
   // Create a dummy tracing session without a real backend to check that
   // the client library was initialized.
   constexpr perfetto::BackendType kInvalidBackend(

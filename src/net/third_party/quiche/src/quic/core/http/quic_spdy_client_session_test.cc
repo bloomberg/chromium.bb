@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session.h"
+#include "quic/core/http/quic_spdy_client_session.h"
 
 #include <memory>
 #include <string>
@@ -10,35 +10,35 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/memory/memory.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/http/http_constants.h"
-#include "net/third_party/quiche/src/quic/core/http/http_frames.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_stream.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_server_push_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_quic_spdy_client_stream.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_packet_creator_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_stream_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_session_cache.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/crypto/null_decrypter.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/http/http_constants.h"
+#include "quic/core/http/http_frames.h"
+#include "quic/core/http/quic_spdy_client_stream.h"
+#include "quic/core/http/spdy_server_push_utils.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/core/tls_client_handshaker.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/mock_quic_spdy_client_stream.h"
+#include "quic/test_tools/quic_config_peer.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_framer_peer.h"
+#include "quic/test_tools/quic_packet_creator_peer.h"
+#include "quic/test_tools/quic_session_peer.h"
+#include "quic/test_tools/quic_spdy_session_peer.h"
+#include "quic/test_tools/quic_stream_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/simple_session_cache.h"
 
 using spdy::SpdyHeaderBlock;
 using ::testing::_;
@@ -83,7 +83,7 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSession {
     }
     MockQuicSpdyClientStream* stream =
         new MockQuicSpdyClientStream(id, this, READ_UNIDIRECTIONAL);
-    ActivateStream(QuicWrapUnique(stream));
+    ActivateStream(absl::WrapUnique(stream));
     return stream;
   }
 };
@@ -97,7 +97,6 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
             QuicUtils::GetInvalidStreamId(GetParam().transport_version)) {
     auto client_cache = std::make_unique<test::SimpleSessionCache>();
     client_session_cache_ = client_cache.get();
-    SetQuicRestartFlag(quic_enable_zero_rtt_for_tls_v2, true);
     client_crypto_config_ = std::make_unique<QuicCryptoClientConfig>(
         crypto_test_utils::ProofVerifierForTesting(), std::move(client_cache));
     server_crypto_config_ = crypto_test_utils::CryptoServerConfigForTesting();
@@ -230,10 +229,7 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
 
 std::string ParamNameFormatter(
     const testing::TestParamInfo<QuicSpdyClientSessionTest::ParamType>& info) {
-  const ParsedQuicVersion& version = info.param;
-  return quiche::QuicheStrCat(
-      QuicVersionToString(version.transport_version), "_",
-      HandshakeProtocolToString(version.handshake_protocol));
+  return ParsedQuicVersionToString(info.param);
 }
 
 INSTANTIATE_TEST_SUITE_P(Tests,
@@ -282,10 +278,11 @@ TEST_P(QuicSpdyClientSessionTest, NoEncryptionAfterInitialEncryption) {
   EXPECT_TRUE(session_->CreateOutgoingBidirectionalStream() == nullptr);
   // Verify that no data may be send on existing streams.
   char data[] = "hello world";
-  EXPECT_QUIC_BUG(
+  QuicConsumedData consumed =
       session_->WritevData(stream->id(), ABSL_ARRAYSIZE(data), 0, NO_FIN,
-                           NOT_RETRANSMISSION, ENCRYPTION_INITIAL),
-      "Client: Try to send data of stream");
+                           NOT_RETRANSMISSION, ENCRYPTION_INITIAL);
+  EXPECT_EQ(0u, consumed.bytes_consumed);
+  EXPECT_FALSE(consumed.fin_consumed);
 }
 
 TEST_P(QuicSpdyClientSessionTest, MaxNumStreamsWithNoFinOrRst) {
@@ -583,7 +580,7 @@ TEST_P(QuicSpdyClientSessionTest, InvalidFramedPacketReceived) {
       QuicConnectionPeer::GetFramer(connection_), destination_connection_id);
   bool version_flag = false;
   QuicConnectionIdIncluded scid_included = CONNECTION_ID_ABSENT;
-  if (VersionHasIetfInvariantHeader(version.transport_version)) {
+  if (version.HasIetfInvariantHeader()) {
     version_flag = true;
     source_connection_id = destination_connection_id;
     scid_included = CONNECTION_ID_PRESENT;
@@ -599,12 +596,12 @@ TEST_P(QuicSpdyClientSessionTest, InvalidFramedPacketReceived) {
 }
 
 TEST_P(QuicSpdyClientSessionTest, PushPromiseOnPromiseHeaders) {
+  if (VersionHasIetfQuicFrames(connection_->transport_version())) {
+    return;
+  }
+
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
-
-  if (VersionHasIetfQuicFrames(connection_->transport_version())) {
-    session_->SetMaxPushId(10);
-  }
 
   MockQuicSpdyClientStream* stream = static_cast<MockQuicSpdyClientStream*>(
       session_->CreateOutgoingBidirectionalStream());
@@ -615,6 +612,10 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseOnPromiseHeaders) {
 }
 
 TEST_P(QuicSpdyClientSessionTest, PushPromiseStreamIdTooHigh) {
+  if (VersionHasIetfQuicFrames(connection_->transport_version())) {
+    return;
+  }
+
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
   QuicStreamId stream_id =
@@ -631,18 +632,6 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseStreamIdTooHigh) {
   headers.OnHeader(":scheme", "https");
   headers.OnHeaderBlockEnd(0, 0);
 
-  if (VersionHasIetfQuicFrames(connection_->transport_version())) {
-    session_->SetMaxPushId(10);
-    // TODO(b/136295430) Use PushId to represent Push IDs instead of
-    // QuicStreamId.
-    EXPECT_CALL(
-        *connection_,
-        CloseConnection(QUIC_INVALID_STREAM_ID,
-                        "Received push stream id higher than MAX_PUSH_ID.", _));
-    const PushId promise_id = 11;
-    session_->OnPromiseHeaderList(stream_id, promise_id, 0, headers);
-    return;
-  }
   const QuicStreamId promise_id = GetNthServerInitiatedUnidirectionalStreamId(
       connection_->transport_version(), 11);
   session_->OnPromiseHeaderList(stream_id, promise_id, 0, headers);
@@ -664,12 +653,12 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseOnPromiseHeadersAlreadyClosed) {
 }
 
 TEST_P(QuicSpdyClientSessionTest, PushPromiseOutOfOrder) {
+  if (VersionHasIetfQuicFrames(connection_->transport_version())) {
+    return;
+  }
+
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
-
-  if (VersionHasIetfQuicFrames(connection_->transport_version())) {
-    session_->SetMaxPushId(10);
-  }
 
   MockQuicSpdyClientStream* stream = static_cast<MockQuicSpdyClientStream*>(
       session_->CreateOutgoingBidirectionalStream());
@@ -771,7 +760,7 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseDuplicateUrl) {
 TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
   CompleteCryptoHandshake();
   for (size_t i = 0u; i < session_->get_max_promises(); i++) {
-    push_promise_[":path"] = quiche::QuicheStringPrintf("/bar%zu", i);
+    push_promise_[":path"] = absl::StrCat("/bar", i);
 
     QuicStreamId id =
         promised_stream_id_ +
@@ -789,7 +778,7 @@ TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
 
   // One more promise, this should be refused.
   int i = session_->get_max_promises();
-  push_promise_[":path"] = quiche::QuicheStringPrintf("/bar%d", i);
+  push_promise_[":path"] = absl::StrCat("/bar", i);
 
   QuicStreamId id =
       promised_stream_id_ +
@@ -933,6 +922,10 @@ TEST_P(QuicSpdyClientSessionTest,
 }
 
 TEST_P(QuicSpdyClientSessionTest, TooManyPushPromises) {
+  if (VersionHasIetfQuicFrames(connection_->transport_version())) {
+    return;
+  }
+
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
   QuicStreamId stream_id =
@@ -940,10 +933,6 @@ TEST_P(QuicSpdyClientSessionTest, TooManyPushPromises) {
   QuicSessionPeer::ActivateStream(
       session_.get(), std::make_unique<QuicSpdyClientStream>(
                           stream_id, session_.get(), BIDIRECTIONAL));
-
-  if (VersionHasIetfQuicFrames(connection_->transport_version())) {
-    session_->SetMaxPushId(kMaxQuicStreamId);
-  }
 
   EXPECT_CALL(*connection_, OnStreamReset(_, QUIC_REFUSED_STREAM));
 
@@ -953,7 +942,7 @@ TEST_P(QuicSpdyClientSessionTest, TooManyPushPromises) {
         connection_->transport_version(), promise_count);
     auto headers = QuicHeaderList();
     headers.OnHeaderBlockStart();
-    headers.OnHeader(":path", quiche::QuicheStrCat("/", promise_count));
+    headers.OnHeader(":path", absl::StrCat("/", promise_count));
     headers.OnHeader(":authority", "www.google.com");
     headers.OnHeader(":method", "GET");
     headers.OnHeader(":scheme", "https");
@@ -1269,119 +1258,6 @@ TEST_P(QuicSpdyClientSessionTest,
   crypto_test_utils::HandshakeWithFakeServer(
       &config, server_crypto_config_.get(), &helper_, &alarm_factory_,
       connection_, crypto_stream_, AlpnForVersion(connection_->version()));
-}
-
-TEST_P(QuicSpdyClientSessionTest, SetMaxPushIdBeforeEncryptionEstablished) {
-  // 0-RTT is TLS-only, MAX_PUSH_ID frame is HTTP/3-only.
-  if (!session_->version().UsesTls() || !session_->version().UsesHttp3()) {
-    return;
-  }
-
-  CompleteFirstConnection();
-
-  CreateConnection();
-  StrictMock<MockHttp3DebugVisitor> debug_visitor;
-  session_->set_debug_visitor(&debug_visitor);
-
-  // No MAX_PUSH_ID frame is sent before encryption is established.
-  session_->SetMaxPushId(5);
-
-  EXPECT_FALSE(session_->IsEncryptionEstablished());
-  EXPECT_FALSE(session_->OneRttKeysAvailable());
-  EXPECT_EQ(ENCRYPTION_INITIAL, session_->connection()->encryption_level());
-
-  // MAX_PUSH_ID frame is sent upon encryption establishment with the value set
-  // by the earlier SetMaxPushId() call.
-  EXPECT_CALL(debug_visitor, OnSettingsFrameSent(_));
-  EXPECT_CALL(debug_visitor, OnMaxPushIdFrameSent(_))
-      .WillOnce(Invoke(
-          [](const MaxPushIdFrame& frame) { EXPECT_EQ(5u, frame.push_id); }));
-  session_->CryptoConnect();
-  testing::Mock::VerifyAndClearExpectations(&debug_visitor);
-
-  EXPECT_TRUE(session_->IsEncryptionEstablished());
-  EXPECT_FALSE(session_->OneRttKeysAvailable());
-  EXPECT_EQ(ENCRYPTION_ZERO_RTT, session_->connection()->encryption_level());
-
-  // Another SetMaxPushId() call with the same value does not trigger sending
-  // another MAX_PUSH_ID frame.
-  session_->SetMaxPushId(5);
-
-  // Calling SetMaxPushId() with a different value results in sending another
-  // MAX_PUSH_ID frame.
-  EXPECT_CALL(debug_visitor, OnMaxPushIdFrameSent(_))
-      .WillOnce(Invoke(
-          [](const MaxPushIdFrame& frame) { EXPECT_EQ(10u, frame.push_id); }));
-  session_->SetMaxPushId(10);
-  testing::Mock::VerifyAndClearExpectations(&debug_visitor);
-
-  QuicConfig config = DefaultQuicConfig();
-  crypto_test_utils::HandshakeWithFakeServer(
-      &config, server_crypto_config_.get(), &helper_, &alarm_factory_,
-      connection_, crypto_stream_, AlpnForVersion(connection_->version()));
-
-  EXPECT_TRUE(session_->IsEncryptionEstablished());
-  EXPECT_TRUE(session_->OneRttKeysAvailable());
-  EXPECT_EQ(ENCRYPTION_FORWARD_SECURE,
-            session_->connection()->encryption_level());
-  EXPECT_TRUE(session_->GetCryptoStream()->IsResumption());
-}
-
-TEST_P(QuicSpdyClientSessionTest, SetMaxPushIdAfterEncryptionEstablished) {
-  // 0-RTT is TLS-only, MAX_PUSH_ID frame is HTTP/3-only.
-  if (!session_->version().UsesTls() || !session_->version().UsesHttp3()) {
-    return;
-  }
-
-  CompleteFirstConnection();
-
-  CreateConnection();
-  StrictMock<MockHttp3DebugVisitor> debug_visitor;
-  session_->set_debug_visitor(&debug_visitor);
-
-  EXPECT_FALSE(session_->IsEncryptionEstablished());
-  EXPECT_FALSE(session_->OneRttKeysAvailable());
-  EXPECT_EQ(ENCRYPTION_INITIAL, session_->connection()->encryption_level());
-
-  // No MAX_PUSH_ID frame is sent if SetMaxPushId() has not been called.
-  EXPECT_CALL(debug_visitor, OnSettingsFrameSent(_));
-  session_->CryptoConnect();
-  testing::Mock::VerifyAndClearExpectations(&debug_visitor);
-
-  EXPECT_TRUE(session_->IsEncryptionEstablished());
-  EXPECT_FALSE(session_->OneRttKeysAvailable());
-  EXPECT_EQ(ENCRYPTION_ZERO_RTT, session_->connection()->encryption_level());
-
-  // Calling SetMaxPushId() for the first time after encryption is established
-  // results in sending a MAX_PUSH_ID frame.
-  EXPECT_CALL(debug_visitor, OnMaxPushIdFrameSent(_))
-      .WillOnce(Invoke(
-          [](const MaxPushIdFrame& frame) { EXPECT_EQ(5u, frame.push_id); }));
-  session_->SetMaxPushId(5);
-  testing::Mock::VerifyAndClearExpectations(&debug_visitor);
-
-  // Another SetMaxPushId() call with the same value does not trigger sending
-  // another MAX_PUSH_ID frame.
-  session_->SetMaxPushId(5);
-
-  // Calling SetMaxPushId() with a different value results in sending another
-  // MAX_PUSH_ID frame.
-  EXPECT_CALL(debug_visitor, OnMaxPushIdFrameSent(_))
-      .WillOnce(Invoke(
-          [](const MaxPushIdFrame& frame) { EXPECT_EQ(10u, frame.push_id); }));
-  session_->SetMaxPushId(10);
-  testing::Mock::VerifyAndClearExpectations(&debug_visitor);
-
-  QuicConfig config = DefaultQuicConfig();
-  crypto_test_utils::HandshakeWithFakeServer(
-      &config, server_crypto_config_.get(), &helper_, &alarm_factory_,
-      connection_, crypto_stream_, AlpnForVersion(connection_->version()));
-
-  EXPECT_TRUE(session_->IsEncryptionEstablished());
-  EXPECT_TRUE(session_->OneRttKeysAvailable());
-  EXPECT_EQ(ENCRYPTION_FORWARD_SECURE,
-            session_->connection()->encryption_level());
-  EXPECT_TRUE(session_->GetCryptoStream()->IsResumption());
 }
 
 TEST_P(QuicSpdyClientSessionTest, BadSettingsInZeroRttResumption) {

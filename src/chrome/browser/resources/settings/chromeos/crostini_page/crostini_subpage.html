@@ -4,10 +4,10 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="crostini_browser_proxy.html">
-<link rel="import" href="crostini_mic_sharing_dialog.html">
+<link rel="import" href="crostini_confirmation_dialog.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
-<link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../deep_linking_behavior.html">
 <link rel="import" href="../os_route.html">
@@ -18,6 +18,7 @@
 <link rel="import" href="../metrics_recorder.html">
 <link rel="import" href="crostini_disk_resize_dialog.html">
 <link rel="import" href="crostini_disk_resize_confirmation_dialog.html">
+<link rel="import" href="crostini_port_forwarding.html">
 
 <dom-module id="settings-crostini-subpage">
   <template>
@@ -46,13 +47,13 @@
     <cr-link-row
         class="hr"
         id="crostini-shared-paths"
-        label="$i18n{crostiniSharedPaths}"
+        label="$i18n{guestOsSharedPaths}"
         on-click="onSharedPathsClick_"
         role-description="$i18n{subpageArrowRoleDescription}">
     </cr-link-row>
     <cr-link-row
         class="hr"
-        label="$i18n{crostiniSharedUsbDevicesLabel}"
+        label="$i18n{guestOsSharedUsbDevicesLabel}"
         id="crostini-shared-usb-devices"
         on-click="onSharedUsbDevicesClick_"
         role-description="$i18n{subpageArrowRoleDescription}">
@@ -114,17 +115,23 @@
         </settings-crostini-disk-resize-confirmation-dialog>
       </template>
     </template>
-    <div class="settings-box">
-      <div id="crostini-mic-sharing-label" class="start" aria-hidden="true">
-        $i18n{crostiniMicTitle}
-      </div>
-      <cr-toggle id="crostini-mic-sharing-toggle"
-          checked="[[crostiniMicSharingEnabled_]]"
-          on-change="onMicSharingChange_"
-          aria-describedby="crostini-mic-sharing-label"
-          deep-link-focus-id$="[[Setting.kCrostiniMicAccess]]">
-      </cr-toggle>
-    </div>
+    <settings-toggle-button
+        class="hr"
+        id="crostini-mic-permission-toggle"
+        pref="{{prefs.crostini.mic_allowed}}"
+        no-set-pref
+        label="$i18n{crostiniMicTitle}"
+        on-settings-boolean-control-change="onMicPermissionChange_"
+        deep-link-focus-id$="[[Setting.kCrostiniMicAccess]]">
+    </settings-toggle-button>
+    <template is="dom-if" if="[[showCrostiniMicPermissionDialog_]]" restamp>
+      <settings-crostini-confirmation-dialog
+          id="crostini-mic-permission-dialog"
+          accept-button-text="$i18n{crostiniMicDialogShutdownButton}"
+          on-close="onCrostiniMicPermissionDialogClose_">
+        <div slot="body">$i18n{crostiniMicDialogLabel}</div>
+      </settings-crostini-confirmation-dialog>
+    </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
       <div id="remove" class="settings-box">
         <div id="removeCrostiniLabel" class="start" aria-hidden="true">
@@ -137,13 +144,6 @@
           $i18n{crostiniRemoveButton}
         </cr-button>
       </div>
-    </template>
-
-    <template is="dom-if" if="[[showCrostiniMicSharingDialog_]]" restamp>
-      <settings-crostini-mic-sharing-dialog
-          on-close="onCrostiniMicSharingDialogClose_"
-          pending-mic-sharing-state="[[!crostiniMicSharingEnabled_]]">
-      </settings-crostini-mic-sharing-dialog>
     </template>
   </template>
   <script src="crostini_subpage.js"></script>

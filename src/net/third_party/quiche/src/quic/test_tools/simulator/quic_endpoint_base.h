@@ -7,17 +7,18 @@
 
 #include <memory>
 
-#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_default_packet_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream_frame_data_producer.h"
-#include "net/third_party/quiche/src/quic/core/quic_trace_visitor.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_session_notifier.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/link.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/queue.h"
+#include "absl/container/flat_hash_map.h"
+#include "quic/core/crypto/null_decrypter.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_default_packet_writer.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_stream_frame_data_producer.h"
+#include "quic/core/quic_trace_visitor.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/test_tools/simple_session_notifier.h"
+#include "quic/test_tools/simulator/link.h"
+#include "quic/test_tools/simulator/queue.h"
 
 namespace quic {
 namespace simulator {
@@ -150,7 +151,7 @@ class QuicEndpointMultiplexer : public Endpoint,
   void Act() override {}
 
  private:
-  QuicHashMap<std::string, QuicEndpointBase*> mapping_;
+  absl::flat_hash_map<std::string, QuicEndpointBase*> mapping_;
 };
 
 }  // namespace simulator

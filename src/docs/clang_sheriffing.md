@@ -14,19 +14,19 @@ determining if any compile or test failures are due to an upstream compiler
 change, filing bugs upstream, and often reverting bad changes in LLVM. This
 document describes some of the processes and techniques for doing that.
 
-Some may find the [sheriff-o-matic]
-(https://sheriff-o-matic.appspot.com/chromium.clang) view of the waterfall
-easier to work with.
+Some may find the
+[sheriff-o-matic](https://sheriff-o-matic.appspot.com/chromium.clang)
+view of the waterfall easier to work with.
 
-To keep others informed, [file a bug]
-(https://bugs.chromium.org/p/chromium/issues/entry) .
+To keep others informed, [file a
+bug](https://bugs.chromium.org/p/chromium/issues/entry).
 earlier rather than later for build breaks likely caused by changes in
 clang or the rest fo the toolchain. Make sure to set the component field to
 `Tools > LLVM`, which will include the entire Chrome toolchain (Lexan) team.
 
 At the beginning of your sheriff rotation, it may be
-useful to [search for recent bot breaks]
-(https://bugs.chromium.org/p/chromium/issues/list?q=component%3ATools%3ELLVM&can=2&sort=-modified).
+useful to [search for recent bot
+breaks](https://bugs.chromium.org/p/chromium/issues/list?q=component%3ATools%3ELLVM&can=2&sort=-modified).
 We prefer searching like this to having sheriffs compose status email at the
 end of their week.
 
@@ -91,8 +91,13 @@ and what to do about them:
 This is probably the most common bug. The standard procedure is to do these
 things:
 
-1. Use `got_clang_revision` property from first red and last green build to find
-   upstream regression range
+1. Open the `gclient runhooks` stdout log from the first red build.  Near the
+   top of that log you can find the range of upstream llvm revisions.  For
+   example:
+
+       From https://github.com/llvm/llvm-project
+           f917356f9ce..292e898c16d  master     -> origin/master
+
 1. File a crbug documenting the crash. Include the range, and any other bots
    displaying the same symptoms.
 1. All clang crashes on the Chromium bots are automatically uploaded to
@@ -201,7 +206,7 @@ To use `ld.lld`'s `--reproduce` flag, follow these steps:
 
 1. Copy the link command that ninja prints, `cd out/gn`, paste it, and manually
    append `-Wl,--reproduce,repro.tar`. With `lld-link`, instead append
-   `/linkrepro:repro.tar`. (`ld.lld` is invoked through the `clang` driver, so
+   `/reproduce:repro.tar`. (`ld.lld` is invoked through the `clang` driver, so
    it needs `-Wl` to pass the flag through to the linker. `lld-link` is called
    directly, so the flag needs no prefix.)
 

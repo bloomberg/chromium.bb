@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace {
@@ -57,7 +58,7 @@ class BackgroundSyncMetrics {
   friend class BackgroundSyncMetricsBrowserTest;
 
   void DidGetBackgroundSourceId(RecordCallback record_callback,
-                                base::Optional<ukm::SourceId> source_id);
+                                absl::optional<ukm::SourceId> source_id);
 
   void RecordOneShotSyncRegistrationEvent(bool can_fire,
                                           bool is_reregistered,

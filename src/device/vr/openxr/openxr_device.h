@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/viz/common/gpu/context_provider.h"
+#include "device/vr/openxr/context_provider_callbacks.h"
 #include "device/vr/openxr/openxr_util.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device_base.h"
@@ -27,7 +29,8 @@ class DEVICE_VR_EXPORT OpenXrDevice
       public mojom::XRSessionController,
       public mojom::XRCompositorHost {
  public:
-  OpenXrDevice(OpenXrStatics* openxr_statics);
+  OpenXrDevice(OpenXrStatics* openxr_statics,
+               VizContextProviderFactoryAsync context_provider_factory_async);
   ~OpenXrDevice() override;
 
   // VRDeviceBase
@@ -47,9 +50,7 @@ class DEVICE_VR_EXPORT OpenXrDevice
 
   void EnsureRenderLoop();
 
-  void OnRequestSessionResult(mojom::XRRuntime::RequestSessionCallback callback,
-                              bool result,
-                              mojom::XRSessionPtr session);
+  void OnRequestSessionResult(bool result, mojom::XRSessionPtr session);
   void OnPresentingControllerMojoConnectionError();
   bool IsArBlendModeSupported(OpenXrStatics* openxr_statics);
 
@@ -62,6 +63,10 @@ class DEVICE_VR_EXPORT OpenXrDevice
 
   mojo::Receiver<mojom::XRCompositorHost> compositor_host_receiver_{this};
   mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver_;
+
+  VizContextProviderFactoryAsync context_provider_factory_async_;
+
+  mojom::XRRuntime::RequestSessionCallback request_session_callback_;
 
   base::WeakPtrFactory<OpenXrDevice> weak_ptr_factory_;
 

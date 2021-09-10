@@ -36,9 +36,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/request_mode.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
@@ -63,7 +63,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -141,6 +140,11 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
     return client;
   }
 
+  void Trace(Visitor* visitor) const final {
+    visitor->Trace(error_timer_);
+    ThreadableLoaderClient::Trace(visitor);
+  }
+
  private:
   void NotifyError(TimerBase*);
 
@@ -149,9 +153,9 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   WebAssociatedURLLoaderOptions options_;
   network::mojom::RequestMode request_mode_;
   network::mojom::CredentialsMode credentials_mode_;
-  base::Optional<WebURLError> error_;
+  absl::optional<WebURLError> error_;
 
-  TaskRunnerTimer<ClientAdapter> error_timer_;
+  HeapTaskRunnerTimer<ClientAdapter> error_timer_;
   bool enable_error_notifications_;
   bool did_fail_;
 

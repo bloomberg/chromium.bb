@@ -1,0 +1,10 @@
+InterfaceBlock {
+    layout(set=0) $mat g;
+};
+
+struct S {
+    $bvec bv;
+};
+
+void func($ivec iv) {}
+void func2() { $genType g; }

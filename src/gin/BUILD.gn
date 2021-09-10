@@ -16,6 +16,7 @@ component("gin") {
     "context_holder.cc",
     "converter.cc",
     "converter.h",
+    "cppgc.cc",
     "data_object_builder.cc",
     "data_object_builder.h",
     "debug_impl.cc",
@@ -40,6 +41,7 @@ component("gin") {
     "per_isolate_data.cc",
     "per_isolate_data.h",
     "public/context_holder.h",
+    "public/cppgc.h",
     "public/debug.h",
     "public/gin_embedders.h",
     "public/isolate_holder.h",
@@ -176,5 +178,12 @@ test("gin_unittests") {
     } else {
       deps += [ "//v8:v8_external_startup_data_assets" ]
     }
+  }
+
+  if (is_fuchsia) {
+    additional_manifest_fragments = [
+      # TODO(crbug.com/1185811): Figure out why jit_capabilities is needed.
+      "//build/config/fuchsia/test/jit_capabilities.test-cmx",
+    ]
   }
 }

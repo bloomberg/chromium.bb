@@ -24,12 +24,12 @@
 namespace dawn_native { namespace vulkan {
 
     // static
-    ResultOrError<ComputePipeline*> ComputePipeline::Create(
+    ResultOrError<Ref<ComputePipeline>> ComputePipeline::Create(
         Device* device,
         const ComputePipelineDescriptor* descriptor) {
         Ref<ComputePipeline> pipeline = AcquireRef(new ComputePipeline(device, descriptor));
         DAWN_TRY(pipeline->Initialize(descriptor));
-        return pipeline.Detach();
+        return pipeline;
     }
 
     MaybeError ComputePipeline::Initialize(const ComputePipelineDescriptor* descriptor) {
@@ -45,20 +45,28 @@ namespace dawn_native { namespace vulkan {
         createInfo.stage.pNext = nullptr;
         createInfo.stage.flags = 0;
         createInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-        createInfo.stage.module = ToBackend(descriptor->computeStage.module)->GetHandle();
+        if (GetDevice()->IsToggleEnabled(Toggle::UseTintGenerator)) {
+            // Generate a new VkShaderModule with BindingRemapper tint transform for each pipeline
+            DAWN_TRY_ASSIGN(createInfo.stage.module,
+                            ToBackend(descriptor->computeStage.module)
+                                ->GetTransformedModuleHandle(descriptor->computeStage.entryPoint,
+                                                             ToBackend(GetLayout())));
+        } else {
+            createInfo.stage.module = ToBackend(descriptor->computeStage.module)->GetHandle();
+        }
         createInfo.stage.pName = descriptor->computeStage.entryPoint;
         createInfo.stage.pSpecializationInfo = nullptr;
 
         Device* device = ToBackend(GetDevice());
 
-        PNextChainBuilder extChain(&createInfo);
+        PNextChainBuilder stageExtChain(&createInfo.stage);
 
         VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT subgroupSizeInfo = {};
         uint32_t computeSubgroupSize = device->GetComputeSubgroupSize();
         if (computeSubgroupSize != 0u) {
             ASSERT(device->GetDeviceInfo().HasExt(DeviceExt::SubgroupSizeControl));
             subgroupSizeInfo.requiredSubgroupSize = computeSubgroupSize;
-            extChain.Add(
+            stageExtChain.Add(
                 &subgroupSizeInfo,
                 VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO_EXT);
         }

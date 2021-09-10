@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import re
+import six
 
 from telemetry.story import shared_state as shared_state_module
 
@@ -105,7 +107,7 @@ class Story(object):
 
   @property
   def name_and_grouping_key_tuple(self):
-    return self.name, tuple(self.grouping_keys.iteritems())
+    return self.name, tuple(six.iteritems(self.grouping_keys))
 
   def AsDict(self):
     """Converts a story object to a dict suitable for JSON output."""
@@ -151,7 +153,7 @@ class Story(object):
   def GetStoryTagsList(self):
     """Return a list of strings with story tags and grouping keys."""
     return list(self.tags) + [
-        '%s:%s' % kv for kv in self.grouping_keys.iteritems()]
+        '%s:%s' % kv for kv in six.iteritems(self.grouping_keys)]
 
   def GetExtraTracingMetrics(self):
     """Override this to add more TBMv2 metrics to be computed.
@@ -170,3 +172,10 @@ class Story(object):
     return ['exampleMetric']
     """
     return []
+
+  def WillStartTracing(self, chrome_trace_config):
+    """This method provides a way to add/modify tracing configs on the story
+    levels. e.g. if you want to add more trace categories for some stories
+    you can add them here.
+    """
+    pass

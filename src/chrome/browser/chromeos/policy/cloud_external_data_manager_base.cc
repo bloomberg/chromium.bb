@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -16,13 +17,13 @@
 #include "base/callback_helpers.h"
 #include "base/callback_list.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -182,9 +183,9 @@ void CloudExternalDataManagerBase::Backend::Connect(
     std::unique_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!updater_);
-  updater_.reset(new ExternalPolicyDataUpdater(
+  updater_ = std::make_unique<ExternalPolicyDataUpdater>(
       task_runner_, std::move(external_policy_data_fetcher),
-      kMaxParallelFetches));
+      kMaxParallelFetches);
   for (const auto& it : pending_downloads_)
     StartDownload(it.first);
 }
@@ -355,13 +356,11 @@ void CloudExternalDataManagerBase::Backend::StartDownload(
   const MetadataEntry& metadata = metadata_[policy];
   updater_->FetchExternalData(
       policy,
-      ExternalPolicyDataUpdater::Request(metadata.url,
-                                         metadata.hash,
+      ExternalPolicyDataUpdater::Request(metadata.url, metadata.hash,
                                          GetMaxExternalDataSize(policy)),
-      base::Bind(&CloudExternalDataManagerBase::Backend::OnDownloadSuccess,
-                 base::Unretained(this),
-                 policy,
-                 metadata.hash));
+      base::BindRepeating(
+          &CloudExternalDataManagerBase::Backend::OnDownloadSuccess,
+          base::Unretained(this), policy, metadata.hash));
 }
 
 CloudExternalDataManagerBase::CloudExternalDataManagerBase(

@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">內置顯示屏</translation>
 <translation id="335581015389089642">語音</translation>
 <translation id="3389286852084373014">文字過多</translation>
+<translation id="3406306243914553062">HTML 內容</translation>
 <translation id="348799646910989694">自動隱藏捷徑列</translation>
 <translation id="3554637740840164787">已經將<ph name="ITEM_TITLE" />置頂</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{還有 1 天}other{還有 # 天}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">號碼</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/秒</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />。<ph name="TYPE_2" />。</translation>
 <translation id="3842239759367498783">喺流動裝置上繼續閱讀「<ph name="TITLE" />」</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3889424535448813030">向右鍵</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 個月前}other{# 個月前}}</translation>
 <translation id="4289300219472526559">開始說</translation>
 <translation id="430191667033048642">「<ph name="MOVED_APP_NAME" />」已經移咗去「<ph name="FOLDER_NAME" />」資料夾。</translation>
+<translation id="4306392492252714209">喺剪貼簿度移除。</translation>
 <translation id="4316910396681052118">所有應用程式</translation>
 <translation id="4491109536499578614">圖片</translation>
 <translation id="4588090240171750605">向右捲動</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">要從記錄中刪除此搜尋嗎？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7620655452534002301">移除咗。</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="7814458197256864873">複製(&amp;C)</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{1 小時前}other{# 小時前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{還有 1 秒}other{還有 # 秒}}</translation>
 <translation id="8134065097954893699">重新載入此頁面</translation>
-<translation id="8144660977431427332">您的搜尋結果由「Google 助理」提供。<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />，自動完成</translation>
 <translation id="815598010540052116">向下捲動</translation>
 <translation id="8179976553408161302">Enter 鍵</translation>
 <translation id="8210608804940886430">下一頁</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Tab 鍵</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />，應用程式</translation>
 <translation id="8259556432390118667">十六進制顏色值</translation>

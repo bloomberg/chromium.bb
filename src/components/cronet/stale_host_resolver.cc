@@ -42,13 +42,15 @@ class StaleHostResolver::RequestImpl
 
   // net::HostResolver::ResolveHostRequest implementation:
   int Start(net::CompletionOnceCallback result_callback) override;
-  const base::Optional<net::AddressList>& GetAddressResults() const override;
-  const base::Optional<std::vector<std::string>>& GetTextResults()
+  const absl::optional<net::AddressList>& GetAddressResults() const override;
+  const absl::optional<std::vector<std::string>>& GetTextResults()
       const override;
-  const base::Optional<std::vector<net::HostPortPair>>& GetHostnameResults()
+  const absl::optional<std::vector<net::HostPortPair>>& GetHostnameResults()
+      const override;
+  const absl::optional<std::vector<std::string>>& GetDnsAliasResults()
       const override;
   net::ResolveErrorInfo GetResolveErrorInfo() const override;
-  const base::Optional<net::HostCache::EntryStaleness>& GetStaleInfo()
+  const absl::optional<net::HostCache::EntryStaleness>& GetStaleInfo()
       const override;
   void ChangeRequestPriority(net::RequestPriority priority) override;
 
@@ -176,7 +178,7 @@ int StaleHostResolver::RequestImpl::Start(
   return network_rv;
 }
 
-const base::Optional<net::AddressList>&
+const absl::optional<net::AddressList>&
 StaleHostResolver::RequestImpl::GetAddressResults() const {
   if (network_request_)
     return network_request_->GetAddressResults();
@@ -185,7 +187,7 @@ StaleHostResolver::RequestImpl::GetAddressResults() const {
   return cache_request_->GetAddressResults();
 }
 
-const base::Optional<std::vector<std::string>>&
+const absl::optional<std::vector<std::string>>&
 StaleHostResolver::RequestImpl::GetTextResults() const {
   if (network_request_)
     return network_request_->GetTextResults();
@@ -194,13 +196,22 @@ StaleHostResolver::RequestImpl::GetTextResults() const {
   return cache_request_->GetTextResults();
 }
 
-const base::Optional<std::vector<net::HostPortPair>>&
+const absl::optional<std::vector<net::HostPortPair>>&
 StaleHostResolver::RequestImpl::GetHostnameResults() const {
   if (network_request_)
     return network_request_->GetHostnameResults();
 
   DCHECK(cache_request_);
   return cache_request_->GetHostnameResults();
+}
+
+const absl::optional<std::vector<std::string>>&
+StaleHostResolver::RequestImpl::GetDnsAliasResults() const {
+  if (network_request_)
+    return network_request_->GetDnsAliasResults();
+
+  DCHECK(cache_request_);
+  return cache_request_->GetDnsAliasResults();
 }
 
 net::ResolveErrorInfo StaleHostResolver::RequestImpl::GetResolveErrorInfo()
@@ -211,7 +222,7 @@ net::ResolveErrorInfo StaleHostResolver::RequestImpl::GetResolveErrorInfo()
   return cache_request_->GetResolveErrorInfo();
 }
 
-const base::Optional<net::HostCache::EntryStaleness>&
+const absl::optional<net::HostCache::EntryStaleness>&
 StaleHostResolver::RequestImpl::GetStaleInfo() const {
   if (network_request_)
     return network_request_->GetStaleInfo();
@@ -321,7 +332,7 @@ StaleHostResolver::CreateRequest(
     const net::HostPortPair& host,
     const net::NetworkIsolationKey& network_isolation_key,
     const net::NetLogWithSource& net_log,
-    const base::Optional<ResolveHostParameters>& optional_parameters) {
+    const absl::optional<ResolveHostParameters>& optional_parameters) {
   DCHECK(tick_clock_);
   return std::make_unique<RequestImpl>(
       weak_ptr_factory_.GetWeakPtr(), host, network_isolation_key, net_log,

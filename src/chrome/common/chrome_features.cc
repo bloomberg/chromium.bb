@@ -8,33 +8,28 @@
 #include "base/feature_list.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/chrome_switches.h"
-#include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 
 namespace features {
 
 // All features in alphabetical order.
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-// Sets whether dismissing the new-tab-page override bubble counts as
-// acknowledgement.
-const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
-    "AcknowledgeNtpOverrideOnDeactivate", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// If enabled device status collector will add the type of session (Affiliated
+// User, Kiosks, Managed Guest Sessions) to the device status report.
+const base::Feature kActivityReportingSessionType{
+    "ActivityReportingSessionType", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(IS_CHROMEOS_ASH)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables logging for adaptive screen brightness on Chrome OS.
 const base::Feature kAdaptiveScreenBrightnessLogging{
     "AdaptiveScreenBrightnessLogging", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_ANDROID)
-const base::Feature kAddToHomescreenMessaging{
-    "AddToHomescreenMessaging", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows a setting that allows disabling mouse acceleration.
 const base::Feature kAllowDisableMouseAcceleration{
     "AllowDisableMouseAcceleration", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -45,32 +40,24 @@ const base::Feature kAllowDisableMouseAcceleration{
 const base::Feature kAlwaysReinstallSystemWebApps{
     "ReinstallSystemWebApps", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_ANDROID)
-const base::Feature kAndroidDarkSearch{"AndroidDarkSearch",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Controls whether web apps can be installed via APKs on Chrome OS.
 const base::Feature kApkWebAppInstalls{"ApkWebAppInstalls",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_CHROMEOS)
-// Enables app activity reporting for child user.
-// Requires |kPerAppTimeLimits| to be enabled.
-const base::Feature kAppActivityReporting{"AppActivityReporting",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Controls whether intent settings are available in App Management.
+const base::Feature kAppManagementIntentSettings{
+    "AppManagementIntentSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
 // App Service related flags. See components/services/app_service/README.md.
 const base::Feature kAppServiceAdaptiveIcon{"AppServiceAdaptiveIcon",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAppServiceExternalProtocol{
     "AppServiceExternalProtocol", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAppServiceIntentHandling{"AppServiceIntentHandling",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_MAC)
@@ -104,16 +91,9 @@ const base::Feature kBackgroundModeAllowRestart{
     "BackgroundModeAllowRestart", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable Borealis on Chrome OS.
 const base::Feature kBorealis{"Borealis", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-// Enables the dual certificate verification trial feature.
-// https://crbug.com/649026
-const base::Feature kCertDualVerificationTrialFeature{
-    "CertDualVerificationTrial", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enables change picture video mode.
@@ -132,27 +112,38 @@ const base::Feature kClearOldBrowsingData{"ClearOldBrowsingData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-const base::Feature kClickToOpenPDFPlaceholder{
-    "ClickToOpenPDFPlaceholder", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kClientStorageAccessContextAuditing{
     "ClientStorageAccessContextAuditing", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentSettingsRedesign{"ContentSettingsRedesign",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables a redesign of the cookies page.
-const base::Feature kCookiesPageRedesign{"CookiesPageRedesign",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_ANDROID)
+const base::Feature kContinuousFeeds{"ContinuousFeeds",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContinuousSearch{"ContinuousSearch",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Restricts all of Chrome's threads to use only LITTLE cores on big.LITTLE
 // architectures.
 const base::Feature kCpuAffinityRestrictToLittleCores{
     "CpuAffinityRestrictToLittleCores", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Restricts all of Chrome's threads to use only LITTLE cores on big.LITTLE
+// architectures when the detected PowerMode is kIdle or kBackground.
+const base::Feature kPowerSchedulerThrottleIdle{
+    "PowerSchedulerThrottleIdle", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Restricts all of Chrome's threads to use only LITTLE cores on big.LITTLE
+// architectures when the detected PowerMode is kIdle, kBackground, or
+// kNopAnimation.
+const base::Feature kPowerSchedulerThrottleIdleAndNopAnimation{
+    "PowerSchedulerThrottleIdleAndNopAnimation",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables "usm" service in the list of user services returned by
 // userInfo Gaia message.
 const base::Feature kCrOSEnableUSMUserService{"CrOSEnableUSMUserService",
@@ -211,7 +202,7 @@ const base::Feature kCryptohomeUserDataAuthKillswitch{
     "CryptohomeUserDataAuthKillswitch", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables parsing and enforcing Data Leak Prevention policy rules that
 // restricts usage of some system features, e.g.clipboard, screenshot, etc.
 // for confidential content.
@@ -219,7 +210,7 @@ const base::Feature kDataLeakPreventionPolicy{"DataLeakPreventionPolicy",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables passing additional user authentication in requests to DMServer
 // (policy fetch, status report upload).
 const base::Feature kDMServerOAuthForChildUser{
@@ -228,8 +219,15 @@ const base::Feature kDMServerOAuthForChildUser{
 
 #if !defined(OS_ANDROID)
 // Whether to allow installed-by-default web apps to be installed or not.
-const base::Feature kDefaultWebAppInstallation{
+const base::Feature kPreinstalledWebAppInstallation{
     "DefaultWebAppInstallation", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Updates the default set of pinned apps in the Chrome OS shelf for new
+// profiles.
+const base::Feature kDefaultPinnedAppsUpdate2021Q2{
+    "DefaultPinnedAppsUpdate2021Q2", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enable using tab sharing infobars for desktop capture.
@@ -241,34 +239,68 @@ const base::Feature kDesktopCaptureTabSharingInfobar{
 const base::Feature kDesktopPWAsAppIconShortcutsMenu{
     "DesktopPWAsAppIconShortcutsMenu", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Enables Desktop PWAs shortcuts menu to be visible and executable in ChromeOS
+// UI surfaces.
+const base::Feature kDesktopPWAsAppIconShortcutsMenuUI{
+    "DesktopPWAsAppIconShortcutsMenuUI", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables attention badging for PWA icons in the shelf and launcher.
+const base::Feature kDesktopPWAsAttentionBadgingCrOS{
+    "DesktopPWAsAttentionBadgingCrOS", base::FEATURE_ENABLED_BY_DEFAULT};
+constexpr base::FeatureParam<std::string> kDesktopPWAsAttentionBadgingCrOSParam{
+    &kDesktopPWAsAttentionBadgingCrOS, "badge-source",
+    switches::kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications};
+#endif
+
 // When installing default installed PWAs, we wait for service workers
 // to cache resources.
 const base::Feature kDesktopPWAsCacheDuringDefaultInstall{
     "DesktopPWAsCacheDuringDefaultInstall", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables local PWA installs to update their app manifest data if the site
-// changes its manifest.
-const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
+// Moves the Extensions "puzzle piece" icon from the title bar into the app menu
+// for web app windows.
+const base::Feature kDesktopPWAsElidedExtensionsMenu{
+  "DesktopPWAsElidedExtensionsMenu",
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
-// Enables or disables the WebAppMigrationUserDisplayModeCleanUp code for
-// cleaning up the fallout of https://crbug.com/1125020.
-const base::Feature kDesktopPWAsMigrationUserDisplayModeCleanUp{
-    "DesktopPWAsMigrationUserDisplayModeCleanUp",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+// Replaces the origin text flash in web app titlebars with the name of the app.
+const base::Feature kDesktopPWAsFlashAppNameInsteadOfOrigin{
+    "DesktopPWAsFlashAppNameInsteadOfOrigin",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Replaces the origin text flash and the icon in web app notifications with
+// the name of the app and the icon of the app.
+const base::Feature kDesktopPWAsNotificationIconAndTitle{
+    "DesktopPWAsNotificationIconAndTitle", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Desktop PWAs to be auto-started on OS login.
-const base::Feature kDesktopPWAsRunOnOsLogin{"DesktopPWAsRunOnOsLogin",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDesktopPWAsRunOnOsLogin {
+  "DesktopPWAsRunOnOsLogin",
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables or disables usage of shared LevelDB instance (ModelTypeStoreService).
 // If this flag is disabled, the new Web Apps system uses its own isolated
-// LevelDB instance for manual testing purposes. Requires
-// kDesktopPWAsWithoutExtensions to be enabled.
-// TODO(crbug.com/877898): Delete this feature flag before
-// kDesktopPWAsWithoutExtensions launch.
+// LevelDB instance for manual testing purposes.
+//
+// TODO(crbug.com/1065748): Delete this feature flag.
 const base::Feature kDesktopPWAsSharedStoreService{
     "DesktopPWAsSharedStoreService", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// API that allows installed PWAs to add additional shortcuts by means of
+// installing sub app components.
+const base::Feature kDesktopPWAsSubApps{"DesktopPWAsSubApps",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Adds a tab strip to PWA windows, used for UI experimentation.
 // TODO(crbug.com/897314): Enable this feature.
@@ -280,11 +312,6 @@ const base::Feature kDesktopPWAsTabStrip{"DesktopPWAsTabStrip",
 // TODO(crbug.com/897314): Enable this feature.
 const base::Feature kDesktopPWAsTabStripLinkCapturing{
     "DesktopPWAsTabStripLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables or disables new Desktop PWAs implementation that does not use
-// extensions.
-const base::Feature kDesktopPWAsWithoutExtensions{
-    "DesktopPWAsWithoutExtensions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable DNS over HTTPS (DoH).
 const base::Feature kDnsOverHttps {
@@ -326,6 +353,12 @@ const base::FeatureParam<bool> kDnsOverHttpsShowUiParam {
 const base::FeatureParam<std::string> kDnsOverHttpsTemplatesParam{
     &kDnsOverHttps, "Templates", ""};
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Enables the DNS-Over-HTTPS in the DNS proxy.
+const base::Feature kDnsProxyEnableDOH{"DnsProxyEnableDOH",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_ANDROID)
 // Enable changing default downloads storage location on Android.
 const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
@@ -343,14 +376,16 @@ const base::Feature kEarlyLibraryLoad{"EarlyLibraryLoad",
 const base::Feature kEnableAllSystemWebApps{"EnableAllSystemWebApps",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || \
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
     defined(OS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES)
 // Enables ephemeral Guest profiles on desktop.
 extern const base::Feature kEnableEphemeralGuestProfilesOnDesktop{
     "EnableEphemeralGuestProfilesOnDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS)) ||
-        // defined(OS_MAC)
+#endif  // defined(OS_WIN) || (defined(OS_LINUX) ||
+        // BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_MAC)
 
 #if defined(OS_WIN)
 // Enables users to create a desktop shortcut for incognito mode.
@@ -358,28 +393,34 @@ const base::Feature kEnableIncognitoShortcutOnDesktop{
     "EnableIncognitoShortcutOnDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enable the restricted web APIs for high-trusted apps.
+const base::Feature kEnableRestrictedWebApis{"EnableRestrictedWebApis",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable web app uninstallation from Windows settings or control panel.
+const base::Feature kEnableWebAppUninstallFromOsSettings{
+    "EnableWebAppUninstallFromOsSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_MAC)
 const base::Feature kEnterpriseReportingApiKeychainRecreation{
     "EnterpriseReportingApiKeychainRecreation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Upload enterprise cloud reporting from Chrome OS.
 const base::Feature kEnterpriseReportingInChromeOS{
-    "EnterpriseReportingInChromeOS", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-#if defined(OS_CHROMEOS)
-// Enables event-based status reporting for child accounts in Chrome OS.
-const base::Feature kEventBasedStatusReporting{
-    "EventBasedStatusReporting", base::FEATURE_ENABLED_BY_DEFAULT};
+    "EnterpriseReportingInChromeOS", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if !defined(OS_ANDROID)
 // Enables real-time reporting for extension request
 const base::Feature kEnterpriseRealtimeExtensionRequest{
     "EnterpriseRealtimeExtensionRequest", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::FeatureParam<base::TimeDelta>
+    kEnterpiseRealtimeExtensionRequestThrottleDelay{
+        &kEnterpriseRealtimeExtensionRequest, "throttle_delay",
+        base::TimeDelta::FromMinutes(1)};
 #endif
 
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
@@ -394,17 +435,6 @@ const base::Feature kExternalExtensionDefaultButtonControl{
 const base::Feature kFlashDeprecationWarning{"FlashDeprecationWarning",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
-
-// Enables or disables the FlocIdComputed event logging, which happens when a
-// floc id is first computed for a browsing session or is refreshed due to a
-// long period of time has passed since the last computation.
-const base::Feature kFlocIdComputedEventLogging{
-    "FlocIdComputedEventLogging", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// If enabled, the sim-hash floc computed from history will be further encoded
-// based on the sorting-lsh.
-const base::Feature kFlocIdSortingLshBasedComputation{
-    "FlocIdSortingLshBasedComputation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables Focus Mode which brings up a PWA-like window look.
 const base::Feature kFocusMode{"FocusMode", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -423,17 +453,22 @@ const base::Feature kGdiTextPrinting{"GdiTextPrinting",
 // of languages.
 const base::Feature kGeoLanguage{"GeoLanguage",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if !defined(OS_ANDROID)
-// Enables or disables the Happiness Tracking System for Desktop Chrome.
-const base::Feature kHappinessTrackingSurveysForDesktop{
-    "HappinessTrackingSurveysForDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables the Happiness Tracking System demo mode for Desktop
 // Chrome.
 const base::Feature kHappinessTrackingSurveysForDesktopDemo{
     "HappinessTrackingSurveysForDesktopDemo",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Happiness Tracking System for COEP issues in Chrome
+// DevTools on Desktop.
+const base::Feature kHaTSDesktopDevToolsIssuesCOEP{
+    "HaTSDesktopDevToolsIssuesCOEP", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Happiness Tracking System for Mixed Content issues in
+// Chrome DevTools on Desktop.
+const base::Feature kHaTSDesktopDevToolsIssuesMixedContent{
+    "HaTSDesktopDevToolsIssuesMixedContent", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the Happiness Tracking System for same-site cookies
 // issues in Chrome DevTools on Desktop.
@@ -442,56 +477,69 @@ const base::Feature
         "HappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSite",
         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the migration of Happiness Tracking Surveys on Desktop (to the latest
-// version).
-const base::Feature kHappinessTrackingSurveysForDesktopMigration{
-    "HappinessTrackingSurveysForDesktopMigration",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables or disables the Happiness Tracking System for Heavy Ad issues in
+// Chrome DevTools on Desktop.
+const base::Feature kHaTSDesktopDevToolsIssuesHeavyAd{
+    "HaTSDesktopDevToolsIssuesHeavyAd", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Happiness Tracking System for CSP issues in Chrome
+// DevTools on Desktop.
+const base::Feature kHaTSDesktopDevToolsIssuesCSP{
+    "HaTSDesktopDevToolsIssuesCSP", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Happiness Tracking System for Layout panel in Chrome
+// DevTools on Desktop.
+const base::Feature kHaTSDesktopDevToolsLayoutPanel{
+    "HaTSDesktopDevToolsLayoutPanel", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Happiness Tracking System for Desktop Privacy
+// Sandbox.
+const base::Feature kHappinessTrackingSurveysForDesktopPrivacySandbox{
+    "HappinessTrackingSurveysForDesktopPrivacySandbox",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the Happiness Tracking System for Desktop Chrome
 // Settings.
 const base::Feature kHappinessTrackingSurveysForDesktopSettings{
     "HappinessTrackingSurveysForDesktopSettings",
     base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<bool>
+    kHappinessTrackingSurveysForDesktopSettingsPrivacyNoSandbox{
+        &kHappinessTrackingSurveysForDesktopSettingsPrivacy, "no-sandbox",
+        false};
 
 // Enables or disables the Happiness Tracking System for Desktop Chrome
 // Privacy Settings.
 const base::Feature kHappinessTrackingSurveysForDesktopSettingsPrivacy{
     "HappinessTrackingSurveysForDesktopSettingsPrivacy",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Happiness Tracking System for Desktop Chrome
+// NTP Modules.
+const base::Feature kHappinessTrackingSurveysForDesktopNtpModules{
+    "HappinessTrackingSurveysForDesktopNtpModules",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables the Happiness Tracking System for the device.
 const base::Feature kHappinessTrackingSystem{"HappinessTrackingSystem",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables or disables the Happiness Tracking System for Onboarding Experience.
+const base::Feature kHappinessTrackingSystemOnboarding{
+    "HappinessTrackingOnboardingExperience", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables or disables the intervention that unloads ad iframes with intensive
-// resource usage.
-const base::Feature kHeavyAdIntervention{"HeavyAdIntervention",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables or disables reporting on the intervention that unloads ad iframes
-// with intensive resource usage.
-const base::Feature kHeavyAdInterventionWarning{
-    "HeavyAdInterventionWarning", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables the privacy mitigations for the heavy ad intervention.
-// This throttles the amount of interventions that can occur on a given host in
-// a time period. It also adds noise to the thresholds used. This is separate
-// from the intervention feature so it does not interfere with field trial
-// activation, as this blocklist is created for every user, and noise is decided
-// prior to seeing a heavy ad.
-const base::Feature kHeavyAdPrivacyMitigations{
-    "HeavyAdPrivacyMitigations", base::FEATURE_ENABLED_BY_DEFAULT};
+// Hides the origin text from showing up briefly in WebApp windows.
+const base::Feature kHideWebAppOriginText{"HideWebAppOriginText",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_MAC)
 const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables scraping of password-expiry information during SAML login flow, which
 // can lead to an in-session flow for changing SAML password if it has expired.
 // This is safe to enable by default since it does not cause the password-expiry
@@ -502,7 +550,7 @@ const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
 // any unforeseen issues.
 const base::Feature kInSessionPasswordChange{"InSessionPasswordChange",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
 // A feature that controls whether Chrome warns about incompatible applications.
@@ -513,15 +561,27 @@ const base::Feature kIncompatibleApplicationsWarning{
 #endif
 
 #if defined(OS_ANDROID)
-// Enables or disables the installable ambient badge infobar.
-const base::Feature kInstallableAmbientBadgeInfoBar{
-    "InstallableAmbientBadgeInfoBar", base::FEATURE_ENABLED_BY_DEFAULT};
+// When enabled, keeps Incognito UI consistent regardless of any selected theme.
+const base::Feature kIncognitoBrandConsistencyForAndroid{
+    "IncognitoBrandConsistencyForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+// When enabled, removes any theme or background customization done by the user
+// on the Incognito UI.
+const base::Feature kIncognitoBrandConsistencyForDesktop{
+    "IncognitoBrandConsistencyForDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+// When enabled, removes any entry points to the history UI from Incognito mode.
+const base::Feature kUpdateHistoryEntryPointsInIncognito{
+    "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
 // Support sharing in Chrome OS intent handling.
 const base::Feature kIntentHandlingSharing{"IntentHandlingSharing",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 // Allow user to have preference for PWA in the intent picker.
 const base::Feature kIntentPickerPWAPersistence{
     "IntentPickerPWAPersistence", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -532,10 +592,16 @@ const base::Feature kIntentPickerPWAPersistence{
 const base::Feature kInvalidatorUniqueOwnerName{
     "InvalidatorUniqueOwnerName", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kKernelnextVMs{"KernelnextVMs",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+const base::Feature kLinkDoctorDeprecationAndroid{
+    "LinkDoctorDeprecationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
 
 // Enables LiteVideos, a data-saving optimization that throttles media requests
 // to reduce the bitrate of adaptive media streams. Only for Lite mode users
@@ -558,23 +624,21 @@ const base::Feature kMacMaterialDesignDownloadShelf{
 #endif
 
 #if defined(OS_MAC)
-// In case a website is trying to use the camera/microphone, but Chrome itself
-// is blocked on the system level to access these, show an icon in the Omnibox,
-// which, when clicked, displays a bubble with information on how to toggle
-// Chrome's system-level media permissions.
-const base::Feature kMacSystemMediaPermissionsInfoUi{
-    "MacSystemMediaPermissionsInfoUI", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable screen capture system permission check on Mac 10.15+.
 const base::Feature kMacSystemScreenCapturePermissionCheck{
     "MacSystemScreenCapturePermissionCheck", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Whether to show the Metered toggle in Settings, allowing users to toggle
 // whether to treat a WiFi or Cellular network as 'metered'.
 const base::Feature kMeteredShowToggle{"MeteredShowToggle",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Whether to show the Hidden toggle in Settings, allowing users to toggle
+// whether to treat a WiFi network as having a hidden ssid.
+const base::Feature kShowHiddenNetworkToggle{"ShowHiddenNetworkToggle",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID)
@@ -583,13 +647,35 @@ const base::Feature kMetricsSettingsAndroid{"MetricsSettingsAndroid",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables the use of native notification centers instead of using the Message
+const base::Feature kMoveWebApp{
+    "MoveWebApp", base::FeatureState::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<std::string> kMoveWebAppUninstallStartUrlPrefix(
+    &kMoveWebApp,
+    "uninstallStartUrlPrefix",
+    "");
+const base::FeatureParam<std::string> kMoveWebAppUninstallStartUrlPattern(
+    &kMoveWebApp,
+    "uninstallStartUrlPattern",
+    "");
+const base::FeatureParam<std::string>
+    kMoveWebAppInstallStartUrl(&kMoveWebApp, "installStartUrl", "");
+
+// Enables the use of system notification centers instead of using the Message
 // Center for displaying the toasts. The feature is hardcoded to enabled for
 // Chrome OS.
-#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_SYSTEM_NOTIFICATIONS) && !BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kNativeNotifications{"NativeNotifications",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
+
+const base::Feature kSystemNotifications{"SystemNotifications",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(ENABLE_SYSTEM_NOTIFICATIONS)
+
+#if defined(OS_MAC)
+// Enables the usage of Apple's new Notification API on macOS 10.14+
+const base::Feature kNewMacNotificationAPI{"NewMacNotificationAPI",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // OS_MAC
 
 // When kNoReferrers is enabled, most HTTP requests will provide empty
 // referrers instead of their ordinary behavior.
@@ -603,6 +689,12 @@ const base::Feature kNotificationDurationLongForRequireInteraction{
     "NotificationDurationLongForRequireInteraction",
     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OS_WIN
+
+#if defined(OS_MAC)
+// Shows alert notifications via a helper app in a utility process.
+const base::Feature kNotificationsViaHelperApp{
+    "NotificationsViaHelperApp", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // OS_MAC
 
 #if defined(OS_POSIX)
 // Enables NTLMv2, which implicitly disables NTLMv1.
@@ -635,22 +727,28 @@ const base::Feature kOomIntervention{"OomIntervention",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables usage of Parent Access Code in the login flow for reauth and add
 // user. Requires |kParentAccessCode| to be enabled.
 const base::Feature kParentAccessCodeForOnlineLogin{
     "ParentAccessCodeForOnlineLogin", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables enforcement of per-app time limits for child user.
-const base::Feature kPerAppTimeLimits{"PerAppTimeLimits",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
+
+// Keep a client-side log of when websites access permission-gated capabilities
+// to allow the user to audit usage.
+const base::Feature kPermissionAuditing{"PermissionAuditing",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables using the prediction service for permission prompts.
 const base::Feature kPermissionPredictions{"PermissionPredictions",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
+const base::FeatureParam<double> kPermissionPredictionsHoldbackChance(
+    &kPermissionPredictions,
+    "holdback_chance",
+    0.0);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable support for "Plugin VMs" on Chrome OS.
 const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
@@ -660,6 +758,9 @@ const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
     "PredictivePrefetchingAllowedOnAllConnectionTypes",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kPrefixWebAppWindowsWithAppName{
+    "PrefixWebAppWindowsWithAppName", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows Chrome to do preconnect when prerender fails.
 const base::Feature kPrerenderFallbackToPreconnect{
     "PrerenderFallbackToPreconnect", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -668,22 +769,25 @@ const base::Feature kPrerenderFallbackToPreconnect{
 const base::Feature kPrivacyAdvisor{"PrivacyAdvisor",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_ANDROID)
-const base::Feature kPrivacyReorderedAndroid{"PrivacyReorderedAndroid",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
+// Enables the privacy sandbox settings page.
+const base::Feature kPrivacySandboxSettings{"PrivacySandboxSettings",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+const base::FeatureParam<std::string> kPrivacySandboxSettingsURL{
+    &kPrivacySandboxSettings, "website-url", "https://www.privacysandbox.com"};
 
-// Whether to display redesign of the chrome privacy settings page
-// to the user.
-const base::Feature kPrivacySettingsRedesign{"PrivacySettingsRedesign",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables additional control set 2 on the privacy sandbox settings page.
+const base::Feature kPrivacySandboxSettings2{"PrivacySandboxSettings2",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<std::string> kPrivacySandboxSettings2FlocURL{
+    &kPrivacySandboxSettings2, "floc-website-url",
+    "https://privacysandbox.com/proposals/floc"};
 
 // Enables or disables push subscriptions keeping Chrome running in the
 // background when closed.
 const base::Feature kPushMessagingBackgroundMode{
     "PushMessagingBackgroundMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables fingerprint quick unlock.
 const base::Feature kQuickUnlockFingerprint{"QuickUnlockFingerprint",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
@@ -693,20 +797,34 @@ const base::Feature kQuickUnlockFingerprint{"QuickUnlockFingerprint",
 const base::Feature kQuietNotificationPrompts{"QuietNotificationPrompts",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables recording additional web app related debugging data to be displayed
+// in: chrome://internals/web-app
+const base::Feature kRecordWebAppDebugInfo{"RecordWebAppDebugInfo",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables notification permission revocation for abusive origins.
 const base::Feature kAbusiveNotificationPermissionRevocation{
     "AbusiveOriginNotificationPermissionRevocation",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
+const base::Feature kRemoveStatusBarInWebApps{
+    "RemoveStatusBarInWebApps",
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables permanent removal of Legacy Supervised Users on startup.
 const base::Feature kRemoveSupervisedUsersOnStartup{
     "RemoveSupervisedUsersOnStartup", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID)
-const base::Feature kSafetyCheckAndroid{"SafetyCheckAndroid",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kRequestDesktopSiteForTablets{
+    "RequestDesktopSiteForTablets", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_WIN)
@@ -714,11 +832,14 @@ const base::Feature kSafetyCheckChromeCleanerChild{
     "SafetyCheckChromeCleanerChild", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
+const base::Feature kSafetyCheckWeakPasswords{
+    "SafetyCheckWeakPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable support for multiple scheduler configurations.
 const base::Feature kSchedulerConfiguration{"SchedulerConfiguration",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Controls whether SCT audit reports are queued and the rate at which they
 // should be sampled.
@@ -727,13 +848,19 @@ const base::Feature kSCTAuditing{"SCTAuditing",
 constexpr base::FeatureParam<double> kSCTAuditingSamplingRate{
     &kSCTAuditing, "sampling_rate", 0.0};
 
+const base::Feature kSearchHistoryLink{"SearchHistoryLink",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the user is prompted when sites request attestation.
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
-const base::Feature kSharesheet{"Sharesheet",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const base::Feature kSharesheet{"Sharesheet", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kSharesheetContentPreviews{
+    "SharesheetContentPreviews", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kChromeOSSharingHub{"ChromeOSSharingHub",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_MAC)
@@ -759,30 +886,29 @@ const base::Feature kSitePerProcess {
 #endif
 };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables SmartDim on Chrome OS.
 const base::Feature kSmartDim{"SmartDim", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables or disables using smbfs for accessing SMB file shares.
-const base::Feature kSmbFs{"SmbFs", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables or disables the ability to use the sound content setting to mute a
 // website.
 const base::Feature kSoundContentSetting{"SoundContentSetting",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables chrome://sys-internals.
 const base::Feature kSysInternals{"SysInternals",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
-#if defined(OS_CHROMEOS)
+// Enables or disables System Extensions.
+const base::Feature kSystemExtensions{"SystemExtensions",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables TPM firmware update capability on Chrome OS.
 const base::Feature kTPMFirmwareUpdate{"TPMFirmwareUpdate",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
 // Enables logging UKMs for background tab activity by TabActivityWatcher.
@@ -805,29 +931,43 @@ const base::Feature kThirdPartyModulesBlocking{
 #endif
 
 // Disable downloads of unsafe file types over insecure transports if initiated
-// from a secure page
+// from a secure page. As of M89, mixed downloads are blocked on all platforms.
 const base::Feature kTreatUnsafeDownloadsAsActive{
-    "TreatUnsafeDownloadsAsActive", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TreatUnsafeDownloadsAsActive", base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable uploading of a zip archive of system logs instead of individual files.
 const base::Feature kUploadZippedSystemLogs{"UploadZippedSystemLogs",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable USB Bouncer for managing a device whitelist for USBGuard on Chrome OS.
-const base::Feature kUsbbouncer{"USBBouncer",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable USBGuard at the lockscreen on Chrome OS.
-// TODO(crbug.com/874630): Remove this kill-switch
-const base::Feature kUsbguard{"USBGuard", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
+// Enables using NotificationCompat.Builder to create Android notifications.
+const base::Feature kUseNotificationCompatBuilder{
+    "UseNotificationCompatBuilder", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables user activity event logging for power management on
 // Chrome OS.
 const base::Feature kUserActivityEventLogging{"UserActivityEventLogging",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
+#if !defined(OS_ANDROID)
+const base::Feature kWebAppManifestIconUpdating{
+    "WebAppManifestIconUpdating", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
+
+const base::Feature kWebAppManifestPolicyAppIdentityUpdate{
+    "WebAppManifestPolicyAppIdentityUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// When enabled, the Ash browser only manages system web apps, and non-system
+// web apps are managed by the Lacros browser. When disabled, the Ash browser
+// manages all web apps.
+const base::Feature kWebAppsCrosapi{"WebAppsCrosapi",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if !defined(OS_ANDROID)
@@ -842,30 +982,37 @@ const base::Feature kWebRtcRemoteEventLogGzipped{
     "WebRtcRemoteEventLogGzipped", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables Web Share (navigator.share)
+const base::Feature kWebShare{"WebShare", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
+#if defined(OS_MAC)
+// Enables Web Share (navigator.share) for macOS
 const base::Feature kWebShare{"WebShare", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enables setting time limit for Chrome and PWA's on child user device.
 // Requires |kPerAppTimeLimits| to be enabled.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kWebTimeLimits{"WebTimeLimits",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Whether to enable "dark mode" enhancements in Mac Mojave or Windows 10 for
 // UIs implemented with web technologies.
 const base::Feature kWebUIDarkMode {
   "WebUIDarkMode",
-#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_ANDROID) || \
+    BUILDFLAG(IS_CHROMEOS_ASH)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_MAC) || defined(OS_WIN) || defined(OS_ANDROID)
+#endif  // defined(OS_MAC) || defined(OS_WIN) || defined(OS_ANDROID) ||
+        // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Populates storage dimensions in UMA log if enabled. Requires diagnostics
 // package in the image.
 const base::Feature kUmaStorageDimensions{"UmaStorageDimensions",
@@ -876,6 +1023,12 @@ const base::Feature kUmaStorageDimensions{"UmaStorageDimensions",
 const base::Feature kWilcoDtc{"WilcoDtc", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Populates the user type on device type metrics in UMA log if enabled.
+const base::Feature kUserTypeByDeviceTypeMetricsProvider{
+    "UserTypeByDeviceTypeMetricsProvider", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_WIN)
 // Enables the accelerated default browser flow for Windows 10.
 const base::Feature kWin10AcceleratedDefaultBrowserFlow{
@@ -883,7 +1036,7 @@ const base::Feature kWin10AcceleratedDefaultBrowserFlow{
 #endif  // defined(OS_WIN)
 
 const base::Feature kWindowNaming{"WindowNaming",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables writing basic system profile to the persistent histograms files
 // earlier.
@@ -891,10 +1044,10 @@ const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile{
     "WriteBasicSystemProfileToPersistentHistogramsFile",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool IsParentAccessCodeForOnlineLoginEnabled() {
   return base::FeatureList::IsEnabled(kParentAccessCodeForOnlineLogin);
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace features

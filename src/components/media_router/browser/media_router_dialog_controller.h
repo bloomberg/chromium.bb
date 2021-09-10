@@ -6,15 +6,12 @@
 #define COMPONENTS_MEDIA_ROUTER_BROWSER_MEDIA_ROUTER_DIALOG_CONTROLLER_H_
 
 #include <memory>
-#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 namespace content {
 class WebContents;

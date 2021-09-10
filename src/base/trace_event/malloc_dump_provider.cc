@@ -11,6 +11,10 @@
 #include "base/allocator/allocator_extension.h"
 #include "base/allocator/buildflags.h"
 #include "base/debug/profiler.h"
+#include "base/format_macros.h"
+#include "base/memory/nonscannable_memory.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
@@ -62,25 +66,67 @@ void WinHeapMemoryDumpImpl(WinHeapInfo* crt_heap_info) {
   }
   CHECK(::HeapUnlock(crt_heap) == TRUE);
 }
+
+void ReportWinHeapStats(MemoryDumpLevelOfDetail level_of_detail,
+                        ProcessMemoryDump* pmd,
+                        size_t* total_virtual_size,
+                        size_t* resident_size,
+                        size_t* allocated_objects_size,
+                        size_t* allocated_objects_count) {
+  // This is too expensive on Windows, crbug.com/780735.
+  if (level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
+    WinHeapInfo main_heap_info = {};
+    WinHeapMemoryDumpImpl(&main_heap_info);
+    *total_virtual_size +=
+        main_heap_info.committed_size + main_heap_info.uncommitted_size;
+    // Resident size is approximated with committed heap size. Note that it is
+    // possible to do this with better accuracy on windows by intersecting the
+    // working set with the virtual memory ranges occuipied by the heap. It's
+    // not clear that this is worth it, as it's fairly expensive to do.
+    *resident_size += main_heap_info.committed_size;
+    *allocated_objects_size += main_heap_info.allocated_size;
+    *allocated_objects_count += main_heap_info.block_count;
+
+    if (pmd) {
+      MemoryAllocatorDump* win_heap_dump =
+          pmd->CreateAllocatorDump("malloc/win_heap");
+      win_heap_dump->AddScalar("size", "bytes", main_heap_info.allocated_size);
+    }
+  }
+}
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-void ReportDetailedPartitionAllocStats(ProcessMemoryDump* pmd) {
-  SimplePartitionStatsDumper allocator_dumper;
-  internal::PartitionAllocMalloc::Allocator()->DumpStats("malloc", false,
-                                                         &allocator_dumper);
+void ReportPartitionAllocStats(ProcessMemoryDump* pmd,
+                               MemoryDumpLevelOfDetail level_of_detail,
+                               size_t* total_virtual_size,
+                               size_t* resident_size,
+                               size_t* allocated_objects_size) {
+  MemoryDumpPartitionStatsDumper partition_stats_dumper("malloc", pmd,
+                                                        level_of_detail);
+  bool is_light_dump = level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND;
 
-  if (allocator_dumper.stats().has_thread_cache) {
-    const auto& stats = allocator_dumper.stats().all_thread_caches_stats;
-    auto* thread_cache_dump = pmd->CreateAllocatorDump("malloc/thread_cache");
-    ReportPartitionAllocThreadCacheStats(thread_cache_dump, stats);
-    const auto& main_thread_stats =
-        allocator_dumper.stats().current_thread_cache_stats;
-    auto* main_thread_cache_dump =
-        pmd->CreateAllocatorDump("malloc/thread_cache/main_thread");
-    ReportPartitionAllocThreadCacheStats(main_thread_cache_dump,
-                                         main_thread_stats);
+  auto* allocator = internal::PartitionAllocMalloc::Allocator();
+  allocator->DumpStats("allocator", is_light_dump, &partition_stats_dumper);
+
+  auto* original_allocator =
+      internal::PartitionAllocMalloc::OriginalAllocator();
+  if (original_allocator) {
+    original_allocator->DumpStats("original", is_light_dump,
+                                  &partition_stats_dumper);
   }
+  auto* aligned_allocator = internal::PartitionAllocMalloc::AlignedAllocator();
+  if (aligned_allocator != allocator) {
+    aligned_allocator->DumpStats("aligned", is_light_dump,
+                                 &partition_stats_dumper);
+  }
+  auto& nonscannable_allocator = internal::NonScannableAllocator::Instance();
+  if (auto* root = nonscannable_allocator.root())
+    root->DumpStats("nonscannable", is_light_dump, &partition_stats_dumper);
+
+  *total_virtual_size += partition_stats_dumper.total_resident_bytes();
+  *resident_size += partition_stats_dumper.total_active_bytes();
+  *allocated_objects_size += partition_stats_dumper.total_active_bytes();
 }
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
@@ -112,13 +158,18 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   size_t resident_size = 0;
   size_t allocated_objects_size = 0;
   size_t allocated_objects_count = 0;
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-  if (args.level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
-    ReportDetailedPartitionAllocStats(pmd);
-  }
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
-#if BUILDFLAG(USE_TCMALLOC)
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  ReportPartitionAllocStats(pmd, args.level_of_detail, &total_virtual_size,
+                            &resident_size, &allocated_objects_size);
+
+#if OS_WIN
+  ReportWinHeapStats(args.level_of_detail, pmd, &total_virtual_size,
+                     &resident_size, &allocated_objects_size,
+                     &allocated_objects_count);
+#endif
+  // TODO(keishi): Add glibc malloc on Android
+#elif BUILDFLAG(USE_TCMALLOC)
   bool res =
       allocator::GetNumericProperty("generic.heap_size", &total_virtual_size);
   DCHECK(res);
@@ -147,20 +198,9 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   // https://bugs.chromium.org/p/chromium/issues/detail?id=695263#c1.
   resident_size = stats.size_in_use;
 #elif defined(OS_WIN)
-  // This is too expensive on Windows, crbug.com/780735.
-  if (args.level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
-    WinHeapInfo main_heap_info = {};
-    WinHeapMemoryDumpImpl(&main_heap_info);
-    total_virtual_size =
-        main_heap_info.committed_size + main_heap_info.uncommitted_size;
-    // Resident size is approximated with committed heap size. Note that it is
-    // possible to do this with better accuracy on windows by intersecting the
-    // working set with the virtual memory ranges occuipied by the heap. It's
-    // not clear that this is worth it, as it's fairly expensive to do.
-    resident_size = main_heap_info.committed_size;
-    allocated_objects_size = main_heap_info.allocated_size;
-    allocated_objects_count = main_heap_info.block_count;
-  }
+  ReportWinHeapStats(args.level_of_detail, nullptr, &total_virtual_size,
+                     &resident_size, &allocated_objects_size,
+                     &allocated_objects_count);
 #elif defined(OS_FUCHSIA)
 // TODO(fuchsia): Port, see https://crbug.com/706592.
 #else
@@ -181,12 +221,11 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   outer_dump->AddScalar(MemoryAllocatorDump::kNameSize,
                         MemoryAllocatorDump::kUnitsBytes, resident_size);
 
-  MemoryAllocatorDump* inner_dump = pmd->CreateAllocatorDump(kAllocatedObjects);
-  inner_dump->AddScalar(MemoryAllocatorDump::kNameSize,
+  outer_dump->AddScalar(MemoryAllocatorDump::kNameSize,
                         MemoryAllocatorDump::kUnitsBytes,
                         allocated_objects_size);
   if (allocated_objects_count != 0) {
-    inner_dump->AddScalar(MemoryAllocatorDump::kNameObjectCount,
+    outer_dump->AddScalar(MemoryAllocatorDump::kNameObjectCount,
                           MemoryAllocatorDump::kUnitsObjects,
                           allocated_objects_count);
   }
@@ -201,6 +240,7 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
                           MemoryAllocatorDump::kUnitsBytes,
                           resident_size - allocated_objects_size);
   }
+
   return true;
 }
 
@@ -215,8 +255,96 @@ void MallocDumpProvider::DisableMetrics() {
 }
 
 #if BUILDFLAG(USE_PARTITION_ALLOC)
-void ReportPartitionAllocThreadCacheStats(MemoryAllocatorDump* dump,
-                                          const ThreadCacheStats& stats) {
+// static
+const char* MemoryDumpPartitionStatsDumper::kPartitionsDumpName = "partitions";
+
+std::string GetPartitionDumpName(const char* root_name,
+                                 const char* partition_name) {
+  return base::StringPrintf("%s/%s/%s", root_name,
+                            MemoryDumpPartitionStatsDumper::kPartitionsDumpName,
+                            partition_name);
+}
+
+void MemoryDumpPartitionStatsDumper::PartitionDumpTotals(
+    const char* partition_name,
+    const base::PartitionMemoryStats* memory_stats) {
+  total_mmapped_bytes_ += memory_stats->total_mmapped_bytes;
+  total_resident_bytes_ += memory_stats->total_resident_bytes;
+  total_active_bytes_ += memory_stats->total_active_bytes;
+
+  std::string dump_name = GetPartitionDumpName(root_name_, partition_name);
+  MemoryAllocatorDump* allocator_dump =
+      memory_dump_->CreateAllocatorDump(dump_name);
+  allocator_dump->AddScalar("size", "bytes",
+                            memory_stats->total_resident_bytes);
+  allocator_dump->AddScalar("allocated_objects_size", "bytes",
+                            memory_stats->total_active_bytes);
+  allocator_dump->AddScalar("virtual_size", "bytes",
+                            memory_stats->total_mmapped_bytes);
+  allocator_dump->AddScalar("virtual_committed_size", "bytes",
+                            memory_stats->total_committed_bytes);
+  allocator_dump->AddScalar("decommittable_size", "bytes",
+                            memory_stats->total_decommittable_bytes);
+  allocator_dump->AddScalar("discardable_size", "bytes",
+                            memory_stats->total_discardable_bytes);
+  if (memory_stats->has_thread_cache) {
+    const auto& thread_cache_stats = memory_stats->current_thread_cache_stats;
+    auto* thread_cache_dump = memory_dump_->CreateAllocatorDump(
+        dump_name + "/thread_cache/main_thread");
+    ReportPartitionAllocThreadCacheStats(memory_dump_, thread_cache_dump,
+                                         thread_cache_stats, ".MainThread",
+                                         detailed_);
+
+    const auto& all_thread_caches_stats = memory_stats->all_thread_caches_stats;
+    auto* all_thread_caches_dump =
+        memory_dump_->CreateAllocatorDump(dump_name + "/thread_cache");
+    ReportPartitionAllocThreadCacheStats(memory_dump_, all_thread_caches_dump,
+                                         all_thread_caches_stats, "",
+                                         detailed_);
+  }
+}
+
+void MemoryDumpPartitionStatsDumper::PartitionsDumpBucketStats(
+    const char* partition_name,
+    const base::PartitionBucketMemoryStats* memory_stats) {
+  DCHECK(memory_stats->is_valid);
+  std::string dump_name = GetPartitionDumpName(root_name_, partition_name);
+  if (memory_stats->is_direct_map) {
+    dump_name.append(base::StringPrintf("/buckets/directMap_%" PRIu64, ++uid_));
+  } else {
+    dump_name.append(base::StringPrintf("/buckets/bucket_%" PRIu32,
+                                        memory_stats->bucket_slot_size));
+  }
+
+  MemoryAllocatorDump* allocator_dump =
+      memory_dump_->CreateAllocatorDump(dump_name);
+  allocator_dump->AddScalar("size", "bytes", memory_stats->resident_bytes);
+  allocator_dump->AddScalar("allocated_objects_size", "bytes",
+                            memory_stats->active_bytes);
+  allocator_dump->AddScalar("slot_size", "bytes",
+                            memory_stats->bucket_slot_size);
+  allocator_dump->AddScalar("decommittable_size", "bytes",
+                            memory_stats->decommittable_bytes);
+  allocator_dump->AddScalar("discardable_size", "bytes",
+                            memory_stats->discardable_bytes);
+  // TODO(bartekn): Rename the scalar names.
+  allocator_dump->AddScalar("total_slot_span_size", "bytes",
+                            memory_stats->allocated_slot_span_size);
+  allocator_dump->AddScalar("active_slot_spans", "objects",
+                            memory_stats->num_active_slot_spans);
+  allocator_dump->AddScalar("full_slot_spans", "objects",
+                            memory_stats->num_full_slot_spans);
+  allocator_dump->AddScalar("empty_slot_spans", "objects",
+                            memory_stats->num_empty_slot_spans);
+  allocator_dump->AddScalar("decommitted_slot_spans", "objects",
+                            memory_stats->num_decommitted_slot_spans);
+}
+
+void ReportPartitionAllocThreadCacheStats(ProcessMemoryDump* pmd,
+                                          MemoryAllocatorDump* dump,
+                                          const ThreadCacheStats& stats,
+                                          const std::string& metrics_suffix,
+                                          bool detailed) {
   dump->AddScalar("alloc_count", "scalar", stats.alloc_count);
   dump->AddScalar("alloc_hits", "scalar", stats.alloc_hits);
   dump->AddScalar("alloc_misses", "scalar", stats.alloc_misses);
@@ -227,12 +355,38 @@ void ReportPartitionAllocThreadCacheStats(MemoryAllocatorDump* dump,
   dump->AddScalar("cache_fill_count", "scalar", stats.cache_fill_count);
   dump->AddScalar("cache_fill_hits", "scalar", stats.cache_fill_hits);
   dump->AddScalar("cache_fill_misses", "scalar", stats.cache_fill_misses);
-  dump->AddScalar("cache_fill_bucket_full", "scalar",
-                  stats.cache_fill_bucket_full);
-  dump->AddScalar("cache_fill_too_large", "scalar", stats.cache_fill_too_large);
+
+  dump->AddScalar("batch_fill_count", "scalar", stats.batch_fill_count);
 
   dump->AddScalar("size", "bytes", stats.bucket_total_memory);
   dump->AddScalar("metadata_overhead", "bytes", stats.metadata_overhead);
+
+  if (stats.alloc_count) {
+    int hit_rate_percent =
+        static_cast<int>((100 * stats.alloc_hits) / stats.alloc_count);
+    base::UmaHistogramPercentage(
+        "Memory.PartitionAlloc.ThreadCache.HitRate" + metrics_suffix,
+        hit_rate_percent);
+    int batch_fill_rate_percent =
+        static_cast<int>((100 * stats.batch_fill_count) / stats.alloc_count);
+    base::UmaHistogramPercentage(
+        "Memory.PartitionAlloc.ThreadCache.BatchFillRate" + metrics_suffix,
+        batch_fill_rate_percent);
+
+#if defined(PA_THREAD_CACHE_ALLOC_STATS)
+    if (detailed) {
+      std::string name = dump->absolute_name();
+      for (size_t i = 0; i < kNumBuckets; i++) {
+        std::string dump_name =
+            base::StringPrintf("%s/buckets_alloc/%d", name.c_str(),
+                               static_cast<int>(stats.bucket_size_[i]));
+        auto* buckets_alloc_dump = pmd->CreateAllocatorDump(dump_name);
+        buckets_alloc_dump->AddScalar("count", "objects",
+                                      stats.allocs_per_bucket_[i]);
+      }
+    }
+#endif  // defined(PA_THREAD_CACHE_ALLOC_STATS)
+  }
 }
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 

@@ -43,10 +43,8 @@ RepeatableQueriesServiceFactory::~RepeatableQueriesServiceFactory() = default;
 
 KeyedService* RepeatableQueriesServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!base::FeatureList::IsEnabled(ntp_features::kNtpRepeatableQueries) ||
-      !base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures)) {
+  if (!base::FeatureList::IsEnabled(ntp_features::kNtpRepeatableQueries))
     return nullptr;
-  }
 
   Profile* profile = Profile::FromBrowserContext(context);
   signin::IdentityManager* identity_manager =
@@ -56,9 +54,8 @@ KeyedService* RepeatableQueriesServiceFactory::BuildServiceInstanceFor(
                                            ServiceAccessType::EXPLICIT_ACCESS);
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile);
-  auto url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(context)
-          ->GetURLLoaderFactoryForBrowserProcess();
+  auto url_loader_factory = context->GetDefaultStoragePartition()
+                                ->GetURLLoaderFactoryForBrowserProcess();
   return new RepeatableQueriesService(identity_manager, history_service,
                                       template_url_service, url_loader_factory,
                                       GURL(chrome::kChromeUINewTabURL));

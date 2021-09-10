@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/test/browser_task_environment.h"
@@ -63,13 +64,14 @@ class NotificationStorageTest : public ::testing::Test {
   // ServiceWorkerRegistration will be kept alive for the test's lifetime.
   int64_t RegisterServiceWorker() {
     GURL script_url = url_;
-
+    storage::StorageKey key(origin_);
     {
       blink::mojom::ServiceWorkerRegistrationOptions options;
       options.scope = url_;
       base::RunLoop run_loop;
       helper_->context()->RegisterServiceWorker(
-          script_url, options, blink::mojom::FetchClientSettingsObject::New(),
+          script_url, key, options,
+          blink::mojom::FetchClientSettingsObject::New(),
           base::BindOnce(&NotificationStorageTest::DidRegisterServiceWorker,
                          base::Unretained(this), run_loop.QuitClosure()));
       run_loop.Run();
@@ -86,7 +88,7 @@ class NotificationStorageTest : public ::testing::Test {
     {
       base::RunLoop run_loop;
       helper_->context()->registry()->FindRegistrationForId(
-          service_worker_registration_id_, origin_,
+          service_worker_registration_id_, key,
           base::BindOnce(
               &NotificationStorageTest::DidFindServiceWorkerRegistration,
               base::Unretained(this), &service_worker_registration,

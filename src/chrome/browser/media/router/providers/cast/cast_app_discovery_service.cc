@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider_metrics.h"
 #include "components/cast_channel/cast_message_handler.h"
@@ -48,7 +49,7 @@ CastAppDiscoveryServiceImpl::~CastAppDiscoveryServiceImpl() {
   media_sink_service_->RemoveObserver(this);
 }
 
-CastAppDiscoveryService::Subscription
+base::CallbackListSubscription
 CastAppDiscoveryServiceImpl::StartObservingMediaSinks(
     const CastMediaSource& source,
     const SinkQueryCallback& callback) {
@@ -161,9 +162,18 @@ void CastAppDiscoveryServiceImpl::OnSinkAddedOrUpdated(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   cast_channel::CastSocket* socket =
-      socket_service_->GetSocket(sink.cast_data().cast_channel_id);
-  if (!socket)
+      socket_service_->GetSocket(sink.cast_channel_id());
+  if (!socket) {
+    if (logger_.is_bound()) {
+      logger_->LogError(
+          mojom::LogCategory::kDiscovery, kLoggerComponent,
+          base::StringPrintf("Socket not found for channel id: "
+                             "%d when the sink is added or updated.",
+                             sink.cast_channel_id()),
+          sink.id(), "", "");
+    }
     return;
+  }
 
   const MediaSink::Id& sink_id = sink.sink().id();
 

@@ -340,6 +340,10 @@ def main(args=None):
     git.set_config(STARTING_BRANCH_KEY, '')
     git.set_config(STARTING_WORKDIR_KEY, '')
 
+    print()
+    print("Running `git gc --auto` - Ctrl-C to abort is OK.")
+    git.run('gc', '--auto')
+
   return retcode
 
 

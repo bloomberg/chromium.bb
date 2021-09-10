@@ -475,28 +475,28 @@ class WebTestBluetoothAdapterProvider {
   //   - ErrorsDevice
   //      - ErrorsService errorUUID(0xA0)
   //          - ErrorCharacteristic(
-  //              BluetoothRemoteGattService::GATT_ERROR_UNKNOWN)
+  //              BluetoothGattService::GATT_ERROR_UNKNOWN)
   //              errorUUID(0xA1)
   //          - ErrorCharacteristic(
-  //              BluetoothRemoteGattService::GATT_ERROR_FAILED)
+  //              BluetoothGattService::GATT_ERROR_FAILED)
   //              errorUUID(0xA2)
   //          - ErrorCharacteristic(
-  //              BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS)
+  //              BluetoothGattService::GATT_ERROR_IN_PROGRESS)
   //              errorUUID(0xA3)
   //          - ErrorCharacteristic(
-  //              BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH)
+  //              BluetoothGattService::GATT_ERROR_INVALID_LENGTH)
   //              errorUUID(0xA4)
   //          - ErrorCharacteristic(
-  //              BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED)
+  //              BluetoothGattService::GATT_ERROR_NOT_PERMITTED)
   //              errorUUID(0xA5)
   //          - ErrorCharacteristic(
-  //              BluetoothRemoteGattService::GATT_ERROR_NOT_AUTHORIZED)
+  //              BluetoothGattService::GATT_ERROR_NOT_AUTHORIZED)
   //              errorUUID(0xA6)
   //          - ErrorCharacteristic(
-  //              BluetoothRemoteGattService::GATT_ERROR_NOT_PAIRED)
+  //              BluetoothGattService::GATT_ERROR_NOT_PAIRED)
   //              errorUUID(0xA7)
   //          - ErrorCharacteristic(
-  //              BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED)
+  //              BluetoothGattService::GATT_ERROR_NOT_SUPPORTED)
   //              errorUUID(0xA8)
   //      - Request Disconnection Service: - Characteristics as described in
   //          GetDisconnectingService
@@ -555,6 +555,9 @@ class WebTestBluetoothAdapterProvider {
   //   - Generic Access (0x1800)
   //   - Glucose UUID (0x1808)
   //   - Tx Power (0x1804)
+  // Manufacturer Data added:
+  //   - 0x0001 : { 1, 2 }
+  //   - 0x0002 : { 3, 4 }
   // Services added:
   // None.
   static std::unique_ptr<testing::NiceMock<device::MockBluetoothDevice>>
@@ -765,7 +768,7 @@ class WebTestBluetoothAdapterProvider {
       testing::NiceMock<device::MockBluetoothGattCharacteristic>>
   GetErrorCharacteristic(
       device::MockBluetoothGattService* service,
-      device::BluetoothRemoteGattService::GattErrorCode error_code);
+      device::BluetoothGattService::GattErrorCode error_code);
 
   // Notify Sessions
 

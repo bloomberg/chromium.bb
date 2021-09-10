@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -32,6 +33,7 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/demuxer_memory_limit.h"
 #include "media/base/limits.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_tracks.h"
 #include "media/base/media_types.h"
 #include "media/base/sample_rates.h"
@@ -213,6 +215,17 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
   std::unique_ptr<FFmpegDemuxerStream> demuxer_stream;
   std::unique_ptr<AudioDecoderConfig> audio_config;
   std::unique_ptr<VideoDecoderConfig> video_config;
+
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(kDeprecateLowUsageCodecs)) {
+    const auto codec_id = stream->codecpar->codec_id;
+    if (codec_id == AV_CODEC_ID_AMR_NB || codec_id == AV_CODEC_ID_AMR_WB ||
+        codec_id == AV_CODEC_ID_GSM_MS) {
+      MEDIA_LOG(ERROR, media_log) << "AMR and GSM are deprecated on ChromeOS.";
+      return nullptr;
+    }
+  }
+#endif
 
   if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
     audio_config = std::make_unique<AudioDecoderConfig>();
@@ -570,6 +583,20 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
                               ? base::TimeDelta()
                               : last_packet_timestamp_ +
                                     base::TimeDelta::FromMicroseconds(1));
+  }
+
+  // Fixup negative timestamps where the before-zero portion is completely
+  // discarded after decoding.
+  if (buffer->timestamp() < base::TimeDelta()) {
+    // Discard padding may also remove samples after zero.
+    auto fixed_ts = buffer->discard_padding().first + buffer->timestamp();
+
+    // Allow for rounding error in the discard padding calculations.
+    if (fixed_ts == base::TimeDelta::FromMicroseconds(-1))
+      fixed_ts = base::TimeDelta();
+
+    if (fixed_ts >= base::TimeDelta())
+      buffer->set_timestamp(fixed_ts);
   }
 
   // Only allow negative timestamps past if we know they'll be fixed up by the
@@ -1160,7 +1187,7 @@ int64_t FFmpegDemuxer::GetMemoryUsage() const {
   return allocation_size;
 }
 
-base::Optional<container_names::MediaContainerName>
+absl::optional<container_names::MediaContainerName>
 FFmpegDemuxer::GetContainerForMetrics() const {
   return container();
 }

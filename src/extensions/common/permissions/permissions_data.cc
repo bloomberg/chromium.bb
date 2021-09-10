@@ -4,11 +4,12 @@
 
 #include "extensions/common/permissions/permissions_data.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -21,6 +22,8 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
+
+using extensions::mojom::APIPermissionID;
 
 namespace extensions {
 
@@ -75,7 +78,7 @@ class AutoLockOnValidThread {
 PermissionsData::PermissionsData(
     const ExtensionId& extension_id,
     Manifest::Type manifest_type,
-    Manifest::Location location,
+    mojom::ManifestLocation location,
     std::unique_ptr<const PermissionSet> initial_permissions)
     : extension_id_(extension_id),
       manifest_type_(manifest_type),
@@ -94,8 +97,8 @@ void PermissionsData::SetPolicyDelegate(PolicyDelegate* delegate) {
 // static
 bool PermissionsData::CanExecuteScriptEverywhere(
     const ExtensionId& extension_id,
-    Manifest::Location location) {
-  if (location == Manifest::COMPONENT)
+    mojom::ManifestLocation location) {
+  if (location == mojom::ManifestLocation::kComponent)
     return true;
 
   const ExtensionsClient::ScriptingAllowlist& allowlist =
@@ -116,9 +119,10 @@ bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
 
   // Check if the scheme is valid for extensions. If not, return.
   if (!URLPattern::IsValidSchemeForExtensions(document_url.scheme()) &&
-      document_url.spec() != url::kAboutBlankURL) {
+      document_url.spec() != url::kAboutBlankURL &&
+      document_url.spec() != url::kAboutSrcdocURL) {
     if (error) {
-      if (active_permissions().HasAPIPermission(APIPermission::kTab)) {
+      if (active_permissions().HasAPIPermission(APIPermissionID::kTab)) {
         *error = ErrorUtils::FormatErrorMessage(
             manifest_errors::kCannotAccessPageWithUrl, document_url.spec());
       } else {
@@ -193,7 +197,7 @@ URLPatternSet PermissionsData::policy_allowed_hosts() const {
 
 void PermissionsData::BindToCurrentThread() const {
   DCHECK(!thread_checker_);
-  thread_checker_.reset(new base::ThreadChecker());
+  thread_checker_ = std::make_unique<base::ThreadChecker>();
 }
 
 void PermissionsData::SetPermissions(
@@ -210,7 +214,7 @@ void PermissionsData::SetPolicyHostRestrictions(
   AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
   policy_blocked_hosts_unsafe_ = policy_blocked_hosts.Clone();
   policy_allowed_hosts_unsafe_ = policy_allowed_hosts.Clone();
-  context_id_ = base::nullopt;
+  context_id_ = absl::nullopt;
 }
 
 void PermissionsData::SetUsesDefaultHostRestrictions(int context_id) const {
@@ -252,7 +256,7 @@ void PermissionsData::ClearTabSpecificPermissions(int tab_id) const {
   tab_specific_permissions_.erase(tab_id);
 }
 
-bool PermissionsData::HasAPIPermission(APIPermission::ID permission) const {
+bool PermissionsData::HasAPIPermission(APIPermissionID permission) const {
   base::AutoLock auto_lock(runtime_lock_);
   return active_permissions_unsafe_->HasAPIPermission(permission);
 }
@@ -263,9 +267,8 @@ bool PermissionsData::HasAPIPermission(
   return active_permissions_unsafe_->HasAPIPermission(permission_name);
 }
 
-bool PermissionsData::HasAPIPermissionForTab(
-    int tab_id,
-    APIPermission::ID permission) const {
+bool PermissionsData::HasAPIPermissionForTab(int tab_id,
+                                             APIPermissionID permission) const {
   base::AutoLock auto_lock(runtime_lock_);
   if (active_permissions_unsafe_->HasAPIPermission(permission))
     return true;
@@ -275,22 +278,18 @@ bool PermissionsData::HasAPIPermissionForTab(
 }
 
 bool PermissionsData::CheckAPIPermissionWithParam(
-    APIPermission::ID permission,
+    APIPermissionID permission,
     const APIPermission::CheckParam* param) const {
   base::AutoLock auto_lock(runtime_lock_);
   return active_permissions_unsafe_->CheckAPIPermissionWithParam(permission,
                                                                  param);
 }
 
-URLPatternSet PermissionsData::GetEffectiveHostPermissions(
-    EffectiveHostPermissionsMode mode) const {
+URLPatternSet PermissionsData::GetEffectiveHostPermissions() const {
   base::AutoLock auto_lock(runtime_lock_);
   URLPatternSet effective_hosts =
       active_permissions_unsafe_->effective_hosts().Clone();
-  if (mode == EffectiveHostPermissionsMode::kOmitTabSpecific)
-    return effective_hosts;
 
-  DCHECK_EQ(EffectiveHostPermissionsMode::kIncludeTabSpecific, mode);
   for (const auto& val : tab_specific_permissions_)
     effective_hosts.AddPatterns(val.second->effective_hosts());
   return effective_hosts;
@@ -393,7 +392,7 @@ bool PermissionsData::CanCaptureVisiblePage(
     // blocked host in a different page and then capture that, but it's better
     // than nothing (and policy hosts can set their x-frame options
     // accordingly).
-    if (location_ != Manifest::COMPONENT &&
+    if (location_ != mojom::ManifestLocation::kComponent &&
         IsPolicyBlockedHostUnsafe(origin_url)) {
       if (error)
         *error = extension_misc::kPolicyBlockedScripting;
@@ -402,7 +401,7 @@ bool PermissionsData::CanCaptureVisiblePage(
 
     const PermissionSet* tab_permissions = GetTabSpecificPermissions(tab_id);
     has_active_tab = tab_permissions &&
-                     tab_permissions->HasAPIPermission(APIPermission::kTab);
+                     tab_permissions->HasAPIPermission(APIPermissionID::kTab);
 
     // Check if any of the host permissions match all urls. We don't use
     // URLPatternSet::ContainsPattern() here because a) the schemes may be
@@ -415,7 +414,7 @@ bool PermissionsData::CanCaptureVisiblePage(
     }
 
     has_page_capture = active_permissions_unsafe_->HasAPIPermission(
-        APIPermission::kPageCapture);
+        APIPermissionID::kPageCapture);
   }
   std::string access_error;
   if (capture_requirement == CaptureRequirement::kActiveTabOrAllUrls) {
@@ -530,7 +529,7 @@ PermissionsData::PageAccess PermissionsData::CanRunOnPage(
     const URLPatternSet* tab_url_patterns,
     std::string* error) const {
   runtime_lock_.AssertAcquired();
-  if (location_ != Manifest::COMPONENT &&
+  if (location_ != mojom::ManifestLocation::kComponent &&
       IsPolicyBlockedHostUnsafe(document_url)) {
     if (error)
       *error = extension_misc::kPolicyBlockedScripting;
@@ -550,7 +549,7 @@ PermissionsData::PageAccess PermissionsData::CanRunOnPage(
     return PageAccess::kWithheld;
 
   if (error) {
-    if (active_permissions_unsafe_->HasAPIPermission(APIPermission::kTab)) {
+    if (active_permissions_unsafe_->HasAPIPermission(APIPermissionID::kTab)) {
       *error = ErrorUtils::FormatErrorMessage(
           manifest_errors::kCannotAccessPageWithUrl, document_url.spec());
     } else {

@@ -178,29 +178,37 @@ class AppCacheStorageImplTest : public testing::Test {
 
   class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
    public:
-    MockQuotaManagerProxy() : QuotaManagerProxy(nullptr, nullptr) {}
+    MockQuotaManagerProxy()
+        : QuotaManagerProxy(nullptr, base::SequencedTaskRunnerHandle::Get()) {}
 
     void NotifyStorageAccessed(const url::Origin& origin,
-                               StorageType type) override {
+                               StorageType type,
+                               base::Time access_time) override {
       EXPECT_EQ(StorageType::kTemporary, type);
       ++notify_storage_accessed_count_;
       last_origin_ = origin;
     }
 
-    void NotifyStorageModified(storage::QuotaClientType client_id,
-                               const url::Origin& origin,
-                               StorageType type,
-                               int64_t delta) override {
+    void NotifyStorageModified(
+        storage::QuotaClientType client_id,
+        const url::Origin& origin,
+        StorageType type,
+        int64_t delta,
+        base::Time modification_time,
+        scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+        base::OnceClosure callback) override {
       EXPECT_EQ(storage::QuotaClientType::kAppcache, client_id);
       EXPECT_EQ(StorageType::kTemporary, type);
       ++notify_storage_modified_count_;
       last_origin_ = origin;
       last_delta_ = delta;
+      if (callback)
+        callback_task_runner->PostTask(FROM_HERE, std::move(callback));
     }
 
     // Not needed for our tests.
     void RegisterClient(
-        scoped_refptr<storage::QuotaClient> client,
+        mojo::PendingRemote<storage::mojom::QuotaClient> client,
         storage::QuotaClientType quota_client_type,
         const std::vector<blink::mojom::StorageType>& storage_types) override {}
     void NotifyOriginInUse(const url::Origin& origin) override {}
@@ -209,13 +217,14 @@ class AppCacheStorageImplTest : public testing::Test {
                               const url::Origin& origin,
                               StorageType type,
                               bool enabled) override {}
-    void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
-                          const url::Origin& origin,
-                          StorageType type,
-                          UsageAndQuotaCallback callback) override {
+    void GetUsageAndQuota(
+        const url::Origin& origin,
+        blink::mojom::StorageType type,
+        scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+        UsageAndQuotaCallback callback) override {
       EXPECT_EQ(StorageType::kTemporary, type);
       if (async_) {
-        original_task_runner->PostTask(
+        callback_task_runner->PostTask(
             FROM_HERE,
             base::BindOnce(std::move(callback),
                            blink::mojom::QuotaStatusCode::kOk, 0, kMockQuota));
@@ -263,7 +272,7 @@ class AppCacheStorageImplTest : public testing::Test {
     base::Thread::Options options(base::MessagePumpType::IO, 0);
     background_thread =
         std::make_unique<base::Thread>("AppCacheTest::BackgroundThread");
-    ASSERT_TRUE(background_thread->StartWithOptions(options));
+    ASSERT_TRUE(background_thread->StartWithOptions(std::move(options)));
   }
 
   static void TearDownTestCase() {
@@ -300,7 +309,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // including setting up a disk cache, which checks feature lists.
     // Defer until here so test constructors can set feature lists first.
     weak_partition_factory_.emplace(static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetDefaultStoragePartition(&browser_context_)));
+        browser_context_.GetDefaultStoragePartition()));
   }
 
   void SetUpTest() {
@@ -1656,7 +1665,8 @@ class AppCacheStorageImplTest : public testing::Test {
       request.url = GetMockUrl("manifest");
       handler_ = host2->CreateRequestHandler(
           std::make_unique<AppCacheRequest>(request),
-          network::mojom::RequestDestination::kDocument, false);
+          network::mojom::RequestDestination::kDocument, false,
+          FrameTreeNode::kFrameTreeNodeInvalidId);
       handler_->MaybeCreateLoader(request, nullptr, base::DoNothing(),
                                   base::DoNothing());
     }
@@ -1818,7 +1828,7 @@ class AppCacheStorageImplTest : public testing::Test {
   TestBrowserContext browser_context_;
   base::test::ScopedFeatureList appcache_require_origin_trial_feature_;
   // Delayed initialization to avoid data races with feature list.
-  base::Optional<base::WeakPtrFactory<StoragePartitionImpl>>
+  absl::optional<base::WeakPtrFactory<StoragePartitionImpl>>
       weak_partition_factory_;
 
   // Test data

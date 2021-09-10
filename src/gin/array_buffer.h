@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gin/converter.h"
 #include "gin/gin_export.h"
@@ -30,20 +29,19 @@ class GIN_EXPORT ArrayBuffer {
  public:
   ArrayBuffer();
   ArrayBuffer(v8::Isolate* isolate, v8::Local<v8::ArrayBuffer> buffer);
+  ArrayBuffer(const ArrayBuffer&) = delete;
   ~ArrayBuffer();
   ArrayBuffer& operator=(const ArrayBuffer& other);
 
-  void* bytes() const { return bytes_; }
-  size_t num_bytes() const { return num_bytes_; }
+  void* bytes() const {
+    return backing_store_ ? backing_store_->Data() : nullptr;
+  }
+  size_t num_bytes() const {
+    return backing_store_ ? backing_store_->ByteLength() : 0;
+  }
 
  private:
-  class Private;
-
-  scoped_refptr<Private> private_;
-  void* bytes_;
-  size_t num_bytes_;
-
-  DISALLOW_COPY(ArrayBuffer);
+  std::shared_ptr<v8::BackingStore> backing_store_;
 };
 
 template<>
@@ -56,6 +54,7 @@ class GIN_EXPORT ArrayBufferView {
  public:
   ArrayBufferView();
   ArrayBufferView(v8::Isolate* isolate, v8::Local<v8::ArrayBufferView> view);
+  ArrayBufferView(const ArrayBufferView&) = delete;
   ~ArrayBufferView();
   ArrayBufferView& operator=(const ArrayBufferView& other);
 
@@ -68,8 +67,6 @@ class GIN_EXPORT ArrayBufferView {
   ArrayBuffer array_buffer_;
   size_t offset_;
   size_t num_bytes_;
-
-  DISALLOW_COPY(ArrayBufferView);
 };
 
 template<>

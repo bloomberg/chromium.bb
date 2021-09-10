@@ -8,13 +8,13 @@
 #include <memory>
 #include <vector>
 
-#include "base/optional.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/frame_deadline.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/aggregated_frame.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/latency/latency_info.h"
 
 namespace viz {
@@ -63,10 +63,13 @@ class CompositorFrameBuilder {
   CompositorFrameBuilder& SetDeadline(const FrameDeadline& deadline);
   CompositorFrameBuilder& SetSendFrameTokenToEmbedder(bool send);
 
+  CompositorFrameBuilder& AddDelegatedInkMetadata(
+      const gfx::DelegatedInkMetadata& metadata);
+
  private:
   CompositorFrame MakeInitCompositorFrame() const;
 
-  base::Optional<CompositorFrame> frame_;
+  absl::optional<CompositorFrame> frame_;
   CompositorRenderPassId::Generator render_pass_id_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameBuilder);

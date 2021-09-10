@@ -18,6 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_network_session.h"
@@ -37,7 +38,6 @@ namespace net {
 class CertVerifier;
 class CookieStore;
 class CTPolicyEnforcer;
-class CTVerifier;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpTransactionFactory;
@@ -83,7 +83,9 @@ class NET_EXPORT URLRequestContext
   // session.
   const HttpNetworkSession::Context* GetNetworkSessionContext() const;
 
-#if (!defined(OS_WIN) && !defined(OS_LINUX)) || defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if !defined(OS_WIN) && !(defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   // This function should not be used in Chromium, please use the version with
   // NetworkTrafficAnnotationTag in the future.
   //
@@ -194,13 +196,6 @@ class NET_EXPORT URLRequestContext
   void set_transport_security_state(
       TransportSecurityState* state) {
     transport_security_state_ = state;
-  }
-
-  CTVerifier* cert_transparency_verifier() const {
-    return cert_transparency_verifier_;
-  }
-  void set_cert_transparency_verifier(CTVerifier* verifier) {
-    cert_transparency_verifier_ = verifier;
   }
 
   CTPolicyEnforcer* ct_policy_enforcer() const { return ct_policy_enforcer_; }
@@ -337,7 +332,6 @@ class NET_EXPORT URLRequestContext
   const HttpUserAgentSettings* http_user_agent_settings_;
   CookieStore* cookie_store_;
   TransportSecurityState* transport_security_state_;
-  CTVerifier* cert_transparency_verifier_;
   CTPolicyEnforcer* ct_policy_enforcer_;
   SCTAuditingDelegate* sct_auditing_delegate_;
   HttpTransactionFactory* http_transaction_factory_;

@@ -20,11 +20,12 @@ import java.util.Map;
  * Helper class that encapsulates the logic for which optional button is displayed on the browsing
  * mode toolbar.
  */
-class OptionalBrowsingModeButtonController {
+@VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+public class OptionalBrowsingModeButtonController {
     private final UserEducationHelper mUserEducationHelper;
     private final Map<ButtonDataProvider, ButtonDataProvider.ButtonDataObserver> mObserverMap;
     private ButtonDataProvider mCurrentProvider;
-    private final List<ButtonDataProvider> mButtonDataProviders;
+    private List<ButtonDataProvider> mButtonDataProviders;
     private final ToolbarLayout mToolbarLayout;
     private final Supplier<Tab> mTabSupplier;
 
@@ -88,7 +89,7 @@ class OptionalBrowsingModeButtonController {
         if (mButtonDataProviders == null) return;
         for (ButtonDataProvider provider : mButtonDataProviders) {
             ButtonData buttonData = provider.get(mTabSupplier.get());
-            if (buttonData != null && buttonData.canShow) {
+            if (buttonData != null && buttonData.canShow()) {
                 // Same-provider updates are handled in updateCurrentOptionalButton; the below check
                 // prevents us from pointlessly updating with the same button data.
                 if (provider == mCurrentProvider) return;
@@ -108,9 +109,10 @@ class OptionalBrowsingModeButtonController {
     private void setCurrentOptionalButton(ButtonDataProvider provider, ButtonData buttonData) {
         mCurrentProvider = provider;
         mToolbarLayout.updateOptionalButton(buttonData);
-        if (buttonData.iphCommandBuilder != null) {
+        if (buttonData.getButtonSpec().getIPHCommandBuilder() != null) {
             mUserEducationHelper.requestShowIPH(
-                    buttonData.iphCommandBuilder
+                    buttonData.getButtonSpec()
+                            .getIPHCommandBuilder()
                             .setAnchorView(mToolbarLayout.getOptionalButtonView())
                             .build());
         }
@@ -127,11 +129,17 @@ class OptionalBrowsingModeButtonController {
      */
     private void updateCurrentOptionalButton(ButtonDataProvider provider) {
         ButtonData buttonData = provider.get(mTabSupplier.get());
-        if (buttonData.canShow) {
+        if (buttonData != null && buttonData.canShow()) {
             setCurrentOptionalButton(provider, buttonData);
         } else {
             hideCurrentOptionalButton();
             showHighestPrecedenceOptionalButton();
         }
+    }
+
+    /** Returns the list of {@link ButtonDataProvider}s. */
+    @VisibleForTesting
+    public List<ButtonDataProvider> getButtonDataProvidersForTesting() {
+        return mButtonDataProviders;
     }
 }

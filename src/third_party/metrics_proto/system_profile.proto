@@ -17,7 +17,7 @@ import "extension_install.proto";
 // Almost all the fields should be populated on every upload. (The only
 // exception is some fields in the stability section that are only uploaded
 // once per browsing session, usually shortly after startup.)
-// Next tag: 36
+// Next tag: 39
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -61,6 +61,10 @@ message SystemProfileProto {
   }
   optional Channel channel = 10;
 
+  // True for a client following updates on the extended stable channel;
+  // see go/chrome-extended-dd.
+  optional bool is_extended_stable_channel = 36 [default = false];
+
   // True if Chrome build is instrumented (e.g. built with ASAN instrumentation
   // or with DCHECKs enabled).
   // This field was renamed from |is_asan_build| to reflect its actual meaning.
@@ -87,10 +91,27 @@ message SystemProfileProto {
   // the new source.
   optional int32 old_low_entropy_source = 32;
 
+  // A pseudo low entropy value. The actual low_entropy_source value is used for
+  // assignment to experiment arms, and this use may cause drift over time (for
+  // example, if a bad experiment arm drives away some users permanently.) This
+  // pseudo low entropy value is generated identically to low_entropy_source,
+  // but it is generated with a different randomization seed and is not used for
+  // experiment randomization. Consequently, it can be used in statistical
+  // validation to answer the question of how our data would be distributed if
+  // we didn't have to worry about low entropy source drift.
+  optional int32 pseudo_low_entropy_source = 37;
+
   // The user's selected application locale, i.e. the user interface language.
   // The locale includes a language code and, possibly, also a country code,
   // e.g. "en-US".
   optional string application_locale = 4;
+
+  // Hashes of command line keys used in the browser session when the MetricsLog
+  // is created. This takes into account the command line switches that were
+  // used when launching the session, as well as any modifications made to them,
+  // for example via CommandLine::AppendSwitch and CommandLine::RemoveSwitch.
+  // Values are the lower 32-bit of SHA1 hash in little-endian.
+  repeated fixed32 command_line_key_hash = 38 [packed = true];
 
   // Information on the user's operating system.
   // Next tag: 8
@@ -147,12 +168,18 @@ message SystemProfileProto {
   optional OS os = 5;
 
   // Information on the user's hardware.
-  // Next tag: 21
+  // Next tag: 22
   message Hardware {
-    // CPU architecture. Taken from uname -m and modified in Chromium logic.
+    // OS CPU architecture. Taken from uname -m and modified in Chromium logic.
     // Common options are: x86, x86_64, armv7l, armv8l, aarch64.
     // Not recorded on iOS.
     optional string cpu_architecture = 1;
+
+    // Browser process CPU architecture. Will be different from
+    // `cpu_architecture` in the case where Chromium runs non-natively (e.g.
+    // macOS Rosetta or Arm Windows). One of four values: x86, x86_64, ARM,
+    // ARM_64. Added in M90.
+    optional string app_cpu_architecture = 21;
 
     // The amount of RAM present on the system, in megabytes.
     optional int64 system_ram_mb = 2;
@@ -200,18 +227,6 @@ message SystemProfileProto {
     // Max DPI for any attached screen. (Windows only)
     optional float max_dpi_x = 9;
     optional float max_dpi_y = 10;
-
-    // Device form factors.
-    enum FormFactor {
-      FORM_FACTOR_UNKNOWN = 0;
-      FORM_FACTOR_DESKTOP = 1;
-      FORM_FACTOR_PHONE = 2;
-      FORM_FACTOR_TABLET = 3;
-      FORM_FACTOR_KIOSK = 4;
-    }
-
-    // The device form factor.
-    optional FormFactor form_factor = 19;
 
     // Information on the CPU obtained by CPUID.
     message CPU {
@@ -361,6 +376,9 @@ message SystemProfileProto {
       WIFI_PHY_LAYER_PROTOCOL_G = 4;
       WIFI_PHY_LAYER_PROTOCOL_N = 5;
       WIFI_PHY_LAYER_PROTOCOL_UNKNOWN = 6;
+      WIFI_PHY_LAYER_PROTOCOL_AC = 7;
+      WIFI_PHY_LAYER_PROTOCOL_AD = 8;
+      WIFI_PHY_LAYER_PROTOCOL_AX = 9;
     }
     // The physical layer mode of the associated wifi access point, if any.
     optional WifiPHYLayerProtocol wifi_phy_layer_protocol = 4;

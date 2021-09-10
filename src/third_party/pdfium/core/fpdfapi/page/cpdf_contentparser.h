@@ -14,6 +14,7 @@
 #include "core/fpdfapi/page/cpdf_streamcontentparser.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/maybe_owned.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 
 class CPDF_AllStates;
@@ -70,12 +71,9 @@ class CPDF_ContentParser {
   uint32_t m_nStreams = 0;
   uint32_t m_Size = 0;
   uint32_t m_CurrentOffset = 0;
+  std::set<const uint8_t*> m_ParsedSet;  // Only used when parsing pages.
 
-  // Only used when parsing pages.
-  std::unique_ptr<std::set<const uint8_t*>> m_pParsedSet;
-
-  // |m_pParser| has a reference to |m_pParsedSet|, so must be below and thus
-  // destroyed first.
+  // Must not outlive |m_pParsedSet|.
   std::unique_ptr<CPDF_StreamContentParser> m_pParser;
 };
 

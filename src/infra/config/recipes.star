@@ -5,7 +5,7 @@
 _RECIPE_NAME_PREFIX = "recipe:"
 
 def _recipe_for_package(cipd_package):
-    def recipe(*, name, cipd_version = None, recipe = None, use_bbagent = False):
+    def recipe(*, name, cipd_version = None, recipe = None, use_bbagent = True):
         # Force the caller to put the recipe prefix rather than adding it
         # programatically to make the string greppable
         if not name.startswith(_RECIPE_NAME_PREFIX):
@@ -56,6 +56,15 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:binary_size_cast_trybot",
+)
+
+build_recipe(
+    name = "recipe:branch_configuration/tester",
+    use_bbagent = True,
+)
+
+build_recipe(
     name = "recipe:celab",
 )
 
@@ -64,9 +73,15 @@ build_recipe(
 )
 
 build_recipe(
-    name = "recipe:chromium (bbagent)",
-    recipe = "chromium",
-    use_bbagent = True,
+    name = "recipe:chromium/orchestrator",
+)
+
+build_recipe(
+    name = "recipe:chromium/compilator",
+)
+
+build_recipe(
+    name = "recipe:chromium_3pp",
 )
 
 build_recipe(
@@ -93,6 +108,11 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_libfuzzer_trybot",
+)
+
+build_recipe(
+    name = "recipe:chromium_rts/create_model",
+    use_bbagent = True,
 )
 
 build_recipe(
@@ -137,6 +157,10 @@ build_recipe(
 
 build_recipe(
     name = "recipe:tricium_metrics",
+)
+
+build_recipe(
+    name = "recipe:tricium_oilpan",
 )
 
 build_recipe(

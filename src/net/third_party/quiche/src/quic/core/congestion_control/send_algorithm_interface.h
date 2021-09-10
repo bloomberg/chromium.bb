@@ -11,16 +11,16 @@
 #include <map>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_clock.h"
-#include "net/third_party/quiche/src/quic/core/quic_config.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_stats.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_unacked_packet_map.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/quic_bandwidth.h"
+#include "quic/core/quic_clock.h"
+#include "quic/core/quic_config.h"
+#include "quic/core/quic_connection_stats.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_unacked_packet_map.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -47,25 +47,13 @@ class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
       return bandwidth == other.bandwidth && rtt == other.rtt &&
              max_initial_congestion_window ==
                  other.max_initial_congestion_window &&
-             allow_cwnd_to_decrease == other.allow_cwnd_to_decrease &&
-             quic_fix_bbr_cwnd_in_bandwidth_resumption ==
-                 other.quic_fix_bbr_cwnd_in_bandwidth_resumption &&
-             quic_bbr_fix_pacing_rate == other.quic_bbr_fix_pacing_rate &&
-             quic_bbr_donot_inject_bandwidth ==
-                 other.quic_bbr_donot_inject_bandwidth;
+             allow_cwnd_to_decrease == other.allow_cwnd_to_decrease;
     }
 
     QuicBandwidth bandwidth;
     QuicTime::Delta rtt;
     int max_initial_congestion_window = 0;
     bool allow_cwnd_to_decrease;
-    // Code changes that are controlled by flags.
-    // TODO(b/131899599): Remove after impact of fix is measured.
-    bool quic_fix_bbr_cwnd_in_bandwidth_resumption = true;
-    // TODO(b/143540157): Remove after impact of fix is measured.
-    bool quic_bbr_fix_pacing_rate = true;
-    // TODO(b/72089315, b/143891040): Remove after impact of fix is measured.
-    bool quic_bbr_donot_inject_bandwidth = true;
   };
 
   static SendAlgorithmInterface* Create(

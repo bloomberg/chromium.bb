@@ -21,13 +21,12 @@
 #include "src/sksl/ir/SkSLSwitchStatement.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
-#include "src/sksl/ir/SkSLWhileStatement.h"
 
 namespace SkSL {
 
 SectionAndParameterHelper::SectionAndParameterHelper(const Program* program, ErrorReporter& errors)
     : fProgram(*program) {
-    for (const auto& p : fProgram.elements()) {
+    for (const ProgramElement* p : fProgram.elements()) {
         switch (p->kind()) {
             case ProgramElement::Kind::kGlobalVar: {
                 const VarDeclaration& decl =

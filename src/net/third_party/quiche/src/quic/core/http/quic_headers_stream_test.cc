@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_headers_stream.h"
+#include "quic/core/http/quic_headers_stream.h"
 
 #include <cstdint>
 #include <ostream>
@@ -11,27 +11,27 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_stream_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
-#include "net/third_party/quiche/src/spdy/core/http2_frame_decoder_adapter.h"
-#include "net/third_party/quiche/src/spdy/core/recording_headers_handler.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_alt_svc_wire_format.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_test_utils.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/http/spdy_utils.h"
+#include "quic/core/quic_data_writer.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_spdy_session_peer.h"
+#include "quic/test_tools/quic_stream_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "common/quiche_endian.h"
+#include "spdy/core/http2_frame_decoder_adapter.h"
+#include "spdy/core/recording_headers_handler.h"
+#include "spdy/core/spdy_alt_svc_wire_format.h"
+#include "spdy/core/spdy_protocol.h"
+#include "spdy/core/spdy_test_utils.h"
 
 using spdy::ERROR_CODE_PROTOCOL_ERROR;
 using spdy::RecordingHeadersHandler;
@@ -73,17 +73,6 @@ using testing::WithArgs;
 
 namespace quic {
 namespace test {
-
-class MockQuicHpackDebugVisitor : public QuicHpackDebugVisitor {
- public:
-  MockQuicHpackDebugVisitor() : QuicHpackDebugVisitor() {}
-  MockQuicHpackDebugVisitor(const MockQuicHpackDebugVisitor&) = delete;
-  MockQuicHpackDebugVisitor& operator=(const MockQuicHpackDebugVisitor&) =
-      delete;
-
-  MOCK_METHOD(void, OnUseEntry, (QuicTime::Delta elapsed), (override));
-};
-
 namespace {
 
 class MockVisitor : public SpdyFramerVisitorInterface {
@@ -162,6 +151,11 @@ class MockVisitor : public SpdyFramerVisitorInterface {
                int weight,
                bool exclusive),
               (override));
+  MOCK_METHOD(void,
+              OnPriorityUpdate,
+              (SpdyStreamId prioritized_stream_id,
+               absl::string_view priority_field_value),
+              (override));
   MOCK_METHOD(bool,
               OnUnknownFrame,
               (SpdyStreamId stream_id, uint8_t frame_type),
@@ -191,7 +185,7 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& tp) {
-  return quiche::QuicheStrCat(
+  return absl::StrCat(
       ParsedQuicVersionToString(tp.version), "_",
       (tp.perspective == Perspective::IS_CLIENT ? "client" : "server"));
 }
@@ -569,6 +563,10 @@ TEST_P(QuicHeadersStreamTest, ProcessPriorityFrame) {
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessPushPromiseDisabledSetting) {
+  if (perspective() != Perspective::IS_CLIENT) {
+    return;
+  }
+
   session_.OnConfigNegotiated();
   SpdySettingsIR data;
   // Respect supported settings frames SETTINGS_ENABLE_PUSH.
@@ -576,15 +574,11 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromiseDisabledSetting) {
   SpdySerializedFrame frame(framer_->SerializeFrame(data));
   stream_frame_.data_buffer = frame.data();
   stream_frame_.data_length = frame.size();
-  if (perspective() == Perspective::IS_CLIENT) {
-    EXPECT_CALL(
-        *connection_,
-        CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
-                        "Unsupported field of HTTP/2 SETTINGS frame: 2", _));
-  }
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
+                      "Unsupported field of HTTP/2 SETTINGS frame: 2", _));
   headers_stream_->OnStreamFrame(stream_frame_);
-  EXPECT_EQ(session_.server_push_enabled(),
-            perspective() == Perspective::IS_CLIENT);
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {
@@ -687,36 +681,32 @@ TEST_P(QuicHeadersStreamTest, RespectHttp2SettingsFrameUnsupportedFields) {
   data.AddSetting(SETTINGS_ENABLE_PUSH, 1);
   data.AddSetting(SETTINGS_MAX_FRAME_SIZE, 1250);
   SpdySerializedFrame frame(framer_->SerializeFrame(data));
-  EXPECT_CALL(
-      *connection_,
-      CloseConnection(
-          QUIC_INVALID_HEADERS_STREAM_DATA,
-          quiche::QuicheStrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
+  EXPECT_CALL(*connection_,
+              CloseConnection(
+                  QUIC_INVALID_HEADERS_STREAM_DATA,
+                  absl::StrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
                                SETTINGS_MAX_CONCURRENT_STREAMS),
-          _));
-  EXPECT_CALL(
-      *connection_,
-      CloseConnection(
-          QUIC_INVALID_HEADERS_STREAM_DATA,
-          quiche::QuicheStrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
+                  _));
+  EXPECT_CALL(*connection_,
+              CloseConnection(
+                  QUIC_INVALID_HEADERS_STREAM_DATA,
+                  absl::StrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
                                SETTINGS_INITIAL_WINDOW_SIZE),
-          _));
+                  _));
   if (session_.perspective() == Perspective::IS_CLIENT) {
-    EXPECT_CALL(
-        *connection_,
-        CloseConnection(
-            QUIC_INVALID_HEADERS_STREAM_DATA,
-            quiche::QuicheStrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
+    EXPECT_CALL(*connection_,
+                CloseConnection(
+                    QUIC_INVALID_HEADERS_STREAM_DATA,
+                    absl::StrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
                                  SETTINGS_ENABLE_PUSH),
-            _));
+                    _));
   }
-  EXPECT_CALL(
-      *connection_,
-      CloseConnection(
-          QUIC_INVALID_HEADERS_STREAM_DATA,
-          quiche::QuicheStrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
+  EXPECT_CALL(*connection_,
+              CloseConnection(
+                  QUIC_INVALID_HEADERS_STREAM_DATA,
+                  absl::StrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
                                SETTINGS_MAX_FRAME_SIZE),
-          _));
+                  _));
   stream_frame_.data_buffer = frame.data();
   stream_frame_.data_length = frame.size();
   headers_stream_->OnStreamFrame(stream_frame_);
@@ -763,95 +753,6 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyWindowUpdateFrame) {
 TEST_P(QuicHeadersStreamTest, NoConnectionLevelFlowControl) {
   EXPECT_FALSE(QuicStreamPeer::StreamContributesToConnectionFlowControl(
       headers_stream_));
-}
-
-TEST_P(QuicHeadersStreamTest, HpackDecoderDebugVisitor) {
-  auto hpack_decoder_visitor =
-      std::make_unique<StrictMock<MockQuicHpackDebugVisitor>>();
-  {
-    InSequence seq;
-    // Number of indexed representations generated in headers below.
-    for (int i = 1; i < 28; i++) {
-      EXPECT_CALL(*hpack_decoder_visitor,
-                  OnUseEntry(QuicTime::Delta::FromMilliseconds(i)))
-          .Times(4);
-    }
-  }
-  QuicSpdySessionPeer::SetHpackDecoderDebugVisitor(
-      &session_, std::move(hpack_decoder_visitor));
-
-  // Create some headers we expect to generate entries in HPACK's
-  // dynamic table, in addition to content-length.
-  headers_["key0"] = std::string(1 << 1, '.');
-  headers_["key1"] = std::string(1 << 2, '.');
-  headers_["key2"] = std::string(1 << 3, '.');
-  for (QuicStreamId stream_id = client_id_1_; stream_id < client_id_3_;
-       stream_id += next_stream_id_) {
-    for (bool fin : {false, true}) {
-      for (SpdyPriority priority = 0; priority < 7; ++priority) {
-        // Replace with "WriteHeadersAndSaveData"
-        SpdySerializedFrame frame;
-        if (perspective() == Perspective::IS_SERVER) {
-          SpdyHeadersIR headers_frame(stream_id, headers_.Clone());
-          headers_frame.set_fin(fin);
-          headers_frame.set_has_priority(true);
-          headers_frame.set_weight(Spdy3PriorityToHttp2Weight(0));
-          frame = framer_->SerializeFrame(headers_frame);
-          EXPECT_CALL(session_, OnStreamHeadersPriority(
-                                    stream_id, spdy::SpdyStreamPrecedence(0)));
-        } else {
-          SpdyHeadersIR headers_frame(stream_id, headers_.Clone());
-          headers_frame.set_fin(fin);
-          frame = framer_->SerializeFrame(headers_frame);
-        }
-        EXPECT_CALL(session_,
-                    OnStreamHeaderList(stream_id, fin, frame.size(), _))
-            .WillOnce(Invoke(this, &QuicHeadersStreamTest::SaveHeaderList));
-        stream_frame_.data_buffer = frame.data();
-        stream_frame_.data_length = frame.size();
-        connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
-        headers_stream_->OnStreamFrame(stream_frame_);
-        stream_frame_.offset += frame.size();
-        CheckHeaders();
-      }
-    }
-  }
-}
-
-TEST_P(QuicHeadersStreamTest, HpackEncoderDebugVisitor) {
-  auto hpack_encoder_visitor =
-      std::make_unique<StrictMock<MockQuicHpackDebugVisitor>>();
-  if (perspective() == Perspective::IS_SERVER) {
-    InSequence seq;
-    for (int i = 1; i < 4; i++) {
-      EXPECT_CALL(*hpack_encoder_visitor,
-                  OnUseEntry(QuicTime::Delta::FromMilliseconds(i)));
-    }
-  } else {
-    InSequence seq;
-    for (int i = 1; i < 28; i++) {
-      EXPECT_CALL(*hpack_encoder_visitor,
-                  OnUseEntry(QuicTime::Delta::FromMilliseconds(i)));
-    }
-  }
-  QuicSpdySessionPeer::SetHpackEncoderDebugVisitor(
-      &session_, std::move(hpack_encoder_visitor));
-
-  for (QuicStreamId stream_id = client_id_1_; stream_id < client_id_3_;
-       stream_id += next_stream_id_) {
-    for (bool fin : {false, true}) {
-      if (perspective() == Perspective::IS_SERVER) {
-        WriteAndExpectResponseHeaders(stream_id, fin);
-        connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
-      } else {
-        for (SpdyPriority priority = 0; priority < 7; ++priority) {
-          // TODO(rch): implement priorities correctly.
-          WriteAndExpectRequestHeaders(stream_id, fin, 0);
-          connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
-        }
-      }
-    }
-  }
 }
 
 TEST_P(QuicHeadersStreamTest, AckSentData) {

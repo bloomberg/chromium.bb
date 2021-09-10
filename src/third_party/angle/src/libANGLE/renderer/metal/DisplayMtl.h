@@ -46,7 +46,9 @@ class DisplayMtl : public DisplayImpl
     bool testDeviceLost() override;
     egl::Error restoreLostDevice(const egl::Display *display) override;
 
-    std::string getVendorString() const override;
+    std::string getRendererDescription() override;
+    std::string getVendorString() override;
+    std::string getVersionString() override;
 
     DeviceImpl *createDevice() override;
 
@@ -82,6 +84,10 @@ class DisplayMtl : public DisplayImpl
 
     ShareGroupImpl *createShareGroup() override;
 
+    ExternalImageSiblingImpl *createExternalImageSibling(const gl::Context *context,
+                                                         EGLenum target,
+                                                         EGLClientBuffer buffer,
+                                                         const egl::AttributeMap &attribs) override;
     gl::Version getMaxSupportedESVersion() const override;
     gl::Version getMaxConformantESVersion() const override;
 
@@ -101,9 +107,13 @@ class DisplayMtl : public DisplayImpl
                                     EGLClientBuffer clientBuffer,
                                     const egl::AttributeMap &attribs) const override;
 
+    egl::Error validateImageClientBuffer(const gl::Context *context,
+                                         EGLenum target,
+                                         EGLClientBuffer clientBuffer,
+                                         const egl::AttributeMap &attribs) const override;
+
     egl::ConfigSet generateConfigs() override;
 
-    std::string getRendererDescription() const;
     gl::Caps getNativeCaps() const;
     const gl::TextureCapsMap &getNativeTextureCaps() const;
     const gl::Extensions &getNativeExtensions() const;
@@ -112,7 +122,7 @@ class DisplayMtl : public DisplayImpl
 
     // Check whether either of the specified iOS or Mac GPU family is supported
     bool supportsEitherGPUFamily(uint8_t iOSFamily, uint8_t macFamily) const;
-    bool supportsIOSGPUFamily(uint8_t iOSFamily) const;
+    bool supportsAppleGPUFamily(uint8_t iOSFamily) const;
     bool supportsMacGPUFamily(uint8_t macFamily) const;
     bool isAMD() const;
     bool isIntel() const;
@@ -189,9 +199,6 @@ class DisplayMtl : public DisplayImpl
     mutable gl::Limitations mNativeLimitations;
 
     angle::FeaturesMtl mFeatures;
-
-    // track whether we initialized (or released) glslang
-    bool mGlslangInitialized;
 };
 
 }  // namespace rx

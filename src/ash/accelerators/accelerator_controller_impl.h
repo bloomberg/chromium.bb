@@ -12,16 +12,21 @@
 #include <set>
 #include <vector>
 
-#include "ash/accelerators/accelerator_confirmation_dialog.h"
+#include "ash/accelerators/accelerator_history_impl.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accelerators/exit_warning_handler.h"
+#include "ash/accessibility/ui/accessibility_confirmation_dialog.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/accelerators/accelerator_history.h"
+#include "ui/base/accelerators/accelerator_map.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
+
+class PrefRegistrySimple;
 
 namespace ui {
 class AcceleratorManager;
@@ -54,8 +59,14 @@ enum class WindowSnapAcceleratorAction {
   kMaxValue = kCycleRightSnapInTablet,
 };
 
+// Notification ID for shortcut shown to tell users about new shortcuts.
+ASH_EXPORT extern const char kStartupNewShortcutNotificationId[];
+
 // Histogram for volume adjustment in tablet mode.
 ASH_EXPORT extern const char kTabletCountOfVolumeAdjustType[];
+
+// URL for keyboard shortcut help.
+ASH_EXPORT extern const char kKeyboardShortcutHelpPageUrl[];
 
 // Identifiers for toggling accelerator notifications.
 ASH_EXPORT extern const char kHighContrastToggleAccelNotificationId[];
@@ -74,8 +85,11 @@ ASH_EXPORT extern const char kAccelWindowSnap[];
 // AcceleratorControllerImpl provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
 // also implements several handlers as an accelerator target.
-class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
-                                             public AcceleratorController {
+class ASH_EXPORT AcceleratorControllerImpl
+    : public ui::AcceleratorTarget,
+      public AcceleratorController,
+      public SessionObserver,
+      public chromeos::input_method::InputMethodManager::Observer {
  public:
   // Some Chrome OS devices have volume up and volume down buttons on their
   // side. We want the button that's closer to the top/right to increase the
@@ -112,7 +126,7 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
         AcceleratorAction action);
 
     // Accessor to accelerator confirmation dialog.
-    AcceleratorConfirmationDialog* GetConfirmationDialog();
+    AccessibilityConfirmationDialog* GetConfirmationDialog();
 
     AcceleratorControllerImpl::SideVolumeButtonLocation
     side_volume_button_location() {
@@ -144,6 +158,14 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
   AcceleratorControllerImpl();
   ~AcceleratorControllerImpl() override;
 
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Allows overriding whether the new shortcuts notification should be shown
+  // for tests.
+  static void SetShouldShowShortcutNotificationForTest(bool value) {
+    should_show_shortcut_notification_ = value;
+  }
+
   // A list of possible ways in which an accelerator should be restricted before
   // processing. Any target registered with this controller should respect
   // restrictions by calling |GetCurrentAcceleratorRestriction| during
@@ -158,6 +180,14 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
     // Don't process the accelerator and prevent propagation to other targets.
     RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION
   };
+
+  // SessionObserver overrides:
+  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
+
+  // chromeos::input_method::InputMethodManager::Observer overrides:
+  void InputMethodChanged(chromeos::input_method::InputMethodManager* manager,
+                          Profile* profile,
+                          bool show_message) override;
 
   // Registers global keyboard accelerators for the specified target. If
   // multiple targets are registered for any given accelerator, a target
@@ -182,7 +212,7 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
                               const ui::Accelerator& accelerator) override;
   bool OnMenuAccelerator(const ui::Accelerator& accelerator) override;
   bool IsRegistered(const ui::Accelerator& accelerator) const override;
-  ui::AcceleratorHistory* GetAcceleratorHistory() override;
+  AcceleratorHistoryImpl* GetAcceleratorHistory() override;
 
   // Returns true if the |accelerator| is preferred. A preferred accelerator
   // is handled before being passed to an window/web contents, unless
@@ -201,7 +231,7 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
     return &exit_warning_handler_;
   }
 
-  ui::AcceleratorHistory* accelerator_history() {
+  AcceleratorHistoryImpl* accelerator_history() {
     return accelerator_history_.get();
   }
 
@@ -228,7 +258,13 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
   // |side_volume_button_location_|.
   void ParseSideVolumeButtonLocationInfo();
 
+  // Remove the observers.
+  void Shutdown();
+
  private:
+  // A map for looking up actions from accelerators.
+  using AcceleratorActionMap = ui::AcceleratorMap<AcceleratorAction>;
+
   // Initializes the accelerators this class handles as a target.
   void Init();
 
@@ -291,10 +327,17 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
   // VOLUME_DOWN acceleration action when in tablet mode.
   void StartTabletModeVolumeAdjustTimer(AcceleratorAction action);
 
+  // Determines whether the notification about changed shortcuts at startup
+  // should show. This needs to be overridden in tests and set to false,
+  // because many tests rely on knowing the current active window, or test
+  // for the number of notifications visible.
+  // TODO(crbug.com/1179893): Remove in M94.
+  static bool should_show_shortcut_notification_;
+
   std::unique_ptr<ui::AcceleratorManager> accelerator_manager_;
 
   // A tracker for the current and previous accelerators.
-  std::unique_ptr<ui::AcceleratorHistory> accelerator_history_;
+  std::unique_ptr<AcceleratorHistoryImpl> accelerator_history_;
 
   // Handles the exit accelerator which requires a double press to exit and
   // shows a popup with an explanation.
@@ -302,7 +345,7 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
 
   // A map from accelerators to the AcceleratorAction values, which are used in
   // the implementation.
-  std::map<ui::Accelerator, AcceleratorAction> accelerators_;
+  AcceleratorActionMap accelerators_;
 
   std::map<AcceleratorAction, const DeprecatedAcceleratorData*>
       actions_with_deprecations_;
@@ -331,8 +374,8 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
   // Actions that can be performed without closing the menu (if one is present).
   std::set<int> actions_keeping_menu_open_;
 
-  // Holds a weak pointer to the accelerator confirmation dialog.
-  base::WeakPtr<AcceleratorConfirmationDialog> confirmation_dialog_;
+  // Holds a weak pointer to the accessibility confirmation dialog.
+  base::WeakPtr<AccessibilityConfirmationDialog> confirmation_dialog_;
 
   // Path of the file that contains the side volume button location info. It
   // should always be kSideVolumeButtonLocationFilePath. But it is allowed to be
