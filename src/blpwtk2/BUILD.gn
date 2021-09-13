@@ -378,6 +378,7 @@ executable("blpwtk2_subprocess") {
   deps = [
     ":blpwtk2_generate_sources",
     ":blpwtk2_manifest",
+    "//sandbox",
     "//content:sandbox_helper_win",
   ]
 }
