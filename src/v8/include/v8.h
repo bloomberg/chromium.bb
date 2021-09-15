@@ -8316,11 +8316,27 @@ class V8_EXPORT Isolate {
    * Initial configuration parameters for a new Isolate.
    */
   struct CreateParams {
-    // blpwtk2: We cannot export the entire CreateParams struct because this
-    // will implicitly cause the array_buffer_allocator_shared to be exported
-    // as well. This is a problem because the reference count manipulators of
-    // std::shared_ptr are not exported. This causes a link-time error
-    // because these manipulators cannot be imported by other modules.
+    // blpwtk2: blpwtk2 supports embedders that are built with MSVS.
+    // Since MSVS does not support the fvisibility-inlines-hidden optimization,
+    // clang must be built with this option disabled.
+    //
+    // With this optimization disabled, exporting a class will cause all
+    // inline member functions as well as inline member functions for any
+    // data members to also be exported. In this case, exporting the
+    // CreateParams class will cause the inline reference manipulators of
+    // std::shared_ptr<ArrayBuffer::Allocator> to also be exported for v8.dll.
+    //
+    // Translation units in blink.dll includes v8.h and so all supposedly
+    // exported functions will be imported by it. This is a problem for
+    // std::shared_ptr<ArrayBuffer::Allocator> because the reference
+    // manipulators are not exported. This causes a link-time error since
+    // blink.dll cannot change the ref-count of this shared_ptr.
+    //
+    // To workaround this problem, we selectively export only the ctor and
+    // dtor of the CreateParams class. blink only needs to create and destroy
+    // an instance of CreateParams and it doesn't need to directly use any
+    // other data members or member functions. For this reason, it's sufficient
+    // to only export the ctor and dtor.
     V8_EXPORT CreateParams();
     V8_EXPORT ~CreateParams();
 
