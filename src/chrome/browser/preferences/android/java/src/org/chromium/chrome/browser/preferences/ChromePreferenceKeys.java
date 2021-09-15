@@ -788,6 +788,7 @@ public final class ChromePreferenceKeys {
      */
     public static final String QUERY_TILES_SHOW_ON_NTP = "Chrome.Querytiles.ShowOnNTP";
 
+    public static final String PRIMARY_ACCOUNT_SYNC = "Chrome.StartSurface.PrimaryAccountSync";
     /**
      * Contains a trial group that was used to determine whether the reached code profiler should be
      * enabled.
@@ -869,6 +870,7 @@ public final class ChromePreferenceKeys {
             "signin_promo_last_shown_account_names";
     public static final String SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION =
             "signin_promo_last_shown_chrome_version";
+    public static final String SIGNIN_PROMO_NTP_PROMO_EXPIRED = "Chrome.SigninPromo.Expired";
     /**
      * Whether the user dismissed the personalized sign in promo from the new tab page.
      * Default value is false.
@@ -1111,6 +1113,7 @@ public final class ChromePreferenceKeys {
                 PRICE_TRACKING_PRICE_WELCOME_MESSAGE_CARD,
                 PRICE_TRACKING_PRICE_WELCOME_MESSAGE_CARD_SHOW_COUNT,
                 PRICE_TRACKING_TRACK_PRICES_ON_TABS,
+                PRIMARY_ACCOUNT_SYNC,
                 PROMO_IS_DISMISSED.pattern(),
                 PROMO_TIMES_SEEN.pattern(),
                 QUERY_TILES_NEXT_DISPLAY_DECISION_TIME_MS,
@@ -1121,6 +1124,7 @@ public final class ChromePreferenceKeys {
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,
                 SHARING_LAST_SHARED_COMPONENT_NAME,
                 SIGNIN_PROMO_IMPRESSIONS_COUNT_NTP,
+                SIGNIN_PROMO_NTP_PROMO_EXPIRED,
                 TWA_DISCLOSURE_SEEN_PACKAGES,
                 VIDEO_TUTORIALS_SHARE_URL_SET,
                 WEB_FEED_INTRO_LAST_SHOWN_TIME_MS,

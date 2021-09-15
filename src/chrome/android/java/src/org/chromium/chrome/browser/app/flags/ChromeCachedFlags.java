@@ -125,12 +125,15 @@ public class ChromeCachedFlags {
                         add(LensFeature.SEARCH_BOX_START_VARIANT_LENS_CAMERA_ASSISTED_SEARCH);
                         add(PageAnnotationsServiceConfig.PAGE_ANNOTATIONS_BASE_URL);
                         add(ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS);
+                        add(StartSurfaceConfiguration.CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP);
                         add(StartSurfaceConfiguration.FINALE_ANIMATION_ENABLED);
                         add(StartSurfaceConfiguration.HOME_BUTTON_ON_GRID_TAB_SWITCHER);
                         add(StartSurfaceConfiguration.NEW_SURFACE_FROM_HOME_BUTTON);
                         add(StartSurfaceConfiguration.OMNIBOX_FOCUSED_ON_NEW_TAB);
                         add(StartSurfaceConfiguration.SHOW_NTP_TILES_ON_OMNIBOX);
                         add(StartSurfaceConfiguration.SHOW_TABS_IN_MRU_ORDER);
+                        add(StartSurfaceConfiguration
+                                        .SIGN_IN_PROMO_SHOW_SINCE_LAST_BACKGROUNDED_LIMIT_MS);
                         add(StartSurfaceConfiguration.SPARE_RENDERER_DELAY_MS);
                         add(StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES);
                         add(StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB);

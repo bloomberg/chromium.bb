@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "src/ast/discard_statement.h"
 #include "src/ast/return_statement.h"
 #include "src/ast/stage_decoration.h"
 #include "src/resolver/resolver.h"
@@ -26,8 +27,8 @@ class ResolverFunctionValidationTest : public resolver::TestHelper,
                                        public testing::Test {};
 
 TEST_F(ResolverFunctionValidationTest, FunctionNamesMustBeUnique_fail) {
-  // fn func -> i32 { return 2; }
-  // fn func -> i32 { return 2; }
+  // fn func() -> i32 { return 2; }
+  // fn func() -> i32 { return 2; }
   Func(Source{{56, 78}}, "func", ast::VariableList{}, ty.i32(),
        ast::StatementList{
            Return(2),
@@ -172,24 +173,74 @@ TEST_F(ResolverFunctionValidationTest,
 
 TEST_F(ResolverFunctionValidationTest, UnreachableCode_return) {
   // fn func() -> {
+  //  var a : i32;
   //  return;
-  //  var a: i32 = 2;
+  //  a = 2;
   //}
-  auto* decl = Decl(Source{{12, 34}},
-                    Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2)));
 
   Func("func", ast::VariableList{}, ty.void_(),
-       ast::StatementList{
+       {
+           Decl(Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2))),
            Return(),
-           decl,
-       },
-       ast::DecorationList{});
+           Assign(Source{{12, 34}}, "a", 2),
+       });
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+}
+
+TEST_F(ResolverFunctionValidationTest, UnreachableCode_return_InBlocks) {
+  // fn func() -> {
+  //  var a : i32;
+  //  {{{return;}}}
+  //  a = 2;
+  //}
+
+  Func("func", ast::VariableList{}, ty.void_(),
+       {
+           Decl(Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2))),
+           Block(Block(Block(Return()))),
+           Assign(Source{{12, 34}}, "a", 2),
+       });
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+}
+
+TEST_F(ResolverFunctionValidationTest, UnreachableCode_discard) {
+  // fn func() -> {
+  //  var a : i32;
+  //  discard;
+  //  a = 2;
+  //}
+
+  Func("func", ast::VariableList{}, ty.void_(),
+       {
+           Decl(Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2))),
+           create<ast::DiscardStatement>(),
+           Assign(Source{{12, 34}}, "a", 2),
+       });
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+}
+
+TEST_F(ResolverFunctionValidationTest, UnreachableCode_discard_InBlocks) {
+  // fn func() -> {
+  //  var a : i32;
+  //  {{{discard;}}}
+  //  a = 2;
+  //}
+
+  Func("func", ast::VariableList{}, ty.void_(),
+       {
+           Decl(Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2))),
+           Block(Block(Block(create<ast::DiscardStatement>()))),
+           Assign(Source{{12, 34}}, "a", 2),
+       });
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
 }
 
 TEST_F(ResolverFunctionValidationTest, FunctionEndWithoutReturnStatement_Fail) {
-  // fn func -> int { var a:i32 = 2; }
+  // fn func() -> int { var a:i32 = 2; }
 
   auto* var = Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2));
 
@@ -216,7 +267,7 @@ TEST_F(ResolverFunctionValidationTest,
 
 TEST_F(ResolverFunctionValidationTest,
        FunctionEndWithoutReturnStatementEmptyBody_Fail) {
-  // fn func -> int {}
+  // fn func() -> int {}
 
   Func(Source{Source::Location{12, 34}}, "func", ast::VariableList{}, ty.i32(),
        ast::StatementList{}, ast::DecorationList{});
@@ -269,7 +320,7 @@ TEST_F(ResolverFunctionValidationTest,
 
 TEST_F(ResolverFunctionValidationTest,
        FunctionTypeMustMatchReturnStatementTypeMissing_fail) {
-  // fn func -> f32 { return; }
+  // fn func() -> f32 { return; }
   Func("func", ast::VariableList{}, ty.f32(),
        ast::StatementList{
            Return(Source{Source::Location{12, 34}}, nullptr),
@@ -284,7 +335,7 @@ TEST_F(ResolverFunctionValidationTest,
 
 TEST_F(ResolverFunctionValidationTest,
        FunctionTypeMustMatchReturnStatementTypeF32_pass) {
-  // fn func -> f32 { return 2.0; }
+  // fn func() -> f32 { return 2.0; }
   Func("func", ast::VariableList{}, ty.f32(),
        ast::StatementList{
            Return(Source{Source::Location{12, 34}}, Expr(2.f)),
@@ -296,7 +347,7 @@ TEST_F(ResolverFunctionValidationTest,
 
 TEST_F(ResolverFunctionValidationTest,
        FunctionTypeMustMatchReturnStatementTypeF32_fail) {
-  // fn func -> f32 { return 2; }
+  // fn func() -> f32 { return 2; }
   Func("func", ast::VariableList{}, ty.f32(),
        ast::StatementList{
            Return(Source{Source::Location{12, 34}}, Expr(2)),
@@ -312,7 +363,7 @@ TEST_F(ResolverFunctionValidationTest,
 TEST_F(ResolverFunctionValidationTest,
        FunctionTypeMustMatchReturnStatementTypeF32Alias_pass) {
   // type myf32 = f32;
-  // fn func -> myf32 { return 2.0; }
+  // fn func() -> myf32 { return 2.0; }
   auto* myf32 = Alias("myf32", ty.f32());
   Func("func", ast::VariableList{}, ty.Of(myf32),
        ast::StatementList{
@@ -326,7 +377,7 @@ TEST_F(ResolverFunctionValidationTest,
 TEST_F(ResolverFunctionValidationTest,
        FunctionTypeMustMatchReturnStatementTypeF32Alias_fail) {
   // type myf32 = f32;
-  // fn func -> myf32 { return 2; }
+  // fn func() -> myf32 { return 2; }
   auto* myf32 = Alias("myf32", ty.f32());
   Func("func", ast::VariableList{}, ty.Of(myf32),
        ast::StatementList{
@@ -338,6 +389,24 @@ TEST_F(ResolverFunctionValidationTest,
   EXPECT_EQ(r()->error(),
             "12:34 error: return statement type must match its function return "
             "type, returned 'u32', expected 'myf32'");
+}
+
+TEST_F(ResolverFunctionValidationTest, CannotCallEntryPoint) {
+  // [[stage(compute), workgroup_size(1)]] fn entrypoint() {}
+  // fn func() { return entrypoint(); }
+  Func("entrypoint", ast::VariableList{}, ty.void_(), {},
+       {Stage(ast::PipelineStage::kCompute), WorkgroupSize(1)});
+
+  Func("func", ast::VariableList{}, ty.void_(),
+       {
+           create<ast::CallStatement>(Call(Source{{12, 34}}, "entrypoint")),
+       });
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(
+      r()->error(),
+
+      R"(12:34 error: entry point functions cannot be the target of a function call)");
 }
 
 TEST_F(ResolverFunctionValidationTest, PipelineStage_MustBeUnique_Fail) {

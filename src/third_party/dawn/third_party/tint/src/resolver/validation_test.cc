@@ -15,6 +15,7 @@
 #include "src/resolver/resolver.h"
 
 #include "gmock/gmock.h"
+#include "gtest/gtest-spi.h"
 #include "src/ast/assignment_statement.h"
 #include "src/ast/bitcast_expression.h"
 #include "src/ast/break_statement.h"
@@ -56,10 +57,9 @@ class FakeStmt : public ast::Statement {
   }
 };
 
-class FakeExpr : public ast::Expression {
+class FakeExpr : public Castable<FakeExpr, ast::Expression> {
  public:
-  FakeExpr(ProgramID program_id, Source source)
-      : ast::Expression(program_id, source) {}
+  FakeExpr(ProgramID program_id, Source source) : Base(program_id, source) {}
   FakeExpr* Clone(CloneContext*) const override { return nullptr; }
   void to_str(const sem::Info&, std::ostream&, size_t) const override {}
 };
@@ -158,14 +158,15 @@ TEST_F(ResolverValidationTest, Stmt_Else_NonBool) {
             "12:34 error: else statement condition must be bool, got f32");
 }
 
-TEST_F(ResolverValidationTest, Expr_Error_Unknown) {
-  auto* e = create<FakeExpr>(Source{Source::Location{2, 30}});
-  WrapInFunction(e);
-
-  EXPECT_FALSE(r()->Resolve());
-
-  EXPECT_EQ(r()->error(),
-            "2:30 error: unknown expression for type determination");
+TEST_F(ResolverValidationTest, Expr_ErrUnknownExprType) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.WrapInFunction(b.create<FakeExpr>());
+        Resolver(&b).Resolve();
+      },
+      "internal compiler error: unhandled expression type: "
+      "tint::resolver::FakeExpr");
 }
 
 TEST_F(ResolverValidationTest, Expr_DontCall_Function) {
@@ -467,6 +468,32 @@ TEST_F(ResolverValidationTest,
       Block(create<ast::ContinueStatement>(),
             Decl(error_loc, Var("z", ty.i32(), ast::StorageClass::kNone)),
             create<ast::ContinueStatement>());
+  auto* continuing = Block(Assign(Expr("z"), 2));
+  auto* loop_stmt = Loop(body, continuing);
+  WrapInFunction(loop_stmt);
+
+  EXPECT_FALSE(r()->Resolve()) << r()->error();
+  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+}
+
+TEST_F(
+    ResolverValidationTest,
+    Stmt_Loop_ContinueInLoopBodyBeforeDeclAndAfterDecl_UsageInContinuing_InBlocks) {  // NOLINT - line length
+  // loop  {
+  //     var z : i32;
+  //     {{{continue;}}} // Bypasses z decl
+  //     z = 1;
+  //     continue; // Ok
+  //
+  //     continuing {
+  //         z = 2;
+  //     }
+  // }
+
+  auto* body =
+      Block(Decl(Var("z", ty.i32(), ast::StorageClass::kNone)),
+            Block(Block(Block(create<ast::ContinueStatement>()))),
+            Assign(Source{{12, 34}}, "z", 2), create<ast::ContinueStatement>());
   auto* continuing = Block(Assign(Expr("z"), 2));
   auto* loop_stmt = Loop(body, continuing);
   WrapInFunction(loop_stmt);
@@ -925,3 +952,5 @@ TEST_F(ResolverTest, Expr_Constructor_Cast_Pointer) {
 }  // namespace
 }  // namespace resolver
 }  // namespace tint
+
+TINT_INSTANTIATE_TYPEINFO(tint::resolver::FakeExpr);

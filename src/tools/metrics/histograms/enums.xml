@@ -10252,6 +10252,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="7" label="Data wipe failed">
     Failed to delete lacros data directory with old data.
   </int>
+  <int value="8" label="Size limit exceeded">
+    The total size of data that needs to be copied exceeded the limit. This
+    limit is set as a short-term fix to avoid making users stuck on the
+    migration screen for more than a few minutes.
+  </int>
 </enum>
 
 <enum name="BrowserGestureActionType">
@@ -21729,14 +21734,14 @@ Called by update_document_policy_enum.py.-->
   <int value="22" label="Completed with content length mismatch"/>
   <int value="23" label="More bytes received after content length mismatch"/>
   <int value="24" label="No bytes received after content length mismatch"/>
-  <int value="25" label="Target determination requeted"/>
+  <int value="25" label="Target determination requested"/>
   <int value="26" label="Target determination completed"/>
   <int value="27"
       label="Cross origin download without content disposition headers"/>
-  <int value="28" label="Download attemps before sending the request"/>
-  <int value="29" label="Download attempts for manual download resumption."/>
-  <int value="30" label="Download attempts for auto download resumption."/>
-  <int value="31" label="Dropped download attempts."/>
+  <int value="28" label="Download attempts before sending the request"/>
+  <int value="29" label="Download attempts for manual download resumption"/>
+  <int value="30" label="Download attempts for auto download resumption"/>
+  <int value="31" label="Dropped download attempts"/>
 </enum>
 
 <enum name="DownloadDatabaseRecordDroppedType">
@@ -75026,6 +75031,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="DIRECT_SHARE"/>
 </enum>
 
+<enum name="ShareSourceDesktop">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="OMNIBOX_SHARING_HUB"/>
+</enum>
+
 <enum name="ShareTargetUpdateResult">
   <int value="1" label="SUCCESS"/>
   <int value="2" label="FAILED_EMPTY"/>
@@ -75578,6 +75588,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Scheduled">
     The account reconcilor is scheduled for running soon.
   </int>
+</enum>
+
+<enum name="SigninAccountType">
+  <int value="0" label="Regular gmail account"/>
+  <int value="1" label="Managed account"/>
 </enum>
 
 <enum name="SigninChoice">
