@@ -29,6 +29,15 @@ class V8_EXPORT DefaultPlatform : public Platform {
    */
   static void InitializeProcess(DefaultPlatform* platform);
 
+  // blpwtk2: One of the embedders of blpwtk2 needs to use v8 before blink
+  // is initialized. This requires the embedder to call
+  // v8::platform::NewDefaultPlatform to manually create the platform instance.
+  //
+  // Since blpwtk2 supports embedders that are linked against a different
+  // C runtime library, exported functions cannot use STL types. For this
+  // reason, unique pointers are replaced with raw pointers in the function
+  // parameter of v8::platform::NewDefaultPlatform. This requirement extends to
+  // all callers, including the one below.
   using IdleTaskSupport = v8::platform::IdleTaskSupport;
   explicit DefaultPlatform(
       int thread_pool_size = 0,
