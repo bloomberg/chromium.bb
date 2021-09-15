@@ -21,9 +21,7 @@
  */
 
 #include <blpwtk2_contentrendererclientimpl.h>
-#include <blpwtk2_inprocessresourceloaderbridge.h>
 #include <blpwtk2_renderviewobserverimpl.h>
-#include <blpwtk2_resourceloader.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_stringref.h>
 
@@ -133,18 +131,6 @@ void ContentRendererClientImpl::PrepareErrorPage(
             *error_html += "<p>" + localdesc + "</p>";
         }
     }
-}
-
-std::unique_ptr<content::ResourceLoaderBridge>
-ContentRendererClientImpl::OverrideResourceLoaderBridge(
-    const content::ResourceRequestInfoProvider& request_info) {
-  StringRef url = request_info.url().spec();
-
-  if (!Statics::inProcessResourceLoader ||
-      !Statics::inProcessResourceLoader->canHandleURL(url)) {
-    return nullptr;
-  }
-  return std::make_unique<InProcessResourceLoaderBridge>(request_info);
 }
 
 bool ContentRendererClientImpl::OverrideCreatePlugin(

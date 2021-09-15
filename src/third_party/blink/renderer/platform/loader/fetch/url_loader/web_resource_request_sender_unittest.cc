@@ -88,11 +88,6 @@ class TestResourceRequestSenderDelegate
     return base::MakeRefCounted<WrapperPeer>(std::move(current_peer));
   }
 
-  std::unique_ptr<ResourceLoaderBridge> OverrideResourceLoaderBridge(
-      const ResourceRequestInfoProvider& request_info) override {
-    return nullptr;
-  }
-
   class WrapperPeer : public WebRequestPeer {
    public:
     explicit WrapperPeer(scoped_refptr<WebRequestPeer> original_peer)
