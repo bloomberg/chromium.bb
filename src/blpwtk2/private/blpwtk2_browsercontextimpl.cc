@@ -32,6 +32,7 @@
 #include <blpwtk2_webviewproperties.h>
 #include <blpwtk2_webviewimpl.h>
 #include <blpwtk2_webviewdelegate.h>
+#include <blpwtk2_requestinterceptorimpl.h>
 #include <net/url_request/url_request_context_builder.h>
 
 

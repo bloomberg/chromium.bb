@@ -111,6 +111,11 @@ class RendererResourceDelegate
 #endif
   }
 
+  std::unique_ptr<ResourceLoaderBridge> OverrideResourceLoaderBridge(
+      const ResourceRequestInfoProvider& request_info) override {
+    return nullptr;
+  }
+
  private:
   void InformHostOfCacheStats() {
     DCHECK(!base::FeatureList::IsEnabled(
