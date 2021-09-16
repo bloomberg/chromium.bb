@@ -274,11 +274,10 @@ using content::WebContents;
 using views::ColumnSet;
 using web_modal::WebContentsModalDialogHost;
 
-namespace {
+// static
+const char BrowserView::kBrowserViewKey[] = "__BROWSER_VIEW__";
 
-// The name of a key to store on the window handle so that other code can
-// locate this object using just the handle.
-const char* const kBrowserViewKey = "__BROWSER_VIEW__";
+namespace {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // UMA histograms that record animation smoothness for tab loading animation.

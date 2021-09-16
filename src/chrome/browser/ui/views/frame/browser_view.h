@@ -121,6 +121,9 @@ class BrowserView : public BrowserWindow,
   BrowserView& operator=(const BrowserView&) = delete;
   ~BrowserView() override;
 
+  // Key used to bind BrowserView to the Widget with which it is associated.
+  static const char kBrowserViewKey[];
+
   void set_frame(BrowserFrame* frame) { frame_ = frame; }
   BrowserFrame* frame() const { return frame_; }
 

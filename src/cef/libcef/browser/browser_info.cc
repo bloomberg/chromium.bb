@@ -41,7 +41,9 @@ CefBrowserInfo::~CefBrowserInfo() {
 
 CefRefPtr<CefBrowserHostBase> CefBrowserInfo::browser() const {
   base::AutoLock lock_scope(lock_);
-  return browser_;
+  if (!is_closing_)
+    return browser_;
+  return nullptr;
 }
 
 void CefBrowserInfo::SetBrowser(CefRefPtr<CefBrowserHostBase> browser) {
@@ -69,6 +71,12 @@ void CefBrowserInfo::SetBrowser(CefRefPtr<CefBrowserHostBase> browser) {
     // notifications that are currently queued due to RemoveAllFrames.
     frame_handler_ = nullptr;
   }
+}
+
+void CefBrowserInfo::SetClosing() {
+  base::AutoLock lock_scope(lock_);
+  DCHECK(!is_closing_);
+  is_closing_ = true;
 }
 
 void CefBrowserInfo::MaybeCreateFrame(content::RenderFrameHost* host,
@@ -155,7 +163,26 @@ void CefBrowserInfo::FrameHostStateChanged(
     content::RenderFrameHost::LifecycleState new_state) {
   CEF_REQUIRE_UIT();
 
-  // We currently only care about BackForwardCache state changes.
+  if ((old_state == content::RenderFrameHost::LifecycleState::kPrerendering ||
+       old_state ==
+           content::RenderFrameHost::LifecycleState::kInBackForwardCache) &&
+      new_state == content::RenderFrameHost::LifecycleState::kActive) {
+    if (auto frame = GetFrameForHost(host)) {
+      // Update the associated RFH, which may have changed.
+      frame->MaybeReAttach(this, host);
+
+      if (frame->IsMain()) {
+        // Update the main frame object.
+        NotificationStateLock lock_scope(this);
+        SetMainFrame(browser_, frame);
+      }
+
+      // Update draggable regions.
+      frame->MaybeSendDidStopLoading();
+    }
+  }
+
+  // Update BackForwardCache state.
   bool added_to_bfcache =
       new_state ==
       content::RenderFrameHost::LifecycleState::kInBackForwardCache;
@@ -207,9 +234,9 @@ void CefBrowserInfo::RemoveFrame(content::RenderFrameHost* host) {
 }
 
 CefRefPtr<CefFrameHostImpl> CefBrowserInfo::GetMainFrame() {
-  NotificationStateLock lock_scope(this);
+  base::AutoLock lock_scope(lock_);
   // Early exit if called post-destruction.
-  if (!browser_)
+  if (!browser_ || is_closing_)
     return nullptr;
 
   CHECK(main_frame_);
@@ -345,12 +372,38 @@ void CefBrowserInfo::MaybeExecuteFrameNotification(
   std::move(pending_action).Run(frame_handler);
 }
 
+void CefBrowserInfo::MaybeNotifyDraggableRegionsChanged(
+    CefRefPtr<CefBrowserHostBase> browser,
+    CefRefPtr<CefFrameHostImpl> frame,
+    std::vector<CefDraggableRegion> draggable_regions) {
+  CEF_REQUIRE_UIT();
+  DCHECK(frame->IsMain());
+
+  if (draggable_regions == draggable_regions_)
+    return;
+
+  draggable_regions_ = std::move(draggable_regions);
+
+  if (auto client = browser->GetClient()) {
+    if (auto handler = client->GetDragHandler()) {
+      handler->OnDraggableRegionsChanged(browser.get(), frame,
+                                         draggable_regions_);
+    }
+  }
+}
+
 // Passing in |browser| here because |browser_| may already be cleared.
 void CefBrowserInfo::SetMainFrame(CefRefPtr<CefBrowserHostBase> browser,
                                   CefRefPtr<CefFrameHostImpl> frame) {
   lock_.AssertAcquired();
   DCHECK(browser);
   DCHECK(!frame || frame->IsMain());
+
+  if (frame && main_frame_ &&
+      frame->GetIdentifier() == main_frame_->GetIdentifier()) {
+    // Nothing to do.
+    return;
+  }
 
   CefRefPtr<CefFrameHostImpl> old_frame;
   if (main_frame_) {
@@ -451,6 +504,8 @@ void CefBrowserInfo::RemoveAllFrames(
 CefBrowserInfo::NotificationStateLock::NotificationStateLock(
     CefBrowserInfo* browser_info)
     : browser_info_(browser_info) {
+  CEF_REQUIRE_UIT();
+
   // Take the navigation state lock.
   {
     base::AutoLock lock_scope_(browser_info_->notification_lock_);
@@ -465,6 +520,8 @@ CefBrowserInfo::NotificationStateLock::NotificationStateLock(
 }
 
 CefBrowserInfo::NotificationStateLock::~NotificationStateLock() {
+  CEF_REQUIRE_UIT();
+
   // Unlock in reverse order.
   browser_info_lock_scope_.reset();
 
@@ -477,11 +534,8 @@ CefBrowserInfo::NotificationStateLock::~NotificationStateLock() {
   if (!queue_.empty()) {
     DCHECK(frame_handler_);
 
-    scoped_refptr<NavigationLock> nav_lock;
-    if (CEF_CURRENTLY_ON_UIT()) {
-      // Don't navigate while inside callbacks.
-      nav_lock = browser_info_->CreateNavigationLock();
-    }
+    // Don't navigate while inside callbacks.
+    auto nav_lock = browser_info_->CreateNavigationLock();
 
     // Empty the queue of pending actions. Any of these actions might result in
     // the acquisition of a new NotificationStateLock.

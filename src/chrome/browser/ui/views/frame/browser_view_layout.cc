@@ -39,6 +39,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/browser/chrome/views/chrome_views_util.h"
+#endif
+
 using views::View;
 using web_modal::WebContentsModalDialogHost;
 using web_modal::ModalDialogHostObserver;
@@ -441,8 +445,7 @@ int BrowserViewLayout::LayoutWebUITabStrip(int top) {
 
 int BrowserViewLayout::LayoutToolbar(int top) {
   TRACE_EVENT0("ui", "BrowserViewLayout::LayoutToolbar");
-  if (toolbar_->parent() && toolbar_->parent()->GetLayoutManager() != this &&
-      toolbar_->parent()->GetLayoutManager() != nullptr) {
+  if (cef::IsCefView(toolbar_)) {
     // CEF may take ownership of the toolbar. Early exit to avoid the DCHECK
     // in LayoutManager::SetViewVisibility().
     return top;

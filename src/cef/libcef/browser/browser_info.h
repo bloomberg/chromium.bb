@@ -52,6 +52,13 @@ class CefBrowserInfo : public base::RefCountedThreadSafe<CefBrowserInfo> {
   // (to set) and DestroyBrowser (to clear).
   void SetBrowser(CefRefPtr<CefBrowserHostBase> browser);
 
+  // Called after OnBeforeClose and before SetBrowser(nullptr). This will cause
+  // browser() and GetMainFrame() to return nullptr as expected by
+  // CefFrameHandler callbacks. Note that this differs from calling
+  // SetBrowser(nullptr) because the WebContents has not yet been destroyed and
+  // further frame-related callbacks are expected.
+  void SetClosing();
+
   // Ensure that a frame record exists for |host|. Called for the main frame
   // when the RenderView is created, or for a sub-frame when the associated
   // RenderFrame is created in the renderer process.
@@ -147,6 +154,11 @@ class CefBrowserInfo : public base::RefCountedThreadSafe<CefBrowserInfo> {
   // executed immediately.
   void MaybeExecuteFrameNotification(FrameNotifyOnceAction pending_action);
 
+  void MaybeNotifyDraggableRegionsChanged(
+      CefRefPtr<CefBrowserHostBase> browser,
+      CefRefPtr<CefFrameHostImpl> frame,
+      std::vector<CefDraggableRegion> draggable_regions);
+
  private:
   friend class base::RefCountedThreadSafe<CefBrowserInfo>;
 
@@ -192,7 +204,7 @@ class CefBrowserInfo : public base::RefCountedThreadSafe<CefBrowserInfo> {
   // Used instead of |base::AutoLock(lock_)| in situations that might generate
   // CefFrameHandler notifications. Any notifications passed to
   // MaybeExecuteFrameNotification() will be queued until the lock is released,
-  // and then executed in order.
+  // and then executed in order. Only accessed on the UI thread.
   class NotificationStateLock final {
    public:
     explicit NotificationStateLock(CefBrowserInfo* browser_info);
@@ -233,6 +245,12 @@ class CefBrowserInfo : public base::RefCountedThreadSafe<CefBrowserInfo> {
 
   // The current main frame.
   CefRefPtr<CefFrameHostImpl> main_frame_;
+
+  // True if the browser is currently closing.
+  bool is_closing_ = false;
+
+  // Only accessed on the UI thread.
+  std::vector<CefDraggableRegion> draggable_regions_;
 
   DISALLOW_COPY_AND_ASSIGN(CefBrowserInfo);
 };
