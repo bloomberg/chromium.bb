@@ -7,7 +7,7 @@ from conans.errors import ConanInvalidConfiguration
 class BLPWTK2Conan(ConanFile):
     """Conanfile to produce a BLPWTK2 binary package."""
 
-    name = "blpwtk2"
+    name = "blpwtk2-pkg"
     description = "blpwtk2 libraries and headers"
     url = "bbgithub/buildbot/sotr-conan-index"
     settings = "os", "arch"
@@ -19,12 +19,14 @@ class BLPWTK2Conan(ConanFile):
             raise ConanInvalidConfiguration("Only Windows supported")
 
     def source(self):
-        tools.download(self.conan_data["sources"][self.version]["url"],
-                       "archive.7z",
-                       sha256=self.conan_data["sources"][self.version]["sha256"])
+        tools.download(
+            self.conan_data["sources"][self.version]["url"],
+            "archive.7z",
+            sha256=self.conan_data["sources"][self.version]["sha256"],
+        )
 
     def build(self):
-        self.run("7za.exe x -y -mmt -o\".\" \"archive.7z\"")
+        self.run('7za.exe x -y -mmt -o"." "archive.7z"')
         file_names = os.listdir(self.version)
 
         for file_name in file_names:
@@ -37,14 +39,51 @@ class BLPWTK2Conan(ConanFile):
         self.copy("include/v8/*", keep_path=True)
 
     def package_info(self):
-        self.cpp_info.libs = [f"blpwtk2.{self.version}.dll.lib"]
-        self.cpp_info.libdirs = ["lib"]
-        self.cpp_info.defines = ["USING_BLPWTK2_SHARED", "USING_V8_SHARED", "USING_BLPWTK2V8"]
+        self.cpp_info.components["blpwtk2-empty"].requires = [
+            f"{x.split('/')[0]}::{x.split('/')[0]}" for x in self.requires
+        ]
+
+        ## BLPWTK2 ##
+        self.cpp_info.components["blpwtk2"].libs = [f"blpwtk2.{self.version}.dll.lib"]
+        self.cpp_info.components["blpwtk2"].bindirs = ["bin"]
+        self.cpp_info.components["blpwtk2"].libdirs = ["lib"]
+        self.cpp_info.components["blpwtk2"].defines = [
+            "USING_BLPWTK2_SHARED",
+            "USING_V8_SHARED",
+            "USING_BLPWTK2V8",
+        ]
         if "64" in str(self.settings.arch):
-            self.cpp_info.defines.append("V8_COMPRESS_POINTERS")
-        self.cpp_info.includedirs = ["include/blpwtk2", "include/v8"]
-        self.cpp_info.requires = [f"{x.split('/')[0]}::{x.split('/')[0]}" for x in self.requires]
-        self.cpp_info.builddirs = [os.path.join(self.package_folder, "lib", "cmake")]
+            self.cpp_info.components["blpwtk2"].defines.append("V8_COMPRESS_POINTERS")
+        self.cpp_info.components["blpwtk2"].includedirs = [
+            "include/blpwtk2",
+            "include/v8",
+        ]
+        self.cpp_info.components["blpwtk2"].builddirs = [
+            os.path.join(self.package_folder, "lib", "cmake")
+        ]
+
+        ## ICUDT_FROM_BLPWTK2 ##
+        self.cpp_info.components["icudt_from_blpwtk2"].bindirs = ["bin"]
+        self.cpp_info.components["icudt_from_blpwtk2"].libdirs = ["lib"]
+
+        ## V8 ##
+        self.cpp_info.components["v8"].libs = [f"blpwtk2.{self.version}.dll.lib"]
+        self.cpp_info.components["v8"].bindirs = ["bin"]
+        self.cpp_info.components["v8"].libdirs = ["lib"]
+        self.cpp_info.components["v8"].defines = [
+            "USING_V8_SHARED",
+            "USING_BLPWTK2V8",
+        ]
+        if "64" in str(self.settings.arch):
+            self.cpp_info.components["v8"].defines.append("V8_COMPRESS_POINTERS")
+        self.cpp_info.components["v8"].includedirs = [
+            "include/blpwtk2",
+            "include/v8",
+        ]
+        self.cpp_info.components["v8"].requires = ["blpwtk2", "icudt_from_blpwtk2"]
+        self.cpp_info.components["v8"].builddirs = [
+            os.path.join(self.package_folder, "lib", "cmake")
+        ]
 
         cmake_prefix = os.path.join(self.package_folder, "lib", "cmake")
         self.env_info.CMAKE_PREFIX_PATH.append(cmake_prefix)
