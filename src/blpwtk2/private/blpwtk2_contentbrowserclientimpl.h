@@ -72,7 +72,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
         // A non-nullptr return value is needed because
         // BrowserMainLoop::PreShutdown() assumes a non-nullptr
 
-    void OverrideWebkitPrefs(content::RenderViewHost *render_view_host,
+    void OverrideWebkitPrefs(content::WebContents *web_contents,
                              blink::web_pref::WebPreferences *prefs) override;
         // Called by WebContents to override the WebKit preferences that are
         // used by the renderer. The content layer will add its own settings,
@@ -105,7 +105,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
         // Returns whether a specified URL is handled by the embedder's
         // internal protocol handlers.
 
-    content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() override;
+    std::unique_ptr<content::DevToolsManagerDelegate>
+    CreateDevToolsManagerDelegate() override;
         // Creates a new DevToolsManagerDelegate. The caller owns the returned
         // value.  It's valid to return NULL.
 
@@ -118,10 +119,6 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
     // SupportsInProcessRenderer() returns true.
     void StartInProcessRendererThread(
         mojo::OutgoingInvitation* broker_client_invitation, int renderer_client_id) override;
-
-    // Use build-time C++ manifests instead of runtime JSON manifests
-    // https://chromium-review.googlesource.com/c/chromium/src/+/1423354
-    std::vector<service_manager::Manifest> GetExtraServiceManifests() override;
 
     mojo::OutgoingInvitation* GetClientInvitation() const;
 
@@ -136,7 +133,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       bool in_memory,
       const base::FilePath& relative_partition_path,
       network::mojom::NetworkContextParams* network_context_params,
-      network::mojom::CertVerifierCreationParams*
+      cert_verifier::mojom::CertVerifierCreationParams*
           cert_verifier_creation_params) override;
 
     void RegisterNonNetworkSubresourceURLLoaderFactories(
