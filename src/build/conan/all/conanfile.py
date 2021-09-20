@@ -12,7 +12,7 @@ class BLPWTK2Conan(ConanFile):
     url = "bbgithub/buildbot/sotr-conan-index"
     settings = "os", "arch"
 
-    build_requires = "p7zip/19.00"
+    build_requires = ("p7zip/19.00",)
 
     def configure(self):
         if self.settings.os != "Windows":
