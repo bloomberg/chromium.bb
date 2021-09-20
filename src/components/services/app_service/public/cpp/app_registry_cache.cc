@@ -4,6 +4,8 @@
 
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 
+#include "base/containers/contains.h"
+
 #include <utility>
 
 namespace apps {
@@ -46,10 +48,6 @@ AppRegistryCache::~AppRegistryCache() {
 void AppRegistryCache::AddObserver(Observer* observer) {
   DCHECK(observer);
   observers_.AddObserver(observer);
-
-  for (auto app_type : initialized_app_types_) {
-    observer->OnAppTypeInitialized(app_type);
-  }
 }
 
 void AppRegistryCache::RemoveObserver(Observer* observer) {
@@ -161,8 +159,14 @@ void AppRegistryCache::SetAccountId(const AccountId& account_id) {
   account_id_ = account_id;
 }
 
-bool AppRegistryCache::IsAppTypeInitialized(apps::mojom::AppType app_type) {
-  return initialized_app_types_.find(app_type) != initialized_app_types_.end();
+const std::set<apps::mojom::AppType>& AppRegistryCache::GetInitializedAppTypes()
+    const {
+  return initialized_app_types_;
+}
+
+bool AppRegistryCache::IsAppTypeInitialized(
+    apps::mojom::AppType app_type) const {
+  return base::Contains(initialized_app_types_, app_type);
 }
 
 void AppRegistryCache::OnAppTypeInitialized() {
@@ -170,14 +174,15 @@ void AppRegistryCache::OnAppTypeInitialized() {
     return;
   }
 
-  for (auto app_type : in_progress_initialized_app_types_) {
+  auto in_progress_initialized_app_types = in_progress_initialized_app_types_;
+  in_progress_initialized_app_types_.clear();
+
+  for (auto app_type : in_progress_initialized_app_types) {
     for (auto& obs : observers_) {
       obs.OnAppTypeInitialized(app_type);
     }
     initialized_app_types_.insert(app_type);
   }
-
-  in_progress_initialized_app_types_.clear();
 }
 
 }  // namespace apps

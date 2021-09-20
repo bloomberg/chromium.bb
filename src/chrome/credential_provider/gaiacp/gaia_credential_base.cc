@@ -505,7 +505,7 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
     LOGFN(VERBOSE) << "Found existing SID created in GCPW registry entry = "
                    << sid;
 
-    HRESULT hr = FindUserBySidWithRegistryFallback(
+    hr = OSUserManager::Get()->FindUserBySidWithFallback(
         sid, username, username_length, domain, domain_length);
     if (FAILED(hr)) {
       *error_text =
@@ -521,7 +521,7 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
                                         error_text);
 
     if (SUCCEEDED(hr)) {
-      HRESULT hr = OSUserManager::Get()->FindUserBySID(
+      hr = OSUserManager::Get()->FindUserBySidWithFallback(
           sid, username, username_length, domain, domain_length);
       if (FAILED(hr)) {
         *error_text =
@@ -2354,7 +2354,6 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
       result, &gaia_id, found_username, base::size(found_username),
       found_domain, base::size(found_domain), found_sid, base::size(found_sid),
       &is_consumer_account, error_text);
-
   if (FAILED(hr)) {
     LOGFN(ERROR) << "MakeUsernameForAccount hr=" << putHR(hr);
     return hr;
@@ -2526,7 +2525,19 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
       return hr;
     }
 
-    std::wstring email = GetDictString(*properties, kKeyEmail);
+    const std::wstring email = GetDictString(*properties, kKeyEmail);
+    const std::wstring email_domain = email.substr(email.find(L"@") + 1);
+    const std::vector<std::wstring> allowed_domains = GetEmailDomainsList();
+
+    if (std::find(allowed_domains.begin(), allowed_domains.end(),
+                  email_domain) == allowed_domains.end()) {
+      LOGFN(VERBOSE) << "Account " << email
+                     << " isn't in a domain from allowed domains.";
+      *status_text =
+          CGaiaCredentialBase::AllocErrorString(IDS_INVALID_EMAIL_DOMAIN_BASE);
+      return E_FAIL;
+    }
+
     std::vector<std::wstring> permitted_accounts = GetPermittedAccounts();
     if (!permitted_accounts.empty() &&
         std::find(permitted_accounts.begin(), permitted_accounts.end(),

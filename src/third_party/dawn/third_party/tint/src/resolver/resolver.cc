@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
+#include <limits>
 #include <utility>
 
 #include "src/ast/alias.h"
@@ -3864,15 +3865,30 @@ sem::Array* Resolver::Array(const ast::Array* arr) {
   }
 
   // Calculate implicit stride
-  auto implicit_stride = utils::RoundUp(el_align, el_size);
+  uint64_t implicit_stride = utils::RoundUp<uint64_t>(el_align, el_size);
 
-  auto stride = explicit_stride ? explicit_stride : implicit_stride;
+  uint64_t stride = explicit_stride ? explicit_stride : implicit_stride;
 
   // WebGPU requires runtime arrays have at least one element, but the AST
   // records an element count of 0 for it.
   auto size = std::max<uint32_t>(arr->size(), 1) * stride;
-  auto* out = builder_->create<sem::Array>(elem_type, arr->size(), el_align,
-                                           size, stride, implicit_stride);
+  if (size > std::numeric_limits<uint32_t>::max()) {
+    std::stringstream msg;
+    msg << "array size in bytes must not exceed 0x" << std::hex
+        << std::numeric_limits<uint32_t>::max() << ", but is 0x" << std::hex
+        << size;
+    AddError(msg.str(), arr->source());
+    return nullptr;
+  }
+  if (stride > std::numeric_limits<uint32_t>::max() ||
+      implicit_stride > std::numeric_limits<uint32_t>::max()) {
+    TINT_ICE(Resolver, diagnostics_)
+        << "calculated array stride exceeds uint32";
+    return nullptr;
+  }
+  auto* out = builder_->create<sem::Array>(
+      elem_type, arr->size(), el_align, static_cast<uint32_t>(size),
+      static_cast<uint32_t>(stride), static_cast<uint32_t>(implicit_stride));
 
   if (!ValidateArray(out, source)) {
     return nullptr;
@@ -4091,8 +4107,8 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
   // Validation of storage-class rules requires analysing the actual variable
   // usage of the structure, and so is performed as part of the variable
   // validation.
-  uint32_t struct_size = 0;
-  uint32_t struct_align = 1;
+  uint64_t struct_size = 0;
+  uint64_t struct_align = 1;
   std::unordered_map<Symbol, ast::StructMember*> member_map;
 
   for (auto* member : str->members()) {
@@ -4120,9 +4136,9 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
       return nullptr;
     }
 
-    uint32_t offset = struct_size;
-    uint32_t align = type->Align();
-    uint32_t size = type->Size();
+    uint64_t offset = struct_size;
+    uint64_t align = type->Align();
+    uint64_t size = type->Size();
 
     if (!ValidateNoDuplicateDecorations(member->decorations())) {
       return nullptr;
@@ -4171,6 +4187,14 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
     }
 
     offset = utils::RoundUp(align, offset);
+    if (offset > std::numeric_limits<uint32_t>::max()) {
+      std::stringstream msg;
+      msg << "struct member has byte offset 0x" << std::hex << offset
+          << ", but must not exceed 0x" << std::hex
+          << std::numeric_limits<uint32_t>::max();
+      AddError(msg.str(), member->source());
+      return nullptr;
+    }
 
     auto* sem_member = builder_->create<sem::StructMember>(
         member, member->symbol(), const_cast<sem::Type*>(type),
@@ -4182,12 +4206,27 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
     struct_align = std::max(struct_align, align);
   }
 
-  auto size_no_padding = struct_size;
+  uint64_t size_no_padding = struct_size;
   struct_size = utils::RoundUp(struct_align, struct_size);
 
-  auto* out =
-      builder_->create<sem::Struct>(str, str->name(), sem_members, struct_align,
-                                    struct_size, size_no_padding);
+  if (struct_size > std::numeric_limits<uint32_t>::max()) {
+    std::stringstream msg;
+    msg << "struct size in bytes must not exceed 0x" << std::hex
+        << std::numeric_limits<uint32_t>::max() << ", but is 0x" << std::hex
+        << struct_size;
+    AddError(msg.str(), str->source());
+    return nullptr;
+  }
+  if (struct_align > std::numeric_limits<uint32_t>::max()) {
+    TINT_ICE(Resolver, diagnostics_)
+        << "calculated struct stride exceeds uint32";
+    return nullptr;
+  }
+
+  auto* out = builder_->create<sem::Struct>(
+      str, str->name(), sem_members, static_cast<uint32_t>(struct_align),
+      static_cast<uint32_t>(struct_size),
+      static_cast<uint32_t>(size_no_padding));
 
   for (size_t i = 0; i < sem_members.size(); i++) {
     auto* mem_type = sem_members[i]->Type();
