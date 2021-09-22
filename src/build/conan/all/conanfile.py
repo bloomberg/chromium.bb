@@ -15,7 +15,7 @@ class BLPWTK2Conan(ConanFile):
         "arch",
     )
 
-    build_requires = ("p7zip/19.00",)
+    build_requires = ("p7zip/19.00@devkit/stable",)
 
     def configure(self):
         if self.settings.os != "Windows":
