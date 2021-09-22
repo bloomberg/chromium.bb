@@ -10,7 +10,10 @@ class BLPWTK2Conan(ConanFile):
     name = "blpwtk2-pkg"
     description = "blpwtk2 libraries and headers"
     url = "bbgithub/buildbot/sotr-conan-index"
-    settings = "os", "arch"
+    settings = (
+        "os",
+        "arch",
+    )
 
     build_requires = ("p7zip/19.00",)
 
@@ -34,19 +37,25 @@ class BLPWTK2Conan(ConanFile):
 
     def package(self):
         bitness_path_suffix = "64" if "64" in str(self.settings.arch) else ""
-        self.copy(f"lib/release{bitness_path_suffix}/*", dst="lib", keep_path=False)
+        self.copy(f"bin/release{bitness_path_suffix}/*", keep_path=True)
+        self.copy(f"lib/release{bitness_path_suffix}/*", keep_path=True)
         self.copy("include/blpwtk2/*", keep_path=True)
         self.copy("include/v8/*", keep_path=True)
 
     def package_info(self):
-        self.cpp_info.components["blpwtk2-empty"].requires = [
+        bitness_path_suffix = "64" if "64" in str(self.settings.arch) else ""
+        bindir = f"bin/release{bitness_path_suffix}"
+        libdir = f"lib/release{bitness_path_suffix}"
+
+        self.cpp_info.components["blpwtk2-discarded"].requires = [
             f"{x.split('/')[0]}::{x.split('/')[0]}" for x in self.requires
         ]
 
         ## BLPWTK2 ##
         self.cpp_info.components["blpwtk2"].libs = [f"blpwtk2.{self.version}.dll.lib"]
-        self.cpp_info.components["blpwtk2"].bindirs = ["bin"]
-        self.cpp_info.components["blpwtk2"].libdirs = ["lib"]
+        self.cpp_info.components["blpwtk2"].requires = ["icudt_from_blpwtk2"]
+        self.cpp_info.components["blpwtk2"].bindirs = [bindir]
+        self.cpp_info.components["blpwtk2"].libdirs = [libdir]
         self.cpp_info.components["blpwtk2"].defines = [
             "USING_BLPWTK2_SHARED",
             "USING_V8_SHARED",
@@ -59,17 +68,17 @@ class BLPWTK2Conan(ConanFile):
             "include/v8",
         ]
         self.cpp_info.components["blpwtk2"].builddirs = [
-            os.path.join(self.package_folder, "lib", "cmake")
+            os.path.join(self.package_folder, libdir, "cmake")
         ]
 
         ## ICUDT_FROM_BLPWTK2 ##
-        self.cpp_info.components["icudt_from_blpwtk2"].bindirs = ["bin"]
-        self.cpp_info.components["icudt_from_blpwtk2"].libdirs = ["lib"]
+        self.cpp_info.components["icudt_from_blpwtk2"].bindirs = [bindir]
+        self.cpp_info.components["icudt_from_blpwtk2"].libdirs = [libdir]
 
         ## V8 ##
         self.cpp_info.components["v8"].libs = [f"blpwtk2.{self.version}.dll.lib"]
-        self.cpp_info.components["v8"].bindirs = ["bin"]
-        self.cpp_info.components["v8"].libdirs = ["lib"]
+        self.cpp_info.components["v8"].bindirs = [bindir]
+        self.cpp_info.components["v8"].libdirs = [libdir]
         self.cpp_info.components["v8"].defines = [
             "USING_V8_SHARED",
             "USING_BLPWTK2V8",
@@ -82,8 +91,8 @@ class BLPWTK2Conan(ConanFile):
         ]
         self.cpp_info.components["v8"].requires = ["blpwtk2", "icudt_from_blpwtk2"]
         self.cpp_info.components["v8"].builddirs = [
-            os.path.join(self.package_folder, "lib", "cmake")
+            os.path.join(self.package_folder, libdir, "cmake")
         ]
 
-        cmake_prefix = os.path.join(self.package_folder, "lib", "cmake")
+        cmake_prefix = os.path.join(self.package_folder, libdir, "cmake")
         self.env_info.CMAKE_PREFIX_PATH.append(cmake_prefix)
