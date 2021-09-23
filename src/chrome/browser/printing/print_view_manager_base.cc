@@ -283,8 +283,7 @@ void UpdatePrintSettingsOnIO(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::unique_ptr<PrinterQuery> printer_query = queue->PopPrinterQuery(cookie);
   if (!printer_query) {
-    printer_query = queue->CreatePrinterQuery(
-        content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
+    printer_query = queue->CreatePrinterQuery(process_id, routing_id);
   }
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->SetSettings(
