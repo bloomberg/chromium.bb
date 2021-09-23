@@ -436,9 +436,12 @@ void Widget::Init(InitParams params) {
 
     if (show_state == ui::SHOW_STATE_MAXIMIZED) {
       Maximize();
+      saved_show_state_ = ui::SHOW_STATE_MAXIMIZED;
     } else if (show_state == ui::SHOW_STATE_MINIMIZED) {
       Minimize();
       saved_show_state_ = ui::SHOW_STATE_MINIMIZED;
+    } else if (show_state == ui::SHOW_STATE_FULLSCREEN) {
+      SetFullscreen(true);
     }
   } else if (delegate) {
     SetContentsView(delegate->TransferOwnershipOfContentsView());
