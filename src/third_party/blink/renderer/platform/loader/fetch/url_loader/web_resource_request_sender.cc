@@ -187,12 +187,7 @@ void WebResourceRequestSender::SendSync(
     }
   }
 
-  PeerRequestInfoProvider request_info(request.get());
-  std::unique_ptr<ResourceLoaderBridge> bridge(
-      delegate_->OverrideResourceLoaderBridge(
-          request_info));
-  if (bridge.get()) {
-    bridge->SyncLoad(response);
+  if (delegate_->CanHandleURL(request->url.spec())) {
     return;
   }
 
@@ -280,29 +275,26 @@ int WebResourceRequestSender::SendAsync(
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
 
-  std::unique_ptr<ResourceLoaderBridge> bridge =
-      delegate_->OverrideResourceLoaderBridge(
-          PeerRequestInfoProvider(request.get()));
+  if (delegate_->CanHandleURL(request->url.spec())) {
+    delegate_->Start(peer.get(), this, request.get(), request_id, loading_task_runner);
+    request_info_ = std::make_unique<PendingRequestInfo>(
+        std::move(peer), request->destination,
+        request->url, std::move(resource_load_info_notifier_wrapper));
 
-  if (bridge) {
-    bridge->Start(std::make_unique<RequestPeerReceiver>(peer.get(), request_id,
-                                                        loading_task_runner));
-    pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
-        std::move(peer), request->destination, std::move(bridge),
-        request->render_frame_id, request->url,
-        std::move(resource_load_info_notifier_wrapper));
+    request_info_->url_loader_client =
+        std::make_unique<MojoURLLoaderClient>(
+            this, loading_task_runner, true /* bypass_redirect_checks */,
+            request->url, back_forward_cache_loader_helper);
 
-    pending_requests_[request_id]->url_loader_client =
-        std::make_unique<URLLoaderClientImpl>(
-            request_id, this, loading_task_runner,
-            true /* bypass_redirect_checks */, request->url);
+    request_info_->request_id = request_id;
+
     return request_id;
   }
 
   CheckSchemeForReferrerPolicy(*request);
 
   request_info_ = std::make_unique<PendingRequestInfo>(
-      std::move(peer), request->destination, std::move(bridge), request->url,
+      std::move(peer), request->destination, request->url,
       std::move(resource_load_info_notifier_wrapper));
 
   request_info_->resource_load_info_notifier_wrapper
@@ -344,8 +336,8 @@ int WebResourceRequestSender::SendAsync(
 void WebResourceRequestSender::Cancel(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 
-  if (it->second.get()->bridge) {
-    it->second.get()->bridge->Cancel();
+  if (request_info_ && delegate_->CanHandleURL(request_info_->url.spec())) {
+    delegate_->Cancel(request_info_->request_id);
     return;
   }
 
@@ -392,7 +384,7 @@ void WebResourceRequestSender::DeletePendingRequest(
   if (!request_info_)
     return;
 
-  if (request_info_->net_error == net::ERR_IO_PENDING) {
+  if (request_info_->net_error == net::ERR_IO_PENDING && !delegate_->CanHandleURL(request_info_->url.spec())) {
     request_info_->net_error = net::ERR_ABORTED;
     request_info_->resource_load_info_notifier_wrapper
         ->NotifyResourceLoadCanceled(request_info_->net_error);
@@ -405,9 +397,6 @@ void WebResourceRequestSender::DeletePendingRequest(
   // process.
   request_info_->url_loader_client.reset();
 
-  if (is_external_loader)
-    it->second.get()->bridge.reset(nullptr);
-
   // Always delete the `request_info_` asyncly so that cancelling the request
   // doesn't delete the request context which the `request_info_->peer` points
   // to while its response is still being handled.
@@ -417,13 +406,11 @@ void WebResourceRequestSender::DeletePendingRequest(
 WebResourceRequestSender::PendingRequestInfo::PendingRequestInfo(
     scoped_refptr<WebRequestPeer> peer,
     network::mojom::RequestDestination request_destination,
-    std::unique_ptr<ResourceLoaderBridge> bridge,
     const GURL& request_url,
     std::unique_ptr<ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper)
     : peer(std::move(peer)),
       request_destination(request_destination),
-      bridge(std::move(bridge)),
       url(request_url),
       response_url(request_url),
       local_request_start(base::TimeTicks::Now()),

@@ -6,12 +6,13 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RESOURCE_REQUEST_SENDER_DELEGATE_H_
 
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_navigation_body_loader.h"
+#include <memory>
 
 namespace blink {
 class WebRequestPeer;
 class WebString;
 class WebURL;
-class ResourceLoaderBridge;
 
 // Interface that allows observing request events and optionally replacing
 // the peer. Note that if it doesn't replace the peer it must return the
@@ -29,10 +30,18 @@ class BLINK_PLATFORM_EXPORT WebResourceRequestSenderDelegate {
       const WebString& mime_type,
       const WebURL& url) = 0;
 
-  // Allows the embedder to override the ResourceLoaderBridge used.
-  // If it returns NULL, the content layer will use the default loader.
-  virtual std::unique_ptr<ResourceLoaderBridge> OverrideResourceLoaderBridge(
-      const ResourceRequestInfoProvider& request_info) = 0;
+  virtual bool CanHandleURL(const std::string& url) { return false; }
+
+  virtual std::unique_ptr<WebNavigationBodyLoader>
+      CreateBodyLoader(network::ResourceRequest* request) { return nullptr; }
+
+  virtual void Start(WebRequestPeer* peer,
+                     WebResourceRequestSender* sender,
+                     network::ResourceRequest* request,
+                     int request_id,
+                     scoped_refptr<base::SingleThreadTaskRunner> runner) {}
+
+  virtual void Cancel(int request_id) {}
 };
 
 }  // namespace blink

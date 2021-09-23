@@ -29,7 +29,6 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
-#include "third_party/blink/public/platform/resource_loader_bridge.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -174,7 +173,6 @@ class BLINK_PLATFORM_EXPORT WebResourceRequestSender {
   struct PendingRequestInfo {
     PendingRequestInfo(scoped_refptr<WebRequestPeer> peer,
                        network::mojom::RequestDestination request_destination,
-                       std::unique_ptr<ResourceLoaderBridge> bridge,
                        const GURL& request_url,
                        std::unique_ptr<ResourceLoadInfoNotifierWrapper>
                            resource_load_info_notifier_wrapper);
@@ -183,7 +181,6 @@ class BLINK_PLATFORM_EXPORT WebResourceRequestSender {
 
     scoped_refptr<WebRequestPeer> peer;
     network::mojom::RequestDestination request_destination;
-    std::unique_ptr<ResourceLoaderBridge> bridge;
     WebURLLoader::DeferType is_deferred = WebURLLoader::DeferType::kNotDeferred;
     // Original requested url.
     GURL url;
@@ -212,6 +209,8 @@ class BLINK_PLATFORM_EXPORT WebResourceRequestSender {
     // Used to notify the loading stats.
     std::unique_ptr<ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper;
+
+    int request_id = 0;
   };
 
   // Follows redirect, if any, for the given request.

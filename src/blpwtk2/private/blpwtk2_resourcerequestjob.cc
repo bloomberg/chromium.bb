@@ -33,8 +33,8 @@ ResourceRequestJob::ResourceRequestJob(net::URLRequest* request)
 void ResourceRequestJob::Start() {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ResourceRequestJob::NotifyHeadersCompleteHelper,
-                 base::Unretained(this)));
+      base::BindOnce(&ResourceRequestJob::NotifyHeadersCompleteHelper,
+                     base::Unretained(this)));
 }
 
 static bool EndsWith(const std::string& hay, const std::string& needle) {
