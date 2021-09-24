@@ -33,21 +33,27 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_viewport_container.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/outline_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/platform/graphics/stroke_data.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/clear_collection_scope.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 
 struct SearchCandidate {
+  DISALLOW_NEW();
+
   SearchCandidate()
       : layout_object(nullptr), distance(std::numeric_limits<float>::max()) {}
   SearchCandidate(LayoutObject* layout_object, float distance)
       : layout_object(layout_object), distance(distance) {}
-  LayoutObject* layout_object;
+  void Trace(Visitor* visitor) const { visitor->Trace(layout_object); }
+
+  Member<LayoutObject> layout_object;
   float distance;
 };
 
@@ -61,8 +67,8 @@ FloatRect SVGLayoutSupport::LocalVisualRect(const LayoutObject& object) {
     return FloatRect();
 
   FloatRect visual_rect = object.VisualRectInLocalSVGCoordinates();
-  if (int outline_outset = object.StyleRef().OutlineOutsetExtent())
-    visual_rect.Inflate(outline_outset);
+  if (int outset = OutlinePainter::OutlineOutsetExtent(object.StyleRef()))
+    visual_rect.Inflate(outset);
   return visual_rect;
 }
 
@@ -449,7 +455,8 @@ static SearchCandidate SearchTreeForFindClosestLayoutSVGText(
     const FloatPoint& point) {
   // Try to find the closest LayoutSVGText.
   SearchCandidate closest_text;
-  Vector<SearchCandidate> candidates;
+  HeapVector<SearchCandidate> candidates;
+  ClearCollectionScope<HeapVector<SearchCandidate>> scope(&candidates);
 
   // Find the closest LayoutSVGText on this tree level, and also collect any
   // containers that could contain LayoutSVGTexts that are closer.
@@ -459,7 +466,6 @@ static SearchCandidate SearchTreeForFindClosestLayoutSVGText(
       float distance = DistanceToChildLayoutObject(child, point);
       if (distance >= closest_text.distance)
         continue;
-      candidates.clear();
       closest_text.layout_object = child;
       closest_text.distance = distance;
       continue;
@@ -521,3 +527,5 @@ void SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(
 }
 
 }  // namespace blink
+
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::SearchCandidate)

@@ -129,6 +129,7 @@ class DeclarePerVertexBlocksTraverser : public TIntermTraverser
                                     uint32_t cullDistanceArraySize)
         : TIntermTraverser(true, false, false, symbolTable),
           mShaderType(compiler->getShaderType()),
+          mShaderVersion(compiler->getShaderVersion()),
           mResources(compiler->getResources()),
           mClipDistanceArraySize(clipDistanceArraySize),
           mCullDistanceArraySize(cullDistanceArraySize),
@@ -179,7 +180,7 @@ class DeclarePerVertexBlocksTraverser : public TIntermTraverser
             {
                 // Traverse the parents and promote the new type.  Replace the root of
                 // EOpIndex[In]Direct chain.
-                replaceAccessChain(new TIntermSymbol(mPerVertexOutVar));
+                queueAccessChainReplacement(new TIntermSymbol(mPerVertexOutVar));
             }
 
             return;
@@ -202,7 +203,7 @@ class DeclarePerVertexBlocksTraverser : public TIntermTraverser
             {
                 // Traverse the parents and promote the new type.  Replace the root of
                 // EOpIndex[In]Direct chain.
-                replaceAccessChain(new TIntermSymbol(mPerVertexInVar));
+                queueAccessChainReplacement(new TIntermSymbol(mPerVertexInVar));
             }
 
             return;
@@ -281,8 +282,8 @@ class DeclarePerVertexBlocksTraverser : public TIntermTraverser
     {
         TFieldList *fields = new TFieldList;
 
-        const TType *vec4Type  = StaticType::GetBasic<EbtFloat, 4>();
-        const TType *floatType = StaticType::GetBasic<EbtFloat, 1>();
+        const TType *vec4Type  = StaticType::GetBasic<EbtFloat, EbpHigh, 4>();
+        const TType *floatType = StaticType::GetBasic<EbtFloat, EbpHigh, 1>();
 
         TType *positionType     = new TType(*vec4Type);
         TType *pointSizeType    = new TType(*floatType);
@@ -294,11 +295,23 @@ class DeclarePerVertexBlocksTraverser : public TIntermTraverser
         clipDistanceType->setQualifier(EvqClipDistance);
         cullDistanceType->setQualifier(EvqCullDistance);
 
+        TPrecision pointSizePrecision = EbpHigh;
+        if (mShaderType == GL_VERTEX_SHADER)
+        {
+            // gl_PointSize is mediump in ES100 and highp in ES300+.
+            const TVariable *glPointSize = static_cast<const TVariable *>(
+                mSymbolTable->findBuiltIn(ImmutableString("gl_PointSize"), mShaderVersion));
+            ASSERT(glPointSize);
+
+            pointSizePrecision = glPointSize->getType().getPrecision();
+        }
+        pointSizeType->setPrecision(pointSizePrecision);
+
         // TODO: handle interaction with GS and T*S where the two can have different sizes.  These
         // values are valid for EvqPerVertexOut only.  For EvqPerVertexIn, the size should come from
         // the declaration of gl_in.  http://anglebug.com/5466.
-        clipDistanceType->makeArray(mClipDistanceArraySize);
-        cullDistanceType->makeArray(mCullDistanceArraySize);
+        clipDistanceType->makeArray(std::max(mClipDistanceArraySize, 1u));
+        cullDistanceType->makeArray(std::max(mCullDistanceArraySize, 1u));
 
         if (qualifier == EvqPerVertexOut)
         {
@@ -378,40 +391,8 @@ class DeclarePerVertexBlocksTraverser : public TIntermTraverser
         mPerVertexInVarRedeclared = true;
     }
 
-    void replaceAccessChain(TIntermTyped *replacement)
-    {
-        uint32_t ancestorIndex  = 0;
-        TIntermTyped *toReplace = nullptr;
-        while (true)
-        {
-            TIntermNode *ancestor = getAncestorNode(ancestorIndex);
-            ASSERT(ancestor != nullptr);
-
-            TIntermBinary *asBinary = ancestor->getAsBinaryNode();
-            if (asBinary == nullptr ||
-                (asBinary->getOp() != EOpIndexDirect && asBinary->getOp() != EOpIndexIndirect))
-            {
-                break;
-            }
-
-            replacement = new TIntermBinary(asBinary->getOp(), replacement, asBinary->getRight());
-            toReplace   = asBinary;
-
-            ++ancestorIndex;
-        }
-
-        if (toReplace == nullptr)
-        {
-            queueReplacement(replacement, OriginalNode::IS_DROPPED);
-        }
-        else
-        {
-            queueReplacementWithParent(getAncestorNode(ancestorIndex), toReplace, replacement,
-                                       OriginalNode::IS_DROPPED);
-        }
-    }
-
     GLenum mShaderType;
+    int mShaderVersion;
     const ShBuiltInResources &mResources;
     uint32_t mClipDistanceArraySize;
     uint32_t mCullDistanceArraySize;

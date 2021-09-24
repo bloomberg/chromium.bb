@@ -437,7 +437,6 @@ SkColor AshColorProvider::GetControlsLayerColorImpl(ControlsLayerType type,
 SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
                                                    bool use_dark_color) const {
   switch (type) {
-    case ContentLayerType::kLoginScrollBarColor:
     case ContentLayerType::kSeparatorColor:
     case ContentLayerType::kShelfHandleColor:
       return use_dark_color ? SkColorSetA(SK_ColorWHITE, 0x24)
@@ -449,6 +448,7 @@ SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
     case ContentLayerType::kButtonLabelColor:
     case ContentLayerType::kButtonIconColor:
     case ContentLayerType::kAppStateIndicatorColor:
+    case ContentLayerType::kScrollBarColor:
     case ContentLayerType::kSliderColorInactive:
     case ContentLayerType::kRadioColorInactive:
       return use_dark_color ? gfx::kGoogleGrey200 : gfx::kGoogleGrey700;
@@ -458,6 +458,7 @@ SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
       return GetSecondToneColor(use_dark_color ? gfx::kGoogleGrey200
                                                : gfx::kGoogleGrey700);
     case ContentLayerType::kButtonLabelColorBlue:
+    case ContentLayerType::kTextColorURL:
     case ContentLayerType::kSliderColorActive:
     case ContentLayerType::kRadioColorActive:
     case ContentLayerType::kSwitchKnobColorActive:
@@ -482,6 +483,9 @@ SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
       return gfx::kGoogleBlue300;
     case ContentLayerType::kSwitchAccessOuterStrokeColor:
       return gfx::kGoogleBlue900;
+    case ContentLayerType::kHighlightColorHover:
+      return use_dark_color ? SkColorSetA(SK_ColorWHITE, 0x0D)
+                            : SkColorSetA(SK_ColorBLACK, 0x14);
     default:
       return ResolveColor(type, use_dark_color);
   }

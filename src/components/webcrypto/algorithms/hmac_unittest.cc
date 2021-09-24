@@ -52,7 +52,8 @@ class WebCryptoHmacTest : public WebCryptoTestBase {};
 TEST_F(WebCryptoHmacTest, HMACSampleSets) {
   base::ListValue tests;
   ASSERT_TRUE(ReadJsonTestFileToList("hmac.json", &tests));
-  for (size_t test_index = 0; test_index < tests.GetSize(); ++test_index) {
+  for (size_t test_index = 0; test_index < tests.GetList().size();
+       ++test_index) {
     SCOPED_TRACE(test_index);
     base::DictionaryValue* test;
     ASSERT_TRUE(tests.GetDictionary(test_index, &test));
@@ -265,9 +266,9 @@ TEST_F(WebCryptoHmacTest, ImportKeyJwkUseInconsisteWithKeyOps) {
   dict.SetString("use", "sig");
 
   base::ListValue key_ops;
-  key_ops.AppendString("sign");
-  key_ops.AppendString("verify");
-  key_ops.AppendString("encrypt");
+  key_ops.Append("sign");
+  key_ops.Append("verify");
+  key_ops.Append("encrypt");
   dict.SetKey("key_ops", std::move(key_ops));
   EXPECT_EQ(
       Status::ErrorJwkUseAndKeyopsInconsistent(),

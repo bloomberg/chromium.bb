@@ -144,6 +144,14 @@ feedwire::Request CreateFeedQueryRequest(
         feedwire::Capability::OPEN_VIDEO_COMMAND);
   }
 
+  if (base::FeatureList::IsEnabled(kFeedStamp)) {
+    feed_request.add_client_capability(
+        feedwire::Capability::SILK_AMP_OPEN_COMMAND);
+    feed_request.add_client_capability(feedwire::Capability::AMP_STORY_PLAYER);
+    feed_request.add_client_capability(
+        feedwire::Capability::AMP_GROUP_DATASTORE);
+  }
+
   *feed_request.mutable_client_info() = CreateClientInfo(request_metadata);
   feedwire::FeedQuery& query = *feed_request.mutable_feed_query();
   query.set_reason(request_reason);
@@ -153,9 +161,10 @@ feedwire::Request CreateFeedQueryRequest(
           feedwire::FeedQuery::ContentOrder::FeedQuery_ContentOrder_RECENT);
       break;
     case ContentOrder::kGrouped:
-    default:
       query.set_order_by(
           feedwire::FeedQuery::ContentOrder::FeedQuery_ContentOrder_GROUPED);
+      break;
+    case ContentOrder::kUnspecified:
       break;
   }
 
@@ -258,6 +267,8 @@ feedwire::ClientInfo CreateClientInfo(const RequestMetadata& request_metadata) {
         request_metadata.session_id);
   }
 
+  client_info.mutable_chrome_client_info()->set_start_surface(
+      request_metadata.chrome_info.start_surface);
   return client_info;
 }
 

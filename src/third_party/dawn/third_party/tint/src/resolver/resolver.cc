@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
+#include <limits>
 #include <utility>
 
 #include "src/ast/alias.h"
@@ -72,6 +73,7 @@
 #include "src/utils/defer.h"
 #include "src/utils/get_or_create.h"
 #include "src/utils/math.h"
+#include "src/utils/reverse.h"
 #include "src/utils/scoped_assignment.h"
 
 namespace tint {
@@ -520,15 +522,16 @@ Resolver::VariableInfo* Resolver::Variable(ast::Variable* var,
   }
 
   auto storage_class = var->declared_storage_class();
-  if (storage_class == ast::StorageClass::kNone) {
-    if (storage_type->UnwrapRef()->is_handle()) {
+  if (storage_class == ast::StorageClass::kNone && !var->is_const()) {
+    // No declared storage class. Infer from usage / type.
+    if (kind == VariableKind::kLocal) {
+      storage_class = ast::StorageClass::kFunction;
+    } else if (storage_type->UnwrapRef()->is_handle()) {
       // https://gpuweb.github.io/gpuweb/wgsl/#module-scope-variables
       // If the store type is a texture type or a sampler type, then the
       // variable declaration must not have a storage class decoration. The
       // storage class will always be handle.
       storage_class = ast::StorageClass::kUniformConstant;
-    } else if (kind == VariableKind::kLocal && !var->is_const()) {
-      storage_class = ast::StorageClass::kFunction;
     }
   }
 
@@ -545,8 +548,9 @@ Resolver::VariableInfo* Resolver::Variable(ast::Variable* var,
         builder_->create<sem::Reference>(storage_type, storage_class, access);
   }
 
-  if (rhs_type && !ValidateVariableConstructor(var, storage_type, type_name,
-                                               rhs_type, rhs_type_name)) {
+  if (rhs_type &&
+      !ValidateVariableConstructor(var, storage_class, storage_type, type_name,
+                                   rhs_type, rhs_type_name)) {
     return nullptr;
   }
 
@@ -573,6 +577,7 @@ ast::Access Resolver::DefaultAccessForStorageClass(
 }
 
 bool Resolver::ValidateVariableConstructor(const ast::Variable* var,
+                                           ast::StorageClass storage_class,
                                            const sem::Type* storage_type,
                                            const std::string& type_name,
                                            const sem::Type* rhs_type,
@@ -587,6 +592,26 @@ bool Resolver::ValidateVariableConstructor(const ast::Variable* var,
              var->source());
     return false;
   }
+
+  if (!var->is_const()) {
+    switch (storage_class) {
+      case ast::StorageClass::kPrivate:
+      case ast::StorageClass::kFunction:
+        break;  // Allowed an initializer
+      default:
+        // https://gpuweb.github.io/gpuweb/wgsl/#var-and-let
+        // Optionally has an initializer expression, if the variable is in the
+        // private or function storage classes.
+        AddError("var of storage class '" +
+                     std::string(ast::str(storage_class)) +
+                     "' cannot have an initializer. var initializers are only "
+                     "supported for the storage classes "
+                     "'private' and 'function'",
+                 var->source());
+        return false;
+    }
+  }
+
   return true;
 }
 
@@ -1696,11 +1721,18 @@ bool Resolver::Function(ast::Function* func) {
 
   variable_stack_.push_scope();
   uint32_t parameter_index = 0;
+  std::unordered_map<Symbol, Source> parameter_names;
   for (auto* param : func->params()) {
     Mark(param);
 
-    if (!ValidateNoDuplicateDefinition(param->symbol(), param->source())) {
-      return false;
+    {  // Check the parameter name is unique for the function
+      auto emplaced = parameter_names.emplace(param->symbol(), param->source());
+      if (!emplaced.second) {
+        auto name = builder_->Symbols().NameFor(param->symbol());
+        AddError("redefinition of parameter '" + name + "'", param->source());
+        AddNote("previous definition is here", emplaced.first->second);
+        return false;
+      }
     }
 
     auto* param_info =
@@ -1836,10 +1868,10 @@ bool Resolver::Function(ast::Function* func) {
       }
 
       constexpr const char* kErrBadType =
-          "workgroup_size parameter must be either literal or module-scope "
+          "workgroup_size argument must be either literal or module-scope "
           "constant of type i32 or u32";
       constexpr const char* kErrInconsistentType =
-          "workgroup_size parameters must be of the same type, either i32 "
+          "workgroup_size arguments must be of the same type, either i32 "
           "or u32";
 
       auto* ty = TypeOf(expr);
@@ -1878,6 +1910,12 @@ bool Resolver::Function(ast::Function* func) {
           info->workgroup_size[i].value = 0;
           continue;
         }
+      } else if (!expr->Is<ast::ScalarConstructorExpression>()) {
+        AddError(
+            "workgroup_size argument must be either a literal or a "
+            "module-scope constant",
+            values[i]->source());
+        return false;
       }
 
       auto val = ConstantValueOf(expr);
@@ -1888,7 +1926,7 @@ bool Resolver::Function(ast::Function* func) {
       }
       // Validate and set the default value for this dimension.
       if (is_i32 ? val.Elements()[0].i32 < 1 : val.Elements()[0].u32 < 1) {
-        AddError("workgroup_size parameter must be at least 1",
+        AddError("workgroup_size argument must be at least 1",
                  values[i]->source());
         return false;
       }
@@ -1927,15 +1965,23 @@ bool Resolver::Statements(const ast::StatementList& stmts) {
 }
 
 bool Resolver::ValidateStatements(const ast::StatementList& stmts) {
-  auto next_stmt = stmts.begin();
+  bool unreachable = false;
   for (auto* stmt : stmts) {
-    next_stmt++;
-    if (stmt->IsAnyOf<ast::ReturnStatement, ast::BreakStatement,
-                      ast::ContinueStatement>()) {
-      if (stmt != stmts.back()) {
-        AddError("code is unreachable", (*next_stmt)->source());
-        return false;
+    if (unreachable) {
+      AddError("code is unreachable", stmt->source());
+      return false;
+    }
+
+    auto* nested_stmt = stmt;
+    while (auto* block = nested_stmt->As<ast::BlockStatement>()) {
+      if (block->empty()) {
+        break;
       }
+      nested_stmt = block->statements().back();
+    }
+    if (nested_stmt->IsAnyOf<ast::ReturnStatement, ast::BreakStatement,
+                             ast::ContinueStatement, ast::DiscardStatement>()) {
+      unreachable = true;
     }
   }
   return true;
@@ -2208,60 +2254,94 @@ bool Resolver::ForLoopStatement(ast::ForLoopStatement* stmt) {
   });
 }
 
-bool Resolver::Expressions(const ast::ExpressionList& list) {
-  for (auto* expr : list) {
-    Mark(expr);
-    if (!Expression(expr)) {
+bool Resolver::TraverseExpressions(ast::Expression* root,
+                                   std::vector<ast::Expression*>& out) {
+  std::vector<ast::Expression*> to_visit;
+  to_visit.emplace_back(root);
+
+  auto add = [&](ast::Expression* e) {
+    Mark(e);
+    to_visit.emplace_back(e);
+  };
+
+  while (!to_visit.empty()) {
+    auto* expr = to_visit.back();
+    to_visit.pop_back();
+
+    out.emplace_back(expr);
+
+    if (auto* array = expr->As<ast::ArrayAccessorExpression>()) {
+      add(array->array());
+      add(array->idx_expr());
+    } else if (auto* bin_op = expr->As<ast::BinaryExpression>()) {
+      add(bin_op->lhs());
+      add(bin_op->rhs());
+    } else if (auto* bitcast = expr->As<ast::BitcastExpression>()) {
+      add(bitcast->expr());
+    } else if (auto* call = expr->As<ast::CallExpression>()) {
+      for (auto* arg : call->params()) {
+        add(arg);
+      }
+    } else if (auto* type_ctor = expr->As<ast::TypeConstructorExpression>()) {
+      for (auto* value : type_ctor->values()) {
+        add(value);
+      }
+    } else if (auto* member = expr->As<ast::MemberAccessorExpression>()) {
+      add(member->structure());
+    } else if (auto* unary = expr->As<ast::UnaryOpExpression>()) {
+      add(unary->expr());
+    } else if (expr->IsAnyOf<ast::ScalarConstructorExpression,
+                             ast::IdentifierExpression>()) {
+      // Leaf expression
+    } else {
+      TINT_ICE(Resolver, diagnostics_)
+          << "unhandled expression type: " << expr->TypeInfo().name;
       return false;
     }
   }
+
   return true;
 }
 
-bool Resolver::Expression(ast::Expression* expr) {
-  if (TypeOf(expr)) {
-    return true;  // Already resolved
-  }
-
-  bool ok = false;
-  if (auto* array = expr->As<ast::ArrayAccessorExpression>()) {
-    ok = ArrayAccessor(array);
-  } else if (auto* bin_op = expr->As<ast::BinaryExpression>()) {
-    ok = Binary(bin_op);
-  } else if (auto* bitcast = expr->As<ast::BitcastExpression>()) {
-    ok = Bitcast(bitcast);
-  } else if (auto* call = expr->As<ast::CallExpression>()) {
-    ok = Call(call);
-  } else if (auto* ctor = expr->As<ast::ConstructorExpression>()) {
-    ok = Constructor(ctor);
-  } else if (auto* ident = expr->As<ast::IdentifierExpression>()) {
-    ok = Identifier(ident);
-  } else if (auto* member = expr->As<ast::MemberAccessorExpression>()) {
-    ok = MemberAccessor(member);
-  } else if (auto* unary = expr->As<ast::UnaryOpExpression>()) {
-    ok = UnaryOp(unary);
-  } else {
-    AddError("unknown expression for type determination", expr->source());
-  }
-
-  if (!ok) {
+bool Resolver::Expression(ast::Expression* root) {
+  std::vector<ast::Expression*> sorted;
+  if (!TraverseExpressions(root, sorted)) {
     return false;
+  }
+
+  for (auto* expr : utils::Reverse(sorted)) {
+    bool ok = false;
+    if (auto* array = expr->As<ast::ArrayAccessorExpression>()) {
+      ok = ArrayAccessor(array);
+    } else if (auto* bin_op = expr->As<ast::BinaryExpression>()) {
+      ok = Binary(bin_op);
+    } else if (auto* bitcast = expr->As<ast::BitcastExpression>()) {
+      ok = Bitcast(bitcast);
+    } else if (auto* call = expr->As<ast::CallExpression>()) {
+      ok = Call(call);
+    } else if (auto* ctor = expr->As<ast::ConstructorExpression>()) {
+      ok = Constructor(ctor);
+    } else if (auto* ident = expr->As<ast::IdentifierExpression>()) {
+      ok = Identifier(ident);
+    } else if (auto* member = expr->As<ast::MemberAccessorExpression>()) {
+      ok = MemberAccessor(member);
+    } else if (auto* unary = expr->As<ast::UnaryOpExpression>()) {
+      ok = UnaryOp(unary);
+    } else {
+      TINT_ICE(Resolver, diagnostics_)
+          << "unhandled expression type: " << expr->TypeInfo().name;
+      return false;
+    }
+    if (!ok) {
+      return false;
+    }
   }
 
   return true;
 }
 
 bool Resolver::ArrayAccessor(ast::ArrayAccessorExpression* expr) {
-  Mark(expr->array());
-  if (!Expression(expr->array())) {
-    return false;
-  }
   auto* idx = expr->idx_expr();
-  Mark(idx);
-  if (!Expression(idx)) {
-    return false;
-  }
-
   auto* res = TypeOf(expr->array());
   auto* parent_type = res->UnwrapRef();
   const sem::Type* ret = nullptr;
@@ -2309,10 +2389,6 @@ bool Resolver::ArrayAccessor(ast::ArrayAccessorExpression* expr) {
 }
 
 bool Resolver::Bitcast(ast::BitcastExpression* expr) {
-  Mark(expr->expr());
-  if (!Expression(expr->expr())) {
-    return false;
-  }
   auto* ty = Type(expr->type());
   if (!ty) {
     return false;
@@ -2326,10 +2402,6 @@ bool Resolver::Bitcast(ast::BitcastExpression* expr) {
 }
 
 bool Resolver::Call(ast::CallExpression* call) {
-  if (!Expressions(call->params())) {
-    return false;
-  }
-
   Mark(call->func());
   auto* ident = call->func();
   auto name = builder_->Symbols().NameFor(ident->symbol());
@@ -2523,22 +2595,30 @@ bool Resolver::FunctionCall(const ast::CallExpression* call) {
 }
 
 bool Resolver::ValidateFunctionCall(const ast::CallExpression* call,
-                                    const FunctionInfo* callee_func) {
+                                    const FunctionInfo* target) {
   auto* ident = call->func();
   auto name = builder_->Symbols().NameFor(ident->symbol());
 
-  if (call->params().size() != callee_func->parameters.size()) {
-    bool more = call->params().size() > callee_func->parameters.size();
+  if (target->declaration->IsEntryPoint()) {
+    // https://www.w3.org/TR/WGSL/#function-restriction
+    // An entry point must never be the target of a function call.
+    AddError("entry point functions cannot be the target of a function call",
+             call->source());
+    return false;
+  }
+
+  if (call->params().size() != target->parameters.size()) {
+    bool more = call->params().size() > target->parameters.size();
     AddError("too " + (more ? std::string("many") : std::string("few")) +
                  " arguments in call to '" + name + "', expected " +
-                 std::to_string(callee_func->parameters.size()) + ", got " +
+                 std::to_string(target->parameters.size()) + ", got " +
                  std::to_string(call->params().size()),
              call->source());
     return false;
   }
 
   for (size_t i = 0; i < call->params().size(); ++i) {
-    const VariableInfo* param = callee_func->parameters[i];
+    const VariableInfo* param = target->parameters[i];
     const ast::Expression* arg_expr = call->params()[i];
     auto* arg_type = TypeOf(arg_expr)->UnwrapRef();
 
@@ -2597,13 +2677,6 @@ bool Resolver::ValidateFunctionCall(const ast::CallExpression* call,
 
 bool Resolver::Constructor(ast::ConstructorExpression* expr) {
   if (auto* type_ctor = expr->As<ast::TypeConstructorExpression>()) {
-    for (auto* value : type_ctor->values()) {
-      Mark(value);
-      if (!Expression(value)) {
-        return false;
-      }
-    }
-
     auto* type = Type(type_ctor->type());
     if (!type) {
       return false;
@@ -2950,11 +3023,6 @@ bool Resolver::Identifier(ast::IdentifierExpression* expr) {
 }
 
 bool Resolver::MemberAccessor(ast::MemberAccessorExpression* expr) {
-  Mark(expr->structure());
-  if (!Expression(expr->structure())) {
-    return false;
-  }
-
   auto* structure = TypeOf(expr->structure());
   auto* storage_type = structure->UnwrapRef();
 
@@ -3074,13 +3142,6 @@ bool Resolver::MemberAccessor(ast::MemberAccessorExpression* expr) {
 }
 
 bool Resolver::Binary(ast::BinaryExpression* expr) {
-  Mark(expr->lhs());
-  Mark(expr->rhs());
-
-  if (!Expression(expr->lhs()) || !Expression(expr->rhs())) {
-    return false;
-  }
-
   using Bool = sem::Bool;
   using F32 = sem::F32;
   using I32 = sem::I32;
@@ -3286,13 +3347,6 @@ bool Resolver::Binary(ast::BinaryExpression* expr) {
 }
 
 bool Resolver::UnaryOp(ast::UnaryOpExpression* unary) {
-  Mark(unary->expr());
-
-  // Resolve the inner expression
-  if (!Expression(unary->expr())) {
-    return false;
-  }
-
   auto* expr_type = TypeOf(unary->expr());
   if (!expr_type) {
     return false;
@@ -3387,8 +3441,11 @@ bool Resolver::VariableDeclStatement(const ast::VariableDeclStatement* stmt) {
   }
 
   for (auto* deco : var->decorations()) {
-    // TODO(bclayton): Validate decorations
     Mark(deco);
+    if (!deco->Is<ast::InternalDecoration>()) {
+      AddError("decorations are not valid on local variables", deco->source());
+      return false;
+    }
   }
 
   variable_stack_.set(var->symbol(), info);
@@ -3817,15 +3874,87 @@ sem::Array* Resolver::Array(const ast::Array* arr) {
   }
 
   // Calculate implicit stride
-  auto implicit_stride = utils::RoundUp(el_align, el_size);
+  uint64_t implicit_stride = utils::RoundUp<uint64_t>(el_align, el_size);
 
-  auto stride = explicit_stride ? explicit_stride : implicit_stride;
+  uint64_t stride = explicit_stride ? explicit_stride : implicit_stride;
 
-  // WebGPU requires runtime arrays have at least one element, but the AST
-  // records an element count of 0 for it.
-  auto size = std::max<uint32_t>(arr->size(), 1) * stride;
-  auto* out = builder_->create<sem::Array>(elem_type, arr->size(), el_align,
-                                           size, stride, implicit_stride);
+  // Evaluate the constant array size expression.
+  // sem::Array uses a size of 0 for a runtime-sized array.
+  uint32_t count = 0;
+  if (auto* count_expr = arr->Size()) {
+    Mark(count_expr);
+    if (!Expression(count_expr)) {
+      return nullptr;
+    }
+
+    auto size_source = count_expr->source();
+
+    auto* ty = TypeOf(count_expr)->UnwrapRef();
+    if (!ty->is_integer_scalar()) {
+      AddError("array size must be integer scalar", size_source);
+      return nullptr;
+    }
+
+    if (auto* ident = count_expr->As<ast::IdentifierExpression>()) {
+      // Make sure the identifier is a non-overridable module-scope constant.
+      VariableInfo* var = nullptr;
+      bool is_global = false;
+      if (!variable_stack_.get(ident->symbol(), &var, &is_global) ||
+          !is_global || !var->declaration->is_const()) {
+        AddError("array size identifier must be a module-scope constant",
+                 size_source);
+        return nullptr;
+      }
+      if (ast::HasDecoration<ast::OverrideDecoration>(
+              var->declaration->decorations())) {
+        AddError("array size expression must not be pipeline-overridable",
+                 size_source);
+        return nullptr;
+      }
+
+      count_expr = var->declaration->constructor();
+    } else if (!count_expr->Is<ast::ScalarConstructorExpression>()) {
+      AddError(
+          "array size expression must be either a literal or a module-scope "
+          "constant",
+          size_source);
+      return nullptr;
+    }
+
+    auto count_val = ConstantValueOf(count_expr);
+    if (!count_val) {
+      TINT_ICE(Resolver, diagnostics_)
+          << "could not resolve array size expression";
+      return nullptr;
+    }
+
+    if (ty->is_signed_integer_scalar() ? count_val.Elements()[0].i32 < 1
+                                       : count_val.Elements()[0].u32 < 1u) {
+      AddError("array size must be at least 1", size_source);
+      return nullptr;
+    }
+
+    count = count_val.Elements()[0].u32;
+  }
+
+  auto size = std::max<uint64_t>(count, 1) * stride;
+  if (size > std::numeric_limits<uint32_t>::max()) {
+    std::stringstream msg;
+    msg << "array size in bytes must not exceed 0x" << std::hex
+        << std::numeric_limits<uint32_t>::max() << ", but is 0x" << std::hex
+        << size;
+    AddError(msg.str(), arr->source());
+    return nullptr;
+  }
+  if (stride > std::numeric_limits<uint32_t>::max() ||
+      implicit_stride > std::numeric_limits<uint32_t>::max()) {
+    TINT_ICE(Resolver, diagnostics_)
+        << "calculated array stride exceeds uint32";
+    return nullptr;
+  }
+  auto* out = builder_->create<sem::Array>(
+      elem_type, count, el_align, static_cast<uint32_t>(size),
+      static_cast<uint32_t>(stride), static_cast<uint32_t>(implicit_stride));
 
   if (!ValidateArray(out, source)) {
     return nullptr;
@@ -4044,8 +4173,8 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
   // Validation of storage-class rules requires analysing the actual variable
   // usage of the structure, and so is performed as part of the variable
   // validation.
-  uint32_t struct_size = 0;
-  uint32_t struct_align = 1;
+  uint64_t struct_size = 0;
+  uint64_t struct_align = 1;
   std::unordered_map<Symbol, ast::StructMember*> member_map;
 
   for (auto* member : str->members()) {
@@ -4073,9 +4202,9 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
       return nullptr;
     }
 
-    uint32_t offset = struct_size;
-    uint32_t align = type->Align();
-    uint32_t size = type->Size();
+    uint64_t offset = struct_size;
+    uint64_t align = type->Align();
+    uint64_t size = type->Size();
 
     if (!ValidateNoDuplicateDecorations(member->decorations())) {
       return nullptr;
@@ -4124,6 +4253,14 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
     }
 
     offset = utils::RoundUp(align, offset);
+    if (offset > std::numeric_limits<uint32_t>::max()) {
+      std::stringstream msg;
+      msg << "struct member has byte offset 0x" << std::hex << offset
+          << ", but must not exceed 0x" << std::hex
+          << std::numeric_limits<uint32_t>::max();
+      AddError(msg.str(), member->source());
+      return nullptr;
+    }
 
     auto* sem_member = builder_->create<sem::StructMember>(
         member, member->symbol(), const_cast<sem::Type*>(type),
@@ -4135,12 +4272,27 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
     struct_align = std::max(struct_align, align);
   }
 
-  auto size_no_padding = struct_size;
+  uint64_t size_no_padding = struct_size;
   struct_size = utils::RoundUp(struct_align, struct_size);
 
-  auto* out =
-      builder_->create<sem::Struct>(str, str->name(), sem_members, struct_align,
-                                    struct_size, size_no_padding);
+  if (struct_size > std::numeric_limits<uint32_t>::max()) {
+    std::stringstream msg;
+    msg << "struct size in bytes must not exceed 0x" << std::hex
+        << std::numeric_limits<uint32_t>::max() << ", but is 0x" << std::hex
+        << struct_size;
+    AddError(msg.str(), str->source());
+    return nullptr;
+  }
+  if (struct_align > std::numeric_limits<uint32_t>::max()) {
+    TINT_ICE(Resolver, diagnostics_)
+        << "calculated struct stride exceeds uint32";
+    return nullptr;
+  }
+
+  auto* out = builder_->create<sem::Struct>(
+      str, str->name(), sem_members, static_cast<uint32_t>(struct_align),
+      static_cast<uint32_t>(struct_size),
+      static_cast<uint32_t>(size_no_padding));
 
   for (size_t i = 0; i < sem_members.size(); i++) {
     auto* mem_type = sem_members[i]->Type();

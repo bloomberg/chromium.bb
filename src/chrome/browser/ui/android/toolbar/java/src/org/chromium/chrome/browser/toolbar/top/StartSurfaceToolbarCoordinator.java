@@ -96,11 +96,11 @@ public class StartSurfaceToolbarCoordinator {
                 menuButtonCoordinator, identityDiscStateSupplier, identityDiscButtonSupplier,
                 homepageEnabledSupplier, startSurfaceAsHomepageSupplier,
                 homepageManagedByPolicySupplier, homeButtonOnClickHandler,
-                StartSurfaceConfiguration.shouldShowNewSurfaceFromHomeButton(),
+                StartSurfaceConfiguration.TAB_COUNT_BUTTON_ON_START_SURFACE.getValue(),
                 isTabGroupsAndroidContinuationEnabled, userEducationHelper,
                 isIncognitoModeEnabledSupplier,
                 StartSurfaceConfiguration.shouldShowAnimationsForFinale()
-                        && !DeviceClassManager.enableAccessibilityLayout());
+                        && !DeviceClassManager.enableAccessibilityLayout(mStub.getContext()));
 
         mThemeColorProvider = provider;
         mMenuButtonCoordinator = menuButtonCoordinator;
@@ -266,7 +266,7 @@ public class StartSurfaceToolbarCoordinator {
 
         mToolbarMediator.setHomeButtonView(mView.findViewById(R.id.home_button_on_tab_switcher));
 
-        if (StartSurfaceConfiguration.shouldShowNewSurfaceFromHomeButton()) {
+        if (StartSurfaceConfiguration.TAB_COUNT_BUTTON_ON_START_SURFACE.getValue()) {
             mTabSwitcherButtonView = mView.findViewById(R.id.start_tab_switcher_button);
             if (mTabSwitcherLongClickListener != null) {
                 mTabSwitcherButtonView.setOnLongClickListener(mTabSwitcherLongClickListener);

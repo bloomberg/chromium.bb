@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -464,7 +465,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void ScheduleDispatchEvent(Event*);
   void ScheduleDispatchEvent(Event*, BoolFunction);
   void DispatchScheduledEvents();
-  MediaStreamTrack* GetTrack(MediaStreamComponent*) const;
+  MediaStreamTrack* GetTrackForTesting(MediaStreamComponent*) const;
   RTCRtpSender* FindSenderForTrackAndStream(MediaStreamTrack*, MediaStream*);
   HeapVector<Member<RTCRtpSender>>::iterator FindSender(
       const RTCRtpSenderPlatform& web_sender);

@@ -11,6 +11,9 @@
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -29,51 +32,54 @@ namespace ash {
 
 ScanningHandler::ScanningHandler(
     std::unique_ptr<ScanningAppDelegate> scanning_app_delegate)
-    : scanning_app_delegate_(std::move(scanning_app_delegate)) {}
+    : scanning_app_delegate_(std::move(scanning_app_delegate)),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
 ScanningHandler::~ScanningHandler() = default;
 
 void ScanningHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "initialize", base::BindRepeating(&ScanningHandler::HandleInitialize,
                                         base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "requestScanToLocation",
       base::BindRepeating(&ScanningHandler::HandleRequestScanToLocation,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "showFileInLocation",
       base::BindRepeating(&ScanningHandler::HandleShowFileInLocation,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPluralString",
       base::BindRepeating(&ScanningHandler::HandleGetPluralString,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getMyFilesPath",
       base::BindRepeating(&ScanningHandler::HandleGetMyFilesPath,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "openFilesInMediaApp",
       base::BindRepeating(&ScanningHandler::HandleOpenFilesInMediaApp,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "saveScanSettings",
       base::BindRepeating(&ScanningHandler::HandleSaveScanSettings,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getScanSettings",
       base::BindRepeating(&ScanningHandler::HandleGetScanSettings,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "ensureValidFilePath",
       base::BindRepeating(&ScanningHandler::HandleEnsureValidFilePath,
                           base::Unretained(this)));
@@ -127,7 +133,7 @@ void ScanningHandler::HandleOpenFilesInMediaApp(const base::ListValue* args) {
   if (!base::FeatureList::IsEnabled(chromeos::features::kScanAppMediaLink))
     return;
 
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   DCHECK(args->GetList()[0].is_list());
   const base::Value::ConstListView& value_list = args->GetList()[0].GetList();
   DCHECK(!value_list.empty());
@@ -141,7 +147,7 @@ void ScanningHandler::HandleOpenFilesInMediaApp(const base::ListValue* args) {
 }
 
 void ScanningHandler::HandleRequestScanToLocation(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   scan_location_callback_id_ = args->GetList()[0].GetString();
 
   content::WebContents* web_contents = web_ui()->GetWebContents();
@@ -163,7 +169,7 @@ void ScanningHandler::HandleShowFileInLocation(const base::ListValue* args) {
   if (!IsJavascriptAllowed())
     return;
 
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   const std::string callback = args->GetList()[0].GetString();
   const base::FilePath file_location(args->GetList()[1].GetString());
   const bool files_app_opened =
@@ -176,7 +182,7 @@ void ScanningHandler::HandleGetPluralString(const base::ListValue* args) {
   if (!IsJavascriptAllowed())
     return;
 
-  CHECK_EQ(3U, args->GetSize());
+  CHECK_EQ(3U, args->GetList().size());
   const std::string callback = args->GetList()[0].GetString();
   const std::string name = args->GetList()[1].GetString();
   const int count = args->GetList()[2].GetInt();
@@ -191,7 +197,7 @@ void ScanningHandler::HandleGetMyFilesPath(const base::ListValue* args) {
   if (!IsJavascriptAllowed())
     return;
 
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const std::string& callback = args->GetList()[0].GetString();
 
   const base::FilePath my_files_path = scanning_app_delegate_->GetMyFilesPath();
@@ -204,7 +210,7 @@ void ScanningHandler::HandleSaveScanSettings(const base::ListValue* args) {
   if (!IsJavascriptAllowed())
     return;
 
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const std::string& scan_settings = args->GetList()[0].GetString();
   scanning_app_delegate_->SaveScanSettingsToPrefs(scan_settings);
 }
@@ -214,7 +220,7 @@ void ScanningHandler::HandleGetScanSettings(const base::ListValue* args) {
   if (!IsJavascriptAllowed())
     return;
 
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const std::string& callback = args->GetList()[0].GetString();
 
   ResolveJavascriptCallback(
@@ -226,17 +232,26 @@ void ScanningHandler::HandleEnsureValidFilePath(const base::ListValue* args) {
   if (!IsJavascriptAllowed())
     return;
 
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   const std::string callback = args->GetList()[0].GetString();
   const base::FilePath file_path(args->GetList()[1].GetString());
 
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&base::PathExists, file_path),
+      base::BindOnce(&ScanningHandler::OnPathExists, base::Unretained(this),
+                     file_path, callback));
+}
+
+void ScanningHandler::OnPathExists(const base::FilePath& file_path,
+                                   const std::string& callback,
+                                   bool file_path_exists) {
   // When |file_path| is not valid, return a dictionary with an empty file path.
-  const bool filePathValid =
-      scanning_app_delegate_->IsFilePathSupported(file_path) &&
-      base::PathExists(file_path);
+  const bool file_path_valid =
+      file_path_exists &&
+      scanning_app_delegate_->IsFilePathSupported(file_path);
   ResolveJavascriptCallback(
       base::Value(callback),
-      CreateSelectedPathValue(filePathValid ? file_path : base::FilePath()));
+      CreateSelectedPathValue(file_path_valid ? file_path : base::FilePath()));
 }
 
 }  // namespace ash

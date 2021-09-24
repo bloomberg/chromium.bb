@@ -25,7 +25,7 @@
 #include "perfetto/ext/base/string_utils.h"
 #include "src/trace_processor/dynamic/ancestor_generator.h"
 #include "src/trace_processor/dynamic/connected_flow_generator.h"
-#include "src/trace_processor/dynamic/descendant_slice_generator.h"
+#include "src/trace_processor/dynamic/descendant_generator.h"
 #include "src/trace_processor/dynamic/describe_slice_generator.h"
 #include "src/trace_processor/dynamic/experimental_annotated_stack_generator.h"
 #include "src/trace_processor/dynamic/experimental_counter_dur_generator.h"
@@ -634,14 +634,38 @@ void CreateUnwrapMetricProtoFunction(sqlite3* db) {
   }
 }
 
+std::vector<std::string> SanitizeMetricMountPaths(
+    const std::vector<std::string>& mount_paths) {
+  std::vector<std::string> sanitized;
+  for (const auto& path : mount_paths) {
+    if (path.length() == 0)
+      continue;
+    sanitized.push_back(path);
+    if (path.back() != '/')
+      sanitized.back().append("/");
+  }
+  return sanitized;
+}
+
 void SetupMetrics(TraceProcessor* tp,
                   sqlite3* db,
-                  std::vector<metrics::SqlMetricFile>* sql_metrics) {
-  tp->ExtendMetricsProto(kMetricsDescriptor.data(), kMetricsDescriptor.size());
+                  std::vector<metrics::SqlMetricFile>* sql_metrics,
+                  const std::vector<std::string>& extension_paths) {
+  const std::vector<std::string> sanitized_extension_paths =
+      SanitizeMetricMountPaths(extension_paths);
+  std::vector<std::string> skip_prefixes;
+  skip_prefixes.reserve(sanitized_extension_paths.size());
+  for (const auto& path : sanitized_extension_paths) {
+    skip_prefixes.push_back(kMetricProtoRoot + path);
+  }
+  tp->ExtendMetricsProto(kMetricsDescriptor.data(), kMetricsDescriptor.size(),
+                         skip_prefixes);
   tp->ExtendMetricsProto(kAllChromeMetricsDescriptor.data(),
-                         kAllChromeMetricsDescriptor.size());
+                         kAllChromeMetricsDescriptor.size(), skip_prefixes);
 
   for (const auto& file_to_sql : metrics::sql_metrics::kFileToSql) {
+    if (base::StartsWithAny(file_to_sql.path, sanitized_extension_paths))
+      continue;
     tp->RegisterMetric(file_to_sql.path, file_to_sql.sql);
   }
 
@@ -731,7 +755,7 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
   CreateValueAtMaxTsFunction(db);
   CreateUnwrapMetricProtoFunction(db);
 
-  SetupMetrics(this, *db_, &sql_metrics_);
+  SetupMetrics(this, *db_, &sql_metrics_, cfg.skip_builtin_metric_paths);
 
   // Setup the query cache.
   query_cache_.reset(new QueryCache());
@@ -763,8 +787,14 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
       new AncestorGenerator(AncestorGenerator::Ancestor::kSlice, &context_)));
   RegisterDynamicTable(std::unique_ptr<AncestorGenerator>(new AncestorGenerator(
       AncestorGenerator::Ancestor::kStackProfileCallsite, &context_)));
-  RegisterDynamicTable(std::unique_ptr<DescendantSliceGenerator>(
-      new DescendantSliceGenerator(&context_)));
+  RegisterDynamicTable(std::unique_ptr<AncestorGenerator>(new AncestorGenerator(
+      AncestorGenerator::Ancestor::kSliceByStack, &context_)));
+  RegisterDynamicTable(
+      std::unique_ptr<DescendantGenerator>(new DescendantGenerator(
+          DescendantGenerator::Descendant::kSlice, &context_)));
+  RegisterDynamicTable(
+      std::unique_ptr<DescendantGenerator>(new DescendantGenerator(
+          DescendantGenerator::Descendant::kSliceByStack, &context_)));
   RegisterDynamicTable(
       std::unique_ptr<ConnectedFlowGenerator>(new ConnectedFlowGenerator(
           ConnectedFlowGenerator::Mode::kDirectlyConnectedFlow, &context_)));
@@ -1012,7 +1042,15 @@ util::Status TraceProcessorImpl::RegisterMetric(const std::string& path,
 
 util::Status TraceProcessorImpl::ExtendMetricsProto(const uint8_t* data,
                                                     size_t size) {
-  util::Status status = pool_.AddFromFileDescriptorSet(data, size);
+  return ExtendMetricsProto(data, size, /*skip_prefixes*/ {});
+}
+
+util::Status TraceProcessorImpl::ExtendMetricsProto(
+    const uint8_t* data,
+    size_t size,
+    const std::vector<std::string>& skip_prefixes) {
+  util::Status status =
+      pool_.AddFromFileDescriptorSet(data, size, skip_prefixes);
   if (!status.ok())
     return status;
 

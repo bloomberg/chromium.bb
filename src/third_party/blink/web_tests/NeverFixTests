@@ -1096,6 +1096,7 @@ external/wpt/FileAPI/FileReader/test_notreadableerrors-manual.html [ Skip ]
 external/wpt/FileAPI/FileReader/test_securityerrors-manual.html [ Skip ]
 external/wpt/FileAPI/url/url_createobjecturl_file_img-manual.html [ Skip ]
 external/wpt/accelerometer/LinearAccelerationSensor-shake-threshold-manual.https.html [ Skip ]
+external/wpt/appmanifest/file_handlers-member/file_handlers-member-manual.html [ Skip ]
 external/wpt/appmanifest/shortcuts-member/shortcuts-member-manual.html [ Skip ]
 external/wpt/appmanifest/shortcuts-member/shortcuts-member-skip-for-empty-name-manual.html [ Skip ]
 external/wpt/appmanifest/shortcuts-member/shortcuts-member-skip-for-invalid-url-manual.html [ Skip ]
@@ -1183,6 +1184,7 @@ external/wpt/css/css-animations/animation-timing-function-010-manual.html [ Skip
 external/wpt/css/css-animations/animation-timing-function-011-manual.html [ Skip ]
 external/wpt/css/css-animations/animation-timing-function-012-manual.html [ Skip ]
 external/wpt/css/css-animations/animationstart-and-animationend-events-manual.html [ Skip ]
+external/wpt/css/css-counter-styles/counter-style-speak-as-manual.html [ Skip ]
 external/wpt/css/css-transitions/transition-delay-000-manual.html [ Skip ]
 external/wpt/css/css-transitions/transition-delay-002-manual.html [ Skip ]
 external/wpt/css/css-transitions/transition-delay-003-manual.html [ Skip ]
@@ -1537,6 +1539,77 @@ external/wpt/xhr/send-authentication-existing-session-manual.htm [ Skip ]
 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Skip ]
 external/wpt/virtual-keyboard/virtual-keyboard-show-hide-manual.html [ Skip ]
 external/wpt/virtual-keyboard/virtual-keyboard-css-env-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/fieldset-div-display-contents-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/role-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/shadow-dom-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/legend-float-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/baseline-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/fieldset-role-presentation-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/legend-child-visibility-hidden-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/flexbox-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/fieldset-display-none-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/fieldset-visibility-collapse-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/grid-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/aria-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/legend-display-contents-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/legend-abspos-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/legend-role-group-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/title-attribute-and-empty-legend-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/legend-visibility-collapse-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/fieldset-visibility-hidden-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/legend-visibility-hidden-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/fieldset-display-contents-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/fieldset-appearance-none-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/multiple-legends-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/fieldset-role-none-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/legend-child-display-none-manual.html [ Skip ]
+external/wpt/html/semantics/forms/the-fieldset-element/accessibility/legend-display-none-manual.html [ Skip ]
+external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-classic-manual.html [ Skip ]
+external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-module-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/text-combine-upright-digits-001-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/text-combine-upright-all-001-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/text-combine-upright-digits-002-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/text-combine-upright-all-002-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/text-combine-upright-digits-004-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-table-001-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-009-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-table-002-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-012-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-forms-006-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-009-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-015-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-010-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-003-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-table-001-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-forms-001-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-forms-005-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-014-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-002-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-007-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-015-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-003-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-forms-003-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-forms-004-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-001-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-006-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-008-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-forms-004-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-forms-003-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-014-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-forms-002-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-010-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-forms-002-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-012-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-005-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-002-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-forms-001-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-forms-005-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-005-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-007-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vrl-forms-006-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-001-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-008-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/writing-mode-vlr-table-002-manual.html [ Skip ]
 
 # ==== Tests incompatible with the default WPT Origin Isolation start here ==VV
 # The section below lists web tests that are incompatible with the WPT Origin
@@ -1577,6 +1650,7 @@ external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-s
 external/wpt/html/browsers/windows/nested-browsing-contexts/frameElement-siblings.sub.html [ Skip ]
 external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Skip ]
 external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Skip ]
+external/wpt/wasm/serialization/module/share-module-cross-origin-fails.sub.html [ Skip ]
 virtual/not-site-per-process/external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction/* [ Pass ]
 virtual/not-site-per-process/external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Pass ]
@@ -1590,6 +1664,9 @@ virtual/not-site-per-process/external/wpt/html/browsers/the-windowproxy-exotic-o
 virtual/not-site-per-process/external/wpt/html/browsers/windows/nested-browsing-contexts/frameElement-siblings.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/wasm/serialization/module/share-module-cross-origin-fails.sub.html [ Pass ]
+virtual/wasm-module-sharing-enabled-not-site-per-process/external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Pass ]
+virtual/wasm-module-sharing-enabled-not-site-per-process/external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Pass ]
 # -------------------- origin-vs-url in console messages -----------------
 # Process hosting https://foo.example.com should not get any data from
 # https://bar.other-site-example.com.  This includes things like cookies
@@ -1601,16 +1678,6 @@ virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-simil
 # https://foo.example.com/path?token=secret needs to be replaced with just
 # https://foo.example.com).
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Skip ]
-# --------------------------- code cache isolation -----------------------
-# Code cache isolation tests only make sense if either
-# 1) site isolation is disabled or
-#    (covered by virtual/not-site-per-process/.../isolated-code-cache)
-# 2) site isolation is enabled together with --enable-features=IsolatedCodeCache
-#    (covered by virtual/site-isolated-code-cache/.../isolated-code-cache)
-# but don't make sense if
-# 3) site isolation is enabled without also enabling
-#    IsolatedCodeCache (tests disabled by the test expectation below).
-http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Skip ]
 # ----------------------- origin-keyed agent clusters --------------------
 # Origin-keyed agent clusters web platform tests are for the feature at
 # https://html.spec.whatwg.org/#origin-keyed-agent-clusters. It doesn't make
@@ -1660,9 +1727,6 @@ crbug.com/657646 [ Win7 ] virtual/text-antialias/international/lang-glyph-cache-
 crbug.com/657646 [ Win7 ] virtual/text-antialias/font-stretch-variant.html [ Skip ]
 crbug.com/657646 [ Win7 ] virtual/text-antialias/drawBidiText.html [ Skip ]
 crbug.com/657646 [ Win7 ] virtual/text-antialias/font-features/caps-native-synthesis.html [ Skip ]
-
-# We don't plan to support this use-case in the near future.
-crbug.com/940797 external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Skip ]
 
 external/wpt/html/semantics/forms/the-input-element/event-select-manual.html [ Skip ]
 external/wpt/html/editing/dnd/the-datatransferitem-interface/getAsString-manual.html [ Skip ]
@@ -1728,22 +1792,12 @@ crbug.com/1085129 virtual/force-eager/external/wpt/measure-memory/idlharness.win
 crbug.com/1207146 virtual/force-eager/external/wpt/measure-memory/service-worker.https.any.serviceworker.html [ Skip ]
 crbug.com/1207146 virtual/force-eager/external/wpt/measure-memory/shared-worker.https.any.sharedworker.html [ Skip ]
 
-# AppCache tests that need to run only in a virtual test suite
-# But have to live under non-virtual http/ to get http/ behavior
-crbug.com/582750 http/tests/appcache/* [ Skip ]
-virtual/appcache-origin-trial/http/tests/appcache/* [ Pass ]
-
-# AppCache is deprecated, remove these tests once it is removed.
-# These tests all timeout without appcache, so just skip them.
+# AppCache is no longer supported.
+crbug.com/582750 external/wpt/html/browsers/offline/appcache/* [ Skip ]
+crbug.com/940797 external/wpt/signed-exchange/appcache/* [ Skip ]
 crbug.com/582750 external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Skip ]
 crbug.com/582750 external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Skip ]
 crbug.com/582750 external/wpt/storage/estimate-usage-details-application-cache.https.tentative.html [ Skip ]
-crbug.com/582750 http/tests/loading/appcache-delay/appcache-loads-subresource.html [ Skip ]
-crbug.com/582750 http/tests/security/cors-rfc1918/addressspace-document-appcache.https.html [ Skip ]
-crbug.com/582750 http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.https.html [ Skip ]
-
-# These appcache tests fail differently in release and debug, so skip them.
-crbug.com/582750 http/tests/devtools/appcache/* [ Skip ]
 
 # WeakRefs are under development and run in a virtual test suite
 crbug.com/1016767 js/weakrefs/* [ Skip ]
@@ -1753,9 +1807,6 @@ virtual/weakrefs/js/weakrefs/* [ Pass ]
 # virtual test should be run.
 http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Skip ]
 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass ]
-virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass ]
-virtual/not-split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass ]
-virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass ]
 
 # This test run under virtual suites only.
 crbug.com/981970 external/wpt/fetch/http-cache/split-cache.html [ Skip ]
@@ -1904,6 +1955,37 @@ crbug.com/687225 external/wpt/css/css-counter-styles/ethiopic-numeric/* [ Skip ]
 wpt_internal/document-transition/* [ Skip ]
 virtual/document-transition/wpt_internal/document-transition/* [ Pass ]
 
-# Clipboard custom format tests that is still in-progress.
-crbug.com/106449 clipboard/async-clipboard/async-custom-format-write-read.tentative.https.html [ Skip ]
-crbug.com/106449 clipboard/async-clipboard/async-custom-formats-write-read.tentative.https.html [ Skip ]
+# Manual tests in wpt/touch-events
+crbug.com/1247306 external/wpt/touch-events/touch-retargeting-manual.html [ Skip ]
+
+# Tests Linux system font available only in Regular style in Linux set of fonts.
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-weight-system-linux.html [ Skip ]
+crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-weight-system-linux.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-weight-system-linux.html [ Skip ]
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-weight-local-linux.html [ Skip ]
+crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-weight-local-linux.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-weight-local-linux.html [ Skip ]
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-style-system-linux.html [ Skip ]
+crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-style-system-linux.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-system-linux.html [ Skip ]
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-style-local-linux.html [ Skip ]
+crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-style-local-linux.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-local-linux.html [ Skip ]
+
+# Tests Mac system font available only in Regular style in Mac set of fonts.
+crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-weight-system-mac.html [ Skip ]
+crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-weight-system-mac.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-weight-system-mac.html [ Skip ]
+crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-weight-system-mac.html [ Skip ]
+crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-weight-local-mac.html [ Skip ]
+crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-weight-local-mac.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-weight-local-mac.html [ Skip ]
+crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-weight-local-mac.html [ Skip ]
+crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-style-system-mac.html [ Skip ]
+crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-style-system-mac.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-system-mac.html [ Skip ]
+crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-style-system-mac.html [ Skip ]
+crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-style-local-mac.html [ Skip ]
+crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-style-local-mac.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-local-mac.html [ Skip ]
+crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-style-local-mac.html [ Skip ]

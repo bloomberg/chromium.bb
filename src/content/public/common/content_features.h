@@ -36,6 +36,8 @@ CONTENT_EXPORT extern const base::Feature kBlockInsecurePrivateNetworkRequests;
 CONTENT_EXPORT extern const base::Feature
     kBlockInsecurePrivateNetworkRequestsFromPrivate;
 CONTENT_EXPORT extern const base::Feature
+    kBlockInsecurePrivateNetworkRequestsFromUnknown;
+CONTENT_EXPORT extern const base::Feature
     kBlockInsecurePrivateNetworkRequestsDeprecationTrial;
 CONTENT_EXPORT extern const base::Feature
     kBlockInsecurePrivateNetworkRequestsForNavigations;
@@ -55,6 +57,8 @@ CONTENT_EXPORT extern const base::Feature kConsolidatedMovementXY;
 CONTENT_EXPORT extern const base::Feature kCooperativeScheduling;
 CONTENT_EXPORT extern const base::Feature kCrashReporting;
 CONTENT_EXPORT extern const base::Feature kCriticalClientHint;
+CONTENT_EXPORT extern const base::Feature
+    kCrossOriginWebAssemblyModuleSharingEnabled;
 CONTENT_EXPORT extern const base::Feature kDataSaverHoldback;
 CONTENT_EXPORT extern const base::Feature
     kDebugHistoryInterventionNoUserActivation;
@@ -74,7 +78,6 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature
     kExtraSafelistedRequestHeadersForOutOfBlinkCors;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyForClientHints;
-CONTENT_EXPORT extern const base::Feature kFileSystemAccessAccessHandle;
 CONTENT_EXPORT extern const base::Feature kFontSrcLocalMatching;
 #if !defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature
@@ -155,7 +158,6 @@ CONTENT_EXPORT extern const base::Feature
     kRunVideoCaptureServiceInBrowserProcess;
 CONTENT_EXPORT extern const base::Feature kSavePageAsWebBundle;
 CONTENT_EXPORT extern const base::Feature kSecurePaymentConfirmation;
-CONTENT_EXPORT extern const base::Feature kSecurePaymentConfirmationAPIV3;
 CONTENT_EXPORT extern const base::Feature kSecurePaymentConfirmationDebug;
 CONTENT_EXPORT extern const base::Feature
     kSendBeaconThrowForBlobWithNonSimpleType;
@@ -183,9 +185,13 @@ CONTENT_EXPORT extern const base::FeatureParam<base::TimeDelta>
 CONTENT_EXPORT extern const base::Feature kDisableProcessReuse;
 CONTENT_EXPORT extern const base::Feature
     kSkipEarlyCommitPendingForCrashedFrame;
+CONTENT_EXPORT extern const base::Feature kUserMediaCaptureOnFocus;
 CONTENT_EXPORT extern const base::Feature kWebOTP;
 CONTENT_EXPORT extern const base::Feature kWebOTPAssertionFeaturePolicy;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerSubresourceFilter;
+#if defined(OS_ANDROID)
+CONTENT_EXPORT extern const base::Feature kSpareRenderer;
+#endif
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
 CONTENT_EXPORT extern const base::Feature kStopVideoCaptureOnScreenLock;
 CONTENT_EXPORT extern const base::Feature kStorageServiceOutOfProcess;
@@ -237,6 +243,7 @@ CONTENT_EXPORT extern const base::Feature kWebAssemblySimd;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyTiering;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyTrapHandler;
 CONTENT_EXPORT extern const base::Feature kWebAuth;
+CONTENT_EXPORT extern const base::Feature kWebAuthAssertionTransport;
 CONTENT_EXPORT extern const base::Feature kWebAuthCable;
 CONTENT_EXPORT extern const base::Feature kWebAuthConditionalUI;
 CONTENT_EXPORT extern const base::Feature kWebBluetoothNewPermissionsBackend;

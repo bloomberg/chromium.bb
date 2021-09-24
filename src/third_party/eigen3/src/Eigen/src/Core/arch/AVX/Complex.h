@@ -38,6 +38,7 @@ template<> struct packet_traits<std::complex<float> >  : default_packet_traits
     HasMul    = 1,
     HasDiv    = 1,
     HasNegate = 1,
+    HasSqrt   = 1,
     HasAbs    = 0,
     HasAbs2   = 0,
     HasMin    = 0,
@@ -47,7 +48,18 @@ template<> struct packet_traits<std::complex<float> >  : default_packet_traits
 };
 #endif
 
-template<> struct unpacket_traits<Packet4cf> { typedef std::complex<float> type; enum {size=4, alignment=Aligned32, vectorizable=true, masked_load_available=false, masked_store_available=false}; typedef Packet2cf half; };
+template<> struct unpacket_traits<Packet4cf> {
+  typedef std::complex<float> type;
+  typedef Packet2cf half;
+  typedef Packet8f as_real;
+  enum {
+    size=4,
+    alignment=Aligned32,
+    vectorizable=true,
+    masked_load_available=false,
+    masked_store_available=false
+  };
+};
 
 template<> EIGEN_STRONG_INLINE Packet4cf padd<Packet4cf>(const Packet4cf& a, const Packet4cf& b) { return Packet4cf(_mm256_add_ps(a.v,b.v)); }
 template<> EIGEN_STRONG_INLINE Packet4cf psub<Packet4cf>(const Packet4cf& a, const Packet4cf& b) { return Packet4cf(_mm256_sub_ps(a.v,b.v)); }
@@ -155,48 +167,12 @@ template<> EIGEN_STRONG_INLINE std::complex<float> predux_mul<Packet4cf>(const P
                          Packet2cf(_mm256_extractf128_ps(a.v, 1))));
 }
 
-template<> struct conj_helper<Packet4cf, Packet4cf, false,true>
-{
-  EIGEN_STRONG_INLINE Packet4cf pmadd(const Packet4cf& x, const Packet4cf& y, const Packet4cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet4cf pmul(const Packet4cf& a, const Packet4cf& b) const
-  {
-    return internal::pmul(a, pconj(b));
-  }
-};
-
-template<> struct conj_helper<Packet4cf, Packet4cf, true,false>
-{
-  EIGEN_STRONG_INLINE Packet4cf pmadd(const Packet4cf& x, const Packet4cf& y, const Packet4cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet4cf pmul(const Packet4cf& a, const Packet4cf& b) const
-  {
-    return internal::pmul(pconj(a), b);
-  }
-};
-
-template<> struct conj_helper<Packet4cf, Packet4cf, true,true>
-{
-  EIGEN_STRONG_INLINE Packet4cf pmadd(const Packet4cf& x, const Packet4cf& y, const Packet4cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet4cf pmul(const Packet4cf& a, const Packet4cf& b) const
-  {
-    return pconj(internal::pmul(a, b));
-  }
-};
 
 EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet4cf,Packet8f)
 
 template<> EIGEN_STRONG_INLINE Packet4cf pdiv<Packet4cf>(const Packet4cf& a, const Packet4cf& b)
 {
-  Packet4cf num = pmul(a, pconj(b));
-  __m256 tmp = _mm256_mul_ps(b.v, b.v);
-  __m256 tmp2    = _mm256_shuffle_ps(tmp,tmp,0xB1);
-  __m256 denom = _mm256_add_ps(tmp, tmp2);
-  return Packet4cf(_mm256_div_ps(num.v, denom));
+  return pdiv_complex(a, b);
 }
 
 template<> EIGEN_STRONG_INLINE Packet4cf pcplxflip<Packet4cf>(const Packet4cf& x)
@@ -228,6 +204,7 @@ template<> struct packet_traits<std::complex<double> >  : default_packet_traits
     HasMul    = 1,
     HasDiv    = 1,
     HasNegate = 1,
+    HasSqrt   = 1,
     HasAbs    = 0,
     HasAbs2   = 0,
     HasMin    = 0,
@@ -237,7 +214,18 @@ template<> struct packet_traits<std::complex<double> >  : default_packet_traits
 };
 #endif
 
-template<> struct unpacket_traits<Packet2cd> { typedef std::complex<double> type; enum {size=2, alignment=Aligned32, vectorizable=true, masked_load_available=false, masked_store_available=false}; typedef Packet1cd half; };
+template<> struct unpacket_traits<Packet2cd> {
+  typedef std::complex<double> type;
+  typedef Packet1cd half;
+  typedef Packet4d as_real;
+  enum {
+    size=2,
+    alignment=Aligned32,
+    vectorizable=true,
+    masked_load_available=false,
+    masked_store_available=false
+  };
+};
 
 template<> EIGEN_STRONG_INLINE Packet2cd padd<Packet2cd>(const Packet2cd& a, const Packet2cd& b) { return Packet2cd(_mm256_add_pd(a.v,b.v)); }
 template<> EIGEN_STRONG_INLINE Packet2cd psub<Packet2cd>(const Packet2cd& a, const Packet2cd& b) { return Packet2cd(_mm256_sub_pd(a.v,b.v)); }
@@ -326,47 +314,11 @@ template<> EIGEN_STRONG_INLINE std::complex<double> predux_mul<Packet2cd>(const 
                      Packet1cd(_mm256_extractf128_pd(a.v,1))));
 }
 
-template<> struct conj_helper<Packet2cd, Packet2cd, false,true>
-{
-  EIGEN_STRONG_INLINE Packet2cd pmadd(const Packet2cd& x, const Packet2cd& y, const Packet2cd& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cd pmul(const Packet2cd& a, const Packet2cd& b) const
-  {
-    return internal::pmul(a, pconj(b));
-  }
-};
-
-template<> struct conj_helper<Packet2cd, Packet2cd, true,false>
-{
-  EIGEN_STRONG_INLINE Packet2cd pmadd(const Packet2cd& x, const Packet2cd& y, const Packet2cd& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cd pmul(const Packet2cd& a, const Packet2cd& b) const
-  {
-    return internal::pmul(pconj(a), b);
-  }
-};
-
-template<> struct conj_helper<Packet2cd, Packet2cd, true,true>
-{
-  EIGEN_STRONG_INLINE Packet2cd pmadd(const Packet2cd& x, const Packet2cd& y, const Packet2cd& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cd pmul(const Packet2cd& a, const Packet2cd& b) const
-  {
-    return pconj(internal::pmul(a, b));
-  }
-};
-
 EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet2cd,Packet4d)
 
 template<> EIGEN_STRONG_INLINE Packet2cd pdiv<Packet2cd>(const Packet2cd& a, const Packet2cd& b)
 {
-  Packet2cd num = pmul(a, pconj(b));
-  __m256d tmp = _mm256_mul_pd(b.v, b.v);
-  __m256d denom = _mm256_hadd_pd(tmp, tmp);
-  return Packet2cd(_mm256_div_pd(num.v, denom));
+  return pdiv_complex(a, b);
 }
 
 template<> EIGEN_STRONG_INLINE Packet2cd pcplxflip<Packet2cd>(const Packet2cd& x)
@@ -397,6 +349,14 @@ ptranspose(PacketBlock<Packet2cd,2>& kernel) {
   __m256d tmp = _mm256_permute2f128_pd(kernel.packet[0].v, kernel.packet[1].v, 0+(2<<4));
   kernel.packet[1].v = _mm256_permute2f128_pd(kernel.packet[0].v, kernel.packet[1].v, 1+(3<<4));
  kernel.packet[0].v = tmp;
+}
+
+template<> EIGEN_STRONG_INLINE Packet2cd psqrt<Packet2cd>(const Packet2cd& a) {
+  return psqrt_complex<Packet2cd>(a);
+}
+
+template<> EIGEN_STRONG_INLINE Packet4cf psqrt<Packet4cf>(const Packet4cf& a) {
+  return psqrt_complex<Packet4cf>(a);
 }
 
 } // end namespace internal

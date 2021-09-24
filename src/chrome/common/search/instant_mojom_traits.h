@@ -21,9 +21,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusChangeReason,
 
 IPC_ENUM_TRAITS_MAX_VALUE(NTPLoggingEventType, NTP_EVENT_TYPE_LAST)
 
-IPC_ENUM_TRAITS_MAX_VALUE(NTPSuggestionsLoggingEventType,
-                          NTPSuggestionsLoggingEventType::kMaxValue)
-
 IPC_ENUM_TRAITS_MAX_VALUE(ntp_tiles::TileTitleSource,
                           ntp_tiles::TileTitleSource::LAST)
 
@@ -59,11 +56,6 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(NtpTheme)
   IPC_STRUCT_TRAITS_MEMBER(using_default_theme)
-  IPC_STRUCT_TRAITS_MEMBER(custom_background_url)
-  IPC_STRUCT_TRAITS_MEMBER(custom_background_attribution_line_1)
-  IPC_STRUCT_TRAITS_MEMBER(custom_background_attribution_line_2)
-  IPC_STRUCT_TRAITS_MEMBER(custom_background_attribution_action_url)
-  IPC_STRUCT_TRAITS_MEMBER(collection_id)
   IPC_STRUCT_TRAITS_MEMBER(background_color)
   IPC_STRUCT_TRAITS_MEMBER(text_color)
   IPC_STRUCT_TRAITS_MEMBER(text_color_light)

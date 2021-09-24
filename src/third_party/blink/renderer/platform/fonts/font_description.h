@@ -97,6 +97,15 @@ class PLATFORM_EXPORT FontDescription {
   static String ToString(FontVariantCaps);
   static String ToStringForIdl(FontVariantCaps);
 
+  enum FontSynthesisWeight {
+    kAutoFontSynthesisWeight,
+    kNoneFontSynthesisWeight
+  };
+  static String ToString(FontSynthesisWeight);
+
+  enum FontSynthesisStyle { kAutoFontSynthesisStyle, kNoneFontSynthesisStyle };
+  static String ToString(FontSynthesisStyle);
+
   FontDescription();
   FontDescription(const FontDescription&);
 
@@ -207,7 +216,7 @@ class PLATFORM_EXPORT FontDescription {
   // family is "monospace"
   bool IsMonospace() const {
     return GenericFamily() == kMonospaceFamily && !Family().Next() &&
-           Family().Family() == font_family_names::kWebkitMonospace;
+           Family().FamilyName() == font_family_names::kMonospace;
   }
   Kerning GetKerning() const { return static_cast<Kerning>(fields_.kerning_); }
   FontVariantEastAsian VariantEastAsian() const {
@@ -250,6 +259,18 @@ class PLATFORM_EXPORT FontDescription {
   bool IsSyntheticOblique() const { return fields_.synthetic_oblique_; }
   bool UseSubpixelPositioning() const {
     return fields_.subpixel_text_position_;
+  }
+  FontSynthesisWeight GetFontSynthesisWeight() const {
+    return static_cast<FontSynthesisWeight>(fields_.font_synthesis_weight_);
+  }
+  bool SyntheticBoldAllowed() const {
+    return fields_.font_synthesis_weight_ == kAutoFontSynthesisWeight;
+  }
+  FontSynthesisStyle GetFontSynthesisStyle() const {
+    return static_cast<FontSynthesisStyle>(fields_.font_synthesis_style_);
+  }
+  bool SyntheticItalicAllowed() const {
+    return fields_.font_synthesis_style_ == kAutoFontSynthesisStyle;
   }
 
   FontSelectionRequest GetFontSelectionRequest() const;
@@ -331,6 +352,12 @@ class PLATFORM_EXPORT FontDescription {
   }
   void SetSyntheticItalic(bool synthetic_italic) {
     fields_.synthetic_italic_ = synthetic_italic;
+  }
+  void SetFontSynthesisWeight(FontSynthesisWeight font_synthesis_weight) {
+    fields_.font_synthesis_weight_ = font_synthesis_weight;
+  }
+  void SetFontSynthesisStyle(FontSynthesisStyle font_synthesis_style) {
+    fields_.font_synthesis_style_ = font_synthesis_style;
   }
   void SetFeatureSettings(scoped_refptr<FontFeatureSettings> settings) {
     feature_settings_ = std::move(settings);
@@ -463,6 +490,8 @@ class PLATFORM_EXPORT FontDescription {
     unsigned synthetic_bold_ : 1;
     unsigned synthetic_italic_ : 1;
     unsigned synthetic_oblique_ : 1;
+    unsigned font_synthesis_weight_ : 1;
+    unsigned font_synthesis_style_ : 1;
     unsigned subpixel_text_position_ : 1;
     unsigned typesetting_features_ : 3;
     unsigned variant_numeric_ : 8;

@@ -123,6 +123,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name="IPH_FeedHeaderMenu" summary="feed header menu on NTP"/>
   <variant name="IPH_FeedSwipeRefresh" summary="swipe refreshing feeds on NTP"/>
   <variant name="IPH_GlobalMediaControls" summary="the Global Media Controls"/>
+  <variant name="IPH_GMCCastStartStop"
+      summary="Cast start stop in the Zenith dialog"/>
   <variant name="IPH_HomePageButton" summary="home page button">
     <obsolete>
       This feature was deprecated in M79
@@ -192,6 +194,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name="IPH_SharedHighlightingBuilder"
       summary="the in product help message to notify the user that the share
                action can preemptively share a link-to-text"/>
+  <variant name="IPH_SharedHighlightingReceiver"
+      summary="the in product help message encouraging users to create
+               highlights"/>
+  <variant name="IPH_SharingHubLinkToggle"
+      summary="turning on link sharing in the Sharing Hub"/>
   <variant name="IPH_StartSurfaceTabSwitcherHomeButton"
       summary="home button on the tab switcher when start surface is enabled"/>
   <variant name="IPH_TabGroupsDragAndDrop"
@@ -224,7 +231,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2021-12-26">
+    expires_after="2022-02-27">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <summary>
@@ -270,7 +277,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="InProductHelp.Db.TotalEvents" units="events"
-    expires_after="2021-12-26">
+    expires_after="2022-02-27">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <summary>

@@ -42,17 +42,22 @@ public:
     }
 
     id<MTLBlitCommandEncoder> getBlitCommandEncoder();
+    // Tries to reuse current renderCommandEncoder if possible
     GrMtlRenderCommandEncoder* getRenderCommandEncoder(MTLRenderPassDescriptor*,
                                                        const GrMtlPipelineState*,
                                                        GrMtlOpsRenderPass* opsRenderPass);
+    // Replaces current renderCommandEncoder with new one
+    GrMtlRenderCommandEncoder* getRenderCommandEncoder(MTLRenderPassDescriptor*,
+                                                       GrMtlOpsRenderPass*);
 
     void addCompletedHandler(MTLCommandBufferHandler block) {
         [fCmdBuffer addCompletedHandler:block];
     }
 
     void addResource(sk_sp<const GrManagedResource> resource) {
-        SkASSERT(resource);
-        fTrackedResources.push_back(std::move(resource));
+// Disable generic resource tracking for now
+//        SkASSERT(resource);
+//        fTrackedResources.push_back(std::move(resource));
     }
 
     void addGrBuffer(sk_sp<const GrBuffer> buffer) {

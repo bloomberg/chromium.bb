@@ -141,11 +141,8 @@ class HpackDecoderAdapterTest
     return decoder_.HandleControlFrameHeadersData(str.data(), str.size());
   }
 
-  bool HandleControlFrameHeadersComplete(size_t* size) {
-    bool rc = decoder_.HandleControlFrameHeadersComplete(size);
-    if (size != nullptr) {
-      EXPECT_EQ(*size, bytes_passed_in_);
-    }
+  bool HandleControlFrameHeadersComplete() {
+    bool rc = decoder_.HandleControlFrameHeadersComplete();
     return rc;
   }
 
@@ -172,22 +169,18 @@ class HpackDecoderAdapterTest
       decode_has_failed_ = true;
       return false;
     }
-    // Want to get out the number of compressed bytes that were decoded,
-    // so pass in a pointer if no handler.
-    size_t total_hpack_bytes = 0;
     if (start_choice_ == START_WITH_HANDLER) {
-      if (!HandleControlFrameHeadersComplete(nullptr)) {
+      if (!HandleControlFrameHeadersComplete()) {
         decode_has_failed_ = true;
         return false;
       }
-      total_hpack_bytes = handler_.compressed_header_bytes();
+      EXPECT_EQ(handler_.compressed_header_bytes(), bytes_passed_in_);
     } else {
-      if (!HandleControlFrameHeadersComplete(&total_hpack_bytes)) {
+      if (!HandleControlFrameHeadersComplete()) {
         decode_has_failed_ = true;
         return false;
       }
     }
-    EXPECT_EQ(total_hpack_bytes, bytes_passed_in_);
     if (check_decoded_size && start_choice_ == START_WITH_HANDLER) {
       EXPECT_EQ(handler_.uncompressed_header_bytes(),
                 SizeOfHeaders(decoded_block()));
@@ -352,8 +345,7 @@ TEST_P(HpackDecoderAdapterTest, HeaderBlockTooLong) {
   // entire block successfully.
   HandleControlFrameHeadersStart();
   EXPECT_TRUE(HandleControlFrameHeadersData(hbb.buffer()));
-  size_t total_bytes;
-  EXPECT_TRUE(HandleControlFrameHeadersComplete(&total_bytes));
+  EXPECT_TRUE(HandleControlFrameHeadersComplete());
 
   // When a total byte limit is imposed, the decoder bails before the end of the
   // block.
@@ -387,9 +379,7 @@ TEST_P(HpackDecoderAdapterTest, DecodeWithIncompleteData) {
   // Add the needed data.
   EXPECT_TRUE(HandleControlFrameHeadersData("\x04gggs"));
 
-  size_t size = 0;
-  EXPECT_TRUE(HandleControlFrameHeadersComplete(&size));
-  EXPECT_EQ(24u, size);
+  EXPECT_TRUE(HandleControlFrameHeadersComplete());
 
   expected_headers.push_back({"spam", "gggs"});
 
@@ -429,7 +419,7 @@ TEST_P(HpackDecoderAdapterTest, HandleHeaderRepresentation) {
   decoder_peer_.HandleHeaderRepresentation("cookie", " fin!");
 
   // Finish and emit all headers.
-  decoder_.HandleControlFrameHeadersComplete(nullptr);
+  decoder_.HandleControlFrameHeadersComplete();
 
   // Resulting decoded headers are in the same order as the inputs.
   EXPECT_THAT(
@@ -503,8 +493,8 @@ TEST_P(HpackDecoderAdapterTest, ContextUpdateMaximumSize) {
     output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
     output_stream.AppendUint32(126);
 
-    output_stream.TakeString(&input);
-    EXPECT_TRUE(DecodeHeaderBlock(absl::string_view(input)));
+    input = output_stream.TakeString();
+    EXPECT_TRUE(DecodeHeaderBlock(input));
     EXPECT_EQ(126u, decoder_peer_.header_table_size_limit());
   }
   {
@@ -513,8 +503,8 @@ TEST_P(HpackDecoderAdapterTest, ContextUpdateMaximumSize) {
     output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
     output_stream.AppendUint32(kDefaultHeaderTableSizeSetting);
 
-    output_stream.TakeString(&input);
-    EXPECT_TRUE(DecodeHeaderBlock(absl::string_view(input)));
+    input = output_stream.TakeString();
+    EXPECT_TRUE(DecodeHeaderBlock(input));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
               decoder_peer_.header_table_size_limit());
   }
@@ -524,8 +514,8 @@ TEST_P(HpackDecoderAdapterTest, ContextUpdateMaximumSize) {
     output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
     output_stream.AppendUint32(kDefaultHeaderTableSizeSetting + 1);
 
-    output_stream.TakeString(&input);
-    EXPECT_FALSE(DecodeHeaderBlock(absl::string_view(input)));
+    input = output_stream.TakeString();
+    EXPECT_FALSE(DecodeHeaderBlock(input));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
               decoder_peer_.header_table_size_limit());
   }
@@ -542,8 +532,8 @@ TEST_P(HpackDecoderAdapterTest, TwoTableSizeUpdates) {
     output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
     output_stream.AppendUint32(122);
 
-    output_stream.TakeString(&input);
-    EXPECT_TRUE(DecodeHeaderBlock(absl::string_view(input)));
+    input = output_stream.TakeString();
+    EXPECT_TRUE(DecodeHeaderBlock(input));
     EXPECT_EQ(122u, decoder_peer_.header_table_size_limit());
   }
 }
@@ -561,9 +551,9 @@ TEST_P(HpackDecoderAdapterTest, ThreeTableSizeUpdatesError) {
     output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
     output_stream.AppendUint32(15);
 
-    output_stream.TakeString(&input);
+    input = output_stream.TakeString();
 
-    EXPECT_FALSE(DecodeHeaderBlock(absl::string_view(input)));
+    EXPECT_FALSE(DecodeHeaderBlock(input));
     EXPECT_EQ(10u, decoder_peer_.header_table_size_limit());
   }
 }
@@ -580,9 +570,9 @@ TEST_P(HpackDecoderAdapterTest, TableSizeUpdateSecondError) {
     output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
     output_stream.AppendUint32(123);
 
-    output_stream.TakeString(&input);
+    input = output_stream.TakeString();
 
-    EXPECT_FALSE(DecodeHeaderBlock(absl::string_view(input)));
+    EXPECT_FALSE(DecodeHeaderBlock(input));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
               decoder_peer_.header_table_size_limit());
   }
@@ -603,9 +593,9 @@ TEST_P(HpackDecoderAdapterTest, TableSizeUpdateFirstThirdError) {
     output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
     output_stream.AppendUint32(125);
 
-    output_stream.TakeString(&input);
+    input = output_stream.TakeString();
 
-    EXPECT_FALSE(DecodeHeaderBlock(absl::string_view(input)));
+    EXPECT_FALSE(DecodeHeaderBlock(input));
     EXPECT_EQ(60u, decoder_peer_.header_table_size_limit());
   }
 }
@@ -719,9 +709,8 @@ TEST_P(HpackDecoderAdapterTest, BasicC31) {
   expected_header_set[":path"] = "/";
   expected_header_set[":authority"] = "www.example.com";
 
-  std::string encoded_header_set;
-  EXPECT_TRUE(
-      encoder.EncodeHeaderSet(expected_header_set, &encoded_header_set));
+  std::string encoded_header_set =
+      encoder.EncodeHeaderBlock(expected_header_set);
 
   EXPECT_TRUE(DecodeHeaderBlock(encoded_header_set));
   EXPECT_EQ(expected_header_set, decoded_block());

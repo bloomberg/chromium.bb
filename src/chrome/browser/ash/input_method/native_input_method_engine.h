@@ -49,6 +49,7 @@ class NativeInputMethodEngine
   void Initialize(std::unique_ptr<InputMethodEngineBase::Observer> observer,
                   const char* extension_id,
                   Profile* profile) override;
+  void CandidateClicked(uint32_t index) override;
 
   // ChromeKeyboardControllerClient:
   void OnKeyboardEnabledChanged(bool enabled) override;
@@ -147,6 +148,8 @@ class NativeInputMethodEngine
                             RequestSuggestionsCallback callback) override;
     void DisplaySuggestions(
         const std::vector<ime::TextSuggestion>& suggestions) override;
+    void UpdateCandidatesWindow(
+        chromeos::ime::mojom::CandidatesWindowPtr window) override;
     void RecordUkm(chromeos::ime::mojom::UkmEntryPtr entry) override;
 
     // Called when suggestions are collected from the system via

@@ -169,7 +169,7 @@ const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
   return elements;
 }
 
-void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes,
+void HTMLSlotElement::assign(HeapVector<Member<V8UnionElementOrText>> nodes,
                              ExceptionState& exception_state) {
   UseCounter::Count(GetDocument(), WebFeature::kSlotAssignNode);
   if (nodes.IsEmpty() && manually_assigned_nodes_.IsEmpty())
@@ -178,7 +178,16 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes,
       manually_assigned_nodes_);
   HeapLinkedHashSet<WeakMember<Node>> nodes_set;
   bool updated = false;
-  for (auto& node : nodes) {
+  for (V8UnionElementOrText* union_node : nodes) {
+    Node* node = nullptr;
+    switch (union_node->GetContentType()) {
+      case V8UnionElementOrText::ContentType::kText:
+        node = union_node->GetAsText();
+        break;
+      case V8UnionElementOrText::ContentType::kElement:
+        node = union_node->GetAsElement();
+        break;
+    }
     nodes_set.insert(node);
     old_manually_assigned_nodes.erase(node);
     if (auto* previous_slot = node->ManuallyAssignedSlot()) {

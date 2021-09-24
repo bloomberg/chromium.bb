@@ -11,6 +11,9 @@ import {LayoutElement} from './LayoutPaneUtils.js';
 
 import type {NodeTextData} from './NodeText.js';
 import {NodeText} from './NodeText.js';
+import layoutPaneStyles from '../layoutPane.css.js';
+// eslint-disable-next-line rulesdir/es_modules_import
+import inspectorCommonStyles from '../../../ui/legacy/inspectorCommon.css.js';
 
 import * as i18n from '../../../core/i18n/i18n.js';
 const UIStrings = {
@@ -52,13 +55,13 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export {LayoutElement};
 
 const {render, html} = LitHtml;
-const getStyleSheets = ComponentHelpers.GetStylesheet.getStyleSheets;
 
 export class SettingChangedEvent extends Event {
+  static readonly eventName = 'settingchanged';
   data: {setting: string, value: string|boolean};
 
   constructor(setting: string, value: string|boolean) {
-    super('settingchanged', {});
+    super(SettingChangedEvent.eventName, {});
     this.data = {setting, value};
   }
 }
@@ -91,9 +94,8 @@ export class LayoutPane extends HTMLElement {
   constructor() {
     super();
     this.shadow.adoptedStyleSheets = [
-      ...getStyleSheets('panels/elements/layoutPane.css'),
-      // Required for chrome-select styles.
-      ...getStyleSheets('ui/legacy/inspectorCommon.css'),
+      layoutPaneStyles,
+      inspectorCommonStyles,
     ];
   }
 

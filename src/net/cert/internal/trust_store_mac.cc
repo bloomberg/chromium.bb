@@ -231,6 +231,7 @@ TrustStatus IsSecCertificateTrustedForPolicyInDomain(
   }
   if (err) {
     OSSTATUS_LOG(ERROR, err) << "SecTrustSettingsCopyTrustSettings error";
+    *debug_info |= TrustStoreMac::COPY_TRUST_SETTINGS_ERROR;
     return TrustStatus::UNSPECIFIED;
   }
   TrustStatus trust = IsTrustSettingsTrustedForPolicy(
@@ -239,7 +240,7 @@ TrustStatus IsSecCertificateTrustedForPolicyInDomain(
 }
 
 TrustStatus IsCertificateTrustedForPolicyInDomain(
-    const scoped_refptr<ParsedCertificate>& cert,
+    const ParsedCertificate* cert,
     const CFStringRef policy_oid,
     SecTrustSettingsDomain trust_domain,
     int* debug_info) {
@@ -326,6 +327,7 @@ TrustStatus IsCertificateTrustedForPolicy(const ParsedCertificate* cert,
         continue;
       }
       OSSTATUS_LOG(ERROR, err) << "SecTrustSettingsCopyTrustSettings error";
+      *debug_info |= TrustStoreMac::COPY_TRUST_SETTINGS_ERROR;
       continue;
     }
     if (out_is_known_root && trust_domain == kSecTrustSettingsDomainSystem) {
@@ -398,7 +400,7 @@ class TrustDomainCache {
   }
 
   // Returns the trust status for |cert| in |domain_|.
-  TrustStatus IsCertTrusted(const scoped_refptr<ParsedCertificate>& cert,
+  TrustStatus IsCertTrusted(const ParsedCertificate* cert,
                             const SHA256HashValue& cert_hash,
                             base::SupportsUserData* debug_data) {
     auto cache_iter = trust_status_cache_.find(cert_hash);
@@ -578,9 +580,8 @@ class TrustStoreMac::TrustImpl {
   virtual ~TrustImpl() = default;
 
   virtual bool IsKnownRoot(const ParsedCertificate* cert) = 0;
-  virtual TrustStatus IsCertTrusted(
-      const scoped_refptr<ParsedCertificate>& cert,
-      base::SupportsUserData* debug_data) = 0;
+  virtual TrustStatus IsCertTrusted(const ParsedCertificate* cert,
+                                    base::SupportsUserData* debug_data) = 0;
   virtual void InitializeTrustCache() = 0;
 };
 
@@ -612,7 +613,7 @@ class TrustStoreMac::TrustImplDomainCache : public TrustStoreMac::TrustImpl {
   }
 
   // Returns the trust status for |cert|.
-  TrustStatus IsCertTrusted(const scoped_refptr<ParsedCertificate>& cert,
+  TrustStatus IsCertTrusted(const ParsedCertificate* cert,
                             base::SupportsUserData* debug_data) override {
     SHA256HashValue cert_hash = CalculateFingerprint256(cert->der_cert());
 
@@ -690,11 +691,11 @@ class TrustStoreMac::TrustImplNoCache : public TrustStoreMac::TrustImpl {
   }
 
   // Returns the trust status for |cert|.
-  TrustStatus IsCertTrusted(const scoped_refptr<ParsedCertificate>& cert,
+  TrustStatus IsCertTrusted(const ParsedCertificate* cert,
                             base::SupportsUserData* debug_data) override {
     int debug_info = 0;
     TrustStatus result = IsCertificateTrustedForPolicy(
-        cert.get(), policy_oid_, &debug_info, /*out_is_known_root=*/nullptr);
+        cert, policy_oid_, &debug_info, /*out_is_known_root=*/nullptr);
     UpdateUserData(debug_info, debug_data,
                    TrustStoreMac::TrustImplType::kSimple);
     return result;
@@ -731,9 +732,9 @@ class TrustStoreMac::TrustImplMRUCache : public TrustStoreMac::TrustImpl {
   }
 
   // Returns the trust status for |cert|.
-  TrustStatus IsCertTrusted(const scoped_refptr<ParsedCertificate>& cert,
+  TrustStatus IsCertTrusted(const ParsedCertificate* cert,
                             base::SupportsUserData* debug_data) override {
-    TrustStatusDetails trust_details = GetTrustStatus(cert.get());
+    TrustStatusDetails trust_details = GetTrustStatus(cert);
     UpdateUserData(trust_details.debug_info, debug_data,
                    TrustStoreMac::TrustImplType::kMruCache);
     return trust_details.trust_status;
@@ -918,20 +919,17 @@ void TrustStoreMac::SyncGetIssuersOf(const ParsedCertificate* cert,
   }
 }
 
-void TrustStoreMac::GetTrust(const scoped_refptr<ParsedCertificate>& cert,
-                             CertificateTrust* trust,
-                             base::SupportsUserData* debug_data) const {
+CertificateTrust TrustStoreMac::GetTrust(
+    const ParsedCertificate* cert,
+    base::SupportsUserData* debug_data) const {
   TrustStatus trust_status = trust_cache_->IsCertTrusted(cert, debug_data);
   switch (trust_status) {
     case TrustStatus::TRUSTED:
-      *trust = CertificateTrust::ForTrustAnchor();
-      return;
+      return CertificateTrust::ForTrustAnchor();
     case TrustStatus::DISTRUSTED:
-      *trust = CertificateTrust::ForDistrusted();
-      return;
+      return CertificateTrust::ForDistrusted();
     case TrustStatus::UNSPECIFIED:
-      *trust = CertificateTrust::ForUnspecified();
-      return;
+      return CertificateTrust::ForUnspecified();
     case TrustStatus::UNKNOWN:
       // UNKNOWN is an implementation detail of TrustImpl and should never be
       // returned.
@@ -939,8 +937,7 @@ void TrustStoreMac::GetTrust(const scoped_refptr<ParsedCertificate>& cert,
       break;
   }
 
-  *trust = CertificateTrust::ForUnspecified();
-  return;
+  return CertificateTrust::ForUnspecified();
 }
 
 // static

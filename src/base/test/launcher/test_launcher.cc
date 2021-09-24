@@ -36,6 +36,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -354,15 +355,16 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   new_options.spawn_flags = FDIO_SPAWN_CLONE_STDIO | FDIO_SPAWN_CLONE_JOB;
 
   const base::FilePath kDataPath(base::kPersistedDataDirectoryPath);
+  const base::FilePath kCachePath(base::kPersistedCacheDirectoryPath);
 
-  // Clone all namespace entries from the current process, except /data, which
-  // is overridden below.
+  // Clone all namespace entries from the current process, except /data and
+  // /cache, which are overridden below.
   fdio_flat_namespace_t* flat_namespace = nullptr;
   zx_status_t result = fdio_ns_export_root(&flat_namespace);
   ZX_CHECK(ZX_OK == result, result) << "fdio_ns_export_root";
   for (size_t i = 0; i < flat_namespace->count; ++i) {
     base::FilePath path(flat_namespace->path[i]);
-    if (path == kDataPath) {
+    if (path == kDataPath || path == kCachePath) {
       result = zx_handle_close(flat_namespace->handle[i]);
       ZX_CHECK(ZX_OK == result, result) << "zx_handle_close";
     } else {
@@ -378,25 +380,36 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   new_options.job_handle = job_handle.get();
 
   // Give this test its own isolated /data directory by creating a new temporary
-  // subdirectory under data (/data/test-$PID) and binding that to /data on the
-  // child process.
+  // subdirectory under data (/data/test-$PID) and binding paths under that to
+  // /data and /cache in the child process.
+  // Persistent data storage is mapped to /cache rather than system-provided
+  // cache storage, to avoid unexpected purges (see crbug.com/1242170).
   CHECK(base::PathExists(kDataPath));
 
   // Create the test subdirectory with a name that is unique to the child test
   // process (qualified by parent PID and an autoincrementing test process
   // index).
   static base::AtomicSequenceNumber child_launch_index;
-  base::FilePath nested_data_path = kDataPath.AppendASCII(
+  const base::FilePath child_data_path = kDataPath.AppendASCII(
       base::StringPrintf("test-%zu-%d", base::Process::Current().Pid(),
                          child_launch_index.GetNext()));
-  CHECK(!base::DirectoryExists(nested_data_path));
-  CHECK(base::CreateDirectory(nested_data_path));
-  DCHECK(base::DirectoryExists(nested_data_path));
+  CHECK(!base::DirectoryExists(child_data_path));
+  CHECK(base::CreateDirectory(child_data_path));
+  DCHECK(base::DirectoryExists(child_data_path));
 
-  // Bind the new test subdirectory to /data in the child process' namespace.
+  const base::FilePath test_data_dir(child_data_path.AppendASCII("data"));
+  CHECK(base::CreateDirectory(test_data_dir));
+  const base::FilePath test_cache_dir(child_data_path.AppendASCII("cache"));
+  CHECK(base::CreateDirectory(test_cache_dir));
+
+  // Transfer handles to the new directories as /data and /cache in the child
+  // process' namespace.
   new_options.paths_to_transfer.push_back(
       {kDataPath,
-       base::OpenDirectoryHandle(nested_data_path).TakeChannel().release()});
+       base::OpenDirectoryHandle(test_data_dir).TakeChannel().release()});
+  new_options.paths_to_transfer.push_back(
+      {kCachePath,
+       base::OpenDirectoryHandle(test_cache_dir).TakeChannel().release()});
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -482,7 +495,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     ZX_CHECK(status == ZX_OK, status);
 
     // Cleanup the data directory.
-    CHECK(DeletePathRecursively(nested_data_path));
+    CHECK(DeletePathRecursively(child_data_path));
 #elif defined(OS_POSIX)
     // It is not possible to waitpid() on any leaked sub-processes of the test
     // batch process, since those are not direct children of this process.
@@ -791,6 +804,26 @@ int CountItemsInDirectory(const FilePath& dir) {
     ++items;
   }
   return items;
+}
+
+// Truncates a snippet in the middle to the given byte limit. byte_limit should
+// be at least 30.
+std::string TruncateSnippet(const base::StringPiece snippet,
+                            size_t byte_limit) {
+  if (snippet.length() <= byte_limit) {
+    return std::string(snippet);
+  }
+  std::string truncation_message =
+      StringPrintf("\n<truncated (%zu bytes)>\n", snippet.length());
+  if (truncation_message.length() > byte_limit) {
+    // Fail gracefully.
+    return truncation_message;
+  }
+  size_t remaining_limit = byte_limit - truncation_message.length();
+  size_t first_half = remaining_limit / 2;
+  return base::StrCat(
+      {snippet.substr(0, first_half), truncation_message,
+       snippet.substr(snippet.length() - (remaining_limit - first_half))});
 }
 
 }  // namespace
@@ -1146,14 +1179,8 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
     if (result.status == TestResult::TEST_SUCCESS)
       result.status = TestResult::TEST_EXCESSIVE_OUTPUT;
 
-    // Keep the top and bottom of the log and truncate the middle part.
     result.output_snippet =
-        result.output_snippet.substr(0, kOutputSnippetBytesLimit / 2) + "\n" +
-        StringPrintf("<truncated (%zu bytes)>\n",
-                     result.output_snippet.length()) +
-        result.output_snippet.substr(result.output_snippet.length() -
-                                     kOutputSnippetBytesLimit / 2) +
-        "\n";
+        TruncateSnippetFocused(result.output_snippet, kOutputSnippetBytesLimit);
   }
 
   bool print_snippet = false;
@@ -1811,9 +1838,12 @@ std::vector<std::string> TestLauncher::CollectTests() {
     // locations only for those tests that were run as part of this shard.
     results_tracker_.AddTestLocation(test_name, test_info.file(),
                                      test_info.line());
+
     if (!test_info.pre_test()) {
       // Only a subset of tests that are run require placeholders -- namely,
-      // those that will output results.
+      // those that will output results. Note that the results for PRE_XYZ will
+      // be merged into XYZ's results if the former fails, so we don't need a
+      // placeholder for it.
       results_tracker_.AddTestPlaceholder(test_name);
     }
 
@@ -2061,6 +2091,65 @@ std::string GetTestOutputSnippet(const TestResult& result,
     snippet = full_output.substr(run_pos, end_pos - run_pos);
 
   return snippet;
+}
+
+std::string TruncateSnippetFocused(const base::StringPiece snippet,
+                                   size_t byte_limit) {
+  // Find the start of anything that looks like a fatal log message.
+  // We want to preferentially preserve these from truncation as we
+  // run extraction of fatal test errors from snippets in result_adapter
+  // to populate failure reasons in ResultDB. It is also convenient for
+  // the user to see them.
+  // Refer to LogMessage::Init in base/logging[_platform].cc for patterns.
+  size_t fatal_message_pos =
+      std::min(snippet.find("FATAL:"), snippet.find("FATAL "));
+
+  size_t fatal_message_start = 0;
+  size_t fatal_message_end = 0;
+  if (fatal_message_pos != std::string::npos) {
+    // Find the line-endings before and after the fatal message.
+    size_t start_pos = snippet.rfind("\n", fatal_message_pos);
+    if (start_pos != std::string::npos) {
+      fatal_message_start = start_pos;
+    }
+    size_t end_pos = snippet.find("\n", fatal_message_pos);
+    if (end_pos != std::string::npos) {
+      // Include the new-line character.
+      fatal_message_end = end_pos + 1;
+    } else {
+      fatal_message_end = snippet.length();
+    }
+  }
+  // Limit fatal message length to half the snippet byte quota. This ensures
+  // we have space for some context at the beginning and end of the snippet.
+  fatal_message_end =
+      std::min(fatal_message_end, fatal_message_start + (byte_limit / 2));
+
+  // Distribute remaining bytes between start and end of snippet.
+  // The split is either even, or if one is small enough to be displayed
+  // without truncation, it gets displayed in full and the other split gets
+  // the remaining bytes.
+  size_t remaining_bytes =
+      byte_limit - (fatal_message_end - fatal_message_start);
+  size_t start_split_bytes;
+  size_t end_split_bytes;
+  if (fatal_message_start < remaining_bytes / 2) {
+    start_split_bytes = fatal_message_start;
+    end_split_bytes = remaining_bytes - fatal_message_start;
+  } else if ((snippet.length() - fatal_message_end) < remaining_bytes / 2) {
+    start_split_bytes =
+        remaining_bytes - (snippet.length() - fatal_message_end);
+    end_split_bytes = (snippet.length() - fatal_message_end);
+  } else {
+    start_split_bytes = remaining_bytes / 2;
+    end_split_bytes = remaining_bytes - start_split_bytes;
+  }
+  return base::StrCat(
+      {TruncateSnippet(snippet.substr(0, fatal_message_start),
+                       start_split_bytes),
+       snippet.substr(fatal_message_start,
+                      fatal_message_end - fatal_message_start),
+       TruncateSnippet(snippet.substr(fatal_message_end), end_split_bytes)});
 }
 
 }  // namespace base

@@ -8,8 +8,8 @@
 
 #include <gtest/gtest.h>
 
-#include "EGLMultiThreadSteps.h"
 #include "test_utils/ANGLETest.h"
+#include "test_utils/MultiThreadSteps.h"
 #include "test_utils/angle_test_configs.h"
 #include "test_utils/gl_raii.h"
 #include "util/EGLWindow.h"
@@ -68,6 +68,11 @@ TEST_P(EGLMultiContextTest, TestContextDestroySimple)
 
     EXPECT_EGL_TRUE(eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, context1));
     EXPECT_EGL_TRUE(eglDestroyContext(dpy, context2));
+    EXPECT_EGL_SUCCESS();
+
+    // Cleanup
+    EXPECT_EGL_TRUE(eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
+    EXPECT_EGL_TRUE(eglDestroyContext(dpy, context1));
     EXPECT_EGL_SUCCESS();
 }
 
@@ -226,6 +231,7 @@ void main()
     ASSERT_NE(currentStep, Step::Abort);
 
     // Clean up
+    EXPECT_EGL_TRUE(eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
     for (size_t t = 0; t < kThreadCount; ++t)
     {
         eglDestroySurface(dpy, surface[t]);

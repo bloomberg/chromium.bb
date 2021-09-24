@@ -19,10 +19,10 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/web_apps/web_app_hover_button.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -125,13 +125,12 @@ gfx::Size WebAppProtocolHandlerIntentPickerView::CalculatePreferredSize()
                    GetHeightForWidth(kMaxIntentPickerWidth));
 }
 
-
 void WebAppProtocolHandlerIntentPickerView::OnAccepted() {
-  RunCloseCallback(/*accepted=*/true);
+  RunCloseCallback(/*allowed=*/true, /*remember_user_choice=*/true);
 }
 
 void WebAppProtocolHandlerIntentPickerView::OnCanceled() {
-  RunCloseCallback(/*accepted=*/false);
+  RunCloseCallback(/*allowed=*/false, /*remember_user_choice=*/false);
 }
 
 void WebAppProtocolHandlerIntentPickerView::OnClosed() {
@@ -152,7 +151,8 @@ void WebAppProtocolHandlerIntentPickerView::Initialize() {
   scrollable_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile_);
+  web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForWebApps(profile_);
   web_app::WebAppRegistrar& registrar = provider->registrar();
   auto app_button = std::make_unique<WebAppHoverButton>(
       views::Button::PressedCallback(), app_id_, provider,
@@ -183,9 +183,11 @@ void WebAppProtocolHandlerIntentPickerView::Initialize() {
   layout->AddPaddingRow(views::GridLayout::kFixedSize, kRowHeight);
 }
 
-void WebAppProtocolHandlerIntentPickerView::RunCloseCallback(bool accepted) {
+void WebAppProtocolHandlerIntentPickerView::RunCloseCallback(
+    bool allowed,
+    bool remember_user_choice) {
   if (close_callback_) {
-    std::move(close_callback_).Run(accepted);
+    std::move(close_callback_).Run(allowed, remember_user_choice);
   }
 }
 
@@ -203,7 +205,7 @@ void ShowWebAppProtocolHandlerIntentPicker(
       profile, ProfileKeepAliveOrigin::kWebAppPermissionDialogWindow);
   auto keep_alive = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::WEB_APP_INTENT_PICKER, KeepAliveRestartOption::DISABLED);
-  auto* provider = web_app::WebAppProvider::Get(profile);
+  auto* provider = web_app::WebAppProvider::GetDeprecated(profile);
   DCHECK(provider);
   // Sometimes it is too early for registrar to be populated at this time. We
   // need to wait for it to get the web application info.

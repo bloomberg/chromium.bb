@@ -7,7 +7,6 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "build/build_config.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/buildflags.h"
 #include "third_party/blink/public/common/common_export.h"
@@ -31,6 +30,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kEagerCacheStorageSetupForServiceWorkers;
 BLINK_COMMON_EXPORT extern const base::Feature kScriptStreaming;
 BLINK_COMMON_EXPORT extern const base::Feature kSmallScriptStreaming;
+BLINK_COMMON_EXPORT extern const base::Feature kConsumeCodeCacheOffThread;
 BLINK_COMMON_EXPORT extern const base::Feature kUserLevelMemoryPressureSignal;
 BLINK_COMMON_EXPORT extern const base::Feature kFreezePurgeMemoryAllPagesFrozen;
 BLINK_COMMON_EXPORT extern const base::Feature kReduceUserAgent;
@@ -56,6 +56,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kUserAgentClientHint;
 BLINK_COMMON_EXPORT extern const base::Feature kLangClientHintHeader;
 BLINK_COMMON_EXPORT extern const base::Feature
     kPrefersColorSchemeClientHintHeader;
+BLINK_COMMON_EXPORT extern const base::Feature kViewportHeightClientHintHeader;
 
 enum class FencedFramesImplementationType {
   kShadowDOM,
@@ -174,9 +175,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kBlinkHeapIncrementalMarkingStress;
 
 BLINK_COMMON_EXPORT extern const base::Feature
-    kVerifyHTMLFetchedFromAppCacheBeforeDelay;
-
-BLINK_COMMON_EXPORT extern const base::Feature
     kBlinkCompositorUseDisplayThreadPriority;
 
 BLINK_COMMON_EXPORT extern const base::Feature kTransformInterop;
@@ -293,7 +291,6 @@ extern const char
     kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[];
 
 BLINK_COMMON_EXPORT extern const base::Feature kCompressParkableStrings;
-BLINK_COMMON_EXPORT extern const base::Feature kParkableStringsToDisk;
 BLINK_COMMON_EXPORT bool IsParkableStringsToDiskEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature kCrOSAutoSelect;
@@ -338,7 +335,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebAppNoteTaking;
 
 BLINK_COMMON_EXPORT extern const base::Feature kLoadingTasksUnfreezable;
 
-BLINK_COMMON_EXPORT extern const base::Feature kFreezeWhileKeepActive;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kNetworkRequestUsesOnlyPerProcessBufferLimit;
 
 BLINK_COMMON_EXPORT extern const base::Feature kTargetBlankImpliesNoOpener;
 
@@ -433,14 +431,42 @@ BLINK_COMMON_EXPORT extern const base::Feature kDesktopPWAsSubApps;
 
 // When enabled, we report all JavaScript frameworks via a manual traversal to
 // detect the properties and attributes required.
-BLINK_COMMON_EXPORT extern const base::Feature kReportAllJavascriptFrameworks;
+BLINK_COMMON_EXPORT extern const base::Feature kReportAllJavaScriptFrameworks;
 
 // Suppresses console errors for CORS problems which report an associated
 // inspector issue anyway.
 BLINK_COMMON_EXPORT extern const base::Feature kCORSErrorsIssueOnly;
 
+// Synchronously load web fonts inlined as data urls. See crbug.com/1236283
+BLINK_COMMON_EXPORT extern const base::Feature kSyncLoadDataUrlFonts;
+
+// Makes Persistent quota the same as Temporary quota.
+BLINK_COMMON_EXPORT
+extern const base::Feature kPersistentQuotaIsTemporaryQuota;
+
+// If enabled, the ResourceLoadScheculer will take the current network state
+// into consideration, when it plans to delay a low-priority throttleable
+// requests in the tight mode. The factors include:
+//  - The total number of the in-flight multiplexed connections (e.g.,
+//    H2/SPDY/QUIC).
+//  - HTTP RTT estimate.
 BLINK_COMMON_EXPORT extern const base::Feature
-    kDeprecateThirdPartyContextWebSQL;
+    kDelayLowPriorityRequestsAccordingToNetworkState;
+
+// Number of the requests that can be handled in the tight mode.
+BLINK_COMMON_EXPORT
+extern const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode;
+
+// The HTTP RTT threshold: decide whether the
+// `kDelayLowPriorityRequestsAccordingToNetworkState` feature can take effect
+// practically according to the network connection state.
+BLINK_COMMON_EXPORT
+extern const base::FeatureParam<base::TimeDelta> kHttpRttThreshold;
+
+// The cost reduction for the multiplexed requests when
+// `kDelayLowPriorityRequestsAccordingToNetworkState` is enabled.
+BLINK_COMMON_EXPORT
+extern const base::FeatureParam<double> kCostReductionOfMultiplexedRequests;
 
 }  // namespace features
 }  // namespace blink

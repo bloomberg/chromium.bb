@@ -259,7 +259,7 @@ profile_metrics::BrowserProfileType ChromeAutofillClient::GetProfileType()
                  : profile_metrics::BrowserProfileType::kRegular;
 }
 
-std::unique_ptr<InternalAuthenticator>
+std::unique_ptr<webauthn::InternalAuthenticator>
 ChromeAutofillClient::CreateCreditCardInternalAuthenticator(
     content::RenderFrameHost* rfh) {
 #if defined(OS_ANDROID)
@@ -334,7 +334,7 @@ ChromeAutofillClient::GetAllowedMerchantsForVirtualCards() {
     return std::vector<std::string>();
 
   return AutofillGstaticReader::GetInstance()
-      ->GetTokenizationMerchantWhitelist();
+      ->GetTokenizationMerchantAllowlist();
 }
 
 std::vector<std::string>
@@ -343,7 +343,7 @@ ChromeAutofillClient::GetAllowedBinRangesForVirtualCards() {
     return std::vector<std::string>();
 
   return AutofillGstaticReader::GetInstance()
-      ->GetTokenizationBinRangesWhitelist();
+      ->GetTokenizationBinRangesAllowlist();
 }
 
 void ChromeAutofillClient::ShowLocalCardMigrationDialog(
@@ -474,7 +474,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
               /*upload=*/false, options, card, LegalMessageLines(),
               AutofillClient::UploadSaveCardPromptCallback(),
-              /*local_save_card_callback=*/std::move(callback), GetPrefs(),
+              /*local_save_card_callback=*/std::move(callback),
               AccountInfo())));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
@@ -530,8 +530,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
               /*upload=*/true, options, card, legal_message_lines,
               /*upload_save_card_callback=*/std::move(callback),
-              AutofillClient::LocalSaveCardPromptCallback(), GetPrefs(),
-              account_info)));
+              AutofillClient::LocalSaveCardPromptCallback(), account_info)));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
@@ -860,6 +859,13 @@ void ChromeAutofillClient::MainFrameWasResized(bool width_changed) {
 
 void ChromeAutofillClient::WebContentsDestroyed() {
   HideAutofillPopup(PopupHidingReason::kTabGone);
+}
+
+void ChromeAutofillClient::OnWebContentsFocused(
+    content::RenderWidgetHost* render_widget_host) {
+#if defined(OS_ANDROID)
+  save_card_message_controller_android_.OnWebContentsFocused();
+#endif
 }
 
 #if !defined(OS_ANDROID)

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/buildflags.h"
@@ -22,12 +23,12 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/webui/browser_command/browser_command_handler.h"
 #include "chrome/browser/ui/webui/cr_components/most_visited/most_visited_handler.h"
 #include "chrome/browser/ui/webui/customize_themes/chrome_customize_themes_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/ntp_pref_names.h"
-#include "chrome/browser/ui/webui/new_tab_page/promo_browser_command/promo_browser_command_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/untrusted_source.h"
 #include "chrome/browser/ui/webui/realbox/realbox_handler.h"
 #include "chrome/browser/ui/webui/sanitized_image_source.h"
@@ -98,6 +99,9 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
       base::FeatureList::IsEnabled(
           ntp_features::kNtpHandleMostVisitedNavigationExplicitly));
 
+  source->AddBoolean(
+      "oneGoogleBarEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kNtpOneGoogleBar));
   source->AddBoolean("shortcutsEnabled",
                      base::FeatureList::IsEnabled(ntp_features::kNtpShortcuts));
   source->AddBoolean("logoEnabled",
@@ -441,7 +445,7 @@ void NewTabPageUI::BindInterface(
 }
 
 void NewTabPageUI::BindInterface(
-    mojo::PendingReceiver<promo_browser_command::mojom::CommandHandlerFactory>
+    mojo::PendingReceiver<browser_command::mojom::CommandHandlerFactory>
         pending_receiver) {
   if (browser_command_factory_receiver_.is_bound())
     browser_command_factory_receiver_.reset();
@@ -524,14 +528,14 @@ void NewTabPageUI::CreateCustomizeThemesHandler(
 }
 
 void NewTabPageUI::CreateBrowserCommandHandler(
-    mojo::PendingReceiver<promo_browser_command::mojom::CommandHandler>
+    mojo::PendingReceiver<browser_command::mojom::CommandHandler>
         pending_handler) {
-  using promo_browser_command::mojom::Command;
+  using browser_command::mojom::Command;
   std::vector<Command> supported_commands = {
       Command::kOpenSafetyCheck,
       Command::kOpenSafeBrowsingEnhancedProtectionSettings,
   };
-  promo_browser_command_handler_ = std::make_unique<PromoBrowserCommandHandler>(
+  promo_browser_command_handler_ = std::make_unique<BrowserCommandHandler>(
       std::move(pending_handler), profile_, supported_commands);
 }
 
@@ -577,8 +581,13 @@ void NewTabPageUI::OnCustomBackgroundImageUpdated() {
           .custom_background_url;
   url::EncodeURIComponent(custom_background_url.spec().c_str(),
                           custom_background_url.spec().size(), &encoded_url);
-  update->SetString("backgroundImageUrl",
-                    std::string(encoded_url.data(), encoded_url.length()));
+  update->SetString(
+      "backgroundImageUrl",
+      encoded_url.length() > 0
+          ? base::StrCat(
+                {"chrome-untrusted://new-tab-page/custom_background_image?url=",
+                 std::string(encoded_url.data(), encoded_url.length())})
+          : "");
   content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
                                    std::move(update));
 }

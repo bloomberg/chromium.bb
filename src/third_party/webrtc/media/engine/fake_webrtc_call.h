@@ -122,6 +122,7 @@ class FakeAudioReceiveStream final : public webrtc::AudioReceiveStream {
       std::map<int, webrtc::SdpAudioFormat> decoder_map) override;
   void SetUseTransportCcAndNackHistory(bool use_transport_cc,
                                        int history_ms) override;
+  void SetNonSenderRttMeasurement(bool enabled) override;
   void SetFrameDecryptor(rtc::scoped_refptr<webrtc::FrameDecryptorInterface>
                              frame_decryptor) override;
   void SetRtpExtensions(std::vector<webrtc::RtpExtension> extensions) override;
@@ -263,9 +264,12 @@ class FakeVideoReceiveStream final : public webrtc::VideoReceiveStream {
 
  private:
   // webrtc::VideoReceiveStream implementation.
+  void SetRtpExtensions(std::vector<webrtc::RtpExtension> extensions) override;
+
   const webrtc::ReceiveStream::RtpConfig& rtp_config() const override {
     return config_.rtp;
   }
+
   void Start() override;
   void Stop() override;
 
@@ -291,6 +295,8 @@ class FakeFlexfecReceiveStream final : public webrtc::FlexfecReceiveStream {
  public:
   explicit FakeFlexfecReceiveStream(
       const webrtc::FlexfecReceiveStream::Config& config);
+
+  void SetRtpExtensions(std::vector<webrtc::RtpExtension> extensions) override;
 
   const webrtc::ReceiveStream::RtpConfig& rtp_config() const override {
     return config_.rtp;

@@ -193,6 +193,18 @@ export class PDFViewerBaseElement extends PolymerElement {
       plugin.toggleAttribute('pdf-viewer-update-enabled', true);
     }
 
+    // Pass the attributes for loading PDF plugin through the
+    // `mimeHandlerPrivate` API.
+    const attributesForLoading =
+        /** @type {!chrome.mimeHandlerPrivate.PdfPluginAttributes} */ ({
+          backgroundColor: this.getBackgroundColor(),
+          allowJavascript: javascript === 'allow'
+        });
+    if (chrome.mimeHandlerPrivate &&
+        chrome.mimeHandlerPrivate.setPdfPluginAttributes) {
+      chrome.mimeHandlerPrivate.setPdfPluginAttributes(attributesForLoading);
+    }
+
     return plugin;
   }
 
@@ -299,7 +311,7 @@ export class PDFViewerBaseElement extends PolymerElement {
         this.viewport_.position = this.lastViewportPosition;
       }
       this.paramsParser.getViewportFromUrlParams(this.originalUrl)
-          .then(this.handleURLParams_.bind(this));
+          .then(params => this.handleURLParams_(params));
       this.setLoadState(LoadState.SUCCESS);
       this.sendDocumentLoadedMessage();
       while (this.delayedScriptingMessages_.length > 0) {
@@ -374,9 +386,8 @@ export class PDFViewerBaseElement extends PolymerElement {
       const token = /** @type {!{token: string}} */ (message.data).token;
       if (token === this.browserApi.getStreamInfo().streamUrl) {
         const port = message.ports[0];
-        this.plugin_.postMessage = m => port.postMessage(m);
-        port.onmessage = e =>
-            PluginController.getInstance().handleMessageForUnseasoned(e);
+        this.plugin_.postMessage = port.postMessage.bind(port);
+        PluginController.getInstance().bindUnseasonedMessageHandler(port);
       } else {
         this.dispatchEvent(new CustomEvent('connection-denied-for-testing'));
       }

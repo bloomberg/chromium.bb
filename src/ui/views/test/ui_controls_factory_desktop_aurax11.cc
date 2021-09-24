@@ -20,7 +20,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/test/ui_controls_aura.h"
 #include "ui/base/x/test/x11_ui_controls_test_helper.h"
-#include "ui/views/test/test_desktop_screen_x11.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 
 namespace views {

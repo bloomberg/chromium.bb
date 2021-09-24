@@ -16,24 +16,35 @@
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_timeout.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/dot_indicator.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/layout/fill_layout.h"
@@ -43,6 +54,7 @@
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
@@ -75,6 +87,9 @@ constexpr SkColor kBubbleButtonFocusRingColor = SK_ColorWHITE;
 
 // The background color of the button when focused.
 constexpr SkColor kBubbleButtonFocusedBackgroundColor = gfx::kGoogleBlue600;
+
+// The background color of the button when highlighted.
+constexpr SkColor kBubbleButtonHighlightColor = gfx::kGoogleBlue300;
 
 class MdIPHBubbleButton : public views::MdTextButton {
  public:
@@ -132,6 +147,30 @@ class MdIPHBubbleButton : public views::MdTextButton {
 };
 
 BEGIN_METADATA(MdIPHBubbleButton, views::MdTextButton)
+END_METADATA
+
+class CloseTutorialButton : public views::ImageButton {
+ public:
+  METADATA_HEADER(CloseTutorialButton);
+  explicit CloseTutorialButton(PressedCallback callback) {
+    SetCallback(callback);
+    SetImage(
+        views::ImageButton::STATE_NORMAL,
+        gfx::CreateVectorIcon(views::kIcCloseIcon, 16, kBubbleButtonTextColor));
+    views::ConfigureVectorImageButton(this);
+    views::HighlightPathGenerator::Install(
+        this,
+        std::make_unique<views::CircleHighlightPathGenerator>(gfx::Insets()));
+    views::InkDrop::Get(this)->SetBaseColor(kBubbleButtonHighlightColor);
+    SetProperty(views::kFlexBehaviorKey,
+                views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                                         views::MaximumFlexSizeRule::kUnbounded)
+                    .WithAlignment(views::LayoutAlignment::kEnd));
+    SetAccessibleName(l10n_util::GetStringUTF16(IDS_CLOSE_TUTORIAL));
+  }
+};
+
+BEGIN_METADATA(CloseTutorialButton, views::ImageButton)
 END_METADATA
 
 class DotView : public views::View {
@@ -219,6 +258,10 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
   else
     accessible_name_ = body_text;
 
+  // Since we don't have any controls for the user to interact with (we're just
+  // an information bubble), override our role to kAlert.
+  SetAccessibleRole(ax::mojom::Role::kAlert);
+
   // We get the theme provider from the anchor view since our widget hasn't been
   // created yet.
   const ui::ThemeProvider* theme_provider =
@@ -233,59 +276,86 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
       ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_TEXT);
 
   // Add child views.
+  views::View* top_row_container = nullptr;
+  if (params.tutorial_progress_current || params.has_close_button)
+    top_row_container = AddChildView(std::make_unique<views::View>());
 
   // Add progress indicator.
-  views::View* progress_indicator_container = nullptr;
   if (params.tutorial_progress_current) {
     DCHECK(params.tutorial_progress_max);
-    progress_indicator_container =
-        AddChildView(std::make_unique<views::View>());
-
     // TODO(crbug.com/1197208): surface progress information in a11y tree
-
     for (int i = 0; i < params.tutorial_progress_max; ++i) {
       SkColor fill_color = i < params.tutorial_progress_current
                                ? SK_ColorWHITE
                                : SK_ColorTRANSPARENT;
       // TODO(crbug.com/1197208): formalize dot size
-      progress_indicator_container->AddChildView(std::make_unique<DotView>(
+      top_row_container->AddChildView(std::make_unique<DotView>(
           gfx::Size(8, 8), fill_color, SK_ColorWHITE));
     }
   }
 
+  auto close_bubble_and_run_callback = [](FeaturePromoBubbleView* view,
+                                          base::RepeatingClosure callback,
+                                          const ui::Event& event) {
+    view->CloseBubble();
+    callback.Run();
+  };
+
+  // Add close button.
+  if (params.has_close_button) {
+    // Close button should only be used for tutorial use cases.
+    DCHECK(params.tutorial_progress_current);
+    top_row_container->AddChildView(
+        std::make_unique<CloseTutorialButton>(base::BindRepeating(
+            close_bubble_and_run_callback, base::Unretained(this),
+            params.dismiss_callback.has_value()
+                ? std::move(params.dismiss_callback.value())
+                : base::DoNothing())));
+  }
+
+  // Add body icon (optional) and associated containers.
+  views::View* outer_label_container = nullptr;
+  views::View* inner_label_container = nullptr;
+  views::ImageView* icon_view = nullptr;
+  constexpr int kBodyIconSize = 24;
+  if (params.body_icon) {
+    outer_label_container = AddChildView(std::make_unique<views::View>());
+    icon_view = outer_label_container->AddChildView(
+        std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
+            *params.body_icon, text_color, kBodyIconSize)));
+    inner_label_container =
+        outer_label_container->AddChildView(std::make_unique<views::View>());
+  }
+
+  views::View* const label_parent =
+      inner_label_container ? inner_label_container : this;
+
   // Add title label.
   views::Label* title_label = nullptr;
   if (params.title_text.has_value()) {
-    title_label = AddChildView(std::make_unique<views::Label>(
+    title_label = label_parent->AddChildView(std::make_unique<views::Label>(
         std::move(*params.title_text),
         ChromeTextContext::CONTEXT_IPH_BUBBLE_TITLE));
     title_label->SetBackgroundColor(background_color);
     title_label->SetEnabledColor(text_color);
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-    if (params.preferred_width.has_value())
-      title_label->SetMultiLine(true);
+    title_label->SetMultiLine(true);
+    title_label->SetElideBehavior(gfx::NO_ELIDE);
   }
 
   // Add body label.
-  auto* body_label = AddChildView(
+  auto* const body_label = label_parent->AddChildView(
       std::make_unique<views::Label>(body_text, CONTEXT_IPH_BUBBLE_BODY));
   body_label->SetBackgroundColor(background_color);
   body_label->SetEnabledColor(text_color);
   body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   body_label->SetMultiLine(true);
+  body_label->SetElideBehavior(gfx::NO_ELIDE);
 
   // Add buttons.
   views::View* button_container = nullptr;
   if (!params.buttons.empty()) {
     button_container = AddChildView(std::make_unique<views::View>());
-    auto close_bubble_and_run_callback = [](FeaturePromoBubbleView* view,
-                                            base::RepeatingClosure callback,
-                                            const ui::Event& event) {
-      view->CloseBubble();
-      callback.Run();
-    };
-
     for (ButtonParams& button_params : params.buttons) {
       MdIPHBubbleButton* const button =
           button_container->AddChildView(std::make_unique<MdIPHBubbleButton>(
@@ -315,16 +385,21 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
       .SetDefault(views::kMarginsKey, gfx::Insets(0, 0, default_spacing, 0))
       .SetIgnoreDefaultMainAxisMargins(true);
 
-  // Set up progress container layout.
+  // Set up top row container layout.
   const int kCloseButtonHeight = 24;
-  if (progress_indicator_container) {
-    progress_indicator_container
-        ->SetLayoutManager(std::make_unique<views::FlexLayout>())
-        ->SetOrientation(views::LayoutOrientation::kHorizontal)
-        .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-        .SetMinimumCrossAxisSize(kCloseButtonHeight)
-        .SetDefault(views::kMarginsKey, gfx::Insets(0, default_spacing, 0, 0))
-        .SetIgnoreDefaultMainAxisMargins(true);
+  if (top_row_container) {
+    auto& top_layout =
+        top_row_container
+            ->SetLayoutManager(std::make_unique<views::FlexLayout>())
+            ->SetOrientation(views::LayoutOrientation::kHorizontal)
+            .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+            .SetMinimumCrossAxisSize(kCloseButtonHeight)
+            .SetDefault(views::kMarginsKey,
+                        gfx::Insets(0, default_spacing, 0, 0))
+            .SetIgnoreDefaultMainAxisMargins(true);
+    top_row_container->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(top_layout.GetDefaultFlexRule()));
   }
 
   // Set label flex properties. This ensures that if the width of the bubble
@@ -340,6 +415,43 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
   if (title_label)
     title_label->SetProperty(views::kFlexBehaviorKey, text_flex);
 
+  if (outer_label_container) {
+    auto& outer_layout =
+        outer_label_container
+            ->SetLayoutManager(std::make_unique<views::FlexLayout>())
+            ->SetOrientation(views::LayoutOrientation::kHorizontal)
+            .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+            .SetIgnoreDefaultMainAxisMargins(true);
+    outer_label_container->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(outer_layout.GetDefaultFlexRule()));
+
+    auto& inner_layout =
+        inner_label_container
+            ->SetLayoutManager(std::make_unique<views::FlexLayout>())
+            ->SetOrientation(views::LayoutOrientation::kVertical)
+            .SetCollapseMargins(true)
+            .SetDefault(views::kMarginsKey,
+                        gfx::Insets(0, 0, default_spacing, 0))
+            .SetIgnoreDefaultMainAxisMargins(true);
+    inner_label_container->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(inner_layout.GetDefaultFlexRule()));
+
+    // Align the midpoint of the first line of text with the icon.
+    const gfx::FontList& first_line_font =
+        title_label ? title_label->font_list() : body_label->font_list();
+    const int to_text_midpoint =
+        first_line_font.GetBaseline() - first_line_font.GetCapHeight() / 2;
+    const int icon_top_margin = to_text_midpoint - kBodyIconSize / 2;
+    icon_view->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets(std::max(0, icon_top_margin), 0, 0, default_spacing));
+    inner_label_container->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets(std::max(0, -icon_top_margin), 0, 0, 0));
+  }
+
   // Set up button container layout.
   if (button_container) {
     // Add in the default spacing between bubble content and bottom/buttons.
@@ -350,15 +462,21 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
                     0, 0, 0));
 
     // Create button container internal layout.
-    button_container->SetLayoutManager(std::make_unique<views::FlexLayout>())
-        ->SetOrientation(views::LayoutOrientation::kHorizontal)
-        .SetMainAxisAlignment(views::LayoutAlignment::kEnd)
-        .SetDefault(views::kMarginsKey,
-                    gfx::Insets(0,
-                                layout_provider->GetDistanceMetric(
-                                    views::DISTANCE_RELATED_BUTTON_HORIZONTAL),
-                                0, 0))
-        .SetIgnoreDefaultMainAxisMargins(true);
+    auto& button_layout =
+        button_container
+            ->SetLayoutManager(std::make_unique<views::FlexLayout>())
+            ->SetOrientation(views::LayoutOrientation::kHorizontal)
+            .SetMainAxisAlignment(views::LayoutAlignment::kEnd)
+            .SetDefault(
+                views::kMarginsKey,
+                gfx::Insets(0,
+                            layout_provider->GetDistanceMetric(
+                                views::DISTANCE_RELATED_BUTTON_HORIZONTAL),
+                            0, 0))
+            .SetIgnoreDefaultMainAxisMargins(true);
+    button_container->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(button_layout.GetDefaultFlexRule()));
   }
 
   // Set up the bubble itself.
@@ -434,12 +552,6 @@ void FeaturePromoBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
 void FeaturePromoBubbleView::OnMouseExited(const ui::MouseEvent& event) {
   if (feature_promo_bubble_timeout_)
     feature_promo_bubble_timeout_->OnMouseExited();
-}
-
-ax::mojom::Role FeaturePromoBubbleView::GetAccessibleWindowRole() {
-  // Since we don't have any controls for the user to interact with (we're just
-  // an information bubble), override our role to kAlert.
-  return ax::mojom::Role::kAlert;
 }
 
 std::u16string FeaturePromoBubbleView::GetAccessibleWindowTitle() const {

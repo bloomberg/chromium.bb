@@ -10,6 +10,7 @@
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
@@ -241,6 +242,10 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
       mouse_actively_entered_(false) {
+  // We set the dialog role because views::BubbleDialogDelegate defaults this to
+  // an alert dialog. This would make screen readers announce the whole of the
+  // system tray which is undesirable.
+  SetAccessibleRole(ax::mojom::Role::kDialog);
   // Bubbles that use transparent colors should not paint their ClientViews to a
   // layer as doing so could result in visual artifacts.
   SetPaintClientToLayer(false);
@@ -271,7 +276,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
         gfx::RoundedCornersF{kUnifiedTrayCornerRadius});
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetIsFastRoundedCorner(true);
-    layer()->SetBackgroundBlur(kUnifiedMenuBackgroundBlur);
+    layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
   } else {
     // Create a layer so that the layer for FocusRing stays in this view's
     // layer. Without it, the layer for FocusRing goes above the
@@ -374,13 +379,6 @@ bool TrayBubbleView::IsAnchoredToStatusArea() const {
 
 void TrayBubbleView::StopReroutingEvents() {
   reroute_event_handler_.reset();
-}
-
-ax::mojom::Role TrayBubbleView::GetAccessibleWindowRole() {
-  // We override the role because the base class sets it to alert dialog.
-  // This would make screen readers announce the whole of the system tray
-  // which is undesirable.
-  return ax::mojom::Role::kDialog;
 }
 
 void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,

@@ -6,166 +6,165 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
-#include "ash/app_list/app_list_util.h"
+#include "ash/app_list/model/app_list_folder_item.h"
+#include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_bubble_apps_page.h"
 #include "ash/app_list/views/app_list_bubble_search_page.h"
+#include "ash/app_list/views/app_list_folder_view.h"
+#include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/assistant/app_list_bubble_assistant_page.h"
+#include "ash/app_list/views/folder_background_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/search_box/search_box_constants.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/bubble/bubble_border.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 
 using views::BoxLayout;
-using views::BubbleBorder;
 
 namespace ash {
 namespace {
 
-constexpr int kDefaultHeight = 688;
+// Folder view inset from the edge of the bubble.
+constexpr int kFolderViewInset = 16;
 
-// As of August 2021 the assistant cards require a minimum width of 640. If the
-// cards become narrower then this could be reduced.
-constexpr int kDefaultWidth = 640;
-
-// Space between the AppListBubbleView and the top of the screen should be at
-// least this value plus the shelf height.
-constexpr int kExtraTopOfScreenSpacing = 16;
-
-gfx::Rect GetWorkAreaForBubble(aura::Window* root_window) {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
-  gfx::Rect work_area = display.work_area();
-
-  // Subtract the shelf's bounds from the work area, since the shelf should
-  // always be shown with the app list bubble. This is done because the work
-  // area includes the area under the shelf when the shelf is set to auto-hide.
-  work_area.Subtract(Shelf::ForWindow(root_window)->GetIdealBounds());
-
-  return work_area;
-}
-
-// Returns the point on the screen to which the bubble is anchored.
-gfx::Point GetAnchorPointInScreen(aura::Window* root_window,
-                                  ShelfAlignment shelf_alignment) {
-  gfx::Rect work_area = GetWorkAreaForBubble(root_window);
-
-  switch (shelf_alignment) {
-    case ShelfAlignment::kBottom:
-    case ShelfAlignment::kBottomLocked:
-      return base::i18n::IsRTL() ? work_area.bottom_right()
-                                 : work_area.bottom_left();
-    case ShelfAlignment::kLeft:
-      return work_area.origin();
-    case ShelfAlignment::kRight:
-      return work_area.top_right();
+// A simplified horizontal separator that uses a solid color layer for painting.
+// This is more efficient than using a views::Separator, which would require
+// SetPaintToLayer(ui::LAYER_TEXTURED).
+class SeparatorWithLayer : public views::View {
+ public:
+  SeparatorWithLayer() {
+    SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    layer()->SetColor(ColorProvider::Get()->GetContentLayerColor(
+        ColorProvider::ContentLayerType::kSeparatorColor));
+    layer()->SetFillsBoundsOpaquely(false);
   }
-}
+  SeparatorWithLayer(const SeparatorWithLayer&) = delete;
+  SeparatorWithLayer& operator=(const SeparatorWithLayer&) = delete;
+  ~SeparatorWithLayer() override = default;
 
-// Returns which corner of the bubble is anchored. The views bubble code calls
-// this "arrow" for historical reasons. No arrow is drawn.
-BubbleBorder::Arrow GetArrowCorner(ShelfAlignment shelf_alignment) {
-  switch (shelf_alignment) {
-    case ShelfAlignment::kBottom:
-    case ShelfAlignment::kBottomLocked:
-      return base::i18n::IsRTL() ? BubbleBorder::BOTTOM_RIGHT
-                                 : BubbleBorder::BOTTOM_LEFT;
-    case ShelfAlignment::kLeft:
-      return BubbleBorder::TOP_LEFT;
-    case ShelfAlignment::kRight:
-      return BubbleBorder::TOP_RIGHT;
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    // The parent's layout manager will stretch it horizontally.
+    return gfx::Size(1, 1);
   }
-}
+};
 
 }  // namespace
 
-AppListBubbleView::AppListBubbleView(AppListViewDelegate* view_delegate,
-                                     aura::Window* root_window,
-                                     ShelfAlignment shelf_alignment)
+AppListBubbleView::AppListBubbleView(
+    AppListViewDelegate* view_delegate,
+    ApplicationDragAndDropHost* drag_and_drop_host)
     : view_delegate_(view_delegate) {
   DCHECK(view_delegate);
-  DCHECK(root_window);
-  // The bubble is anchored to a screen corner point, but the API takes a rect.
-  SetAnchorRect(gfx::Rect(GetAnchorPointInScreen(root_window, shelf_alignment),
-                          gfx::Size()));
-  SetArrow(GetArrowCorner(shelf_alignment));
+  DCHECK(drag_and_drop_host);
 
-  SetButtons(ui::DIALOG_BUTTON_NONE);
-  set_parent_window(
-      Shell::GetContainer(root_window, kShellWindowId_AppListContainer));
+  // Set up rounded corners and background blur, similar to TrayBubbleView.
+  SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  layer()->SetRoundedCornerRadius(
+      gfx::RoundedCornersF{kUnifiedTrayCornerRadius});
+  layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetIsFastRoundedCorner(true);
+  layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+  layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
 
-  // Match the system tray bubble radius.
-  set_corner_radius(kUnifiedTrayCornerRadius);
+  views::FillLayout* layout =
+      SetLayoutManager(std::make_unique<views::FillLayout>());
+  a11y_announcer_ = std::make_unique<AppListA11yAnnouncer>(
+      AddChildView(std::make_unique<views::View>()));
+  InitContentsView(drag_and_drop_host);
+  InitFolderView();
+  // Folder view is laid out manually based on its contents.
+  layout->SetChildViewIgnoredByLayout(folder_view_, true);
 
-  // Remove the default margins so the content fills the bubble.
-  set_margins(gfx::Insets());
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));
+}
 
-  // TODO(https://crbug.com/1218229): Add background blur. See TrayBubbleView
-  // and BubbleBorder.
-  set_color(AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kOpaque));
+AppListBubbleView::~AppListBubbleView() {
+  // `a11y_announcer_` depends on a child view, so shut it down before view
+  // hierarchy is destroyed.
+  a11y_announcer_->Shutdown();
 
-  // Arrow left/right and up/down triggers the same focus movement as
-  // tab/shift+tab.
-  SetEnableArrowKeyTraversal(true);
+  // AppListFolderView may reference/observe an item on the root apps grid view
+  // (associated with the folder), so destroy it before the root apps grid view.
+  delete folder_view_;
+  folder_view_ = nullptr;
+}
 
-  auto* layout = SetLayoutManager(
+void AppListBubbleView::InitContentsView(
+    ApplicationDragAndDropHost* drag_and_drop_host) {
+  auto* contents = AddChildView(std::make_unique<views::View>());
+
+  auto* layout = contents->SetLayoutManager(
       std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical));
   layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
 
-  search_box_view_ = AddChildView(std::make_unique<SearchBoxView>(
-      /*delegate=*/this, view_delegate, /*app_list_view=*/nullptr));
+  search_box_view_ = contents->AddChildView(std::make_unique<SearchBoxView>(
+      /*delegate=*/this, view_delegate_, /*app_list_view=*/nullptr));
   SearchBoxViewBase::InitParams params;
   // Show the assistant button until the user types text.
   params.show_close_button_when_active = false;
   params.create_background = false;
   search_box_view_->Init(params);
 
-  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));
+  // The main view has a solid color layer, so the separator needs its own
+  // layer to visibly paint.
+  separator_ = contents->AddChildView(std::make_unique<SeparatorWithLayer>());
 
   // NOTE: Passing drag and drop host from a specific shelf instance assumes
   // that the `apps_page_` will not get reused for showing the app list in
   // another root window.
-  apps_page_ = AddChildView(std::make_unique<AppListBubbleAppsPage>(
-      view_delegate, Shelf::ForWindow(root_window)
-                         ->shelf_widget()
-                         ->GetDragAndDropHostForAppList()));
+  apps_page_ = contents->AddChildView(std::make_unique<AppListBubbleAppsPage>(
+      view_delegate_, drag_and_drop_host, a11y_announcer_.get(),
+      /*folder_controller=*/this));
 
-  search_page_ = AddChildView(std::make_unique<AppListBubbleSearchPage>(
-      view_delegate, search_box_view_));
+  search_page_ =
+      contents->AddChildView(std::make_unique<AppListBubbleSearchPage>(
+          view_delegate_, search_box_view_));
   search_page_->SetVisible(false);
 
-  assistant_page_ = AddChildView(std::make_unique<AppListBubbleAssistantPage>(
-      view_delegate->GetAssistantViewDelegate()));
+  assistant_page_ =
+      contents->AddChildView(std::make_unique<AppListBubbleAssistantPage>(
+          view_delegate_->GetAssistantViewDelegate()));
   assistant_page_->SetVisible(false);
 }
 
-AppListBubbleView::~AppListBubbleView() = default;
+void AppListBubbleView::InitFolderView() {
+  auto folder_view = std::make_unique<AppListFolderView>(
+      this, apps_page_->scrollable_apps_grid_view(), view_delegate_->GetModel(),
+      /*contents_view=*/nullptr, a11y_announcer_.get(), view_delegate_);
+  folder_background_view_ =
+      AddChildView(std::make_unique<FolderBackgroundView>(folder_view.get()));
+  folder_background_view_->SetVisible(false);
+
+  folder_view_ = AddChildView(std::move(folder_view));
+  // Folder view will be set visible by its show animation.
+  folder_view_->SetVisible(false);
+}
 
 bool AppListBubbleView::Back() {
   if (search_box_view_->HasSearch()) {
-    search_box_view_->ClearSearchAndDeactivateSearchBox();
+    search_box_view_->ClearSearch();
     return true;
   }
   // TODO(https://crbug.com/1220808): Handle back action for open folders in
@@ -186,11 +185,21 @@ bool AppListBubbleView::IsShowingEmbeddedAssistantUI() const {
 void AppListBubbleView::ShowEmbeddedAssistantUI() {
   // The assistant has its own text input field.
   search_box_view_->SetVisible(false);
+  separator_->SetVisible(false);
 
   apps_page_->SetVisible(false);
   search_page_->SetVisible(false);
   assistant_page_->SetVisible(true);
   assistant_page_->RequestFocus();
+}
+
+int AppListBubbleView::GetHeightToFitAllApps() const {
+  return apps_page_->scroll_view()->contents()->bounds().height() +
+         search_box_view_->GetPreferredSize().height();
+}
+
+const char* AppListBubbleView::GetClassName() const {
+  return "AppListBubbleView";
 }
 
 bool AppListBubbleView::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -211,48 +220,27 @@ bool AppListBubbleView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
-gfx::Size AppListBubbleView::CalculatePreferredSize() const {
-  int height = kDefaultHeight - margins().height();
-  int width = kDefaultWidth - margins().width();
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          GetWidget()->GetNativeWindow());
-  gfx::Rect work_area = GetWorkAreaForBubble(GetWidget()->GetNativeWindow());
+void AppListBubbleView::OnThemeChanged() {
+  views::View::OnThemeChanged();
 
-  if (display.bounds().height() < 800) {
-    height = work_area.height() - margins().height() -
-             ShelfConfig::Get()->shelf_size() - kExtraTopOfScreenSpacing;
-  } else if (display.bounds().height() > 1200) {
-    // Calculate the height required to fit the contents of the AppListBubble
-    // with no scrolling.
-    int height_to_fit_all_apps =
-        apps_page_->scroll_view()->contents()->bounds().height() +
-        search_box_view_->GetPreferredSize().height();
-
-    int max_height =
-        (work_area.height() - margins().height() -
-         ShelfConfig::Get()->shelf_size() + kExtraTopOfScreenSpacing) /
-        2;
-
-    height = base::clamp(height_to_fit_all_apps,
-                         kDefaultHeight - margins().height(), max_height);
-  }
-
-  return gfx::Size(width, height);
+  layer()->SetColor(AshColorProvider::Get()->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparent80));
 }
 
-void AppListBubbleView::OnPaint(gfx::Canvas* canvas) {
-  // Used to draw/hide the focus bar for the search box view.
-  if (search_box_view_->search_box()->HasFocus() &&
-      search_box_view_->search_box()->GetText().empty()) {
-    PaintFocusBar(
-        canvas,
-        GetContentsBounds().origin() +
-            gfx::Vector2d(0,
-                          kUnifiedTrayCornerRadius /*downshift the focus bar*/),
-        /*height=*/kSearchBoxIconSize);
+void AppListBubbleView::Layout() {
+  // The folder view has custom layout code that centers the folder over the
+  // associated root apps grid folder item.
+  if (showing_folder_) {
+    gfx::Rect folder_bounding_box = GetLocalBounds();
+    folder_bounding_box.Inset(kFolderViewInset, kFolderViewInset);
+    folder_view_->SetBoundingBox(folder_bounding_box);
+    folder_view_->UpdatePreferredBounds();
+    // NOTE: Folder view bounds are also modified during reparent drag when the
+    // view is "visible" but hidden offscreen. See app_list_folder_view.cc.
+    folder_view_->SetBoundsRect(folder_view_->preferred_bounds());
   }
-  views::View::OnPaint(canvas);
+
+  views::View::Layout();
 }
 
 void AppListBubbleView::QueryChanged(SearchBoxViewBase* sender) {
@@ -286,6 +274,63 @@ void AppListBubbleView::OnSearchBoxKeyEvent(ui::KeyEvent* event) {
 
 bool AppListBubbleView::CanSelectSearchResults() {
   return search_page_->GetVisible() && search_page_->CanSelectSearchResults();
+}
+
+void AppListBubbleView::ShowFolderForItemView(
+    AppListItemView* folder_item_view) {
+  DVLOG(1) << __FUNCTION__;
+  if (folder_view_->IsAnimationRunning())
+    return;
+
+  // TODO(jamescook): Record metric for folder open. Either use the existing
+  // Apps.AppListFolderOpened or introduce a new metric.
+
+  DCHECK(folder_item_view->is_folder());
+  folder_view_->ConfigureForFolderItemView(folder_item_view);
+  showing_folder_ = true;
+  Layout();
+  folder_background_view_->SetVisible(true);
+  folder_view_->ScheduleShowHideAnimation(/*show=*/true,
+                                          /*hide_for_reparent=*/false);
+  // TODO(crbug.com/1214064): Disable items behind the folder so they will not
+  // be reached in focus traversal. See
+  // AppsContainerView::DisableFocusForShowingActiveFolder().
+}
+
+void AppListBubbleView::ShowApps(AppListFolderItem* folder_item) {
+  DVLOG(1) << __FUNCTION__;
+  if (folder_view_->IsAnimationRunning())
+    return;
+
+  showing_folder_ = false;
+  Layout();
+  folder_background_view_->SetVisible(false);
+  apps_page_->scrollable_apps_grid_view()->ResetForShowApps();
+  folder_view_->ResetItemsGridForClose();
+  if (folder_item) {
+    folder_view_->ScheduleShowHideAnimation(/*show=*/false,
+                                            /*hide_for_reparent=*/false);
+  } else {
+    folder_view_->HideViewImmediately();
+  }
+}
+
+void AppListBubbleView::ReparentFolderItemTransit(
+    AppListFolderItem* folder_item) {
+  DVLOG(1) << __FUNCTION__;
+  if (folder_view_->IsAnimationRunning())
+    return;
+
+  showing_folder_ = false;
+  Layout();
+  folder_background_view_->SetVisible(false);
+  folder_view_->ScheduleShowHideAnimation(/*show=*/false,
+                                          /*hide_for_reparent=*/true);
+}
+
+void AppListBubbleView::ReparentDragEnded() {
+  DVLOG(1) << __FUNCTION__;
+  // Nothing to do.
 }
 
 }  // namespace ash

@@ -18,6 +18,7 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
 
@@ -25,6 +26,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.color.MaterialColors;
@@ -34,7 +36,6 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.settings.FeedAutoplaySettingsFragment;
-import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceProvider;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
@@ -62,6 +63,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
+import org.chromium.chrome.browser.xsurface.ImageCacheHelper;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
@@ -87,8 +89,9 @@ import java.util.List;
 /**
  * Provides a surface that displays an interest feed rendered list of content suggestions.
  */
-public class FeedSurfaceCoordinator
-        implements FeedSurfaceProvider, FeedIPHDelegate, SwipeRefreshLayout.OnRefreshListener {
+public class FeedSurfaceCoordinator implements FeedSurfaceProvider, FeedBubbleDelegate,
+                                               SwipeRefreshLayout.OnRefreshListener,
+                                               BackToTopBubbleScrollListener.ResultHandler {
     @VisibleForTesting
     public static final String FEED_STREAM_CREATED_TIME_MS_UMA = "FeedStreamCreatedTime";
 
@@ -132,6 +135,7 @@ public class FeedSurfaceCoordinator
     private @Nullable FeedStream mStream;
     // Feed header fields.
     private @Nullable PropertyModel mSectionHeaderModel;
+    private @Nullable ViewGroup mViewportView;
     private @Nullable SectionHeaderView mSectionHeaderView;
     private @Nullable ListModelChangeProcessor<PropertyListModel<PropertyModel, PropertyKey>,
             SectionHeaderView, PropertyKey> mSectionHeaderListModelChangeProcessor;
@@ -141,6 +145,7 @@ public class FeedSurfaceCoordinator
     private @Nullable NtpListContentManager mContentManager;
     private @Nullable RecyclerView mRecyclerView;
     private @Nullable SurfaceScope mSurfaceScope;
+    private @Nullable FeedSurfaceScopeDependencyProvider mDependencyProvider;
     private @Nullable HybridListRenderer mHybridListRenderer;
 
     // Used when Feed is disabled by policy.
@@ -148,10 +153,14 @@ public class FeedSurfaceCoordinator
     private @Nullable ViewResizer mScrollViewResizer;
 
     // Used to handle things related to the main scrollable container of NTP surface.
+    // In start surface, it does not track scrolling events - only the header offset.
+    // In New Tab Page, it does not track the header offset (no header) - instead, it
+    // tracks scrolling events.
     private @Nullable ScrollableContainerDelegate mScrollableContainerDelegate;
 
     private @Nullable HeaderIphScrollListener mHeaderIphScrollListener;
     private @Nullable RefreshIphScrollListener mRefreshIphScrollListener;
+    private @Nullable BackToTopBubbleScrollListener mBackToTopBubbleScrollListener;
 
     private final FeedLaunchReliabilityLoggingState mLaunchReliabilityLoggingState;
     private FeedLaunchReliabilityLogger mLaunchReliabilityLogger;
@@ -160,6 +169,8 @@ public class FeedSurfaceCoordinator
     private final Supplier<Toolbar> mToolbarSupplier;
 
     private FeedSwipeRefreshLayout mSwipeRefreshLayout;
+
+    private BackToTopBubble mBackToTopBubble;
 
     @IntDef({StreamTabId.DEFAULT, StreamTabId.FOR_YOU, StreamTabId.FOLLOWING})
     public @interface StreamTabId {
@@ -264,6 +275,8 @@ public class FeedSurfaceCoordinator
      * @param FeedLaunchReliabilityLoggingState Holds the state for feed surface creation.
      * @param swipeRefreshLayout The layout to support pull-to-refresh.
      * @param overScrollDisabled Whether the overscroll effect is disabled.
+     * @param viewportView The view that should be used as a container for viewport measurement
+     *   purposes, or |null| if the view returned by HybridListRenderer is to be used.
      */
     public FeedSurfaceCoordinator(Activity activity, SnackbarManager snackbarManager,
             WindowAndroid windowAndroid, @Nullable SnapScrollHelper snapScrollHelper,
@@ -277,7 +290,8 @@ public class FeedSurfaceCoordinator
             PrivacyPreferencesManagerImpl privacyPreferencesManager,
             @NonNull Supplier<Toolbar> toolbarSupplier,
             FeedLaunchReliabilityLoggingState launchReliabilityLoggingState,
-            @Nullable FeedSwipeRefreshLayout swipeRefreshLayout, boolean overScrollDisabled) {
+            @Nullable FeedSwipeRefreshLayout swipeRefreshLayout, boolean overScrollDisabled,
+            @Nullable ViewGroup viewportView) {
         FeedSurfaceTracker.getInstance().initServiceBridge();
         mActivity = activity;
         mSnackbarManager = snackbarManager;
@@ -296,6 +310,7 @@ public class FeedSurfaceCoordinator
         mToolbarSupplier = toolbarSupplier;
         mSwipeRefreshLayout = swipeRefreshLayout;
         mOverScrollDisabled = overScrollDisabled;
+        mViewportView = viewportView;
 
         Resources resources = mActivity.getResources();
         mDefaultMarginPixels = mActivity.getResources().getDimensionPixelSize(
@@ -344,6 +359,13 @@ public class FeedSurfaceCoordinator
         }
     }
 
+    private void stopScrollTracking() {
+        if (mScrollableContainerDelegate != null) {
+            mScrollableContainerDelegate.removeScrollListener(mDependencyProvider);
+            mScrollableContainerDelegate = null;
+        }
+    }
+
     @Override
     public void destroy() {
         if (mSwipeRefreshLayout != null) {
@@ -355,19 +377,20 @@ public class FeedSurfaceCoordinator
             mSwipeRefreshLayout.disableSwipe();
             mSwipeRefreshLayout = null;
         }
-        stopIph();
+        stopBubbleTriggering();
         mMediator.destroy();
         if (mFeedSurfaceLifecycleManager != null) mFeedSurfaceLifecycleManager.destroy();
         mFeedSurfaceLifecycleManager = null;
         if (mEnhancedProtectionPromoController != null) {
             mEnhancedProtectionPromoController.destroy();
         }
-        mScrollableContainerDelegate = null;
+        stopScrollTracking();
         if (mSectionHeaderModelChangeProcessor != null) {
             mSectionHeaderModelChangeProcessor.destroy();
             mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY)
                     .removeObserver(mSectionHeaderListModelChangeProcessor);
         }
+        clearImageMemoryCache();
         FeedSurfaceTracker.getInstance().untrackSurface(this);
         if (mHybridListRenderer != null) {
             mHybridListRenderer.unbind();
@@ -504,12 +527,18 @@ public class FeedSurfaceCoordinator
                                      : R.style.ThemeOverlay_Feed_Light));
         ProcessScope processScope = FeedSurfaceTracker.getInstance().getXSurfaceProcessScope();
         if (processScope != null) {
-            mSurfaceScope = processScope.obtainSurfaceScope(new FeedSurfaceScopeDependencyProvider(
+            mDependencyProvider = new FeedSurfaceScopeDependencyProvider(
                     mActivity, context, mShowDarkBackground, () -> {
                         if (mMediator.getFirstStream() == null) return false;
                         return mMediator.getFirstStream().isActivityLoggingEnabled();
-                    }));
+                    });
+
+            mSurfaceScope = processScope.obtainSurfaceScope(mDependencyProvider);
+            if (mScrollableContainerDelegate != null) {
+                mScrollableContainerDelegate.addScrollListener(mDependencyProvider);
+            }
         } else {
+            mDependencyProvider = null;
             mSurfaceScope = null;
         }
 
@@ -520,6 +549,7 @@ public class FeedSurfaceCoordinator
                 mLaunchReliabilityLogger = mSurfaceScope.getFeedLaunchReliabilityLogger();
                 mLaunchReliabilityLoggingState.onLoggerAvailable(mLaunchReliabilityLogger);
             }
+
         } else {
             mHybridListRenderer = new NativeViewListRenderer(context);
         }
@@ -532,7 +562,7 @@ public class FeedSurfaceCoordinator
         RecyclerView view;
         if (mHybridListRenderer != null) {
             // XSurface returns a View, but it should be a RecyclerView.
-            view = (RecyclerView) mHybridListRenderer.bind(mContentManager);
+            view = (RecyclerView) mHybridListRenderer.bind(mContentManager, mViewportView);
             view.setId(R.id.feed_stream_recycler_view);
             view.setClipToPadding(false);
             view.setBackgroundColor(
@@ -658,7 +688,8 @@ public class FeedSurfaceCoordinator
                             "Header" + header.hashCode(), header);
             headerList.add(content);
             // Feed header view in multi does not need padding added.
-            if (FeedFeatures.isWebFeedUIEnabled() && header == mSectionHeaderView) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)
+                    && header == mSectionHeaderView) {
                 content.setShouldAddPadding(false);
             }
         }
@@ -799,16 +830,21 @@ public class FeedSurfaceCoordinator
         return mSectionHeaderView;
     }
 
+    @VisibleForTesting
+    public BackToTopBubble getBackToTopBubble() {
+        return mBackToTopBubble;
+    }
+
     /**
-     * Initializes things related to the IPH which will start listening to scroll events to
-     * determine whether the IPH should be triggered.
+     * Initializes things related to the bubbles which will start listening to scroll events to
+     * determine whether a bubble should be triggered.
      *
-     * You must stop the IPH with #stopIph before tearing down feed components, e.g., on #destroy.
-     * This also applies for the case where the feed stream is deleted when disabled (e.g., by
-     * policy).
+     * You must stop the IPH with #stopBubbleTriggering before tearing down feed components, e.g.,
+     * on #destroy. This also applies for the case where the feed stream is deleted when disabled
+     * (e.g., by policy).
      */
-    void initializeIph() {
-        // Don't do anything when there is no feed stream because the IPH isn't needed in that
+    void initializeBubbleTriggering() {
+        // Don't do anything when there is no feed stream because the bubble isn't needed in that
         // case.
         if (mStream == null) return;
 
@@ -821,6 +857,9 @@ public class FeedSurfaceCoordinator
         createHeaderIphScrollListener();
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_INTERACTIVE_REFRESH)) {
             createRefreshIphScrollListener();
+        }
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_BACK_TO_TOP)) {
+            createBackToTopBubbleScrollListener();
         }
     }
 
@@ -842,14 +881,18 @@ public class FeedSurfaceCoordinator
         mScrollableContainerDelegate.addScrollListener(mRefreshIphScrollListener);
     }
 
+    private void createBackToTopBubbleScrollListener() {
+        mBackToTopBubbleScrollListener = new BackToTopBubbleScrollListener(this, this);
+        mScrollableContainerDelegate.addScrollListener(mBackToTopBubbleScrollListener);
+    }
+
     /**
-     * Stops and deletes things related to the IPH. Must be called before tearing down feed
+     * Stops and deletes things related to the bubbles. Must be called before tearing down feed
      * components, e.g., on #destroy. This also applies for the case where the feed stream is
      * deleted when disabled (e.g., by policy).
      */
-    void stopIph() {
-        if (mStream != null && mScrollableContainerDelegate != null
-                && mHeaderIphScrollListener != null) {
+    private void stopBubbleTriggering() {
+        if (mStream != null && mScrollableContainerDelegate != null) {
             if (mHeaderIphScrollListener != null) {
                 mScrollableContainerDelegate.removeScrollListener(mHeaderIphScrollListener);
                 mHeaderIphScrollListener = null;
@@ -858,8 +901,12 @@ public class FeedSurfaceCoordinator
                 mScrollableContainerDelegate.removeScrollListener(mRefreshIphScrollListener);
                 mRefreshIphScrollListener = null;
             }
+            if (mBackToTopBubbleScrollListener != null) {
+                mScrollableContainerDelegate.removeScrollListener(mBackToTopBubbleScrollListener);
+                mBackToTopBubbleScrollListener = null;
+            }
         }
-        mScrollableContainerDelegate = null;
+        stopScrollTracking();
     }
 
     @Override
@@ -915,10 +962,65 @@ public class FeedSurfaceCoordinator
         return (mSwipeRefreshLayout == null) ? true : mSwipeRefreshLayout.canScrollVertically(-1);
     }
 
+    @Override
+    public boolean isShowingBackToTopBubble() {
+        return mBackToTopBubble != null && mBackToTopBubble.isShowing();
+    }
+
+    @Override
+    public int getHeaderCount() {
+        return mHeaderCount;
+    }
+
+    @Override
+    public int getItemCount() {
+        return ((LinearLayoutManager) mRecyclerView.getLayoutManager()).getItemCount();
+    }
+
+    @Override
+    public int getFirstVisiblePosition() {
+        return ((LinearLayoutManager) mRecyclerView.getLayoutManager())
+                .findFirstVisibleItemPosition();
+    }
+
+    @Override
+    public int getLastVisiblePosition() {
+        return ((LinearLayoutManager) mRecyclerView.getLayoutManager())
+                .findLastVisibleItemPosition();
+    }
+
+    @Override
+    public void showBubble() {
+        if (mBackToTopBubble != null) return;
+        mBackToTopBubble = new BackToTopBubble(mActivity, mRootView.getContext(), mRootView, () -> {
+            mBackToTopBubble.dismiss();
+            mBackToTopBubble = null;
+            mRecyclerView.smoothScrollToPosition(0);
+        });
+        mBackToTopBubble.show();
+    }
+
+    @Override
+    public void dismissBubble() {
+        if (mBackToTopBubble == null) return;
+        mBackToTopBubble.dismiss();
+        mBackToTopBubble = null;
+    }
+
     private boolean isReliabilityLoggingEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_RELIABILITY_LOGGING)
                 && (mPrivacyPreferencesManager.isMetricsReportingEnabled()
                         || CommandLine.getInstance().hasSwitch(
                                 "force-enable-feed-reliability-logging"));
+    }
+
+    private void clearImageMemoryCache() {
+        ProcessScope processScope = FeedSurfaceTracker.getInstance().getXSurfaceProcessScope();
+        if (processScope != null) {
+            ImageCacheHelper imageCacheHelper = processScope.provideImageCacheHelper();
+            if (imageCacheHelper != null) {
+                imageCacheHelper.clearMemoryCache();
+            }
+        }
     }
 }

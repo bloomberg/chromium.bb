@@ -30,6 +30,7 @@
 
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
 import type * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 
@@ -39,7 +40,7 @@ import {LiveLocationPool} from './LiveLocation.js';
 
 let breakpointManagerInstance: BreakpointManager;
 
-export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
+export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
   readonly storage: Storage;
   private readonly workspace: Workspace.Workspace.WorkspaceImpl;
   readonly targetManager: SDK.TargetManager.TargetManager;
@@ -113,18 +114,18 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
     this.storage.unmute();
   }
 
-  private uiSourceCodeAdded(event: Common.EventTarget.EventTargetEvent): void {
-    const uiSourceCode = (event.data as Workspace.UISourceCode.UISourceCode);
+  private uiSourceCodeAdded(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.UISourceCode>): void {
+    const uiSourceCode = event.data;
     this.restoreBreakpoints(uiSourceCode);
   }
 
-  private uiSourceCodeRemoved(event: Common.EventTarget.EventTargetEvent): void {
-    const uiSourceCode = (event.data as Workspace.UISourceCode.UISourceCode);
+  private uiSourceCodeRemoved(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.UISourceCode>): void {
+    const uiSourceCode = event.data;
     this.removeUISourceCode(uiSourceCode);
   }
 
-  private projectRemoved(event: Common.EventTarget.EventTargetEvent): void {
-    const project = (event.data as Workspace.Workspace.Project);
+  private projectRemoved(event: Common.EventTarget.EventTargetEvent<Workspace.Workspace.Project>): void {
+    const project = event.data;
     for (const uiSourceCode of project.uiSourceCodes()) {
       this.removeUISourceCode(uiSourceCode);
     }
@@ -295,6 +296,11 @@ export enum Events {
   BreakpointAdded = 'breakpoint-added',
   BreakpointRemoved = 'breakpoint-removed',
 }
+
+export type EventTypes = {
+  [Events.BreakpointAdded]: BreakpointLocation,
+  [Events.BreakpointRemoved]: BreakpointLocation,
+};
 
 export class Breakpoint implements SDK.TargetManager.SDKModelObserver<SDK.DebuggerModel.DebuggerModel> {
   readonly breakpointManager: BreakpointManager;
@@ -535,7 +541,7 @@ export class ModelBreakpoint {
   private isUpdating: boolean;
   private cancelCallback: boolean;
   private currentState: Breakpoint.State|null;
-  private breakpointIds: string[];
+  private breakpointIds: Protocol.Debugger.BreakpointId[];
 
   constructor(
       debuggerModel: SDK.DebuggerModel.DebuggerModel, breakpoint: Breakpoint,
@@ -635,7 +641,13 @@ export class ModelBreakpoint {
         // TODO(bmeurer): This fallback doesn't make a whole lot of sense, we should
         // at least signal a warning to the developer that this breakpoint wasn't
         // really resolved.
-        const position = {url: this.breakpoint.url(), scriptId: '', scriptHash: '', lineNumber, columnNumber};
+        const position = {
+          url: this.breakpoint.url(),
+          scriptId: '' as Protocol.Runtime.ScriptId,
+          scriptHash: '',
+          lineNumber,
+          columnNumber,
+        };
         newState = new Breakpoint.State([position], condition);
       }
     }
@@ -659,9 +671,9 @@ export class ModelBreakpoint {
         return this.debuggerModel.setBreakpointByURL(pos.url, pos.lineNumber, pos.columnNumber, condition);
       }
       return this.debuggerModel.setBreakpointInAnonymousScript(
-          pos.scriptId as string, pos.scriptHash as string, pos.lineNumber, pos.columnNumber, condition);
+          pos.scriptId, pos.scriptHash as string, pos.lineNumber, pos.columnNumber, condition);
     }));
-    const breakpointIds: string[] = [];
+    const breakpointIds: Protocol.Debugger.BreakpointId[] = [];
     let locations: SDK.DebuggerModel.Location[] = [];
     let maybeRescheduleUpdate = false;
     for (const result of results) {
@@ -779,7 +791,7 @@ export class ModelBreakpoint {
 
 interface Position {
   url: string;
-  scriptId: string;
+  scriptId: Protocol.Runtime.ScriptId;
   scriptHash: string;
   lineNumber: number;
   columnNumber?: number;

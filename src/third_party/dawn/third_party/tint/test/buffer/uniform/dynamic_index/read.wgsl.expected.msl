@@ -1,6 +1,17 @@
 #include <metal_stdlib>
 
 using namespace metal;
+
+template<typename T, int N, int M>
+inline auto operator*(matrix<T, N, M> lhs, packed_vec<T, N> rhs) {
+  return lhs * vec<T, N>(rhs);
+}
+
+template<typename T, int N, int M>
+inline auto operator*(packed_vec<T, M> lhs, matrix<T, N, M> rhs) {
+  return vec<T, M>(lhs) * rhs;
+}
+
 struct tint_array_wrapper {
   /* 0x0000 */ int4 arr[4];
 };
@@ -11,8 +22,8 @@ struct Inner {
   /* 0x001c */ uint d;
   /* 0x0020 */ packed_float3 e;
   /* 0x002c */ float f;
-  /* 0x0030 */ packed_int2 g;
-  /* 0x0038 */ packed_int2 h;
+  /* 0x0030 */ int2 g;
+  /* 0x0038 */ int2 h;
   /* 0x0040 */ float2x3 i;
   /* 0x0060 */ float3x2 j;
   /* 0x0078 */ int8_t tint_pad[8];

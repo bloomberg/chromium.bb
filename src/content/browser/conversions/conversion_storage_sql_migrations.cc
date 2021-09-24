@@ -20,14 +20,20 @@ namespace content {
 
 namespace {
 
+WARN_UNUSED_RESULT
+StorableImpression::Id NextImpressionId(StorableImpression::Id id) {
+  return StorableImpression::Id(*id + 1);
+}
+
 struct ImpressionIdAndConversionOrigin {
-  int64_t impression_id;
+  StorableImpression::Id impression_id;
   url::Origin conversion_origin;
 };
 
 std::vector<ImpressionIdAndConversionOrigin>
-GetImpressionIdAndConversionOrigins(sql::Database* db,
-                                    int64_t start_impression_id) {
+GetImpressionIdAndConversionOrigins(
+    sql::Database* db,
+    StorableImpression::Id start_impression_id) {
   static constexpr char kGetImpressionsSql[] =
       "SELECT impression_id,conversion_origin "
       "FROM impressions "
@@ -37,14 +43,14 @@ GetImpressionIdAndConversionOrigins(sql::Database* db,
 
   sql::Statement statement(
       db->GetCachedStatement(SQL_FROM_HERE, kGetImpressionsSql));
-  statement.BindInt64(0, start_impression_id);
+  statement.BindInt64(0, *start_impression_id);
 
   const int kNumImpressions = 100;
   statement.BindInt(1, kNumImpressions);
 
   std::vector<ImpressionIdAndConversionOrigin> impressions;
   while (statement.Step()) {
-    int64_t impression_id = statement.ColumnInt64(0);
+    StorableImpression::Id impression_id(statement.ColumnInt64(0));
     url::Origin conversion_origin =
         DeserializeOrigin(statement.ColumnString(1));
 
@@ -56,13 +62,14 @@ GetImpressionIdAndConversionOrigins(sql::Database* db,
 }
 
 struct ImpressionIdAndImpressionOrigin {
-  int64_t impression_id;
+  StorableImpression::Id impression_id;
   url::Origin impression_origin;
 };
 
 std::vector<ImpressionIdAndImpressionOrigin>
-GetImpressionIdAndImpressionOrigins(sql::Database* db,
-                                    int64_t start_impression_id) {
+GetImpressionIdAndImpressionOrigins(
+    sql::Database* db,
+    StorableImpression::Id start_impression_id) {
   static constexpr char kGetImpressionsSql[] =
       "SELECT impression_id,impression_origin "
       "FROM impressions "
@@ -72,14 +79,14 @@ GetImpressionIdAndImpressionOrigins(sql::Database* db,
 
   sql::Statement statement(
       db->GetCachedStatement(SQL_FROM_HERE, kGetImpressionsSql));
-  statement.BindInt64(0, start_impression_id);
+  statement.BindInt64(0, *start_impression_id);
 
   const int kNumImpressions = 100;
   statement.BindInt(1, kNumImpressions);
 
   std::vector<ImpressionIdAndImpressionOrigin> impressions;
   while (statement.Step()) {
-    int64_t impression_id = statement.ColumnInt64(0);
+    StorableImpression::Id impression_id(statement.ColumnInt64(0));
     url::Origin impression_origin =
         DeserializeOrigin(statement.ColumnString(1));
 
@@ -149,7 +156,7 @@ bool MigrateToVersion2(sql::Database* db, sql::MetaTable* meta_table) {
   // We update a subset of rows at a time to avoid pulling the entire
   // impressions table into memory.
   std::vector<ImpressionIdAndConversionOrigin> impressions =
-      GetImpressionIdAndConversionOrigins(db, /*start_impression_id=*/0);
+      GetImpressionIdAndConversionOrigins(db, StorableImpression::Id(0));
 
   static constexpr char kUpdateDestinationSql[] =
       "UPDATE impressions SET conversion_destination = ? WHERE impression_id = "
@@ -166,13 +173,13 @@ bool MigrateToVersion2(sql::Database* db, sql::MetaTable* meta_table) {
       // dynamically.
       update_destination_statement.BindString(
           0, net::SchemefulSite(impression.conversion_origin).Serialize());
-      update_destination_statement.BindInt64(1, impression.impression_id);
+      update_destination_statement.BindInt64(1, *impression.impression_id);
       update_destination_statement.Run();
     }
 
     // Fetch the next batch of rows from the database.
     impressions = GetImpressionIdAndConversionOrigins(
-        db, impressions.back().impression_id + 1);
+        db, NextImpressionId(impressions.back().impression_id));
   }
 
   // Create the pre-existing impression table indices on the new table.
@@ -479,7 +486,7 @@ bool MigrateToVersion7(sql::Database* db, sql::MetaTable* meta_table) {
   // We update a subset of rows at a time to avoid pulling the entire
   // impressions table into memory.
   std::vector<ImpressionIdAndImpressionOrigin> impressions =
-      GetImpressionIdAndImpressionOrigins(db, /*start_impression_id=*/0);
+      GetImpressionIdAndImpressionOrigins(db, StorableImpression::Id(0));
 
   static constexpr char kUpdateImpressionSiteSql[] =
       "UPDATE impressions SET impression_site = ? WHERE impression_id = ?";
@@ -494,14 +501,14 @@ bool MigrateToVersion7(sql::Database* db, sql::MetaTable* meta_table) {
       // The impression site is derived from the impression origin dynamically.
       update_impression_site_statement.BindString(
           0, net::SchemefulSite(impression.impression_origin).Serialize());
-      update_impression_site_statement.BindInt64(1, impression.impression_id);
+      update_impression_site_statement.BindInt64(1, *impression.impression_id);
       if (!update_impression_site_statement.Run())
         return false;
     }
 
     // Fetch the next batch of rows from the database.
     impressions = GetImpressionIdAndImpressionOrigins(
-        db, impressions.back().impression_id + 1);
+        db, NextImpressionId(impressions.back().impression_id));
   }
 
   // Create the pre-existing impression table indices on the new table.
@@ -535,13 +542,13 @@ bool MigrateToVersion7(sql::Database* db, sql::MetaTable* meta_table) {
 }
 
 struct ImpressionIdAndImpressionData {
-  int64_t impression_id;
+  StorableImpression::Id impression_id;
   std::string impression_data;
 };
 
 std::vector<ImpressionIdAndImpressionData> GetImpressionIdAndImpressionData(
     sql::Database* db,
-    int64_t start_impression_id) {
+    StorableImpression::Id start_impression_id) {
   static constexpr char kGetImpressionsSql[] =
       "SELECT impression_id,impression_data "
       "FROM impressions "
@@ -551,14 +558,14 @@ std::vector<ImpressionIdAndImpressionData> GetImpressionIdAndImpressionData(
 
   sql::Statement statement(
       db->GetCachedStatement(SQL_FROM_HERE, kGetImpressionsSql));
-  statement.BindInt64(0, start_impression_id);
+  statement.BindInt64(0, *start_impression_id);
 
   const int kNumImpressions = 100;
   statement.BindInt(1, kNumImpressions);
 
   std::vector<ImpressionIdAndImpressionData> impressions;
   while (statement.Step()) {
-    int64_t impression_id = statement.ColumnInt64(0);
+    StorableImpression::Id impression_id(statement.ColumnInt64(0));
     std::string impression_data = statement.ColumnString(1);
 
     impressions.push_back({impression_id, std::move(impression_data)});
@@ -618,7 +625,7 @@ bool MigrateToVersion8(sql::Database* db, sql::MetaTable* meta_table) {
   // We update a subset of rows at a time to avoid pulling the entire
   // impressions table into memory.
   std::vector<ImpressionIdAndImpressionData> impressions =
-      GetImpressionIdAndImpressionData(db, /*start_impression_id=*/0);
+      GetImpressionIdAndImpressionData(db, StorableImpression::Id(0));
 
   static constexpr char kUpdateImpressionDataSql[] =
       "UPDATE new_impressions SET impression_data = ? WHERE impression_id = ?";
@@ -636,13 +643,13 @@ bool MigrateToVersion8(sql::Database* db, sql::MetaTable* meta_table) {
       update_impression_data_statement.Reset(/*clear_bound_vars=*/true);
       update_impression_data_statement.BindInt64(
           0, SerializeImpressionOrConversionData(impression_data));
-      update_impression_data_statement.BindInt64(1, impression.impression_id);
+      update_impression_data_statement.BindInt64(1, *impression.impression_id);
       update_impression_data_statement.Run();
     }
 
     // Fetch the next batch of rows from the database.
     impressions = GetImpressionIdAndImpressionData(
-        db, impressions.back().impression_id + 1);
+        db, NextImpressionId(impressions.back().impression_id));
   }
 
   static constexpr char kDropOldImpressionTableSql[] = "DROP TABLE impressions";
@@ -802,7 +809,7 @@ bool MigrateToVersion10(sql::Database* db, sql::MetaTable* meta_table) {
   if (!transaction.Begin())
     return false;
 
-  const char kDedupKeyTableSql[] =
+  static constexpr char kDedupKeyTableSql[] =
       "CREATE TABLE IF NOT EXISTS dedup_keys"
       "(impression_id INTEGER NOT NULL,"
       "dedup_key INTEGER NOT NULL,"
@@ -811,6 +818,98 @@ bool MigrateToVersion10(sql::Database* db, sql::MetaTable* meta_table) {
     return false;
 
   meta_table->SetVersionNumber(10);
+  return transaction.Commit();
+}
+
+bool MigrateToVersion11(sql::Database* db, sql::MetaTable* meta_table) {
+  // Wrap each migration in its own transaction. See comment in
+  // |MigrateToVersion2|.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return false;
+
+  static constexpr char kDropOldImpressionSiteIdxSql[] =
+      "DROP INDEX impression_site_idx";
+  if (!db->Execute(kDropOldImpressionSiteIdxSql))
+    return false;
+
+  static constexpr char kEventSourceImpressionSiteIndexSql[] =
+      "CREATE INDEX IF NOT EXISTS event_source_impression_site_idx "
+      "ON impressions(impression_site)"
+      "WHERE active = 1 AND num_conversions = 0 AND source_type = 1";
+  if (!db->Execute(kEventSourceImpressionSiteIndexSql))
+    return false;
+
+  meta_table->SetVersionNumber(11);
+  return transaction.Commit();
+}
+
+bool MigrateToVersion12(sql::Database* db, sql::MetaTable* meta_table) {
+  // Wrap each migration in its own transaction. See comment in
+  // |MigrateToVersion2|.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return false;
+
+  static constexpr char kNewRateLimitTableSql[] =
+      "CREATE TABLE IF NOT EXISTS new_rate_limits"
+      "(rate_limit_id INTEGER PRIMARY KEY NOT NULL,"
+      "attribution_type INTEGER NOT NULL,"
+      "impression_id INTEGER NOT NULL,"
+      "impression_site TEXT NOT NULL,"
+      "impression_origin TEXT NOT NULL,"
+      "conversion_destination TEXT NOT NULL,"
+      "conversion_origin TEXT NOT NULL,"
+      "conversion_time INTEGER NOT NULL,"
+      "bucket TEXT NOT NULL,"
+      "value INTEGER NOT NULL)";
+  if (!db->Execute(kNewRateLimitTableSql))
+    return false;
+
+  // Transfer the existing rows to the new table, inserting 0 for `bucket` and
+  // 1 for `value`, since all existing rows are non-aggregate.
+  static constexpr char kPopulateNewRateLimitTableSql[] =
+      "INSERT INTO new_rate_limits SELECT "
+      "rate_limit_id,attribution_type,impression_id,impression_site,"
+      "impression_origin,conversion_destination,conversion_origin,"
+      "conversion_time,0,1 "
+      "FROM rate_limits";
+  if (!db->Execute(kPopulateNewRateLimitTableSql))
+    return false;
+
+  static constexpr char kDropOldRateLimitTableSql[] = "DROP TABLE rate_limits";
+  if (!db->Execute(kDropOldRateLimitTableSql))
+    return false;
+
+  static constexpr char kRenameRateLimitTableSql[] =
+      "ALTER TABLE new_rate_limits RENAME TO rate_limits";
+  if (!db->Execute(kRenameRateLimitTableSql))
+    return false;
+
+  // Create the pre-existing indices on the new table.
+
+  static constexpr char kRateLimitImpressionSiteTypeIndexSql[] =
+      "CREATE INDEX IF NOT EXISTS rate_limit_impression_site_type_idx "
+      "ON rate_limits(attribution_type,conversion_destination,"
+      "impression_site,conversion_time)";
+  if (!db->Execute(kRateLimitImpressionSiteTypeIndexSql))
+    return false;
+
+  // Add the attribution_type as a prefix of the index.
+  static constexpr char kRateLimitAttributionTypeConversionTimeIndexSql[] =
+      "CREATE INDEX IF NOT EXISTS "
+      "rate_limit_attribution_type_conversion_time_idx "
+      "ON rate_limits(attribution_type,conversion_time)";
+  if (!db->Execute(kRateLimitAttributionTypeConversionTimeIndexSql))
+    return false;
+
+  static constexpr char kRateLimitImpressionIndexSql[] =
+      "CREATE INDEX IF NOT EXISTS rate_limit_impression_id_idx "
+      "ON rate_limits(impression_id)";
+  if (!db->Execute(kRateLimitImpressionIndexSql))
+    return false;
+
+  meta_table->SetVersionNumber(12);
   return transaction.Commit();
 }
 
@@ -854,6 +953,14 @@ bool UpgradeConversionStorageSqlSchema(sql::Database* db,
   }
   if (meta_table->GetVersionNumber() == 9) {
     if (!MigrateToVersion10(db, meta_table))
+      return false;
+  }
+  if (meta_table->GetVersionNumber() == 10) {
+    if (!MigrateToVersion11(db, meta_table))
+      return false;
+  }
+  if (meta_table->GetVersionNumber() == 11) {
+    if (!MigrateToVersion12(db, meta_table))
       return false;
   }
   // Add similar if () blocks for new versions here.

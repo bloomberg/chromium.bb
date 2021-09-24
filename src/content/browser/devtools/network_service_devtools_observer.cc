@@ -52,6 +52,7 @@ void NetworkServiceDevToolsObserver::OnRawRequest(
     const std::string& devtools_request_id,
     const net::CookieAccessResultList& request_cookie_list,
     std::vector<network::mojom::HttpRawHeaderPairPtr> request_headers,
+    base::TimeTicks timestamp,
     network::mojom::ClientSecurityStatePtr security_state) {
   auto* host = GetDevToolsAgentHost();
   if (!host)
@@ -59,7 +60,7 @@ void NetworkServiceDevToolsObserver::OnRawRequest(
   DispatchToAgents(host,
                    &protocol::NetworkHandler::OnRequestWillBeSentExtraInfo,
                    devtools_request_id, request_cookie_list, request_headers,
-                   security_state);
+                   timestamp, security_state);
 }
 
 void NetworkServiceDevToolsObserver::OnRawResponse(
@@ -158,7 +159,7 @@ void NetworkServiceDevToolsObserver::OnCorsPreflightRequest(
 void NetworkServiceDevToolsObserver::OnCorsPreflightResponse(
     const base::UnguessableToken& devtools_request_id,
     const GURL& url,
-    network::mojom::URLResponseHeadPtr head) {
+    network::mojom::URLResponseHeadDevToolsInfoPtr head) {
   auto* host = GetDevToolsAgentHost();
   if (!host)
     return;

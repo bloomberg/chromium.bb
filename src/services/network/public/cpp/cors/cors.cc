@@ -122,7 +122,29 @@ bool IsNoCorsSafelistedHeaderNameLowerCase(const std::string& lower_name) {
   return true;
 }
 
-absl::optional<CorsErrorStatus> CheckAccessInternal(
+}  // namespace
+
+namespace cors {
+
+namespace header_names {
+
+constexpr char kAccessControlAllowCredentials[] =
+    "Access-Control-Allow-Credentials";
+constexpr char kAccessControlAllowExternal[] = "Access-Control-Allow-External";
+constexpr char kAccessControlAllowHeaders[] = "Access-Control-Allow-Headers";
+constexpr char kAccessControlAllowMethods[] = "Access-Control-Allow-Methods";
+constexpr char kAccessControlAllowOrigin[] = "Access-Control-Allow-Origin";
+constexpr char kAccessControlMaxAge[] = "Access-Control-Max-Age";
+constexpr char kAccessControlRequestExternal[] =
+    "Access-Control-Request-External";
+constexpr char kAccessControlRequestHeaders[] =
+    "Access-Control-Request-Headers";
+constexpr char kAccessControlRequestMethod[] = "Access-Control-Request-Method";
+
+}  // namespace header_names
+
+// See https://fetch.spec.whatwg.org/#cors-check.
+absl::optional<CorsErrorStatus> CheckAccess(
     const GURL& response_url,
     const absl::optional<std::string>& allow_origin_header,
     const absl::optional<std::string>& allow_credentials_header,
@@ -197,59 +219,23 @@ absl::optional<CorsErrorStatus> CheckAccessInternal(
   return absl::nullopt;
 }
 
-// These values are used for logging to UMA. Entries should not be renumbered
-// and numeric values should never be reused. Please keep in sync with
-// "CorsAccessCheckResult" in src/tools/metrics/histograms/enums.xml.
-enum class AccessCheckResult {
-  kPermitted = 0,
-  kNotPermitted = 1,
-  kPermittedInPreflight = 2,
-  kNotPermittedInPreflight = 3,
-
-  kMaxValue = kNotPermittedInPreflight,
-};
-
-void ReportAccessCheckResultMetric(AccessCheckResult result,
-                                   const url::Origin& requestor_origin) {
-  UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckResult", result);
-  if (!IsOriginPotentiallyTrustworthy(requestor_origin)) {
-    UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckResult.NotSecureRequestor",
-                              result);
-  }
-}
-
-}  // namespace
-
-namespace cors {
-
-namespace header_names {
-
-const char kAccessControlAllowCredentials[] =
-    "Access-Control-Allow-Credentials";
-const char kAccessControlAllowExternal[] = "Access-Control-Allow-External";
-const char kAccessControlAllowHeaders[] = "Access-Control-Allow-Headers";
-const char kAccessControlAllowMethods[] = "Access-Control-Allow-Methods";
-const char kAccessControlAllowOrigin[] = "Access-Control-Allow-Origin";
-const char kAccessControlMaxAge[] = "Access-Control-Max-Age";
-const char kAccessControlRequestExternal[] = "Access-Control-Request-External";
-const char kAccessControlRequestHeaders[] = "Access-Control-Request-Headers";
-const char kAccessControlRequestMethod[] = "Access-Control-Request-Method";
-
-}  // namespace header_names
-
-// See https://fetch.spec.whatwg.org/#cors-check.
-absl::optional<CorsErrorStatus> CheckAccess(
+absl::optional<CorsErrorStatus> CheckAccessAndReportMetrics(
     const GURL& response_url,
     const absl::optional<std::string>& allow_origin_header,
     const absl::optional<std::string>& allow_credentials_header,
     mojom::CredentialsMode credentials_mode,
     const url::Origin& origin) {
-  const auto error_status =
-      CheckAccessInternal(response_url, allow_origin_header,
-                          allow_credentials_header, credentials_mode, origin);
-  ReportAccessCheckResultMetric(error_status ? AccessCheckResult::kNotPermitted
-                                             : AccessCheckResult::kPermitted,
-                                origin);
+  absl::optional<CorsErrorStatus> error_status =
+      CheckAccess(response_url, allow_origin_header, allow_credentials_header,
+                  credentials_mode, origin);
+  cors::AccessCheckResult result = error_status
+                                       ? cors::AccessCheckResult::kNotPermitted
+                                       : cors::AccessCheckResult::kPermitted;
+  UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckResult", result);
+  if (!IsOriginPotentiallyTrustworthy(origin)) {
+    UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckResult.NotSecureRequestor",
+                              result);
+  }
   if (error_status) {
     UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckError",
                               error_status->cors_error);
@@ -276,68 +262,6 @@ bool ShouldCheckCors(const GURL& request_url,
   if (request_initiator->IsSameOriginWith(url::Origin::Create(request_url)))
     return false;
   return true;
-}
-
-absl::optional<CorsErrorStatus> CheckPreflightAccess(
-    const GURL& response_url,
-    const int response_status_code,
-    const absl::optional<std::string>& allow_origin_header,
-    const absl::optional<std::string>& allow_credentials_header,
-    mojom::CredentialsMode actual_credentials_mode,
-    const url::Origin& origin) {
-  // Step 7 of https://fetch.spec.whatwg.org/#cors-preflight-fetch
-  auto error_status = CheckAccessInternal(response_url, allow_origin_header,
-                                          allow_credentials_header,
-                                          actual_credentials_mode, origin);
-  const bool has_ok_status = IsOkStatus(response_status_code);
-
-  ReportAccessCheckResultMetric(
-      (error_status || !has_ok_status)
-          ? AccessCheckResult::kNotPermittedInPreflight
-          : AccessCheckResult::kPermittedInPreflight,
-      origin);
-
-  // Prefer using a preflight specific error code.
-  if (error_status) {
-    switch (error_status->cors_error) {
-      case mojom::CorsError::kWildcardOriginNotAllowed:
-        error_status->cors_error =
-            mojom::CorsError::kPreflightWildcardOriginNotAllowed;
-        break;
-      case mojom::CorsError::kMissingAllowOriginHeader:
-        error_status->cors_error =
-            mojom::CorsError::kPreflightMissingAllowOriginHeader;
-        break;
-      case mojom::CorsError::kMultipleAllowOriginValues:
-        error_status->cors_error =
-            mojom::CorsError::kPreflightMultipleAllowOriginValues;
-        break;
-      case mojom::CorsError::kInvalidAllowOriginValue:
-        error_status->cors_error =
-            mojom::CorsError::kPreflightInvalidAllowOriginValue;
-        break;
-      case mojom::CorsError::kAllowOriginMismatch:
-        error_status->cors_error =
-            mojom::CorsError::kPreflightAllowOriginMismatch;
-        break;
-      case mojom::CorsError::kInvalidAllowCredentials:
-        error_status->cors_error =
-            mojom::CorsError::kPreflightInvalidAllowCredentials;
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  } else if (!has_ok_status) {
-    error_status = absl::make_optional<CorsErrorStatus>(
-        mojom::CorsError::kPreflightInvalidStatus);
-  } else {
-    return absl::nullopt;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Net.Cors.PreflightCheckError",
-                            error_status->cors_error);
-  return error_status;
 }
 
 absl::optional<CorsErrorStatus> CheckRedirectLocation(
@@ -440,11 +364,17 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
       "width",
       "viewport-width",
 
-      // The `Sec-CH-Lang` header field is a proposed replacement for
+      // The Sec-CH-Viewport-height header field gives a server information
+      // about the user-agent's current viewport height.
+      //
+      // https://wicg.github.io/responsive-image-client-hints/#sec-ch-viewport-height
+      "sec-ch-viewport-height",
+
+      // The `Lang` header field is a proposed replacement for
       // `Accept-Language`, using the Client Hints infrastructure.
       //
       // https://tools.ietf.org/html/draft-west-lang-client-hint
-      "sec-ch-lang",
+      "lang",
 
       // The `Sec-CH-UA-*` header fields are proposed replacements for
       // `User-Agent`, using the Client Hints infrastructure.
@@ -546,41 +476,6 @@ std::vector<std::string> CorsUnsafeRequestHeaderNames(
       header_names.push_back(base::ToLowerASCII(header.key));
     } else {
       potentially_unsafe_names.push_back(base::ToLowerASCII(header.key));
-      safe_list_value_size += header.value.size();
-    }
-  }
-  if (safe_list_value_size > kSafeListValueSizeMax) {
-    header_names.insert(header_names.end(), potentially_unsafe_names.begin(),
-                        potentially_unsafe_names.end());
-  }
-  return header_names;
-}
-
-std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
-    const net::HttpRequestHeaders::HeaderVector& headers,
-    bool is_revalidating) {
-  std::vector<std::string> header_names;
-  std::vector<std::string> potentially_unsafe_names;
-
-  constexpr size_t kSafeListValueSizeMax = 1024;
-  size_t safe_list_value_size = 0;
-
-  for (const auto& header : headers) {
-    if (!net::HttpUtil::IsSafeHeader(header.key))
-      continue;
-
-    const std::string name = base::ToLowerASCII(header.key);
-
-    if (is_revalidating) {
-      if (name == "if-modified-since" || name == "if-none-match" ||
-          name == "cache-control") {
-        continue;
-      }
-    }
-    if (!IsCorsSafelistedHeader(name, header.value)) {
-      header_names.push_back(name);
-    } else {
-      potentially_unsafe_names.push_back(name);
       safe_list_value_size += header.value.size();
     }
   }

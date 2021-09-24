@@ -253,9 +253,10 @@ class SparseMatrix
     inline void setZero()
     {
       m_data.clear();
-      memset(m_outerIndex, 0, (m_outerSize+1)*sizeof(StorageIndex));
-      if(m_innerNonZeros)
-        memset(m_innerNonZeros, 0, (m_outerSize)*sizeof(StorageIndex));
+      std::fill_n(m_outerIndex, m_outerSize + 1, StorageIndex(0));
+      if(m_innerNonZeros) {
+        std::fill_n(m_innerNonZeros, m_outerSize, StorageIndex(0));
+      }
     }
 
     /** Preallocates \a reserveSize non zeros.
@@ -579,10 +580,12 @@ class SparseMatrix
       else if (innerChange < 0) 
       {
         // Inner size decreased: allocate a new m_innerNonZeros
-        m_innerNonZeros = static_cast<StorageIndex*>(std::malloc((m_outerSize+outerChange+1) * sizeof(StorageIndex)));
+        m_innerNonZeros = static_cast<StorageIndex*>(std::malloc((m_outerSize + outerChange) * sizeof(StorageIndex)));
         if (!m_innerNonZeros) internal::throw_std_bad_alloc();
-        for(Index i = 0; i < m_outerSize; i++)
+        for(Index i = 0; i < m_outerSize + (std::min)(outerChange, Index(0)); i++)
           m_innerNonZeros[i] = m_outerIndex[i+1] - m_outerIndex[i];
+        for(Index i = m_outerSize; i < m_outerSize + outerChange; i++)
+          m_innerNonZeros[i] = 0;
       }
       
       // Change the m_innerNonZeros in case of a decrease of inner size
@@ -639,7 +642,7 @@ class SparseMatrix
         std::free(m_innerNonZeros);
         m_innerNonZeros = 0;
       }
-      memset(m_outerIndex, 0, (m_outerSize+1)*sizeof(StorageIndex));
+      std::fill_n(m_outerIndex, m_outerSize + 1, StorageIndex(0));
     }
 
     /** \internal
@@ -1086,7 +1089,7 @@ void set_from_triplets(const InputIterator& begin, const InputIterator& end, Spa
   * \code
     typedef Triplet<double> T;
     std::vector<T> tripletList;
-    triplets.reserve(estimation_of_entries);
+    tripletList.reserve(estimation_of_entries);
     for(...)
     {
       // ...
@@ -1258,7 +1261,7 @@ typename SparseMatrix<_Scalar,_Options,_StorageIndex>::Scalar& SparseMatrix<_Sca
       m_innerNonZeros = static_cast<StorageIndex*>(std::malloc(m_outerSize * sizeof(StorageIndex)));
       if(!m_innerNonZeros) internal::throw_std_bad_alloc();
       
-      memset(m_innerNonZeros, 0, (m_outerSize)*sizeof(StorageIndex));
+      std::fill(m_innerNonZeros, m_innerNonZeros + m_outerSize, StorageIndex(0));
       
       // pack all inner-vectors to the end of the pre-allocated space
       // and allocate the entire free-space to the first inner-vector

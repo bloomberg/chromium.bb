@@ -4,6 +4,7 @@
 import * as Platform from '../../../core/platform/platform.js';
 import type * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as DataGridRenderers from './DataGridRenderers.js';
+import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 
 /**
   * A column is an object with the following properties:
@@ -28,7 +29,7 @@ export interface Column {
   visible: boolean;
 }
 
-export type CellValue = string|number|boolean|null;
+export type CellValue = string|number|boolean|IconButton.Icon.Icon|null;
 
 /**
  * A cell contains a `columnId`, which is the ID of the column the cell
@@ -42,6 +43,17 @@ export interface Cell {
   value: CellValue;
   title?: string;
   renderer?: (value: CellValue) => LitHtml.TemplateResult | typeof LitHtml.nothing;
+}
+
+export function getStringifiedCellValues(cells: Cell[]): string {
+  return JSON
+      .stringify(cells.map(cell => {
+        if (cell.value instanceof IconButton.Icon.Icon) {
+          return null;
+        }
+        return cell.value;
+      }))
+      .toLowerCase();
 }
 
 export interface RowCSSStylesObject {

@@ -124,13 +124,13 @@ namespace dawn_native { namespace d3d12 {
 
         Ref<TextureBase> CreateExternalTexture(const TextureDescriptor* descriptor,
                                                ComPtr<ID3D12Resource> d3d12Texture,
+                                               Ref<D3D11on12ResourceCacheEntry> d3d11on12Resource,
                                                ExternalMutexSerial acquireMutexKey,
                                                ExternalMutexSerial releaseMutexKey,
                                                bool isSwapChainTexture,
                                                bool isInitialized);
-        ResultOrError<ComPtr<IDXGIKeyedMutex>> CreateKeyedMutexForTexture(
-            ID3D12Resource* d3d12Resource);
-        void ReleaseKeyedMutexForTexture(ComPtr<IDXGIKeyedMutex> dxgiKeyedMutex);
+
+        ComPtr<ID3D11On12Device> GetOrCreateD3D11on12Device();
 
         void InitTogglesFromDriver();
 
@@ -145,7 +145,8 @@ namespace dawn_native { namespace d3d12 {
         ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) override;
         ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayoutImpl(
-            const BindGroupLayoutDescriptor* descriptor) override;
+            const BindGroupLayoutDescriptor* descriptor,
+            PipelineCompatibilityToken pipelineCompatibilityToken) override;
         ResultOrError<Ref<BufferBase>> CreateBufferImpl(
             const BufferDescriptor* descriptor) override;
         ResultOrError<Ref<ComputePipelineBase>> CreateComputePipelineImpl(
@@ -172,10 +173,11 @@ namespace dawn_native { namespace d3d12 {
         ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
-        void CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
-                                            size_t blueprintHash,
-                                            WGPUCreateComputePipelineAsyncCallback callback,
-                                            void* userdata) override;
+        void CreateComputePipelineAsyncImpl(
+            std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
+            size_t blueprintHash,
+            WGPUCreateComputePipelineAsyncCallback callback,
+            void* userdata) override;
 
         void ShutDownImpl() override;
         MaybeError WaitForIdleForDestruction() override;
@@ -192,9 +194,8 @@ namespace dawn_native { namespace d3d12 {
         ComPtr<ID3D12CommandQueue> mCommandQueue;
         ComPtr<ID3D12SharingContract> mD3d12SharingContract;
 
-        // 11on12 device and device context corresponding to mCommandQueue
+        // 11on12 device corresponding to mCommandQueue
         ComPtr<ID3D11On12Device> mD3d11On12Device;
-        ComPtr<ID3D11DeviceContext2> mD3d11On12DeviceContext;
 
         ComPtr<ID3D12CommandSignature> mDispatchIndirectSignature;
         ComPtr<ID3D12CommandSignature> mDrawIndirectSignature;

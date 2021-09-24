@@ -17,6 +17,8 @@ export const enum IssueCode {
   AttributionSourceUntrustworthyOrigin = 'AttributionReportingIssue::AttributionSourceUntrustworthyOrigin',
   AttributionUntrustworthyFrameOrigin = 'AttributionReportingIssue::AttributionUntrustworthyFrameOrigin',
   AttributionUntrustworthyOrigin = 'AttributionReportingIssue::AttributionUntrustworthyOrigin',
+  AttributionTriggerDataTooLarge = 'AttrubtionReportingIssue::AttributionTriggerDataTooLarge',
+  AttributionEventSourceTriggerDataTooLarge = 'AttrubtionReportingIssue::AttributionEventSourceTriggerDataTooLarge',
 }
 
 function getIssueCode(details: Protocol.Audits.AttributionReportingIssueDetails): IssueCode {
@@ -34,6 +36,10 @@ function getIssueCode(details: Protocol.Audits.AttributionReportingIssueDetails)
     case Protocol.Audits.AttributionReportingIssueType.AttributionUntrustworthyOrigin:
       return details.frame !== undefined ? IssueCode.AttributionUntrustworthyFrameOrigin :
                                            IssueCode.AttributionUntrustworthyOrigin;
+    case Protocol.Audits.AttributionReportingIssueType.AttributionTriggerDataTooLarge:
+      return IssueCode.AttributionTriggerDataTooLarge;
+    case Protocol.Audits.AttributionReportingIssueType.AttributionEventSourceTriggerDataTooLarge:
+      return IssueCode.AttributionEventSourceTriggerDataTooLarge;
   }
 }
 
@@ -50,7 +56,7 @@ export class AttributionReportingIssue extends Issue<IssueCode> {
     return IssueCategory.AttributionReporting;
   }
 
-  getDescription(): MarkdownIssueDescription {
+  getDescription(): MarkdownIssueDescription|null {
     switch (this.code()) {
       case IssueCode.PermissionPolicyDisabled:
         return {
@@ -92,6 +98,13 @@ export class AttributionReportingIssue extends Issue<IssueCode> {
           file: 'arAttributionUntrustworthyOrigin.md',
           links: [],
         };
+      case IssueCode.AttributionTriggerDataTooLarge:
+        return {
+          file: 'arAttributionTriggerDataTooLarge.md',
+          links: [],
+        };
+      case IssueCode.AttributionEventSourceTriggerDataTooLarge:
+        return null;
     }
   }
 

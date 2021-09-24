@@ -29,6 +29,31 @@ namespace dawn_native {
 
     class DeviceBase;
 
+    // TODO(dawn:529): Use FlatRenderPipelineDescriptor to keep all the members of
+    // RenderPipelineDescriptor (especially the members in pointers) valid when the creation of the
+    // render pipeline is executed asynchronously.
+    struct FlatRenderPipelineDescriptor : public RenderPipelineDescriptor, public NonMovable {
+      public:
+        explicit FlatRenderPipelineDescriptor(const RenderPipelineDescriptor* descriptor);
+
+      private:
+        std::string mLabel;
+        Ref<PipelineLayoutBase> mLayout;
+
+        Ref<ShaderModuleBase> mVertexModule;
+        std::string mVertexEntryPoint;
+        std::array<VertexBufferLayout, kMaxVertexBuffers> mVertexBuffers;
+        std::array<VertexAttribute, kMaxVertexAttributes> mVertexAttributes;
+
+        FragmentState mFragmentState;
+        Ref<ShaderModuleBase> mFragmentModule;
+        std::string mFragmentEntryPoint;
+        std::array<ColorTargetState, kMaxColorAttachments> mColorTargetStates;
+        std::array<BlendState, kMaxColorAttachments> mBlendStates;
+
+        DepthStencilState mDepthStencilState;
+    };
+
     MaybeError ValidateRenderPipelineDescriptor(DeviceBase* device,
                                                 const RenderPipelineDescriptor* descriptor);
 
@@ -50,6 +75,7 @@ namespace dawn_native {
     struct VertexBufferInfo {
         uint64_t arrayStride;
         wgpu::VertexStepMode stepMode;
+        uint16_t usedBytesInStride;
     };
 
     class RenderPipelineBase : public PipelineBase {
@@ -102,6 +128,7 @@ namespace dawn_native {
       private:
         RenderPipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
+        // TODO(dawn:529): store all the following members in a FlatRenderPipelineDescriptor object
         // Vertex state
         uint32_t mVertexBufferCount;
         ityp::bitset<VertexAttributeLocation, kMaxVertexAttributes> mAttributeLocationsUsed;

@@ -27,6 +27,7 @@ import traceback
 
 import shard_util
 import test_runner
+import variations_runner
 import wpr_runner
 import xcodebuild_runner
 import xcode_util as xcode
@@ -115,9 +116,9 @@ class Runner():
     # For a given test on a given run, otool should return the same total
     # counts and thus, should generate the same sublists. With the shard
     # index, each shard would then know the exact test case to run.
-    gtest_shard_index = os.getenv('GTEST_SHARD_INDEX', '')
-    gtest_total_shards = os.getenv('GTEST_TOTAL_SHARDS', '')
-    if gtest_shard_index and gtest_total_shards:
+    gtest_shard_index = shard_util.shard_index()
+    gtest_total_shards = shard_util.total_shards()
+    if gtest_total_shards > 1:
       self.args.test_cases = shard_util.shard_test_cases(
           self.args, gtest_shard_index, gtest_total_shards)
     else:
@@ -162,6 +163,19 @@ class Runner():
             test_cases=self.args.test_cases,
             test_args=self.test_args,
             use_clang_coverage=self.args.use_clang_coverage,
+            env_vars=self.args.env_var)
+      elif self.args.variations_seed_path != 'NO_PATH':
+        tr = variations_runner.VariationsSimulatorParallelTestRunner(
+            self.args.app,
+            self.args.host_app,
+            self.args.iossim,
+            self.args.version,
+            self.args.platform,
+            self.args.out_dir,
+            self.args.variations_seed_path,
+            release=self.args.release,
+            test_cases=self.args.test_cases,
+            test_args=self.test_args,
             env_vars=self.args.env_var)
       elif self.args.replay_path != 'NO_PATH':
         tr = wpr_runner.WprProxySimulatorTestRunner(
@@ -438,6 +452,13 @@ class Runner():
         metavar='ver',
     )
     parser.add_argument(
+        '--variations-seed-path',
+        help=('Path to a JSON file with variations seed used in variations '
+              'smoke testing. Default: %(default)s'),
+        default='NO_PATH',
+        metavar='variations-seed-path',
+    )
+    parser.add_argument(
         '--wpr-tools-path',
         help=(
             'Location of WPR test tools (should be preinstalled, e.g. as part '
@@ -506,8 +527,8 @@ class Runner():
                      'both -p/--platform and -v/--version')
 
       args_json = json.loads(args.args_json)
-      if (args.gtest_filter or args.test_cases or args_json.get('test_cases')
-         ) and int(os.getenv('GTEST_TOTAL_SHARDS', '1')) > 1:
+      if (args.gtest_filter or args.test_cases or
+          args_json.get('test_cases')) and shard_util.total_shards() > 1:
         parser.error(
             'Specifying test cases is not supported in multiple swarming '
             'shards environment.')

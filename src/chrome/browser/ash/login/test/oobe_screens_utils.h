@@ -26,6 +26,8 @@ void SkipToEnrollmentOnRecovery();
 void WaitForEnrollmentScreen();
 void WaitForUserCreationScreen();
 void TapUserCreationNext();
+// Wait for OobeUI to finish loading.
+void WaitForOobeJSReady();
 
 void WaitForEulaScreen();
 void TapEulaAccept();

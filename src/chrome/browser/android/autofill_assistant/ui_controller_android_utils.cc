@@ -183,7 +183,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
           return Java_AssistantDrawable_createRectangleShape(
               env, jbackground_color, jstroke_color, stroke_width_pixels,
               corner_radius_pixels);
-          break;
         }
         case ShapeDrawableProto::SHAPE_NOT_SET:
           return nullptr;
@@ -352,7 +351,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDialogButton(
 
 base::android::ScopedJavaLocalRef<jobject> CreateJavaInfoPopup(
     JNIEnv* env,
-    const InfoPopupProto& info_popup_proto) {
+    const InfoPopupProto& info_popup_proto,
+    const std::string& close_display_str) {
   base::android::ScopedJavaLocalRef<jobject> jpositive_button = nullptr;
   base::android::ScopedJavaLocalRef<jobject> jnegative_button = nullptr;
   base::android::ScopedJavaLocalRef<jobject> jneutral_button = nullptr;
@@ -375,9 +375,7 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaInfoPopup(
   } else {
     // If no button is set in the proto, we add a Close button
     jpositive_button = Java_AssistantDialogButton_Constructor(
-        env,
-        base::android::ConvertUTF8ToJavaString(
-            env, l10n_util::GetStringUTF8(IDS_CLOSE)),
+        env, base::android::ConvertUTF8ToJavaString(env, close_display_str),
         nullptr);
   }
 

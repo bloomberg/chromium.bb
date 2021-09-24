@@ -3396,7 +3396,7 @@ sctp_getopt(struct socket *so, int optname, void *optval, size_t *optsize,
 				sasoc->sasoc_asocmaxrxt = inp->sctp_ep.max_send_times;
 				sasoc->sasoc_number_peer_destinations = 0;
 				sasoc->sasoc_peer_rwnd = 0;
-				sasoc->sasoc_local_rwnd = sbspace(&inp->sctp_socket->so_rcv);
+				sasoc->sasoc_local_rwnd = (uint32_t)sbspace(&inp->sctp_socket->so_rcv);
 				SCTP_INP_RUNLOCK(inp);
 			} else {
 				SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EINVAL);
@@ -3502,7 +3502,7 @@ sctp_getopt(struct socket *so, int optname, void *optval, size_t *optsize,
 	{
 		struct sctp_hmacalgo *shmac;
 		sctp_hmaclist_t *hmaclist;
-		uint32_t size;
+		size_t size;
 		int i;
 
 		SCTP_CHECK_AND_CAST(shmac, optval, struct sctp_hmacalgo, *optsize);
@@ -3517,8 +3517,8 @@ sctp_getopt(struct socket *so, int optname, void *optval, size_t *optsize,
 		}
 		/* is there room for all of the hmac ids? */
 		size = sizeof(*shmac) + (hmaclist->num_algo *
-					 sizeof(shmac->shmac_idents[0]));
-		if ((size_t)(*optsize) < size) {
+		                         sizeof(shmac->shmac_idents[0]));
+		if (*optsize < size) {
 			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EINVAL);
 			error = EINVAL;
 			SCTP_INP_RUNLOCK(inp);

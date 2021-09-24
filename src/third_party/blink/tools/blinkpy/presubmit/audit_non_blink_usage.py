@@ -541,6 +541,7 @@ _CONFIG = [
             # serialization. Please keep alphabetized.
             'ui::CanHaveInlineTextBoxChildren',
             'ui::IsCellOrTableHeader',
+            'ui::IsComboBox',
             'ui::IsContainerWithSelectableChildren',
             'ui::IsDialog',
             'ui::IsHeading',
@@ -924,6 +925,8 @@ _CONFIG = [
             'third_party/blink/renderer/bindings/core/v8/v8_code_cache.h',
             'third_party/blink/renderer/core/loader/document_loader.cc',
             'third_party/blink/renderer/core/loader/document_loader.h',
+            'third_party/blink/renderer/core/workers/worklet_global_scope.h',
+            'third_party/blink/renderer/core/workers/worklet_global_scope.cc',
             'third_party/blink/renderer/core/workers/worker_global_scope.cc',
             'third_party/blink/renderer/core/workers/worker_global_scope.h',
             'third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h',
@@ -1304,6 +1307,9 @@ _CONFIG = [
             # liburlpattern API.
             "base::IsStringASCII",
 
+            # Needed to use part of the StringUTF8Adaptor API.
+            "base::StringPiece",
+
             # //third_party/liburlpattern
             'liburlpattern::.+',
 
@@ -1488,6 +1494,12 @@ _CONFIG = [
             'third_party/blink/renderer/platform/graphics/document_transition_shared_element_id.h'
         ],
         'allowed': ['cc::DocumentTransitionSharedElementId'],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/',
+        ],
+        'allowed': ['ui::k200Percent'],
     },
 ]
 

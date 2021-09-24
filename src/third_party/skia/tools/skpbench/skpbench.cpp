@@ -33,7 +33,7 @@
 #include "tools/gpu/GpuTimer.h"
 #include "tools/gpu/GrContextFactory.h"
 
-#ifdef SK_XML
+#if defined(SK_ENABLE_SVG)
 #include "modules/svg/include/SkSVGDOM.h"
 #include "src/xml/SkDOM.h"
 #endif
@@ -595,9 +595,8 @@ int main(int argc, char** argv) {
     }
 
     // Create a render target.
-    SkImageInfo info =
-            SkImageInfo::Make(width, height, config->getColorType(), config->getAlphaType(),
-                              sk_ref_sp(config->getColorSpace()));
+    SkImageInfo info = SkImageInfo::Make(
+            width, height, config->getColorType(), config->getAlphaType(), config->refColorSpace());
     SkSurfaceProps props(config->getSurfaceFlags(), kRGB_H_SkPixelGeometry);
     sk_sp<SkSurface> surface =
         SkSurface::MakeRenderTarget(ctx, SkBudgeted::kNo, info, config->getSamples(), &props);
@@ -700,7 +699,7 @@ static sk_sp<SkPicture> create_warmup_skp() {
 }
 
 static sk_sp<SkPicture> create_skp_from_svg(SkStream* stream, const char* filename) {
-#ifdef SK_XML
+#if defined(SK_ENABLE_SVG)
     sk_sp<SkSVGDOM> svg = SkSVGDOM::MakeFromStream(*stream);
     if (!svg) {
         exitf(ExitErr::kData, "failed to build svg dom from file %s", filename);
@@ -715,7 +714,7 @@ static sk_sp<SkPicture> create_skp_from_svg(SkStream* stream, const char* filena
 
     return recorder.finishRecordingAsPicture();
 #endif
-    exitf(ExitErr::kData, "SK_XML is disabled; cannot open svg file %s", filename);
+    exitf(ExitErr::kData, "SK_ENABLE_SVG is disabled; cannot open svg file %s", filename);
     return nullptr;
 }
 

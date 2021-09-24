@@ -27,6 +27,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/policy/core/common/cloud/client_data_delegate.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -51,12 +52,14 @@ using testing::_;
 using testing::Contains;
 using testing::DoAll;
 using testing::ElementsAre;
+using testing::Invoke;
 using testing::Mock;
 using testing::Not;
 using testing::Pair;
 using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
+using testing::WithArg;
 
 // Matcher for absl::optional. Can be combined with Not().
 MATCHER(HasValue, "Has value") {
@@ -198,6 +201,15 @@ struct MockResponseCallbackObserver {
   MOCK_METHOD(void, OnResponseReceived, (absl::optional<base::Value>));
 };
 
+class FakeClientDataDelegate : public ClientDataDelegate {
+ public:
+  void FillRegisterBrowserRequest(
+      enterprise_management::RegisterBrowserRequest* request) const override {
+    request->set_os_platform(policy::GetOSPlatform());
+    request->set_os_version(policy::GetOSVersion());
+  }
+};
+
 std::string CreatePolicyData(const std::string& policy_value) {
   em::PolicyData policy_data;
   policy_data.set_policy_type(dm_protocol::kChromeUserPolicyType);
@@ -326,23 +338,13 @@ em::DeviceManagementRequest GetCertBasedRegistrationRequest(
 
 #if defined(OS_WIN) || defined(OS_APPLE) || \
     (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
-em::DeviceManagementRequest GetEnrollementRequest() {
+em::DeviceManagementRequest GetEnrollmentRequest() {
   em::DeviceManagementRequest request;
 
   em::RegisterBrowserRequest* enrollment_request =
       request.mutable_register_browser_request();
   enrollment_request->set_os_platform(policy::GetOSPlatform());
   enrollment_request->set_os_version(policy::GetOSVersion());
-
-#if defined(OS_IOS)
-  enrollment_request->set_device_model(policy::GetDeviceModel());
-  enrollment_request->set_brand_name(policy::GetDeviceManufacturer());
-#else
-  enrollment_request->set_machine_name(policy::GetMachineName());
-  enrollment_request->set_allocated_browser_device_identifier(
-      GetBrowserDeviceIdentifier().release());
-#endif
-
   return request;
 }
 #endif
@@ -657,12 +659,14 @@ TEST_F(CloudPolicyClientTest, RegistrationWithTokenAndPolicyFetch) {
               OnDeviceDMTokenRequested(
                   /*user_affiliation_ids=*/std::vector<std::string>()))
       .WillOnce(Return(kDeviceDMToken));
-  client_->RegisterWithToken(kEnrollmentToken, "device_id");
+  FakeClientDataDelegate client_data_delegate;
+  client_->RegisterWithToken(kEnrollmentToken, "device_id",
+                             client_data_delegate);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_TOKEN_ENROLLMENT,
             job_type_);
   EXPECT_EQ(job_request_.SerializePartialAsString(),
-            GetEnrollementRequest().SerializePartialAsString());
+            GetEnrollmentRequest().SerializePartialAsString());
   EXPECT_TRUE(client_->is_registered());
   EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
@@ -982,18 +986,18 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithMetaData) {
   RegisterClient();
 
   const int kPublicKeyVersion = 42;
-  const base::Time kTimestamp(base::Time::UnixEpoch() +
-                              base::TimeDelta::FromDays(20));
+  const base::Time kOldTimestamp(base::Time::UnixEpoch() +
+                                 base::TimeDelta::FromDays(20));
 
   em::DeviceManagementRequest policy_request = GetPolicyRequest();
   em::PolicyFetchRequest* policy_fetch_request =
       policy_request.mutable_policy_request()->mutable_requests(0);
-  policy_fetch_request->set_timestamp(kTimestamp.ToJavaTime());
+  policy_fetch_request->set_timestamp(kOldTimestamp.ToJavaTime());
   policy_fetch_request->set_public_key_version(kPublicKeyVersion);
 
   em::DeviceManagementResponse policy_response = GetPolicyResponse();
 
-  client_->set_last_policy_timestamp(kTimestamp);
+  client_->set_last_policy_timestamp(kOldTimestamp);
   client_->set_public_key_version(kPublicKeyVersion);
 
   ExpectAndCaptureJob(policy_response);
@@ -1321,8 +1325,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithExtensionPolicy) {
     const em::PolicyFetchRequest& fetch_request = policy_request.requests(i);
     ASSERT_TRUE(fetch_request.has_policy_type());
     EXPECT_FALSE(fetch_request.has_settings_entity_id());
-    std::pair<std::string, std::string> key(fetch_request.policy_type(),
-                                            std::string());
+    key = {fetch_request.policy_type(), std::string()};
     EXPECT_EQ(1u, expected_namespaces.erase(key));
   }
   EXPECT_TRUE(expected_namespaces.empty());

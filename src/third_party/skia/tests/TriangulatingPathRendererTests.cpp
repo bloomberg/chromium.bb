@@ -12,9 +12,9 @@
 #include "include/gpu/GrDirectContext.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrEagerVertexAllocator.h"
-#include "src/gpu/GrInnerFanTriangulator.h"
 #include "src/gpu/GrStyle.h"
 #include "src/gpu/effects/GrPorterDuffXferProcessor.h"
+#include "src/gpu/geometry/GrInnerFanTriangulator.h"
 #include "src/gpu/geometry/GrStyledShape.h"
 #include "src/shaders/SkShaderBase.h"
 #include "tools/ToolUtils.h"
@@ -484,7 +484,7 @@ CreatePathFn kNonEdgeAAPaths[] = {
 };
 
 #if SK_GPU_V1
-#include "src/gpu/ops/GrTriangulatingPathRenderer.h"
+#include "src/gpu/ops/TriangulatingPathRenderer.h"
 #include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 // A simple concave path. Test this with a non-invertible matrix.
@@ -715,7 +715,7 @@ static void test_path(GrRecordingContext* rContext,
                       const SkMatrix& matrix = SkMatrix::I(),
                       GrAAType aaType = GrAAType::kNone,
                       std::unique_ptr<GrFragmentProcessor> fp = nullptr) {
-    GrTriangulatingPathRenderer pr;
+    skgpu::v1::TriangulatingPathRenderer pr;
     pr.setMaxVerbCount(100);
 
     GrPaint paint;
@@ -727,16 +727,16 @@ static void test_path(GrRecordingContext* rContext,
     SkIRect clipConservativeBounds = SkIRect::MakeWH(sdc->width(), sdc->height());
     GrStyle style(SkStrokeRec::kFill_InitStyle);
     GrStyledShape shape(path, style);
-    GrPathRenderer::DrawPathArgs args{rContext,
-                                      std::move(paint),
-                                      &GrUserStencilSettings::kUnused,
-                                      sdc,
-                                      nullptr,
-                                      &clipConservativeBounds,
-                                      &matrix,
-                                      &shape,
-                                      aaType,
-                                      false};
+    skgpu::v1::PathRenderer::DrawPathArgs args{rContext,
+                                               std::move(paint),
+                                               &GrUserStencilSettings::kUnused,
+                                               sdc,
+                                               nullptr,
+                                               &clipConservativeBounds,
+                                               &matrix,
+                                               &shape,
+                                               aaType,
+                                               false};
     pr.drawPath(args);
 }
 

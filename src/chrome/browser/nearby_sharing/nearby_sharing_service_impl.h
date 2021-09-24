@@ -155,11 +155,13 @@ class NearbySharingServiceImpl
 
   // nearby_share::mojom::NearbyShareSettingsObserver:
   void OnEnabledChanged(bool enabled) override;
+  void OnFastInitiationNotificationEnabledChanged(bool enabled) override;
   void OnDeviceNameChanged(const std::string& device_name) override;
   void OnDataUsageChanged(nearby_share::mojom::DataUsage data_usage) override;
   void OnVisibilityChanged(nearby_share::mojom::Visibility visibility) override;
   void OnAllowedContactsChanged(
       const std::vector<std::string>& allowed_contacts) override;
+  void OnIsOnboardingCompleteChanged(bool is_complete) override {}
 
   // NearbyShareCertificateManager::Observer:
   void OnPublicCertificatesDownloaded() override;

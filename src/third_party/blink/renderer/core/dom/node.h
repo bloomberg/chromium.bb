@@ -507,6 +507,17 @@ class CORE_EXPORT Node : public EventTarget {
     MarkAncestorsWithChildNeedsStyleRecalc();
   }
 
+  // Mark non-slotted shadow host child dirty for style recalc to enforce new
+  // ComputedStyles for elements outside the flat tree for getComputedStyle().
+  // To be called when descendant recalcs are skipped for such subtrees.
+  void SetStyleChangeForNonSlotted() {
+    DCHECK(IsElementNode());
+    DCHECK(isConnected());
+    DCHECK(parentElement() && !GetStyleRecalcParent());
+    if (!NeedsStyleRecalc())
+      SetStyleChange(kLocalStyleChange);
+  }
+
   bool NeedsReattachLayoutTree() const {
     return GetFlag(kNeedsReattachLayoutTree);
   }
@@ -535,8 +546,10 @@ class CORE_EXPORT Node : public EventTarget {
     return GetFlag(kForceReattachLayoutTree);
   }
 
+  bool WhitespaceChildrenMayChange() const;
   bool IsDirtyForStyleRecalc() const {
-    return NeedsStyleRecalc() || GetForceReattachLayoutTree();
+    return NeedsStyleRecalc() || GetForceReattachLayoutTree() ||
+           WhitespaceChildrenMayChange();
   }
 
   // True if the style invalidation process should traverse this node's children

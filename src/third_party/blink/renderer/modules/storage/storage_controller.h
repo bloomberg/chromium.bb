@@ -26,8 +26,8 @@ namespace blink {
 
 class CachedStorageArea;
 class InspectorDOMStorageAgent;
+class LocalDOMWindow;
 class LocalFrame;
-class SecurityOrigin;
 class StorageNamespace;
 
 // Singleton that manages the creation & accounting for DOMStorage objects. It
@@ -79,7 +79,7 @@ class MODULES_EXPORT StorageController : public mojom::blink::DomStorageClient {
   // LocalStorage:
 
   scoped_refptr<CachedStorageArea> GetLocalStorageArea(
-      const SecurityOrigin*,
+      const LocalDOMWindow* local_dom_window,
       mojo::PendingRemote<mojom::blink::StorageArea> local_storage_area = {});
   void AddLocalStorageInspectorStorageAgent(InspectorDOMStorageAgent* agent);
   void RemoveLocalStorageInspectorStorageAgent(InspectorDOMStorageAgent* agent);

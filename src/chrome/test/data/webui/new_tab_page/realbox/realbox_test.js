@@ -7,7 +7,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {assertStyle, createTheme} from 'chrome://test/new_tab_page/test_support.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {eventToPromise} from 'chrome://test/test_util.js';
 
 /**
  * @enum {string}
@@ -85,12 +85,12 @@ class TestRealboxBrowserProxy extends TestBrowserProxy {
  * @return {TestBrowserProxy}
  */
 export function createTestProxy() {
-  const testProxy = TestBrowserProxy.fromClass(RealboxBrowserProxy);
-  testProxy.callbackRouter = new realbox.mojom.PageCallbackRouter();
-  testProxy.callbackRouterRemote =
-      testProxy.callbackRouter.$.bindNewPipeAndPassRemote();
-  testProxy.handler = new TestRealboxBrowserProxy();
-  return testProxy;
+  const callbackRouter = new realbox.mojom.PageCallbackRouter();
+  return {
+    callbackRouter,
+    callbackRouterRemote: callbackRouter.$.bindNewPipeAndPassRemote(),
+    handler: new TestRealboxBrowserProxy(),
+  };
 }
 
 /**

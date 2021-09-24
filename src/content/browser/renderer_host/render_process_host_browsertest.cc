@@ -9,6 +9,7 @@
 #include "base/scoped_observation.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/hang_watcher.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -581,8 +582,10 @@ class RenderProcessHostObserverCounter : public RenderProcessHostObserver {
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostObserverCounter);
 };
 
-// Check that the spare renderer is properly destroyed via
-// DisableKeepAliveRefCount.
+// Check that the spare renderer is properly destroyed via DisableRefCounts().
+// Note: DisableRefCounts() used to be called DisableKeepAliveRefCount();
+// the name if this test is left unchanged to avoid disrupt any tracking
+// tools (e.g. flakiness) that might reference the old name.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareVsDisableKeepAliveRefCount) {
   RenderProcessHost::WarmupSpareRenderProcessHost(
       ShellContentBrowserClient::Get()->browser_context());
@@ -595,7 +598,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareVsDisableKeepAliveRefCount) {
   RenderProcessHostWatcher process_watcher(
       spare_renderer, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
 
-  spare_renderer->DisableKeepAliveRefCount();
+  spare_renderer->DisableRefCounts();
 
   process_watcher.Wait();
   EXPECT_TRUE(process_watcher.did_exit_normally());
@@ -611,8 +614,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareVsDisableKeepAliveRefCount) {
   DCHECK_EQ(1, counter.destroyed_count());
 }
 
-// Check that the spare renderer is properly destroyed via
-// DisableKeepAliveRefCount.
+// Check that the spare renderer is properly destroyed via DisableRefCounts().
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareVsFastShutdown) {
   RenderProcessHost::WarmupSpareRenderProcessHost(
       ShellContentBrowserClient::Get()->browser_context());
@@ -1092,7 +1094,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   // 1 for the service worker.
-  EXPECT_EQ(rph->keep_alive_ref_count(), 1u);
+  EXPECT_EQ(rph->worker_ref_count(), 1u);
+  EXPECT_EQ(rph->keep_alive_ref_count(), 0u);
 
   // We use /workers/send-beacon.html, not send-beacon.html, due to the
   // service worker scope rule.
@@ -1103,7 +1106,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   // We are still using the same process.
   ASSERT_EQ(shell()->web_contents()->GetMainFrame()->GetProcess(), rph);
   // 1 for the service worker, 1 for the keepalive fetch.
-  EXPECT_EQ(rph->keep_alive_ref_count(), 2u);
+  EXPECT_EQ(rph->keep_alive_ref_count(), 1u);
+  EXPECT_EQ(rph->worker_ref_count(), 1u);
 }
 
 // Test is flaky on Android builders: https://crbug.com/875179
@@ -1115,6 +1119,17 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 #endif
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                        MAYBE_KeepAliveRendererProcess_Hung) {
+  // Disable HangWatcher so it doesn't interfere with this test when hangs take
+  // place.
+  base::HangWatcher::StopMonitoringForTesting();
+
+  // The test assumes that the render process exits after 1 second. But this
+  // will be prevented if the process still hosts a bfcached page. So disable
+  // BFCache for this test.
+  content::DisableBackForwardCacheForTesting(
+      shell()->web_contents(),
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleHungBeacon, base::RepeatingClosure()));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1160,6 +1175,17 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 #endif
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                        MAYBE_FetchKeepAliveRendererProcess_Hung) {
+  // Disable HangWatcher so it doesn't interfere with this test when hangs take
+  // place.
+  base::HangWatcher::StopMonitoringForTesting();
+
+  // The test assumes that the render process exits after 1 second. But this
+  // will be prevented if the process still hosts a bfcached page. So disable
+  // BFCache for this test.
+  content::DisableBackForwardCacheForTesting(
+      shell()->web_contents(),
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleHungBeacon, base::RepeatingClosure()));
   ASSERT_TRUE(embedded_test_server()->Start());

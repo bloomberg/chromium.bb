@@ -42,7 +42,6 @@
     flex-direction: column;
     flex-grow: 1;
     overflow-y: clip;
-    padding-bottom: 4px;
     width: 100%;
   }
 
@@ -87,9 +86,11 @@
   }
 
   .chevron {
+    --cr-icon-button-fill-color: var(--cros-icon-color-primary);
+    --cr-icon-button-icon-size: 20px;
+    --cr-icon-button-size: 28px;
     background-color: var(--cros-bg-color);
     border-radius: 0;
-    height: var(--emoji--size);
     margin: 0;
     padding: 0;
     position: absolute;
@@ -111,7 +112,7 @@
   }
 
   .divider {
-    border-top: 1px solid var(--cros-seperator-color);
+    border-top: 1px solid var(--cros-separator-color);
     width: var(--emoji-picker-width);
   }
 

@@ -51,8 +51,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/policy/core/common/management/management_service.h"
-#include "components/policy/core/common/management/scoped_management_service_override_for_testing.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/ntp_features.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -376,7 +374,8 @@ class DiceBrowserTest : public InProcessBrowserTest,
 
   // Navigates to the given path on the test server.
   void NavigateToURL(const std::string& path) {
-    ui_test_utils::NavigateToURL(browser(), https_server_.GetURL(path));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server_.GetURL(path)));
   }
 
   // Returns the identity manager.
@@ -657,22 +656,6 @@ class DiceBrowserTest : public InProcessBrowserTest,
   base::OnceClosure on_primary_account_set_quit_closure_;
   base::OnceClosure signin_requested_quit_closure_;
 
-  // The sync service and waits for policies to load before starting for
-  // enterprise users, managed devices and browsers. This means that services
-  // depending on it might have to wait too. By setting the management
-  // authorities to none by default, we assume that the default test is on an
-  // unmanaged device and browser thus we avoid unnecessarily waiting for
-  // policies to load. Tests expecting either an enterprise user, a managed
-  // device or browser should add the appropriate management authorities.
-  policy::ScopedManagementServiceOverrideForTesting browser_management_ =
-      policy::ScopedManagementServiceOverrideForTesting(
-          policy::ManagementTarget::BROWSER,
-          base::flat_set<policy::EnterpriseManagementAuthority>());
-  policy::ScopedManagementServiceOverrideForTesting platform_management_ =
-      policy::ScopedManagementServiceOverrideForTesting(
-          policy::ManagementTarget::PLATFORM,
-          base::flat_set<policy::EnterpriseManagementAuthority>());
-
   DISALLOW_COPY_AND_ASSIGN(DiceBrowserTest);
 };
 
@@ -853,8 +836,8 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutAllAccounts) {
 #endif
 IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_NoDiceFromWebUI) {
   // Navigate to Gaia and from the native tab, which uses an extension.
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL("chrome:chrome-signin?reason=5"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome:chrome-signin?reason=5")));
 
   // Check that the request had no Dice request header.
   if (dice_request_header_.empty())

@@ -7,15 +7,15 @@
 
 #include <map>
 
-#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 
 class WebAppShortcutManager;
-class FileHandlerManager;
-class ProtocolHandlerManager;
+class WebAppFileHandlerManager;
+class WebAppProtocolHandlerManager;
 class UrlHandlerManager;
 
 class TestOsIntegrationManager : public OsIntegrationManager {
@@ -23,8 +23,8 @@ class TestOsIntegrationManager : public OsIntegrationManager {
   TestOsIntegrationManager(
       Profile* profile,
       std::unique_ptr<WebAppShortcutManager> shortcut_manager,
-      std::unique_ptr<FileHandlerManager> file_handler_manager,
-      std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager,
+      std::unique_ptr<WebAppFileHandlerManager> file_handler_manager,
+      std::unique_ptr<WebAppProtocolHandlerManager> protocol_handler_manager,
       std::unique_ptr<UrlHandlerManager> url_handler_manager);
   ~TestOsIntegrationManager() override;
 
@@ -34,7 +34,7 @@ class TestOsIntegrationManager : public OsIntegrationManager {
                       std::unique_ptr<WebApplicationInfo> web_app_info,
                       InstallOsHooksOptions options) override;
   void UninstallOsHooks(const AppId& app_id,
-                        const OsHooksResults& os_hooks,
+                        const OsHooksOptions& os_hooks,
                         UninstallOsHooksCallback callback) override;
   void UninstallAllOsHooks(const AppId& app_id,
                            UninstallOsHooksCallback callback) override;
@@ -82,10 +82,10 @@ class TestOsIntegrationManager : public OsIntegrationManager {
   void SetNextCreateShortcutsResult(const AppId& app_id, bool success);
 
   void SetFileHandlerManager(
-      std::unique_ptr<FileHandlerManager> file_handler_manager);
+      std::unique_ptr<WebAppFileHandlerManager> file_handler_manager);
 
   void SetProtocolHandlerManager(
-      std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager);
+      std::unique_ptr<WebAppProtocolHandlerManager> protocol_handler_manager);
 
   void SetUrlHandlerManager(
       std::unique_ptr<UrlHandlerManager> url_handler_manager);

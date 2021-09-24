@@ -130,13 +130,9 @@ void FirstPartySetsComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
-  if (install_dir.empty())
+  if (install_dir.empty() || !GetConfigPathInstance().empty())
     return;
 
-  if (component_installed_)
-    return;
-
-  component_installed_ = true;
   VLOG(1) << "First-Party Sets Component ready, version " << version.GetString()
           << " in " << install_dir.value();
 
@@ -180,6 +176,11 @@ FirstPartySetsComponentInstallerPolicy::GetInstallerAttributes() const {
   };
 }
 
+// static
+void FirstPartySetsComponentInstallerPolicy::ResetForTesting() {
+  GetConfigPathInstance().clear();
+}
+
 void RegisterFirstPartySetsComponent(ComponentUpdateService* cus) {
   if (!base::FeatureList::IsEnabled(net::features::kFirstPartySets))
     return;
@@ -192,6 +193,15 @@ void RegisterFirstPartySetsComponent(ComponentUpdateService* cus) {
                 content::GetNetworkService()->SetFirstPartySets(raw_sets);
               })));
   installer->Register(cus, base::OnceClosure());
+}
+
+// static
+void FirstPartySetsComponentInstallerPolicy::WriteComponentForTesting(
+    const base::FilePath& install_dir,
+    base::StringPiece contents) {
+  CHECK(base::WriteFile(GetInstalledPath(install_dir), contents));
+
+  GetConfigPathInstance() = GetInstalledPath(install_dir);
 }
 
 }  // namespace component_updater

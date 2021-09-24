@@ -28,7 +28,6 @@
 <translation id="1165039591588034296">Помилка</translation>
 <translation id="1172898394251786223">Наступне поле</translation>
 <translation id="1176932207622159128">Помилка збереження</translation>
-<translation id="1180526666083833456">Синхронізуйте та персоналізуйте служби на всіх пристроях.</translation>
 <translation id="1181037720776840403">Видалити</translation>
 <translation id="1207113853726624428">Новий пошук</translation>
 <translation id="1209206284964581585">Приховати</translation>
@@ -117,6 +116,7 @@
 <translation id="2073572773299281212">У мережі <ph name="DAYS" /> дн. тому</translation>
 <translation id="2074131957428911366">Ви можете будь-коли вибрати дані для синхронізації в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Відмінити</translation>
+<translation id="2080769225927880590">Увійдіть у дійсний обліковий запис</translation>
 <translation id="209018056901015185">Повна версія сайту</translation>
 <translation id="2103075008456228677">Відкрити history.google.com</translation>
 <translation id="2116625576999540962">Переміщено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -135,7 +135,6 @@
 <translation id="2302742851632557585">Змінити пароль на веб-сайті</translation>
 <translation id="2316709634732130529">Використати запропонований пароль</translation>
 <translation id="2320166752086256636">Сховати клавіатуру</translation>
-<translation id="2339560363438331454">Синхрон. та серв. Google</translation>
 <translation id="2351097562818989364">Налаштування перекладу скинуто.</translation>
 <translation id="235789365079050412">Політика конфіденційності Google</translation>
 <translation id="2359043044084662842">Перекласти</translation>
@@ -185,7 +184,6 @@
 <translation id="2820289420301699633">Адміністратор зможе контролювати Chrome і отримувати доступ до даних</translation>
 <translation id="2830972654601096923">Керувати адресами…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
-<translation id="2840687315230832938">Початкове налаштування синхронізації не завершено</translation>
 <translation id="2843803966603263712">Скинути налаштування</translation>
 <translation id="2848086008667475748">Вибрати за умовчанням у налаштуваннях…</translation>
 <translation id="2858204748079866344">Щоб захистити вашу конфіденційність, Chrome не буде автоматично заповнювати пароль у цьому полі.</translation>
@@ -224,7 +222,6 @@
 <translation id="3153862085237805241">Зберегти картку</translation>
 <translation id="3157387275655328056">Додати в список читання</translation>
 <translation id="3157684681743766797">Позначити всі…</translation>
-<translation id="3161291298470460782">Ваш сеанс в обліковому записі буде завершено, синхронізацію – вимкнено, а всі дані Chrome на пристрої – видалено. Синхронізовані дані залишаться у вашому обліковому записі Google.</translation>
 <translation id="3169472444629675720">Рекомендації</translation>
 <translation id="3175081911749765310">Веб-служби</translation>
 <translation id="3178650076442119961">У мережі сьогодні</translation>
@@ -233,6 +230,7 @@
 <translation id="3184767182050912705">Розблокувати, використовуючи <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /></translation>
 <translation id="3207960819495026254">Створено закладку</translation>
 <translation id="3224641773458703735">Щоб експортувати паролі, спершу потрібно налаштувати код доступу на пристрої.</translation>
+<translation id="3230318355092723906">Коли синхронізацію вимкнено, ви все ще можете переглядати всі свої закладки, історію, паролі й інші налаштування на цьому пристрої. Якщо ви внесете зміни, вони не синхронізуватимуться з обліковим записом.</translation>
 <translation id="3240426699337459095">Посилання скопійовано</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> з <ph name="NUM_SUGGESTIONS" /></translation>
@@ -267,7 +265,6 @@
 <translation id="3494788280727468875">Підтвердити очищення даних веб-перегляду</translation>
 <translation id="35083190962747987">Відкрити ${url}</translation>
 <translation id="3519193562722059437">Щоб переглядати веб-сторінки, відкрийте вкладку.</translation>
-<translation id="3523473570015918798">Якщо ви вийдете, дані Chrome (зокрема закладки, історія та паролі) більше не синхронізуватимуться з вашим обліковим записом Google.</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3529024052484145543">Небезпечно</translation>
 <translation id="3533202363250687977">Закрити всі анонімні вкладки</translation>
@@ -360,6 +357,7 @@
 <translation id="4619564267100705184">Підтвердити особу</translation>
 <translation id="4619615317237390068">Вкладки з інших пристроїв</translation>
 <translation id="4620246317052452550">Прочитані сторінки</translation>
+<translation id="4620888520263267479">Увімкнути попередній перегляд посилань</translation>
 <translation id="4630540211544979320">Перекласти сторінки</translation>
 <translation id="4634124774493850572">Прийняти пароль</translation>
 <translation id="4636930964841734540">Інформація</translation>
@@ -447,7 +445,6 @@
 <translation id="5457226814769348910">Відкрити офлайн-версію</translation>
 <translation id="5489208564673669003">Щоб керувати файлами cookie для всіх сайтів, перегляньте <ph name="BEGIN_LINK" />Налаштування файлів cookie<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">Блокувати всі файли cookie (не рекомендовано)</translation>
-<translation id="5508435575041083207">Вийти й видалити дані з цього пристрою</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> год тому</translation>
 <translation id="5525269841082836315">Створити парол.фразу</translation>
 <translation id="5532698011560297095">Не можна ввійти</translation>
@@ -458,6 +455,7 @@
 <translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5580834567471114021">Додати в список читання на пізніше?</translation>
 <translation id="5592679540098330836">Увімкнути синхронізацію для користувача <ph name="NAME" /></translation>
+<translation id="560322036295180549">Вимкнено адміністратором організації</translation>
 <translation id="5614553682702429503">Зберегти пароль?</translation>
 <translation id="5626245204502895507">Зараз неможливо завантажити цей файл.</translation>
 <translation id="5631164295104953411">Додати спосіб оплати</translation>
@@ -473,6 +471,8 @@
 <translation id="5737974891429562743">Дані для входу в обліковий запис застаріли. Оновіть їх, щоб почати синхронізацію.</translation>
 <translation id="5738887413654608789">Ви зможете знаходити відповідні веб-сторінки на основі об’єктів поблизу.</translation>
 <translation id="5758631781033351321">Тут відображатиметься ваш список читання</translation>
+<translation id="575902488528307720">Шукати зображення</translation>
+<translation id="5781453543752460388">Додати у Фото</translation>
 <translation id="5782227691023083829">Виконується переклад сторінки...</translation>
 <translation id="5803566855766646066">Відхилити цю нову картку?</translation>
 <translation id="5812974770859303494">Додати в…</translation>
@@ -510,6 +510,7 @@
 <translation id="6042308850641462728">Більше</translation>
 <translation id="605721222689873409">РР</translation>
 <translation id="6059830886158432458">Керуйте новинами й діями тут</translation>
+<translation id="6064824697233747382">Адміністратор вашої організації вимагає, щоб ви вимкнули синхронізацію.</translation>
 <translation id="6066301408025741299">Торкніться, щоб скасувати.</translation>
 <translation id="60829778314739003">Прийняти та продовжити</translation>
 <translation id="6084848228346514841">Виберіть вкладки</translation>
@@ -585,7 +586,6 @@
 <translation id="6628106477656132239">Недійсна дата закінчення терміну дії</translation>
 <translation id="6634432609054530164">Адміністратор вашої організації вимкнув режим анонімного перегляду</translation>
 <translation id="6638511529934826365">Масштабувати текст…</translation>
-<translation id="6639730758971422557">Щоб увімкнути Безпечний перегляд, відкрийте параметр <ph name="BEGIN_LINK" />Синхронізація та сервіси Google<ph name="END_LINK" /> і натисніть "Безпечний перегляд".</translation>
 <translation id="6642362222295953972">Перейти на наявну вкладку</translation>
 <translation id="6643016212128521049">Очистити</translation>
 <translation id="6645899968535965230">QR-код: <ph name="PAGE_TITLE" /></translation>
@@ -610,6 +610,7 @@
 <translation id="6801927553864092214">Щоб переглядати веб-сторінки конфіденційно, відкрийте анонімну вкладку</translation>
 <translation id="6807889908376551050">Показати всі...</translation>
 <translation id="681368974849482173">Закладку творено</translation>
+<translation id="681450999322335505">Адміністратор вашої організації вимкнув синхронізацію.</translation>
 <translation id="6830804042318138535">Показати більше</translation>
 <translation id="6831043979455480757">Перекласти</translation>
 <translation id="6842136130964845393">Щоб не втратити доступ до своїх збережених паролів, підтвердьте свою особу</translation>
@@ -635,7 +636,6 @@
 <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="7004499039102548441">Останні вкладки</translation>
 <translation id="7006788746334555276">Веб-контент</translation>
-<translation id="7015203776128479407">Початкове налаштування синхронізації не завершено. Синхронізацію вимкнено.</translation>
 <translation id="7029809446516969842">Паролі</translation>
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="7062545763355031412">Прийняти та перейти в інший обліковий запис</translation>
@@ -658,12 +658,12 @@
 <translation id="7265758999917665941">Ніколи для цього сайту</translation>
 <translation id="7272437679830969316">Не вдалося підтвердити особу. Пароль не скопійовано.</translation>
 <translation id="7291368939935408496">Готуються паролі…</translation>
-<translation id="7293171162284876153">Щоб почати синхронізацію, увімкніть параметр "Синхронізувати дані Chrome".</translation>
 <translation id="7313347584264171202">Тут відображатимуться ваші анонімні вкладки</translation>
 <translation id="7319242366286515846">Продовжуючи, ви приймаєте <ph name="BEGIN_LINK" />Умови використання<ph name="END_LINK" /></translation>
 <translation id="7336264872878993241">Завантажено <ph name="PERCENT" />%</translation>
 <translation id="7340958967809483333">Налаштування рекомендацій</translation>
 <translation id="7346909386216857016">OK</translation>
+<translation id="7347393021726115275">Ви можете ввійти лише в облікові записи, які схвалив адміністратор. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="734758817008927353">Опції збереження картки</translation>
 <translation id="7348502496356775519">Закладка</translation>
 <translation id="7353432112255316844">Підтвердьте свою особу</translation>
@@ -702,9 +702,6 @@
 <translation id="7701040980221191251">Немає</translation>
 <translation id="7741325291586284254">Сторінка нової анонімної вкладки</translation>
 <translation id="7765158879357617694">Перемістити</translation>
-<translation id="7771470029643830783">Якщо ви вийдете, дані Chrome (зокрема закладки, історія та паролі) більше не синхронізуватимуться з вашим обліковим записом Google.
-
-Оскільки ваш обліковий запис зареєстровано в домені <ph name="HOSTED_DOMAIN" />, коли ви вийдете з нього, ваші дані Chrome буде видалено з цього пристрою. Синхронізовані дані залишаться у вашому обліковому записі Google.</translation>
 <translation id="7772032839648071052">Підтвердити парольну фразу</translation>
 <translation id="7778472311864276518">Вилучити обліковий запис із цього пристрою</translation>
 <translation id="7781011649027948662">Перекласти сторінку?</translation>
@@ -717,6 +714,7 @@
 <translation id="7856733331829174190">Не вдалося завантажити</translation>
 <translation id="7859704718976024901">Історія веб-перегляду</translation>
 <translation id="7887198238286927132">Щоб захистити вашу конфіденційність, Chrome не буде автоматично заповнювати це поле.</translation>
+<translation id="7911190106180361398">Адміністратор вашої організації не дозволяє синхронізувати всі дані.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Експортувати паролі…</translation>
 <translation id="794799177247607889">Припинити ведення журналів</translation>
@@ -744,12 +742,13 @@
 <translation id="8080028325999236607">Закрити всі вкладки</translation>
 <translation id="8105368624971345109">Вимкнути</translation>
 <translation id="8114753159095730575">Доступне завантаження файлу. Параметри можна знайти внизу екрана.</translation>
-<translation id="8131740175452115882">Підтвердити</translation>
 <translation id="8156478151976189188">Синхронізація паролів не працює</translation>
+<translation id="8193953846147532858"><ph name="BEGIN_LINK" />Ваші пристрої<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8197543752516192074">Перекласти сторінку</translation>
 <translation id="8205564605687841303">Скасувати</translation>
 <translation id="8206354486702514201">Це налаштування застосовується вашим адміністратором.</translation>
 <translation id="8225985093977202398">Кешовані зображення й файли</translation>
+<translation id="8228176677386827255">Вашим пристроєм керують. Ви можете ввійти лише в обліковий запис організації.</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8271720166617117963">Прийняти й увійти</translation>
 <translation id="8281781826761538115">За умовчанням – <ph name="DEFAULT_LOCALE" /></translation>
@@ -774,7 +773,6 @@
 <translation id="8495097701594799854">Вимкнено адміністратором організації.</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>
 <translation id="850600235656508448">Відкрити в режимі анонімного перегляду</translation>
-<translation id="8510057420705599706">Ваш сеанс в обліковому записі буде завершено, а синхронізацію – вимкнено. Ваші дані Chrome (зокрема закладки, історія та паролі) залишаться на пристрої.</translation>
 <translation id="8517375800490286174">Ліцензії ПЗ з відкритим кодом</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />: вкладки <ph name="FIRST_VISIBLE_TAB" />–<ph name="LAST_VISIBLE_TAB" /> з <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Нове</translation>

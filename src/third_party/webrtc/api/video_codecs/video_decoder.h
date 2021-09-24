@@ -20,7 +20,6 @@
 #include "api/video/render_resolution.h"
 #include "api/video/video_codec_type.h"
 #include "api/video/video_frame.h"
-#include "api/video_codecs/video_codec.h"
 #include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
@@ -78,8 +77,9 @@ class RTC_EXPORT VideoDecoder {
     void set_max_render_resolution(RenderResolution value);
 
     // Maximum number of cpu cores the decoder is allowed to use in parallel.
+    // Must be positive.
     int number_of_cores() const { return number_of_cores_; }
-    void set_number_of_cores(int value) { number_of_cores_ = value; }
+    void set_number_of_cores(int value);
 
     // Codec of encoded images user of the VideoDecoder interface will `Decode`.
     VideoCodecType codec_type() const { return codec_type_; }
@@ -96,14 +96,7 @@ class RTC_EXPORT VideoDecoder {
 
   // Prepares decoder to handle incoming encoded frames. Can be called multiple
   // times, in such case only latest `settings` are in effect.
-  // TODO(bugs.webrtc.org/13045): Make pure virtual when implemented by all
-  // derived classes.
-  virtual bool Configure(const Settings& settings);
-
-  // TODO(bugs.webrtc.org/13045): Delete in favor of the Configure function
-  // above.
-  virtual int32_t InitDecode(const VideoCodec* codec_settings,
-                             int32_t number_of_cores);
+  virtual bool Configure(const Settings& settings) = 0;
 
   virtual int32_t Decode(const EncodedImage& input_image,
                          bool missing_frames,

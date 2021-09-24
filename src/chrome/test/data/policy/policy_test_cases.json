@@ -622,6 +622,21 @@
       }
     ]
   },
+  "PrintPostScriptMode": {
+    "os": [
+      "win"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "PrintPostScriptMode": 1
+        },
+        "prefs": {
+          "printing.postscript_mode": {}
+        }
+      }
+    ]
+  },
   "PrintRasterizationMode": {
     "os": [
       "win"
@@ -2970,7 +2985,7 @@
         "policies": {},
         "prefs": {
           "profile.cross_origin_webassembly_module_sharing_enabled": {
-            "default_value": true
+            "default_value": false
           }
         }
       }
@@ -11064,6 +11079,9 @@
   "DeviceTargetVersionPrefix": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
+  "DeviceTargetVersionSelector": {
+    "reason_for_missing_test": "Chrome OS device policy used by update_engine only, not used in Chrome."
+  },
   "DeviceUpdateScatterFactor": {
     "reason_for_missing_test": "Chrome OS device policy used by update_engine only, not used in Chrome."
   },
@@ -14043,6 +14061,23 @@
       }
     ]
   },
+  "BrowserLegacyExtensionPointsBlocked": {
+    "os": [
+      "win"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "BrowserLegacyExtensionPointsBlocked": true
+        },
+        "prefs": {
+          "block_browser_legacy_extension_points": {
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
   "HSTSPolicyBypassList": {
     "os": [
       "win",
@@ -14885,21 +14920,7 @@
     "reason_for_missing_test": "TODO(http://crbug.com/1141521): enable this policy test on Android"
   },
   "LacrosAllowed": {
-    "os": [
-      "chromeos_ash"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "LacrosAllowed": false
-        },
-        "prefs": {
-          "lacros_allowed": {
-            "location": "local_state"
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "IntegratedWebAuthenticationAllowed": {
     "reason_for_missing_test": "Policy was removed"
@@ -15556,7 +15577,7 @@
       }
     ]
   },
-  "RestrictedManagedGuestSessionEnabled": {
+  "DeviceRestrictedManagedGuestSessionEnabled": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
   "RestrictedManagedGuestSessionExtensionCleanupExemptList": {
@@ -15656,6 +15677,35 @@
         "prefs": {
           "settings.a11y.enhanced_network_voices_in_select_to_speak_allowed": {
             "default_value": true
+          }
+        }
+      }
+    ]
+  },
+  "ChromeAppsEnabled": {
+    "os": ["win", "linux", "mac"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": { "ChromeAppsEnabled": false },
+        "prefs": {
+          "extensions.chrome_apps_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": { "ChromeAppsEnabled": true },
+        "prefs": {
+          "extensions.chrome_apps_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "extensions.chrome_apps_enabled": {
+            "default_value": false
           }
         }
       }

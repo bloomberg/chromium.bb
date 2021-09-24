@@ -5,18 +5,20 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_APP_SERVICE_WEB_APP_PUBLISHER_HELPER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_APP_SERVICE_WEB_APP_PUBLISHER_HELPER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/types/id_type.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
-#include "chrome/browser/web_applications/components/app_registrar_observer.h"
+#include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -49,6 +51,10 @@ class WebAppProvider;
 class WebAppRegistrar;
 class WebAppLaunchManager;
 
+struct ShortcutIdTypeMarker {};
+
+typedef base::IdTypeU32<ShortcutIdTypeMarker> ShortcutId;
+
 class WebAppPublisherHelper : public AppRegistrarObserver,
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
                               public NotificationDisplayService::Observer,
@@ -76,6 +82,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   using LoadIconCallback = base::OnceCallback<void(apps::mojom::IconValuePtr)>;
 
   WebAppPublisherHelper(Profile* profile,
+                        WebAppProvider* provider,
                         apps::mojom::AppType app_type,
                         Delegate* delegate,
                         bool observe_media_requests);
@@ -174,23 +181,25 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   // Converts |display_mode| to a |window_mode|.
   apps::mojom::WindowMode ConvertDisplayModeToWindowMode(
-      blink::mojom::DisplayMode display_mode,
-      bool in_experimental_tabbed_window);
+      blink::mojom::DisplayMode display_mode);
 
   void PublishWindowModeUpdate(const std::string& app_id,
-                               blink::mojom::DisplayMode display_mode,
-                               bool in_experimental_tabbed_window);
+                               blink::mojom::DisplayMode display_mode);
+
+  std::string GenerateShortcutId();
+
+  void StoreShortcutId(
+      const std::string& shortcut_id,
+      const WebApplicationShortcutsMenuItemInfo& menu_item_info);
 
   // Execute the user command from the context menu items. Currently
   // on the web app shortcut need to be execute in the publisher.
-  // The |app_id| represent the app that user selected, the |item_id|
-  // represents which shortcut item that user selected. |app_launch_source|
-  // is the launch source for a web app. The |display_id| represent where to
-  // display the app.
+  // The |app_id| represent the app that user selected, the |shortcut_id|
+  // represents which shortcut item that user selected. The |display_id|
+  // represent where to display the app.
   content::WebContents* ExecuteContextMenuCommand(
       const std::string& app_id,
-      int32_t item_id,
-      apps::mojom::AppLaunchSource app_launch_source,
+      const std::string& shortcut_id,
       int64_t display_id);
 
   Profile* profile() { return profile_; }
@@ -228,8 +237,6 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       const base::Time& last_launch_time) override;
   void OnWebAppUserDisplayModeChanged(const AppId& app_id,
                                       DisplayMode user_display_mode) override;
-  void OnWebAppExperimentalTabbedWindowModeChanged(const AppId& app_id,
-                                                   bool enabled) override;
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void OnWebAppDisabledStateChanged(const AppId& app_id,
                                     bool is_disabled) override;
@@ -291,13 +298,13 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   Profile* const profile_;
 
+  WebAppProvider* const provider_;
+
   // The app type of the publisher. The app type is kSystemWeb if the web apps
   // are serving from Lacros, and the app type is kWeb for all other cases.
   const apps::mojom::AppType app_type_;
 
   Delegate* const delegate_;
-
-  WebAppProvider* const provider_;
 
   base::ScopedObservation<WebAppRegistrar, AppRegistrarObserver>
       registrar_observation_{this};
@@ -326,6 +333,9 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   apps::MediaRequests media_requests_;
 #endif
+
+  std::map<std::string, WebApplicationShortcutsMenuItemInfo> shortcut_id_map_;
+  ShortcutId::Generator shortcut_id_generator_;
 
   base::WeakPtrFactory<WebAppPublisherHelper> weak_ptr_factory_{this};
 };

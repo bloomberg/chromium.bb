@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 
 #include "base/base64.h"
 #include "base/strings/strcat.h"
@@ -68,12 +68,18 @@ AppId GenerateAppId(const absl::optional<std::string>& manifest_id,
       crypto::SHA256HashString(GenerateAppIdUnhashed(manifest_id, start_url)));
 }
 
-AppId GenerateAppIdFromManifest(const blink::mojom::Manifest& manifest) {
-  return GenerateAppId(
+std::string GenerateAppIdUnhashedFromManifest(
+    const blink::mojom::Manifest& manifest) {
+  return GenerateAppIdUnhashed(
       manifest.id.has_value()
           ? absl::optional<std::string>(base::UTF16ToUTF8(manifest.id.value()))
           : absl::nullopt,
       manifest.start_url);
+}
+
+AppId GenerateAppIdFromManifest(const blink::mojom::Manifest& manifest) {
+  return crx_file::id_util::GenerateId(
+      crypto::SHA256HashString(GenerateAppIdUnhashedFromManifest(manifest)));
 }
 
 bool IsValidWebAppUrl(const GURL& app_url) {
@@ -94,7 +100,7 @@ bool IsValidExtensionUrl(const GURL& app_url) {
 absl::optional<AppId> FindInstalledAppWithUrlInScope(Profile* profile,
                                                      const GURL& url,
                                                      bool window_only) {
-  auto* provider = WebAppProvider::GetForLocalApps(profile);
+  auto* provider = WebAppProvider::GetForLocalAppsUnchecked(profile);
   return provider ? provider->registrar().FindInstalledAppWithUrlInScope(
                         url, window_only)
                   : absl::nullopt;

@@ -306,19 +306,19 @@ TEST_F(WebStateImplTest, ObserverTest) {
   // Test that WebFrameDidBecomeAvailable() is called.
   ASSERT_FALSE(observer->web_frame_available_info());
   auto main_frame = FakeWebFrame::CreateMainWebFrame(GURL::EmptyGURL());
-  web_state_->OnWebFrameAvailable(main_frame.get());
+  WebFrame* main_frame_ptr = main_frame.get();
+  web_state_->WebFrameBecameAvailable(std::move(main_frame));
   ASSERT_TRUE(observer->web_frame_available_info());
   EXPECT_EQ(web_state_.get(), observer->web_frame_available_info()->web_state);
-  EXPECT_EQ(main_frame.get(), observer->web_frame_available_info()->web_frame);
+  EXPECT_EQ(main_frame_ptr, observer->web_frame_available_info()->web_frame);
 
   // Test that WebFrameWillBecomeUnavailable() is called.
   ASSERT_FALSE(observer->web_frame_unavailable_info());
-  web_state_->OnWebFrameUnavailable(main_frame.get());
+  web_state_->WebFrameBecameUnavailable(main_frame_ptr->GetFrameId());
   ASSERT_TRUE(observer->web_frame_unavailable_info());
   EXPECT_EQ(web_state_.get(),
             observer->web_frame_unavailable_info()->web_state);
-  EXPECT_EQ(main_frame.get(),
-            observer->web_frame_unavailable_info()->web_frame);
+  EXPECT_EQ(main_frame_ptr, observer->web_frame_unavailable_info()->web_frame);
 
   // Test that RenderProcessGone() is called.
   SetIgnoreRenderProcessCrashesDuringTesting(true);
@@ -499,32 +499,6 @@ TEST_F(WebStateImplTest, DelegateTest) {
   EXPECT_EQ(delegate.last_authentication_request()->protection_space,
             protection_space);
   EXPECT_EQ(delegate.last_authentication_request()->credential, credential);
-
-  // Test that ShouldPreviewLink() is delegated correctly.
-  GURL link_url("http://link.test/");
-  delegate.SetShouldPreviewLink(false);
-  delegate.ClearLastLinkURL();
-  EXPECT_FALSE(web_state_->ShouldPreviewLink(link_url));
-  EXPECT_EQ(link_url, delegate.last_link_url());
-  delegate.SetShouldPreviewLink(true);
-  delegate.ClearLastLinkURL();
-  EXPECT_TRUE(web_state_->ShouldPreviewLink(link_url));
-  EXPECT_EQ(link_url, delegate.last_link_url());
-
-  // Test that GetPreviewingViewController() is delegated correctly.
-  UIViewController* previewing_view_controller =
-      OCMClassMock([UIViewController class]);
-  delegate.SetPreviewingViewController(previewing_view_controller);
-  delegate.ClearLastLinkURL();
-  EXPECT_EQ(previewing_view_controller,
-            web_state_->GetPreviewingViewController(link_url));
-  EXPECT_EQ(link_url, delegate.last_link_url());
-
-  // Test that CommitPreviewingViewController() is called.
-  delegate.ClearLastPreviewingViewController();
-  web_state_->CommitPreviewingViewController(previewing_view_controller);
-  EXPECT_EQ(previewing_view_controller,
-            delegate.last_previewing_view_controller());
 }
 
 // Verifies that GlobalWebStateObservers are called when expected.

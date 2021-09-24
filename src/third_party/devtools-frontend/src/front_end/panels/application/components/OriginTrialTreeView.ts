@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// eslint-disable-next-line rulesdir/check_component_naming
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Protocol from '../../../generated/protocol.js';
 import * as Adorners from '../../../ui/components/adorners/adorners.js';
@@ -12,6 +11,7 @@ import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 
 import badgeStyles from './badge.css.js';
 import originTrialTokenRowsStyles from './originTrialTokenRows.css.js';
+import originTrialTreeViewStyles from './originTrialTreeView.css.js';
 
 const UIStrings = {
   /**
@@ -89,7 +89,7 @@ export class Badge extends HTMLElement {
         LitHtml.html`
       ${this.adorner}
     `,
-        this.shadow);
+        this.shadow, {host: this});
   }
 }
 
@@ -107,6 +107,7 @@ export type OriginTrialTreeNodeData = Protocol.Page.OriginTrial|Protocol.Page.Or
 function constructOriginTrialTree(originTrial: Protocol.Page.OriginTrial): TreeNode<OriginTrialTreeNodeData> {
   return {
     treeNodeData: originTrial,
+    id: 'OriginTrialTreeNode#' + originTrial.trialName,
     children: async(): Promise<TreeNode<OriginTrialTreeNodeData>[]> => originTrial.tokensWithStatus.length > 1 ?
         originTrial.tokensWithStatus.map(constructTokenNode) :
         constructTokenDetailsNodes(originTrial.tokensWithStatus[0]),
@@ -134,6 +135,7 @@ function constructOriginTrialTree(originTrial: Protocol.Page.OriginTrial): TreeN
 function constructTokenNode(token: Protocol.Page.OriginTrialTokenWithStatus): TreeNode<OriginTrialTreeNodeData> {
   return {
     treeNodeData: token.status,
+    id: 'TokenNode#' + token.rawTokenText,
     children: async(): Promise<TreeNode<OriginTrialTreeNodeData>[]> => constructTokenDetailsNodes(token),
     renderer: (node: TreeNode<OriginTrialTreeNodeData>, state: {isExpanded: boolean}): LitHtml.TemplateResult => {
       const tokenStatus = node.treeNodeData as string;
@@ -166,6 +168,7 @@ function constructTokenDetailsNodes(token: Protocol.Page.OriginTrialTokenWithSta
   return [
     {
       treeNodeData: token,
+      id: 'TokenDetailsNode#' + token.rawTokenText,
       renderer: renderTokenDetails,
     },
     constructRawTokenTextNode(token.rawTokenText),
@@ -175,8 +178,10 @@ function constructTokenDetailsNodes(token: Protocol.Page.OriginTrialTokenWithSta
 function constructRawTokenTextNode(tokenText: string): TreeNode<OriginTrialTreeNodeData> {
   return {
     treeNodeData: i18nString(UIStrings.rawTokenText),
+    id: 'TokenRawTextContainerNode#' + tokenText,
     children: async(): Promise<TreeNode<OriginTrialTreeNodeData>[]> => [{
       treeNodeData: tokenText,
+      id: 'TokenRawTextNode#' + tokenText,
       renderer: (data: TreeNode<OriginTrialTreeNodeData>): LitHtml.TemplateResult => {
         const tokenText = data.treeNodeData as string;
         return LitHtml.html`
@@ -198,7 +203,7 @@ export interface OriginTrialTokenRowsData {
 }
 
 export class OriginTrialTokenRows extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-resources-origin-trial-token-rows`;
+  static readonly litTagName = LitHtml.literal`devtools-resources-origin-trial-token-rows`;
   private readonly shadow = this.attachShadow({mode: 'open'});
   private tokenWithStatus: Protocol.Page.OriginTrialTokenWithStatus|null = null;
   private parsedTokenDetails: TokenField[] = [];
@@ -284,7 +289,7 @@ export class OriginTrialTokenRows extends HTMLElement {
         ${tokenDetailRows}
       </div>
     `,
-        this.shadow);
+        this.shadow, {host: this});
   }
 }
 
@@ -295,11 +300,15 @@ export interface OriginTrialTreeViewData {
 }
 
 export class OriginTrialTreeView extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-resources-origin-trial-tree-view`;
+  static readonly litTagName = LitHtml.literal`devtools-resources-origin-trial-tree-view`;
   private readonly shadow = this.attachShadow({mode: 'open'});
 
   set data(data: OriginTrialTreeViewData) {
     this.render(data.trials);
+  }
+
+  connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [originTrialTreeViewStyles];
   }
 
   private render(trials: Protocol.Page.OriginTrial[]): void {
@@ -315,8 +324,16 @@ export class OriginTrialTreeView extends HTMLElement {
         } as TreeOutline.TreeOutline.TreeOutlineData<OriginTrialTreeNodeData>}">
       </${TreeOutline.TreeOutline.TreeOutline.litTagName}>
     `,
-        this.shadow);
+        this.shadow, {host: this});
   }
 }
 
 ComponentHelpers.CustomElements.defineComponent('devtools-resources-origin-trial-tree-view', OriginTrialTreeView);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'devtools-resources-origin-trial-tree-view': OriginTrialTreeView;
+    'devtools-resources-origin-trial-token-rows': OriginTrialTokenRows;
+    'devtools-resources-origin-trial-tree-view-badge': Badge;
+  }
+}

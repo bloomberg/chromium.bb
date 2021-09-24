@@ -21,9 +21,9 @@
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
-#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/test/test_shelf_item_delegate.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -114,17 +114,6 @@
 namespace ash {
 
 namespace {
-
-class TestShelfItemDelegate : public ShelfItemDelegate {
- public:
-  explicit TestShelfItemDelegate(const ShelfID& shelf_id)
-      : ShelfItemDelegate(shelf_id) {}
-  void ExecuteCommand(bool from_context_menu,
-                      int64_t command_id,
-                      int32_t event_flags,
-                      int64_t display_id) override {}
-  void Close() override {}
-};
 
 void NewDesk() {
   // Create a desk through keyboard. Do not use |kButton| to avoid empty name.
@@ -861,8 +850,10 @@ TEST_F(DesksTest, WindowStackingAfterWindowMoveToAnotherDesk) {
 
   // Moving |win2| should be enough to get its transient parent |win1| moved as
   // well.
-  desk_2->MoveWindowToDesk(win2.get(), desk_1, win1->GetRootWindow());
-  desk_2->MoveWindowToDesk(win3.get(), desk_1, win1->GetRootWindow());
+  desk_2->MoveWindowToDesk(win2.get(), desk_1, win1->GetRootWindow(),
+                           /*unminimize=*/true);
+  desk_2->MoveWindowToDesk(win3.get(), desk_1, win1->GetRootWindow(),
+                           /*unminimize=*/true);
   EXPECT_TRUE(IsStackedBelow(win1.get(), win2.get()));
   EXPECT_TRUE(IsStackedBelow(win2.get(), win0.get()));
   EXPECT_TRUE(IsStackedBelow(win0.get(), win3.get()));
@@ -1872,7 +1863,7 @@ class DesksWithMultiDisplayOverview : public AshTestBase {
     AshTestBase::SetUp();
 
     // Start the test with two displays and two desks.
-    UpdateDisplay("600x600,400x500");
+    UpdateDisplay("700x600,400x500");
     NewDesk();
   }
 };
@@ -1939,17 +1930,30 @@ TEST_F(DesksWithMultiDisplayOverview, DropOnOtherDeskInOtherDisplay) {
   EXPECT_EQ(grid1, overview_item->overview_grid());
   EXPECT_EQ(0u, grid2->size());
 
-  // Drag the item and drop it on the mini view of the second desk on the second
-  // display. The window should change desks as well as displays.
   const auto* desks_bar_view = grid2->desks_bar_view();
-  ASSERT_TRUE(desks_bar_view);
-  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
   auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
-  auto* event_generator = GetEventGenerator();
-  DragItemToPoint(overview_item,
-                  desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
-                  event_generator,
-                  /*by_touch_gestures=*/false);
+  gfx::Point desk_2_mini_view_center =
+      desk_2_mini_view->GetBoundsInScreen().CenterPoint();
+  // When |features::kVerticalSnapState| is enabled, one of two drag indicators
+  // show up on the top instead of the left side of the display. Such top
+  // indicator pushes the desks bar down, so we need to drag the item to the
+  // area that triggers drag indicators without dropping first to get the
+  // updated position of the mini view before dropping the window on it.
+  DragItemToPoint(overview_item, desk_2_mini_view_center, GetEventGenerator(),
+                  /*by_touch_gestures=*/false,
+                  /*drop=*/false);
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  // Validate that before dropping, the SplitView indicators and the drop target
+  // widget are created.
+  EXPECT_EQ(
+      SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+      grid2->split_view_drag_indicators()->current_window_dragging_state());
+  desk_2_mini_view_center = desk_2_mini_view->GetBoundsInScreen().CenterPoint();
+  // Now drop the window to desk 2 mini view in the second display.
+  DragItemToPoint(overview_item, desk_2_mini_view_center, GetEventGenerator(),
+                  /*by_touch_gestures=*/false,
+                  /*drop=*/true);
+
   // The item should no longer be in any grid, since it moved to an inactive
   // desk.
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -1977,7 +1981,7 @@ void VerifyDesksRestoreData(PrefService* user_prefs,
                             const std::vector<std::string>& desks_names) {
   const base::ListValue* desks_restore_names =
       user_prefs->GetList(prefs::kDesksNamesList);
-  ASSERT_EQ(desks_names.size(), desks_restore_names->GetSize());
+  ASSERT_EQ(desks_names.size(), desks_restore_names->GetList().size());
 
   size_t index = 0;
   for (const auto& value : desks_restore_names->GetList())
@@ -4176,7 +4180,7 @@ TEST_F(DesksTest, NameNudges) {
 // resides on the same DesksBarView as the clicked button should be focused.
 // See crbug.com/1206013.
 TEST_F(DesksTest, NameNudgesMultiDisplay) {
-  UpdateDisplay("800x800,800x800");
+  UpdateDisplay("800x700,800x700");
 
   // Start overview.
   EnterOverview();
@@ -5904,9 +5908,22 @@ TEST_F(PersistentDesksBarTest, OverviewMode) {
 
   NewDesk();
   EXPECT_TRUE(GetBarWidget());
+  // Create a window thus `UpdateBarOnWindowStateChanges()` will be called while
+  // entering overview mode. Bento bar should not be created and the desks bar
+  // should be at the top of the display in this case.
+  std::unique_ptr<aura::Window> window =
+      CreateTestWindow(gfx::Rect(0, 0, 300, 300));
+  WindowState* window_state = WindowState::Get(window.get());
+  window_state->Minimize();
+
   // Entering overview mode should destroy the bar. Exiting overview mode with
   // more than one desk should create the bar and show it.
   EnterOverview();
+  EXPECT_EQ(GetOverviewGridForRoot(Shell::GetPrimaryRootWindow())
+                ->desks_bar_view()
+                ->GetBoundsInScreen()
+                .origin(),
+            gfx::Point(0, 0));
   EXPECT_FALSE(GetBarWidget());
   EXPECT_EQ(2u, desks_controller->desks().size());
   ExitOverview();
@@ -6213,15 +6230,6 @@ TEST_F(PersistentDesksBarTest, NoPersistentDesksBarWithFullscreenedWindow) {
   EXPECT_TRUE(IsWidgetVisible());
   EXPECT_EQ(bounds, GetBarWidget()->GetWindowBoundsInScreen());
 
-  // The bar should be created after `window1` being hidden.
-  window_state1->OnWMEvent(&event_toggle_fullscreen);
-  window1->Hide();
-  EXPECT_TRUE(GetBarWidget());
-  EXPECT_TRUE(IsWidgetVisible());
-  EXPECT_EQ(bounds, GetBarWidget()->GetWindowBoundsInScreen());
-  window1->Show();
-  EXPECT_FALSE(GetBarWidget());
-
   // The bar should be created after `window1` being minimized.
   window_state1->Minimize();
   EXPECT_TRUE(GetBarWidget());
@@ -6235,14 +6243,38 @@ TEST_F(PersistentDesksBarTest, NoPersistentDesksBarWithFullscreenedWindow) {
   // closed.
   window_state1->OnWMEvent(&event_toggle_fullscreen);
   window_state2->OnWMEvent(&event_toggle_fullscreen);
-  views::Widget::GetWidgetForNativeWindow(window1.get())
-      ->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
+  window1.reset();
   EXPECT_FALSE(GetBarWidget());
-  views::Widget::GetWidgetForNativeWindow(window2.get())
-      ->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
+  window2.reset();
   EXPECT_TRUE(GetBarWidget());
   EXPECT_TRUE(IsWidgetVisible());
   EXPECT_EQ(bounds, GetBarWidget()->GetWindowBoundsInScreen());
+}
+
+// Tests that the bar should not be created in non-active user session.
+TEST_F(PersistentDesksBarTest, NoPersistentDesksBarInNonActiveUserSession) {
+  AccessibilityControllerImpl* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  TestSessionControllerClient* client = GetSessionControllerClient();
+
+  // The bar should be created with two desks.
+  NewDesk();
+  EXPECT_TRUE(GetBarWidget());
+  EXPECT_TRUE(IsWidgetVisible());
+
+  // The bar should not be created in LOCKED user session when docked magnifier
+  // is enabled/disabled.
+  client->SetSessionState(session_manager::SessionState::LOCKED);
+  EXPECT_FALSE(GetBarWidget());
+  accessibility_controller->docked_magnifier().SetEnabled(true);
+  EXPECT_FALSE(GetBarWidget());
+  accessibility_controller->docked_magnifier().SetEnabled(false);
+  EXPECT_FALSE(GetBarWidget());
+
+  // The bar should be created when the user session is active.
+  client->SetSessionState(session_manager::SessionState::ACTIVE);
+  EXPECT_TRUE(GetBarWidget());
+  EXPECT_TRUE(IsWidgetVisible());
 }
 
 TEST_F(PersistentDesksBarTest, DisplayMetricsChanged) {
@@ -6291,6 +6323,54 @@ TEST_F(PersistentDesksBarTest, DisplayMetricsChanged) {
   EXPECT_LE(display_width_before_scale_up, display_width_after_scale_up);
   EXPECT_EQ(display_width_after_scale_up,
             GetBarWidget()->GetWindowBoundsInScreen().width());
+}
+
+// Tests bento bar's state on the pref `kBentoBarEnabled` changes. And its value
+// should be independent among users.
+TEST_F(PersistentDesksBarTest, UpdateBarStateOnPrefChanges) {
+  const char kUser1[] = "user1@test.com";
+  const char kUser2[] = "user2@test.com";
+  const AccountId kUserAccount1 = AccountId::FromUserEmail(kUser1);
+  const AccountId kUserAccount2 = AccountId::FromUserEmail(kUser2);
+
+  TestSessionControllerClient* session_controller =
+      GetSessionControllerClient();
+  // Setup 2 users.
+  session_controller->AddUserSession(kUser1, user_manager::USER_TYPE_REGULAR,
+                                     /*provide_pref_service=*/false);
+  session_controller->AddUserSession(kUser2, user_manager::USER_TYPE_REGULAR,
+                                     /*provide_pref_service=*/false);
+
+  auto user_1_prefs = std::make_unique<TestingPrefServiceSimple>();
+  RegisterUserProfilePrefs(user_1_prefs->registry(), /*for_test=*/true);
+  auto user_2_prefs = std::make_unique<TestingPrefServiceSimple>();
+  RegisterUserProfilePrefs(user_2_prefs->registry(), /*for_test=*/true);
+  session_controller->SetUserPrefService(kUserAccount1,
+                                         std::move(user_1_prefs));
+  session_controller->SetUserPrefService(kUserAccount2,
+                                         std::move(user_2_prefs));
+
+  session_controller->SwitchActiveUser(kUserAccount1);
+  session_controller->SetSessionState(session_manager::SessionState::ACTIVE);
+  auto* bar_controller = Shell::Get()->persistent_desks_bar_controller();
+  // Toggling to hide the bar for user1.
+  NewDesk();
+  EXPECT_TRUE(GetBarWidget());
+  EXPECT_TRUE(bar_controller->IsEnabled());
+  bar_controller->ToggleEnabledState();
+  EXPECT_FALSE(GetBarWidget());
+  EXPECT_FALSE(bar_controller->IsEnabled());
+
+  // Toggling to hide the bar for user1 should not affect user2. The bar should
+  // still visible for user2.
+  session_controller->SwitchActiveUser(kUserAccount2);
+  EXPECT_TRUE(GetBarWidget());
+  EXPECT_TRUE(bar_controller->IsEnabled());
+
+  // Switching back to user1. The bar should still be hidden.
+  session_controller->SwitchActiveUser(kUserAccount1);
+  EXPECT_FALSE(GetBarWidget());
+  EXPECT_FALSE(bar_controller->IsEnabled());
 }
 
 // TODO(afakhry): Add more tests:

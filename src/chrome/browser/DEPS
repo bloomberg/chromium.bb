@@ -59,6 +59,7 @@ include_rules = [
   "+components/bookmarks/common",
   "+components/bookmarks/managed",
   "+components/bookmarks/test",
+  "+components/breadcrumbs/core",
   "+components/browser_sync",
   "+components/browser_ui/bottomsheet",
   "+components/browser_ui/modaldialog",
@@ -183,6 +184,7 @@ include_rules = [
   "+components/media_message_center",
   "+components/media_router/browser",
   "+components/history_clusters/core",
+  "+components/memory_pressure",
   "+components/messages/android",
   "+components/metal_util",
   "+components/metrics",
@@ -378,6 +380,7 @@ include_rules = [
   "+media/base",  # For media switches
   "+media/capabilities", # For InMemoryVideoDecodeStatsDB
   "+media/cdm/cdm_paths.h",
+  "+media/cdm/win/media_foundation_cdm.h",
   "+media/capture",
   "+media/midi",  # For midi switches
   "+media/mojo",  # For mojo media services.
@@ -476,10 +479,6 @@ include_rules = [
   # sending synchronous IPC messages on non-UI threads.
   "-ipc/ipc_sync_message_filter.h",
 
-  # Allows in-process use of NetworkService for URLRequestContext configuration.
-  # Should be removed once the actual network service ships.
-  "+content/public/network",
-
   # ASK TEXT-TO-SPEECH content/browser/speech/OWNERS BEFORE OVERRIDING THIS IN A
   # SUBDIRECTORY.
   "-content/public/browser/tts_controller.h",
@@ -551,9 +550,6 @@ specific_include_rules = {
   "chrome_authenticator_request_delegate_unittest\.cc": [
     "+third_party/microsoft_webauthn/webauthn.h",
   ],
-  "chrome_find_request_manager_browsertest\.cc": [
-    "+pdf/document_loader_impl.h",
-  ],
   "chrome_content_browser_client_receiver_bindings\.cc" : [
     "+chrome/browser/performance_manager/mechanisms/userspace_swap_chromeos.h",
   ],
@@ -568,5 +564,8 @@ specific_include_rules = {
   ],
   "app_controller_mac_browsertest\.mm" : [
     "+chrome/browser/ui/views/web_apps/web_app_url_handler_intent_picker_dialog_view.h",
+  ],
+  "dbus_memory_pressure_evaluator_linux(_unittest)?\.(cc|h)" : [
+    "+dbus",
   ]
 }

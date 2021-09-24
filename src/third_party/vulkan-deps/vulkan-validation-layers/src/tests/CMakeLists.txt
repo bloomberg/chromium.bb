@@ -75,6 +75,7 @@ set(COMMON_CPP
     vklayertests_others.cpp
     vklayertests_best_practices.cpp
     vklayertests_arm_best_practices.cpp
+    vklayertests_amd_best_practices.cpp
     vklayertests_gpu.cpp
     vklayertests_descriptor_renderpass_framebuffer.cpp
     vklayertests_command.cpp
@@ -163,7 +164,7 @@ endif()
 if(WIN32)
     # For Windows, copy necessary gtest DLLs to the right spot for the vk_layer_tests...
     if(NOT GTEST_IS_STATIC_LIB)
-        file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/external/googletest/googletest/$<CONFIG>/*.dll SRC_GTEST_DLLS)
+        file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR}/googletest/googletest/$<CONFIG>/*.dll SRC_GTEST_DLLS)
         file(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> DST_GTEST_DLLS)
         add_custom_command(TARGET vk_layer_validation_tests POST_BUILD
                            COMMAND xcopy /Y /I ${SRC_GTEST_DLLS} ${DST_GTEST_DLLS})

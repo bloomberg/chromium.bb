@@ -33,6 +33,7 @@ class MediaFoundationRendererWrapper final
   MediaFoundationRendererWrapper(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       mojom::FrameInterfaceFactory* frame_interfaces,
+      mojo::PendingRemote<mojom::MediaLog> media_log_remote,
       mojo::PendingReceiver<RendererExtension> renderer_extension_receiver);
   MediaFoundationRendererWrapper(const MediaFoundationRendererWrapper&) =
       delete;
@@ -55,7 +56,8 @@ class MediaFoundationRendererWrapper final
   // mojom::MediaFoundationRendererExtension implementation.
   void GetDCOMPSurface(GetDCOMPSurfaceCallback callback) override;
   void SetVideoStreamEnabled(bool enabled) override;
-  void SetOutputParams(const gfx::Rect& output_rect) override;
+  void SetOutputRect(const gfx::Rect& output_rect,
+                     SetOutputRectCallback callback) override;
 
   // mojom::MuteStateObserver implementation.
   void OnMuteStateChange(bool muted) override;

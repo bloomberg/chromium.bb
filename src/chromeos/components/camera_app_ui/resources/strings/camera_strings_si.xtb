@@ -8,7 +8,6 @@
 <translation id="1430915738399379752">මුද්‍රණය කරන්න</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> පේනුගත කිරීම ඉවත් කර ඇත.</translation>
 <translation id="1473110567575736769">තත්පර 3 කාල ගණකය</translation>
-<translation id="1478594628797167447">ස්කෑනරය</translation>
 <translation id="1545749641540134597">QR කේතය ස්කෑන් කරන්න</translation>
 <translation id="1620510694547887537">කැමරාව</translation>
 <translation id="1627744224761163218">4 x 4</translation>
@@ -24,12 +23,12 @@
 <translation id="2064538373111010176"><ph name="CAMERA" /> ක්‍රියාත්මකයි</translation>
 <translation id="2144806332417375165">අභිරුචි වීඩියෝ පරාමිති</translation>
 <translation id="2175927920773552910">QR කේතය</translation>
-<translation id="2268107369530950373">ස්කෑනර ප්‍රකාරයට මාරු වන්න</translation>
 <translation id="229579744168541441">තැටියට නිර්යාත කරන්න</translation>
 <translation id="2320741269052147773">වමට පෑන් කරන්න</translation>
 <translation id="2501278716633472235">ආපසු යන්න</translation>
 <translation id="2501853267655415902">පටිගත කිරීම නැවතුණි</translation>
 <translation id="2501953888035679275">ඔබේ කැමරාව මඟින් ඡායාරූප ගන්න, වීඩියෝ පටිගත කරන්න.</translation>
+<translation id="2517472476991765520">ස්කෑන් කරන්න</translation>
 <translation id="2549985041256363841">පටිගත කිරීම අරඹන්න</translation>
 <translation id="2599796128805996109">පිටුපස කැමරාව</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> පේනුගත කර ඇත.</translation>
@@ -45,12 +44,13 @@
 <translation id="3259149966178251584">කැමරා විභේදනය</translation>
 <translation id="3260401663013584785">ලේඛනයක් අනාවරණය කර ගැනීමට නොහැකි විය</translation>
 <translation id="3448774564454087943">වීඩියෝව ඉතා කෙටි බැවින් සුරකිනු නොලැබේ</translation>
+<translation id="346539236881580388">නැවත ගන්න</translation>
 <translation id="3517926952904427380">ප්‍රතිමූර්ති ඡායාරූප ගත නොහැක</translation>
 <translation id="3569311554794739032">ඔබට සැබැවින්ම <ph name="FILE" /> ඉවත් කිරීමට අවශ්‍යද?</translation>
+<translation id="3573890771273113519">ස්කෑන් කිරීමේ ප්‍රකාරයට මාරු වන්න</translation>
 <translation id="3810838688059735925">වීඩියෝ</translation>
 <translation id="3838931309141338733">තීරු කේතය ස්කෑන් කරන්න</translation>
 <translation id="3892148308691398805">පෙළ පිටපත් කරන්න</translation>
-<translation id="4000398125663085899">නව ඡායාරූප සහ වීඩියෝ දැන් ගොනු යෙදුම තුළ ෆෝල්ඩරයකට සුරකිනු ඇත: මගේ ගොනු &gt; කැමරාව</translation>
 <translation id="4118525110028899586">පටිගත කිරීම විරාම කරන්න</translation>
 <translation id="4121305183798804752">ලේඛනය අනාවරණය කර ගන්නා ලදි</translation>
 <translation id="4269820728363426813">ලින්ක් ලිපිනය පිටපත් කරන්න</translation>
@@ -69,15 +69,14 @@
 <translation id="5152121255775685072">ගැලරියට යන්න</translation>
 <translation id="520537883758714667">ලේඛන ස්කෑන් කිරීම දැන් ලබා ගත හැකිය</translation>
 <translation id="5268823927180092501">සියලු කැමරාවල ලේඛන ප්‍රකාරය සබල කරන්න</translation>
-<translation id="5422455049771430511">ඔබගේ ඡායාරූප සහ වීඩියෝවලට නව මුල් පිටුවක් ඇත</translation>
 <translation id="5444515100983837161">ලේඛනයේ සියලු මායිම් රාමුව තුළ තබන්න. ලේඛනය සහ පසුබිම විවිධ වර්ණවලින් යුතු නම් ස්කෑන් කිරීම වඩාත්ම හොඳින් ක්‍රියා කරයි.</translation>
 <translation id="5671277269877808209">සමචතුරස්‍රය</translation>
+<translation id="5746169159649715125">PDF ලෙස සුරකින්න</translation>
 <translation id="5753488212459587150">විශේෂඥ ප්‍රකාරය සබල කරන්න</translation>
 <translation id="5759254179196327752">ලේඛනය ස්කෑන් කරන්න</translation>
 <translation id="5775960006311140197">ප්‍රවීණ ප්‍රකාරය</translation>
 <translation id="5869546221129391014">ජාලය</translation>
 <translation id="5975083100439434680">විශාලනය අඩු කරන්න</translation>
-<translation id="6040143037577758943">වසන්න</translation>
 <translation id="6073451960410192870">පටිගත කිරීම නැවැත්වීම</translation>
 <translation id="6197807149213783179">පාරදත්ත සුරකින්න</translation>
 <translation id="6233780560267770709">3 න් 3</translation>
@@ -109,6 +108,7 @@
 <translation id="8120146556401698679">පෑන් ඇද කිරීම් විශාලනය</translation>
 <translation id="8131740175452115882">තහවුරු කරන්න</translation>
 <translation id="8145038249676204903">ඡායාරූපය ගැනීමට මාරු වන්න</translation>
+<translation id="8167081290930651932">ඡායාරූපයක් ලෙස සුරකින්න</translation>
 <translation id="8239780215768881278">වීඩියෝ සැණ රුවක් ගන්න</translation>
 <translation id="8261506727792406068">මකන්න</translation>
 <translation id="8425673304802773841">පහළට ඇල කරන්න</translation>
@@ -122,5 +122,6 @@
 <translation id="8903921497873541725">විශාලනය කරන්න</translation>
 <translation id="9045010116236796332">ලේඛනයේ සියලු මායිම් රාමුව තුළ තබන්න</translation>
 <translation id="9045155556724273246">තත්පර 10ක්</translation>
+<translation id="906331135292332864">රූපය සකසමින්...</translation>
 <translation id="945522503751344254">අදහස් හා යෝජනා යවන්න</translation>
 </translationbundle>

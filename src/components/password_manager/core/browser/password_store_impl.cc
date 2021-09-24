@@ -29,18 +29,6 @@ constexpr base::TimeDelta kSyncTaskTimeout = base::TimeDelta::FromSeconds(30);
 
 }  // namespace
 
-// TODO(crbug.com/1217071): Definition would clash with factory implementation
-// in the PasswordStoreAndroidBackend. Remove #if guard when Android doesn't
-// need to create a local backend anymore (i.e. when the feature is cleaned up).
-#if !defined(OS_ANDROID)
-std::unique_ptr<PasswordStoreBackend> PasswordStoreBackend::Create(
-    std::unique_ptr<LoginDatabase> login_db) {
-  // TODO(crbug.com/1217071): Once PasswordStoreImpl does not implement the
-  // PasswordStore abstract class anymore, return a local backend.
-  return nullptr;
-}
-#endif
-
 PasswordStoreImpl::PasswordStoreImpl(std::unique_ptr<LoginDatabase> login_db)
     : login_db_(std::move(login_db)) {
   backend_ = this;
@@ -60,16 +48,6 @@ void PasswordStoreImpl::ShutdownOnUIThread() {
   PasswordStore::ShutdownOnUIThread();
   ScheduleTask(
       base::BindOnce(&PasswordStoreImpl::DestroyOnBackgroundSequence, this));
-}
-
-void PasswordStoreImpl::ReportMetricsImpl(const std::string& sync_username,
-                                          bool custom_passphrase_sync_enabled,
-                                          BulkCheckDone bulk_check_done) {
-  if (!login_db_)
-    return;
-  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  login_db_->ReportMetrics(sync_username, custom_passphrase_sync_enabled,
-                           bulk_check_done);
 }
 
 PasswordStoreChangeList PasswordStoreImpl::DisableAutoSignInForOriginsImpl(
@@ -142,6 +120,13 @@ PasswordStoreImpl::GetSyncControllerDelegateOnBackgroundSequence() {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(sync_bridge_);
   return sync_bridge_->change_processor()->GetControllerDelegate();
+}
+
+void PasswordStoreImpl::ReportMetrics() {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  if (!login_db_)
+    return;
+  login_db_->ReportMetrics();
 }
 
 PasswordStoreChangeList PasswordStoreImpl::AddLoginSync(
@@ -472,6 +457,14 @@ bool PasswordStoreImpl::InitOnBackgroundSequence(
   if (success) {
     login_db_->SetDeletionsHaveSyncedCallback(base::BindRepeating(
         &PasswordStoreImpl::NotifyDeletionsHaveSynced, base::Unretained(this)));
+
+    // Delay the actual reporting by 30 seconds, to ensure it doesn't happen
+    // during the "hot phase" of Chrome startup.
+    background_task_runner()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&PasswordStoreImpl::ReportMetrics,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(30));
   }
 
   sync_bridge_ = base::WrapUnique(new PasswordSyncBridge(
@@ -487,6 +480,7 @@ void PasswordStoreImpl::DestroyOnBackgroundSequence() {
   login_db_.reset();
   sync_bridge_.reset();
   remote_forms_changes_received_callback_.Reset();
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 LoginsResult PasswordStoreImpl::GetAllLoginsInternal() {

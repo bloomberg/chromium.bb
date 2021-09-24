@@ -130,7 +130,7 @@ class WebUITestMessageHandler : public content::WebUIMessageHandler,
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override {
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         "testResult",
         base::BindRepeating(&WebUITestMessageHandler::HandleTestResult,
                             base::Unretained(this)));
@@ -407,7 +407,7 @@ class PrintContentBrowserClient : public ChromeContentBrowserClient {
 
 void BaseWebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  ui_test_utils::NavigateToURL(browser(), browse_to);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), browse_to));
 
   PrintContentBrowserClient new_client(
       this, preload_test_fixture_, preload_test_name_);

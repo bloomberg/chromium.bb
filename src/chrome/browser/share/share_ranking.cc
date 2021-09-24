@@ -56,29 +56,30 @@ bool RankingContains(const std::vector<std::string>& ranking,
   return false;
 }
 
-std::vector<std::string> RankByUses(const std::map<std::string, int>& uses) {
-  std::vector<std::string> ranked_uses;
-  std::transform(uses.begin(), uses.end(), std::back_inserter(ranked_uses),
-                 [](const auto& entry) { return entry.first; });
-  std::sort(ranked_uses.begin(), ranked_uses.end(),
-            [&](const std::string& a, const std::string& b) {
-              return uses.at(a) < uses.at(b);
+std::vector<std::string> OrderByUses(const std::vector<std::string>& ranking,
+                                     const std::map<std::string, int>& uses) {
+  std::vector<std::string> ordered_ranking(ranking.begin(), ranking.end());
+  std::sort(ordered_ranking.begin(), ordered_ranking.end(),
+            [&](const std::string& a, const std::string& b) -> bool {
+              int ua = uses.count(a) > 0 ? uses.at(a) : 0;
+              int ub = uses.count(b) > 0 ? uses.at(b) : 0;
+              return ua > ub;
             });
-  return ranked_uses;
+  return ordered_ranking;
 }
 
-std::string HighestUnshown(const std::vector<std::string>& shown,
+std::string HighestUnshown(const std::vector<std::string>& ranking,
                            const std::map<std::string, int>& uses,
-                           unsigned int fold) {
-  std::vector<std::string> ranked = RankByUses(uses);
-  auto in_shown_above_fold = [&](const std::string& e) {
-    return RankingContains(shown, e, fold);
-  };
+                           unsigned int length) {
+  std::vector<std::string> unshown(ranking.begin() + length, ranking.end());
+  return !unshown.empty() ? OrderByUses(unshown, uses).front() : "";
+}
 
-  ranked.erase(
-      std::remove_if(ranked.begin(), ranked.end(), in_shown_above_fold),
-      ranked.end());
-  return ranked.empty() ? "" : ranked.front();
+std::string LowestShown(const std::vector<std::string>& ranking,
+                        const std::map<std::string, int>& uses,
+                        unsigned int length) {
+  std::vector<std::string> shown(ranking.begin(), ranking.begin() + length);
+  return !shown.empty() ? OrderByUses(shown, uses).back() : "";
 }
 
 void SwapRankingElement(std::vector<std::string>& ranking,
@@ -106,20 +107,20 @@ std::vector<std::string> ReplaceUnavailableEntries(
 
 void FillGaps(std::vector<std::string>& ranking,
               const std::vector<std::string>& available,
-              unsigned int fold) {
+              unsigned int length) {
   std::vector<std::string> unused_available = available;
 
   unused_available.erase(
       std::remove_if(unused_available.begin(), unused_available.end(),
                      [&](const std::string& e) {
-                       return RankingContains(ranking, e, fold);
+                       return RankingContains(ranking, e, length);
                      }),
       unused_available.end());
   auto next_unused = unused_available.begin();
 
-  DCHECK_GE(ranking.size(), fold);
+  DCHECK_GE(ranking.size(), length);
 
-  for (unsigned int i = 0; i < fold; ++i) {
+  for (unsigned int i = 0; i < length; ++i) {
     if (ranking[i] == "" && *next_unused != "")
       ranking[i] = *(next_unused++);
   }
@@ -129,15 +130,17 @@ std::vector<std::string> MaybeUpdateRankingFromHistory(
     const std::vector<std::string>& old_ranking,
     const std::map<std::string, int>& recent_share_history,
     const std::map<std::string, int>& all_share_history,
-    unsigned int fold) {
-  const double RECENCY_WEIGHT = 2.0;
+    unsigned int length) {
   const double DAMPENING = 1.1;
 
-  const std::string lowest_shown = old_ranking[fold - 1];
+  const std::string lowest_shown_recent =
+      LowestShown(old_ranking, recent_share_history, length);
+  const std::string lowest_shown_all =
+      LowestShown(old_ranking, all_share_history, length);
   const std::string highest_unshown_recent =
-      HighestUnshown(old_ranking, recent_share_history, fold);
+      HighestUnshown(old_ranking, recent_share_history, length);
   const std::string highest_unshown_all =
-      HighestUnshown(old_ranking, all_share_history, fold);
+      HighestUnshown(old_ranking, all_share_history, length);
 
   std::vector<std::string> new_ranking = old_ranking;
 
@@ -151,13 +154,14 @@ std::vector<std::string> MaybeUpdateRankingFromHistory(
   };
 
   if (highest_unshown_recent != "" &&
-      recent_count_for(highest_unshown_recent) * RECENCY_WEIGHT >
-          recent_count_for(lowest_shown) * DAMPENING) {
-    SwapRankingElement(new_ranking, lowest_shown, highest_unshown_recent);
+      recent_count_for(highest_unshown_recent) >
+          recent_count_for(lowest_shown_recent) * DAMPENING) {
+    SwapRankingElement(new_ranking, lowest_shown_recent,
+                       highest_unshown_recent);
   } else if (highest_unshown_all != "" &&
              all_count_for(highest_unshown_all) >
-                 all_count_for(lowest_shown) * DAMPENING) {
-    SwapRankingElement(new_ranking, lowest_shown, highest_unshown_all);
+                 all_count_for(lowest_shown_all) * DAMPENING) {
+    SwapRankingElement(new_ranking, lowest_shown_all, highest_unshown_all);
   }
 
   DCHECK_EQ(old_ranking.size(), new_ranking.size());
@@ -183,9 +187,9 @@ bool EveryElementInList(const std::vector<std::string>& ranking,
 
 bool ElementIndexesAreUnchanged(const std::vector<std::string>& display,
                                 const std::vector<std::string>& old,
-                                unsigned int fold) {
-  for (unsigned int i = 0; i < display.size() && i < fold; ++i) {
-    if (RankingContains(old, display[i], fold) && display[i] != old[i])
+                                unsigned int length) {
+  for (unsigned int i = 0; i < display.size() && i < length; ++i) {
+    if (RankingContains(old, display[i], length) && display[i] != old[i])
       return false;
   }
   return true;
@@ -193,9 +197,9 @@ bool ElementIndexesAreUnchanged(const std::vector<std::string>& display,
 
 bool AtMostOneSlotChanged(const std::vector<std::string>& old_ranking,
                           const std::vector<std::string>& new_ranking,
-                          unsigned int fold) {
+                          unsigned int length) {
   bool change_seen = false;
-  for (unsigned int i = 0; i < old_ranking.size() && i < fold; ++i) {
+  for (unsigned int i = 0; i < old_ranking.size() && i < length; ++i) {
     if (old_ranking[i] != new_ranking[i]) {
       if (change_seen)
         return false;
@@ -207,10 +211,10 @@ bool AtMostOneSlotChanged(const std::vector<std::string>& old_ranking,
 }
 
 bool NoEmptySlots(const std::vector<std::string>& display_ranking,
-                  unsigned int fold) {
-  if (display_ranking.size() < fold)
+                  unsigned int length) {
+  if (display_ranking.size() < length)
     return false;
-  for (unsigned int i = 0; i < fold; i++) {
+  for (unsigned int i = 0; i < length; i++) {
     if (display_ranking[i] == "")
       return false;
   }
@@ -226,9 +230,16 @@ std::map<std::string, int> BuildHistoryMap(
   return result;
 }
 
-bool ShouldFixMore() {
-  // TODO(ellyjones): Add a field trial and wire it up here.
-  return true;
+std::vector<std::string> AddMissingItemsFromHistory(
+    const std::vector<std::string> existing,
+    const std::map<std::string, int> history,
+    unsigned int length) {
+  std::vector<std::string> updated = existing;
+  for (const auto& item : history) {
+    if (!RankingContains(updated, item.first))
+      updated.push_back(item.first);
+  }
+  return updated;
 }
 
 }  // namespace
@@ -298,13 +309,13 @@ void ShareRanking::GetRanking(const std::string& type,
 void ShareRanking::Rank(ShareHistory* history,
                         const std::string& type,
                         const std::vector<std::string>& available_on_system,
-                        unsigned int fold,
+                        unsigned int length,
                         bool persist_update,
                         GetRankingCallback callback) {
   auto pending_call = std::make_unique<PendingRankCall>();
   pending_call->type = type;
   pending_call->available_on_system = available_on_system;
-  pending_call->fold = fold;
+  pending_call->length = length;
   pending_call->persist_update = persist_update;
   pending_call->callback = std::move(callback);
   pending_call->history_db = history->GetWeakPtr();
@@ -320,6 +331,7 @@ void ShareRanking::Clear(const base::Time& start, const base::Time& end) {
   // specified deletion interval. Instead, we forget all the ranking data
   // altogether whenever we're clearing any interval - this almost always
   // over-deletes, unfortunately.
+  ranking_.clear();
   db_->UpdateEntriesWithRemoveFilter(
       std::make_unique<BackingDb::KeyEntryVector>(),
       base::BindRepeating([](const std::string& key) -> bool { return true; }),
@@ -332,26 +344,28 @@ void ShareRanking::ComputeRanking(
     const std::map<std::string, int>& recent_share_history,
     const Ranking& old_ranking,
     const std::vector<std::string>& available_on_system,
-    unsigned int fold,
-    bool fix_more,
+    unsigned int length,
     Ranking* display_ranking,
     Ranking* persisted_ranking) {
   // Preconditions:
-  DCHECK_GE(old_ranking.size(), fold);
-  DCHECK_GE(available_on_system.size(), fold);
+  DCHECK_GE(old_ranking.size(), length - 1);
+  DCHECK_GE(available_on_system.size(), length - 1);
 
-  std::vector<std::string> new_ranking = MaybeUpdateRankingFromHistory(
-      old_ranking, all_share_history, recent_share_history, fold);
+  Ranking augmented_old_ranking = AddMissingItemsFromHistory(
+      AddMissingItemsFromHistory(old_ranking, all_share_history, length - 1),
+      recent_share_history, length - 1);
+
+  std::vector<std::string> new_ranking =
+      MaybeUpdateRankingFromHistory(augmented_old_ranking, all_share_history,
+                                    recent_share_history, length - 1);
 
   Ranking computed_display_ranking =
       ReplaceUnavailableEntries(new_ranking, available_on_system);
 
-  FillGaps(computed_display_ranking, available_on_system, fold);
+  FillGaps(computed_display_ranking, available_on_system, length - 1);
 
-  computed_display_ranking.resize(fold);
-
-  if (fix_more)
-    computed_display_ranking[fold - 1] = kMoreTarget;
+  computed_display_ranking.resize(length);
+  computed_display_ranking[length - 1] = kMoreTarget;
 
   *persisted_ranking = new_ranking;
   *display_ranking = computed_display_ranking;
@@ -363,11 +377,15 @@ void ShareRanking::ComputeRanking(
     available.push_back(kMoreTarget);
 
     DCHECK(EveryElementInList(*display_ranking, available));
-    DCHECK(ElementIndexesAreUnchanged(*display_ranking, old_ranking, fold));
-    DCHECK(AtMostOneSlotChanged(old_ranking, *persisted_ranking, fold));
-    DCHECK(NoEmptySlots(*display_ranking, fold));
+    DCHECK(
+        ElementIndexesAreUnchanged(*display_ranking, old_ranking, length - 1));
+    DCHECK(AtMostOneSlotChanged(old_ranking, *persisted_ranking, length - 1));
+    DCHECK(NoEmptySlots(*display_ranking, length));
 
-    DCHECK_GE(persisted_ranking->size(), fold);
+    DCHECK(RankingContains(*display_ranking, kMoreTarget));
+
+    DCHECK_EQ(display_ranking->size(), length);
+    DCHECK_GE(persisted_ranking->size(), length - 1);
   }
 #endif  // DCHECK_IS_ON()
 }
@@ -446,8 +464,8 @@ void ShareRanking::OnRankGetOldRankingDone(
   Ranking display, persisted;
   ComputeRanking(BuildHistoryMap(pending->all_history),
                  BuildHistoryMap(pending->recent_history), *ranking,
-                 pending->available_on_system, pending->fold, ShouldFixMore(),
-                 &display, &persisted);
+                 pending->available_on_system, pending->length, &display,
+                 &persisted);
 
   if (pending->persist_update)
     UpdateRanking(pending->type, persisted);
@@ -475,11 +493,12 @@ void JNI_ShareRankingBridge_Rank(JNIEnv* env,
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
 
   if (profile->IsOffTheRecord()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&sharing::RunJniRankCallback, std::move(callback),
-                       base::Unretained(env), absl::nullopt));
-    return;
+    // For incognito/guest profiles, we use the source ranking from the parent
+    // normal profile but never write anything back to that profile, meaning the
+    // user will get their existing ranking but no change to it will be made
+    // based on incognito activity.
+    DCHECK(!jpersist);
+    profile = profile->GetOriginalProfile();
   }
 
   auto* history = sharing::ShareHistory::Get(profile);

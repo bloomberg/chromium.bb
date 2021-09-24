@@ -47,15 +47,15 @@ examined by the OS crash reporter. This may cause other failures like timeouts
 where they normally don't occur.
 
 ```bash
-strip ./xcodebuild/{Debug,Release}/content_shell.app/Contents/MacOS/content_shell
+strip ./out/Default/content_shell.app/Contents/MacOS/content_shell
 ```
 
 ### Running the Tests
 
 The test runner script is in `third_party/blink/tools/run_web_tests.py`.
 
-To specify which build directory to use (e.g. out/Default, out/Release,
-out/Debug) you should pass the `-t` or `--target` parameter. For example, to
+To specify which build directory to use (e.g. out/Default, etc.)
+you should pass the `-t` or `--target` parameter. For example, to
 use the build in `out/Default`, use:
 
 ```bash
@@ -209,7 +209,7 @@ on this.
 
 There are two ways to run web tests with additional command-line arguments:
 
-### `--flag-specific` or `--additional-driver-flag`:
+### --flag-specific or --additional-driver-flag:
 
 ```bash
 # Actually we prefer --flag-specific in some cases. See below for details.
@@ -242,17 +242,24 @@ the name is too long or when we need to match multiple additional args:
   "args": ["--blocking-repaint", "--another-flag"]
 }
 ```
-  
+
 `web_tests/FlagSpecificConfig` is preferred when you need multiple flags,
 or the flag is long.
 
 With the config, you can use `--flag-specific=short-name` as a shortcut
 of `--additional-driver-flag=--blocking-repaint --additional-driver-flag=--another-flag`.
-  
+
 `--additional-driver-flags` still works with `web_tests/FlagSpecificConfig`.
 For example, when at least `--additional-driver-flag=--blocking-repaint` and
 `--additional-driver-flag=--another-flag` are specified, `short-name` will
 be used as name of the flag specific expectation file and the baseline directory.
+
+*** note
+[BUILD.gn](../../BUILD.gn) assumes flag-specific builders always runs on linux bots, so
+flag-specific test expectations and baselines are only downloaded to linux bots.
+If you need run flag-specific builders on other platforms, please update
+BUILD.gn to download flag-specific related data to that platform.
+***
 
 ### Virtual test suites
 

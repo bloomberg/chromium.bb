@@ -92,13 +92,9 @@ struct MessageAddress : public MessageData {
   SocketAddress addr;
 };
 
-VirtualSocket::VirtualSocket(VirtualSocketServer* server,
-                             int family,
-                             int type,
-                             bool async)
+VirtualSocket::VirtualSocket(VirtualSocketServer* server, int family, int type)
     : server_(server),
       type_(type),
-      async_(async),
       state_(CS_CLOSED),
       error_(0),
       listen_queue_(nullptr),
@@ -107,8 +103,6 @@ VirtualSocket::VirtualSocket(VirtualSocketServer* server,
       bound_(false),
       was_any_(false) {
   RTC_DCHECK((type_ == SOCK_DGRAM) || (type_ == SOCK_STREAM));
-  RTC_DCHECK(async_ ||
-             (type_ != SOCK_STREAM));  // We only support async streams
   server->SignalReadyToSend.connect(this,
                                     &VirtualSocket::OnSocketServerReadyToSend);
 }
@@ -139,8 +133,8 @@ int VirtualSocket::Bind(const SocketAddress& addr) {
     error_ = EINVAL;
     return -1;
   }
-  local_addr_ = addr;
-  int result = server_->Bind(this, &local_addr_);
+  local_addr_ = server_->AssignBindAddress(addr);
+  int result = server_->Bind(this, local_addr_);
   if (result != 0) {
     local_addr_.Clear();
     error_ = EADDRINUSE;
@@ -235,13 +229,8 @@ int VirtualSocket::RecvFrom(void* pv,
   webrtc::MutexLock lock(&mutex_);
   // If we don't have a packet, then either error or wait for one to arrive.
   if (recv_buffer_.empty()) {
-    if (async_) {
-      error_ = EAGAIN;
-      return -1;
-    }
-    while (recv_buffer_.empty()) {
-      server_->ProcessOneMessage();
-    }
+    error_ = EAGAIN;
+    return -1;
   }
 
   // Return the packet at the front of the queue.
@@ -295,7 +284,7 @@ VirtualSocket* VirtualSocket::Accept(SocketAddress* paddr) {
     return nullptr;
   }
   while (!listen_queue_->empty()) {
-    VirtualSocket* socket = new VirtualSocket(server_, AF_INET, type_, async_);
+    VirtualSocket* socket = new VirtualSocket(server_, AF_INET, type_);
 
     // Set the new local address to the same as this server socket.
     socket->SetLocalAddress(local_addr_);
@@ -356,16 +345,16 @@ void VirtualSocket::OnMessage(Message* pmsg) {
       Packet* packet = static_cast<Packet*>(pmsg->pdata);
 
       recv_buffer_.push_back(packet);
-      signal_read_event = async_;
+      signal_read_event = true;
     } else if (pmsg->message_id == MSG_ID_CONNECT) {
       RTC_DCHECK(nullptr != pmsg->pdata);
       MessageAddress* data = static_cast<MessageAddress*>(pmsg->pdata);
       if (listen_queue_ != nullptr) {
         listen_queue_->push_back(data->addr);
-        signal_read_event = async_;
+        signal_read_event = true;
       } else if ((SOCK_STREAM == type_) && (CS_CONNECTING == state_)) {
         CompleteConnect(data->addr);
-        signal_connect_event = async_;
+        signal_connect_event = true;
       } else {
         RTC_LOG(LS_VERBOSE)
             << "Socket at " << local_addr_.ToString() << " is not listening";
@@ -378,7 +367,7 @@ void VirtualSocket::OnMessage(Message* pmsg) {
         error_to_signal = (CS_CONNECTING == state_) ? ECONNREFUSED : 0;
         state_ = CS_CLOSED;
         remote_addr_.Clear();
-        signal_close_event = async_;
+        signal_close_event = true;
       }
     } else if (pmsg->message_id == MSG_ID_SIGNALREADEVENT) {
       signal_read_event = !recv_buffer_.empty();
@@ -442,8 +431,9 @@ int VirtualSocket::SendUdp(const void* pv,
                            const SocketAddress& addr) {
   // If we have not been assigned a local port, then get one.
   if (local_addr_.IsNil()) {
-    local_addr_ = EmptySocketAddressWithFamily(addr.ipaddr().family());
-    int result = server_->Bind(this, &local_addr_);
+    local_addr_ = server_->AssignBindAddress(
+        EmptySocketAddressWithFamily(addr.ipaddr().family()));
+    int result = server_->Bind(this, local_addr_);
     if (result != 0) {
       local_addr_.Clear();
       error_ = EADDRINUSE;
@@ -610,16 +600,8 @@ void VirtualSocketServer::SetSendingBlocked(bool blocked) {
   }
 }
 
-Socket* VirtualSocketServer::CreateSocket(int family, int type) {
-  return CreateSocketInternal(family, type);
-}
-
-AsyncSocket* VirtualSocketServer::CreateAsyncSocket(int family, int type) {
-  return CreateSocketInternal(family, type);
-}
-
-VirtualSocket* VirtualSocketServer::CreateSocketInternal(int family, int type) {
-  return new VirtualSocket(this, family, type, true);
+VirtualSocket* VirtualSocketServer::CreateSocket(int family, int type) {
+  return new VirtualSocket(this, family, type);
 }
 
 void VirtualSocketServer::SetMessageQueue(Thread* msg_queue) {
@@ -703,35 +685,35 @@ int VirtualSocketServer::Bind(VirtualSocket* socket,
   return bindings_->insert(entry).second ? 0 : -1;
 }
 
-int VirtualSocketServer::Bind(VirtualSocket* socket, SocketAddress* addr) {
-  RTC_DCHECK(nullptr != socket);
+SocketAddress VirtualSocketServer::AssignBindAddress(
+    const SocketAddress& app_addr) {
+  RTC_DCHECK(!IPIsUnspec(app_addr.ipaddr()));
 
   // Normalize the IP.
-  if (!IPIsUnspec(addr->ipaddr())) {
-    addr->SetIP(addr->ipaddr().Normalized());
-  } else {
-    RTC_NOTREACHED();
-  }
+  SocketAddress addr;
+  addr.SetIP(app_addr.ipaddr().Normalized());
 
   // If the IP appears in `alternative_address_mapping_`, meaning the test has
   // configured sockets bound to this IP to actually use another IP, replace
   // the IP here.
-  auto alternative = alternative_address_mapping_.find(addr->ipaddr());
+  auto alternative = alternative_address_mapping_.find(addr.ipaddr());
   if (alternative != alternative_address_mapping_.end()) {
-    addr->SetIP(alternative->second);
+    addr.SetIP(alternative->second);
   }
 
-  // Assign a port if not assigned.
-  if (addr->port() == 0) {
+  if (app_addr.port() != 0) {
+    addr.SetPort(app_addr.port());
+  } else {
+    // Assign a port.
     for (int i = 0; i < kEphemeralPortCount; ++i) {
-      addr->SetPort(GetNextPort());
-      if (bindings_->find(*addr) == bindings_->end()) {
+      addr.SetPort(GetNextPort());
+      if (bindings_->find(addr) == bindings_->end()) {
         break;
       }
     }
   }
 
-  return Bind(socket, *addr);
+  return addr;
 }
 
 VirtualSocket* VirtualSocketServer::LookupBinding(const SocketAddress& addr) {
@@ -741,7 +723,7 @@ VirtualSocket* VirtualSocketServer::LookupBinding(const SocketAddress& addr) {
     return it->second;
   }
 
-  IPAddress default_ip = GetDefaultRoute(addr.ipaddr().family());
+  IPAddress default_ip = GetDefaultSourceAddress(addr.ipaddr().family());
   if (!IPIsUnspec(default_ip) && addr.ipaddr() == default_ip) {
     // If we can't find a binding for the packet which is sent to the interface
     // corresponding to the default route, it should match a binding with the
@@ -885,12 +867,6 @@ void VirtualSocketServer::Clear(VirtualSocket* socket) {
   }
 }
 
-void VirtualSocketServer::ProcessOneMessage() {
-  Message msg;
-  msg_queue_->Get(&msg);
-  msg_queue_->Dispatch(&msg);
-}
-
 void VirtualSocketServer::PostSignalReadEvent(VirtualSocket* socket) {
   // Clear the message so it doesn't end up posted multiple times.
   msg_queue_->Clear(socket, MSG_ID_SIGNALREADEVENT);
@@ -932,7 +908,7 @@ int VirtualSocketServer::SendUdp(VirtualSocket* socket,
   if (!recipient) {
     // Make a fake recipient for address family checking.
     std::unique_ptr<VirtualSocket> dummy_socket(
-        CreateSocketInternal(AF_INET, SOCK_DGRAM));
+        CreateSocket(AF_INET, SOCK_DGRAM));
     dummy_socket->SetLocalAddress(remote_addr);
     if (!CanInteractWith(socket, dummy_socket.get())) {
       RTC_LOG(LS_VERBOSE) << "Incompatible address families: "
@@ -1040,7 +1016,7 @@ void VirtualSocketServer::AddPacketToNetwork(VirtualSocket* sender,
   // to the default route here such that the recipient will see the default
   // route.
   SocketAddress sender_addr = sender->GetLocalAddress();
-  IPAddress default_ip = GetDefaultRoute(sender_addr.ipaddr().family());
+  IPAddress default_ip = GetDefaultSourceAddress(sender_addr.ipaddr().family());
   if (sender_addr.IsAnyIP() && !IPIsUnspec(default_ip)) {
     sender_addr.SetIP(default_ip);
   }
@@ -1251,21 +1227,21 @@ bool VirtualSocketServer::CanInteractWith(VirtualSocket* local,
   return false;
 }
 
-IPAddress VirtualSocketServer::GetDefaultRoute(int family) {
+IPAddress VirtualSocketServer::GetDefaultSourceAddress(int family) {
   if (family == AF_INET) {
-    return default_route_v4_;
+    return default_source_address_v4_;
   }
   if (family == AF_INET6) {
-    return default_route_v6_;
+    return default_source_address_v6_;
   }
   return IPAddress();
 }
-void VirtualSocketServer::SetDefaultRoute(const IPAddress& from_addr) {
+void VirtualSocketServer::SetDefaultSourceAddress(const IPAddress& from_addr) {
   RTC_DCHECK(!IPIsAny(from_addr));
   if (from_addr.family() == AF_INET) {
-    default_route_v4_ = from_addr;
+    default_source_address_v4_ = from_addr;
   } else if (from_addr.family() == AF_INET6) {
-    default_route_v6_ = from_addr;
+    default_source_address_v6_ = from_addr;
   }
 }
 

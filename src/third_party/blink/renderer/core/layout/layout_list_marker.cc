@@ -46,6 +46,11 @@ LayoutListMarker::LayoutListMarker(Element* element) : LayoutBox(element) {
 
 LayoutListMarker::~LayoutListMarker() = default;
 
+void LayoutListMarker::Trace(Visitor* visitor) const {
+  visitor->Trace(image_);
+  LayoutBox::Trace(visitor);
+}
+
 void LayoutListMarker::WillBeDestroyed() {
   NOT_DESTROYED();
   if (image_)
@@ -207,6 +212,8 @@ String LayoutListMarker::TextAlternative() const {
     return "";
 
   const CounterStyle& counter_style = GetCounterStyle();
+  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleSpeakAsDescriptorEnabled())
+    return counter_style.GenerateTextAlternative(ListItem()->Value());
   return counter_style.GetPrefix() + text_ + counter_style.GetSuffix();
 }
 

@@ -74,7 +74,7 @@
             {
                 "domain": "Page",
                 "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
-                            "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot", "getInstallabilityErrors", "getManifestIcons"],
+                            "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot", "getInstallabilityErrors", "getManifestIcons", "getAppId"],
                 "async": ["getResourceContent", "searchInResource"],
                 "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
             },
@@ -88,14 +88,14 @@
                 "domain": "Emulation",
                 "include": ["forceViewport", "resetViewport", "resetPageScaleFactor", "setPageScaleFactor", "setScriptExecutionDisabled", "setTouchEmulationEnabled",
                             "setEmulatedMedia", "setEmulatedVisionDeficiency", "setCPUThrottlingRate", "setVirtualTimePolicy", "setTimezoneOverride", "setNavigatorOverrides", "setDefaultBackgroundColorOverride", "setDeviceMetricsOverride", "clearDeviceMetricsOverride",
-                            "setUserAgentOverride", "setScrollbarsHidden", "setDocumentCookieDisabled", "setFocusEmulationEnabled", "setLocaleOverride", "setDisabledImageTypes"],
+                            "setUserAgentOverride", "setScrollbarsHidden", "setDocumentCookieDisabled", "setFocusEmulationEnabled", "setAutoDarkModeOverride", "setLocaleOverride", "setDisabledImageTypes"],
                 "include_events": ["virtualTimeBudgetExpired", "virtualTimeAdvanced", "virtualTimePaused"]
             },
             {
                 "domain": "Network",
                 "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions",
                             "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception",
-                            "takeResponseBodyForInterceptionAsStream", "getSecurityIsolationStatus", "loadNetworkResource"],
+                            "takeResponseBodyForInterceptionAsStream", "getSecurityIsolationStatus", "loadNetworkResource", "enableReportingApi"],
                 "async": ["getResponseBody", "getRequestPostData"]
             },
             {

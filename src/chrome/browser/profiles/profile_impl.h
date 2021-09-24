@@ -84,6 +84,8 @@ class ProfileImpl : public Profile {
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
+  content::PlatformNotificationService* GetPlatformNotificationService()
+      override;
   content::PushMessagingService* GetPushMessagingService() override;
   content::StorageNotificationService* GetStorageNotificationService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
@@ -101,6 +103,8 @@ class ProfileImpl : public Profile {
   content::FileSystemAccessPermissionContext*
   GetFileSystemAccessPermissionContext() override;
   content::ContentIndexProvider* GetContentIndexProvider() override;
+  content::FederatedIdentityActiveSessionPermissionContextDelegate*
+  GetFederatedIdentityActiveSessionPermissionContext() override;
   content::FederatedIdentityRequestPermissionContextDelegate*
   GetFederatedIdentityRequestPermissionContext() override;
   content::FederatedIdentitySharingPermissionContextDelegate*
@@ -171,7 +175,7 @@ class ProfileImpl : public Profile {
   bool IsNewProfile() const override;
 
   void SetCreationTimeForTesting(base::Time creation_time) override;
-  void RecordMainFrameNavigation() override {}
+  void RecordPrimaryMainFrameNavigation() override {}
 
  protected:
   // Profile implementation.

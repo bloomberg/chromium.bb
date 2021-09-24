@@ -20,6 +20,9 @@ import org.chromium.ui.display.DisplayAndroid;
 public class ScreenshotBoundsManager {
     private static final int NUM_VIEWPORTS_CAPTURE_ABOVE = 4;
     private static final int NUM_VIEWPORTS_CAPTURE_BELOW = 6;
+    // TODO(skare): Verify these constants with UX.
+    private static final int NUM_VIEWPORTS_CAPTURE_ABOVE_FOR_FULL_CAPTURE = 2;
+    private static final int NUM_VIEWPORTS_CAPTURE_BELOW_FOR_FULL_CAPTURE = 4;
 
     private Tab mTab;
     private Rect mCaptureRect;
@@ -102,6 +105,14 @@ public class ScreenshotBoundsManager {
     }
 
     /**
+     * Gets the bounds of the entire page for single-bitmap mode.
+     * @return the compositing bounds of the full entry.
+     */
+    public Rect getFullEntryBounds() {
+        return calculateFullClipBounds();
+    }
+
+    /**
      * Defines the bounds of the capture and compositing. Only the starting height is needed. The
      * entire width is always captured.
      *
@@ -138,6 +149,16 @@ public class ScreenshotBoundsManager {
         return new Rect(0, yAxisRef, 0, endYAxis);
     }
 
+    public Rect calculateFullClipBounds() {
+        int startYAxis = mCurrYStartPosition
+                - mClipHeightScaled * NUM_VIEWPORTS_CAPTURE_ABOVE_FOR_FULL_CAPTURE;
+        startYAxis = Math.max(startYAxis, 0);
+        int endYAxis = mCurrYStartPosition
+                + mClipHeightScaled * (NUM_VIEWPORTS_CAPTURE_BELOW_FOR_FULL_CAPTURE + 1);
+        endYAxis = Math.min(endYAxis, mCaptureRect.bottom);
+        return new Rect(0, startYAxis, 0, endYAxis);
+    }
+
     /**
      * Calculates the bounds passed in relative to the bounds of the capture. Since 6x the viewport
      * size is captured, the composite bounds needs to be adjusted to be relative to the captured
@@ -157,5 +178,20 @@ public class ScreenshotBoundsManager {
         endY = (endY > mCaptureRect.height()) ? mCaptureRect.height() : endY;
 
         return new Rect(0, startY, 0, endY);
+    }
+
+    /**
+     * Calculates the scale factor to be used for bitmaps based on the composited width of the
+     * frame at default scale.
+     * @return the scale factor to be used for generating bitmaps.
+     */
+    public float getBitmapScaleFactorFromCompositedWidth(int compositedWidth) {
+        if (mTab.getWebContents() == null || compositedWidth == 0) {
+            // If the web contents crashes/vanished during capture then assume 1f.
+            return 1f;
+        }
+
+        RenderCoordinates coords = RenderCoordinates.fromWebContents(mTab.getWebContents());
+        return coords.getLastFrameViewportWidthPixInt() / (float) compositedWidth;
     }
 }

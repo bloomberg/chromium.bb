@@ -821,20 +821,27 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
 
   LocalFrame* local_frame = DomWindow()->GetFrame();
 
-  bool payment_request_allowed =
+  bool has_transient_user_activation =
       LocalFrame::HasTransientUserActivation(local_frame);
-  if (!payment_request_allowed) {
+  bool payment_request_token_active =
+      local_frame->IsPaymentRequestTokenActive();
+
+  if (!has_transient_user_activation) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPaymentRequestShowWithoutGesture);
+
+    if (!payment_request_token_active) {
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kPaymentRequestShowWithoutGestureOrToken);
+    }
   }
+
+  bool payment_request_allowed = has_transient_user_activation;
 
   if (RuntimeEnabledFeatures::CapabilityDelegationPaymentRequestEnabled(
           GetExecutionContext())) {
-    payment_request_allowed |= local_frame->IsPaymentRequestTokenActive();
+    payment_request_allowed |= payment_request_token_active;
     if (!payment_request_allowed) {
-      UseCounter::Count(GetExecutionContext(),
-                        WebFeature::kPaymentRequestShowWithoutGestureOrToken);
-
       String message =
           "PaymentRequest.show() requires either transient user activation or "
           "delegated payment request capability";
@@ -842,20 +849,11 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
           MakeGarbageCollected<ConsoleMessage>(
               mojom::blink::ConsoleMessageSource::kJavaScript,
               mojom::blink::ConsoleMessageLevel::kWarning, message));
-      exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
-                                        message);
+      exception_state.ThrowSecurityError(message);
       return ScriptPromise();
     }
     LocalFrame::ConsumeTransientUserActivation(local_frame);
     local_frame->ConsumePaymentRequestToken();
-
-  } else if (RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
-                 GetExecutionContext())) {
-    // TODO(crbug.com/825270): Pretend that a user gesture is provided to allow
-    // origins that are part of the Secure Payment Confirmation Origin Trial to
-    // use skip-the-sheet flow as a hack for secure modal window
-    // (crbug.com/1122028). Remove this after user gesture delegation ships.
-    payment_request_allowed = true;
   }
 
   // TODO(crbug.com/779126): add support for handling payment requests in

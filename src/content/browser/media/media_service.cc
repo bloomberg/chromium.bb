@@ -11,14 +11,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "media/mojo/buildflags.h"
+#include "media/mojo/mojom/media_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 #include "content/browser/gpu/gpu_process_host.h"
 #elif BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 #include "media/mojo/services/media_service_factory.h"
-#elif BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-#include "content/public/browser/service_process_host.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
 #endif
 
 namespace content {
@@ -39,12 +39,6 @@ void BindReceiverInGpuProcess(
 
   process_host->RunService(std::move(receiver));
 }
-#endif
-
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-// When running in an isolated service process, we reset the connection and tear
-// down the process once it's been idle for at least this long.
-constexpr base::TimeDelta kIdleTimeout = base::TimeDelta::FromSeconds(5);
 #endif
 
 }  // namespace
@@ -71,15 +65,11 @@ media::mojom::MediaService& GetMediaService() {
           base::BindOnce(&BindReceiverInGpuProcess, std::move(receiver)));
     }
 #elif BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+    static_assert(media::mojom::MediaService::kServiceSandbox ==
+                      sandbox::mojom::Sandbox::kNoSandbox,
+                  "MediaService requested in-browser but not with kNoSandbox");
     static base::NoDestructor<std::unique_ptr<media::MediaService>> service;
     *service = media::CreateMediaService(std::move(receiver));
-#elif BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-    ServiceProcessHost::Launch(
-        std::move(receiver),
-        ServiceProcessHost::Options()
-            .WithDisplayName("Media Service")
-            .Pass());
-    remote.reset_on_idle_timeout(kIdleTimeout);
 #endif
   }
 

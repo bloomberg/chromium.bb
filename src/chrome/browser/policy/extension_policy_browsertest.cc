@@ -35,13 +35,13 @@
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
-#include "chrome/browser/web_applications/test/web_app_install_observer.h"
+#include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -84,8 +84,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
-#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #endif
 
 using extensions::mojom::ManifestLocation;
@@ -236,7 +235,7 @@ class ExtensionPolicyTest : public PolicyTest {
   }
 
   web_app::WebAppProvider* web_app_provider() {
-    return web_app::WebAppProvider::Get(browser()->profile());
+    return web_app::WebAppProvider::GetForTest(browser()->profile());
   }
 
   const extensions::Extension* InstallExtension(
@@ -288,9 +287,8 @@ class ExtensionPolicyTest : public PolicyTest {
     // Setting the forcelist extension should install extension with ExtensionId
     // equal to id.
     base::ListValue forcelist;
-    forcelist.AppendString(
-        base::StringPrintf(update_url.is_empty() ? "%s" : "%s;%s", id.c_str(),
-                           update_url.spec().c_str()));
+    forcelist.Append(base::StringPrintf(update_url.is_empty() ? "%s" : "%s;%s",
+                                        id.c_str(), update_url.spec().c_str()));
     policies->Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(forcelist),
                   nullptr);
@@ -342,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
       registry->enabled_extensions().GetByID(extensions::kWebStoreAppId));
 
   base::ListValue blocklist;
-  blocklist.AppendString(extensions::kWebStoreAppId);
+  blocklist.Append(extensions::kWebStoreAppId);
   PolicyMap policies;
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, blocklist.Clone(),
@@ -362,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   ASSERT_FALSE(registry->GetExtensionById(
       kSimpleWithIconCrxId, extensions::ExtensionRegistry::EVERYTHING));
   base::ListValue blocklist;
-  blocklist.AppendString(kGoodCrxId);
+  blocklist.Append(kGoodCrxId);
   PolicyMap policies;
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, blocklist.Clone(),
@@ -449,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
       kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
   ASSERT_TRUE(registry->enabled_extensions().GetByID(kSimpleWithIconCrxId));
   base::ListValue blocklist;
-  blocklist.AppendString("*");
+  blocklist.Append("*");
   PolicyMap policies;
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, blocklist.Clone(),
@@ -508,12 +506,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   // will be installed from.
   GURL update_xml_url = embedded_test_server()->GetURL(update_xml_path);
   extension_test_util::SetGalleryUpdateURL(update_xml_url);
-  ui_test_utils::NavigateToURL(browser(), update_xml_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), update_xml_url));
 
   // Blocklist "*" but force-install the importer extension. The shared module
   // should be automatically installed too.
   base::ListValue blocklist;
-  blocklist.AppendString("*");
+  blocklist.Append("*");
   PolicyMap policies;
   AddExtensionToForceList(&policies, kImporterId, update_xml_url);
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
@@ -560,9 +558,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallAllowlist) {
   ASSERT_FALSE(registry->GetExtensionById(
       kSimpleWithIconCrxId, extensions::ExtensionRegistry::EVERYTHING));
   base::ListValue blocklist;
-  blocklist.AppendString("*");
+  blocklist.Append("*");
   base::ListValue allowlist;
-  allowlist.AppendString(kGoodCrxId);
+  allowlist.Append(kGoodCrxId);
   PolicyMap policies;
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, blocklist.Clone(),
@@ -1937,7 +1935,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionAllowedTypes) {
       kHostedAppCrxId, extensions::ExtensionRegistry::EVERYTHING));
 
   base::ListValue allowed_types;
-  allowed_types.AppendString("hosted_app");
+  allowed_types.Append("hosted_app");
   PolicyMap policies;
   policies.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, allowed_types.Clone(),
@@ -1978,7 +1976,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, MAYBE_ExtensionInstallSources) {
 
   GURL download_page_url = embedded_test_server()->GetURL(
       "/policy/extension_install_sources_test.html");
-  ui_test_utils::NavigateToURL(browser(), download_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), download_page_url));
 
   const GURL install_source_url(
       embedded_test_server()->GetURL("/extensions/*"));
@@ -1993,8 +1991,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, MAYBE_ExtensionInstallSources) {
 
   // Install the policy and trigger another download.
   base::ListValue install_sources;
-  install_sources.AppendString(install_source_url.spec());
-  install_sources.AppendString(referrer_url.spec());
+  install_sources.Append(install_source_url.spec());
+  install_sources.Append(referrer_url.spec());
   PolicyMap policies;
   policies.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, install_sources.Clone(),
@@ -2293,12 +2291,12 @@ class WebAppInstallForceListPolicyTest : public ExtensionPolicyTest {
 
 IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest, StartUpInstallation) {
   const web_app::WebAppRegistrar& registrar =
-      web_app::WebAppProvider::Get(browser()->profile())->registrar();
-  web_app::WebAppInstallObserver install_observer(browser()->profile());
+      web_app::WebAppProvider::GetForTest(browser()->profile())->registrar();
+  web_app::WebAppTestInstallObserver install_observer(browser()->profile());
   absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)
-    app_id = install_observer.AwaitNextInstall();
+    app_id = install_observer.BeginListeningAndWait();
   EXPECT_EQ(policy_app_url_, registrar.GetAppStartUrl(*app_id));
 }
 
@@ -2324,12 +2322,12 @@ IN_PROC_BROWSER_TEST_F(
     WebAppInstallForceListPolicyWithAppFallbackNameManifestTest,
     StartUpInstallationPWAFallbackName) {
   const web_app::WebAppRegistrar& registrar =
-      web_app::WebAppProvider::Get(browser()->profile())->registrar();
-  web_app::WebAppInstallObserver install_observer(browser()->profile());
+      web_app::WebAppProvider::GetForTest(browser()->profile())->registrar();
+  web_app::WebAppTestInstallObserver install_observer(browser()->profile());
   absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)
-    app_id = install_observer.AwaitNextInstall();
+    app_id = install_observer.BeginListeningAndWait();
   EXPECT_EQ(policy_app_url_, registrar.GetAppStartUrl(*app_id));
 
   // We specifically don't expect the fallback name to be used for a PWA
@@ -2355,12 +2353,12 @@ class WebAppInstallForceListPolicySAATest
 IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicySAATest,
                        StartUpInstallationSAA) {
   const web_app::WebAppRegistrar& registrar =
-      web_app::WebAppProvider::Get(browser()->profile())->registrar();
-  web_app::WebAppInstallObserver install_observer(browser()->profile());
+      web_app::WebAppProvider::GetForTest(browser()->profile())->registrar();
+  web_app::WebAppTestInstallObserver install_observer(browser()->profile());
   absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)
-    app_id = install_observer.AwaitNextInstall();
+    app_id = install_observer.BeginListeningAndWait();
   EXPECT_EQ(policy_app_url_, registrar.GetAppStartUrl(*app_id));
   EXPECT_NE(fallback_app_name_, registrar.GetAppShortName(*app_id));
 }
@@ -2383,12 +2381,12 @@ class WebAppInstallForceListPolicyWithAppFallbackNameSAATest
 IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyWithAppFallbackNameSAATest,
                        StartUpInstallationSAAFallbackName) {
   const web_app::WebAppRegistrar& registrar =
-      web_app::WebAppProvider::Get(browser()->profile())->registrar();
-  web_app::WebAppInstallObserver install_observer(browser()->profile());
+      web_app::WebAppProvider::GetForTest(browser()->profile())->registrar();
+  web_app::WebAppTestInstallObserver install_observer(browser()->profile());
   absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)
-    app_id = install_observer.AwaitNextInstall();
+    app_id = install_observer.BeginListeningAndWait();
   EXPECT_EQ(policy_app_url_, registrar.GetAppStartUrl(*app_id));
   EXPECT_EQ(fallback_app_name_, registrar.GetAppShortName(*app_id));
 }
@@ -2415,12 +2413,12 @@ IN_PROC_BROWSER_TEST_F(
     WebAppInstallForceListPolicyPlaceholderWithAppFallbackNameTest,
     StartUpInstallationPlaceholderFallbackName) {
   const web_app::WebAppRegistrar& registrar =
-      web_app::WebAppProvider::Get(browser()->profile())->registrar();
-  web_app::WebAppInstallObserver install_observer(browser()->profile());
+      web_app::WebAppProvider::GetForTest(browser()->profile())->registrar();
+  web_app::WebAppTestInstallObserver install_observer(browser()->profile());
   absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)
-    app_id = install_observer.AwaitNextInstall();
+    app_id = install_observer.BeginListeningAndWait();
   EXPECT_EQ(policy_app_url_, registrar.GetAppStartUrl(*app_id));
   EXPECT_EQ(fallback_app_name_, registrar.GetAppShortName(*app_id));
 

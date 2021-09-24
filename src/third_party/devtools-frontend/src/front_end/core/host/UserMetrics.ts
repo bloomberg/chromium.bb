@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as Common from '../common/common.js';
-
 import {InspectorFrontendHostInstance} from './InspectorFrontendHost.js';
 import {EnumeratedHistogram} from './InspectorFrontendHostAPI.js';
 
@@ -43,22 +41,10 @@ export class UserMetrics {
     this.launchPanelName = '';
   }
 
-  colorFixed(contrastThreshold: string): void {
-    const code = ContrastThresholds[contrastThreshold];
-    if (code === undefined) {
-      console.warn(`Unknown contrast threshold: ${contrastThreshold}`);
-      return;
-    }
-    const size = Object.keys(ContrastThresholds).length + 1;
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.ColorPickerFixedColor, code, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.ColorPickerFixedColor, {value: code});
-  }
-
   panelShown(panelName: string): void {
     const code = PanelCodes[panelName] || 0;
     const size = Object.keys(PanelCodes).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.PanelShown, code, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.PanelShown, {value: code});
     // Store that the user has changed the panel so we know launch histograms should not be fired.
     this.panelChangedSinceLaunch = true;
   }
@@ -70,7 +56,6 @@ export class UserMetrics {
     const code = PanelCodes[panelName] || 0;
     const size = Object.keys(PanelCodes).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.PanelClosed, code, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.PanelClosed, {value: code});
     // Store that the user has changed the panel so we know launch histograms should not be fired.
     this.panelChangedSinceLaunch = true;
   }
@@ -79,7 +64,6 @@ export class UserMetrics {
     const code = SidebarPaneCodes[sidebarPaneName] || 0;
     const size = Object.keys(SidebarPaneCodes).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.SidebarPaneShown, code, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.SidebarPaneShown, {value: code});
   }
 
   settingsPanelShown(settingsViewId: string): void {
@@ -89,7 +73,6 @@ export class UserMetrics {
   actionTaken(action: Action): void {
     const size = Object.keys(Action).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.ActionTaken, action, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.ActionTaken, {value: action});
   }
 
   panelLoaded(panelName: string, histogramName: string): void {
@@ -112,7 +95,6 @@ export class UserMetrics {
         // This fires the event for the appropriate launch histogram.
         // The duration is measured as the time elapsed since the time origin of the document.
         InspectorFrontendHostInstance.recordPerformanceHistogram(histogramName, performance.now());
-        Common.EventTarget.fireEvent('DevTools.PanelLoaded', {value: {panelName, histogramName}});
       }, 0);
     });
   }
@@ -125,21 +107,18 @@ export class UserMetrics {
     const size = Object.keys(KeybindSetSettings).length + 1;
     const value = KeybindSetSettings[keybindSet] || 0;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.KeybindSetSettingChanged, value, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.KeybindSetSettingChanged, {value});
   }
 
   keyboardShortcutFired(actionId: string): void {
     const size = Object.keys(KeyboardShortcutAction).length + 1;
     const action = KeyboardShortcutAction[actionId] || KeyboardShortcutAction.OtherShortcut;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.KeyboardShortcutFired, action, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.KeyboardShortcutFired, {value: action});
   }
 
   issuesPanelOpenedFrom(issueOpener: IssueOpener): void {
     const size = Object.keys(IssueOpener).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.IssuesPanelOpenedFrom, issueOpener, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.IssuesPanelOpenedFrom, {value: issueOpener});
   }
 
   issuesPanelIssueExpanded(issueExpandedCategory: string|undefined): void {
@@ -156,7 +135,6 @@ export class UserMetrics {
 
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.IssuesPanelIssueExpanded, issueExpanded, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.IssuesPanelIssueExpanded, {value: issueExpanded});
   }
 
   issuesPanelResourceOpened(issueCategory: string, type: string): void {
@@ -169,7 +147,6 @@ export class UserMetrics {
     }
 
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.IssuesPanelResourceOpened, value, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.IssuesPanelResourceOpened, {value});
   }
 
   issueCreated(code: string): void {
@@ -179,14 +156,12 @@ export class UserMetrics {
       return;
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.IssueCreated, issueCreated, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.IssueCreated, {value: issueCreated});
   }
 
   dualScreenDeviceEmulated(emulationAction: DualScreenDeviceEmulated): void {
     const size = Object.keys(DualScreenDeviceEmulated).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.DualScreenDeviceEmulated, emulationAction, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.DualScreenDeviceEmulated, {value: emulationAction});
   }
 
   cssEditorOpened(editorName: string): void {
@@ -199,7 +174,6 @@ export class UserMetrics {
     }
 
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.CssEditorOpened, value, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.CssEditorOpened, {value});
   }
 
   experimentEnabledAtLaunch(experimentId: string): void {
@@ -210,7 +184,6 @@ export class UserMetrics {
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.ExperimentEnabledAtLaunch, experiment, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.ExperimentEnabledAtLaunch, {value: experiment});
   }
 
   experimentChanged(experimentId: string, isEnabled: boolean): void {
@@ -221,7 +194,6 @@ export class UserMetrics {
     }
     const actionName = isEnabled ? EnumeratedHistogram.ExperimentEnabled : EnumeratedHistogram.ExperimentDisabled;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(actionName, experiment, size);
-    Common.EventTarget.fireEvent(actionName, {value: experiment});
   }
 
   developerResourceLoaded(developerResourceLoaded: DeveloperResourceLoaded): void {
@@ -231,7 +203,6 @@ export class UserMetrics {
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.DeveloperResourceLoaded, developerResourceLoaded, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.DeveloperResourceLoaded, {value: developerResourceLoaded});
   }
 
   developerResourceScheme(developerResourceScheme: DeveloperResourceScheme): void {
@@ -241,7 +212,6 @@ export class UserMetrics {
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.DeveloperResourceScheme, developerResourceScheme, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.DeveloperResourceScheme, {value: developerResourceScheme});
   }
 
   linearMemoryInspectorRevealedFrom(linearMemoryInspectorRevealedFrom: LinearMemoryInspectorRevealedFrom): void {
@@ -251,8 +221,6 @@ export class UserMetrics {
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.LinearMemoryInspectorRevealedFrom, linearMemoryInspectorRevealedFrom, size);
-    Common.EventTarget.fireEvent(
-        EnumeratedHistogram.LinearMemoryInspectorRevealedFrom, {value: linearMemoryInspectorRevealedFrom});
   }
 
   linearMemoryInspectorTarget(linearMemoryInspectorTarget: LinearMemoryInspectorTarget): void {
@@ -262,7 +230,15 @@ export class UserMetrics {
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.LinearMemoryInspectorTarget, linearMemoryInspectorTarget, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.LinearMemoryInspectorTarget, {value: linearMemoryInspectorTarget});
+  }
+
+  language(language: Intl.UnicodeBCP47LocaleIdentifier): void {
+    const size = Object.keys(Language).length + 1;
+    const languageCode = Language[language];
+    if (languageCode === undefined) {
+      return;
+    }
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.Language, languageCode, size);
   }
 }
 
@@ -512,6 +488,7 @@ export const KeyboardShortcutAction: {
   'layers.down': 103,
   'layers.left': 104,
   'layers.right': 105,
+  'help.report-translation-issue': 106,
 };
 
 // TODO(crbug.com/1167717): Make this a const enum again
@@ -734,3 +711,88 @@ export enum LinearMemoryInspectorTarget {
   TypedArray = 3,
   WebAssemblyMemory = 4,
 }
+
+export const Language: Record<string, number> = {
+  'af': 1,
+  'am': 2,
+  'ar': 3,
+  'as': 4,
+  'az': 5,
+  'be': 6,
+  'bg': 7,
+  'bn': 8,
+  'bs': 9,
+  'ca': 10,
+  'cs': 11,
+  'cy': 12,
+  'da': 13,
+  'de': 14,
+  'el': 15,
+  'en-GB': 16,
+  'en-US': 17,
+  'es-419': 18,
+  'es': 19,
+  'et': 20,
+  'eu': 21,
+  'fa': 22,
+  'fi': 23,
+  'fil': 24,
+  'fr-CA': 25,
+  'fr': 26,
+  'gl': 27,
+  'gu': 28,
+  'he': 29,
+  'hi': 30,
+  'hr': 31,
+  'hu': 32,
+  'hy': 33,
+  'id': 34,
+  'is': 35,
+  'it': 36,
+  'ja': 37,
+  'ka': 38,
+  'kk': 39,
+  'km': 40,
+  'kn': 41,
+  'ko': 42,
+  'ky': 43,
+  'lo': 44,
+  'lt': 45,
+  'lv': 46,
+  'mk': 47,
+  'ml': 48,
+  'mn': 49,
+  'mr': 50,
+  'ms': 51,
+  'my': 52,
+  'ne': 53,
+  'nl': 54,
+  'no': 55,
+  'or': 56,
+  'pa': 57,
+  'pl': 58,
+  'pt-PT': 59,
+  'pt': 60,
+  'ro': 61,
+  'ru': 62,
+  'si': 63,
+  'sk': 64,
+  'sl': 65,
+  'sq': 66,
+  'sr-Latn': 67,
+  'sr': 68,
+  'sv': 69,
+  'sw': 70,
+  'ta': 71,
+  'te': 72,
+  'th': 73,
+  'tr': 74,
+  'uk': 75,
+  'ur': 76,
+  'uz': 77,
+  'vi': 78,
+  'zh': 79,
+  'zh-HK': 80,
+  'zh-TW': 81,
+  'zu': 82,
+};

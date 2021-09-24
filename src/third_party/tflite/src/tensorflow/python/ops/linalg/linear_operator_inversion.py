@@ -27,6 +27,7 @@ __all__ = []
 
 
 @tf_export("linalg.LinearOperatorInversion")
+@linear_operator.make_composite_tensor
 class LinearOperatorInversion(linear_operator.LinearOperator):
   """`LinearOperator` representing the inverse of another operator.
 
@@ -113,6 +114,14 @@ class LinearOperatorInversion(linear_operator.LinearOperator):
     Raises:
       ValueError:  If `operator.is_non_singular` is False.
     """
+    parameters = dict(
+        operator=operator,
+        is_non_singular=is_non_singular,
+        is_self_adjoint=is_self_adjoint,
+        is_positive_definite=is_positive_definite,
+        is_square=is_square,
+        name=name
+    )
 
     self._operator = operator
 
@@ -158,11 +167,11 @@ class LinearOperatorInversion(linear_operator.LinearOperator):
     with ops.name_scope(name, values=operator.graph_parents):
       super(LinearOperatorInversion, self).__init__(
           dtype=operator.dtype,
-          graph_parents=None,
           is_non_singular=is_non_singular,
           is_self_adjoint=is_self_adjoint,
           is_positive_definite=is_positive_definite,
           is_square=is_square,
+          parameters=parameters,
           name=name)
     # TODO(b/143910018) Remove graph_parents in V3.
     self._set_graph_parents(operator.graph_parents)
@@ -204,3 +213,7 @@ class LinearOperatorInversion(linear_operator.LinearOperator):
 
   def _cond(self):
     return self.operator.cond()
+
+  @property
+  def _composite_tensor_fields(self):
+    return ("operator",)

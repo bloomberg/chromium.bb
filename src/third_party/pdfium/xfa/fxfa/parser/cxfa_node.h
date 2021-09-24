@@ -10,7 +10,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -85,18 +84,19 @@ enum class XFA_NodeFlag : uint8_t {
   kLayoutGeneratedNode = 1 << 6
 };
 
-enum XFA_PropertyFlag : uint8_t {
-  XFA_PropertyFlag_OneOf = 1 << 0,
-  XFA_PropertyFlag_DefaultOneOf = 1 << 1,
+enum class XFA_PropertyFlag : uint8_t {
+  kOneOf = 1 << 0,
+  kDefaultOneOf = 1 << 1,
 };
-using XFA_PropertyFlagMask = std::underlying_type<XFA_PropertyFlag>::type;
 
 class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
  public:
   struct PropertyData {
+    PropertyData() = delete;
+
     XFA_Element property;
     uint8_t occurance_count;
-    XFA_PropertyFlagMask flags;
+    Mask<XFA_PropertyFlag> flags;
   };
 
   struct AttributeData {
@@ -116,7 +116,7 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
   void Trace(cppgc::Visitor* visitor) const override;
 
   bool HasProperty(XFA_Element property) const;
-  bool HasPropertyFlags(XFA_Element property, uint8_t flags) const;
+  bool HasPropertyFlag(XFA_Element property, XFA_PropertyFlag flag) const;
   uint8_t PropertyOccuranceCount(XFA_Element property) const;
 
   std::pair<CXFA_Node*, int32_t> GetProperty(int32_t index,
@@ -185,6 +185,11 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
   template <typename T>
   T* GetChild(size_t index, XFA_Element eType, bool bOnlyChild) {
     return static_cast<T*>(GetChildInternal(index, eType, bOnlyChild));
+  }
+
+  template <typename T>
+  const T* GetChild(size_t index, XFA_Element eType, bool bOnlyChild) const {
+    return static_cast<const T*>(GetChildInternal(index, eType, bOnlyChild));
   }
 
   void InsertChildAndNotify(int32_t index, CXFA_Node* pNode);
@@ -271,7 +276,7 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
   CXFA_Validate* GetOrCreateValidateIfPossible();
 
   CXFA_Value* GetFormValueIfExists() const;
-  WideString GetRawValue();
+  WideString GetRawValue() const;
 
   int32_t GetRotate() const;
   Optional<float> TryWidth();
@@ -337,8 +342,8 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
   bool IsRadioButton();
   bool IsMultiLine();
 
-  bool HasButtonRollover();
-  bool HasButtonDown();
+  bool HasButtonRollover() const;
+  bool HasButtonDown() const;
 
   float GetCheckButtonSize();
 
@@ -396,9 +401,9 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
   WideString GetFormatDataValue(const WideString& wsValue);
   WideString NormalizeNumStr(const WideString& wsValue);
 
-  std::pair<XFA_Element, int32_t> GetMaxChars();
-  int32_t GetFracDigits();
-  int32_t GetLeadDigits();
+  std::pair<XFA_Element, int32_t> GetMaxChars() const;
+  int32_t GetFracDigits() const;
+  int32_t GetLeadDigits() const;
 
   WideString NumericLimit(const WideString& wsValue);
 
@@ -408,7 +413,7 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
  protected:
   CXFA_Node(CXFA_Document* pDoc,
             XFA_PacketType ePacket,
-            uint32_t validPackets,
+            Mask<XFA_XDPPACKET> validPackets,
             XFA_ObjectType oType,
             XFA_Element eType,
             pdfium::span<const PropertyData> properties,
@@ -421,8 +426,6 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
  private:
   void ProcessScriptTestValidate(CXFA_FFDocView* pDocView,
                                  CXFA_Validate* validate,
-                                 XFA_EventError iRet,
-                                 bool pRetValue,
                                  bool bVersionFlag);
   XFA_EventError ProcessFormatTestValidate(CXFA_FFDocView* pDocView,
                                            CXFA_Validate* validate,
@@ -437,8 +440,7 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
   bool HasFlag(XFA_NodeFlag dwFlag) const;
   const PropertyData* GetPropertyData(XFA_Element property) const;
   const AttributeData* GetAttributeData(XFA_Attribute attr) const;
-  Optional<XFA_Element> GetFirstPropertyWithFlag(
-      XFA_PropertyFlagMask flag) const;
+  Optional<XFA_Element> GetFirstPropertyWithFlag(XFA_PropertyFlag flag) const;
   void OnRemoved(bool bNotify) const;
   Optional<void*> GetDefaultValue(XFA_Attribute attr,
                                   XFA_AttributeType eType) const;
@@ -513,7 +515,7 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
   bool is_widget_ready_ = false;
   const pdfium::span<const PropertyData> m_Properties;
   const pdfium::span<const AttributeData> m_Attributes;
-  const uint32_t m_ValidPackets;
+  const Mask<XFA_XDPPACKET> m_ValidPackets;
   UnownedPtr<CFX_XMLNode> xml_node_;
   const XFA_PacketType m_ePacket;
   uint8_t m_ExecuteRecursionDepth = 0;

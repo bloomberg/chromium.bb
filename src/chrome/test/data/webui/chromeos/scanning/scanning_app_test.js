@@ -11,8 +11,8 @@ import {MAX_NUM_SAVED_SCANNERS, ScannerArr, ScannerSetting, ScanSettings, StartM
 import {tokenToString} from 'chrome://scanning/scanning_app_util.js';
 import {ScanningBrowserProxyImpl} from 'chrome://scanning/scanning_browser_proxy.js';
 
-import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks, isVisible, waitAfterNextRender} from '../../test_util.m.js';
+import {assertArrayEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
+import {flushTasks, isVisible, waitAfterNextRender} from '../../test_util.js';
 
 import {changeSelect, createScanner, createScannerSource} from './scanning_app_test_utils.js';
 import {TestScanningBrowserProxy} from './test_scanning_browser_proxy.js';
@@ -191,13 +191,16 @@ class FakeScanService {
   }
 
   /**
-   * @param {number} pageNumber
+   * @param {number} pageNumber Always 1 for Flatbed scans, increments for ADF
+   *    scans.
+   * @param {number} newPageIndex The index the new page should take in the
+   *    objects array.
    * @return {!Promise}
    */
-  simulatePageComplete(pageNumber) {
+  simulatePageComplete(pageNumber, newPageIndex) {
     this.scanJobObserverRemote_.onPageProgress(pageNumber, 100);
     const fakePageData = [2, 57, 13, 289];
-    this.scanJobObserverRemote_.onPageComplete(fakePageData);
+    this.scanJobObserverRemote_.onPageComplete(fakePageData, newPageIndex);
     return flushTasks();
   }
 
@@ -217,6 +220,15 @@ class FakeScanService {
    */
   simulateCancelComplete(success) {
     this.scanJobObserverRemote_.onCancelComplete(success);
+    return flushTasks();
+  }
+
+  /**
+   * @param {!ash.scanning.mojom.ScanResult} scanResult
+   * @return {!Promise}
+   */
+  simulateMultiPageScanFail(scanResult) {
+    this.scanJobObserverRemote_.onMultiPageScanFail(scanResult);
     return flushTasks();
   }
 
@@ -288,12 +300,19 @@ class FakeMultiPageScanController {
       close() {},
     };
 
+    /** @private {number} */
+    this.pageIndexToRemove_ = -1;
+
+    /** @private {number} */
+    this.pageIndexToRescan_ = -1;
+
     this.resetForTest();
   }
 
   resetForTest() {
     this.resolverMap_.set('scanNextPage', new PromiseResolver());
     this.resolverMap_.set('completeMultiPageScan', new PromiseResolver());
+    this.resolverMap_.set('rescanPage', new PromiseResolver());
   }
 
   /**
@@ -327,21 +346,48 @@ class FakeMultiPageScanController {
   }
 
   /**
-   * @param {!mojoBase.mojom.UnguessableToken} scanner_id
+   * @param {!mojoBase.mojom.UnguessableToken} scannerId
    * @param {!ash.scanning.mojom.ScanSettings} settings
    * @return {!Promise<{success: boolean}>}
    */
-  scanNextPage(scanner_id, settings) {
+  scanNextPage(scannerId, settings) {
     return new Promise(resolve => {
       this.methodCalled('scanNextPage');
       resolve({success: true});
     });
   }
 
-  removePage() {}
+  /** @param {number} pageIndex */
+  removePage(pageIndex) {
+    this.pageIndexToRemove_ = pageIndex;
+  }
+
+  /**
+   * @param {!mojoBase.mojom.UnguessableToken} scannerId
+   * @param {!ash.scanning.mojom.ScanSettings} settings
+   * @param {number} pageIndex
+   * @return {!Promise<{success: boolean}>}
+   */
+  rescanPage(scannerId, settings, pageIndex) {
+    this.pageIndexToRescan_ = pageIndex;
+    return new Promise(resolve => {
+      this.methodCalled('rescanPage');
+      resolve({success: true});
+    });
+  }
 
   completeMultiPageScan() {
     this.methodCalled('completeMultiPageScan');
+  }
+
+  /** @return {number}*/
+  getPageIndexToRemove() {
+    return this.pageIndexToRemove_;
+  }
+
+  /** @return {number}*/
+  getPageIndexToRescan() {
+    return this.pageIndexToRescan_;
   }
 }
 
@@ -556,6 +602,7 @@ export function scanningAppTest() {
     /** @type {!Array<!mojoBase.mojom.FilePath>} */
     const scannedFilePaths =
         [{'path': '/test/path/scan1.jpg'}, {'path': '/test/path/scan2.jpg'}];
+    let newPageIndex = 0;
 
     return initializeScanningApp(expectedScanners, capabilities)
         .then(() => {
@@ -655,7 +702,8 @@ export function scanningAppTest() {
 
           // Simulate a page complete update and verify the progress bar and
           // text are updated correctly.
-          return fakeScanService_.simulatePageComplete(1);
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
         })
         .then(() => {
           assertEquals('Scanning page 1', progressText.textContent.trim());
@@ -670,7 +718,8 @@ export function scanningAppTest() {
           assertEquals(53, progressBar.value);
 
           // Complete the page.
-          return fakeScanService_.simulatePageComplete(2);
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 2, newPageIndex++);
         })
         .then(() => {
           // Complete the scan.
@@ -794,6 +843,7 @@ export function scanningAppTest() {
   test('MultiPageScan', () => {
     /** @type {!Array<!mojoBase.mojom.FilePath>} */
     const scannedFilePaths = [{'path': '/test/path/scan1.pdf'}];
+    let newPageIndex = 0;
 
     return initializeScanningApp(expectedScanners, capabilities)
         .then(() => {
@@ -814,7 +864,8 @@ export function scanningAppTest() {
           return fakeScanService_.whenCalled('startMultiPageScan');
         })
         .then(() => {
-          return fakeScanService_.simulatePageComplete(1);
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
         })
         .then(() => {
           // The scanned images and multi-page scan page should be visible.
@@ -830,7 +881,16 @@ export function scanningAppTest() {
           return fakeMultiPageScanController_.whenCalled('scanNextPage');
         })
         .then(() => {
-          return fakeScanService_.simulatePageComplete(1);
+          // Cancel button should be visible while scanning.
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('multi-page-scan').$$('#scanButton'))));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('multi-page-scan').$$('#cancelButton'))));
+
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
         })
         .then(() => {
           // The scanned images and multi-page scan page should still be visible
@@ -861,6 +921,562 @@ export function scanningAppTest() {
           assertArrayEquals(
               scannedFilePaths,
               scanningApp.$$('scan-done-section').scannedFilePaths);
+        });
+  });
+
+  // Verify a multi-page scan job can fail scanning a page then scan another
+  // page successfully.
+  test('MultiPageScanPageFailed', () => {
+    let newPageIndex = 0;
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return waitAfterNextRender(/** @type {!HTMLElement} */ (scanningApp));
+        })
+        .then(() => {
+          scanningApp.multiPageScanChecked = true;
+        })
+        .then(() => {
+          scanningApp.$$('#scanButton').click();
+          return fakeScanService_.whenCalled('startMultiPageScan');
+        })
+        .then(() => {
+          assertEquals(
+              'Scanning page 1',
+              scanningApp.$$('#scanPreview')
+                  .$$('#progressText')
+                  .textContent.trim());
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          scanningApp.$$('multi-page-scan').$$('#scanButton').click();
+          return fakeMultiPageScanController_.whenCalled('scanNextPage');
+        })
+        .then(() => {
+          assertEquals(
+              'Scanning page 2',
+              scanningApp.$$('#scanPreview')
+                  .$$('#progressText')
+                  .textContent.trim());
+          return fakeScanService_.simulateMultiPageScanFail(
+              ash.scanning.mojom.ScanResult.kFlatbedOpen);
+        })
+        .then(() => {
+          // The scan failed dialog should open.
+          assertTrue(scanningApp.$$('#scanFailedDialog').open);
+          assertEquals(
+              loadTimeData.getString('scanFailedDialogFlatbedOpenText'),
+              scanningApp.$$('#scanFailedDialogText').textContent.trim());
+
+          // Click the dialog's Ok button to return to MULTI_PAGE_NEXT_ACTION
+          // state.
+          return clickScanFailedDialogOkButton();
+        })
+        .then(() => {
+          // After the dialog closes, the scan next page button should still
+          // say 'Scan Page 2'.
+          const scanNextPageButton =
+              scanningApp.$$('multi-page-scan').$$('#scanButton');
+          assertEquals('Scan page 2', scanNextPageButton.textContent.trim());
+          scanNextPageButton.click();
+          return fakeMultiPageScanController_.whenCalled('scanNextPage');
+        })
+        .then(() => {
+          assertEquals(
+              'Scanning page 2',
+              scanningApp.$$('#scanPreview')
+                  .$$('#progressText')
+                  .textContent.trim());
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          scanningApp.$$('multi-page-scan').$$('#saveButton').click();
+          return fakeMultiPageScanController_.whenCalled(
+              'completeMultiPageScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulateScanComplete(
+              ash.scanning.mojom.ScanResult.kSuccess,
+              [{'path': '/test/path/scan1.pdf'}]);
+        })
+        .then(() => {
+          scannedImages = scanningApp.$$('#scanPreview').$$('#scannedImages');
+
+          // There should be 2 images from scanning once, failing once, then
+          // scanning again successfully.
+          assertEquals(2, scannedImages.querySelectorAll('img').length);
+        });
+  });
+
+  // Verify a scan can be canceled during a multi-page scan session.
+  test('MultiPageCancelScan', () => {
+    let newPageIndex = 0;
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return flushTasks();
+        })
+        .then(() => {
+          scanningApp.multiPageScanChecked = true;
+          scanningApp.$$('#scanButton').click();
+          return fakeScanService_.whenCalled('startMultiPageScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          scanningApp.$$('multi-page-scan').$$('#scanButton').click();
+          return fakeMultiPageScanController_.whenCalled('scanNextPage');
+        })
+        .then(() => {
+          // Click the Cancel button to cancel the scan.
+          scanningApp.$$('multi-page-scan').$$('#cancelButton').click();
+          return fakeScanService_.whenCalled('cancelScan');
+        })
+        .then(() => {
+          // Cancel button should be disabled while canceling is in progress.
+          assertTrue(
+              scanningApp.$$('multi-page-scan').$$('#cancelButton').disabled);
+
+          // Simulate cancel completing successfully.
+          return fakeScanService_.simulateCancelComplete(true);
+        })
+        .then(() => {
+          // After canceling is complete, the Scan Next Page button should be
+          // visible and showing the correct page number to scan. The cancel
+          // button should be hidden.
+          const scanNextPageButton =
+              scanningApp.$$('multi-page-scan').$$('#scanButton');
+          assertTrue(
+              isVisible(/** @type {!CrButtonElement} */ (scanNextPageButton)));
+          assertEquals('Scan page 2', scanNextPageButton.textContent.trim());
+          assertFalse(isVisible(/** @type {!CrButtonElement} */ (
+              scanningApp.$$('multi-page-scan').$$('#cancelButton'))));
+          assertTrue(scanningApp.$$('#toast').open);
+        });
+  });
+
+  // Verify the correct page can be removed from a multi-page scan job by
+  // scanning three pages then removing the second page.
+  test('MultiPageScanPageRemoved', () => {
+    const pageNumberToRemove = 2;
+    let expectedObjectUrls;
+    let newPageIndex = 0;
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return waitAfterNextRender(/** @type {!HTMLElement} */ (scanningApp));
+        })
+        .then(() => {
+          scanningApp.multiPageScanChecked = true;
+        })
+        .then(() => {
+          scanningApp.$$('#scanButton').click();
+          return fakeScanService_.whenCalled('startMultiPageScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          scanningApp.$$('multi-page-scan').$$('#scanButton').click();
+          return fakeMultiPageScanController_.whenCalled('scanNextPage');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          scanningApp.$$('multi-page-scan').$$('#scanButton').click();
+          return fakeMultiPageScanController_.whenCalled('scanNextPage');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          // Save the current scanned images
+          expectedObjectUrls = scanningApp.$$('#scanPreview').objectUrls;
+          assertEquals(3, expectedObjectUrls.length);
+
+          // Open the remove page dialog.
+          scanningApp.$$('#scanPreview')
+              .$$('action-toolbar')
+              .dispatchEvent(new CustomEvent(
+                  'show-remove-page-dialog', {detail: pageNumberToRemove}));
+          return flushTasks();
+        })
+        .then(() => {
+          scanningApp.$$('#scanPreview').$$('#actionButton').click();
+          return flushTasks();
+        })
+        .then(() => {
+          assertEquals(
+              pageNumberToRemove - 1,
+              fakeMultiPageScanController_.getPageIndexToRemove());
+
+          // Remove the second page from the expected scanned images and verify
+          // the correct image was removed from the actual scanned images.
+          expectedObjectUrls.splice(pageNumberToRemove - 1, 1);
+          assertArrayEquals(
+              expectedObjectUrls, scanningApp.$$('#scanPreview').objectUrls);
+        });
+  });
+
+  // Verify if there's only one page in the multi-page scan session it can be
+  // removed, the scan is reset, and the user is returned to the scan settings
+  // page.
+  test('MultiPageScanRemoveLastPage', () => {
+    let newPageIndex = 0;
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return waitAfterNextRender(/** @type {!HTMLElement} */ (scanningApp));
+        })
+        .then(() => {
+          scanningApp.multiPageScanChecked = true;
+        })
+        .then(() => {
+          scanningApp.$$('#scanButton').click();
+          return fakeScanService_.whenCalled('startMultiPageScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          // Open the remove page dialog.
+          scanningApp.$$('#scanPreview')
+              .$$('action-toolbar')
+              .dispatchEvent(
+                  new CustomEvent('show-remove-page-dialog', {detail: 1}));
+          return flushTasks();
+        })
+        .then(() => {
+          scanningApp.$$('#scanPreview').$$('#actionButton').click();
+          return flushTasks();
+        })
+        .then(() => {
+          assertArrayEquals([], scanningApp.$$('#scanPreview').objectUrls);
+          --newPageIndex;
+
+          // Attempt a new multi-page scan from the scan settings page.
+          scanningApp.$$('#scanButton').click();
+          return fakeScanService_.whenCalled('startMultiPageScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          // The scanned images and multi-page scan page should be visible.
+          assertTrue(isVisible(/** @type {!HTMLElement} */ (
+              scanningApp.$$('#scanPreview').$$('#scannedImages'))));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('multi-page-scan'))));
+
+          const scanNextPageButton =
+              scanningApp.$$('multi-page-scan').$$('#scanButton');
+          assertEquals('Scan page 2', scanNextPageButton.textContent.trim());
+        });
+  });
+
+  // Verify one page can be scanned and then rescanned in a multi-page scan job.
+  test('MultiPageScanRescanOnePage', () => {
+    /** @type {!Array<!mojoBase.mojom.FilePath>} */
+    const scannedFilePaths = [{'path': '/test/path/scan1.pdf'}];
+    const pageNumberToRescan = 1;
+
+    let scanPreview;
+    let expectedObjectUrls;
+    let newPageIndex = 0;
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          scanPreview = scanningApp.$$('#scanPreview');
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return waitAfterNextRender(/** @type {!HTMLElement} */ (scanningApp));
+        })
+        .then(() => {
+          scanningApp.multiPageScanChecked = true;
+        })
+        .then(() => {
+          scanningApp.$$('#scanButton').click();
+          return fakeScanService_.whenCalled('startMultiPageScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          // Save the current scanned image.
+          expectedObjectUrls = [...scanPreview.objectUrls];
+          assertEquals(1, expectedObjectUrls.length);
+
+          // Open the rescan page dialog.
+          scanPreview.$$('action-toolbar')
+              .dispatchEvent(new CustomEvent(
+                  'show-rescan-page-dialog', {detail: pageNumberToRescan}));
+          return flushTasks();
+        })
+        .then(() => {
+          // Verify the dialog shows we are rescanning the correct page number.
+          assertEquals(
+              'Rescan page ' + pageNumberToRescan,
+              scanPreview.$$('#dialogTitle').textContent.trim());
+          assertEquals(
+              'Rescan page ' + pageNumberToRescan,
+              scanPreview.$$('#actionButton').textContent.trim());
+
+          scanPreview.$$('#actionButton').click();
+          return fakeMultiPageScanController_.whenCalled('rescanPage');
+        })
+        .then(() => {
+          // Verify the progress text shows we are attempting to rescan the
+          // first page.
+          progressText = scanPreview.$$('#progressText');
+          assertEquals('Scanning page 1', progressText.textContent.trim());
+          assertEquals(
+              pageNumberToRescan - 1,
+              fakeMultiPageScanController_.getPageIndexToRescan());
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, /*newPageIndex=*/ 0);
+        })
+        .then(() => {
+          // After rescanning verify the page is different.
+          const actualObjectUrls = scanPreview.objectUrls;
+          assertEquals(1, actualObjectUrls.length);
+          assertNotEquals(expectedObjectUrls[0], actualObjectUrls[0]);
+        })
+        .then(() => {
+          // Save the one page scan.
+          scanningApp.$$('multi-page-scan').$$('#saveButton').click();
+          return fakeMultiPageScanController_.whenCalled(
+              'completeMultiPageScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulateScanComplete(
+              ash.scanning.mojom.ScanResult.kSuccess, scannedFilePaths);
+        })
+        .then(() => {
+          scannedImages = scanningApp.$$('#scanPreview').$$('#scannedImages');
+          assertTrue(isVisible(/** @type {!HTMLElement} */ (scannedImages)));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('scan-done-section'))));
+          assertArrayEquals(
+              scannedFilePaths,
+              scanningApp.$$('scan-done-section').scannedFilePaths);
+        });
+  });
+
+  // Verify a page can be rescanned in a multi-page scan job. This test
+  // simulates scanning two pages, rescanning the first page, then scanning a
+  // third page.
+  test('MultiPageScanPageRescanned', () => {
+    const pageNumberToRescan = 1;
+
+    let scanPreview;
+    let expectedObjectUrls;
+    let newPageIndex = 0;
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          scanPreview = scanningApp.$$('#scanPreview');
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return waitAfterNextRender(/** @type {!HTMLElement} */ (scanningApp));
+        })
+        .then(() => {
+          scanningApp.multiPageScanChecked = true;
+        })
+        .then(() => {
+          scanningApp.$$('#scanButton').click();
+          return fakeScanService_.whenCalled('startMultiPageScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          scanningApp.$$('multi-page-scan').$$('#scanButton').click();
+          return fakeMultiPageScanController_.whenCalled('scanNextPage');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          // Save the current scanned images.
+          expectedObjectUrls = [...scanPreview.objectUrls];
+          assertEquals(2, expectedObjectUrls.length);
+
+          // Open the rescan page dialog.
+          scanPreview.$$('action-toolbar')
+              .dispatchEvent(new CustomEvent(
+                  'show-rescan-page-dialog', {detail: pageNumberToRescan}));
+          return flushTasks();
+        })
+        .then(() => {
+          // Verify the dialog shows we are rescanning the correct page number.
+          assertEquals(
+              'Rescan page ' + pageNumberToRescan,
+              scanPreview.$$('#dialogTitle').textContent.trim());
+          assertEquals(
+              'Rescan page ' + pageNumberToRescan,
+              scanPreview.$$('#actionButton').textContent.trim());
+
+          scanPreview.$$('#actionButton').click();
+          return fakeMultiPageScanController_.whenCalled('rescanPage');
+        })
+        .then(() => {
+          // Verify the progress text shows we are attempting to rescan the
+          // first page.
+          progressText = scanPreview.$$('#progressText');
+          assertEquals('Scanning page 1', progressText.textContent.trim());
+          assertEquals(
+              pageNumberToRescan - 1,
+              fakeMultiPageScanController_.getPageIndexToRescan());
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, /*newPageIndex=*/ 0);
+        })
+        .then(() => {
+          // After rescanning verify that the first page changed but the second
+          // page stayed the same.
+          const actualObjectUrls = scanPreview.objectUrls;
+          assertEquals(2, actualObjectUrls.length);
+          assertNotEquals(expectedObjectUrls[0], actualObjectUrls[0]);
+          assertEquals(expectedObjectUrls[1], actualObjectUrls[1]);
+        })
+        .then(() => {
+          // Verify that after rescanning, the scan button shows the correct
+          // next page number to scan.
+          const scanButton =
+              scanningApp.$$('multi-page-scan').$$('#scanButton');
+          assertEquals('Scan page 3', scanButton.textContent.trim());
+
+          scanButton.click();
+          return fakeMultiPageScanController_.whenCalled('scanNextPage');
+        })
+        .then(() => {
+          // Verify the progress text shows we are scanning the third page.
+          assertEquals('Scanning page 3', progressText.textContent.trim());
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          assertEquals(3, scanPreview.objectUrls.length);
+        });
+  });
+
+  // Verify that if rescanning a page fails, the page numbers update correctly.
+  test('MultiPageScanPageRescanFail', () => {
+    const pageNumberToRescan = 1;
+    let scanPreview;
+    let expectedObjectUrls;
+    let newPageIndex = 0;
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          scanPreview = scanningApp.$$('#scanPreview');
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return waitAfterNextRender(/** @type {!HTMLElement} */ (scanningApp));
+        })
+        .then(() => {
+          scanningApp.multiPageScanChecked = true;
+        })
+        .then(() => {
+          scanningApp.$$('#scanButton').click();
+          return fakeScanService_.whenCalled('startMultiPageScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          scanningApp.$$('multi-page-scan').$$('#scanButton').click();
+          return fakeMultiPageScanController_.whenCalled('scanNextPage');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(
+              /*pageNumber=*/ 1, newPageIndex++);
+        })
+        .then(() => {
+          // Save the current scanned images.
+          expectedObjectUrls = [...scanPreview.objectUrls];
+          assertEquals(2, expectedObjectUrls.length);
+
+          // Open the rescan page dialog.
+          scanPreview.$$('action-toolbar')
+              .dispatchEvent(new CustomEvent(
+                  'show-rescan-page-dialog', {detail: pageNumberToRescan}));
+          return flushTasks();
+        })
+        .then(() => {
+          scanPreview.$$('#actionButton').click();
+          return fakeMultiPageScanController_.whenCalled('rescanPage');
+        })
+        .then(() => {
+          return fakeScanService_.simulateMultiPageScanFail(
+              ash.scanning.mojom.ScanResult.kFlatbedOpen);
+        })
+        .then(() => {
+          // The scan failed dialog should open.
+          assertTrue(scanningApp.$$('#scanFailedDialog').open);
+          assertEquals(
+              loadTimeData.getString('scanFailedDialogFlatbedOpenText'),
+              scanningApp.$$('#scanFailedDialogText').textContent.trim());
+
+          // Click the dialog's Ok button to return to MULTI_PAGE_NEXT_ACTION
+          // state.
+          return clickScanFailedDialogOkButton();
+        })
+        .then(() => {
+          // Verify that the pages stayed the same.
+          const actualObjectUrls = scanPreview.objectUrls;
+          assertEquals(2, actualObjectUrls.length);
+          assertArrayEquals(expectedObjectUrls, actualObjectUrls);
+
+          // Verify the scan button shows the correct next page number to scan.
+          assertEquals(
+              'Scan page 3',
+              scanningApp.$$('multi-page-scan')
+                  .$$('#scanButton')
+                  .textContent.trim());
         });
   });
 
@@ -1322,6 +1938,7 @@ export function scanningAppTest() {
         colorMode: ash.scanning.mojom.ColorMode.kGrayscale,
         pageSize: ash.scanning.mojom.PageSize.kMax,
         resolutionDpi: 100,
+        multiPageScanChecked: false,
       }],
     };
     testBrowserProxy.setSavedSettings(JSON.stringify(savedScanSettings));
@@ -1350,6 +1967,7 @@ export function scanningAppTest() {
               scanningApp.$$('#pageSizeSelect').$$('select').value);
           assertEquals(
               '300', scanningApp.$$('#resolutionSelect').$$('select').value);
+          assertFalse(scanningApp.multiPageScanChecked);
         });
   });
 
@@ -1368,11 +1986,12 @@ export function scanningAppTest() {
       scanners: [{
         name: firstScannerName,
         lastScanDate: new Date(),
-        sourceName: ADF_DUPLEX,
-        fileType: ash.scanning.mojom.FileType.kPng,
+        sourceName: PLATEN,
+        fileType: ash.scanning.mojom.FileType.kPdf,
         colorMode: ash.scanning.mojom.ColorMode.kBlackAndWhite,
         pageSize: ash.scanning.mojom.PageSize.kMax,
         resolutionDpi: 75,
+        multiPageScanChecked: true,
       }],
     };
     testBrowserProxy.setSavedSettings(JSON.stringify(savedScanSettings));
@@ -1386,12 +2005,12 @@ export function scanningAppTest() {
               tokenToString(firstScannerId),
               scanningApp.$$('#scannerSelect').$$('select').value);
           assertEquals(
-              ADF_DUPLEX, scanningApp.$$('#sourceSelect').$$('select').value);
+              PLATEN, scanningApp.$$('#sourceSelect').$$('select').value);
           assertEquals(
               selectedPath.baseName,
               scanningApp.$$('#scanToSelect').$$('select').value);
           assertEquals(
-              ash.scanning.mojom.FileType.kPng.toString(),
+              ash.scanning.mojom.FileType.kPdf.toString(),
               scanningApp.$$('#fileTypeSelect').$$('select').value);
           assertEquals(
               ash.scanning.mojom.ColorMode.kBlackAndWhite.toString(),
@@ -1401,6 +2020,7 @@ export function scanningAppTest() {
               scanningApp.$$('#pageSizeSelect').$$('select').value);
           assertEquals(
               '75', scanningApp.$$('#resolutionSelect').$$('select').value);
+          assertTrue(scanningApp.multiPageScanChecked);
         });
   });
 
@@ -1425,6 +2045,7 @@ export function scanningAppTest() {
         colorMode: ash.scanning.mojom.ColorMode.kGrayscale,
         pageSize: -1,
         resolutionDpi: 600,
+        multiPageScanChecked: false,
       }],
     };
     testBrowserProxy.setSavedSettings(JSON.stringify(savedScanSettings));
@@ -1453,6 +2074,76 @@ export function scanningAppTest() {
               scanningApp.$$('#pageSizeSelect').$$('select').value);
           assertEquals(
               '300', scanningApp.$$('#resolutionSelect').$$('select').value);
+          assertFalse(scanningApp.multiPageScanChecked);
+        });
+  });
+
+  // Verify if |multiPageScanChecked| is true in saved settings but the
+  // scanner's capabilities doesn't support it, the multi-page scan checkbox
+  // will not be set.
+  test('MultiPageNotAvailableFromCapabilities', () => {
+    if (!loadTimeData.getBoolean('scanAppStickySettingsEnabled')) {
+      return;
+    }
+
+    const savedScanSettings = {
+      lastUsedScannerName: secondScannerName,
+      scanToPath: '',
+      scanners: [{
+        name: secondScannerName,
+        lastScanDate: new Date(),
+        sourceName: PLATEN,
+        fileType: ash.scanning.mojom.FileType.kPdf,
+        colorMode: ash.scanning.mojom.ColorMode.kGrayscale,
+        pageSize: ash.scanning.mojom.PageSize.kNaLetter,
+        resolutionDpi: 600,
+        multiPageScanChecked: true,
+      }],
+    };
+    testBrowserProxy.setSavedSettings(JSON.stringify(savedScanSettings));
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          // `secondScanner` does not have PLATEN in it's capabilities so the
+          // multi-page scan checkbox should not get set.
+          assertFalse(scanningApp.multiPageScanChecked);
+        });
+  });
+
+  // Verify if the |multiPageScanChecked| is not present in the saved settings
+  // JSON (i.e. the first time the feature is enabled), the multi-page scan
+  // checkbox will not be set.
+  test('MultiPageNotInSavedSettings', () => {
+    if (!loadTimeData.getBoolean('scanAppStickySettingsEnabled')) {
+      return;
+    }
+
+    const savedScanSettings = {
+      lastUsedScannerName: firstScannerName,
+      scanToPath: '',
+      scanners: [{
+        name: secondScannerName,
+        lastScanDate: new Date(),
+        sourceName: PLATEN,
+        fileType: ash.scanning.mojom.FileType.kPdf,
+        colorMode: ash.scanning.mojom.ColorMode.kGrayscale,
+        pageSize: ash.scanning.mojom.PageSize.kNaLetter,
+        resolutionDpi: 600,
+      }],
+    };
+    testBrowserProxy.setSavedSettings(JSON.stringify(savedScanSettings));
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          // The multi-page scan checkbox should not get set because it wasn't
+          // present in the saved settings.
+          assertFalse(scanningApp.multiPageScanChecked);
         });
   });
 
@@ -1473,6 +2164,7 @@ export function scanningAppTest() {
         colorMode: ash.scanning.mojom.ColorMode.kBlackAndWhite,
         pageSize: ash.scanning.mojom.PageSize.kMax,
         resolutionDpi: 75,
+        multiPageScanChecked: false,
       }],
     };
     testBrowserProxy.setSavedSettings(JSON.stringify(savedScanSettings));
@@ -1502,6 +2194,7 @@ export function scanningAppTest() {
       colorMode: ash.scanning.mojom.ColorMode.kBlackAndWhite,
       pageSize: ash.scanning.mojom.PageSize.kMax,
       resolutionDpi: 100,
+      multiPageScanChecked: false,
     };
 
     const savedScanSettings = {
@@ -1547,6 +2240,7 @@ export function scanningAppTest() {
       colorMode: ash.scanning.mojom.ColorMode.kBlackAndWhite,
       pageSize: ash.scanning.mojom.PageSize.kMax,
       resolutionDpi: 100,
+      multiPageScanChecked: false,
     };
 
     // The saved scan settings for the second scanner. This is loaded from the
@@ -1560,6 +2254,7 @@ export function scanningAppTest() {
       colorMode: ash.scanning.mojom.ColorMode.kBlackAndWhite,
       pageSize: ash.scanning.mojom.PageSize.kMax,
       resolutionDpi: 100,
+      multiPageScanChecked: false,
     };
 
     const savedScanSettings = {
@@ -1580,6 +2275,7 @@ export function scanningAppTest() {
       colorMode: ash.scanning.mojom.ColorMode.kGrayscale,
       pageSize: ash.scanning.mojom.PageSize.kIsoA4,
       resolutionDpi: 600,
+      multiPageScanChecked: false,
     };
     savedScanSettings.scanners[1] = newSecondScannerSetting;
 
@@ -1623,6 +2319,7 @@ export function scanningAppTest() {
       colorMode: ash.scanning.mojom.ColorMode.kBlackAndWhite,
       pageSize: ash.scanning.mojom.PageSize.kMax,
       resolutionDpi: 100,
+      multiPageScanChecked: false,
     };
 
     // Create an identical scanner with `lastScanDate` set to infinity so it
@@ -1680,6 +2377,7 @@ export function scanningAppTest() {
         colorMode: ash.scanning.mojom.ColorMode.kBlackAndWhite,
         pageSize: ash.scanning.mojom.PageSize.kMax,
         resolutionDpi: 300,
+        multiPageScanChecked: false,
       };
     }
 

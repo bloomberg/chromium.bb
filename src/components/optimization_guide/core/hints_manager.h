@@ -108,7 +108,6 @@ class HintsManager : public OptimizationHintsComponentObserver,
   // |optimization_metadata| will be populated, if applicable.
   optimization_guide::OptimizationTypeDecision CanApplyOptimization(
       const GURL& navigation_url,
-      const absl::optional<int64_t>& navigation_id,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata);
 
@@ -117,7 +116,6 @@ class HintsManager : public OptimizationHintsComponentObserver,
   // |this| to make the decision. Virtual for testing.
   virtual void CanApplyOptimizationAsync(
       const GURL& navigation_url,
-      const absl::optional<int64_t>& navigation_id,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationGuideDecisionCallback callback);
 
@@ -152,6 +150,11 @@ class HintsManager : public OptimizationHintsComponentObserver,
   // Notifies |this| that a navigation with redirect chain
   // |navigation_redirect_chain| has finished.
   void OnNavigationFinish(const std::vector<GURL>& navigation_redirect_chain);
+
+  // Notifies |this| that deferred startup has occurred. This enables |this|
+  // to execute background tasks while minimizing the risk of regressing
+  // metrics such as jank.
+  void OnDeferredStartup();
 
   // Fetch the hints for the given URLs.
   void FetchHintsForURLs(std::vector<GURL> target_urls);
@@ -215,6 +218,9 @@ class HintsManager : public OptimizationHintsComponentObserver,
   // the Component Updater. This is used as a signal during tests.
   void OnComponentHintsUpdated(base::OnceClosure update_closure,
                                bool hints_updated);
+
+  // Initiates fetching of hints - either immediately over via a timer.
+  void InitiateHintsFetchScheduling();
 
   // Returns the URLs that are currently in the active tab model that do not
   // have a hint available in |hint_cache_|.
@@ -354,15 +360,12 @@ class HintsManager : public OptimizationHintsComponentObserver,
                  std::unique_ptr<optimization_guide::OptimizationFilter>>
       blocklist_optimization_filters_;
 
-  // A map from URL to a map of callbacks (along with the navigation IDs that
-  // they were called for) keyed by their optimization type.
+  // A map from URL to a map of callbacks keyed by their optimization type.
   base::flat_map<
       GURL,
       base::flat_map<
           optimization_guide::proto::OptimizationType,
-          std::vector<std::pair<
-              absl::optional<int64_t>,
-              optimization_guide::OptimizationGuideDecisionCallback>>>>
+          std::vector<optimization_guide::OptimizationGuideDecisionCallback>>>
       registered_callbacks_;
 
   // Whether |this| was created for an off the record profile.

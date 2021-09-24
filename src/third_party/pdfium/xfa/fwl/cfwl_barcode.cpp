@@ -78,8 +78,8 @@ bool CFWL_Barcode::IsProtectedType() const {
     return true;
 
   BC_TYPE tEngineType = m_pBarcodeEngine->GetType();
-  return tEngineType == BC_QR_CODE || tEngineType == BC_PDF417 ||
-         tEngineType == BC_DATAMATRIX;
+  return tEngineType == BC_TYPE::kQRCode || tEngineType == BC_TYPE::kPDF417 ||
+         tEngineType == BC_TYPE::kDataMatrix;
 }
 
 void CFWL_Barcode::OnProcessEvent(CFWL_Event* pEvent) {
@@ -162,7 +162,7 @@ void CFWL_Barcode::GenerateBarcodeImageCache() {
     m_pBarcodeEngine->SetModuleWidth(m_nModuleWidth.value());
   if (m_nDataLength.has_value())
     m_pBarcodeEngine->SetDataLength(m_nDataLength.value());
-  if (m_bCalChecksum.value())
+  if (m_bCalChecksum.has_value())
     m_pBarcodeEngine->SetCalChecksum(m_bCalChecksum.value());
   if (m_bPrintChecksum.has_value())
     m_pBarcodeEngine->SetPrintChecksum(m_bPrintChecksum.value());
@@ -183,7 +183,7 @@ void CFWL_Barcode::GenerateBarcodeImageCache() {
 }
 
 void CFWL_Barcode::CreateBarcodeEngine() {
-  if (m_pBarcodeEngine || m_type == BC_UNKNOWN)
+  if (m_pBarcodeEngine || m_type == BC_TYPE::kUnknown)
     return;
 
   m_pBarcodeEngine = CFX_Barcode::Create(m_type);

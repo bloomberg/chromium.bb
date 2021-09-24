@@ -3221,10 +3221,10 @@ if (does_exist) {
         TextNode("""\
 if (${return_value} == NamedPropertyDeleterResult::kDidNotDelete) {
   if (${info}.ShouldThrowOnError()) {
-    ExceptionState exception_state(${info}.GetIsolate(),
-                                   ExceptionState::kNamedDeletionContext,
-                                   "${interface.identifier}");
-    exception_state.ThrowTypeError("Failed to delete a property.");
+    ExceptionState deletion_exception_state(
+        ${info}.GetIsolate(), ExceptionState::kNamedDeletionContext,
+        "${interface.identifier}");
+    deletion_exception_state.ThrowTypeError("Failed to delete a property.");
   }
   return;
 }"""),
@@ -7119,8 +7119,7 @@ def generate_class_like(class_like):
                     "v8::Local<v8::Value>",
                     "const v8::FunctionCallbackInfo<v8::Value>&",
                 ])
-            if is_cross_origin and (not cross_origin_values
-                                    or "Setter" in cross_origin_values):
+            if is_cross_origin and "Setter" in cross_origin_values:
                 add_custom_callback_impl_decl(
                     attribute=attribute,
                     attribute_set=True,

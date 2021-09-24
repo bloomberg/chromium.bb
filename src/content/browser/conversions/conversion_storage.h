@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/storable_impression.h"
 
 namespace base {
@@ -24,14 +25,19 @@ namespace content {
 
 class StorableConversion;
 
-struct ConversionReport;
-
 // This class provides an interface for persisting impression/conversion data to
 // disk, and performing queries on it. ConversionStorage should initialize
 // itself. Calls to a ConversionStorage instance that failed to initialize
 // properly should result in no-ops.
 class ConversionStorage {
  public:
+  // The type of attribution used for rate limiting calculations.
+  enum class AttributionType {
+    kNavigation = 0,
+    kEvent = 1,
+    kAggregate = 2,
+  };
+
   // Storage delegate that can supplied to extend basic conversion storage
   // functionality like annotating conversion reports.
   class Delegate {
@@ -80,11 +86,12 @@ class ConversionStorage {
 
     struct RateLimitConfig {
       base::TimeDelta time_window;
-      int max_attributions_per_window;
+      int64_t max_contributions_per_window;
     };
 
-    // Returns the rate limits for capping attributions per window.
-    virtual RateLimitConfig GetRateLimits() const WARN_UNUSED_RESULT = 0;
+    // Returns the rate limits for capping contributions per window.
+    virtual RateLimitConfig GetRateLimits(
+        AttributionType attribution_type) const WARN_UNUSED_RESULT = 0;
 
     // Selects how to handle the given impression; may involve RNG or other
     // dynamic criteria.
@@ -120,12 +127,29 @@ class ConversionStorage {
   // reporting. Unconverted matching impressions are not modified.
   virtual void StoreImpression(const StorableImpression& impression) = 0;
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class CreateReportStatus {
+    kSuccess = 0,
+    // The report was stored successfully, but it replaced an existing report
+    // with a lower priority.
+    kSuccessDroppedLowerPriority = 1,
+    kInternalError = 2,
+    kNoCapacityForConversionDestination = 3,
+    kNoMatchingImpressions = 4,
+    kDeduplicated = 5,
+    kRateLimited = 6,
+    kPriorityTooLow = 7,
+    kDroppedForNoise = 8,
+    kMaxValue = kDroppedForNoise,
+  };
+
   // Finds all stored impressions matching a given `conversion`, and stores the
   // new associated conversion report. The delegate will receive a call to
   // `Delegate::ProcessNewConversionReports()` before the report is added to
   // storage. Only active impressions will receive new conversions. Returns
   // whether a new conversion report has been scheduled/added to storage.
-  virtual bool MaybeCreateAndStoreConversionReport(
+  virtual CreateReportStatus MaybeCreateAndStoreConversionReport(
       const StorableConversion& conversion) = 0;
 
   // Returns all of the conversion reports that should be sent before
@@ -146,8 +170,8 @@ class ConversionStorage {
       WARN_UNUSED_RESULT = 0;
 
   // Deletes the conversion report with the given |conversion_id|. Returns
-  // whether the deletion was successful.
-  virtual bool DeleteConversion(int64_t conversion_id) = 0;
+  // false if an error occurred.
+  virtual bool DeleteConversion(ConversionReport::Id conversion_id) = 0;
 
   // Deletes all data in storage for URLs matching |filter|, between
   // |delete_begin| and |delete_end| time. More specifically, this:

@@ -8,6 +8,7 @@ import * as UI from '../../legacy/legacy.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
+
 import dataGridStyles from './dataGrid.css.js';
 import {BodyCellFocusedEvent, ColumnHeaderClickEvent, ContextMenuHeaderResetClickEvent} from './DataGridEvents.js';
 
@@ -114,12 +115,6 @@ export class DataGrid extends HTMLElement {
   private userHasFocusInDataGrid = false;
   private scheduleRender = false;
 
-  constructor() {
-    super();
-    this.shadow.adoptedStyleSheets = [
-      ...ComponentHelpers.GetStylesheet.getStyleSheets('ui/legacy/inspectorScrollbars.css'),
-    ];
-  }
   connectedCallback(): void {
     this.shadow.adoptedStyleSheets = [dataGridStyles];
     ComponentHelpers.SetCSSProperty.set(this, '--table-row-height', `${ROW_HEIGHT_PIXELS}px`);
@@ -768,13 +763,12 @@ export class DataGrid extends HTMLElement {
                 throw new Error('Trying to render a row that has no index in the rowIndexMap');
               }
               const tabbableCell = this.tabbableCell();
-              const [,focusableCellRowIndex] = tabbableCell;
               // Remember that row 0 is considered the header row, so the first tbody row is row 1.
               const tableRowIndex = rowIndex + 1;
 
-              // Check for hasFocusInDataGrid so that we don't highlight the
-              // active cell before they've even clicked it.
-              const rowIsSelected = this.userHasFocusInDataGrid && tableRowIndex === focusableCellRowIndex;
+              // Check for cellUserHasFocused instead of tabbableCell so that we
+              // don't highlight the active cell before they've even clicked it.
+              const rowIsSelected = this.cellUserHasFocused ? tableRowIndex === this.cellUserHasFocused[1] : false;
 
               const rowClasses = LitHtml.Directives.classMap({
                 selected: rowIsSelected,

@@ -48,7 +48,6 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
 
  private:
   app_management::mojom::AppPtr CreateUIAppPtr(const apps::AppUpdate& update);
-  std::vector<std::string> GetSupportedLinksList(const std::string& app_id);
 
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;
@@ -72,6 +71,14 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   apps::PreferredAppsList& preferred_apps_list_;
+
+  base::ScopedObservation<apps::AppRegistryCache,
+                          apps::AppRegistryCache::Observer>
+      app_registry_cache_observer_{this};
+
+  base::ScopedObservation<apps::PreferredAppsList,
+                          apps::PreferredAppsList::Observer>
+      preferred_apps_list_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppManagementPageHandler);
 };

@@ -378,6 +378,8 @@ config("spvtools_internal_config") {
     cflags += [
       "-Wno-implicit-fallthrough",
       "-Wno-newline-eof",
+      "-Wno-unreachable-code-break",
+      "-Wno-unreachable-code-return",
     ]
   } else if (!is_win) {
     # Work around a false-positive on a Skia GCC 10 builder.
@@ -608,6 +610,8 @@ static_library("spvtools_opt") {
     "source/opt/constants.h",
     "source/opt/control_dependence.cpp",
     "source/opt/control_dependence.h",
+    "source/opt/convert_to_sampled_image_pass.cpp",
+    "source/opt/convert_to_sampled_image_pass.h",
     "source/opt/convert_to_half_pass.cpp",
     "source/opt/convert_to_half_pass.h",
     "source/opt/copy_prop_arrays.cpp",

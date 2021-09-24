@@ -46,7 +46,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 let networkLogInstance: NetworkLog;
 
-export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper implements
+export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements
     SDK.TargetManager.SDKModelObserver<SDK.NetworkManager.NetworkManager> {
   private requestsInternal: SDK.NetworkRequest.NetworkRequest[];
   private sentNetworkRequests: Protocol.Network.Request[];
@@ -205,7 +205,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper implements
     let url = '';
     let lineNumber: number = -Infinity;
     let columnNumber: number = -Infinity;
-    let scriptId: string|null = null;
+    let scriptId: Protocol.Runtime.ScriptId|null = null;
     let initiatorStack: Protocol.Runtime.StackTrace|null = null;
     let initiatorRequest: (SDK.NetworkRequest.NetworkRequest|null)|null = null;
     const initiator = request.initiator();
@@ -565,10 +565,22 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper implements
 
 const consoleMessageToRequest = new WeakMap<SDK.ConsoleModel.ConsoleMessage, SDK.NetworkRequest.NetworkRequest>();
 
-export const Events = {
-  Reset: Symbol('Reset'),
-  RequestAdded: Symbol('RequestAdded'),
-  RequestUpdated: Symbol('RequestUpdated'),
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum Events {
+  Reset = 'Reset',
+  RequestAdded = 'RequestAdded',
+  RequestUpdated = 'RequestUpdated',
+}
+
+export interface ResetEvent {
+  clearIfPreserved: boolean;
+}
+
+export type EventTypes = {
+  [Events.Reset]: ResetEvent,
+  [Events.RequestAdded]: SDK.NetworkRequest.NetworkRequest,
+  [Events.RequestUpdated]: SDK.NetworkRequest.NetworkRequest,
 };
 
 interface InitiatorData {
@@ -587,7 +599,7 @@ interface InitiatorInfo {
   url: string;
   lineNumber: number;
   columnNumber: number;
-  scriptId: string|null;
+  scriptId: Protocol.Runtime.ScriptId|null;
   stack: Protocol.Runtime.StackTrace|null;
   initiatorRequest: SDK.NetworkRequest.NetworkRequest|null;
 }

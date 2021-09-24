@@ -4,12 +4,14 @@
 #include <cstring>
 
 #include "absl/strings/string_view.h"
+#include "http2/adapter/data_source.h"
 #include "http2/adapter/http2_protocol.h"
 #include "http2/adapter/http2_visitor_interface.h"
 #include "http2/adapter/nghttp2_data_provider.h"
 #include "http2/adapter/nghttp2_util.h"
 #include "third_party/nghttp2/nghttp2.h"
 #include "third_party/nghttp2/src/lib/includes/nghttp2/nghttp2.h"
+#include "common/platform/api/quiche_bug_tracker.h"
 #include "common/platform/api/quiche_logging.h"
 #include "common/quiche_endian.h"
 
@@ -21,7 +23,7 @@ ssize_t OnReadyToSend(nghttp2_session* /* session */, const uint8_t* data,
                       size_t length, int flags, void* user_data) {
   QUICHE_CHECK_NE(user_data, nullptr);
   auto* visitor = static_cast<Http2VisitorInterface*>(user_data);
-  const ssize_t result = visitor->OnReadyToSend(ToStringView(data, length));
+  const int64_t result = visitor->OnReadyToSend(ToStringView(data, length));
   QUICHE_VLOG(1) << "OnReadyToSend(length=" << length << ", flags=" << flags
                  << ") returning " << result;
   if (result > 0) {
@@ -38,14 +40,17 @@ int OnBeginFrame(nghttp2_session* /* session */,
                  void* user_data) {
   QUICHE_CHECK_NE(user_data, nullptr);
   auto* visitor = static_cast<Http2VisitorInterface*>(user_data);
-  visitor->OnFrameHeader(header->stream_id, header->length, header->type,
-                         header->flags);
+  bool result = visitor->OnFrameHeader(header->stream_id, header->length,
+                                       header->type, header->flags);
+  if (!result) {
+    return NGHTTP2_ERR_CALLBACK_FAILURE;
+  }
   if (header->type == NGHTTP2_DATA) {
-    visitor->OnBeginDataForStream(header->stream_id, header->length);
+    result = visitor->OnBeginDataForStream(header->stream_id, header->length);
   } else if (header->type == kMetadataFrameType) {
     visitor->OnBeginMetadataForStream(header->stream_id, header->length);
   }
-  return 0;
+  return result ? 0 : NGHTTP2_ERR_CALLBACK_FAILURE;
 }
 
 int OnFrameReceived(nghttp2_session* /* session */,
@@ -66,7 +71,10 @@ int OnFrameReceived(nghttp2_session* /* session */,
       break;
     case NGHTTP2_HEADERS: {
       if (frame->hd.flags & NGHTTP2_FLAG_END_HEADERS) {
-        visitor->OnEndHeadersForStream(stream_id);
+        const bool result = visitor->OnEndHeadersForStream(stream_id);
+        if (!result) {
+          return NGHTTP2_ERR_CALLBACK_FAILURE;
+        }
       }
       if (frame->hd.flags & NGHTTP2_FLAG_END_STREAM) {
         visitor->OnEndStream(stream_id);
@@ -121,9 +129,12 @@ int OnFrameReceived(nghttp2_session* /* session */,
       absl::string_view opaque_data(
           reinterpret_cast<const char*>(frame->goaway.opaque_data),
           frame->goaway.opaque_data_len);
-      visitor->OnGoAway(frame->goaway.last_stream_id,
-                        ToHttp2ErrorCode(frame->goaway.error_code),
-                        opaque_data);
+      const bool result = visitor->OnGoAway(
+          frame->goaway.last_stream_id,
+          ToHttp2ErrorCode(frame->goaway.error_code), opaque_data);
+      if (!result) {
+        return NGHTTP2_ERR_CALLBACK_FAILURE;
+      }
       break;
     }
     case NGHTTP2_WINDOW_UPDATE: {
@@ -210,9 +221,9 @@ int OnDataChunk(nghttp2_session* /* session */, uint8_t /*flags*/,
                 void* user_data) {
   QUICHE_CHECK_NE(user_data, nullptr);
   auto* visitor = static_cast<Http2VisitorInterface*>(user_data);
-  visitor->OnDataForStream(
+  const bool result = visitor->OnDataForStream(
       stream_id, absl::string_view(reinterpret_cast<const char*>(data), len));
-  return 0;
+  return result ? 0 : NGHTTP2_ERR_CALLBACK_FAILURE;
 }
 
 int OnStreamClosed(nghttp2_session* /* session */,
@@ -235,8 +246,9 @@ int OnExtensionChunkReceived(nghttp2_session* /*session*/,
                       << static_cast<int>(hd->type);
     return NGHTTP2_ERR_CANCEL;
   }
-  visitor->OnMetadataForStream(hd->stream_id, ToStringView(data, len));
-  return 0;
+  const bool result =
+      visitor->OnMetadataForStream(hd->stream_id, ToStringView(data, len));
+  return result ? 0 : NGHTTP2_ERR_CALLBACK_FAILURE;
 }
 
 int OnUnpackExtensionCallback(nghttp2_session* /*session*/, void** /*payload*/,
@@ -256,11 +268,21 @@ ssize_t OnPackExtensionCallback(nghttp2_session* /*session*/, uint8_t* buf,
                                 size_t len, const nghttp2_frame* frame,
                                 void* user_data) {
   QUICHE_CHECK_NE(user_data, nullptr);
-  auto* visitor = static_cast<Http2VisitorInterface*>(user_data);
-  ssize_t written = 0;
-  visitor->OnReadyToSendMetadataForStream(
-      frame->hd.stream_id, reinterpret_cast<char*>(buf), len, &written);
-  return written;
+  auto* source = static_cast<MetadataSource*>(frame->ext.payload);
+  if (source == nullptr) {
+    QUICHE_BUG(payload_is_nullptr) << "Extension frame payload for stream "
+                                   << frame->hd.stream_id << " is null!";
+    return NGHTTP2_ERR_CALLBACK_FAILURE;
+  }
+  const std::pair<int64_t, bool> result = source->Pack(buf, len);
+  if (result.first < 0) {
+    return NGHTTP2_ERR_CALLBACK_FAILURE;
+  }
+  const bool end_metadata_flag = (frame->hd.flags & kMetadataEndFlag);
+  QUICHE_LOG_IF(DFATAL, result.second != end_metadata_flag)
+      << "Metadata ends: " << result.second
+      << " has kMetadataEndFlag: " << end_metadata_flag;
+  return result.first;
 }
 
 int OnError(nghttp2_session* /*session*/, int /*lib_error_code*/,

@@ -33,7 +33,7 @@ class WebContentsImpl;
 // that triggered prerendering and starts prerendering. Then NavigationRequest
 // is expected to find this host from PrerenderHostRegistry and activate the
 // prerendered page upon navigation. This is created per request from a renderer
-// process via PrerenderProcessor or will directly be created for
+// process via SpeculationHostImpl or will directly be created for
 // browser-initiated prerendering (this code path is not implemented yet). This
 // is owned by PrerenderHostRegistry.
 class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
@@ -80,7 +80,9 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     kLoginAuthRequested = 26,
     kUaChangeRequiresReload = 27,
     kBlockedByClient = 28,
-    kMaxValue = kBlockedByClient,
+    kAudioOutputDeviceRequested = 29,
+    kMixedContent = 30,
+    kMaxValue = kMixedContent,
   };
 
   PrerenderHost(blink::mojom::PrerenderAttributesPtr attributes,
@@ -192,9 +194,10 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   base::ObserverList<Observer> observers_;
 
   // Navigation parameters for the navigation which loaded the main document of
-  // the prerendered page, copied immediately after BeginNavigation. They will
-  // be compared with the navigation parameters of the potential activation when
-  // attempting to reserve the prerender host for a navigation.
+  // the prerendered page, copied immediately after BeginNavigation when
+  // throttles are created. They will be compared with the navigation parameters
+  // of the potential activation when attempting to reserve the prerender host
+  // for a navigation.
   blink::mojom::BeginNavigationParamsPtr begin_params_;
   blink::mojom::CommonNavigationParamsPtr common_params_;
 

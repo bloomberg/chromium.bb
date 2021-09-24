@@ -28,7 +28,6 @@
 <translation id="1165039591588034296">កំហុសឆ្គង</translation>
 <translation id="1172898394251786223">ប្រអប់បំពេញបន្ទាប់</translation>
 <translation id="1176932207622159128">មិនអាចរក្សាទុករូបភាព</translation>
-<translation id="1180526666083833456">ធ្វើសមកាលកម្ម និង​កំណត់​ផ្ទាល់​ខ្លួន​នៅលើ​ឧបករណ៍​នានា។</translation>
 <translation id="1181037720776840403">ដកចេញ</translation>
 <translation id="1207113853726624428">ការស្វែងរក​ថ្មី</translation>
 <translation id="1209206284964581585">លាក់ឥឡូវនេះ</translation>
@@ -117,6 +116,7 @@
 <translation id="2073572773299281212">ដំណើរការ <ph name="DAYS" /> ថ្ងៃ​មុន</translation>
 <translation id="2074131957428911366">អ្នកអាចជ្រើសរើស​អ្វីដែលត្រូវធ្វើសមកាលកម្ម​នៅក្នុង<ph name="BEGIN_LINK" />ការកំណត់<ph name="END_LINK" />បានជានិច្ច។</translation>
 <translation id="2079545284768500474">ត្រឡប់វិញ</translation>
+<translation id="2080769225927880590">ចូលដោយប្រើគណនីដែលត្រឹមត្រូវ</translation>
 <translation id="209018056901015185">ស្នើសុំគេហទំព័រដេស៍ថប</translation>
 <translation id="2103075008456228677">បើក history.google.com</translation>
 <translation id="2116625576999540962">ធាតុ <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ត្រូវបានផ្លាស់ទី។</translation>
@@ -135,7 +135,6 @@
 <translation id="2302742851632557585">ប្ដូរពាក្យសម្ងាត់នៅលើគេហទំព័រ</translation>
 <translation id="2316709634732130529">ប្រើពាក្យសម្ងាត់​ដែល​បាន​ណែនាំ</translation>
 <translation id="2320166752086256636">លាក់ក្តារចុច</translation>
-<translation id="2339560363438331454">សមកាលកម្ម និង​សេវាកម្ម Google</translation>
 <translation id="2351097562818989364">ការកំណត់ការបកប្រែរបស់អ្នកត្រូវបានកំណត់ឡើងវិញ។</translation>
 <translation id="235789365079050412">គោលការណ៍ឯកជនភាព Google</translation>
 <translation id="2359043044084662842">បកប្រែ</translation>
@@ -185,7 +184,6 @@
 <translation id="2820289420301699633">អ្នកគ្រប់គ្រង​របស់អ្នក​មានសិទ្ធិ​គ្រប់គ្រង Chrome និង​អាចចូលប្រើ​ទិន្នន័យ​របស់វាបាន</translation>
 <translation id="2830972654601096923">គ្រប់គ្រង​អាសយដ្ឋាន...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
-<translation id="2840687315230832938">ការរៀបចំសមកាលកម្ម​ដំបូង​មិនបាន​បញ្ចប់​ទេ</translation>
 <translation id="2843803966603263712">កំណត់ការកំណត់បកប្រែឡើងវិញ</translation>
 <translation id="2848086008667475748">កំណត់ជាលំនាំដើមនៅក្នុងការកំណត់…</translation>
 <translation id="2858204748079866344">ដើម្បី​ការពារ​ឯកជនភាព​របស់អ្នក Chrome នឹងមិន​បំពេញពាក្យសម្ងាត់​របស់អ្នក​ដោយស្វ័យប្រវត្តិ​នៅក្នុងកន្លែង​បញ្ចូលនេះទេ។</translation>
@@ -224,7 +222,6 @@
 <translation id="3153862085237805241">រក្សាទុក​បណ្ណ</translation>
 <translation id="3157387275655328056">បន្ថែមទៅបញ្ជីអាន</translation>
 <translation id="3157684681743766797">សម្គាល់ទាំងអស់…</translation>
-<translation id="3161291298470460782">ការធ្វើបែបនេះនឹងនាំអ្នកចេញពីគណនី បិទសមកាលកម្ម និងសម្អាតទិន្នន័យ Chrome ទាំងអស់​ចេញពីឧបករណ៍នេះ។ ទិន្នន័យ​ដែលអ្នកបានធ្វើសមកាលកម្ម​នឹងនៅតែមាននៅក្នុងគណនី Google របស់អ្នកដដែល។</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3175081911749765310">សេវាកម្មបណ្តាញ</translation>
 <translation id="3178650076442119961">ដំណើរការ​ថ្ងៃនេះ</translation>
@@ -233,6 +230,7 @@
 <translation id="3184767182050912705">ដោះ​សោដោយប្រើ <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /></translation>
 <translation id="3207960819495026254">បានចំណាំ</translation>
 <translation id="3224641773458703735">ដើម្បី​នាំចេញ​ពាក្យសម្ងាត់ អ្នកត្រូវ​កំណត់​លេខ​កូដ​សម្ងាត់​នៅលើ​ឧបករណ៍​របស់អ្នក​ជាមុន​សិន។</translation>
+<translation id="3230318355092723906">នៅពេលបិទការធ្វើសមកាលកម្ម អ្នកអាចមើលឃើញ​ចំណាំ ប្រវត្តិ ពាក្យសម្ងាត់ និងការកំណត់​ផ្សេងទៀត​ទាំងអស់របស់អ្នក​នៅលើ​ឧបករណ៍នេះដដែល។ ប្រសិនបើ​អ្នកធ្វើការផ្លាស់ប្ដូរ ចំណាំ ប្រវត្តិ ពាក្យសម្ងាត់ និងការកំណត់​ផ្សេងទៀត​ទាំងអស់​នឹងមិនធ្វើសមកាលកម្ម​ទៅគណនី​របស់អ្នកទេ។</translation>
 <translation id="3240426699337459095">បានចម្លងតំណ</translation>
 <translation id="3244271242291266297">ខែ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> នៃ <ph name="NUM_SUGGESTIONS" /></translation>
@@ -267,7 +265,6 @@
 <translation id="3494788280727468875">បញ្ជាក់ការសម្អាតទិន្នន័យរុករក</translation>
 <translation id="35083190962747987">បើក ${url}</translation>
 <translation id="3519193562722059437">បើកផ្ទាំងដើម្បីរុករកលើអ៊ីនធឺណិត</translation>
-<translation id="3523473570015918798">ប្រសិនបើចេញពីគណនី នោះចំណាំ​ ប្រវត្តិ ​ពាក្យសម្ងាត់ និងទិន្នន័យ Chrome ផ្សេងទៀត​របស់អ្នកនឹងមិន​ធ្វើ​សម​កាល​កម្មទៅក្នុងគណនី​ Google របស់អ្នកទៀតទេ។</translation>
 <translation id="3527085408025491307">ថតឯកសារ</translation>
 <translation id="3529024052484145543">គ្មានសុវត្ថិភាពទេ</translation>
 <translation id="3533202363250687977">បិទផ្ទាំងឯកជនទាំងអស់</translation>
@@ -360,6 +357,7 @@
 <translation id="4619564267100705184">ផ្ទៀងផ្ទាត់ថា​ជាអ្នក</translation>
 <translation id="4619615317237390068">ផ្ទាំងបានពីឧបករណ៍ផ្សេងទៀត</translation>
 <translation id="4620246317052452550">ទំព័រ​ដែល​អ្នក​បាន​អាន​</translation>
+<translation id="4620888520263267479">បង្ហាញការមើលតំណសាកល្បង</translation>
 <translation id="4630540211544979320">បកប្រែ​ទំព័រ</translation>
 <translation id="4634124774493850572">ប្រើពាក្យសម្ងាត់​</translation>
 <translation id="4636930964841734540">ព័ត៌មាន</translation>
@@ -447,7 +445,6 @@
 <translation id="5457226814769348910">បើកកំណែគ្មានអ៊ីនធឺណិត</translation>
 <translation id="5489208564673669003">ដើម្បីគ្រប់គ្រងខូគីសម្រាប់គេហទំព័រទាំងអស់ សូមមើល<ph name="BEGIN_LINK" />ការកំណត់ខូគី<ph name="END_LINK" />។</translation>
 <translation id="5490005495580364134">ទប់ស្កាត់​ខូគី​ទាំងអស់ (មិនណែនាំ)</translation>
-<translation id="5508435575041083207">ចេញពីគណនី និងសម្អាតទិន្នន័យចេញ​ពីឧបករណ៍នេះ</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> ម៉ោង​មុន</translation>
 <translation id="5525269841082836315">បង្កើតឃ្លាសម្ងាត់</translation>
 <translation id="5532698011560297095">មិនអាចចូលគណនីបានទេ</translation>
@@ -458,6 +455,7 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="5556459405103347317">ដំណើរការឡើងវិញ</translation>
 <translation id="5580834567471114021">បញ្ចូល​ទៅក្នុង​បញ្ជីអាន​សម្រាប់​អាននៅពេលក្រោយ​ដែរទេ?</translation>
 <translation id="5592679540098330836">បើកសមកាលកម្មសម្រាប់ <ph name="NAME" /></translation>
+<translation id="560322036295180549">បានបិទ​ដោយស្ថាប័ន​របស់អ្នក</translation>
 <translation id="5614553682702429503">រក្សាទុក​ពាក្យសម្ងាត់?</translation>
 <translation id="5626245204502895507">ឯកសារនេះមិនអាចឲ្យទាញយកនៅពេលនេះបានទេ។</translation>
 <translation id="5631164295104953411">បញ្ចូល​វិធី​បង់ប្រាក់</translation>
@@ -473,6 +471,8 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="5737974891429562743">ព័ត៌មានលម្អិតពីការចូលគណនីហួសសម័យហើយ។ សូមអាប់ដេតដើម្បីចាប់ផ្តើមសមកាលកម្ម។</translation>
 <translation id="5738887413654608789">វាអនុញ្ញាតឲ្យអ្នករកមើលគេហទំព័រដែលពាក់ព័ន្ធដោយផ្អែកលើរបស់ជុំវិញខ្លួនអ្នក។</translation>
 <translation id="5758631781033351321">អ្នក​នឹង​ឃើញ​បញ្ជីអាន​របស់អ្នក​នៅទីនេះ</translation>
+<translation id="575902488528307720">ស្វែងរករូបភាព</translation>
+<translation id="5781453543752460388">បញ្ចូលទៅក្នុងរូបថត</translation>
 <translation id="5782227691023083829">កំពុង​បកប្រែ...</translation>
 <translation id="5803566855766646066">តើអ្នក​ពិតជា​ចង់លុប​កាតថ្មីនេះ​មែនឬ?</translation>
 <translation id="5812974770859303494">បញ្ចូល​ទៅ...</translation>
@@ -510,6 +510,7 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="6042308850641462728">ច្រើនទៀត</translation>
 <translation id="605721222689873409">ឆ្នាំ</translation>
 <translation id="6059830886158432458">គ្រប់គ្រង​អត្ថបទ និង​សកម្មភាព​របស់អ្នក​នៅទីនេះ</translation>
+<translation id="6064824697233747382">ស្ថាប័ន​របស់អ្នក​តម្រូវឱ្យអ្នក​បិទការធ្វើ​សមកាលកម្ម។</translation>
 <translation id="6066301408025741299">ប៉ះដើម្បីបោះបង់</translation>
 <translation id="60829778314739003">ទទួលយក និងបន្ត</translation>
 <translation id="6084848228346514841">ជ្រើសរើស​ផ្ទាំង</translation>
@@ -585,7 +586,6 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="6628106477656132239">កាលបរិច្ឆេទ​ផុតកំណត់មិន​ត្រឹមត្រូវ</translation>
 <translation id="6634432609054530164">ស្ថាប័នរបស់អ្នក​បានបិទ​មុខងារឯកជន</translation>
 <translation id="6638511529934826365">ពង្រីក​បង្រួម​អត្ថបទ…</translation>
-<translation id="6639730758971422557">ដើម្បីបើក "ការរុករក​ដោយសុវត្ថិភាព" សូមបើក <ph name="BEGIN_LINK" />​សម​កាល​កម្ម និងសេវាកម្ម Google<ph name="END_LINK" /> រួចចុច "ការរុករក​ដោយសុវត្ថិភាព"។</translation>
 <translation id="6642362222295953972">ប្ដូរទៅផ្ទាំង​ដែលមានស្រាប់</translation>
 <translation id="6643016212128521049">ជម្រះ</translation>
 <translation id="6645899968535965230">កូដ QR៖ <ph name="PAGE_TITLE" /></translation>
@@ -610,6 +610,7 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="6801927553864092214">សូមបើក​ផ្ទាំងឯកជន ដើម្បីរុករកជា​លក្ខណៈឯកជន</translation>
 <translation id="6807889908376551050">បង្ហាញទាំងអស់...</translation>
 <translation id="681368974849482173">ធាតុត្រូវបានបង្កើត</translation>
+<translation id="681450999322335505">ស្ថាប័នរបស់អ្នកបានបិទការធ្វើសមកាលកម្ម។</translation>
 <translation id="6830804042318138535">អាន​បន្ថែម</translation>
 <translation id="6831043979455480757">បកប្រែ</translation>
 <translation id="6842136130964845393">ដើម្បី​ប្រាកដថា អ្នកអាចចូលប្រើ​ពាក្យសម្ងាត់ដែលបានរក្សាទុក​របស់អ្នក​បានជានិច្ច សូមផ្ទៀងផ្ទាត់​ថាជាអ្នក</translation>
@@ -635,7 +636,6 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="7004499039102548441">ផ្ទាំងថ្មីៗ</translation>
 <translation id="7006788746334555276">ការកំណត់មាតិកា</translation>
-<translation id="7015203776128479407">ការរៀបចំសមកាលកម្ម​ដំបូង​មិនបាន​បញ្ចប់​ទេ។ សមកាលកម្មបានបិទ។</translation>
 <translation id="7029809446516969842">ពាក្យសម្ងាត់</translation>
 <translation id="7053983685419859001">ទប់ស្កាត់</translation>
 <translation id="7062545763355031412">ទទួលយក និងប្តូរគណនី</translation>
@@ -658,12 +658,12 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="7265758999917665941">មិន​ចងចាំ​សម្រាប់​គេហទំព័រ​នេះទេ</translation>
 <translation id="7272437679830969316">មិនអាច​ផ្ទៀងផ្ទាត់​អត្តសញ្ញាណ​របស់អ្នក​បានទេ។ ពាក្យសម្ងាត់​មិន​បានចម្លង។</translation>
 <translation id="7291368939935408496">កំពុង​រៀបចំ​ពាក្យ​សម្ងាត់...</translation>
-<translation id="7293171162284876153">ដើម្បី​ចាប់ផ្ដើមសមកាលកម្ម សូមបើក​ "ធ្វើសមកាលកម្មទិន្នន័យ​ Chrome របស់អ្នក"។</translation>
 <translation id="7313347584264171202">អ្នក​នឹងឃើញ​ផ្ទាំងឯកជន​របស់អ្នក​នៅទីនេះ</translation>
 <translation id="7319242366286515846">ប្រសិនបើ​បន្ត មានន័យថា​អ្នកយល់ព្រមតាម​<ph name="BEGIN_LINK" />លក្ខខណ្ឌ​ប្រើប្រាស់<ph name="END_LINK" /></translation>
 <translation id="7336264872878993241">ទាញយកបាន <ph name="PERCENT" /></translation>
 <translation id="7340958967809483333">ជម្រើសសម្រាប់ Discover</translation>
 <translation id="7346909386216857016">យល់ព្រម ខ្ញុំយល់ហើយ</translation>
+<translation id="7347393021726115275">អ្នកអាចចូលបាន លុះត្រាតែ​ប្រើគណនី​ដែលត្រូវបានអនុញ្ញាត​ដោយអ្នកគ្រប់គ្រង​របស់អ្នក​ប៉ុណ្ណោះ។ <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="734758817008927353">ជម្រើស​សម្រាប់រក្សា​ទុកកាត</translation>
 <translation id="7348502496356775519">ចំណាំ</translation>
 <translation id="7353432112255316844">ផ្ទៀងផ្ទាត់ថា​ជាអ្នក</translation>
@@ -702,9 +702,6 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="7701040980221191251">គ្មាន</translation>
 <translation id="7741325291586284254">ទំព័រផ្ទាំងឯកជនថ្មី</translation>
 <translation id="7765158879357617694">ផ្លាស់ទី</translation>
-<translation id="7771470029643830783">ប្រសិនបើចេញពីគណនី នោះចំណាំ​ ប្រវត្តិ ​ពាក្យសម្ងាត់ និងទិន្នន័យ Chrome ផ្សេងទៀត​របស់អ្នកនឹងមិន​ធ្វើ​សម​កាល​កម្មទៅក្នុងគណនី​ Google របស់អ្នកទៀតទេ។
-
-ដោយសារគណនីរបស់អ្នកស្ថិតក្រោមការគ្រប់គ្រងរបស់ <ph name="HOSTED_DOMAIN" /> ទិន្នន័យ Chrome របស់អ្នក​នឹងត្រូវលុប​ចេញពីឧបករណ៍នេះ នៅពេលចេញពីគណនី។ ទិន្នន័យ​ដែលអ្នកបានធ្វើសមកាលកម្ម​នឹងនៅតែមាននៅក្នុងគណនី Google របស់អ្នកដដែល។</translation>
 <translation id="7772032839648071052">អះអាងឃ្លាសម្ងាត់</translation>
 <translation id="7778472311864276518">លុបគណនី​ចេញពី​ឧបករណ៍​នេះ</translation>
 <translation id="7781011649027948662">បកប្រែទំព័រ​ឬ?</translation>
@@ -717,6 +714,7 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="7856733331829174190">មិន​អាច​ទាញ​យកបាន​ទេ</translation>
 <translation id="7859704718976024901">ប្រវត្តិរុករក</translation>
 <translation id="7887198238286927132">ដើម្បី​ការពារ​ឯកជនភាព​របស់អ្នក Chrome នឹងមិន​បំពេញ​កន្លែងបញ្ចូល​នេះដោយស្វ័យ​ប្រវត្តិទេ។</translation>
+<translation id="7911190106180361398">ស្ថាប័នរបស់អ្នក​មិនអនុញ្ញាតឱ្យអ្នកធ្វើ​សម​កាល​កម្មអ្វីៗគ្រប់យ៉ាងទេ។</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">នាំចេញ​ពាក្យ​សម្ងាត់...</translation>
 <translation id="794799177247607889">បញ្ឈប់​ការធ្វើកំណត់​ហេតុ</translation>
@@ -744,12 +742,13 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="8080028325999236607">បិទផ្ទាំងទាំងអស់</translation>
 <translation id="8105368624971345109">បិទ</translation>
 <translation id="8114753159095730575">អាចទាញយកឯកសារ​បានហើយ។ មានជម្រើស​នៅ​ក្បែរ​ផ្នែកខាងក្រោមនៃ​អេក្រង់។</translation>
-<translation id="8131740175452115882">អះអាង</translation>
 <translation id="8156478151976189188">សមកាលកម្ម​ពាក្យសម្ងាត់​មិនដំណើរការទេ</translation>
+<translation id="8193953846147532858"><ph name="BEGIN_LINK" />ឧបករណ៍របស់អ្នក<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8197543752516192074">បកប្រែទំព័រ</translation>
 <translation id="8205564605687841303">បោះបង់</translation>
 <translation id="8206354486702514201">ការកំណត់នេះត្រូវបានអនុវត្តដោយអ្នកគ្រប់គ្រងរបស់អ្នក។</translation>
 <translation id="8225985093977202398">រូបភាព និងឯកសារដែលផ្ទុកក្នុងឃ្លាំងសម្ងាត់</translation>
+<translation id="8228176677386827255">ឧបករណ៍​របស់អ្នកស្ថិតក្រោមការគ្រប់គ្រង​។ អ្នកអាចចូលដោយប្រើគណនីរបស់ស្ថាប័នអ្នកតែប៉ុណ្ណោះ។</translation>
 <translation id="8261506727792406068">លុប</translation>
 <translation id="8271720166617117963">យល់ព្រម រួចចូលគណនី</translation>
 <translation id="8281781826761538115">លំនាំដើម៖ <ph name="DEFAULT_LOCALE" /></translation>
@@ -774,7 +773,6 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="8495097701594799854">បានបិទ​ដោយស្ថាប័ន​របស់អ្នក។</translation>
 <translation id="8503813439785031346">ឈ្មោះអ្នកប្រើ</translation>
 <translation id="850600235656508448">បើកនៅ​ក្នុងផ្ទាំងឯក​ជន</translation>
-<translation id="8510057420705599706">ការធ្វើបែបនេះនឹងនាំអ្នកចេញពីគណនី និងបិទសមកាលកម្ម ប៉ុន្តែ​ចំណាំ ប្រវត្តិ ពាក្យសម្ងាត់ និងទិន្នន័យ Chrome ផ្សេងទៀតរបស់អ្នក​នឹងនៅតែមាននៅក្នុងឧបករណ៍នេះដដែល។</translation>
 <translation id="8517375800490286174">អាជ្ញាប័ណ្ណប្រភពបើកចំហ</translation>
 <translation id="8524799873541103884">ផ្ទាំង <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> តាមរយៈ <ph name="LAST_VISIBLE_TAB" /> នៃ <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">ថ្មី</translation>

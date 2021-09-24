@@ -95,6 +95,7 @@ class CollectUserDataAction : public Action,
       autofill::PersonalDataManager* personal_data_manager);
 
   void WriteProcessedAction(UserData* user_data, const UserModel* user_model);
+  void UpdateProfileAndCardUse(UserData* user_data);
 
   // Update user data with the new state from personal data manager.
   void UpdatePersonalDataManagerProfiles(
@@ -109,7 +110,7 @@ class CollectUserDataAction : public Action,
                               UserData::FieldChange* field_change = nullptr);
 
   bool shown_to_user_ = false;
-  bool initially_prefilled = false;
+  bool initially_prefilled_ = false;
   bool personal_data_changed_ = false;
   bool action_successful_ = false;
   std::unique_ptr<CollectUserDataOptions> collect_user_data_options_;

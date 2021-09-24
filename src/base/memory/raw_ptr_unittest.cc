@@ -726,7 +726,7 @@ static constexpr PartitionOptions kOpts = {
     PartitionOptions::AlignedAlloc::kDisallowed,
     PartitionOptions::ThreadCache::kDisabled,
     PartitionOptions::Quarantine::kDisallowed,
-    PartitionOptions::Cookies::kAllowed, PartitionOptions::RefCount::kAllowed};
+    PartitionOptions::Cookie::kAllowed, PartitionOptions::RefCount::kAllowed};
 
 TEST(BackupRefPtrImpl, Basic) {
   // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
@@ -823,10 +823,10 @@ TEST(BackupRefPtrImpl, ReinterpretCast) {
   PartitionAllocator<ThreadSafe> allocator;
   allocator.init(kOpts);
 
-  void* raw_ptr = allocator.root()->Alloc(16, "");
-  allocator.root()->Free(raw_ptr);
+  void* ptr = allocator.root()->Alloc(16, "");
+  allocator.root()->Free(ptr);
 
-  raw_ptr<void>* wrapped_ptr = reinterpret_cast<raw_ptr<void>*>(&raw_ptr);
+  raw_ptr<void>* wrapped_ptr = reinterpret_cast<raw_ptr<void>*>(&ptr);
   // The reference count cookie check should detect that the allocation has
   // been already freed.
   EXPECT_DEATH_IF_SUPPORTED(*wrapped_ptr = nullptr, "");

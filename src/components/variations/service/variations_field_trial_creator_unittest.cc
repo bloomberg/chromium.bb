@@ -16,7 +16,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_field_trial_list_resetter.h"
@@ -50,13 +49,13 @@
 #include "components/variations/seed_response.h"
 #endif  // OS_ANDROID
 
-using testing::_;
-using testing::Ge;
-using ::testing::NiceMock;
-using testing::Return;
-
 namespace variations {
 namespace {
+
+using ::testing::_;
+using ::testing::Ge;
+using ::testing::NiceMock;
+using ::testing::Return;
 
 // Constants used to create the test seeds.
 const char kTestSeedStudyName[] = "test";
@@ -216,7 +215,10 @@ class TestVariationsServiceClient : public VariationsServiceClient {
  private:
   // VariationsServiceClient:
   version_info::Channel GetChannel() override {
-    return version_info::Channel::UNKNOWN;
+    // Set to stable to skip logic related to the Extended Variations Safe Mode
+    // experiment.
+    // TODO(crbug/1241702): Clean this up once the experiment is done.
+    return version_info::Channel::STABLE;
   }
 
   std::string restrict_parameter_;
@@ -410,8 +412,8 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSeed_NotExpired) {
     int freshness_in_minutes = test_case.days * 24 * 60;
     histogram_tester.ExpectUniqueSample("Variations.SeedFreshness",
                                         freshness_in_minutes, 1);
-    histogram_tester.ExpectUniqueSample(
-        "Variations.SafeMode.FellBackToSafeMode2", false, 1);
+    histogram_tester.ExpectUniqueSample("Variations.SeedUsage",
+                                        SeedUsage::kRegularSeedUsed, 1);
 
     ResetFeatureList();
   }
@@ -452,8 +454,8 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSeed_NoLastFetchTime) {
                                       VariationsSeedExpiry::kFetchTimeMissing,
                                       1);
   histogram_tester.ExpectTotalCount("Variations.SeedFreshness", 0);
-  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode2",
-                                      false, 1);
+  histogram_tester.ExpectUniqueSample("Variations.SeedUsage",
+                                      SeedUsage::kRegularSeedUsed, 1);
 }
 
 TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ExpiredSeed) {
@@ -488,8 +490,8 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ExpiredSeed) {
   histogram_tester.ExpectUniqueSample("Variations.CreateTrials.SeedExpiry",
                                       VariationsSeedExpiry::kExpired, 1);
   histogram_tester.ExpectTotalCount("Variations.SeedFreshness", 0);
-  histogram_tester.ExpectTotalCount("Variations.SafeMode.FellBackToSafeMode2",
-                                    0);
+  histogram_tester.ExpectUniqueSample("Variations.SeedUsage",
+                                      SeedUsage::kExpiredRegularSeedNotUsed, 1);
 }
 
 // Verify that unexpired safe seeds are used.
@@ -542,16 +544,16 @@ TEST_F(FieldTrialCreatorTest,
     int freshness_in_minutes = test_case.days * 24 * 60;
     histogram_tester.ExpectUniqueSample("Variations.SeedFreshness",
                                         freshness_in_minutes, 1);
-    histogram_tester.ExpectUniqueSample(
-        "Variations.SafeMode.FellBackToSafeMode2", true, 1);
+    histogram_tester.ExpectUniqueSample("Variations.SeedUsage",
+                                        SeedUsage::kSafeSeedUsed, 1);
 
     ResetFeatureList();
   }
 }
 
-// Verify that Chrome applies the latest variations seed when Chrome should run
+// Verify that Chrome applies the regular variations seed when Chrome should run
 // in variations safe mode but the safe seed is empty.
-TEST_F(FieldTrialCreatorTest, SetupFieldTrials_EmptySafeSeed_UsesLatestSeed) {
+TEST_F(FieldTrialCreatorTest, SetupFieldTrials_EmptySafeSeed_UsesRegularSeed) {
   DisableTestingConfig();
 
   NiceMock<MockSafeSeedManager> safe_seed_manager(&prefs_);
@@ -560,8 +562,8 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_EmptySafeSeed_UsesLatestSeed) {
   const base::Time recent_time =
       base::Time::Now() - base::TimeDelta::FromMinutes(17);
   prefs_.SetTime(prefs::kVariationsLastFetchTime, recent_time);
-  // When using the latest seed, the safe seed manager should be informed of the
-  // active seed state.
+  // When using the regular seed, the safe seed manager should be informed of
+  // the active seed state.
   EXPECT_CALL(
       safe_seed_manager,
       DoSetActiveSeedState(kTestSeedData, kTestSeedSignature, _, recent_time))
@@ -572,7 +574,7 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_EmptySafeSeed_UsesLatestSeed) {
       &prefs_, &variations_service_client, &safe_seed_manager);
   field_trial_creator.seed_store()->set_has_empty_safe_seed(true);
 
-  // Check that field trials are created from the latest seed. Since the test
+  // Check that field trials are created from the regular seed. Since the test
   // study has only one experiment with 100% probability weight, we must be part
   // of it.
   base::HistogramTester histogram_tester;
@@ -584,8 +586,9 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_EmptySafeSeed_UsesLatestSeed) {
   histogram_tester.ExpectUniqueSample("Variations.CreateTrials.SeedExpiry",
                                       VariationsSeedExpiry::kNotExpired, 1);
   histogram_tester.ExpectUniqueSample("Variations.SeedFreshness", 17, 1);
-  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode2",
-                                      false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Variations.SeedUsage",
+      SeedUsage::kRegularSeedUsedAfterEmptySafeSeedLoaded, 1);
 }
 
 // Verify that Chrome does not apply a variations seed when Chrome should run in
@@ -612,11 +615,9 @@ TEST_F(FieldTrialCreatorTest,
   EXPECT_FALSE(field_trial_creator.SetupFieldTrials());
   EXPECT_FALSE(base::FieldTrialList::TrialExists(kTestSeedStudyName));
 
-  // Verify that this metric was not recorded. This metric is recorded only when
-  // a variations seed is used to create field trials.
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Variations.SafeMode.FellBackToSafeMode2"),
-      ::testing::IsEmpty());
+  // Verify that Chrome did not apply the safe seed.
+  histogram_tester.ExpectUniqueSample("Variations.SeedUsage",
+                                      SeedUsage::kCorruptedSafeSeedNotUsed, 1);
 }
 
 // Verify that valid safe seeds with missing download times are applied.
@@ -651,8 +652,8 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSafeSeed_NoLastFetchTime) {
       "Variations.SafeMode.CreateTrials.SeedExpiry",
       VariationsSeedExpiry::kFetchTimeMissing, 1);
   histogram_tester.ExpectTotalCount("Variations.SeedFreshness", 0);
-  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode2",
-                                      true, 1);
+  histogram_tester.ExpectUniqueSample("Variations.SeedUsage",
+                                      SeedUsage::kSafeSeedUsed, 1);
 }
 
 // Verify that no seed is applied when (i) safe mode is triggered and (ii) the
@@ -689,8 +690,8 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ExpiredSafeSeed) {
       "Variations.SafeMode.CreateTrials.SeedExpiry",
       VariationsSeedExpiry::kExpired, 1);
   histogram_tester.ExpectTotalCount("Variations.SeedFreshness", 0);
-  histogram_tester.ExpectTotalCount("Variations.SafeMode.FellBackToSafeMode2",
-                                    0);
+  histogram_tester.ExpectUniqueSample("Variations.SeedUsage",
+                                      SeedUsage::kExpiredSafeSeedNotUsed, 1);
 }
 
 #if defined(OS_ANDROID)
@@ -862,9 +863,8 @@ TEST_F(FieldTrialCreatorSafeModeExperimentTest,
   ON_CALL(safe_seed_manager, ShouldRunInSafeMode())
       .WillByDefault(Return(false));
 
-  std::vector<version_info::Channel> channels = {
-      version_info::Channel::BETA, version_info::Channel::STABLE,
-      version_info::Channel::UNKNOWN};
+  std::vector<version_info::Channel> channels = {version_info::Channel::BETA,
+                                                 version_info::Channel::STABLE};
   for (const version_info::Channel channel : channels) {
     NiceMock<MockVariationsServiceClient> variations_service_client;
     ON_CALL(variations_service_client, GetChannel())
@@ -889,28 +889,6 @@ TEST_F(FieldTrialCreatorSafeModeExperimentTest,
 
     base::FeatureList::ClearInstanceForTesting();
   }
-}
-
-TEST_F(FieldTrialCreatorSafeModeExperimentTest,
-       EnableExperimentOnCanary_DefaultGroup) {
-  std::unique_ptr<PrefService> pref_service(CreatePrefService());
-
-  NiceMock<MockVariationsServiceClient> variations_service_client;
-  ON_CALL(variations_service_client, GetChannel())
-      .WillByDefault(Return(version_info::Channel::CANARY));
-
-  // Ensure that variations safe mode is not triggered.
-  NiceMock<MockSafeSeedManager> safe_seed_manager(pref_service.get());
-  ON_CALL(safe_seed_manager, ShouldRunInSafeMode())
-      .WillByDefault(Return(false));
-
-  TestVariationsFieldTrialCreator field_trial_creator(
-      pref_service.get(), &variations_service_client, &safe_seed_manager);
-
-  SetUpExtendedSafeModeExperiment(kDefaultGroup);
-  // The experiment has four experiment groups of equal weight. Verify that
-  // there's a DCHECK if a client is assigned to the default group.
-  EXPECT_DCHECK_DEATH(field_trial_creator.SetupFieldTrials());
 }
 
 TEST_F(FieldTrialCreatorSafeModeExperimentTest,

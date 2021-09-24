@@ -26,7 +26,7 @@
 #include "content/browser/webtransport/web_transport_connector_impl.h"
 #include "content/browser/worker_host/dedicated_worker_host_factory_impl.h"
 #include "content/browser/worker_host/dedicated_worker_service_impl.h"
-#include "content/browser/worker_host/worker_script_fetch_initiator.h"
+#include "content/browser/worker_host/worker_script_fetcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/content_client.h"
@@ -106,6 +106,13 @@ DedicatedWorkerHost::~DedicatedWorkerHost() {
   // This DedicatedWorkerHost is destroyed via either the mojo disconnection
   // or RenderProcessHostObserver. This destruction should be called before
   // the observed render process host (`worker_process_host_`) is destroyed.
+
+  // Send any final reports and allow the reporting configuration to be
+  // removed.
+  worker_process_host_->GetStoragePartition()
+      ->GetNetworkContext()
+      ->SendReportsAndRemoveSource(reporting_source_);
+
   service_->NotifyBeforeWorkerDestroyed(token_, ancestor_render_frame_host_id_);
 }
 
@@ -223,9 +230,9 @@ void DedicatedWorkerHost::StartScriptLoad(
   // Set if the subresource loader factories support file URLs so that we can
   // recreate the factories after Network Service crashes.
   // TODO(nhiroki): Currently this flag is calculated based on the request
-  // initiator origin to keep consistency with WorkerScriptFetchInitiator, but
-  // probably this should be calculated based on the worker origin as the
-  // factories be used for subresource loading on the worker.
+  // initiator origin to keep consistency with WorkerScriptFetcher, but probably
+  // this should be calculated based on the worker origin as the factories be
+  // used for subresource loading on the worker.
   file_url_support_ = creator_origin_.scheme() == url::kFileScheme;
 
   service_worker_handle_ = std::make_unique<ServiceWorkerMainResourceHandle>(
@@ -265,7 +272,7 @@ void DedicatedWorkerHost::StartScriptLoad(
       nearest_ancestor_render_frame_host->GetSiteInstance()->GetPartitionDomain(
           storage_partition_impl);
 
-  WorkerScriptFetchInitiator::Start(
+  WorkerScriptFetcher::CreateAndStart(
       worker_process_host_->GetID(), token_, script_url,
       creator_render_frame_host,
       nearest_ancestor_render_frame_host->ComputeSiteForCookies(),
@@ -539,10 +546,19 @@ void DedicatedWorkerHost::CreateWebSocketConnector(
 void DedicatedWorkerHost::CreateWebTransportConnector(
     mojo::PendingReceiver<blink::mojom::WebTransportConnector> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHostImpl* ancestor_render_frame_host =
+      RenderFrameHostImpl::FromID(ancestor_render_frame_host_id_);
+  if (!ancestor_render_frame_host) {
+    // The ancestor frame may have already been closed. In that case, the worker
+    // will soon be terminated too, so abort the connection.
+    receiver.ResetWithReason(0, "The parent frame has already been gone.");
+    return;
+  }
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<WebTransportConnectorImpl>(
-          worker_process_host_->GetID(), /*frame=*/nullptr,
-          GetStorageKey().origin(), isolation_info_.network_isolation_key()),
+          worker_process_host_->GetID(),
+          ancestor_render_frame_host->GetWeakPtr(), GetStorageKey().origin(),
+          isolation_info_.network_isolation_key()),
       std::move(receiver));
 }
 
@@ -601,19 +617,6 @@ void DedicatedWorkerHost::CreateIdleManager(
   }
 
   ancestor_render_frame_host->BindIdleManager(std::move(receiver));
-}
-
-void DedicatedWorkerHost::BindWebOTPServiceReceiver(
-    mojo::PendingReceiver<blink::mojom::WebOTPService> receiver) {
-  RenderFrameHostImpl* ancestor_render_frame_host =
-      RenderFrameHostImpl::FromID(ancestor_render_frame_host_id_);
-  if (!ancestor_render_frame_host) {
-    // The ancestor frame may have already been closed. In that case, the worker
-    // will soon be terminated too, so abort the connection.
-    return;
-  }
-
-  ancestor_render_frame_host->BindWebOTPServiceReceiver(std::move(receiver));
 }
 
 void DedicatedWorkerHost::CreateCodeCacheHost(
@@ -691,12 +694,11 @@ void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
   // Recreate the default URLLoaderFactory. This doesn't support
   // AppCache-specific factory.
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-      subresource_loader_factories =
-          WorkerScriptFetchInitiator::CreateFactoryBundle(
-              WorkerScriptFetchInitiator::LoaderType::kSubResource,
-              worker_process_host_->GetID(), storage_partition_impl,
-              partition_domain, file_url_support_,
-              /*filesystem_url_support=*/true, creator_render_frame_host);
+      subresource_loader_factories = WorkerScriptFetcher::CreateFactoryBundle(
+          WorkerScriptFetcher::LoaderType::kSubResource,
+          worker_process_host_->GetID(), storage_partition_impl,
+          partition_domain, file_url_support_,
+          /*filesystem_url_support=*/true, creator_render_frame_host);
 
   bool bypass_redirect_checks = false;
   subresource_loader_factories->pending_default_factory() =

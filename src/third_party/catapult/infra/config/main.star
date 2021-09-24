@@ -165,9 +165,7 @@ def try_builder(
 
     # Presubmit sees all changes
     if not is_presubmit:
-        if is_dashboard:
-            verifier_kwargs["location_regexp"] = [DASHBOARD_RE]
-        else:
+        if not is_dashboard:
             verifier_kwargs["location_regexp_exclude"] = [DASHBOARD_RE]
     if experiment != None:
         verifier_kwargs["experiment_percentage"] = experiment
@@ -179,8 +177,8 @@ def try_builder(
         **verifier_kwargs
     )
 
-try_builder("Catapult Linux Tryserver", "Ubuntu")
-try_builder("Catapult Linux Tryserver Py3", "Ubuntu", experiment = 100, properties = {"use_python3": True})
+try_builder("Catapult Linux Tryserver", "Ubuntu", properties = {"use_python3": True})
+try_builder("Catapult Linux Tryserver Py2", "Ubuntu")
 
 try_builder("Catapult Windows Tryserver", "Windows-10")
 try_builder("Catapult Windows Tryserver Py3", "Windows-10", experiment = 100, properties = {"use_python3": True})
@@ -188,10 +186,9 @@ try_builder("Catapult Windows Tryserver Py3", "Windows-10", experiment = 100, pr
 try_builder("Catapult Mac Tryserver", "Mac")
 try_builder("Catapult Mac Tryserver Py3", "Mac", experiment = 100, properties = {"use_python3": True})
 
-try_builder("Catapult Android Tryserver", "Android", dimensions = {"device_type": "bullhead"}, properties = {"platform": "android"})
-try_builder("Catapult Android Tryserver Py3", "Android", experiment = 100, dimensions = {"device_type": "bullhead"}, properties = {"platform": "android", "use_python3": True})
+try_builder("Catapult Android Tryserver", "Android", dimensions = {"device_type": "walleye"}, properties = {"platform": "android", "use_python3": True})
+try_builder("Catapult Android Tryserver Py2", "Android", dimensions = {"device_type": "walleye"}, properties = {"platform": "android"})
 
 try_builder("Catapult Presubmit", "Ubuntu", is_presubmit = True)
 
 try_builder("Dashboard Linux Tryserver", "Ubuntu", is_dashboard = True)
-try_builder("Dashboard Windows Tryserver", "Windows-10", is_dashboard = True)

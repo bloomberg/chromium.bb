@@ -22,14 +22,14 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/ash/printing/ppd_provider_factory.h"
+#include "chrome/browser/ash/printing/printer_event_tracker.h"
+#include "chrome/browser/ash/printing/printer_event_tracker_factory.h"
+#include "chrome/browser/ash/printing/printer_info.h"
+#include "chrome/browser/ash/printing/server_printers_fetcher.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
-#include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
-#include "chrome/browser/chromeos/printing/printer_event_tracker.h"
-#include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
-#include "chrome/browser/chromeos/printing/printer_info.h"
-#include "chrome/browser/chromeos/printing/server_printers_fetcher.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/profiles/profile.h"
@@ -108,8 +108,7 @@ base::Value BuildCupsPrintersList(const std::vector<Printer>& printers) {
   for (const Printer& printer : printers) {
     // Some of these printers could be invalid but we want to allow the user
     // to edit them. crbug.com/778383
-    printers_list.Append(
-        base::Value::FromUniquePtrValue(GetCupsPrinterInfo(printer)));
+    printers_list.Append(GetCupsPrinterInfo(printer));
   }
 
   base::Value response(base::Value::Type::DICTIONARY);
@@ -277,81 +276,81 @@ std::unique_ptr<CupsPrintersHandler> CupsPrintersHandler::CreateForTesting(
 CupsPrintersHandler::~CupsPrintersHandler() = default;
 
 void CupsPrintersHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getCupsSavedPrintersList",
       base::BindRepeating(&CupsPrintersHandler::HandleGetCupsSavedPrintersList,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getCupsEnterprisePrintersList",
       base::BindRepeating(
           &CupsPrintersHandler::HandleGetCupsEnterprisePrintersList,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "updateCupsPrinter",
       base::BindRepeating(&CupsPrintersHandler::HandleUpdateCupsPrinter,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "removeCupsPrinter",
       base::BindRepeating(&CupsPrintersHandler::HandleRemoveCupsPrinter,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "addCupsPrinter",
       base::BindRepeating(&CupsPrintersHandler::HandleAddCupsPrinter,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "reconfigureCupsPrinter",
       base::BindRepeating(&CupsPrintersHandler::HandleReconfigureCupsPrinter,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPrinterInfo",
       base::BindRepeating(&CupsPrintersHandler::HandleGetPrinterInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getCupsPrinterManufacturersList",
       base::BindRepeating(
           &CupsPrintersHandler::HandleGetCupsPrinterManufacturers,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getCupsPrinterModelsList",
       base::BindRepeating(&CupsPrintersHandler::HandleGetCupsPrinterModels,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "selectPPDFile",
       base::BindRepeating(&CupsPrintersHandler::HandleSelectPPDFile,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "startDiscoveringPrinters",
       base::BindRepeating(&CupsPrintersHandler::HandleStartDiscovery,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "stopDiscoveringPrinters",
       base::BindRepeating(&CupsPrintersHandler::HandleStopDiscovery,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPrinterPpdManufacturerAndModel",
       base::BindRepeating(
           &CupsPrintersHandler::HandleGetPrinterPpdManufacturerAndModel,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "addDiscoveredPrinter",
       base::BindRepeating(&CupsPrintersHandler::HandleAddDiscoveredPrinter,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "cancelPrinterSetUp",
       base::BindRepeating(&CupsPrintersHandler::HandleSetUpCancel,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getEulaUrl", base::BindRepeating(&CupsPrintersHandler::HandleGetEulaUrl,
                                         base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "queryPrintServer",
       base::BindRepeating(&CupsPrintersHandler::HandleQueryPrintServer,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "openPrintManagementApp",
       base::BindRepeating(&CupsPrintersHandler::HandleOpenPrintManagementApp,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "openScanningApp",
       base::BindRepeating(&CupsPrintersHandler::HandleOpenScanningApp,
                           base::Unretained(this)));
@@ -374,7 +373,7 @@ void CupsPrintersHandler::HandleGetCupsSavedPrintersList(
     const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
@@ -389,7 +388,7 @@ void CupsPrintersHandler::HandleGetCupsEnterprisePrintersList(
     const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   std::string callback_id = args->GetList()[0].GetString();
 
   std::vector<Printer> printers =
@@ -403,7 +402,7 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
   std::string callback_id;
   std::string printer_id;
   std::string printer_name;
-  CHECK_EQ(3U, args->GetSize());
+  CHECK_EQ(3U, args->GetList().size());
   CHECK(args->GetString(0, &callback_id));
   CHECK(args->GetString(1, &printer_id));
   CHECK(args->GetString(2, &printer_name));
@@ -542,7 +541,7 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
   // the rest.
   PRINTER_LOG(EVENT) << "Could not query printer.  Fallback to asking the user";
   RejectJavascriptCallback(base::Value(callback_id),
-                           *GetCupsPrinterInfo(printer));
+                           GetCupsPrinterInfo(printer));
 }
 
 void CupsPrintersHandler::OnAutoconfQueried(
@@ -632,7 +631,7 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::ListValue* args,
                                                   bool is_printer_edit) {
   std::string callback_id;
   const base::DictionaryValue* printer_dict = nullptr;
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   CHECK(args->GetString(0, &callback_id));
   CHECK(args->GetDictionary(1, &printer_dict));
 
@@ -802,7 +801,7 @@ void CupsPrintersHandler::OnAddedDiscoveredPrinter(
                           "Fall back to manual.";
     // Could not set up printer.  Asking user for manufacturer data.
     RejectJavascriptCallback(base::Value(callback_id),
-                             *GetCupsPrinterInfo(printer));
+                             GetCupsPrinterInfo(printer));
   }
 }
 
@@ -838,7 +837,7 @@ void CupsPrintersHandler::HandleGetCupsPrinterManufacturers(
     const base::ListValue* args) {
   AllowJavascript();
   std::string callback_id;
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   CHECK(args->GetString(0, &callback_id));
   ppd_provider_->ResolveManufacturers(
       base::BindOnce(&CupsPrintersHandler::ResolveManufacturersDone,
@@ -850,7 +849,7 @@ void CupsPrintersHandler::HandleGetCupsPrinterModels(
   AllowJavascript();
   std::string callback_id;
   std::string manufacturer;
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   CHECK(args->GetString(0, &callback_id));
   CHECK(args->GetString(1, &manufacturer));
 
@@ -871,7 +870,7 @@ void CupsPrintersHandler::HandleGetCupsPrinterModels(
 }
 
 void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   CHECK(args->GetString(0, &webui_callback_id_));
 
   base::FilePath downloads_path =
@@ -1038,8 +1037,9 @@ void CupsPrintersHandler::UpdateDiscoveredPrinters() {
   }
 
   PRINTER_LOG(DEBUG) << "Discovered printers updating. Automatic: "
-                     << automatic_printers_list->GetSize()
-                     << " Discovered: " << discovered_printers_list->GetSize();
+                     << automatic_printers_list->GetList().size()
+                     << " Discovered: "
+                     << discovered_printers_list->GetList().size();
   FireWebUIListener("on-nearby-printers-changed", *automatic_printers_list,
                     *discovered_printers_list);
 }
@@ -1047,7 +1047,7 @@ void CupsPrintersHandler::UpdateDiscoveredPrinters() {
 void CupsPrintersHandler::HandleAddDiscoveredPrinter(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   std::string callback_id;
   std::string printer_id;
   CHECK(args->GetString(0, &callback_id));
@@ -1091,7 +1091,7 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
   // directly, so we have to fall back to manual configuration here.
   if (printer->IsUsbProtocol()) {
     RejectJavascriptCallback(base::Value(callback_id),
-                             *GetCupsPrinterInfo(*printer));
+                             GetCupsPrinterInfo(*printer));
     return;
   }
 
@@ -1113,7 +1113,7 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
 void CupsPrintersHandler::HandleGetPrinterPpdManufacturerAndModel(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
   std::string printer_id;
@@ -1147,7 +1147,7 @@ void CupsPrintersHandler::OnGetPrinterPpdManufacturerAndModel(
 }
 
 void CupsPrintersHandler::HandleGetEulaUrl(const base::ListValue* args) {
-  CHECK_EQ(3U, args->GetSize());
+  CHECK_EQ(3U, args->GetList().size());
   const std::string callback_id = args->GetList()[0].GetString();
   const std::string ppd_manufacturer = args->GetList()[1].GetString();
   const std::string ppd_model = args->GetList()[2].GetString();
@@ -1221,13 +1221,13 @@ void CupsPrintersHandler::OnIpResolved(const std::string& callback_id,
   PRINTER_LOG(EVENT) << "Request make and model from user";
   // If it's not an IPP printer, the user must choose a PPD.
   RejectJavascriptCallback(base::Value(callback_id),
-                           *GetCupsPrinterInfo(printer));
+                           GetCupsPrinterInfo(printer));
 }
 
 void CupsPrintersHandler::HandleQueryPrintServer(const base::ListValue* args) {
   std::string callback_id;
   std::string server_url;
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   CHECK(args->GetString(0, &callback_id));
   CHECK(args->GetString(1, &server_url));
 

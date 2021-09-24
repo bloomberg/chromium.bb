@@ -21,13 +21,13 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/install_bounce_metric.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
+#include "chrome/browser/web_applications/install_bounce_metric.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -189,7 +189,7 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
         webapps::TestAppBannerManagerDesktop::FromWebContents(web_contents);
     DCHECK(!app_banner_manager->WaitForInstallableCheck());
 
-    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
     bool installable = app_banner_manager->WaitForInstallableCheck();
 
     return OpenTabResult{web_contents, app_banner_manager, installable};
@@ -252,7 +252,7 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
     web_app::SetInstallBounceMetricTimeForTesting(test_time + install_duration);
 
     base::RunLoop run_loop;
-    web_app::WebAppProvider::Get(browser()->profile())
+    web_app::WebAppProvider::GetForTest(browser()->profile())
         ->install_finalizer()
         .UninstallWebApp(app_id, webapps::WebappUninstallSource::kAppMenu,
                          base::BindLambdaForTesting([&](bool uninstalled) {
@@ -340,8 +340,8 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
   web_app::AppId app_id = ExecutePwaInstallIcon();
 
   // Change launch container to open in tab.
-  web_app::WebAppProvider::Get(browser()->profile())
-      ->registry_controller()
+  web_app::WebAppProvider::GetForTest(browser()->profile())
+      ->sync_bridge()
       .SetAppUserDisplayMode(app_id, web_app::DisplayMode::kBrowser,
                              /*is_user_action=*/false);
 

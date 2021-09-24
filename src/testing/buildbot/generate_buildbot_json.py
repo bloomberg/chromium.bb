@@ -1482,7 +1482,7 @@ class BBJSONGenerator(object):
       self.write_file(self.pyl_file_path(filename + suffix), jsonstr)
 
   def get_valid_bot_names(self):
-    # Extract bot names from infra/config/generated/luci-milo.cfg.
+    # Extract bot names from infra/config/generated/luci/luci-milo.cfg.
     # NOTE: This reference can cause issues; if a file changes there, the
     # presubmit here won't be run by default. A manually maintained list there
     # tries to run presubmit here when luci-milo.cfg is changed. If any other
@@ -1503,7 +1503,8 @@ class BBJSONGenerator(object):
 
     bot_names = set()
     milo_configs = glob.glob(
-        os.path.join(self.args.infra_config_dir, 'generated', 'luci-milo*.cfg'))
+        os.path.join(self.args.infra_config_dir, 'generated', 'luci',
+                     'luci-milo*.cfg'))
     for c in milo_configs:
       for l in self.read_file(c).splitlines():
         if (not 'name: "buildbucket/luci.chromium.' in l and
@@ -1541,6 +1542,7 @@ class BBJSONGenerator(object):
         'mac10.14-blink-rel-dummy',
         'mac10.15-blink-rel-dummy',
         'mac11.0-blink-rel-dummy',
+        'mac11.0.arm64-blink-rel-dummy',
         'win7-blink-rel-dummy',
         'win10-blink-rel-dummy',
         'win10.20h2-blink-rel-dummy',

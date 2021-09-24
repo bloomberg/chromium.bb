@@ -142,6 +142,8 @@ bool GrFragmentProcessor::isInstantiated() const {
 
 void GrFragmentProcessor::registerChild(std::unique_ptr<GrFragmentProcessor> child,
                                         SkSL::SampleUsage sampleUsage) {
+    SkASSERT(sampleUsage.isSampled());
+
     if (!child) {
         fChildProcessors.push_back(nullptr);
         return;
@@ -165,8 +167,6 @@ void GrFragmentProcessor::registerChild(std::unique_ptr<GrFragmentProcessor> chi
         child->usesSampleCoords()) {
         fFlags |= kUsesSampleCoordsIndirectly_Flag;
     }
-
-    fRequestedFeatures |= child->fRequestedFeatures;
 
     // Record that the child is attached to us; this FP is the source of any uniform data needed
     // to evaluate the child sample matrix.
@@ -404,10 +404,10 @@ std::unique_ptr<GrFragmentProcessor> GrFragmentProcessor::OverrideInput(
         return nullptr;
     }
     static auto effect = SkMakeRuntimeEffect(SkRuntimeEffect::MakeForColorFilter, R"(
-        uniform colorFilter fp;  // Declared as colorFilter so we can use sample(..., color)
+        uniform colorFilter fp;  // Declared as colorFilter so we can pass a color
         uniform half4 color;
         half4 main(half4 inColor) {
-            return sample(fp, color);
+            return fp.eval(color);
         }
     )");
     SkASSERT(SkRuntimeEffectPriv::SupportsConstantOutputForConstantInput(effect));
@@ -423,9 +423,9 @@ std::unique_ptr<GrFragmentProcessor> GrFragmentProcessor::OverrideInput(
 std::unique_ptr<GrFragmentProcessor> GrFragmentProcessor::UseDestColorAsInput(
         std::unique_ptr<GrFragmentProcessor> fp) {
     static auto effect = SkMakeRuntimeEffect(SkRuntimeEffect::MakeForBlender, R"(
-        uniform colorFilter fp;  // Declared as colorFilter so we can use sample(..., color)
+        uniform colorFilter fp;  // Declared as colorFilter so we can pass a color
         half4 main(half4 src, half4 dst) {
-            return sample(fp, dst);
+            return fp.eval(dst);
         }
     )");
     return GrSkSLFP::Make(effect, "UseDestColorAsInput", /*inputFP=*/nullptr,
@@ -440,9 +440,9 @@ std::unique_ptr<GrFragmentProcessor> GrFragmentProcessor::MakeInputOpaqueAndPost
         return nullptr;
     }
     static auto effect = SkMakeRuntimeEffect(SkRuntimeEffect::MakeForColorFilter, R"(
-        uniform colorFilter fp;  // Declared as colorFilter so we can use sample(..., color)
+        uniform colorFilter fp;  // Declared as colorFilter so we can pass a color
         half4 main(half4 inColor) {
-            return inColor.a * sample(fp, unpremul(inColor).rgb1);
+            return inColor.a * fp.eval(unpremul(inColor).rgb1);
         }
     )");
     return GrSkSLFP::Make(effect,
@@ -935,27 +935,6 @@ using ProgramImpl = GrFragmentProcessor::ProgramImpl;
 void ProgramImpl::setData(const GrGLSLProgramDataManager& pdman,
                           const GrFragmentProcessor& processor) {
     this->onSetData(pdman, processor);
-}
-
-void ProgramImpl::emitChildFunctions(EmitArgs& args) {
-    for (int i = 0; i < this->numChildProcessors(); ++i) {
-        ProgramImpl* childGLSLFP = this->childProcessor(i);
-        if (!childGLSLFP) {
-            continue;
-        }
-
-        const GrFragmentProcessor* childFP = args.fFp.childProcessor(i);
-        SkASSERT(childFP);
-
-        EmitArgs childArgs(args.fFragBuilder,
-                           args.fUniformHandler,
-                           args.fShaderCaps,
-                           *childFP,
-                           childFP->isBlendFunction() ? "_src" : "_input",
-                           "_dst",
-                           "_coords");
-        args.fFragBuilder->writeProcessorFunction(childGLSLFP, childArgs);
-    }
 }
 
 SkString ProgramImpl::invokeChild(int childIndex,

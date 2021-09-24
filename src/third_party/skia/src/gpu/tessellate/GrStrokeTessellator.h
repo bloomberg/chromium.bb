@@ -44,9 +44,11 @@ public:
     // Called before draw(). Prepares GPU buffers containing the geometry to tessellate.
     virtual void prepare(GrMeshDrawTarget*, int totalCombinedVerbCnt) = 0;
 
+#if SK_GPU_V1
     // Issues draw calls for the tessellated stroke. The caller is responsible for creating and
     // binding a pipeline that uses this class's shader() before calling draw().
     virtual void draw(GrOpFlushState*) const = 0;
+#endif
 
     virtual ~GrStrokeTessellator() {}
 
@@ -63,7 +65,7 @@ struct GrStrokeTolerances {
     // Decides the number of parametric segments the tessellator adds for each curve. (Uniform
     // steps in parametric space.) The tessellator will add enough parametric segments so that,
     // once transformed into device space, they never deviate by more than
-    // 1/GrTessellationPathRenderer::kLinearizationPrecision pixels from the true curve.
+    // 1/TessellationPathRenderer::kLinearizationPrecision pixels from the true curve.
     constexpr static float CalcParametricPrecision(float matrixMaxScale) {
         return matrixMaxScale * GrTessellationShader::kLinearizationPrecision;
     }
@@ -131,7 +133,7 @@ public:
     }
 
     float fetchRadialSegmentsPerRadian(PathStrokeList* head) {
-        // GrStrokeTessellateOp::onCombineIfPossible does not allow hairlines to become dynamic. If
+        // StrokeTessellateOp::onCombineIfPossible does not allow hairlines to become dynamic. If
         // this changes, we will need to call GrStrokeTolerances::GetLocalStrokeWidth() for each
         // stroke.
         SkASSERT(!head->fStroke.isHairlineStyle());

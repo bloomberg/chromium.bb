@@ -12,7 +12,7 @@
 // #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.js';
 // clang-format on
 
 cr.define('settings_reset_page', function() {
@@ -175,30 +175,15 @@ cr.define('settings_reset_page', function() {
     // Tests that when the route changes to one containing a deep link to
     // powerwash, powerwash is focused.
     test(TestNames.PowerwashFocusDeepLink, async () => {
-      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-      assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
       assertTrue(
           await isDeepLinkFocusedForSettingId(
               resetPage.$$('#powerwash'), '1600'),
           'Powerwash should be focused for settingId=1600.');
     });
 
-    // Tests that when the deep linking flag is disabled, no focusing of deep
-    // links occurs.
-    test(TestNames.PowerwashFocusDeepLinkNoFlag, async () => {
-      loadTimeData.overrideValues({isDeepLinkingEnabled: false});
-      assertFalse(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-      assertFalse(
-          await isDeepLinkFocusedForSettingId(
-              resetPage.$$('#powerwash'), '1600'),
-          'Powerwash should not be focused with flag disabled.');
-    });
-
     // Tests that when the route changes to one containing a deep link not equal
     // to powerwash, no focusing of powerwash occurs.
     test(TestNames.PowerwashFocusDeepLinkWrongId, async () => {
-      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-      assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
       assertFalse(
           await isDeepLinkFocusedForSettingId(
               resetPage.$$('#powerwash'), '1234'),
@@ -237,8 +222,8 @@ cr.define('settings_reset_page', function() {
           await openDialogWithESimWarning();
 
           const dialog = resetPage.$$('os-settings-powerwash-dialog');
-          const mobileSettingsLink = dialog.$$('settings-localized-link')
-                                         .shadowRoot.querySelector('a');
+          const mobileSettingsLink =
+              dialog.$$('localized-link').shadowRoot.querySelector('a');
           assertTrue(!!mobileSettingsLink);
 
           mobileSettingsLink.click();

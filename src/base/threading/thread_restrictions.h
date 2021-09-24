@@ -14,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/threading/hang_watcher.h"
 #include "build/build_config.h"
 
 // -----------------------------------------------------------------------------
@@ -108,6 +107,8 @@ class KeyStorageLinux;
 class NativeBackendKWallet;
 class NativeDesktopMediaList;
 class Profile;
+class StartupTabProviderImpl;
+class WebEngineBrowserMainParts;
 
 Profile* GetLastProfileMac();
 
@@ -148,6 +149,8 @@ namespace chromeos {
 class BlockingMethodCaller;
 namespace system {
 class StatisticsProviderImpl;
+bool IsCoreSchedulingAvailable();
+int NumberOfProcessorsForCoreScheduling();
 }
 }
 namespace chrome_browser_net {
@@ -233,6 +236,7 @@ class OSMetrics;
 }
 namespace metrics {
 class AndroidMetricsServiceClient;
+class CleanExitBeacon;
 }
 namespace midi {
 class TaskService;  // https://crbug.com/796830
@@ -297,6 +301,7 @@ namespace remoting {
 class AutoThread;
 class ScopedBypassIOThreadRestrictions;
 namespace protocol {
+class ScopedAllowSyncPrimitivesForWebRtcTransport;
 class ScopedAllowThreadJoinForWebRtcTransport;
 }
 }
@@ -411,6 +416,7 @@ class BASE_EXPORT ScopedAllowBlocking {
 
   // This can only be instantiated by friends. Use ScopedAllowBlockingForTesting
   // in unit tests to avoid the friend requirement.
+  friend class ::StartupTabProviderImpl;
   friend class AdjustOOMScoreHelper;
   friend class StackSamplingProfiler;
   friend class android_webview::ScopedAllowInitGLBindings;
@@ -431,6 +437,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class ios_web_view::WebViewBrowserState;
   friend class memory_instrumentation::OSMetrics;
   friend class metrics::AndroidMetricsServiceClient;
+  friend class metrics::CleanExitBeacon;
   friend class module_installer::ScopedAllowModulePakLoad;
   friend class mojo::CoreLibraryInitializer;
   friend class printing::LocalPrinterHandlerDefault;
@@ -443,13 +450,16 @@ class BASE_EXPORT ScopedAllowBlocking {
       DroppedScreenShotCopierMac;  // https://crbug.com/1148078
   friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
   friend class web::WebSubThread;
+  friend class ::WebEngineBrowserMainParts;
   friend class weblayer::BrowserContextImpl;
   friend class weblayer::ContentBrowserClientImpl;
   friend class weblayer::ProfileImpl;
   friend class weblayer::WebLayerPathProvider;
 
-  friend bool PathProviderWin(int, FilePath*);
   friend Profile* ::GetLastProfileMac();  // crbug.com/1176734
+  friend bool PathProviderWin(int, FilePath*);
+  friend bool chromeos::system::IsCoreSchedulingAvailable();
+  friend int chromeos::system::NumberOfProcessorsForCoreScheduling();
 
   ScopedAllowBlocking(const Location& from_here = Location::Current());
   ~ScopedAllowBlocking();
@@ -594,8 +604,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class dbus::Bus;                           // http://crbug.com/125222
   friend class disk_cache::BackendImpl;             // http://crbug.com/74623
   friend class disk_cache::InFlightIO;              // http://crbug.com/74623
-  friend class remoting::protocol::
-      ScopedAllowThreadJoinForWebRtcTransport;      // http://crbug.com/660081
   friend class midi::TaskService;                   // https://crbug.com/796830
   friend class net::internal::AddressTrackerLinux;  // http://crbug.com/125097
   friend class net::
@@ -605,6 +613,10 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class proxy_resolver::
       ScopedAllowThreadJoinForProxyResolverV8Tracing;  // http://crbug.com/69710
   friend class remoting::AutoThread;  // https://crbug.com/944316
+  friend class remoting::protocol::
+      ScopedAllowSyncPrimitivesForWebRtcTransport;  // http://crbug.com/1198501
+  friend class remoting::protocol::
+      ScopedAllowThreadJoinForWebRtcTransport;  // http://crbug.com/660081
   // Not used in production yet, https://crbug.com/844078.
   friend class service_manager::ServiceProcessLauncher;
   friend class ui::WindowResizeHelperMac;  // http://crbug.com/902829

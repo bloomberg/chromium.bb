@@ -13,6 +13,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/cors/cors_url_loader_factory.h"
+#include "services/network/cors/cors_util.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
@@ -33,28 +34,87 @@ namespace cors {
 
 namespace {
 
-bool NeedsPreflight(const ResourceRequest& request) {
+enum class PreflightRequiredReason {
+  kExternalRequest,
+  kCorsWithForcedPreflightMode,
+  kDisallowedMethod,
+  kDisallowedHeader
+};
+
+// Returns absl::nullopt when a CORS preflight isn't needed. Otherwise
+// returns the reason why a preflight is needed.
+absl::optional<PreflightRequiredReason> NeedsPreflight(
+    const ResourceRequest& request) {
   if (!IsCorsEnabledRequestMode(request.mode))
-    return false;
+    return absl::nullopt;
 
   if (request.is_external_request)
-    return true;
+    return PreflightRequiredReason::kExternalRequest;
 
   if (request.mode == mojom::RequestMode::kCorsWithForcedPreflight) {
-    return true;
+    return PreflightRequiredReason::kCorsWithForcedPreflightMode;
   }
 
   if (request.cors_preflight_policy ==
       mojom::CorsPreflightPolicy::kPreventPreflight) {
-    return false;
+    return absl::nullopt;
   }
 
   if (!IsCorsSafelistedMethod(request.method))
-    return true;
+    return PreflightRequiredReason::kDisallowedMethod;
 
-  return !CorsUnsafeNotForbiddenRequestHeaderNames(
-              request.headers.GetHeaderVector(), request.is_revalidating)
-              .empty();
+  if (!CorsUnsafeNotForbiddenRequestHeaderNames(
+           request.headers.GetHeaderVector(), request.is_revalidating)
+           .empty())
+    return PreflightRequiredReason::kDisallowedHeader;
+
+  return absl::nullopt;
+}
+
+base::Value NetLogCorsURLLoaderStartParams(const ResourceRequest& request) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("url", request.url.possibly_invalid_spec());
+  dict.SetStringKey("method", request.method);
+  dict.SetStringKey("headers", request.headers.ToString());
+  dict.SetBoolKey("is_external_request", request.is_external_request);
+  dict.SetBoolKey("is_revalidating", request.is_revalidating);
+  std::string cors_preflight_policy;
+  switch (request.cors_preflight_policy) {
+    case mojom::CorsPreflightPolicy::kConsiderPreflight:
+      cors_preflight_policy = "consider_preflight";
+      break;
+    case mojom::CorsPreflightPolicy::kPreventPreflight:
+      cors_preflight_policy = "prevent_preflight";
+      break;
+  }
+  dict.SetStringKey("cors_preflight_policy", cors_preflight_policy);
+  return dict;
+}
+
+base::Value NetLogPreflightRequiredParams(
+    absl::optional<PreflightRequiredReason> preflight_required_reason) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetBoolKey("preflight_required", preflight_required_reason.has_value());
+  if (preflight_required_reason) {
+    std::string preflight_required_reason_param;
+    switch (preflight_required_reason.value()) {
+      case PreflightRequiredReason::kExternalRequest:
+        preflight_required_reason_param = "external_request";
+        break;
+      case PreflightRequiredReason::kCorsWithForcedPreflightMode:
+        preflight_required_reason_param = "cors_with_forced_preflight_mode";
+        break;
+      case PreflightRequiredReason::kDisallowedMethod:
+        preflight_required_reason_param = "disallowed_method";
+        break;
+      case PreflightRequiredReason::kDisallowedHeader:
+        preflight_required_reason_param = "disallowed_header";
+        break;
+    }
+    dict.SetStringKey("preflight_required_reason",
+                      preflight_required_reason_param);
+  }
+  return dict;
 }
 
 constexpr const char kTimingAllowOrigin[] = "Timing-Allow-Origin";
@@ -94,7 +154,11 @@ CorsURLLoader::CorsURLLoader(
       skip_cors_enabled_scheme_check_(skip_cors_enabled_scheme_check),
       allow_any_cors_exempt_header_(allow_any_cors_exempt_header),
       isolation_info_(isolation_info),
-      devtools_observer_(std::move(devtools_observer)) {
+      devtools_observer_(std::move(devtools_observer)),
+      // TODO(https://crbug.com/1244451): NetLogSourceType may be changed.
+      net_log_(
+          net::NetLogWithSource::Make(net::NetLog::Get(),
+                                      net::NetLogSourceType::CORS_URL_LOADER)) {
   if (ignore_isolated_world_origin)
     request_.isolated_world_origin = absl::nullopt;
 
@@ -123,6 +187,8 @@ void CorsURLLoader::Start() {
       request_.url = request_.url.ReplaceComponents(replacements);
     }
   }
+  net_log_.BeginEvent(net::NetLogEventType::CORS_REQUEST,
+                      [&] { return NetLogCorsURLLoaderStartParams(request_); });
   StartRequest();
 }
 
@@ -275,7 +341,7 @@ void CorsURLLoader::OnReceiveResponse(mojom::URLResponseHeadPtr response_head) {
       request_.is_revalidating && response_head->headers &&
       response_head->headers->response_code() == 304;
   if (fetch_cors_flag_ && !is_304_for_revalidation) {
-    const auto error_status = CheckAccess(
+    const auto error_status = CheckAccessAndReportMetrics(
         request_.url,
         GetHeaderString(*response_head,
                         header_names::kAccessControlAllowOrigin),
@@ -314,7 +380,7 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
   // If |CORS flag| is set and a CORS check for |request| and |response| returns
   // failure, then return a network error.
   if (fetch_cors_flag_ && IsCorsEnabledRequestMode(request_.mode)) {
-    const auto error_status = CheckAccess(
+    const auto error_status = CheckAccessAndReportMetrics(
         request_.url,
         GetHeaderString(*response_head,
                         header_names::kAccessControlAllowOrigin),
@@ -486,7 +552,14 @@ void CorsURLLoader::StartRequest() {
   // Note that even when |NeedsPreflight(request_)| holds we don't make a
   // preflight request when |fetch_cors_flag_| is false (e.g., when the origin
   // of the url is equal to the origin of the request.
-  if (!fetch_cors_flag_ || !NeedsPreflight(request_)) {
+
+  absl::optional<PreflightRequiredReason> needs_preflight =
+      NeedsPreflight(request_);
+  bool preflight_required = fetch_cors_flag_ && needs_preflight;
+  net_log_.AddEvent(net::NetLogEventType::CHECK_CORS_PREFLIGHT_REQUIRED, [&] {
+    return NetLogPreflightRequiredParams(needs_preflight);
+  });
+  if (!preflight_required) {
     StartNetworkRequest(net::OK, absl::nullopt, false);
     return;
   }
@@ -572,6 +645,7 @@ void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
                                     *status.cors_error_status);
   }
 
+  net_log_.EndEvent(net::NetLogEventType::CORS_REQUEST);
   forwarding_client_->OnComplete(status);
   std::move(delete_callback_).Run(this);
   // |this| is deleted here.

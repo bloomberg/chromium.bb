@@ -85,7 +85,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/commands/policy_signout_commands.h"
+#import "ios/chrome/browser/ui/commands/policy_change_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
@@ -99,8 +99,8 @@
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/incognito_blocker_scene_agent.h"
-#import "ios/chrome/browser/ui/main/policy_signout_scene_agent.h"
 #import "ios/chrome/browser/ui/main/reading_list_background_session_scene_agent.h"
+#import "ios/chrome/browser/ui/main/signin_policy_scene_agent.h"
 #import "ios/chrome/browser/ui/main/ui_blocker_scene_agent.h"
 #import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -206,11 +206,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // The scene level component for url loading. Is passed down to
 // browser state level UrlLoadingService instances.
 @property(nonatomic, assign) SceneUrlLoadingService* sceneURLLoadingService;
-
-// Returns YES if the settings are presented, either from
-// self.settingsNavigationController or from SigninCoordinator.
-@property(nonatomic, assign, readonly, getter=isSettingsViewPresented)
-    BOOL settingsViewPresented;
 
 // Coordinator for displaying history.
 @property(nonatomic, strong) HistoryCoordinator* historyCoordinator;
@@ -344,11 +339,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 - (id<BrowserInterfaceProvider>)interfaceProvider {
   return self.browserViewWrangler;
-}
-
-- (BOOL)isSettingsViewPresented {
-  return self.settingsNavigationController ||
-         self.signinCoordinator.isSettingsViewPresented;
 }
 
 - (void)setStartupParameters:(AppStartupParameters*)parameters {
@@ -757,14 +747,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   ChromeAccountManagerService* accountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(
           self.mainInterface.browser->GetBrowserState());
-
-  if (!signin::ExtendedSyncPromosCapabilityEnabled() ||
-      !accountManagerService->HasIdentities()) {
-    // Present the sign-in promo synchronously.
-    [self presentSigninUpgradePromo];
-    return;
-  }
-
+  // The sign-in promo should not be presented if there is no identities.
   ChromeIdentity* defaultIdentity = accountManagerService->GetDefaultIdentity();
   DCHECK(defaultIdentity);
 
@@ -851,7 +834,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
 
   [self.sceneState
-      addAgent:[[PolicySignoutSceneAgent alloc]
+      addAgent:[[SigninPolicySceneAgent alloc]
                    initWithCommandDispatcher:mainCommandDispatcher]];
 
   // Create and start the BVC.
@@ -863,8 +846,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // changes.
   PolicyWatcherBrowserAgent* policyWatcherAgent =
       PolicyWatcherBrowserAgent::FromBrowser(self.mainInterface.browser);
-  id<PolicySignoutPromptCommands> handler =
-      HandlerForProtocol(mainCommandDispatcher, PolicySignoutPromptCommands);
+  id<PolicyChangeCommands> handler =
+      HandlerForProtocol(mainCommandDispatcher, PolicyChangeCommands);
   policyWatcherAgent->AddObserver(_policyWatcherObserverBridge.get());
   policyWatcherAgent->Initialize(handler);
 
@@ -1274,6 +1257,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // Don't show the promo if the window is not active.
   if (self.sceneState.activationLevel < SceneActivationLevelForegroundActive)
     return NO;
+  // Don't show the promo if the tab grid is active.
+  if (self.mainCoordinator.isTabGridActive)
+    return NO;
   // Don't show the promo if already presented.
   if (self.sceneState.appState.signinUpgradePromoPresentedOnce)
     return NO;
@@ -1330,11 +1316,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                                  dismissOmnibox:YES
                                      completion:nil];
   };
-  [self closeSettingsAnimated:YES completion:completion];
+  [self closeSettingsOrSigninAnimated:YES completion:completion];
 }
 
 - (void)closeSettingsUI {
-  [self closeSettingsAnimated:YES completion:nullptr];
+  [self closeSettingsOrSigninAnimated:YES completion:nullptr];
 }
 
 - (void)prepareTabSwitcher {
@@ -1531,11 +1517,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       advancedSettingsSigninCoordinatorWithBaseViewController:baseViewController
                                                       browser:mainBrowser
                                                   signinState:signinState];
-  [self startSigninCoordinatorWithCompletion:^(BOOL success) {
-    if (location_permissions_field_trial::IsInFirstRunModalGroup()) {
-      [self showLocationPermissionsFromViewController:baseViewController];
-    }
-  }];
+  [self startSigninCoordinatorWithCompletion:nil];
 }
 
 - (void)showLocationPermissionsFromViewController:
@@ -1586,7 +1568,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
             (UIViewController*)baseViewController
                                            URL:(const GURL&)url {
   // Do not display the web sign-in promo if there is any UI on the screen.
-  if (self.signinCoordinator || self.isSettingsViewPresented)
+  if (self.signinCoordinator || self.settingsNavigationController)
     return;
   self.signinCoordinator = [SigninCoordinator
       consistencyPromoSigninCoordinatorWithBaseViewController:baseViewController
@@ -2355,18 +2337,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                                          ? completionWithoutBVC
                                          : completionWithBVC;
 
-  if (self.isSettingsViewPresented) {
-    // In this case, the settings are up and the BVC is showing. Close the
-    // settings then call the chosen completion.
-    [self closeSettingsAnimated:NO completion:chosenCompletion];
-  } else if (self.signinCoordinator) {
-    // The sign-in screen is showing, interrupt it and call the chosen
-    // completion.
-    [self interruptSigninCoordinatorAnimated:NO completion:chosenCompletion];
-  } else {
-    // Does not require a special case. Run the chosen completion.
-    chosenCompletion();
-  }
+  [self closeSettingsOrSigninAnimated:NO completion:chosenCompletion];
 
   // Verify that no modal views are left presented.
   ios::GetChromeBrowserProvider().LogIfModalViewsArePresented();
@@ -2687,10 +2658,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                  completion:nil];
 }
 
-// TODO(crbug.com/1192019): Rename this method in -[SceneController
-// closeUIAnimated:completion:].
-- (void)closeSettingsAnimated:(BOOL)animated
-                   completion:(ProceduralBlock)completion {
+- (void)closeSettingsOrSigninAnimated:(BOOL)animated
+                           completion:(ProceduralBlock)completion {
   if (self.settingsNavigationController) {
     ProceduralBlock dismissSettings = ^() {
       [self.settingsNavigationController cleanUpSettings];
@@ -2713,21 +2682,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       dismissSettings();
     }
   } else if (self.signinCoordinator) {
-    // |self.signinCoordinator| can also present settings, like
-    // the advanced sign-in settings navigation controller. If the settings has
-    // to be closed, it is thus the responsibility of the main controller to
-    // dismiss the advanced sign-in settings by dismssing the settings
-    // presented by |self.signinCoordinator|.
-    // To reproduce this case:
-    //  - open Bookmark view
-    //  - start sign-in
-    //  - tap on "Settings" to open the advanced sign-in settings
-    //  - tap on "Manage Your Google Account"
+    //      |self.signinCoordinator| can be presented without settings, from the
+    //      bookmarks or the recent tabs view.
     [self interruptSigninCoordinatorAnimated:animated completion:completion];
   } else {
-    // This can happens when starting a reauth coordinator and the user choose
-    // "Create account". The coordinator dismisses itself, calls its completion
-    // block and then open the create account URL.
     completion();
   }
 }
@@ -2754,13 +2712,12 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 - (void)startSigninCoordinatorWithCompletion:
     (signin_ui::CompletionCallback)completion {
   DCHECK(self.signinCoordinator);
-  if (!signin::IsSigninAllowedByPolicy(
-          self.signinCoordinator.browser->GetBrowserState()->GetPrefs())) {
+  if (!signin::IsSigninAllowedByPolicy()) {
     completion(/*success=*/NO);
     [self.signinCoordinator stop];
-    id<PolicySignoutPromptCommands> handler = HandlerForProtocol(
+    id<PolicyChangeCommands> handler = HandlerForProtocol(
         self.signinCoordinator.browser->GetCommandDispatcher(),
-        PolicySignoutPromptCommands);
+        PolicyChangeCommands);
     [handler showPolicySignoutPrompt];
     self.signinCoordinator = nil;
   }

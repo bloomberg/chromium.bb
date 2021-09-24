@@ -54,6 +54,7 @@ import org.chromium.ui.util.ColorUtils;
  */
 public class CustomTabActivity extends BaseCustomTabActivity {
     private CustomTabsSessionToken mSession;
+    private CustomTabHeightStrategy mCustomTabHeightStrategy;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
 
@@ -93,6 +94,14 @@ public class CustomTabActivity extends BaseCustomTabActivity {
     }
 
     @Override
+    protected void changeBackgroundColorForResizing() {
+        if (mCustomTabHeightStrategy == null
+                || !mCustomTabHeightStrategy.changeBackgroundColorForResizing()) {
+            super.changeBackgroundColorForResizing();
+        }
+    }
+
+    @Override
     public void performPreInflationStartup() {
         super.performPreInflationStartup();
         mTabProvider.addObserver(mTabChangeObserver);
@@ -103,8 +112,9 @@ public class CustomTabActivity extends BaseCustomTabActivity {
 
         CustomTabNavigationBarController.update(getWindow(), mIntentDataProvider, getResources());
 
-        CustomTabHeightStrategy.createStrategy(
-                this, mIntentDataProvider.getInitialActivityHeight(), getLifecycleDispatcher());
+        mCustomTabHeightStrategy = CustomTabHeightStrategy.createStrategy(this,
+                mIntentDataProvider.getInitialActivityHeight(), getMultiWindowModeStateDispatcher(),
+                mConnection, mSession, getLifecycleDispatcher());
     }
 
     @Override
@@ -291,5 +301,11 @@ public class CustomTabActivity extends BaseCustomTabActivity {
     @VisibleForTesting
     public NightModeStateProvider getNightModeStateProviderForTesting() {
         return super.getNightModeStateProvider();
+    }
+
+    @Override
+    protected void setDefaultTaskDescription() {
+        // mIntentDataProvider is not ready when the super calls this method. So, we skip setting
+        // the task description here, and do it in #performPostInflationStartup();
     }
 }

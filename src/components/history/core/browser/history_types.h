@@ -68,7 +68,7 @@ class VisitRow {
            ui::PageTransition arg_transition,
            SegmentID arg_segment_id,
            bool arg_incremented_omnibox_typed_score,
-           bool floc_allowed);
+           VisitID arg_opener_visit);
   ~VisitRow();
 
   // Compares two visits based on dates, for sorting.
@@ -103,6 +103,17 @@ class VisitRow {
 
   // Records whether the visit incremented the omnibox typed score.
   bool incremented_omnibox_typed_score = false;
+
+  // Indicates the visit that opened this one.
+  //
+  // 0 indicates no opener visit. Only non-zero if this visit was directly
+  // initiated by open in a new tab or window. It is possible for this to be
+  // non-zero and the visit to not exist (i.e., if the visit expired).
+  //
+  // This differs from `referring_visit` since this links visits across tabs
+  // whereas `referring_visit` is only populated if the Referrer is from the
+  // same tab.
+  VisitID opener_visit = 0;
 
   // We allow the implicit copy constructor and operator=.
 };
@@ -353,6 +364,24 @@ struct FilteredURL {
   ExtendedInfo extended_info;
 };
 
+// Opener ---------------------------------------------------------------------
+
+// Contains the information required to determine the VisitID of an opening
+// visit.
+struct Opener {
+  // The default constructor is equivalent to:
+  //
+  // Opener(nullptr, 0, GURL())
+  Opener();
+  Opener(ContextID context_id, int nav_entry_id, const GURL& url);
+  Opener(const Opener& other);
+  ~Opener();
+
+  ContextID context_id;
+  int nav_entry_id;
+  GURL url;
+};
+
 // Navigation -----------------------------------------------------------------
 
 // Marshalling structure for AddPage.
@@ -363,7 +392,7 @@ struct HistoryAddPageArgs {
   //       GURL(), base::Time(), nullptr, 0, GURL(),
   //       RedirectList(), ui::PAGE_TRANSITION_LINK,
   //       false, SOURCE_BROWSED, false, true,
-  //       absl::nullopt)
+  //       absl::nullopt, absl::nullopt)
   HistoryAddPageArgs();
   HistoryAddPageArgs(const GURL& url,
                      base::Time time,
@@ -377,7 +406,8 @@ struct HistoryAddPageArgs {
                      bool did_replace_entry,
                      bool consider_for_ntp_most_visited,
                      bool floc_allowed,
-                     absl::optional<std::u16string> title = absl::nullopt);
+                     absl::optional<std::u16string> title = absl::nullopt,
+                     absl::optional<Opener> opener = absl::nullopt);
   HistoryAddPageArgs(const HistoryAddPageArgs& other);
   ~HistoryAddPageArgs();
 
@@ -400,6 +430,7 @@ struct HistoryAddPageArgs {
   // VisitRow::floc_allowed for details.
   bool floc_allowed;
   absl::optional<std::u16string> title;
+  absl::optional<Opener> opener;
 };
 
 // TopSites -------------------------------------------------------------------
@@ -752,24 +783,36 @@ struct AnnotatedVisitRow {
   VisitContentAnnotations content_annotations;
 };
 
-// An `AnnotatedVisit` associated with a score.
-struct ScoredAnnotatedVisit {
+// An `AnnotatedVisit` associated with some other metadata from clustering.
+struct ClusterVisit {
+  ClusterVisit();
+  ~ClusterVisit();
+  ClusterVisit(const ClusterVisit&);
+
   AnnotatedVisit annotated_visit;
-  float score;
+
+  // A floating point score in the range [0, 1] describing how important this
+  // visit is to the containing cluster.
+  float score = 0.0;
+
+  // A list of `VisitID`s considered duplicates of this cluster visit. The best
+  // visit among all the duplicates will list the worse duplicate visit IDs in
+  // its vector. The worse duplicates will have an empty vector here.
+  std::vector<VisitID> duplicate_visit_ids;
 };
 
 // A cluster of `ScoredAnnotatedVisit`s with associated `keywords`.
 struct Cluster {
   Cluster();
   Cluster(int64_t cluster_id,
-          const std::vector<ScoredAnnotatedVisit>& scored_annotated_visits,
+          const std::vector<ClusterVisit>& visits,
           const std::vector<std::u16string>& keywords);
   Cluster(const Cluster&);
   Cluster& operator=(const Cluster&);
   ~Cluster();
 
   int64_t cluster_id;
-  std::vector<ScoredAnnotatedVisit> scored_annotated_visits;
+  std::vector<ClusterVisit> visits;
   // TODO(manukh): retrieve and persist `keywords`.
   std::vector<std::u16string> keywords;
 };

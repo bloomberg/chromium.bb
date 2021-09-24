@@ -399,8 +399,12 @@ bool GeneratorImpl::EmitType(std::ostream& out, const ast::Type* ty) {
       return false;
     }
 
-    if (!ary->IsRuntimeArray())
-      out << ", " << ary->size();
+    if (!ary->IsRuntimeArray()) {
+      out << ", ";
+      if (!EmitExpression(out, ary->Size())) {
+        return false;
+      }
+    }
 
     out << ">";
   } else if (ty->Is<ast::Bool>()) {
@@ -651,18 +655,8 @@ bool GeneratorImpl::EmitDecorations(std::ostream& out,
           if (i > 0) {
             out << ", ";
           }
-          if (auto* ident = values[i]->As<ast::IdentifierExpression>()) {
-            if (!EmitIdentifier(out, ident)) {
-              return false;
-            }
-          } else if (auto* scalar =
-                         values[i]->As<ast::ScalarConstructorExpression>()) {
-            if (!EmitScalarConstructor(out, scalar)) {
-              return false;
-            }
-          } else {
-            TINT_ICE(Writer, diagnostics_)
-                << "Unsupported workgroup_size expression";
+          if (!EmitExpression(out, values[i])) {
+            return false;
           }
         }
       }

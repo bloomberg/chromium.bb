@@ -12,16 +12,17 @@
 #include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
+#include "chrome/browser/web_applications/web_app_file_handler_manager.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
@@ -271,6 +272,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     local_data->set_install_time(
         syncer::TimeToProtoTime(web_app.install_time()));
   }
+  if (!web_app.manifest_update_time().is_null()) {
+    local_data->set_manifest_update_time(
+        syncer::TimeToProtoTime(web_app.manifest_update_time()));
+  }
 
   if (web_app.chromeos_data().has_value()) {
     auto& chromeos_data = web_app.chromeos_data().value();
@@ -298,8 +303,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   local_data->set_is_from_sync_and_pending_installation(
       web_app.is_from_sync_and_pending_installation());
 
-  for (const WebApplicationIconInfo& icon_info : web_app.icon_infos())
-    *(local_data->add_icon_infos()) = WebAppIconInfoToSyncProto(icon_info);
+  for (const apps::IconInfo& icon_info : web_app.icon_infos())
+    *(local_data->add_icon_infos()) = AppIconInfoToSyncProto(icon_info);
 
   for (SquareSizePx size : web_app.downloaded_icon_sizes(IconPurpose::ANY)) {
     local_data->add_downloaded_icon_sizes_purpose_any(size);
@@ -327,6 +332,11 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
       for (const auto& file_extension : accept_entry.file_extensions)
         accept_entry_proto->add_file_extensions(file_extension);
+    }
+
+    for (const apps::IconInfo& icon_info : file_handler.icons) {
+      *(file_handler_proto->add_icon_infos()) =
+          AppIconInfoToSyncProto(icon_info);
     }
   }
 
@@ -626,6 +636,10 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   if (local_data.has_install_time()) {
     web_app->SetInstallTime(syncer::ProtoTimeToTime(local_data.install_time()));
   }
+  if (local_data.has_manifest_update_time()) {
+    web_app->SetManifestUpdateTime(
+        syncer::ProtoTimeToTime(local_data.manifest_update_time()));
+  }
 
   absl::optional<WebApp::SyncFallbackData> parsed_sync_fallback_data =
       ParseSyncFallbackDataStruct(sync_data);
@@ -635,8 +649,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetSyncFallbackData(std::move(parsed_sync_fallback_data.value()));
 
-  absl::optional<std::vector<WebApplicationIconInfo>> parsed_icon_infos =
-      ParseWebAppIconInfos("WebApp", local_data.icon_infos());
+  absl::optional<std::vector<apps::IconInfo>> parsed_icon_infos =
+      ParseAppIconInfos("WebApp", local_data.icon_infos());
   if (!parsed_icon_infos.has_value()) {
     // ParseWebAppIconInfos() reports any errors.
     return nullptr;
@@ -686,6 +700,16 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
         accept_entry.file_extensions.insert(file_extension);
       }
       file_handler.accept.push_back(std::move(accept_entry));
+    }
+
+    if (WebAppFileHandlerManager::IconsEnabled()) {
+      absl::optional<std::vector<apps::IconInfo>> parsed_icon_infos =
+          ParseAppIconInfos("WebApp", file_handler_proto.icon_infos());
+      if (!parsed_icon_infos.has_value()) {
+        // ParseAppIconInfos() reports any errors.
+        return nullptr;
+      }
+      file_handler.icons = std::move(parsed_icon_infos.value());
     }
 
     file_handlers.push_back(std::move(file_handler));
@@ -1026,6 +1050,8 @@ DisplayMode ToMojomDisplayMode(
   switch (user_display_mode) {
     case ::sync_pb::WebAppSpecifics::BROWSER:
       return DisplayMode::kBrowser;
+    case ::sync_pb::WebAppSpecifics::TABBED:
+      return DisplayMode::kTabbed;
     // New display modes will most likely be of the window variety than the
     // browser tab variety so default to windowed if it's an enum value we don't
     // know about.

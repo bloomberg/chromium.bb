@@ -214,6 +214,17 @@ ANGLE_MAYBE_UNUSED void KHRONOS_APIENTRY PerfTestDebugCallback(GLenum source,
         const_cast<ANGLERenderTest *>(reinterpret_cast<const ANGLERenderTest *>(userParam));
     renderTest->onErrorMessage(message);
 }
+
+double ComputeMean(const std::vector<double> &values)
+{
+    double mean = 0;
+    for (double value : values)
+    {
+        mean += value;
+    }
+    mean /= static_cast<double>(values.size());
+    return mean;
+}
 }  // anonymous namespace
 
 TraceEvent::TraceEvent(char phaseIn,
@@ -297,15 +308,10 @@ void ANGLEPerfTest::run()
         }
     }
 
-    if (gVerboseLogging)
+    if (gVerboseLogging && !mTestTrialResults.empty())
     {
         double numResults = static_cast<double>(mTestTrialResults.size());
-        double mean       = 0;
-        for (double trialResult : mTestTrialResults)
-        {
-            mean += trialResult;
-        }
-        mean /= numResults;
+        double mean       = ComputeMean(mTestTrialResults);
 
         double variance = 0;
         for (double trialResult : mTestTrialResults)
@@ -340,28 +346,35 @@ void ANGLEPerfTest::doRunLoop(double maxRunTime, int maxStepsToRun, RunLoopPolic
 
     while (mRunning)
     {
-        step();
-
-        if (runPolicy == RunLoopPolicy::FinishEveryStep)
+        if (gMaxStepsPerformed > 0 && mTotalNumStepsPerformed >= gMaxStepsPerformed)
         {
-            glFinish();
+            if (gVerboseLogging)
+            {
+                printf("Stopping test after %d steps.\n", mTotalNumStepsPerformed);
+            }
+            mRunning = false;
         }
-
-        if (mRunning)
+        else if (mTimer.getElapsedTime() > maxRunTime)
         {
-            mTrialNumStepsPerformed++;
-            mTotalNumStepsPerformed++;
-            if (gMaxStepsPerformed > 0 && mTotalNumStepsPerformed >= gMaxStepsPerformed)
+            mRunning = false;
+        }
+        else if (mTrialNumStepsPerformed >= maxStepsToRun)
+        {
+            mRunning = false;
+        }
+        else
+        {
+            step();
+
+            if (runPolicy == RunLoopPolicy::FinishEveryStep)
             {
-                mRunning = false;
+                glFinish();
             }
-            else if (mTimer.getElapsedTime() > maxRunTime)
+
+            if (mRunning)
             {
-                mRunning = false;
-            }
-            else if (mTrialNumStepsPerformed >= maxStepsToRun)
-            {
-                mRunning = false;
+                mTrialNumStepsPerformed++;
+                mTotalNumStepsPerformed++;
             }
         }
     }
@@ -446,8 +459,9 @@ double ANGLEPerfTest::printResults()
     // Output histogram JSON set format if enabled.
     double secondsPerStep = elapsedTimeSeconds[0] / static_cast<double>(mTrialNumStepsPerformed);
     double secondsPerIteration = secondsPerStep / static_cast<double>(mIterationsPerStep);
-    TestSuite::GetInstance()->addHistogramSample(
-        mName + mBackend, mStory, secondsPerIteration * kMilliSecondsPerSecond, "msBestFitFormat");
+    TestSuite::GetInstance()->addHistogramSample(mName + mBackend, mStory,
+                                                 secondsPerIteration * kMilliSecondsPerSecond,
+                                                 "ms_smallerIsBetter");
     return retValue;
 }
 
@@ -458,27 +472,64 @@ double ANGLEPerfTest::normalizedTime(size_t value) const
 
 void ANGLEPerfTest::calibrateStepsToRun(RunLoopPolicy policy)
 {
+    // Run initially for "gCalibrationTimeSeconds" using the run loop policy.
     doRunLoop(gCalibrationTimeSeconds, std::numeric_limits<int>::max(), policy);
 
     double elapsedTime = mTimer.getElapsedTime();
+    int stepsPerformed = mTrialNumStepsPerformed;
 
-    // Scale steps down according to the time that exeeded one second.
-    double scale = gCalibrationTimeSeconds / elapsedTime;
-    mStepsToRun  = static_cast<unsigned int>(static_cast<double>(mTrialNumStepsPerformed) * scale);
-    mStepsToRun  = std::max(1, mStepsToRun);
-
+    double scale   = gCalibrationTimeSeconds / elapsedTime;
+    int stepsToRun = static_cast<int>(static_cast<double>(stepsPerformed) * scale);
+    stepsToRun     = std::max(1, stepsPerformed);
     if (getStepAlignment() != 1)
     {
-        mStepsToRun = rx::roundUp(mStepsToRun, getStepAlignment());
+        stepsToRun = rx::roundUp(stepsToRun, getStepAlignment());
     }
+
+    // The run loop policy "FinishEveryStep" indicates we're running GPU tests. GPU work
+    // completes asynchronously from the issued CPU steps. Therefore we need to call
+    // glFinish before we can compute an accurate time elapsed by the test.
+    //
+    // To compute an accurate value for "mStepsToRun" we do a two-pass calibration. The
+    // first pass runs for "gCalibrationTimeSeconds" and calls glFinish every step. The
+    // estimated steps to run using this method is very inaccurate but is guaranteed to
+    // complete in a fixed amount of time. Using that estimate we then run a second pass
+    // and call glFinish a single time after "mStepsToRun" steps. We can then use the
+    // "actual" time elapsed to compute an accurate estimate for "mStepsToRun".
+
+    if (policy == RunLoopPolicy::FinishEveryStep)
+    {
+        for (int loopIndex = 0; loopIndex < gWarmupLoops; ++loopIndex)
+        {
+            doRunLoop(gMaxTrialTimeSeconds, stepsToRun, RunLoopPolicy::RunContinuously);
+
+            // Compute mean of the calibration results.
+            double sampleElapsedTime = mTimer.getElapsedTime();
+            int sampleStepsPerformed = mTrialNumStepsPerformed;
+
+            if (gVerboseLogging)
+            {
+                printf("Calibration loop took %.2lf seconds, with %d steps.\n", sampleElapsedTime,
+                       sampleStepsPerformed);
+            }
+
+            // Scale steps down according to the time that exceeded one second.
+            double sampleScale = gCalibrationTimeSeconds / sampleElapsedTime;
+            stepsToRun = static_cast<int>(static_cast<double>(sampleStepsPerformed) * sampleScale);
+            stepsToRun = std::max(1, stepsToRun);
+            if (getStepAlignment() != 1)
+            {
+                stepsToRun = rx::roundUp(stepsToRun, getStepAlignment());
+            }
+        }
+    }
+
+    // Scale steps down according to the time that exceeded one second.
+    mStepsToRun = stepsToRun;
 
     if (gVerboseLogging)
     {
-        printf(
-            "Running %d steps (calibration took %.2lf seconds). Expecting trial time of %.2lf "
-            "seconds.\n",
-            mStepsToRun, elapsedTime,
-            mStepsToRun * (elapsedTime / static_cast<double>(mTrialNumStepsPerformed)));
+        printf("Running %d steps after calibration.", mStepsToRun);
     }
 
     // Calibration allows the perf test runner script to save some time.
@@ -687,6 +738,10 @@ void ANGLERenderTest::SetUp()
     mConfigParams.depthBits   = 24;
     mConfigParams.stencilBits = 8;
     mConfigParams.colorSpace  = mTestParams.colorSpace;
+    if (mTestParams.surfaceType != SurfaceType::WindowWithVSync)
+    {
+        mConfigParams.swapInterval = 0;
+    }
 
     if (!mGLWindow->initializeGL(mOSWindow, mEntryPointsLib.get(), mTestParams.driver, withMethods,
                                  mConfigParams))
@@ -696,7 +751,7 @@ void ANGLERenderTest::SetUp()
         // FAIL returns.
     }
 
-    // Disable vsync.
+    // Disable vsync (if not done by the window init).
     if (mTestParams.surfaceType != SurfaceType::WindowWithVSync)
     {
         if (!mGLWindow->setSwapInterval(0))
@@ -756,7 +811,7 @@ void ANGLERenderTest::SetUp()
     if (mStepsToRun <= 0)
     {
         // Ensure we always call Finish when calibrating Render tests. This completes our work
-        // beween calibration measurements.
+        // between calibration measurements.
         calibrateStepsToRun(RunLoopPolicy::FinishEveryStep);
     }
 }

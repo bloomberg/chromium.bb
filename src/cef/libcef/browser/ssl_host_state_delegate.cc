@@ -57,13 +57,13 @@ bool CefSSLHostStateDelegate::DidHostRunInsecureContent(
 
 void CefSSLHostStateDelegate::AllowHttpForHost(
     const std::string& host,
-    content::WebContents* web_contents) {
+    content::WebContents* web_content) {
   // Intentional no-op.
 }
 
 bool CefSSLHostStateDelegate::IsHttpAllowedForHost(
     const std::string& host,
-    content::WebContents* web_contents) {
+    content::WebContents* web_content) {
   // Intentional no-op. Return value does not matter as HTTPS-Only Mode is not
   // enabled.
   return false;

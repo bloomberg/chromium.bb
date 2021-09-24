@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 10
+// Next MinVersion: 13
 
 module crosapi.mojom;
 
@@ -77,10 +77,10 @@ interface AppController {
   // to fill to get the required icon.
   // There should always be a return value for this method. If there is an
   // error during the loading, the return value should be a default IconValue
-  // struct, with IconType = kUnknow to indicate it's an error case. If loading
+  // struct, with IconType = kUnknown to indicate it's an error case. If loading
   // succeeded, the size of the returning icon is expected to be as close as
   // possible with the |size_hint_in_dip| set in the interface, but may not be
-  // exactly same.
+  // exactly the same.
   [MinVersion=5]
   LoadIcon@5(
     string app_id,
@@ -100,6 +100,24 @@ interface AppController {
   SetWindowMode@7(
       string app_id,
       WindowMode window_mode);
+
+  // Launch the app with |params|. The params include |app_id|,
+  // |launch_source|, and optional |intent| at the moment. This method will
+  // return |launch_result| to allow us find out which instance the app is
+  // running in.
+  [MinVersion=10]
+  Launch@8(LaunchParams params) => (LaunchResult launch_result);
+
+  // Sends the execution command to Lacros when user selects an item in the
+  // context menu to execute for an app with |app_id|. Current only the
+  // shortcut items in context menu need to be executed in lacros-chrome.
+  // The |id| represent which item user selected.
+  // This method will launch the app with selected shortcut and return
+  // |launch_result| to allow us find out which instance the app is running in.
+  [MinVersion=12]
+  ExecuteContextMenuCommand@9(
+      string app_id,
+      string id) => (LaunchResult launch_result);
 };
 
 // Interacts with the app service. Implemented in ash-chrome and called in
@@ -112,6 +130,30 @@ interface AppServiceProxy {
   [MinVersion=8]
   RegisterAppServiceSubscriber@0(
       pending_remote<AppServiceSubscriber> subscriber);
+
+  // Launch the app with |params|. The params include |app_id|,
+  // |launch_source|, and optional |intent| at the moment.
+  [MinVersion=11]
+  Launch@1(LaunchParams params);
+
+  // Load icon for an app with |app_id| from ash-chrome.
+  // |icon_key|  contains the arguments for an app icon, see
+  // apps::mojom::IconKey for more details. |icon_type| represent the icon
+  // format requested (e.g. compressed, uncompressed. etc). |size_hint_in_dip|
+  // is a hint of how big the icon should be.  All these fields are necessary
+  // to fill to get the required icon.
+  // There should always be a return value for this method. If there is an
+  // error during the loading, the return value should be a default IconValue
+  // struct, with IconType = kUnknown to indicate it's an error case. If loading
+  // succeeded, the size of the returning icon is expected to be as close as
+  // possible with the |size_hint_in_dip| set in the interface, but may not be
+  // exactly the same.
+  [MinVersion=12]
+  LoadIcon@2(
+    string app_id,
+    IconKey icon_key,
+    IconType icon_type,
+    int32 size_hint_in_dip) => (IconValue icon_value);
 };
 
 // Interacts with the app service. Implemented in lacros-chrome and called in

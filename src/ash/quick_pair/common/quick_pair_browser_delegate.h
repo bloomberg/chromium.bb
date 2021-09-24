@@ -5,12 +5,18 @@
 #ifndef ASH_QUICK_PAIR_COMMON_QUICK_PAIR_BROWSER_DELEGATE_H_
 #define ASH_QUICK_PAIR_COMMON_QUICK_PAIR_BROWSER_DELEGATE_H_
 
+#include "ash/services/quick_pair/public/mojom/quick_pair_service.mojom-forward.h"
 #include "base/component_export.h"
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
+
+namespace signin {
+class IdentityManager;
+}  // namespace signin
 
 namespace ash {
 namespace quick_pair {
@@ -30,6 +36,14 @@ class COMPONENT_EXPORT(QUICK_PAIR_COMMON) QuickPairBrowserDelegate {
   // Returns the URL loader factory associated with the active user's profile.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
+
+  // Returns a pointer to the IdentityManager for the active user.
+  virtual signin::IdentityManager* GetIdentityManager() = 0;
+
+  // Starts the utility process which houses QuickPairService and returns a
+  // PendingReceiver for it.
+  virtual void RequestService(
+      mojo::PendingReceiver<mojom::QuickPairService> receiver) = 0;
 };
 
 }  // namespace quick_pair

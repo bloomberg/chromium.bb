@@ -46,6 +46,7 @@
 #include "third_party/blink/public/common/use_counter/use_counter_feature.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-forward.h"
+#include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
@@ -266,7 +267,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Request the creation of a new fenced frame, and return the WebRemoteFrame*
   // associated with it.
   virtual WebRemoteFrame* CreateFencedFrame(
-      const WebElement& fenced_frame_element) {
+      const WebElement& fenced_frame_element,
+      CrossVariantMojoAssociatedReceiver<
+          mojom::FencedFrameOwnerHostInterfaceBase> receiver) {
     return nullptr;
   }
 
@@ -402,13 +405,12 @@ class BLINK_EXPORT WebLocalFrameClient {
   // The page title is available.
   virtual void DidReceiveTitle(const WebString& title) {}
 
-  // The frame's document finished loading.
+  // The DOMContentLoaded event was dispatched for the frame's document.
   // This method may not execute JavaScript code.
-  // TODO(dgozman): rename this to DidFireDOMContentLoadedEvent.
-  virtual void DidFinishDocumentLoad() {}
+  virtual void DidDispatchDOMContentLoadedEvent() {}
 
-  // Like |didFinishDocumentLoad|, except this method may run JavaScript
-  // code (and possibly invalidate the frame).
+  // Like |DidDispatchDOMContentLoadedEvent|, except this method may run
+  // JavaScript code (and possibly invalidate the frame).
   virtual void RunScriptsAtDocumentReady() {}
 
   // The frame's window.onload event is ready to fire. This method may delay

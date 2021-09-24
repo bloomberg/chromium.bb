@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chromeos/components/connectivity_diagnostics/url_constants.h"
 #include "chromeos/grit/connectivity_diagnostics_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -31,7 +31,7 @@ CreateWebAppInfoForConnectivityDiagnosticsSystemWebApp() {
   info->theme_color = 0xFFFFFFFF;
   info->background_color = 0xFFFFFFFF;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
-  info->open_as_window = true;
+  info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
 
   return info;
 }

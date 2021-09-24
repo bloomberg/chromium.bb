@@ -11,12 +11,14 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequence_bound.h"
 #include "base/timer/timer.h"
 #include "content/browser/conversions/conversion_manager.h"
+#include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/sent_report_info.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -57,19 +59,23 @@ class ConversionManagerProviderImpl : public ConversionManager::Provider {
 // storage. Owned by the storage partition.
 class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
  public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class DeleteEvent {
+    kStarted = 0,
+    kSucceeded = 1,
+    kFailed = 2,
+    kMaxValue = kFailed,
+  };
+
   // Interface which manages the ownership, queuing, and sending of pending
   // conversion reports. Owned by |this|.
   class ConversionReporter {
    public:
     virtual ~ConversionReporter() = default;
 
-    // Adds |reports| to a shared queue of reports that need to be sent. Runs
-    // |report_sent_callback| for every report that is sent, with the associated
-    // |conversion_id| of the report and the time the report was originally
-    // supposed to be sent.
-    virtual void AddReportsToQueue(
-        std::vector<ConversionReport> reports,
-        base::RepeatingCallback<void(SentReportInfo)> report_sent_callback) = 0;
+    // Adds |reports| to a shared queue of reports that need to be sent.
+    virtual void AddReportsToQueue(std::vector<ConversionReport> reports) = 0;
   };
 
   // Configures underlying storage to be setup in memory, rather than on
@@ -113,6 +119,8 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
                  base::OnceClosure done) override;
 
  private:
+  friend class ConversionManagerImplTest;
+
   ConversionManagerImpl(
       std::unique_ptr<ConversionReporter> reporter,
       std::unique_ptr<ConversionPolicy> policy,
@@ -141,16 +149,9 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
   void HandleReportsSentFromWebUI(base::OnceClosure done,
                                   std::vector<ConversionReport> reports);
 
-  void MaybeStoreSentReportInfo(SentReportInfo info);
-
   // Notifies storage to delete the given |conversion_id| when its associated
   // report has been sent.
   void OnReportSent(SentReportInfo info);
-
-  // Similar to OnReportSent, but invokes |reports_sent_barrier| when the
-  // report has been removed from storage.
-  void OnReportSentFromWebUI(base::OnceClosure reports_sent_barrier,
-                             SentReportInfo info);
 
   // Friend to expose the ConversionStorage for certain tests.
   friend std::vector<ConversionReport> GetConversionsToReportForTesting(
@@ -176,6 +177,12 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
   // Stores info for the last |max_sent_reports_to_store_| reports sent in this
   // session for display in conversion internals UI.
   base::circular_deque<SentReportInfo> sent_reports_;
+
+  // Stores the set of conversion IDs whose reports are being sent by
+  // `SendReportsForWebUI()`. Once empty, `send_reports_for_web_ui_callback_` is
+  // invoked if non-null.
+  base::flat_set<ConversionReport::Id> pending_conversion_ids_for_internals_ui_;
+  base::OnceClosure send_reports_for_web_ui_callback_;
 
   // This is needed to avoid leaking memory.
   const size_t max_sent_reports_to_store_;

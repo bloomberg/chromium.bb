@@ -6,6 +6,7 @@ import type * as Protocol from '../../generated/protocol.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 
 import type {DOMNode} from './DOMModel.js';
+import {DOMModel} from './DOMModel.js';
 import {DeferredDOMNode} from './DOMModel.js';
 import type {Target} from './Target.js';
 import {Capability} from './Target.js';
@@ -29,7 +30,7 @@ export class AccessibilityNode {
   private readonly accessibilityModelInternal: AccessibilityModel;
   private readonly agent: ProtocolProxyApi.AccessibilityApi;
   private readonly idInternal: Protocol.Accessibility.AXNodeId;
-  private readonly backendDOMNodeIdInternal: number|null;
+  private readonly backendDOMNodeIdInternal: Protocol.DOM.BackendNodeId|null;
   private readonly deferredDOMNodeInternal: DeferredDOMNode|null;
   private readonly ignoredInternal: boolean;
   private readonly ignoredReasonsInternal: Protocol.Accessibility.AXProperty[]|undefined;
@@ -133,7 +134,7 @@ export class AccessibilityNode {
     return Boolean(this.backendDOMNodeIdInternal);
   }
 
-  backendDOMNodeId(): number|null {
+  backendDOMNodeId(): Protocol.DOM.BackendNodeId|null {
     return this.backendDOMNodeIdInternal;
   }
 
@@ -180,12 +181,22 @@ export class AccessibilityNode {
 
     return this.childIds.every(id => this.accessibilityModelInternal.axNodeForId(id) === null);
   }
+
+  // Only the root node gets a frameId, so nodes have to walk up the tree to find their frameId.
+  getFrameId(): Protocol.Page.FrameId|null {
+    const domNode = this.accessibilityModel().domNodeforAXNode(this);
+    if (!domNode) {
+      return null;
+    }
+    return domNode.frameId();
+  }
 }
 
 export class AccessibilityModel extends SDKModel<void> {
   agent: ProtocolProxyApi.AccessibilityApi;
   private axIdToAXNode: Map<string, AccessibilityNode>;
   private readonly backendDOMNodeIdToAXNode: Map<Protocol.DOM.BackendNodeId, AccessibilityNode>;
+  private readonly backendDOMNodeIdToDOMNode: Map<Protocol.DOM.BackendNodeId, DOMNode|null>;
 
   constructor(target: Target) {
     super(target);
@@ -194,6 +205,7 @@ export class AccessibilityModel extends SDKModel<void> {
 
     this.axIdToAXNode = new Map();
     this.backendDOMNodeIdToAXNode = new Map();
+    this.backendDOMNodeIdToDOMNode = new Map();
   }
 
   clear(): void {
@@ -209,8 +221,7 @@ export class AccessibilityModel extends SDKModel<void> {
   }
 
   async requestPartialAXTree(node: DOMNode): Promise<void> {
-    const {nodes} = await this.agent.invoke_getPartialAXTree(
-        {nodeId: node.id, backendNodeId: undefined, objectId: undefined, fetchRelatives: true});
+    const {nodes} = await this.agent.invoke_getPartialAXTree({nodeId: node.id, fetchRelatives: true});
     if (!nodes) {
       return;
     }
@@ -226,42 +237,52 @@ export class AccessibilityModel extends SDKModel<void> {
     }
   }
 
-  async requestRootNode(depth: number = 2): Promise<AccessibilityNode|undefined> {
-    const {nodes} = await this.agent.invoke_getFullAXTree({max_depth: depth});
+  private async pushNodesToFrontend(backendIds: Set<Protocol.DOM.BackendNodeId>): Promise<void> {
+    const domModel = this.target().model(DOMModel);
+    if (!domModel) {
+      return;
+    }
+    const newNodesToTrack = await domModel.pushNodesByBackendIdsToFrontend(backendIds);
+    newNodesToTrack?.forEach((value, key) => this.backendDOMNodeIdToDOMNode.set(key, value));
+  }
+
+  private createNodesFromPayload(payloadNodes: Protocol.Accessibility.AXNode[]): AccessibilityNode[] {
+    const backendIds: Set<Protocol.DOM.BackendNodeId> = new Set();
+    const accessibilityNodes = payloadNodes.map(node => {
+      const sdkNode = new AccessibilityNode(this, node);
+      const backendId = sdkNode.backendDOMNodeId();
+      if (backendId) {
+        backendIds.add(backendId);
+      }
+      return sdkNode;
+    });
+    this.pushNodesToFrontend(backendIds);
+
+    for (const sdkNode of accessibilityNodes) {
+      for (const sdkChild of sdkNode.children()) {
+        sdkChild.setParentNode(sdkNode);
+      }
+    }
+    return accessibilityNodes;
+  }
+
+  async requestRootNode(depth: number = 2, frameId?: Protocol.Page.FrameId): Promise<AccessibilityNode|undefined> {
+    const {nodes} = await this.agent.invoke_getFullAXTree({depth, frameId});
     if (!nodes) {
       return;
     }
-
-    const axNodes = nodes.map(node => new AccessibilityNode(this, node));
-
-    for (const axNode of this.axIdToAXNode.values()) {
-      for (const axChild of axNode.children()) {
-        axChild.setParentNode(axNode);
-      }
-    }
-
-    return axNodes[0];
+    const axNodes = this.createNodesFromPayload(nodes);
+    const root = axNodes[0];
+    return root;
   }
 
-  async requestAXChildren(nodeId: Protocol.Accessibility.AXNodeId): Promise<AccessibilityNode[]> {
-    const {nodes} = await this.agent.invoke_getChildAXNodes({id: nodeId});
+  async requestAXChildren(nodeId: Protocol.Accessibility.AXNodeId, frameId?: Protocol.Page.FrameId):
+      Promise<AccessibilityNode[]> {
+    const {nodes} = await this.agent.invoke_getChildAXNodes({id: nodeId, frameId});
     if (!nodes) {
       return [];
     }
-
-    const axNodes = [];
-    for (const payload of nodes) {
-      if (!this.axIdToAXNode.has(payload.nodeId)) {
-        axNodes.push(new AccessibilityNode(this, payload));
-      }
-    }
-
-    for (const axNode of this.axIdToAXNode.values()) {
-      for (const axChild of axNode.children()) {
-        axChild.setParentNode(axNode);
-      }
-    }
-
+    const axNodes = this.createNodesFromPayload(nodes);
     return axNodes;
   }
 
@@ -272,31 +293,25 @@ export class AccessibilityModel extends SDKModel<void> {
       return loadedAXNode;
     }
 
-    const {nodes} = await this.agent.invoke_getPartialAXTree(
-        {nodeId: node.id, backendNodeId: undefined, objectId: undefined, fetchRelatives: true});
+    const {nodes} = await this.agent.invoke_getPartialAXTree({nodeId: node.id, fetchRelatives: true});
     if (!nodes) {
       return null;
     }
-
-    const ancestors = [];
-    for (const payload of nodes) {
-      if (!this.axIdToAXNode.has(payload.nodeId)) {
-        ancestors.push(new AccessibilityNode(this, payload));
-      }
-    }
-
-    for (const axNode of this.axIdToAXNode.values()) {
-      for (const axChild of axNode.children()) {
-        axChild.setParentNode(axNode);
-      }
-    }
-
+    const ancestors = this.createNodesFromPayload(nodes);
     // Request top level children nodes.
     for (const node of ancestors) {
       await this.requestAXChildren(node.id());
     }
 
     return this.axNodeForDOMNode(node);
+  }
+
+  async updateSubtreeAndAncestors(backendNodeId: Protocol.DOM.BackendNodeId): Promise<void> {
+    const {nodes} = await this.agent.invoke_getPartialAXTree({backendNodeId, fetchRelatives: true});
+    if (!nodes) {
+      return;
+    }
+    this.createNodesFromPayload(nodes);
   }
 
   axNodeForId(axId: string): AccessibilityNode|null {
@@ -312,6 +327,14 @@ export class AccessibilityModel extends SDKModel<void> {
       return null;
     }
     return this.backendDOMNodeIdToAXNode.get(domNode.backendNodeId()) ?? null;
+  }
+
+  domNodeforAXNode(axNode: AccessibilityNode): DOMNode|null {
+    const backendDOMNodeId = axNode.backendDOMNodeId();
+    if (!backendDOMNodeId) {
+      return null;
+    }
+    return this.backendDOMNodeIdToDOMNode.get(backendDOMNodeId) ?? null;
   }
 
   setAXNodeForBackendDOMNodeId(backendDOMNodeId: Protocol.DOM.BackendNodeId, axNode: AccessibilityNode): void {

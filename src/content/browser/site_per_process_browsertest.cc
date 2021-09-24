@@ -483,7 +483,7 @@ blink::ParsedPermissionsPolicy CreateParsedPermissionsPolicyMatchesNone(
 
 // Check frame depth on node, widget, and process all match expected depth.
 void CheckFrameDepth(unsigned int expected_depth, FrameTreeNode* node) {
-  EXPECT_EQ(expected_depth, node->depth());
+  EXPECT_EQ(expected_depth, node->current_frame_host()->GetFrameDepth());
   RenderProcessHost::Priority priority =
       node->current_frame_host()->GetRenderWidgetHost()->GetPriority();
   EXPECT_EQ(expected_depth, priority.frame_depth);
@@ -7106,6 +7106,7 @@ class ShowCreatedPopupWidgetInterceptor
   }
 
   void ShowPopup(const gfx::Rect& initial_rect,
+                 const gfx::Rect& initial_anchor_rect,
                  ShowPopupCallback callback) override {
     show_callback_ = std::move(callback);
     initial_rect_ = initial_rect;
@@ -7113,7 +7114,13 @@ class ShowCreatedPopupWidgetInterceptor
   }
 
   void ResumeShowPopupWidget() {
-    GetForwardingInterface()->ShowPopup(initial_rect_,
+    // Let anchor have same origin as bounds, but its width and height should be
+    // 1,1 as RenderWidgetHostViewAura sets OwnedWindowAnchorPosition as
+    // kBottomLeft. Otherwise, the bottom left point of the |initial_rect|'s
+    // size is going to be used as the origin of a popup.
+    gfx::Rect anchor = initial_rect_;
+    anchor.set_size({1, 1});
+    GetForwardingInterface()->ShowPopup(initial_rect_, anchor,
                                         std::move(show_callback_));
   }
 
@@ -7372,11 +7379,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // The pending RFH should have been canceled and destroyed, so that it won't
   // be reused while it's not live in the next navigation.
-  {
-    RenderFrameHostImpl* pending_rfh =
-        root->render_manager()->speculative_frame_host();
-    EXPECT_FALSE(pending_rfh);
-  }
+  EXPECT_FALSE(root->render_manager()->speculative_frame_host());
 
   // Navigate main tab to b.com again.  This should not crash.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title3.html"));
@@ -11565,7 +11568,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // main frame should've been updated to the RFH from the back navigation.
   EXPECT_EQ(popup_contents->GetMainFrame()->render_view_host(), rvh);
   EXPECT_TRUE(rvh->is_active());
-  EXPECT_EQ(rvh->GetMainFrame(), popup_contents->GetMainFrame());
+  EXPECT_EQ(rvh->GetMainRenderFrameHost(), popup_contents->GetMainFrame());
 }
 
 // Check that when A opens a new window with B which embeds an A subframe, the
@@ -11628,7 +11631,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, FrameDepthTest) {
 
   FrameTreeNode* child0 = root->child_at(0);
   {
-    EXPECT_EQ(1u, child0->depth());
+    EXPECT_EQ(1u, child0->current_frame_host()->GetFrameDepth());
     RenderProcessHost::Priority priority =
         child0->current_frame_host()->GetRenderWidgetHost()->GetPriority();
     // Same site instance as root.
@@ -11649,7 +11652,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, FrameDepthTest) {
 
   FrameTreeNode* grand_child = root->child_at(1)->child_at(0);
   {
-    EXPECT_EQ(2u, grand_child->depth());
+    EXPECT_EQ(2u, grand_child->current_frame_host()->GetFrameDepth());
     RenderProcessHost::Priority priority =
         grand_child->current_frame_host()->GetRenderWidgetHost()->GetPriority();
     EXPECT_EQ(2u, priority.frame_depth);
@@ -13693,8 +13696,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // the hung renderer dialog used to undesirably show up for background tabs
 // (typically during session restore when many navigations would be happening in
 // backgrounded processes).
+// TODO(crbug.com/1246541): Flaky on LaCrOS, Mac, and Windows.
+#if defined(OS_MAC) || defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_NoCommitTimeoutForInvisibleWebContents \
+  DISABLED_NoCommitTimeoutForInvisibleWebContents
+#else
+#define MAYBE_NoCommitTimeoutForInvisibleWebContents \
+  NoCommitTimeoutForInvisibleWebContents
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       NoCommitTimeoutForInvisibleWebContents) {
+                       MAYBE_NoCommitTimeoutForInvisibleWebContents) {
   // Navigate first tab to a.com.
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), a_url));

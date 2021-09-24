@@ -51,9 +51,10 @@
 #include "tools/trace/EventTracingPriv.h"
 #include "tools/trace/SkDebugfTracer.h"
 
-#ifdef SK_XML
+#if defined(SK_ENABLE_SVG)
 #include "modules/svg/include/SkSVGDOM.h"
-#endif  // SK_XML
+#include "modules/svg/include/SkSVGNode.h"
+#endif
 
 #ifdef SK_ENABLE_ANDROID_UTILS
 #include "bench/BitmapRegionDecoderBench.h"
@@ -468,7 +469,7 @@ static int setup_gpu_bench(Target* target, Benchmark* bench, int maxGpuFrameLag)
 #define kBogusContextType GrContextFactory::kGL_ContextType
 #define kBogusContextOverrides GrContextFactory::ContextOverrides::kNone
 
-static skstd::optional<Config> create_base_config(const SkCommandLineConfig* config) {
+static skstd::optional<Config> create_config(const SkCommandLineConfig* config) {
     if (const auto* gpuConfig = config->asConfigGpu()) {
         if (!FLAGS_gpu) {
             SkDebugf("Skipping config '%s' as requested.\n", config->getTag().c_str());
@@ -479,7 +480,6 @@ static skstd::optional<Config> create_base_config(const SkCommandLineConfig* con
         const auto ctxOverrides = gpuConfig->getContextOverrides();
         const auto sampleCount = gpuConfig->getSamples();
         const auto colorType = gpuConfig->getColorType();
-        auto colorSpace = gpuConfig->getColorSpace();
         if (gpuConfig->getSurfType() != SkCommandLineConfigGpu::SurfType::kDefault) {
             SkDebugf("This tool only supports the default surface type.");
             return skstd::nullopt;
@@ -505,7 +505,7 @@ static skstd::optional<Config> create_base_config(const SkCommandLineConfig* con
                       Benchmark::kGPU_Backend,
                       colorType,
                       kPremul_SkAlphaType,
-                      sk_ref_sp(colorSpace),
+                      config->refColorSpace(),
                       sampleCount,
                       ctxType,
                       ctxOverrides,
@@ -522,7 +522,7 @@ static skstd::optional<Config> create_base_config(const SkCommandLineConfig* con
                       Benchmark::backend,                                               \
                       color,                                                            \
                       alpha,                                                            \
-                      nullptr,                                                          \
+                      config->refColorSpace(),                                          \
                       0,                                                                \
                       kBogusContextType,                                                \
                       kBogusContextOverrides,                                           \
@@ -531,12 +531,13 @@ static skstd::optional<Config> create_base_config(const SkCommandLineConfig* con
 
     CPU_CONFIG("nonrendering", kNonRendering_Backend, kUnknown_SkColorType, kUnpremul_SkAlphaType)
 
-    CPU_CONFIG("a8",   kRaster_Backend,   kAlpha_8_SkColorType, kPremul_SkAlphaType)
-    CPU_CONFIG("565",  kRaster_Backend,   kRGB_565_SkColorType, kOpaque_SkAlphaType)
-    CPU_CONFIG("8888", kRaster_Backend,       kN32_SkColorType, kPremul_SkAlphaType)
-    CPU_CONFIG("rgba", kRaster_Backend, kRGBA_8888_SkColorType, kPremul_SkAlphaType)
-    CPU_CONFIG("bgra", kRaster_Backend, kBGRA_8888_SkColorType, kPremul_SkAlphaType)
-    CPU_CONFIG("f16",  kRaster_Backend,  kRGBA_F16_SkColorType, kPremul_SkAlphaType)
+    CPU_CONFIG("a8",    kRaster_Backend,    kAlpha_8_SkColorType, kPremul_SkAlphaType)
+    CPU_CONFIG("565",   kRaster_Backend,    kRGB_565_SkColorType, kOpaque_SkAlphaType)
+    CPU_CONFIG("8888",  kRaster_Backend,        kN32_SkColorType, kPremul_SkAlphaType)
+    CPU_CONFIG("rgba",  kRaster_Backend,  kRGBA_8888_SkColorType, kPremul_SkAlphaType)
+    CPU_CONFIG("bgra",  kRaster_Backend,  kBGRA_8888_SkColorType, kPremul_SkAlphaType)
+    CPU_CONFIG("f16",   kRaster_Backend,   kRGBA_F16_SkColorType, kPremul_SkAlphaType)
+    CPU_CONFIG("srgba", kRaster_Backend, kSRGBA_8888_SkColorType, kPremul_SkAlphaType)
 
 #undef CPU_CONFIG
 
@@ -544,41 +545,14 @@ static skstd::optional<Config> create_base_config(const SkCommandLineConfig* con
     return skstd::nullopt;
 }
 
-static void create_config(const SkCommandLineConfig* config, SkTArray<Config>* configs) {
-    skstd::optional<Config> target = create_base_config(config);
-    if (!target) {
-        return;
-    }
-
-#define CS(t, cs)                    \
-    do {                             \
-        if (tag.equals(t)) {         \
-            target->colorSpace = cs; \
-        }                            \
-    } while (false)
-
-    // Scan through the via tags, applying any color-spaces we find
-    for (const SkString& tag : config->getViaParts()) {
-        // 'narrow' has a gamut narrower than sRGB, and different transfer function.
-        CS("narrow",  SkColorSpace::MakeRGB(SkNamedTransferFn::k2Dot2, gNarrow_toXYZD50));
-        CS("srgb",    SkColorSpace::MakeSRGB());
-        CS("linear",  SkColorSpace::MakeSRGBLinear());
-        CS("p3",      SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDisplayP3));
-        CS("spin",    SkColorSpace::MakeSRGB()->makeColorSpin());
-        CS("rec2020", SkColorSpace::MakeRGB(SkNamedTransferFn::kRec2020, SkNamedGamut::kRec2020));
-    }
-
-#undef CS
-
-    configs->push_back(target.value());
-}
-
 // Append all configs that are enabled and supported.
 void create_configs(SkTArray<Config>* configs) {
     SkCommandLineConfigArray array;
     ParseConfigs(FLAGS_config, &array);
     for (int i = 0; i < array.count(); ++i) {
-        create_config(array[i].get(), configs);
+        if (skstd::optional<Config> config = create_config(array[i].get())) {
+            configs->push_back(*config);
+        }
     }
 
     // If no just default configs were requested, then we're okay.
@@ -753,7 +727,7 @@ public:
             return nullptr;
         }
 
-#ifdef SK_XML
+#if defined(SK_ENABLE_SVG)
         SkMemoryStream stream(std::move(data));
         sk_sp<SkSVGDOM> svgDom = SkSVGDOM::MakeFromStream(stream);
         if (!svgDom) {
@@ -773,7 +747,7 @@ public:
         return recorder.finishRecordingAsPicture();
 #else
         return nullptr;
-#endif  // SK_XML
+#endif  // defined(SK_ENABLE_SVG)
     }
 
     Benchmark* next() {
@@ -1423,7 +1397,7 @@ int main(int argc, char** argv) {
 
             // Building stats.plot often shows up in profiles,
             // so skip building it when we're not going to print it anyway.
-            const bool want_plot = !FLAGS_quiet;
+            const bool want_plot = !FLAGS_quiet && !FLAGS_ms;
 
             Stats stats(samples, want_plot);
             log.beginObject(config);
@@ -1446,8 +1420,8 @@ int main(int argc, char** argv) {
             if (!keys.empty()) {
                 // dump to json, only SKPBench currently returns valid keys / values
                 SkASSERT(keys.count() == values.count());
-                for (int i = 0; i < keys.count(); i++) {
-                    log.appendMetric(keys[i].c_str(), values[i]);
+                for (int j = 0; j < keys.count(); j++) {
+                    log.appendMetric(keys[j].c_str(), values[j]);
                 }
             }
 
@@ -1512,8 +1486,8 @@ int main(int argc, char** argv) {
 
             if (FLAGS_verbose) {
                 SkDebugf("Samples:  ");
-                for (int i = 0; i < samples.count(); i++) {
-                    SkDebugf("%s  ", HUMANIZE(samples[i]));
+                for (int j = 0; j < samples.count(); j++) {
+                    SkDebugf("%s  ", HUMANIZE(samples[j]));
                 }
                 SkDebugf("%s\n", bench->getUniqueName());
             }

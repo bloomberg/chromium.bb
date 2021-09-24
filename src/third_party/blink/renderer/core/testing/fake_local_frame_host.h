@@ -86,7 +86,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DocumentOnLoadCompleted() override;
   void ForwardResourceTimingToParent(
       mojom::blink::ResourceTimingInfoPtr timing) override;
-  void DidFinishDocumentLoad() override;
+  void DidDispatchDOMContentLoadedEvent() override;
   void RunModalAlertDialog(const WTF::String& alert_message,
                            bool disable_third_party_subframe_suppresion,
                            RunModalAlertDialogCallback callback) override;
@@ -130,7 +130,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       const KURL& url,
       const WTF::String& http_method,
       const WTF::String& mime_type,
-      network::mojom::blink::RequestDestination request_destination) override;
+      network::mojom::blink::RequestDestination request_destination,
+      bool include_credentials) override;
   void DidChangeFrameOwnerProperties(
       const blink::FrameToken& child_frame_token,
       mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) override;
@@ -154,7 +155,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DidAddMessageToConsole(
       mojom::blink::ConsoleMessageLevel log_level,
       const WTF::String& message,
-      int32_t line_no,
+      uint32_t line_no,
       const WTF::String& source_id,
       const WTF::String& untrusted_stack_trace) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;

@@ -12,10 +12,13 @@ extern NSString* const kPasswordsTableViewId;
 extern NSString* const kPasswordsExportConfirmViewId;
 extern NSString* const kPasswordsSearchBarId;
 extern NSString* const kPasswordsScrimViewId;
+extern NSString* const kPasswordsAddPasswordButtonId;
 
 // The accessibility identifier of the password details table view.
 extern NSString* const kPasswordDetailsTableViewId;
 extern NSString* const kPasswordDetailsDeletionAlertViewId;
+extern NSString* const kPasswordsAddPasswordSaveButtonId;
+extern NSString* const kPasswordsAddPasswordCancelButtonId;
 
 // The accessibility identifier of the save password item.
 extern NSString* const kSavePasswordSwitchTableViewId;

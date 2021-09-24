@@ -4,14 +4,18 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -48,7 +52,12 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "printing/backend/test_print_backend.h"
 #include "printing/mojom/print.mojom.h"
+#include "printing/print_settings.h"
+#include "printing/printing_context.h"
+#include "printing/printing_context_factory_for_test.h"
+#include "printing/test_printing_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -58,6 +67,9 @@
 namespace printing {
 
 namespace {
+
+constexpr int kPrinterCapabilitiesMaxCopies = 99;
+constexpr int kPrintSettingsCopies = 42;
 
 constexpr int kDefaultDocumentCookie = 1234;
 
@@ -75,6 +87,7 @@ mojom::PrintParamsPtr GetPrintParams() {
 }
 
 void UpdatePrintSettingsReplyOnIO(
+    std::unique_ptr<PrintSettings>& snooped_settings,
     scoped_refptr<PrintQueriesQueue> queue,
     std::unique_ptr<PrinterQuery> printer_query,
     mojom::PrintManagerHost::UpdatePrintSettingsCallback callback) {
@@ -87,6 +100,8 @@ void UpdatePrintSettingsReplyOnIO(
                                   params->params.get());
     params->params->document_cookie = printer_query->cookie();
     params->pages = PageRange::GetPages(printer_query->settings().ranges());
+    snooped_settings =
+        std::make_unique<PrintSettings>(printer_query->settings());
   }
   bool canceled = printer_query->last_status() == PrintingContext::CANCEL;
 
@@ -110,6 +125,7 @@ void UpdatePrintSettingsReplyOnIO(
 }
 
 void UpdatePrintSettingsOnIO(
+    std::unique_ptr<PrintSettings>& snooped_settings,
     int32_t cookie,
     mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
     scoped_refptr<PrintQueriesQueue> queue,
@@ -123,8 +139,8 @@ void UpdatePrintSettingsOnIO(
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->SetSettings(
       std::move(job_settings),
-      base::BindOnce(&UpdatePrintSettingsReplyOnIO, queue,
-                     std::move(printer_query), std::move(callback)));
+      base::BindOnce(&UpdatePrintSettingsReplyOnIO, std::ref(snooped_settings),
+                     queue, std::move(printer_query), std::move(callback)));
 }
 
 class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
@@ -327,6 +343,8 @@ class TestPrintViewManager : public PrintViewManager {
   TestPrintViewManager& operator=(const TestPrintViewManager&) = delete;
   ~TestPrintViewManager() override = default;
 
+  PrintSettings* snooped_settings() { return snooped_settings_.get(); }
+
  private:
   // printing::mojom::PrintManagerHost:
   void UpdatePrintSettings(int32_t cookie,
@@ -334,9 +352,12 @@ class TestPrintViewManager : public PrintViewManager {
                            UpdatePrintSettingsCallback callback) override {
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
-        base::BindOnce(&UpdatePrintSettingsOnIO, cookie, std::move(callback),
-                       queue_, std::move(job_settings)));
+        base::BindOnce(&UpdatePrintSettingsOnIO, std::ref(snooped_settings_),
+                       cookie, std::move(callback), queue_,
+                       std::move(job_settings)));
   }
+
+  std::unique_ptr<PrintSettings> snooped_settings_;
 };
 
 class PrintBrowserTest : public InProcessBrowserTest {
@@ -575,7 +596,7 @@ class PrintExtensionBrowserTest : public extensions::ExtensionBrowserTest {
     GURL::Replacements replacements;
     replacements.SetQueryStr(query);
     url = url.ReplaceComponents(replacements);
-    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   }
 };
 
@@ -595,7 +616,7 @@ class SitePerProcessPrintExtensionBrowserTest
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, SelectionContainsIframe) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/selection_iframe.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/true);
 }
@@ -605,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, SelectionContainsIframe) {
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, NoScrolling) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/with-scrollable.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   auto* contents = browser()->tab_strip_model()->GetActiveWebContents();
   const char kExpression1[] = "iframe.contentWindow.scrollY";
@@ -635,7 +656,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, NoScrolling) {
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, DISABLED_NoScrollingFrameset) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/frameset.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   auto* contents = browser()->tab_strip_model()->GetActiveWebContents();
   const char kExpression[] =
@@ -654,7 +675,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, DISABLED_NoScrollingFrameset) {
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, NoScrollingVerticalRl) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/vertical-rl.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
 
   // Test that entering print preview didn't mess up the scroll position.
@@ -669,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, NoScrollingVerticalRl) {
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, ResetPageScaleAfterPrintPreview) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   auto* contents = browser()->tab_strip_model()->GetActiveWebContents();
   contents->SetPageScale(1.5);
@@ -689,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, ResetPageScaleAfterPrintPreview) {
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintFrameContent) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -710,7 +731,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeContent) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(
       embedded_test_server()->GetURL("/printing/content_with_iframe.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -736,7 +757,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeChain) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL(
       "/printing/content_with_iframe_chain.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(3u, original_contents->GetAllFrames().size());
@@ -783,7 +804,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeABA) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/printing/content_with_iframe_loop.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(3u, original_contents->GetAllFrames().size());
@@ -829,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(
       embedded_test_server()->GetURL("/printing/content_with_iframe.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // When OOPIF is not enabled, CompositorClient is not used.
   if (!IsOopifEnabled())
@@ -891,7 +912,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest,
 IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, BasicPrint) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
 }
@@ -904,7 +925,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(
       embedded_test_server()->GetURL("/printing/content_with_iframe.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -932,7 +953,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(
       embedded_test_server()->GetURL("/printing/content_with_iframe.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -970,7 +991,7 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPrintBrowserTest,
       "/printing/content_with_same_site_iframe.html"));
   GURL isolated_url(
       embedded_test_server()->GetURL(kIsolatedSite, "/printing/test1.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -990,7 +1011,7 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPrintBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, RegularPrinting) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   EXPECT_EQ(content::AreAllSitesIsolatedForTesting(), IsOopifEnabled());
 }
@@ -1000,7 +1021,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, RegularPrinting) {
 IN_PROC_BROWSER_TEST_F(IsolateOriginsPrintBrowserTest, OopifPrinting) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   EXPECT_TRUE(IsOopifEnabled());
 }
@@ -1011,7 +1032,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePrintBrowserTest, DisableCaching) {
   // 1) Navigate to A and trigger printing.
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/back_forward_cache/no-favicon.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   content::RenderFrameHost* rfh_a = current_frame_host();
   content::RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
@@ -1020,7 +1041,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePrintBrowserTest, DisableCaching) {
   // The first page is not cached because printing preview was open.
   GURL url_2(embedded_test_server()->GetURL(
       "b.com", "/back_forward_cache/no-favicon.html"));
-  ui_test_utils::NavigateToURL(browser(), url_2);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_2));
   delete_observer_rfh_a.WaitUntilDeleted();
 
   // 3) Navigate back and checks the blocklisted feature is recorded in UMA.
@@ -1050,7 +1071,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintExtensionBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintNup) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1067,7 +1088,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintNup) {
 IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, PrintNup) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1083,7 +1104,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, PrintNup) {
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, MultipagePrint) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/multipage.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   PrintAndWaitUntilPreviewIsReadyAndLoaded(/*print_only_selection=*/false);
 }
@@ -1091,7 +1112,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, MultipagePrint) {
 IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, MultipagePrint) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/multipage.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   PrintAndWaitUntilPreviewIsReadyAndLoaded(/*print_only_selection=*/false);
 }
@@ -1099,7 +1120,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, MultipagePrint) {
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PDFPluginNotKeyboardFocusable) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/multipage.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
   StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
@@ -1182,7 +1203,7 @@ class PrintPrerenderBrowserTest : public PrintBrowserTest {
 IN_PROC_BROWSER_TEST_F(PrintPrerenderBrowserTest, QuietBlockWithWindowPrint) {
   // Navigate to an initial page.
   const GURL kUrl(embedded_test_server()->GetURL("/empty.html"));
-  ui_test_utils::NavigateToURL(browser(), kUrl);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kUrl));
 
   // Start a prerender.
   GURL prerender_url =
@@ -1210,7 +1231,7 @@ IN_PROC_BROWSER_TEST_F(PrintPrerenderBrowserTest,
                        QuietBlockWithDocumentExecCommand) {
   // Navigate to an initial page.
   const GURL kUrl(embedded_test_server()->GetURL("/empty.html"));
-  ui_test_utils::NavigateToURL(browser(), kUrl);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kUrl));
 
   // Start a prerender.
   GURL prerender_url =
@@ -1229,5 +1250,100 @@ IN_PROC_BROWSER_TEST_F(PrintPrerenderBrowserTest,
   EXPECT_EQ(false, content::EvalJs(prerender_host, "firedAfterPrint"));
   EXPECT_EQ(1u, console_observer.messages().size());
 }
+
+class PrintBackendPrintBrowserTest : public PrintBrowserTest {
+ public:
+  PrintBackendPrintBrowserTest() = default;
+  ~PrintBackendPrintBrowserTest() override = default;
+
+  void SetUp() override {
+    test_backend_ = base::MakeRefCounted<TestPrintBackend>();
+    PrintBackend::SetPrintBackendForTesting(test_backend_.get());
+    PrintingContext::SetPrintingContextFactoryForTest(
+        &test_printing_context_factory_);
+    PrintBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    PrintBrowserTest::TearDown();
+    PrintingContext::SetPrintingContextFactoryForTest(/*factory=*/nullptr);
+    PrintBackend::SetPrintBackendForTesting(/*print_backend=*/nullptr);
+  }
+
+  void AddPrinter(const std::string& printer_name) {
+    const PrinterBasicInfo kPrinterInfo(
+        printer_name,
+        /*display_name=*/"test printer",
+        /*printer_description=*/"A printer for testing.",
+        /*printer_status=*/0,
+        /*is_default=*/true,
+        /*options=*/{});
+
+    auto default_caps = std::make_unique<PrinterSemanticCapsAndDefaults>();
+    default_caps->copies_max = kPrinterCapabilitiesMaxCopies;
+    test_backend_->AddValidPrinter(
+        printer_name, std::move(default_caps),
+        std::make_unique<PrinterBasicInfo>(kPrinterInfo));
+  }
+
+  void SetPrinterNameForSubsequentContexts(const std::string& printer_name) {
+    test_printing_context_factory_.SetPrinterNameForSubsequentContexts(
+        printer_name);
+  }
+
+ private:
+  class PrintBackendPrintingContextFactoryForTest
+      : public PrintingContextFactoryForTest {
+   public:
+    std::unique_ptr<PrintingContext> CreatePrintingContext(
+        PrintingContext::Delegate* delegate) override {
+      auto context = std::make_unique<TestPrintingContext>(delegate);
+
+      auto settings = std::make_unique<PrintSettings>();
+      settings->set_copies(kPrintSettingsCopies);
+      settings->set_device_name(
+          base::ASCIIToUTF16(base::StringPiece(printer_name_)));
+      context->SetDeviceSettings(printer_name_, std::move(settings));
+
+      return std::move(context);
+    }
+
+    void SetPrinterNameForSubsequentContexts(const std::string& printer_name) {
+      printer_name_ = printer_name;
+    }
+
+   private:
+    std::string printer_name_;
+  };
+
+  scoped_refptr<TestPrintBackend> test_backend_;
+  TestPrintingContextDelegate test_printing_context_delegate_;
+  PrintBackendPrintingContextFactoryForTest test_printing_context_factory_;
+};
+
+// TODO(crbug.com/822505)  ChromeOS uses different testing setup that isn't
+// hooked up to make use of `TestPrintingContext` yet.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTest, UpdatePrintSettings) {
+  AddPrinter("printer1");
+  SetPrinterNameForSubsequentContexts("printer1");
+
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  TestPrintViewManager print_view_manager(web_contents);
+  PrintViewManager::SetReceiverImplForTesting(&print_view_manager);
+
+  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+
+  ASSERT_TRUE(print_view_manager.snooped_settings());
+  EXPECT_EQ(print_view_manager.snooped_settings()->copies(),
+            kPrintSettingsCopies);
+}
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace printing

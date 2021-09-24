@@ -107,6 +107,7 @@ ResourceFormat SkColorTypeToResourceFormat(SkColorType color_type) {
     case kBGR_101010x_SkColorType:
     case kRGBA_F16Norm_SkColorType:
     case kRGBA_F32_SkColorType:
+    case kSRGBA_8888_SkColorType:
       break;
   }
   NOTREACHED();

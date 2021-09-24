@@ -37,6 +37,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
+#include "ui/ozone/platform/wayland/host/wayland_serial_tracker.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
@@ -107,16 +108,23 @@ bool WaylandWindowDragController::StartDragSession() {
     return false;
   }
 
+  auto serial = connection_->serial_tracker().GetSerial(
+      {wl::SerialType::kTouchPress, wl::SerialType::kMousePress});
+  if (!serial.has_value()) {
+    LOG(ERROR) << "Failed to retrieve touch/mouse press serial.";
+    return false;
+  }
+
   VLOG(1) << "Starting DND session.";
   state_ = State::kAttached;
-  drag_source_ = connection_->event_serial().event_type == ET_TOUCH_PRESSED
+  drag_source_ = serial->type == wl::SerialType::kTouchPress
                      ? DragSource::kTouch
                      : DragSource::kMouse;
 
   DCHECK(!data_source_);
   data_source_ = data_device_manager_->CreateSource(this);
   data_source_->Offer({kMimeTypeChromiumWindow});
-  data_source_->SetAction(DragDropTypes::DRAG_MOVE);
+  data_source_->SetDndActions(kDndActionWindowDrag);
 
   if (IsExtendedDragAvailable()) {
     extended_drag_source_ = std::make_unique<ExtendedDragSource>(
@@ -126,7 +134,7 @@ bool WaylandWindowDragController::StartDragSession() {
                << "Window/Tab dragging won't be fully functional.";
   }
 
-  data_device_->StartDrag(*data_source_, *origin_window_,
+  data_device_->StartDrag(*data_source_, *origin_window_, serial->value,
                           /*icon_surface=*/nullptr, this);
   pointer_grab_owner_ = origin_window_;
   should_process_drag_event_ = false;
@@ -202,7 +210,12 @@ void WaylandWindowDragController::OnDragEnter(WaylandWindow* window,
   // as WaylandScreen, are able to properly retrieve focus related info during
   // window dragging sesstions.
   pointer_location_ = location;
-  pointer_delegate_->OnPointerFocusChanged(window, location);
+
+  DCHECK(drag_source_.has_value());
+  if (*drag_source_ == DragSource::kMouse)
+    pointer_delegate_->OnPointerFocusChanged(window, location);
+  else
+    touch_delegate_->OnTouchFocusChanged(window, true);
 
   VLOG(1) << "OnEnter. widget=" << window->GetWidget();
 
@@ -217,7 +230,7 @@ void WaylandWindowDragController::OnDragEnter(WaylandWindow* window,
   DCHECK_EQ(data_offer_->mime_types().front(), kMimeTypeChromiumWindow);
 
   // Accept the offer and set the dnd action.
-  data_offer_->SetActions(kDndActionWindowDrag);
+  data_offer_->SetDndActions(kDndActionWindowDrag);
   data_offer_->Accept(serial, kMimeTypeChromiumWindow);
 }
 

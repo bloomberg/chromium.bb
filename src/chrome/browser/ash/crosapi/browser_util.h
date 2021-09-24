@@ -66,8 +66,31 @@ enum class LacrosLaunchSwitch {
   kLacrosOnly = 4
 };
 
+// Represents the different options available for lacros selection.
+enum class LacrosSelection {
+  kRootfs = 0,
+  kStateful = 1,
+  kMaxValue = kStateful,
+};
+
+struct ComponentInfo {
+  // The client-side component name.
+  const char* const name;
+  // The CRX "extension" ID for component updater.
+  // Must match the Omaha console.
+  const char* const crx_id;
+};
+
+extern const ComponentInfo kLacrosDogfoodCanaryInfo;
+extern const ComponentInfo kLacrosDogfoodDevInfo;
+extern const ComponentInfo kLacrosDogfoodStableInfo;
+
 extern const base::Feature kLacrosAllowOnStableChannel;
 extern const base::Feature kLacrosGooglePolicyRollout;
+
+// The default update channel to leverage for Lacros when the channel is
+// unknown.
+extern const version_info::Channel kLacrosDefaultChannel;
 
 // A command-line switch that can also be set from chrome://flags that affects
 // the frequency of Lacros updates.
@@ -174,11 +197,28 @@ bool IsSigninProfileOrBelongsToAffiliatedUser(Profile* profile);
 // Returns the UUID and version for all tracked interfaces. Exposed for testing.
 base::flat_map<base::Token, uint32_t> GetInterfaceVersions();
 
+// Represents how to launch Lacros Chrome.
+struct InitialBrowserAction {
+  explicit InitialBrowserAction(crosapi::mojom::InitialBrowserAction action);
+  InitialBrowserAction(crosapi::mojom::InitialBrowserAction action,
+                       std::vector<GURL> urls);
+  InitialBrowserAction(InitialBrowserAction&&);
+  InitialBrowserAction& operator=(InitialBrowserAction&&);
+  ~InitialBrowserAction();
+
+  // Mode how to launch Lacros chrome.
+  crosapi::mojom::InitialBrowserAction action;
+
+  // If action is kOpenWindowWithUrls, URLs here is passed to Lacros Chrome,
+  // and they will be opened.
+  std::vector<GURL> urls;
+};
+
 // Returns the initial parameter to be passed to Crosapi client,
 // such as lacros-chrome.
 mojom::BrowserInitParamsPtr GetBrowserInitParams(
     EnvironmentProvider* environment_provider,
-    crosapi::mojom::InitialBrowserAction initial_browser_action);
+    InitialBrowserAction initial_browser_action);
 
 // Invite the lacros-chrome to the mojo universe.
 // Queue messages to establish the mojo connection, so that the passed IPC is
@@ -194,7 +234,7 @@ mojo::Remote<crosapi::mojom::BrowserService> SendMojoInvitationToLacrosChrome(
 // and returns its FD.
 base::ScopedFD CreateStartupData(
     ::crosapi::EnvironmentProvider* environment_provider,
-    crosapi::mojom::InitialBrowserAction initial_browser_action);
+    InitialBrowserAction initial_browser_action);
 
 // Reads `kDataVerPref` and gets corresponding data version for `user_id_hash`.
 // If no such version is registered yet, returns `Version` that is invalid.
@@ -226,6 +266,14 @@ base::Version GetRootfsLacrosVersionMayBlock(
 // To be called at primary user login, to cache the policy value for launch
 // switch.
 void CacheLacrosLaunchSwitch(const policy::PolicyMap& map);
+
+// Returns the ComponentInfo associated with the currently active Lacros based
+// on the lacros stability switch selection.
+ComponentInfo GetLacrosComponentInfo();
+
+// Returns the update channel associated with the given loaded lacros selection.
+version_info::Channel GetLacrosSelectionUpdateChannel(
+    LacrosSelection selection);
 
 // Exposed for testing. Returns the lacros integration suggested by the policy
 // lacros-availability, modified by Finch flags and user flags as appropriate.

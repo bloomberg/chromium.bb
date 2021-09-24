@@ -17,16 +17,17 @@
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/ash/login/test/https_forwarder.h"
+#include "chrome/browser/ash/login/test/login_or_lock_screen_visible_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/test/oobe_screens_utils.h"
 #include "chrome/browser/ash/login/test/test_condition_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/supervised_user/supervised_user_features.h"
+#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -38,9 +39,6 @@
 #include "chromeos/dbus/update_engine/fake_update_engine_client.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/user_manager/fake_user_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -133,9 +131,7 @@ void OobeBaseTest::CreatedBrowserMainParts(
   // If the test initially shows views login screen, this notification might
   // come before SetUpOnMainThread(), so the observer has to be set up early.
   login_screen_load_observer_ =
-      std::make_unique<content::WindowedNotificationObserver>(
-          chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-          content::NotificationService::AllSources());
+      std::make_unique<LoginOrLockScreenVisibleWaiter>();
 
   MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
 }
@@ -164,7 +160,7 @@ void OobeBaseTest::SetUpOnMainThread() {
   LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
 
   if (ShouldWaitForOobeUI()) {
-    WaitForOobeUI();
+    MaybeWaitForLoginScreenLoad();
   }
   MixinBasedInProcessBrowserTest::SetUpOnMainThread();
 }
@@ -181,17 +177,12 @@ void OobeBaseTest::WaitForOobeUI() {
   // Wait for notification first. Otherwise LoginDisplayHost might not be
   // created yet.
   MaybeWaitForLoginScreenLoad();
-
-  // Wait for OobeUI to finish loading.
-  base::RunLoop run_loop;
-  if (!LoginDisplayHost::default_host()->GetOobeUI()->IsJSReady(
-          run_loop.QuitClosure())) {
-    run_loop.Run();
-  }
+  test::WaitForOobeJSReady();
 }
 
 void OobeBaseTest::WaitForGaiaPageLoad() {
   WaitForSigninScreen();
+  test::WaitForOobeJSReady();
   WaitForGaiaPageReload();
 }
 
@@ -201,7 +192,7 @@ void OobeBaseTest::WaitForGaiaPageLoadAndPropertyUpdate() {
   // 'ready' event arrives.  To ensure that these properties are updated before
   // they are checked, use WaitForGaiaPageBackButtonUpdate() instead of
   // WaitForGaiaPageLoad().
-  WaitForSigninScreen();
+  WaitForGaiaPageLoad();
   WaitForGaiaPageBackButtonUpdate();
 }
 

@@ -7,8 +7,11 @@
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/attestation_service.h"
+#include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/signing_key_pair.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service.h"
 #include "chrome/browser/enterprise/connectors/device_trust/signal_reporter.h"
+#include "chrome/browser/enterprise/connectors/device_trust/signals/signals_service.h"
+#include "chrome/browser/enterprise/connectors/device_trust/signals/signals_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -44,16 +47,17 @@ KeyedService* DeviceTrustServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   auto* profile = Profile::FromBrowserContext(context);
 
-  std::unique_ptr<AttestationService> attestation_service =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  std::unique_ptr<AttestationService> attestation_service =
       std::make_unique<AshAttestationService>(profile);
 #else
-      std::make_unique<DesktopAttestationService>();
+  std::unique_ptr<AttestationService> attestation_service =
+      std::make_unique<DesktopAttestationService>(SigningKeyPair::Create());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  return new DeviceTrustService(profile->GetPrefs(),
-                                std::move(attestation_service),
-                                std::make_unique<DeviceTrustSignalReporter>());
+  return new DeviceTrustService(
+      profile->GetPrefs(), std::move(attestation_service),
+      std::make_unique<DeviceTrustSignalReporter>(), CreateSignalsService());
 }
 
 }  // namespace enterprise_connectors

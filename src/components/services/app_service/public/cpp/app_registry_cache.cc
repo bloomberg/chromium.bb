@@ -4,9 +4,17 @@
 
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 
+#include "base/containers/contains.h"
+
 #include <utility>
 
 namespace apps {
+
+namespace {
+
+constexpr uint32_t kUAFSentinelInitial = 0xabcd1234;
+
+}  // namespace
 
 AppRegistryCache::Observer::Observer(AppRegistryCache* cache) {
   Observe(cache);
@@ -34,22 +42,20 @@ void AppRegistryCache::Observer::Observe(AppRegistryCache* cache) {
   }
 }
 
-AppRegistryCache::AppRegistryCache() : account_id_(EmptyAccountId()) {}
+AppRegistryCache::AppRegistryCache()
+    : account_id_(EmptyAccountId()), uaf_sentinel_(kUAFSentinelInitial) {}
 
 AppRegistryCache::~AppRegistryCache() {
   for (auto& obs : observers_) {
     obs.OnAppRegistryCacheWillBeDestroyed(this);
   }
   DCHECK(observers_.empty());
+  uaf_sentinel_ = 0;
 }
 
 void AppRegistryCache::AddObserver(Observer* observer) {
   DCHECK(observer);
   observers_.AddObserver(observer);
-
-  for (auto app_type : initialized_app_types_) {
-    observer->OnAppTypeInitialized(app_type);
-  }
 }
 
 void AppRegistryCache::RemoveObserver(Observer* observer) {
@@ -161,11 +167,18 @@ void AppRegistryCache::SetAccountId(const AccountId& account_id) {
   account_id_ = account_id;
 }
 
-bool AppRegistryCache::IsAppTypeInitialized(apps::mojom::AppType app_type) {
-  return initialized_app_types_.find(app_type) != initialized_app_types_.end();
+const std::set<apps::mojom::AppType>& AppRegistryCache::GetInitializedAppTypes()
+    const {
+  return initialized_app_types_;
+}
+
+bool AppRegistryCache::IsAppTypeInitialized(
+    apps::mojom::AppType app_type) const {
+  return base::Contains(initialized_app_types_, app_type);
 }
 
 void AppRegistryCache::OnAppTypeInitialized() {
+  CHECK_EQ(kUAFSentinelInitial, uaf_sentinel_);
   if (in_progress_initialized_app_types_.empty()) {
     return;
   }
@@ -174,6 +187,7 @@ void AppRegistryCache::OnAppTypeInitialized() {
     for (auto& obs : observers_) {
       obs.OnAppTypeInitialized(app_type);
     }
+    CHECK_EQ(kUAFSentinelInitial, uaf_sentinel_);
     initialized_app_types_.insert(app_type);
   }
 

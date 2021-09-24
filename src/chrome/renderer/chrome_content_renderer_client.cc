@@ -279,7 +279,7 @@ using extensions::Extension;
 
 namespace {
 
-// Whitelist PPAPI for Android Runtime for Chromium. (See crbug.com/383937)
+// Allow PPAPI for Android Runtime for Chromium. (See crbug.com/383937)
 #if BUILDFLAG(ENABLE_PLUGINS)
 const char* const kPredefinedAllowedCameraDeviceOrigins[] = {
     "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",
@@ -346,6 +346,17 @@ void MaybeEnableWebShare() {
     blink::WebRuntimeFeatures::EnableWebShare(true);
 #endif
 }
+
+#if BUILDFLAG(ENABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS) && \
+    BUILDFLAG(IS_CHROMEOS_ASH)
+bool IsTerminalSystemWebAppNaClPage(GURL url) {
+  url::Replacements<char> replacements;
+  replacements.ClearQuery();
+  replacements.ClearRef();
+  return url.ReplaceComponents(replacements) ==
+         "chrome-untrusted://terminal/html/nassh.html";
+}
+#endif
 
 }  // namespace
 
@@ -510,7 +521,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
   new prerender::PrerenderRenderFrameObserver(render_frame);
 
-  bool should_whitelist_for_content_settings =
+  bool should_allow_for_content_settings =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInstantProcess);
   auto content_settings_delegate =
@@ -521,7 +532,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #endif
   content_settings::ContentSettingsAgentImpl* content_settings =
       new content_settings::ContentSettingsAgentImpl(
-          render_frame, should_whitelist_for_content_settings,
+          render_frame, should_allow_for_content_settings,
           std::move(content_settings_delegate));
   if (chrome_observer_.get()) {
     content_settings->SetContentSettingRules(
@@ -760,7 +771,7 @@ bool ChromeContentRendererClient::IsPluginHandledExternally(
     // otherwise, let Blink try to create the in-process PDF plugin.
     url::Origin frame_origin = render_frame->GetWebFrame()->GetSecurityOrigin();
     if (IsPdfInternalPluginAllowedOrigin(frame_origin)) {
-      // TODO(crbug.com/1225756): Until this is fixed, allow Print Preview to
+      // TODO(crbug.com/1238829): Until this is fixed, allow Print Preview to
       // create the in-process plugin directly within its own frames.
       if (frame_origin ==
           url::Origin::Create(GURL(chrome::kChromeUIPrintURL))) {
@@ -984,6 +995,11 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           if (extension) {
             is_module_allowed =
                 IsNativeNaClAllowed(app_url, is_nacl_unrestricted, extension);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+            // Allow Terminal System App to load the SSH extension NaCl module.
+          } else if (IsTerminalSystemWebAppNaClPage(app_url)) {
+            is_module_allowed = true;
+#endif
           } else {
             WebDocument document = frame->GetDocument();
             is_module_allowed =
@@ -1318,7 +1334,7 @@ void ChromeContentRendererClient::PostIOThreadCreated(
     base::SingleThreadTaskRunner* io_thread_task_runner) {
   io_thread_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&ThreadProfiler::StartOnChildThread,
-                                metrics::CallStackProfileParams::IO_THREAD));
+                                metrics::CallStackProfileParams::Thread::kIo));
 }
 
 void ChromeContentRendererClient::PostCompositorThreadCreated(
@@ -1326,7 +1342,7 @@ void ChromeContentRendererClient::PostCompositorThreadCreated(
   compositor_thread_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&ThreadProfiler::StartOnChildThread,
-                     metrics::CallStackProfileParams::COMPOSITOR_THREAD));
+                     metrics::CallStackProfileParams::Thread::kCompositor));
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
@@ -1437,12 +1453,12 @@ bool ChromeContentRendererClient::IsOriginIsolatedPepperPlugin(
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
-bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
+bool ChromeContentRendererClient::IsExtensionOrSharedModuleAllowed(
     const GURL& url,
-    const std::set<std::string>& whitelist) {
+    const std::set<std::string>& allowlist) {
   const extensions::ExtensionSet* extension_set =
       extensions::RendererExtensionRegistry::Get()->GetMainThreadExtensionSet();
-  return ::IsExtensionOrSharedModuleWhitelisted(url, extension_set, whitelist);
+  return ::IsExtensionOrSharedModuleAllowed(url, extension_set, allowlist);
 }
 #endif
 
@@ -1523,7 +1539,7 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseCameraDeviceAPI(
           switches::kEnablePepperTesting))
     return true;
 
-  if (IsExtensionOrSharedModuleWhitelisted(url, allowed_camera_device_origins_))
+  if (IsExtensionOrSharedModuleAllowed(url, allowed_camera_device_origins_))
     return true;
 #endif
 
@@ -1582,7 +1598,7 @@ void ChromeContentRendererClient::
     WillInitializeServiceWorkerContextOnWorkerThread() {
   // This is called on the service worker thread.
   ThreadProfiler::StartOnChildThread(
-      metrics::CallStackProfileParams::SERVICE_WORKER_THREAD);
+      metrics::CallStackProfileParams::Thread::kServiceWorker);
 }
 
 void ChromeContentRendererClient::

@@ -672,6 +672,33 @@ class MockAlarmFactory : public QuicAlarmFactory {
   }
 };
 
+class TestAlarmFactory : public QuicAlarmFactory {
+ public:
+  class TestAlarm : public QuicAlarm {
+   public:
+    explicit TestAlarm(QuicArenaScopedPtr<QuicAlarm::Delegate> delegate)
+        : QuicAlarm(std::move(delegate)) {}
+
+    void SetImpl() override {}
+    void CancelImpl() override {}
+    using QuicAlarm::Fire;
+  };
+
+  TestAlarmFactory() {}
+  TestAlarmFactory(const TestAlarmFactory&) = delete;
+  TestAlarmFactory& operator=(const TestAlarmFactory&) = delete;
+
+  QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override {
+    return new TestAlarm(QuicArenaScopedPtr<QuicAlarm::Delegate>(delegate));
+  }
+
+  QuicArenaScopedPtr<QuicAlarm> CreateAlarm(
+      QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+      QuicConnectionArena* arena) override {
+    return arena->New<TestAlarm>(std::move(delegate));
+  }
+};
+
 class MockQuicConnection : public QuicConnection {
  public:
   // Uses a ConnectionId of 42 and 127.0.0.1:123.
@@ -1215,14 +1242,22 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
 
   MockQuicCryptoServerStreamHelper* helper() { return &helper_; }
 
-  QuicSSLConfig GetSSLConfig() const override { return ssl_config_; }
+  QuicSSLConfig GetSSLConfig() const override {
+    QuicSSLConfig ssl_config = QuicServerSessionBase::GetSSLConfig();
+    if (early_data_enabled_.has_value()) {
+      ssl_config.early_data_enabled = *early_data_enabled_;
+    }
+    return ssl_config;
+  }
 
-  QuicSSLConfig* ssl_config() { return &ssl_config_; }
+  void set_early_data_enabled(bool enabled) { early_data_enabled_ = enabled; }
 
  private:
   MockQuicSessionVisitor visitor_;
   MockQuicCryptoServerStreamHelper helper_;
-  QuicSSLConfig ssl_config_;
+  // If not nullopt, override the early_data_enabled value from base class'
+  // ssl_config.
+  absl::optional<bool> early_data_enabled_;
 };
 
 // A test implementation of QuicClientPushPromiseIndex::Delegate.
@@ -1822,12 +1857,6 @@ StreamType DetermineStreamType(QuicStreamId id,
                                Perspective perspective,
                                bool is_incoming,
                                StreamType default_type);
-
-// Utility function that stores message_data in |storage| and returns a
-// QuicMemSliceSpan.
-QuicMemSliceSpan MakeSpan(QuicBufferAllocator* allocator,
-                          absl::string_view message_data,
-                          QuicMemSliceStorage* storage);
 
 // Creates a MemSlice using a singleton trivial buffer allocator.  Performs a
 // copy.

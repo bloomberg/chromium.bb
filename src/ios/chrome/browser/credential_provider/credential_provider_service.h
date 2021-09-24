@@ -9,6 +9,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/prefs/pref_member.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service_observer.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -30,6 +31,7 @@ class CredentialProviderService
  public:
   // Initializes the service.
   CredentialProviderService(
+      PrefService* prefs,
       scoped_refptr<password_manager::PasswordStore> password_store,
       AuthenticationService* authentication_service,
       id<MutableCredentialStore> credential_store,
@@ -72,6 +74,10 @@ class CredentialProviderService
   // Syncs account_id_.
   void UpdateAccountId();
 
+  // Syncs the current logged in user's email to the extension if they are
+  // syncing passwords.
+  void UpdateUserEmail();
+
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<password_manager::PasswordForm>> results)
@@ -92,6 +98,10 @@ class CredentialProviderService
 
   // syncer::SyncServiceObserver:
   void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
+  void OnStateChanged(syncer::SyncService* sync) override;
+
+  // Observer for when |saving_passwords_enabled_| changes.
+  void OnSavingPasswordsEnabledChanged();
 
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> password_store_;
@@ -110,6 +120,10 @@ class CredentialProviderService
 
   // The current validation ID or nil.
   NSString* account_id_ = nil;
+
+  // The preference associated with
+  // password_manager::prefs::kCredentialsEnableService.
+  BooleanPrefMember saving_passwords_enabled_;
 
   // Weak pointer factory.
   base::WeakPtrFactory<CredentialProviderService> weak_factory_{this};

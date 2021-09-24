@@ -40,8 +40,7 @@ const KURL TestDependencyURLJSON() {
   return KURL(kTestDependencyURLJSON);
 }
 ReferrerScriptInfo TestReferrerScriptInfo() {
-  return ReferrerScriptInfo::CreateWithReferencingScript(TestReferrerURL(),
-                                                         ScriptFetchOptions());
+  return ReferrerScriptInfo(TestReferrerURL(), ScriptFetchOptions());
 }
 
 class DynamicModuleResolverTestModulator final : public DummyModulator {
@@ -87,8 +86,6 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
 
     return KURL(base_url, module_request);
   }
-
-  void SetAcquiringImportMapsState(AcquiringImportMapsState) final {}
 
   void FetchTree(const KURL& url,
                  ModuleType module_type,
@@ -446,8 +443,7 @@ TEST_P(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
   ModuleRequest module_request("./dependency.js",
                                TextPosition::MinimumPosition(),
                                Vector<ImportAssertion>());
-  resolver->ResolveDynamically(module_request,
-                               ReferrerScriptInfo::CreateNoReferencingScript(),
+  resolver->ResolveDynamically(module_request, ReferrerScriptInfo(),
                                promise_resolver);
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
@@ -484,10 +480,10 @@ TEST_P(DynamicModuleResolverTest, ResolveWithReferrerScriptInfoBaseURL) {
   ModuleRequest module_request("./dependency.js",
                                TextPosition::MinimumPosition(),
                                Vector<ImportAssertion>());
-  resolver->ResolveDynamically(module_request,
-                               ReferrerScriptInfo::CreateWithReferencingScript(
-                                   correct_base_url, ScriptFetchOptions()),
-                               promise_resolver);
+  resolver->ResolveDynamically(
+      module_request,
+      ReferrerScriptInfo(correct_base_url, ScriptFetchOptions()),
+      promise_resolver);
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   EXPECT_TRUE(modulator->fetch_tree_was_called());

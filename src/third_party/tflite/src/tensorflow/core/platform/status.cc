@@ -21,6 +21,7 @@ limitations under the License.
 #include <map>
 
 #include "absl/base/call_once.h"
+#include "absl/strings/escaping.h"
 #include "tensorflow/core/platform/mutex.h"
 #include "tensorflow/core/platform/stacktrace.h"
 #include "tensorflow/core/platform/str_util.h"
@@ -89,11 +90,13 @@ class StatusLogSink : public TFLogSink {
 
 }  // namespace
 
-Status::Status(tensorflow::error::Code code, StringPiece msg) {
+Status::Status(tensorflow::error::Code code, tensorflow::StringPiece msg,
+               std::vector<StackFrame>&& stack_trace) {
   assert(code != tensorflow::error::OK);
   state_ = std::unique_ptr<State>(new State);
   state_->code = code;
   state_->msg = string(msg);
+  state_->stack_trace = std::move(stack_trace);
   VLOG(5) << "Generated non-OK status: \"" << *this << "\". "
           << CurrentStackTrace();
 }
@@ -117,62 +120,67 @@ const string& Status::empty_string() {
   return *empty;
 }
 
+const std::vector<StackFrame>& Status::empty_stack_trace() {
+  static std::vector<StackFrame>* empty = new std::vector<StackFrame>();
+  return *empty;
+}
+
 string error_name(error::Code code) {
   switch (code) {
     case tensorflow::error::OK:
       return "OK";
       break;
     case tensorflow::error::CANCELLED:
-      return "Cancelled";
+      return "CANCELLED";
       break;
     case tensorflow::error::UNKNOWN:
-      return "Unknown";
+      return "UNKNOWN";
       break;
     case tensorflow::error::INVALID_ARGUMENT:
-      return "Invalid argument";
+      return "INVALID_ARGUMENT";
       break;
     case tensorflow::error::DEADLINE_EXCEEDED:
-      return "Deadline exceeded";
+      return "DEADLINE_EXCEEDED";
       break;
     case tensorflow::error::NOT_FOUND:
-      return "Not found";
+      return "NOT_FOUND";
       break;
     case tensorflow::error::ALREADY_EXISTS:
-      return "Already exists";
+      return "ALREADY_EXISTS";
       break;
     case tensorflow::error::PERMISSION_DENIED:
-      return "Permission denied";
+      return "PERMISSION_DENIED";
       break;
     case tensorflow::error::UNAUTHENTICATED:
-      return "Unauthenticated";
+      return "UNAUTHENTICATED";
       break;
     case tensorflow::error::RESOURCE_EXHAUSTED:
-      return "Resource exhausted";
+      return "RESOURCE_EXHAUSTED";
       break;
     case tensorflow::error::FAILED_PRECONDITION:
-      return "Failed precondition";
+      return "FAILED_PRECONDITION";
       break;
     case tensorflow::error::ABORTED:
-      return "Aborted";
+      return "ABORTED";
       break;
     case tensorflow::error::OUT_OF_RANGE:
-      return "Out of range";
+      return "OUT_OF_RANGE";
       break;
     case tensorflow::error::UNIMPLEMENTED:
-      return "Unimplemented";
+      return "UNIMPLEMENTED";
       break;
     case tensorflow::error::INTERNAL:
-      return "Internal";
+      return "INTERNAL";
       break;
     case tensorflow::error::UNAVAILABLE:
-      return "Unavailable";
+      return "UNAVAILABLE";
       break;
     case tensorflow::error::DATA_LOSS:
-      return "Data loss";
+      return "DATA_LOSS";
       break;
     default:
       char tmp[30];
-      snprintf(tmp, sizeof(tmp), "Unknown code(%d)", static_cast<int>(code));
+      snprintf(tmp, sizeof(tmp), "UNKNOWN_CODE(%d)", static_cast<int>(code));
       return tmp;
       break;
   }
@@ -185,12 +193,54 @@ string Status::ToString() const {
     string result(error_name(code()));
     result += ": ";
     result += state_->msg;
+
+    for (const std::pair<const std::string, std::string>& element :
+         state_->payloads) {
+      absl::StrAppend(&result, " [", element.first, "='",
+                      absl::CHexEscape(element.second), "']");
+    }
+
     return result;
   }
 }
 
 void Status::IgnoreError() const {
   // no-op
+}
+
+void Status::SetPayload(tensorflow::StringPiece type_url,
+                        tensorflow::StringPiece payload) {
+  if (ok()) return;
+  state_->payloads[std::string(type_url)] = std::string(payload);
+}
+
+tensorflow::StringPiece Status::GetPayload(
+    tensorflow::StringPiece type_url) const {
+  if (ok()) return tensorflow::StringPiece();
+  auto payload_iter = state_->payloads.find(std::string(type_url));
+  if (payload_iter == state_->payloads.end()) return tensorflow::StringPiece();
+  return tensorflow::StringPiece(payload_iter->second);
+}
+
+bool Status::ErasePayload(tensorflow::StringPiece type_url) {
+  if (ok()) return false;
+  auto payload_iter = state_->payloads.find(std::string(type_url));
+  if (payload_iter == state_->payloads.end()) return false;
+  state_->payloads.erase(payload_iter);
+  return true;
+}
+
+const std::unordered_map<std::string, std::string> Status::GetAllPayloads()
+    const {
+  if (ok()) return {};
+  return state_->payloads;
+}
+
+void Status::ReplaceAllPayloads(
+    const std::unordered_map<std::string, std::string>& payloads) {
+  if (ok() || payloads.empty()) return;
+  if (state_ == nullptr) state_ = std::make_unique<State>();
+  state_->payloads = payloads;
 }
 
 std::ostream& operator<<(std::ostream& os, const Status& x) {

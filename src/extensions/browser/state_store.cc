@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/value_store/value_store_factory.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -65,15 +66,25 @@ void StateStore::DelayedTaskQueue::SetReady() {
   pending_tasks_.clear();
 }
 
-StateStore::StateStore(content::BrowserContext* context,
-                       const scoped_refptr<ValueStoreFactory>& store_factory,
-                       ValueStoreFrontend::BackendType backend_type,
-                       bool deferred_load)
-    : store_(
-          std::make_unique<ValueStoreFrontend>(store_factory,
-                                               backend_type,
-                                               GetExtensionFileTaskRunner())),
-      task_queue_(std::make_unique<DelayedTaskQueue>()) {
+StateStore::StateStore(
+    content::BrowserContext* context,
+    const scoped_refptr<value_store::ValueStoreFactory>& store_factory,
+    BackendType backend_type,
+    bool deferred_load)
+    : task_queue_(std::make_unique<DelayedTaskQueue>()) {
+  switch (backend_type) {
+    case BackendType::RULES:
+      store_ = std::make_unique<value_store::ValueStoreFrontend>(
+          store_factory, base::FilePath(kRulesStoreName),
+          kRulesDatabaseUMAClientName, GetExtensionFileTaskRunner());
+      break;
+    case BackendType::STATE:
+      store_ = std::make_unique<value_store::ValueStoreFrontend>(
+          store_factory, base::FilePath(kStateStoreName),
+          kStateDatabaseUMAClientName, GetExtensionFileTaskRunner());
+      break;
+  }
+
   extension_registry_observation_.Observe(ExtensionRegistry::Get(context));
 
   if (deferred_load) {
@@ -95,9 +106,9 @@ void StateStore::RegisterKey(const std::string& key) {
 void StateStore::GetExtensionValue(const std::string& extension_id,
                                    const std::string& key,
                                    ReadCallback callback) {
-  task_queue_->InvokeWhenReady(
-      base::BindOnce(&ValueStoreFrontend::Get, base::Unretained(store_.get()),
-                     GetFullKey(extension_id, key), std::move(callback)));
+  task_queue_->InvokeWhenReady(base::BindOnce(
+      &value_store::ValueStoreFrontend::Get, base::Unretained(store_.get()),
+      GetFullKey(extension_id, key), std::move(callback)));
 }
 
 void StateStore::SetExtensionValue(const std::string& extension_id,
@@ -106,16 +117,16 @@ void StateStore::SetExtensionValue(const std::string& extension_id,
   for (TestObserver& observer : observers_)
     observer.WillSetExtensionValue(extension_id, key);
 
-  task_queue_->InvokeWhenReady(
-      base::BindOnce(&ValueStoreFrontend::Set, base::Unretained(store_.get()),
-                     GetFullKey(extension_id, key), std::move(value)));
+  task_queue_->InvokeWhenReady(base::BindOnce(
+      &value_store::ValueStoreFrontend::Set, base::Unretained(store_.get()),
+      GetFullKey(extension_id, key), std::move(value)));
 }
 
 void StateStore::RemoveExtensionValue(const std::string& extension_id,
                                       const std::string& key) {
-  task_queue_->InvokeWhenReady(base::BindOnce(&ValueStoreFrontend::Remove,
-                                              base::Unretained(store_.get()),
-                                              GetFullKey(extension_id, key)));
+  task_queue_->InvokeWhenReady(base::BindOnce(
+      &value_store::ValueStoreFrontend::Remove, base::Unretained(store_.get()),
+      GetFullKey(extension_id, key)));
 }
 
 void StateStore::AddObserver(TestObserver* observer) {
@@ -168,8 +179,8 @@ void StateStore::RemoveKeysForExtension(const std::string& extension_id) {
   for (auto key = registered_keys_.begin(); key != registered_keys_.end();
        ++key) {
     task_queue_->InvokeWhenReady(base::BindOnce(
-        &ValueStoreFrontend::Remove, base::Unretained(store_.get()),
-        GetFullKey(extension_id, *key)));
+        &value_store::ValueStoreFrontend::Remove,
+        base::Unretained(store_.get()), GetFullKey(extension_id, *key)));
   }
 }
 

@@ -11,14 +11,16 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
+#include "base/allocator/partition_allocator/partition_alloc_notreached.h"
+#include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/cxx17_backports.h"
 #include "base/lazy_instance.h"
-#include "base/notreached.h"
 
 namespace base {
 namespace internal {
@@ -41,19 +43,10 @@ namespace {
 
 // This will crash if the range cannot be decommitted.
 void DecommitPages(void* address, size_t size) {
-#if defined(OS_APPLE)
-  // MAP_FIXED replaces an existing mapping with a new one, when the address is
-  // already part of a mapping. Since newly-created mappings are guaranteed to
-  // be zero-filled, this has the desired effect. It is only required on macOS,
-  // as on other operating systems, |DecommitSystemPages()| provides the same
-  // behavior.
-  void* ptr = mmap(address, size, PROT_NONE,
-                   MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-  PA_CHECK(ptr == address);
-#else
-  static_assert(DecommittedMemoryIsAlwaysZeroed(), "");
-  DecommitSystemPages(address, size, PageUpdatePermissions);
-#endif
+  // Callers rely on the pages being zero-initialized when recommitting them.
+  // |DecommitSystemPages| doesn't guarantee this on all operating systems, in
+  // particular on macOS, but |DecommitAndZeroSystemPages| does.
+  DecommitAndZeroSystemPages(address, size);
 }
 
 }  // namespace
@@ -68,7 +61,7 @@ pool_handle AddressPoolManager::Add(uintptr_t ptr, size_t length) {
       return i + 1;
     }
   }
-  NOTREACHED();
+  PA_NOTREACHED();
   return 0;
 }
 
@@ -213,7 +206,7 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
     }
   }
 
-  NOTREACHED();
+  PA_NOTREACHED();
   return 0;
 }
 
@@ -331,15 +324,9 @@ void AddressPoolManager::MarkUsed(pool_handle handle,
                                   size_t length) {
   uintptr_t ptr_as_uintptr = reinterpret_cast<uintptr_t>(address);
   AutoLock guard(AddressPoolManagerBitmap::GetLock());
-  if (handle == kNonBRPPoolHandle) {
-    PA_DCHECK((length %
-               AddressPoolManagerBitmap::kBytesPer1BitOfNonBRPPoolBitmap) == 0);
-    SetBitmap(
-        AddressPoolManagerBitmap::non_brp_pool_bits_,
-        ptr_as_uintptr >> AddressPoolManagerBitmap::kBitShiftOfNonBRPPoolBitmap,
-        length >> AddressPoolManagerBitmap::kBitShiftOfNonBRPPoolBitmap);
-  } else {
-    PA_DCHECK(handle == kBRPPoolHandle);
+  // When USE_BACKUP_REF_PTR is off, BRP pool isn't used.
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+  if (handle == kBRPPoolHandle) {
     PA_DCHECK(
         (length % AddressPoolManagerBitmap::kBytesPer1BitOfBRPPoolBitmap) == 0);
 
@@ -370,31 +357,32 @@ void AddressPoolManager::MarkUsed(pool_handle handle,
             AddressPoolManagerBitmap::kGuardOffsetOfBRPPoolBitmap,
         (length >> AddressPoolManagerBitmap::kBitShiftOfBRPPoolBitmap) -
             AddressPoolManagerBitmap::kGuardBitsOfBRPPoolBitmap);
+  } else
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+  {
+    PA_DCHECK(handle == kNonBRPPoolHandle);
+    PA_DCHECK((length %
+               AddressPoolManagerBitmap::kBytesPer1BitOfNonBRPPoolBitmap) == 0);
+    SetBitmap(
+        AddressPoolManagerBitmap::non_brp_pool_bits_,
+        ptr_as_uintptr >> AddressPoolManagerBitmap::kBitShiftOfNonBRPPoolBitmap,
+        length >> AddressPoolManagerBitmap::kBitShiftOfNonBRPPoolBitmap);
   }
 }
 
 void AddressPoolManager::MarkUnused(pool_handle handle,
                                     const void* address,
                                     size_t length) {
+  // Address regions allocated for normal buckets are never released, so this
+  // function can only be called for direct map. However, do not DCHECK on
+  // IsManagedByDirectMap(address), because many tests test this function using
+  // small allocations.
+
   uintptr_t ptr_as_uintptr = reinterpret_cast<uintptr_t>(address);
   AutoLock guard(AddressPoolManagerBitmap::GetLock());
-  // Address regions allocated for normal buckets are never freed, so frequency
-  // of codepaths taken depends solely on which pool direct map allocations go
-  // to. In the USE_BACKUP_REF_PTR case, they usually go to BRP pool (except for
-  // aligned partition). Otherwise, they always go to non-BRP pool.
+  // When USE_BACKUP_REF_PTR is off, BRP pool isn't used.
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-  if (UNLIKELY(handle == kNonBRPPoolHandle)) {
-#else
-  if (LIKELY(handle == kNonBRPPoolHandle)) {
-#endif
-    PA_DCHECK((length %
-               AddressPoolManagerBitmap::kBytesPer1BitOfNonBRPPoolBitmap) == 0);
-    ResetBitmap(
-        AddressPoolManagerBitmap::non_brp_pool_bits_,
-        ptr_as_uintptr >> AddressPoolManagerBitmap::kBitShiftOfNonBRPPoolBitmap,
-        length >> AddressPoolManagerBitmap::kBitShiftOfNonBRPPoolBitmap);
-  } else {
-    PA_DCHECK(handle == kBRPPoolHandle);
+  if (handle == kBRPPoolHandle) {
     PA_DCHECK(
         (length % AddressPoolManagerBitmap::kBytesPer1BitOfBRPPoolBitmap) == 0);
 
@@ -407,6 +395,16 @@ void AddressPoolManager::MarkUnused(pool_handle handle,
             AddressPoolManagerBitmap::kGuardOffsetOfBRPPoolBitmap,
         (length >> AddressPoolManagerBitmap::kBitShiftOfBRPPoolBitmap) -
             AddressPoolManagerBitmap::kGuardBitsOfBRPPoolBitmap);
+  } else
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+  {
+    PA_DCHECK(handle == kNonBRPPoolHandle);
+    PA_DCHECK((length %
+               AddressPoolManagerBitmap::kBytesPer1BitOfNonBRPPoolBitmap) == 0);
+    ResetBitmap(
+        AddressPoolManagerBitmap::non_brp_pool_bits_,
+        ptr_as_uintptr >> AddressPoolManagerBitmap::kBitShiftOfNonBRPPoolBitmap,
+        length >> AddressPoolManagerBitmap::kBitShiftOfNonBRPPoolBitmap);
   }
 }
 

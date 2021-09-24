@@ -16,6 +16,11 @@
 #include "platform/PlatformMethods.h"
 #include "util/OSWindow.h"
 
+namespace
+{
+constexpr EGLint kDefaultSwapInterval = 1;
+}  // anonymous namespace
+
 // ConfigParameters implementation.
 ConfigParameters::ConfigParameters()
     : redBits(-1),
@@ -33,7 +38,8 @@ ConfigParameters::ConfigParameters()
       robustAccess(false),
       samples(-1),
       resetStrategy(EGL_NO_RESET_NOTIFICATION_EXT),
-      colorSpace(EGL_COLORSPACE_LINEAR)
+      colorSpace(EGL_COLORSPACE_LINEAR),
+      swapInterval(kDefaultSwapInterval)
 {}
 
 ConfigParameters::~ConfigParameters() = default;
@@ -196,6 +202,7 @@ bool EGLWindow::initializeDisplay(OSWindow *osWindow,
     if (params.transformFeedbackFeature == EGL_FALSE)
     {
         disabledFeatureOverrides.push_back("supportsTransformFeedbackExtension");
+        disabledFeatureOverrides.push_back("supportsGeometryStreamsCapability");
         disabledFeatureOverrides.push_back("emulateTransformFeedback");
     }
 
@@ -292,6 +299,11 @@ bool EGLWindow::initializeDisplay(OSWindow *osWindow,
     if (params.forceRobustResourceInit == EGL_TRUE)
     {
         enabledFeatureOverrides.push_back("forceRobustResourceInit");
+    }
+
+    if (params.forceInitShaderVariables == EGL_TRUE)
+    {
+        enabledFeatureOverrides.push_back("forceInitShaderVariables");
     }
 
     const bool hasFeatureControlANGLE =
@@ -447,6 +459,14 @@ bool EGLWindow::initializeSurface(OSWindow *osWindow,
         surfaceAttributes.push_back(mConfigParams.colorSpace);
     }
 
+    bool hasCreateSurfaceSwapInterval =
+        strstr(displayExtensions, "EGL_ANGLE_create_surface_swap_interval") != nullptr;
+    if (hasCreateSurfaceSwapInterval && mConfigParams.swapInterval != kDefaultSwapInterval)
+    {
+        surfaceAttributes.push_back(EGL_SWAP_INTERVAL_ANGLE);
+        surfaceAttributes.push_back(mConfigParams.swapInterval);
+    }
+
     surfaceAttributes.push_back(EGL_NONE);
 
     osWindow->resetNativeWindow();
@@ -467,7 +487,18 @@ bool EGLWindow::initializeSurface(OSWindow *osWindow,
     return true;
 }
 
-EGLContext EGLWindow::createContext(EGLContext share) const
+GLWindowContext EGLWindow::getCurrentContextGeneric()
+{
+    return reinterpret_cast<GLWindowContext>(mContext);
+}
+
+GLWindowContext EGLWindow::createContextGeneric(GLWindowContext share)
+{
+    EGLContext shareContext = reinterpret_cast<EGLContext>(share);
+    return reinterpret_cast<GLWindowContext>(createContext(shareContext));
+}
+
+EGLContext EGLWindow::createContext(EGLContext share)
 {
     const char *displayExtensions = eglQueryString(mDisplay, EGL_EXTENSIONS);
 
@@ -750,9 +781,20 @@ EGLBoolean EGLWindow::FindEGLConfig(EGLDisplay dpy, const EGLint *attrib_list, E
     return EGL_FALSE;
 }
 
+bool EGLWindow::makeCurrentGeneric(GLWindowContext context)
+{
+    EGLContext eglContext = reinterpret_cast<EGLContext>(context);
+    return makeCurrent(eglContext);
+}
+
 bool EGLWindow::makeCurrent()
 {
-    if (eglMakeCurrent(mDisplay, mSurface, mSurface, mContext) == EGL_FALSE ||
+    return makeCurrent(mContext);
+}
+
+bool EGLWindow::makeCurrent(EGLContext context)
+{
+    if (eglMakeCurrent(mDisplay, mSurface, mSurface, context) == EGL_FALSE ||
         eglGetError() != EGL_SUCCESS)
     {
         fprintf(stderr, "Error during eglMakeCurrent.\n");

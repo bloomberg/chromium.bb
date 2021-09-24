@@ -19,10 +19,10 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/public/cpp/shelf_config.h"
-#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/test/test_shelf_item_delegate.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -106,17 +106,6 @@ gfx::ImageSkia CreateImageSkiaIcon(SkColor color) {
   bitmap.eraseColor(color);
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
-
-class TestShelfItemDelegate : public ShelfItemDelegate {
- public:
-  explicit TestShelfItemDelegate(const ShelfID& shelf_id)
-      : ShelfItemDelegate(shelf_id) {}
-  void ExecuteCommand(bool from_context_menu,
-                      int64_t command_id,
-                      int32_t event_flags,
-                      int64_t display_id) override {}
-  void Close() override {}
-};
 
 int64_t GetPrimaryDisplayId() {
   return display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -300,7 +289,7 @@ TEST_F(ShelfObserverIconTest, AddRemove) {
 // Make sure creating/deleting an window on one displays notifies a
 // shelf on external display as well as one on primary.
 TEST_F(ShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
-  UpdateDisplay("400x400,400x400");
+  UpdateDisplay("500x400,500x400");
   observer()->Reset();
 
   Shelf* second_shelf = Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
@@ -430,8 +419,6 @@ class ShelfViewTest : public AshTestBase {
   }
 
   ShelfItem GetItemByID(const ShelfID& id) { return *model_->ItemByID(id); }
-
-  void PinAppWithID(const ShelfID& id) { model_->PinAppWithID(id.app_id); }
 
   bool IsAppPinned(const ShelfID& id) { return model_->IsAppPinned(id.app_id); }
 
@@ -1109,7 +1096,7 @@ TEST_P(LtrRtlShelfViewTest, DragAndDropPinnedRunningApp) {
   int index = model_->ItemIndexByID(id);
   ShelfItem item = GetItemByID(id);
   EXPECT_EQ(STATUS_RUNNING, item.status);
-  PinAppWithID(id);
+  model_->PinExistingItemWithID(id.app_id);
   EXPECT_TRUE(IsAppPinned(GetItemId(index)));
 
   gfx::Point app_location = GetButtonCenter(GetButtonByID(id));

@@ -67,6 +67,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/partition_alloc_support.h"
 #include "content/common/process_visibility_tracker.h"
+#include "content/common/pseudonymization_salt.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
@@ -148,6 +149,7 @@
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_features.h"
@@ -363,6 +365,11 @@ static bool IsSingleProcess() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSingleProcess);
 }
+
+// Whether to initialize the font manager when the renderer starts on a
+// background thread.
+const base::Feature kFontManagerEarlyInit{"FontManagerEarlyInit",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -740,6 +747,11 @@ void RenderThreadImpl::Init() {
 
   variations_observer_ = std::make_unique<VariationsRenderThreadObserver>();
   AddObserver(variations_observer_.get());
+
+  if (base::FeatureList::IsEnabled(kFontManagerEarlyInit)) {
+    base::ThreadPool::PostTask(FROM_HERE,
+                               base::BindOnce([] { SkFontMgr::RefDefault(); }));
+  }
 }
 
 RenderThreadImpl::~RenderThreadImpl() {
@@ -1176,17 +1188,10 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 
   bool support_locking = false;
   bool support_raster_interface = true;
-
-  // Only support OOPR on this context if the general feature is enabled in
-  // addition to OOPR for canvas. Otherwise this context will raster canvas
-  // through Skia's GrContext.
   bool support_oop_rasterization =
       gpu_channel_host->gpu_feature_info()
-              .status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-          gpu::kGpuFeatureStatusEnabled &&
-      !gpu_channel_host->gpu_feature_info().IsWorkaroundEnabled(
-          gpu::DISABLE_CANVAS_OOP_RASTERIZATION) &&
-      base::FeatureList::IsEnabled(features::kCanvasOopRasterization);
+          .status_values[gpu::GPU_FEATURE_TYPE_CANVAS_OOP_RASTERIZATION] ==
+      gpu::kGpuFeatureStatusEnabled;
   bool support_gles2_interface = false;
   bool support_grcontext = !support_oop_rasterization;
   // Enable automatic flushes to improve canvas throughput.
@@ -1273,6 +1278,12 @@ bool RenderThreadImpl::IsUseZoomForDSF() {
   return is_zoom_for_dsf_enabled_;
 }
 
+void RenderThreadImpl::WriteIntoTrace(
+    perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto) {
+  int id = GetClientId();
+  proto->set_id(id);
+}
+
 void RenderThreadImpl::OnAssociatedInterfaceRequest(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
@@ -1354,10 +1365,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   }
 
   return false;
-}
-
-void RenderThreadImpl::SetSchedulerKeepActive(bool keep_active) {
-  main_thread_scheduler_->SetSchedulerKeepActive(keep_active);
 }
 
 void RenderThreadImpl::SetProcessState(

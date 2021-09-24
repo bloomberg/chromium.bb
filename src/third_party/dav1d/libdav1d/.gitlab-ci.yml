@@ -178,6 +178,21 @@ build-debian-bitdepth-16:
                       -Dbitdepths=16
         - ninja -C build
 
+build-debian-avx:
+    extends: .debian-amd64-common
+    tags:
+        - docker
+        - avx2
+        - amd64
+    variables:
+        CFLAGS: '-mavx'
+    script:
+        - meson build --buildtype debug
+                      --werror
+        - ninja -C build
+        - cd build
+        - time meson test -v --suite checkasm
+
 build-win32:
     extends: .debian-amd64-common
     script:
@@ -372,8 +387,10 @@ build-ubuntu-snap:
         - cd package/snap && snapcraft snap
         - |
            if [ "$CI_PROJECT_NAMESPACE" = "videolan" ]; then
+            SNAP_CHANNEL=edge
+            if [ "$CI_COMMIT_TAG" ]; then SNAP_CHANNEL=stable; fi
             echo $SNAP_LOGIN | base64 --decode | snapcraft login --with -
-            snapcraft push dav1d_*.snap --release edge
+            snapcraft push dav1d_*.snap --release $SNAP_CHANNEL
             snapcraft logout
            fi
     artifacts:

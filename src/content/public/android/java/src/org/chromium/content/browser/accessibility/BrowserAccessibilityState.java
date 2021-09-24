@@ -17,6 +17,8 @@ import android.provider.Settings;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -131,6 +133,32 @@ public class BrowserAccessibilityState {
         }
     }
 
+    @VisibleForTesting
+    public static void setEventTypeMaskForTesting() {
+        if (!sInitialized) updateAccessibilityServices();
+
+        // Explicitly set mask so all events are relevant to currently enabled service.
+        sEventTypeMask = ~0;
+
+        // Inform all listeners of this change.
+        for (Listener listener : sListeners) {
+            listener.onBrowserAccessibilityStateChanged(true);
+        }
+    }
+
+    @VisibleForTesting
+    public static void setEventTypeMaskEmptyForTesting() {
+        if (!sInitialized) updateAccessibilityServices();
+
+        // Explicitly set mask so no events are relevant to currently enabled service.
+        sEventTypeMask = 0;
+
+        // Inform all listeners of this change.
+        for (Listener listener : sListeners) {
+            listener.onBrowserAccessibilityStateChanged(true);
+        }
+    }
+
     static void updateAccessibilityServices() {
         sInitialized = true;
         sEventTypeMask = 0;
@@ -235,7 +263,7 @@ public class BrowserAccessibilityState {
      * @return
      */
     @CalledByNative
-    private static int getAccessibilityServiceFeedbackTypeMask() {
+    public static int getAccessibilityServiceFeedbackTypeMask() {
         if (!sInitialized) updateAccessibilityServices();
         return sFeedbackTypeMask;
     }

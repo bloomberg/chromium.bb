@@ -24,6 +24,7 @@
 #include "components/feed/core/v2/persistent_key_value_store_impl.h"
 #include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/public/feed_api.h"
+#include "components/feed/core/v2/public/stream_type.h"
 #include "components/feed/core/v2/request_throttler.h"
 #include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream/notice_card_tracker.h"
@@ -61,7 +62,7 @@ class FeedStream : public FeedApi,
                    public MetricsReporter::Delegate,
                    public StreamModel::StoreObserver {
  public:
-  class Delegate {
+  class Delegate : public WebFeedSubscriptionCoordinator::Delegate {
    public:
     virtual ~Delegate() = default;
     // Returns true if Chrome's EULA has been accepted.
@@ -131,7 +132,7 @@ class FeedStream : public FeedApi,
   void ProcessViewAction(base::StringPiece data) override;
   bool WasUrlRecentlyNavigatedFromFeed(const GURL& url) override;
   DebugStreamData GetDebugStreamData() override;
-  void ForceRefreshForDebugging() override;
+  void ForceRefreshForDebugging(const StreamType& stream_type) override;
   std::string DumpStateForDebugging() override;
   void SetForcedStreamUpdateForDebugging(
       const feedui::StreamUpdate& stream_update) override;
@@ -156,6 +157,7 @@ class FeedStream : public FeedApi,
   base::Time GetLastFetchTime(const StreamType& stream_type) override;
   void SetContentOrder(const StreamType& stream_type,
                        ContentOrder content_order) override;
+  ContentOrder GetContentOrder(const StreamType& stream_type) override;
   ContentOrder GetContentOrderFromPrefs(const StreamType& stream_type) override;
 
   // offline_pages::TaskQueue::Delegate.
@@ -331,7 +333,7 @@ class FeedStream : public FeedApi,
 
   // A single function task to delete stored feed data and force a refresh.
   // To only be called from within a |Task|.
-  void ForceRefreshForDebuggingTask();
+  void ForceRefreshForDebuggingTask(const StreamType& stream_type);
   void ForceRefreshTask(const StreamType& stream_type);
 
   void ScheduleModelUnloadIfNoSurfacesAttached(const StreamType& stream_type);

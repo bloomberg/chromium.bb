@@ -7,6 +7,7 @@ module blink.mojom;
 import "components/payments/mojom/payment_request_data.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/payments/payment_credential.mojom";
+import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 // This file describes the communication between the WebAuthentication renderer
@@ -297,7 +298,19 @@ struct PRFValues {
 // is not used in any mojo interfaces.
 struct PaymentOptions {
   payments.mojom.PaymentCurrencyAmount total;
-  payments.mojom.PaymentCredentialInstrument instrument;
+  PaymentCredentialInstrument instrument;
+  url.mojom.Origin payee_origin;
+};
+
+// TODO(https://crbug.com/1239249): Move to payment_request.mojom after this
+// struct is no longer used in here.
+struct PaymentCredentialInstrument {
+  // Friendly name for displaying this instrument to the user.
+  string display_name;
+
+  // URL for an icon to display alongside the display_name. The URL is secure,
+  // not required to share the same origin with the current page.
+  url.mojom.Url icon;
 };
 
 // Parameters passed into calls to GetAssertion.

@@ -189,11 +189,6 @@ namespace flags_ui {
 
 namespace testing {
 
-void EnsureEveryFlagHasMetadata(const flags_ui::FeatureEntry* entries,
-                                size_t count) {
-  EnsureEveryFlagHasMetadata(base::make_span(entries, count));
-}
-
 void EnsureEveryFlagHasMetadata(
     const base::span<const flags_ui::FeatureEntry>& entries) {
   FlagMetadataMap metadata = LoadFlagMetadata();
@@ -291,7 +286,8 @@ void EnsureFlagsAreListedInAlphabeticalOrder() {
                              FlagFile::kFlagNeverExpire);
 }
 
-// TODO(ellyjones): Does this / should this run on iOS as well?
+// TODO(https://crbug.com/1241068): Call this from the iOS flags unittests once
+// flag expiration is supported there.
 void EnsureRecentUnexpireFlagsArePresent(
     const base::span<const flags_ui::FeatureEntry>& entries,
     int current_milestone) {

@@ -108,14 +108,6 @@ bool IsSelectiveUIAEnablementEnabled() {
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kMagnifierPanningImprovements{
-    "MagnifierPanningImprovements", base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsMagnifierPanningImprovementsEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kMagnifierPanningImprovements);
-}
-
 const base::Feature kMagnifierContinuousMouseFollowingModeSetting{
     "MagnifierContinuousMouseFollowingModeSetting",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -123,14 +115,6 @@ const base::Feature kMagnifierContinuousMouseFollowingModeSetting{
 bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kMagnifierContinuousMouseFollowingModeSetting);
-}
-
-const base::Feature kMagnifierCaretFollowingFromJavascript{
-    "MagnifierCaretFollowingFromJavascript", base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsMagnifierCaretFollowingFromJavascriptEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kMagnifierCaretFollowingFromJavascript);
 }
 
 const base::Feature kEnableSwitchAccessPointScanning{
@@ -156,8 +140,17 @@ bool IsDictationOfflineAvailableAndEnabled() {
          IsExperimentalAccessibilityDictationOfflineEnabled();
 }
 
+const base::Feature kExperimentalAccessibilityDictationCommands{
+    "ExperimentalAccessibilityDictationCommands",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsExperimentalAccessibilityDictationCommandsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilityDictationCommands);
+}
+
 const base::Feature kEnhancedNetworkVoices{"EnhancedNetworkVoices",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsEnhancedNetworkVoicesEnabled() {
   return base::FeatureList::IsEnabled(::features::kEnhancedNetworkVoices);

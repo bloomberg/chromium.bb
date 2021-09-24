@@ -112,16 +112,15 @@ class UtilityProcessSandboxBrowserTest
 
     // Aside from kNoSandbox, every utility process launched explicitly with a
     // sandbox type should always end up with a sandbox.
-    // kVideoCapture is equivalent to kNoSandbox on all platforms except
-    // Fuchsia.
     switch (GetParam()) {
       case SandboxType::kNoSandbox:
-      case SandboxType::kVideoCapture:
         EXPECT_EQ(sandbox_status, 0);
         break;
 
       case SandboxType::kCdm:
+#if BUILDFLAG(ENABLE_PLUGINS)
       case SandboxType::kPpapi:
+#endif
       case SandboxType::kPrintCompositor:
       case SandboxType::kService:
       case SandboxType::kUtility: {

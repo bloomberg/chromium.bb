@@ -48,10 +48,6 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends LogEvent to the browser.
   void LogEvent(NTPLoggingEventType event);
 
-  // Sends LogSuggestionEventWithValue to the browser.
-  void LogSuggestionEventWithValue(NTPSuggestionsLoggingEventType event,
-                                   int data);
-
   // Sends LogMostVisitedImpression to the browser.
   void LogMostVisitedImpression(const ntp_tiles::NTPTileImpression& impression);
 
@@ -109,34 +105,6 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends ToggleShortcutsVisibility to the browser.
   void ToggleShortcutsVisibility(bool do_notify);
 
-  // Updates the NTP custom background preferences, sometimes this includes
-  // image attributions.
-  void SetCustomBackgroundInfo(const GURL& background_url,
-                               const std::string& attribution_line_1,
-                               const std::string& attribution_line_2,
-                               const GURL& action_url,
-                               const std::string& collection_id);
-
-  // Let the user select a local file for the NTP background.
-  void SelectLocalBackgroundImage();
-
-  // Add a search suggestion task id to the blocklist.
-  void BlocklistSearchSuggestion(int task_version, long task_id);
-
-  // Add a search suggestion task id and hash to the blocklist.
-  void BlocklistSearchSuggestionWithHash(int task_version,
-                                         long task_id,
-                                         const std::vector<uint8_t>& hash);
-
-  // A suggestion collected, issue a new request with the suggestion
-  // temporarily added to the blocklist.
-  void SearchSuggestionSelected(int task_version,
-                                long task_id,
-                                const std::vector<uint8_t>& hash);
-
-  // Opts the user out of receiving search suggestions.
-  void OptOutOfSearchSuggestions();
-
   // Applies the default theme.
   void ApplyDefaultTheme();
 
@@ -166,7 +134,6 @@ class SearchBox : public content::RenderFrameObserver,
       const InstantMostVisitedInfo& most_visited_info) override;
   void SetInputInProgress(bool input_in_progress) override;
   void ThemeChanged(const NtpTheme& theme) override;
-  void LocalBackgroundSelected() override;
 
   void AddCustomLinkResult(bool success);
   void UpdateCustomLinkResult(bool success);

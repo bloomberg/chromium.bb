@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 
 #include <string>
 #include <utility>
@@ -88,6 +88,14 @@ void ExternallyInstalledWebAppPrefs::RegisterProfilePrefs(
 bool ExternallyInstalledWebAppPrefs::HasAppId(const PrefService* pref_service,
                                               const AppId& app_id) {
   return GetPreferenceValue(pref_service, app_id) != nullptr;
+}
+
+// static
+// TODO(crbug.com/1236159): Can be removed after M99.
+void ExternallyInstalledWebAppPrefs::RemoveTerminalPWA(
+    PrefService* pref_service) {
+  DictionaryPrefUpdate update(pref_service, prefs::kWebAppsExtensionIDs);
+  update->RemoveKey("chrome-untrusted://terminal/html/pwa.html");
 }
 
 // static

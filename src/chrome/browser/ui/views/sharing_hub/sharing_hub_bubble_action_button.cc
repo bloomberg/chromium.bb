@@ -9,11 +9,14 @@
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/sharing_hub/sharing_hub_bubble_view_impl.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/styled_label.h"
 
 namespace sharing_hub {
 
@@ -59,13 +62,59 @@ SharingHubBubbleActionButton::SharingHubBubbleActionButton(
       action_is_first_party_(action_info.is_first_party),
       action_name_for_metrics_(action_info.feature_name_for_metrics) {
   SetEnabled(true);
-  if (!action_is_first_party_) {
-    SetAccessibleName(l10n_util::GetStringFUTF16(
-        IDS_SHARING_HUB_SHARE_LABEL_ACCESSIBILITY, action_info.title));
-  }
+
+  // This class wants to pretend to be a menu item visually, so it does its own
+  // hover effects by overriding LabelButton::UpdateBackgroundColor (below). It
+  // isn't sufficient to simply swap out the ink drop color - menu backgrounds
+  // are drawn below the text/icon but the ink drop would be drawn above them,
+  // which looks wrong.
+  // TODO(ellyjones): This removes ~all the benefit of being a HoverButton -
+  // should this class instead subclass LabelButton?
+
+  // TODO(crbug.com/1248181): Reverted to restore keyboard navigation showing
+  // background color highlights, but results in high-contrast mode using
+  // normal colors.
+  // views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
+
+  title()->SetTextContext(views::style::CONTEXT_MENU);
 }
 
 SharingHubBubbleActionButton::~SharingHubBubbleActionButton() = default;
+
+void SharingHubBubbleActionButton::UpdateBackgroundColor() {
+  // Pretend to be a menu item:
+  SkColor bg_color = GetNativeTheme()->GetSystemColor(
+      GetVisualState() == STATE_HOVERED
+          ? ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor
+          : ui::NativeTheme::kColorId_MenuBackgroundColor);
+
+  SetBackground(views::CreateSolidBackground(bg_color));
+  SetTitleTextStyle(
+      // Give the hovered element the "selected" menu styling - otherwise the
+      // text color won't change appropriately to keep up with the background
+      // color changing in high contrast mode.
+      GetVisualState() == STATE_HOVERED ? views::style::STYLE_SELECTED
+                                        : views::style::STYLE_PRIMARY,
+      bg_color);
+}
+
+void SharingHubBubbleActionButton::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  HoverButton::GetAccessibleNodeData(node_data);
+
+  // TODO(ellyjones): Yikes!
+  // This hack works around https://crbug.com/1245744, which is a design flaw in
+  // HoverButton. In particular, HoverButton overwrites the accessible name its
+  // client configured on it whenever it bounds change (!) with the plain
+  // concatenation of its title and subtitle, which makes it impossible to set
+  // an accessible name with extra context, as needed for
+  // https://crbug.com/1230178.
+  // TODO(https://crbug.com/1245744): Remove this.
+  if (!action_is_first_party_) {
+    node_data->SetName(l10n_util::GetStringFUTF16(
+        IDS_SHARING_HUB_SHARE_LABEL_ACCESSIBILITY, title()->GetText()));
+  }
+}
 
 BEGIN_METADATA(SharingHubBubbleActionButton, HoverButton)
 END_METADATA

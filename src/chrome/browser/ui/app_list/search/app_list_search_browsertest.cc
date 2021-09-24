@@ -9,6 +9,10 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/webui/help_app_ui/help_app_manager.h"
+#include "ash/webui/help_app_ui/help_app_manager_factory.h"
+#include "ash/webui/help_app_ui/search/search.mojom.h"
+#include "ash/webui/help_app_ui/search/search_handler.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/notreached.h"
@@ -36,18 +40,14 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/with_crosapi_param.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/components/help_app_ui/help_app_manager.h"
-#include "chromeos/components/help_app_ui/help_app_manager_factory.h"
-#include "chromeos/components/help_app_ui/search/search.mojom.h"
-#include "chromeos/components/help_app_ui/search/search_handler.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest, SearchDoesntCrash) {
 // the Discover page.
 IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
                        ClickingDiscoverTabSuggestionChipLaunchesHelpApp) {
-  web_app::WebAppProvider::Get(GetProfile())
+  web_app::WebAppProvider::GetForTest(GetProfile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
   GetProfile()->GetPrefs()->SetInteger(
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
 // left to show it.
 IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
                        AppListSearchHasReleaseNotesSuggestionChip) {
-  web_app::WebAppProvider::Get(GetProfile())
+  web_app::WebAppProvider::GetForTest(GetProfile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
   GetProfile()->GetPrefs()->SetInteger(
@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
 // the chip is shown.
 IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
                        ReleaseNotesDecreasesTimesShownOnAppListOpen) {
-  web_app::WebAppProvider::Get(GetProfile())
+  web_app::WebAppProvider::GetForTest(GetProfile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
   GetProfile()->GetPrefs()->SetInteger(
@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
 // the What's New page.
 IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
                        ClickingReleaseNotesSuggestionChipLaunchesHelpApp) {
-  web_app::WebAppProvider::Get(GetProfile())
+  web_app::WebAppProvider::GetForTest(GetProfile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
   GetProfile()->GetPrefs()->SetInteger(
@@ -307,12 +307,12 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
                        HelpAppProviderProvidesListResults) {
   // Need this because it sets up the icon.
-  web_app::WebAppProvider::Get(GetProfile())
+  web_app::WebAppProvider::GetForTest(GetProfile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
   // Add some searchable content to the help app search handler.
-  std::vector<chromeos::help_app::mojom::SearchConceptPtr> search_concepts;
-  auto concept = chromeos::help_app::mojom::SearchConcept::New(
+  std::vector<ash::help_app::mojom::SearchConceptPtr> search_concepts;
+  auto concept = ash::help_app::mojom::SearchConcept::New(
       /*id=*/"6318213",
       /*title=*/u"Fix connection problems",
       /*main_category=*/u"Help",
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
   search_concepts.push_back(std::move(concept));
 
   base::RunLoop run_loop;
-  chromeos::help_app::HelpAppManagerFactory::GetForBrowserContext(GetProfile())
+  ash::help_app::HelpAppManagerFactory::GetForBrowserContext(GetProfile())
       ->search_handler()
       ->Update(std::move(search_concepts), base::BindLambdaForTesting([&]() {
                  run_loop.QuitClosure().Run();
@@ -383,7 +383,7 @@ class AppListSearchSystemWebAppBrowserTest : public AppListSearchBrowserTest,
 // Test that Help App shows up normally even when suggestion chip should show.
 IN_PROC_BROWSER_TEST_P(AppListSearchSystemWebAppBrowserTest,
                        AppListSearchHasApp) {
-  web_app::WebAppProvider::Get(GetProfile())
+  web_app::WebAppProvider::GetForTest(GetProfile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
   GetProfile()->GetPrefs()->SetInteger(
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_P(AppListSearchSystemWebAppBrowserTest,
 IN_PROC_BROWSER_TEST_P(AppListSearchSystemWebAppBrowserTest, Launch) {
   Profile* profile = browser()->profile();
   auto& system_web_app_manager =
-      web_app::WebAppProvider::Get(profile)->system_web_app_manager();
+      web_app::WebAppProvider::GetForTest(profile)->system_web_app_manager();
   system_web_app_manager.InstallSystemAppsForTesting();
   const web_app::AppId app_id = web_app::kHelpAppId;
 

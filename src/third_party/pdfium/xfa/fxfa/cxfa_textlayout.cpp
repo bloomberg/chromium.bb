@@ -148,9 +148,9 @@ CFX_XMLNode* CXFA_TextLayout::GetXMLContainerNode() {
 }
 
 std::unique_ptr<CFGAS_RTFBreak> CXFA_TextLayout::CreateBreak(bool bDefault) {
-  uint32_t dwStyle = FX_LAYOUTSTYLE_ExpandTab;
+  Mask<CFGAS_Break::LayoutStyle> dwStyle = CFGAS_Break::LayoutStyle::kExpandTab;
   if (!bDefault)
-    dwStyle |= FX_LAYOUTSTYLE_Pagination;
+    dwStyle |= CFGAS_Break::LayoutStyle::kPagination;
 
   auto pBreak = std::make_unique<CFGAS_RTFBreak>(dwStyle);
   pBreak->SetLineBreakTolerance(1);
@@ -1280,8 +1280,8 @@ void CXFA_TextLayout::RenderPath(CFX_RenderDevice* pDevice,
   }
 
   CFX_GraphStateData graphState;
-  graphState.m_LineCap = CFX_GraphStateData::LineCapButt;
-  graphState.m_LineJoin = CFX_GraphStateData::LineJoinMiter;
+  graphState.m_LineCap = CFX_GraphStateData::LineCap::kButt;
+  graphState.m_LineJoin = CFX_GraphStateData::LineJoin::kMiter;
   graphState.m_LineWidth = 1;
   graphState.m_MiterLimit = 10;
   graphState.m_DashPhase = 0;

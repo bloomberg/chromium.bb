@@ -56,7 +56,6 @@
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
@@ -521,18 +520,16 @@ UIColor* BackgroundColor() {
     self.highlightsSelectedTab = NO;
 
     // Register for VoiceOver notifications.
-    if (base::FeatureList::IsEnabled(kVoiceOverUnstackedTabstrip)) {
-      [[NSNotificationCenter defaultCenter]
-          addObserver:self
-             selector:@selector(voiceOverStatusDidChange)
-                 name:UIAccessibilityVoiceOverStatusDidChangeNotification
-               object:nil];
-    }
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(voiceOverStatusDidChange)
+               name:UIAccessibilityVoiceOverStatusDidChangeNotification
+             object:nil];
 
-      self.dragDropHandler = [[URLDragDropHandler alloc] init];
-      self.dragDropHandler.dropDelegate = self;
-      [_view addInteraction:[[UIDropInteraction alloc]
-                                initWithDelegate:self.dragDropHandler]];
+    self.dragDropHandler = [[URLDragDropHandler alloc] init];
+    self.dragDropHandler.dropDelegate = self;
+    [_view addInteraction:[[UIDropInteraction alloc]
+                              initWithDelegate:self.dragDropHandler]];
   }
   return self;
 }
@@ -1780,16 +1777,12 @@ UIColor* BackgroundColor() {
 #pragma mark - Tab Stacking
 
 - (BOOL)shouldUseTabStacking {
+  if (UIAccessibilityIsVoiceOverRunning()) {
+    return NO;
+  }
   BOOL useTabStacking =
       (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) ||
       !IsCompactWidth(self.view);
-  if (base::FeatureList::IsEnabled(kVoiceOverUnstackedTabstrip) &&
-      UIAccessibilityIsVoiceOverRunning()) {
-    useTabStacking = NO;
-  }
-  if (base::FeatureList::IsEnabled(kForceUnstackedTabstrip)) {
-    useTabStacking = NO;
-  }
   return useTabStacking;
 }
 

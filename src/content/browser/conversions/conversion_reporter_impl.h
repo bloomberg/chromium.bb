@@ -11,10 +11,12 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/timer/timer.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
+#include "content/browser/conversions/conversion_report.h"
 #include "content/common/content_export.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace base {
@@ -25,7 +27,6 @@ namespace content {
 
 class StoragePartitionImpl;
 
-struct ConversionReport;
 struct SentReportInfo;
 
 // This class is responsible for managing the dispatch of conversion reports to
@@ -34,7 +35,8 @@ struct SentReportInfo;
 // which a conversion report is sent is potentially sensitive information.
 // Created and owned by ConversionManager.
 class CONTENT_EXPORT ConversionReporterImpl
-    : public ConversionManagerImpl::ConversionReporter {
+    : public ConversionManagerImpl::ConversionReporter,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // This class is responsible for sending conversion reports to their
   // configured endpoints over the network.
@@ -47,12 +49,14 @@ class CONTENT_EXPORT ConversionReporterImpl
 
     // Generates and sends a conversion report matching |report|. This should
     // generate a secure POST request with no-credentials.
-    virtual void SendReport(const ConversionReport& report,
+    virtual void SendReport(ConversionReport report,
                             ReportSentCallback sent_callback) = 0;
   };
 
-  ConversionReporterImpl(StoragePartitionImpl* storage_partition,
-                         const base::Clock* clock);
+  ConversionReporterImpl(
+      StoragePartitionImpl* storage_partition,
+      const base::Clock* clock,
+      base::RepeatingCallback<void(SentReportInfo)> callback);
   ConversionReporterImpl(const ConversionReporterImpl&) = delete;
   ConversionReporterImpl& operator=(const ConversionReporterImpl&) = delete;
   ConversionReporterImpl(ConversionReporterImpl&&) = delete;
@@ -60,14 +64,21 @@ class CONTENT_EXPORT ConversionReporterImpl
   ~ConversionReporterImpl() override;
 
   // ConversionManagerImpl::ConversionReporter:
-  void AddReportsToQueue(std::vector<ConversionReport> reports,
-                         base::RepeatingCallback<void(SentReportInfo)>
-                             report_sent_callback) override;
+  void AddReportsToQueue(std::vector<ConversionReport> reports) override;
 
   void SetNetworkSenderForTesting(
       std::unique_ptr<NetworkSender> network_sender);
 
  private:
+  friend class ConversionReporterImplTest;
+
+  void SetNetworkConnectionTracker(
+      network::NetworkConnectionTracker* network_connection_tracker);
+
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(
+      network::mojom::ConnectionType connection_type) override;
+
   void MaybeScheduleNextReport();
   void SendNextReport();
 
@@ -88,14 +99,15 @@ class CONTENT_EXPORT ConversionReporterImpl
                       ReportComparator>
       report_queue_;
 
-  // Map of all conversion ids that are currently in |report_queue| or are being
-  // sent by |network_sender_|, and their associated report sent callbacks. The
-  // number of concurrent conversion reports being sent at any time is expected
-  // to be small, so a flat_map is used.
-  base::flat_map<int64_t, base::OnceCallback<void(SentReportInfo)>>
-      conversion_report_callbacks_;
+  // Set of all conversion IDs that are currently in |report_queue_| or are
+  // being sent by |network_sender_|. The number of concurrent conversion
+  // reports being sent at any time is expected to be small, so a `flat_set` is
+  // used.
+  base::flat_set<ConversionReport::Id> pending_reports_;
 
   const base::Clock* clock_;
+
+  base::RepeatingCallback<void(SentReportInfo)> callback_;
 
   // Should never be nullptr, since StoragePartition owns the ConversionManager
   // which owns |this|.
@@ -109,6 +121,12 @@ class CONTENT_EXPORT ConversionReporterImpl
   //
   // Should never be nullptr.
   std::unique_ptr<NetworkSender> network_sender_;
+
+  // Lazily initialized to track network availability.
+  network::NetworkConnectionTracker* network_connection_tracker_ = nullptr;
+
+  // Assume that there is a network connection unless we hear otherwise.
+  bool offline_ = false;
 };
 
 }  // namespace content

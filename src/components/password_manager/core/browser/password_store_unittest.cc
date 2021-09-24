@@ -23,9 +23,10 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
-#include "components/password_manager/core/browser/android_affiliation/android_affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
+#include "components/password_manager/core/browser/fake_password_store_backend.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/mock_password_store_backend.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
@@ -40,7 +41,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/model/model_type_controller_delegate.h"
-#include "components/sync/model/proxy_model_type_controller_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -167,67 +167,6 @@ class PasswordStoreWithMockedMetadataStore : public PasswordStoreImpl {
   MockMetadataStore metadata_store_;
 };
 
-class MockPasswordStoreBackend : public PasswordStoreBackend {
- public:
-  // TODO(crbug.bom/1226042): Rename this to Init after PasswordStoreImpl no
-  // longer inherits PasswordStore.
-  MOCK_METHOD(void,
-              InitBackend,
-              (RemoteChangesReceived remote_form_changes_received,
-               base::RepeatingClosure sync_enabled_or_disabled_cb,
-               base::OnceCallback<void(bool)> completion),
-              (override));
-
-  MOCK_METHOD(void, GetAllLoginsAsync, (LoginsReply callback), (override));
-  MOCK_METHOD(void,
-              GetAutofillableLoginsAsync,
-              (LoginsReply callback),
-              (override));
-  MOCK_METHOD(void,
-              FillMatchingLoginsAsync,
-              (LoginsReply callback,
-               bool include_psl,
-               const std::vector<PasswordFormDigest>& forms),
-              (override));
-  MOCK_METHOD(void,
-              AddLoginAsync,
-              (const PasswordForm& form, PasswordStoreChangeListReply callback),
-              (override));
-  MOCK_METHOD(void,
-              UpdateLoginAsync,
-              (const PasswordForm& form, PasswordStoreChangeListReply callback),
-              (override));
-  MOCK_METHOD(void,
-              RemoveLoginAsync,
-              (const PasswordForm& form, PasswordStoreChangeListReply callback),
-              (override));
-  MOCK_METHOD(void,
-              RemoveLoginsByURLAndTimeAsync,
-              (const base::RepeatingCallback<bool(const GURL&)>& url_filter,
-               base::Time delete_begin,
-               base::Time delete_end,
-               base::OnceCallback<void(bool)> sync_completion,
-               PasswordStoreChangeListReply callback),
-              (override));
-  MOCK_METHOD(void,
-              RemoveLoginsCreatedBetweenAsync,
-              (base::Time delete_begin,
-               base::Time delete_end,
-               PasswordStoreChangeListReply callback),
-              (override));
-  MOCK_METHOD(void,
-              DisableAutoSignInForOriginsAsync,
-              (const base::RepeatingCallback<bool(const GURL&)>&,
-               base::OnceClosure),
-              (override));
-  MOCK_METHOD(SmartBubbleStatsStore*, GetSmartBubbleStatsStore, (), (override));
-  MOCK_METHOD(FieldInfoStore*, GetFieldInfoStore, (), (override));
-  MOCK_METHOD(std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>,
-              CreateSyncControllerDelegateFactory,
-              (),
-              (override));
-};
-
 PasswordForm MakePasswordForm(const std::string& signon_realm) {
   PasswordForm form;
   form.url = GURL("http://www.origin.com");
@@ -298,11 +237,14 @@ class PasswordStoreTest : public testing::Test {
 
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
 
+ protected:
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI,
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
  private:
   base::ScopedTempDir temp_dir_;
   TestingPrefServiceSimple pref_service_;
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreTest);
@@ -1545,6 +1487,32 @@ TEST_F(PasswordStoreOriginTest,
   run_loop.Run();
 
   store()->RemoveObserver(&observer);
+}
+
+// Tests the PasswordManager.PasswordStore.GetAllLoginsAsync metric.
+TEST_F(PasswordStoreTest, GetAllLoginsAsyncMetrics) {
+  scoped_refptr<PasswordStore> store =
+      new PasswordStore(std::make_unique<MockPasswordStoreBackend>());
+  auto* mock_backend =
+      static_cast<MockPasswordStoreBackend*>(store->GetBackendForTesting());
+  store->Init(nullptr);
+  constexpr auto delta = base::TimeDelta::FromMilliseconds(123u);
+
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(*mock_backend, GetAllLoginsAsync(_))
+      .WillOnce(WithArg<0>([&](LoginsReply cb) {
+        task_environment_.FastForwardBy(delta);
+        std::move(cb).Run({});
+      }));
+  MockPasswordStoreConsumer mock_consumer;
+  store->GetAllLogins(&mock_consumer);
+  WaitForPasswordStore();
+  store->ShutdownOnUIThread();
+
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.PasswordStore.GetAllLoginsAsync", 1);
+  histogram_tester.ExpectTimeBucketCount(
+      "PasswordManager.PasswordStore.GetAllLoginsAsync", delta, 1);
 }
 
 }  // namespace password_manager

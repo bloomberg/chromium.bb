@@ -59,9 +59,8 @@ NodeDef MakeFusedNode(const NodeDef& map_node,
   (*fused_node.mutable_attr())["f"] = std::move(attr);
 
   // Required attrs.
-  for (auto key : {"Targuments", "output_shapes", "output_types"}) {
-    graph_utils::CopyAttribute(key, map_node, &fused_node);
-  }
+  graph_utils::CopyAttribute("Targuments", map_node, &fused_node);
+  graph_utils::CopyShapesAndTypesAttrs(map_node, &fused_node);
 
   // Optional attrs.
   for (auto key :
@@ -93,9 +92,7 @@ NodeDef MakeFilterNode(const NodeDef& fused_map,
   filter_node.set_op("FilterDataset");
   filter_node.add_input(fused_map.name());
 
-  for (auto key : {"output_shapes", "output_types"}) {
-    graph_utils::CopyAttribute(key, fused_map, &filter_node);
-  }
+  graph_utils::CopyShapesAndTypesAttrs(fused_map, &filter_node);
 
   AddNodeAttr("Targuments", std::vector<DataType>({}), &filter_node);
 
@@ -129,9 +126,7 @@ NodeDef MakeMapNode(const NodeDef& updated_filter, const NodeDef& original_map,
   map_node.set_op("MapDataset");
   map_node.add_input(updated_filter.name());
 
-  for (auto key : {"output_shapes", "output_types"}) {
-    graph_utils::CopyAttribute(key, original_map, &map_node);
-  }
+  graph_utils::CopyShapesAndTypesAttrs(original_map, &map_node);
 
   AddNodeAttr("Targuments", std::vector<DataType>({}), &map_node);
 
@@ -245,12 +240,6 @@ Status MapAndFilterFusion::OptimizeAndCollectStats(Cluster* cluster,
 
   TF_RETURN_IF_ERROR(graph.DeleteNodes(nodes_to_delete));
   return Status::OK();
-}
-
-void MapAndFilterFusion::Feedback(Cluster* cluster, const GrapplerItem& item,
-                                  const GraphDef& optimize_output,
-                                  double result) {
-  // no-op
 }
 
 REGISTER_GRAPH_OPTIMIZER_AS(MapAndFilterFusion, "map_and_filter_fusion");

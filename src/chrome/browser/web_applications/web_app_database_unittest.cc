@@ -14,20 +14,20 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
@@ -400,17 +400,17 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
   std::unique_ptr<WebApp> app = test::CreateRandomWebApp(base_url, /*seed=*/0);
   AppId app_id = app->app_id();
 
-  std::vector<WebApplicationIconInfo> icons;
+  std::vector<apps::IconInfo> icons;
 
   for (IconPurpose purpose : kIconPurposes) {
     std::vector<SquareSizePx> sizes;
     for (int i = 1; i <= num_icons; ++i) {
-      WebApplicationIconInfo icon;
+      apps::IconInfo icon;
       icon.url = base_url.Resolve("icon" + base::NumberToString(num_icons));
       // Let size equals the icon's number squared.
       icon.square_size_px = i * i;
 
-      icon.purpose = purpose;
+      icon.purpose = ManifestPurposeToIconInfoPurpose(purpose);
       sizes.push_back(*icon.square_size_px);
       icons.push_back(std::move(icon));
     }

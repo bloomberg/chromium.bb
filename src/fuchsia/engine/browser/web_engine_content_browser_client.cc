@@ -21,6 +21,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
 #include "fuchsia/base/fuchsia_dir_scheme.h"
+#include "fuchsia/base/init_logging.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/browser/navigation_policy_throttle.h"
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
@@ -32,6 +33,8 @@
 #include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 #include "fuchsia/engine/switches.h"
 #include "media/base/media_switches.h"
+#include "net/cert/x509_certificate.h"
+#include "net/ssl/ssl_private_key.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -82,7 +85,10 @@ std::vector<std::string> GetCorsExemptHeaders() {
 WebEngineContentBrowserClient::WebEngineContentBrowserClient()
     : cors_exempt_headers_(GetCorsExemptHeaders()),
       allow_insecure_content_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowRunningInsecureContent)) {}
+          switches::kAllowRunningInsecureContent)) {
+  // Logging in this class ensures this is logged once per web_instance.
+  cr_fuchsia::LogComponentStartWithVersion("WebEngine web_instance");
+}
 
 WebEngineContentBrowserClient::~WebEngineContentBrowserClient() = default;
 
@@ -201,7 +207,7 @@ std::string WebEngineContentBrowserClient::GetApplicationLocale() {
 std::string WebEngineContentBrowserClient::GetAcceptLangs(
     content::BrowserContext* context) {
   // Returns a comma-separated list of language codes, in preference order.
-  // This is suitable for direct use setting the "sec-ch-lang" header, or
+  // This is suitable for direct use setting the "lang" header, or
   // passed to net::HttpUtil::GenerateAcceptLanguageHeader() to generate a
   // legacy "accept-language" header value.
   return l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES);

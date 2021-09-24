@@ -29,7 +29,6 @@ public:
         fSampleLocationsSupport = true;
 
         fShaderCaps.reset(new GrShaderCaps(contextOptions));
-        fShaderCaps->fGeometryShaderSupport = options.fGeometryShaderSupport;
         fShaderCaps->fIntegerSupport = options.fIntegerSupport;
         fShaderCaps->fFlatInterpolationSupport = options.fFlatInterpolationSupport;
         fShaderCaps->fMaxFragmentSamplers = options.fMaxFragmentSamplers;
@@ -51,7 +50,7 @@ public:
         return GrGetColorTypeDesc(ct).encoding() == GrColorTypeEncoding::kSRGBUnorm;
     }
 
-    bool isFormatTexturable(const GrBackendFormat& format) const override {
+    bool isFormatTexturable(const GrBackendFormat& format, GrTextureType) const override {
         SkImage::CompressionType compression = format.asMockCompressionType();
         if (compression != SkImage::CompressionType::kNone) {
             return fOptions.fCompressedOptions[(int)compression].fTexturable;

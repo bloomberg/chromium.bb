@@ -42,6 +42,7 @@ extern const char kArcDisableMediaStoreMaintenance[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisablePlayAutoInstall[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kArcDisableSystemDefaultApps[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableUreadahead[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kArcEnableNativeBridge64BitSupportExperiment[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForceShowOptInUi[];
@@ -130,6 +131,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnableExtensionAssetsSharing[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableHoudini[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableHoudini64[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableHoudiniDlc[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableNdkTranslation[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableNdkTranslation64[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -147,9 +149,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnterpriseEnableForcedReEnrollment[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnterpriseEnableInitialEnrollment[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnterpriseEnablePsm[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kEnterpriseUseFakePsmRlweClient[];
+extern const char kEnterpriseUseFakePsmRlweClientForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnterpriseEnableZeroTouchEnrollment[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -181,17 +182,21 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceSystemCompositorMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceTabletPowerButton[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFormFactor[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFrameThrottleFps[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGaiaReauthRequestToken[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGuestSession[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGuestWallpaperLarge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGuestWallpaperSmall[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kHasChromeOSKeyboard[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kHasInternalStylus[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kHasNumberPad[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kHomedir[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kIgnoreArcVmDevConf[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kIgnoreUserProfileMappingForTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kInstallLogFastUploadForTests[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kInstallSystemExtension[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kKernelnextRestrictVMs[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosAvailabilityIgnore[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosChromeAdditionalArgs[];

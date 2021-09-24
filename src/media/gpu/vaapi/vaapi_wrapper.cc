@@ -835,8 +835,6 @@ bool GetRequiredAttribs(const base::Lock* va_lock,
   if (mode == VaapiWrapper::kDecodeProtected && profile != VAProfileProtected) {
     required_attribs->push_back(
         {VAConfigAttribEncryption, VA_ENCRYPTION_TYPE_SUBSAMPLE_CTR});
-    required_attribs->push_back(
-        {VAConfigAttribDecProcessing, VA_DEC_PROCESSING});
   }
 #endif
 
@@ -1647,6 +1645,24 @@ bool VaapiWrapper::IsVppFormatSupported(uint32_t va_fourcc) {
 }
 
 // static
+std::vector<Fourcc> VaapiWrapper::GetVppSupportedFormats() {
+  const VASupportedProfiles::ProfileInfo* profile_info =
+      VASupportedProfiles::Get().IsProfileSupported(kVideoProcess,
+                                                    VAProfileNone);
+  if (!profile_info)
+    return {};
+
+  std::vector<Fourcc> supported_fourccs;
+  for (uint32_t pixel_format : profile_info->pixel_formats) {
+    auto fourcc = Fourcc::FromVAFourCC(pixel_format);
+    if (!fourcc)
+      continue;
+    supported_fourccs.push_back(*fourcc);
+  }
+  return supported_fourccs;
+}
+
+// static
 bool VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
     unsigned int rt_format,
     uint32_t fourcc) {
@@ -1859,6 +1875,8 @@ bool VaapiWrapper::CreateProtectedSession(
 
     va_res = vaCreateProtectedSession(va_display_, va_protected_config_id_,
                                       &va_protected_session_id_);
+    DCHECK(va_res == VA_STATUS_SUCCESS ||
+           va_protected_session_id_ == VA_INVALID_ID);
     VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateProtectedSession,
                          false);
   }
@@ -1975,7 +1993,16 @@ uint32_t VaapiWrapper::GetProtectedInstanceID() {
 
 bool VaapiWrapper::IsProtectedSessionDead() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (va_protected_session_id_ == VA_INVALID_ID)
+  return IsProtectedSessionDead(va_protected_session_id_);
+#else
+  return false;
+#endif
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool VaapiWrapper::IsProtectedSessionDead(
+    VAProtectedSessionID va_protected_session_id) {
+  if (va_protected_session_id == VA_INVALID_ID)
     return false;
 
   uint8_t alive;
@@ -1988,25 +2015,28 @@ bool VaapiWrapper::IsProtectedSessionDead() {
 
   base::AutoLock auto_lock(*va_lock_);
   VABufferID buf_id;
-  VAStatus va_res =
-      vaCreateBuffer(va_display_, va_protected_session_id_,
-                     VAProtectedSessionExecuteBufferType, sizeof(tee_exec_buf),
-                     1, &tee_exec_buf, &buf_id);
+  VAStatus va_res = vaCreateBuffer(
+      va_display_, va_protected_session_id, VAProtectedSessionExecuteBufferType,
+      sizeof(tee_exec_buf), 1, &tee_exec_buf, &buf_id);
   // Failure here is valid if the protected session has been closed.
   if (va_res != VA_STATUS_SUCCESS)
     return true;
 
   va_res =
-      vaProtectedSessionExecute(va_display_, va_protected_session_id_, buf_id);
+      vaProtectedSessionExecute(va_display_, va_protected_session_id, buf_id);
   vaDestroyBuffer(va_display_, buf_id);
   if (va_res != VA_STATUS_SUCCESS)
     return true;
 
   return !alive;
-#else  // BUILDFLAG(IS_CHROMEOS_ASH)
-  return false;
-#endif
 }
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+VAProtectedSessionID VaapiWrapper::GetProtectedSessionID() const {
+  return va_protected_session_id_;
+}
+#endif
 
 void VaapiWrapper::DestroyProtectedSession() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2127,6 +2157,15 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   DCHECK_EQ(va_attrib_extbuf.flags, 0u);
   DCHECK_EQ(va_attrib_extbuf.private_data, nullptr);
 
+  uint32_t va_format = BufferFormatToVARTFormat(buffer_format);
+
+  if (protected_content) {
+    if (GetImplementationType() == VAImplementation::kMesaGallium)
+      va_format |= VA_RT_FORMAT_PROTECTED;
+    else
+      va_attrib_extbuf.flags = VA_SURFACE_EXTBUF_DESC_PROTECTED;
+  }
+
   std::vector<VASurfaceAttrib> va_attribs(2);
 
   va_attribs[0].type = VASurfaceAttribMemoryType;
@@ -2138,13 +2177,6 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   va_attribs[1].flags = VA_SURFACE_ATTRIB_SETTABLE;
   va_attribs[1].value.type = VAGenericValueTypePointer;
   va_attribs[1].value.value.p = &va_attrib_extbuf;
-
-  unsigned int va_format = BufferFormatToVARTFormat(buffer_format);
-
-  if (protected_content) {
-    DCHECK_EQ(GetImplementationType(), VAImplementation::kMesaGallium);
-    va_format |= VA_RT_FORMAT_PROTECTED;
-  }
 
   VASurfaceID va_surface_id = VA_INVALID_ID;
   {
@@ -2665,7 +2697,12 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
                                const VASurface& va_surface_dest,
                                absl::optional<gfx::Rect> src_rect,
                                absl::optional<gfx::Rect> dest_rect,
-                               VideoRotation rotation) {
+                               VideoRotation rotation
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+                               ,
+                               VAProtectedSessionID va_protected_session_id
+#endif
+) {
   DCHECK_EQ(mode_, kVideoProcess);
   base::AutoLock auto_lock(*va_lock_);
 
@@ -2731,6 +2768,23 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
     VA_SUCCESS_OR_RETURN(mapping.Unmap(), VaapiFunctions::kVAUnmapBuffer,
                          false);
   }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  std::unique_ptr<base::ScopedClosureRunner> protected_session_detacher;
+  if (va_protected_session_id != VA_INVALID_ID) {
+    VA_SUCCESS_OR_RETURN(vaAttachProtectedSession(va_display_, va_context_id_,
+                                                  va_protected_session_id),
+                         VaapiFunctions::kVAAttachProtectedSession, false);
+    // Note that we use a lambda expression to wrap vaDetachProtectedSession()
+    // because the function in |protected_session_detacher| must return void.
+    protected_session_detacher =
+        std::make_unique<base::ScopedClosureRunner>(base::BindOnce(
+            [](VADisplay va_display, VAContextID va_context_id) {
+              vaDetachProtectedSession(va_display, va_context_id);
+            },
+            va_display_, va_context_id_));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   VA_SUCCESS_OR_RETURN(
       vaBeginPicture(va_display_, va_context_id_, va_surface_dest.id()),

@@ -32,6 +32,7 @@ __all__ = [
 
 
 @tf_export("linalg.LinearOperatorLowerTriangular")
+@linear_operator.make_composite_tensor
 class LinearOperatorLowerTriangular(linear_operator.LinearOperator):
   """`LinearOperator` acting like a [batch] square lower triangular matrix.
 
@@ -137,6 +138,14 @@ class LinearOperatorLowerTriangular(linear_operator.LinearOperator):
     Raises:
       ValueError:  If `is_square` is `False`.
     """
+    parameters = dict(
+        tril=tril,
+        is_non_singular=is_non_singular,
+        is_self_adjoint=is_self_adjoint,
+        is_positive_definite=is_positive_definite,
+        is_square=is_square,
+        name=name
+    )
 
     if is_square is False:
       raise ValueError(
@@ -150,11 +159,11 @@ class LinearOperatorLowerTriangular(linear_operator.LinearOperator):
 
       super(LinearOperatorLowerTriangular, self).__init__(
           dtype=self._tril.dtype,
-          graph_parents=None,
           is_non_singular=is_non_singular,
           is_self_adjoint=is_self_adjoint,
           is_positive_definite=is_positive_definite,
           is_square=is_square,
+          parameters=parameters,
           name=name)
       self._set_graph_parents([self._tril])
 
@@ -206,3 +215,7 @@ class LinearOperatorLowerTriangular(linear_operator.LinearOperator):
 
   def _eigvals(self):
     return self._get_diag()
+
+  @property
+  def _composite_tensor_fields(self):
+    return ("tril",)

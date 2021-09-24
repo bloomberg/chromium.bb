@@ -26,7 +26,10 @@ component("libassistant") {
     "libassistant_service.h",
   ]
 
-  public_deps = [ "//chromeos/services/libassistant/public/mojom" ]
+  public_deps = [
+    "//chromeos/assistant/internal/proto:assistant",
+    "//chromeos/services/libassistant/public/mojom",
+  ]
 
   deps = [
     ":internal",
@@ -81,8 +84,8 @@ source_set("internal") {
     "conversation_state_listener_impl.h",
     "device_settings_controller.cc",
     "device_settings_controller.h",
-    "display_connection_impl.cc",
-    "display_connection_impl.h",
+    "display_connection.cc",
+    "display_connection.h",
     "display_controller.cc",
     "display_controller.h",
     "fake_auth_provider.cc",
@@ -117,6 +120,7 @@ source_set("internal") {
     ":callback_utils",
     ":constants",
     "./grpc:assistant_client",
+    "./grpc/external_services:grpc_services_initializer",
     "//build/util:chromium_git_revision",
     "//chromeos/assistant:buildflags",
     "//chromeos/assistant/internal",
@@ -214,6 +218,7 @@ source_set("test_support") {
   ]
 
   deps = [
+    ":callback_utils",
     ":internal",
     ":libassistant",
     "//base/test:test_support",

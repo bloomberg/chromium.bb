@@ -441,7 +441,8 @@ class WebBluetoothTest : public InProcessBrowserTest {
               }
               return false;
             }));
-    ui_test_utils::NavigateToURL(browser(), GURL("https://example.com"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL("https://example.com")));
     web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_THAT(
         web_contents_->GetMainFrame()->GetLastCommittedOrigin().Serialize(),
@@ -691,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, NotificationStartValueChangeRead) {
     })())");
 
   const base::ListValue promise_values = js_values.ExtractList();
-  EXPECT_EQ(2U, promise_values.GetSize());
+  EXPECT_EQ(2U, promise_values.GetList().size());
   EXPECT_EQ(content::ListValueOf(1, 1), js_values);
 }
 
@@ -1128,7 +1129,7 @@ class WebBluetoothTestWithNewPermissionsBackendEnabledInPrerendering
                     embedded_test_server()->StartAndReturnHandle());
 
     auto url = embedded_test_server()->GetURL("/empty.html");
-    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
     web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
   }
 

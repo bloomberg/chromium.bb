@@ -85,6 +85,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name=".DownloadProgress"/>
   <variant name=".GeneratedPasswordSaved"/>
   <variant name=".MerchantTrust"/>
+  <variant name=".NearOomReduction"/>
   <variant name=".NotificationBlocked"/>
   <variant name=".PermissionUpdate"/>
   <variant name=".PopupBlocked"/>
@@ -94,6 +95,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name=".SaveCard"/>
   <variant name=".SavePassword"/>
   <variant name=".SendTabToSelf"/>
+  <variant name=".SharedHighlighting"/>
+  <variant name=".SyncError"/>
   <variant name=".UpdatePassword"/>
 </variants>
 
@@ -198,7 +201,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.AppNotificationStatus" enum="NotificationAppStatus"
-    expires_after="2020-11-15">
+    expires_after="never">
+<!-- expires-never: Indicates whether Chrome has notification permission. -->
+
+  <owner>dtrainor@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
     Records whether notifications are enabled for Chrome, as the Android app,
@@ -321,6 +327,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     completed (i.e., the continue button was tapped) or not, and whether the
     payment request was initially pre-filled completely or not. This is recorded
     every time the user sees the autofill assistant payment request.
+  </summary>
+</histogram>
+
+<histogram name="Android.AutofillAssistant.TextToSpeech.ButtonAction"
+    enum="AutofillAssistantTextToSpeechButtonAction" expires_after="2022-06-08">
+  <owner>jainshashank@google.com</owner>
+  <owner>arbesser@google.com</owner>
+  <summary>
+    Reports the resultant action that happens on clicking the autofill assistant
+    TTS button. This is recorded every time the TTS button is clicked.
+  </summary>
+</histogram>
+
+<histogram name="Android.AutofillAssistant.TextToSpeech.EngineEvent"
+    enum="AutofillAssistantTextToSpeechEngineEvent" expires_after="2022-06-08">
+  <owner>jainshashank@google.com</owner>
+  <owner>arbesser@google.com</owner>
+  <summary>
+    Reports the various TTS engine events received by the autofill assistant TTS
+    controller. This is recorded every time the autofill assistant TTS
+    controller receives a TTS event.
   </summary>
 </histogram>
 
@@ -880,8 +907,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.DirectAction.Perform" enum="DirectActionId"
-    expires_after="2021-10-10">
-  <owner>szermatt@chromium.org</owner>
+    expires_after="2022-10-10">
+  <owner>arbesser@google.com</owner>
   <owner>autofill_assistant@google.com</owner>
   <summary>
     Counts calls to Activity.onPerformDirectAction made by the system on behalf
@@ -1042,7 +1069,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.DownloadManager.OpenSource.Audio"
-    enum="AndroidDownloadOpenSource" expires_after="2021-12-12">
+    enum="AndroidDownloadOpenSource" expires_after="2022-02-20">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>Records how users open audio download files on Android.</summary>
@@ -1827,6 +1854,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Android.Messages.TimeToAction.Dismiss{MessageIdentifier}"
+    units="ms" expires_after="2022-06-01">
+  <owner>pavely@chromium.org</owner>
+  <owner>lazzzis@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Records the time interval the message was displayed on the screen before the
+    user dismissed it with a gesture. The metric is NOT recorded when the user
+    presses primary or secondary button or when the message is auto-dismissed
+    based on timer. The interval includes both enter and exit animation. The
+    metric can be used to analyze the time threshold for the user to give up
+    waiting for autodismiss timer and dismiss the message explicitly.
+  </summary>
+  <token key="MessageIdentifier" variants="MessageIdentifiers"/>
+</histogram>
+
 <histogram name="Android.Messages.TimeToAction{MessageIdentifier}" units="ms"
     expires_after="2022-06-01">
   <owner>pavely@chromium.org</owner>
@@ -1995,7 +2038,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.NTP.Impression" enum="NTPImpressionType"
-    expires_after="2021-12-12">
+    expires_after="2022-02-20">
   <owner>finkm@chromium.org</owner>
   <summary>
     Counts impressions of the NTP on Android. It also counts potential
@@ -2559,7 +2602,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.Rotation.BeginToRendererFrameActivation" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>jonross@chromium.org</owner>
   <owner>sadrul@chromium.org</owner>
   <summary>
@@ -2700,6 +2743,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="Android.StrictMode.TabPersistentStore{AndroidTabPersistentStoreTime}"
     units="ms" expires_after="2021-10-04">
+  <obsolete>
+    No longer used. Removed as of 09/2021.
+  </obsolete>
   <owner>wnwen@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2708,11 +2754,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
   <token key="AndroidTabPersistentStoreTime">
     <variant name=""/>
-    <variant name=".CleanupAllEncryptedTime" summary="">
-      <obsolete>
-        Original code deleted in a refactoring.
-      </obsolete>
-    </variant>
+    <variant name=".CleanupAllEncryptedTime" summary=""/>
     <variant name=".LoadStateInternalPrefetchTime" summary=""/>
     <variant name=".LoadStateInternalTime" summary=""/>
     <variant name=".LoadStateTime" summary=""/>
@@ -2945,6 +2987,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram name="Android.View.onDraw.30Seconds" units="count"
+    expires_after="2022-08-31">
+  <owner>nuskos@chromium.org</owner>
+  <owner>chrometto-team@google.com</owner>
+  <summary>
+    Keeps a counter of each onDraw invoked on the root view and emits the count
+    once every 30 seconds. Thus this is the amount of times android attempted to
+    draw/update a java view in the last 30 seconds.
+
+    NOTE: 30 second intervals with 0 draws are not reported.
+  </summary>
+</histogram>
+
 <histogram name="Android.WebView.ActualUiThread"
     enum="AndroidWebViewActualUiThread" expires_after="2021-03-31">
   <obsolete>
@@ -3153,7 +3208,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.UpdateJobDuration" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3234,6 +3289,109 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Records true if the embedding app's implementation of the
     WebChromeClient.getDefaultVideoPoster() callback returned a custom default
     poster, or false if it did not.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.DarkMode.ForceDarkBehavior"
+    enum="WebViewForceDarkBehavior" expires_after="2022-01-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records WebView force dark behavior settings on each main frame navigation
+    entry committed.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.DarkMode.ForceDarkMode"
+    enum="WebViewForceDarkMode2" expires_after="2022-01-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records WebView force dark mode settings on each main frame navigation entry
+    committed.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.DarkMode.InDarkMode" enum="Boolean"
+    expires_after="2022-01-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records if WebView is in dark mode on each main frame navigation entry
+    committed.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.DarkMode.InDarkModeVsLightTheme"
+    enum="WebViewInDarkModeVsLightTheme" expires_after="2022-01-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records if the application has light theme and if WebView is in dark mode on
+    each main frame navigation entry committed.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.DarkMode.InDarkModeVsNightMode"
+    enum="WebViewInDarkModeVsNightMode" expires_after="2022-01-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records if the application is in the night mode and if WebView is in dark
+    mode on each main frame navigation entry committed.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.DarkMode.LightTheme" enum="LightTheme"
+    expires_after="2022-01-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records if the application has light theme on each main frame navigation
+    entry committed.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.DarkMode.NightMode" enum="NightMode"
+    expires_after="2022-01-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records application's night mode bit related to
+    android.content.res.Configuration.UI_MODE_NIGHT_MASK on each main frame
+    navigation entry committed.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.DarkMode.NightModeVsLightTheme"
+    enum="WebViewNightModeVsLightTheme" expires_after="2022-01-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records if application is in night mode and if it has light theme on each
+    main frame navigation entry committed.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.DarkMode.PrimaryTextLuminanceVsLightTheme"
+    enum="WebViewPrimaryTextLuminanceVsLightTheme" expires_after="2022-01-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records if the application has light theme and if its theme's
+    textColorPrimary attribute is light on each main frame navigation entry
+    committed.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.DarkMode.PrimaryTextLuminanceVsNightMode"
+    enum="WebViewPrimaryTextLuminanceVsNightMode" expires_after="2022-01-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records if the application is in night mode and if its theme's
+    textColorPrimary attribute is light on each main frame navigation entry
+    committed.
   </summary>
 </histogram>
 

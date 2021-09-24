@@ -53,9 +53,9 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -320,11 +320,6 @@ void ChromeNewWindowClient::NewTab() {
   browser->SetFocusToLocationBar();
 }
 
-void ChromeNewWindowClient::NewTabWithUrl(const GURL& url,
-                                          bool from_user_interaction) {
-  OpenUrlImpl(url, from_user_interaction);
-}
-
 void ChromeNewWindowClient::NewWindow(bool is_incognito,
                                       bool should_trigger_session_restore) {
   if (is_incognito && !IsIncognitoAllowed())
@@ -340,27 +335,18 @@ void ChromeNewWindowClient::NewWindow(bool is_incognito,
       should_trigger_session_restore);
 }
 
+void ChromeNewWindowClient::OpenUrl(const GURL& url,
+                                    bool from_user_interaction) {
+  OpenUrlImpl(url, from_user_interaction);
+}
+
 void ChromeNewWindowClient::OpenCalculator() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  const extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-  if (!registry)
-    return;
-
-  const extensions::Extension* extension =
-      registry->GetInstalledExtension(extension_misc::kCalculatorAppId);
-  if (!extension)
-    return;
-
-  auto url = GURL(extensions::Extension::GetBaseURLFromExtensionId(
-                      extension_misc::kCalculatorAppId)
-                      .spec());
-  apps::LaunchPlatformAppWithUrl(profile, extension,
-                                 /*handler_id=*/std::string(), url,
-                                 /*referrer_url=*/GURL());
-
-  apps::RecordAppLaunch(extension_misc::kCalculatorAppId,
-                        apps::mojom::LaunchSource::kFromKeyboard);
+  apps::AppServiceProxyChromeOs* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  proxy->Launch(extension_misc::kCalculatorAppId, ui::EF_NONE,
+                apps::mojom::LaunchSource::kFromKeyboard);
 }
 
 void ChromeNewWindowClient::OpenFileManager() {

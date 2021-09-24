@@ -1,13 +1,6 @@
 {
   "dependencies": [
-    "ui/legacy/components/utils",
     "panels/network",
     "ui/legacy"
-  ],
-    "resources": [
-    "issuesPane.css",
-    "issuesTree.css",
-    "cspViolationsView.css",
-    "cspViolationsListView.css"
   ]
 }

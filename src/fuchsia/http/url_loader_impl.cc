@@ -10,7 +10,9 @@
 #include "fuchsia/base/mem_buffer_util.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/net_errors.h"
+#include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
+#include "net/ssl/ssl_private_key.h"
 #include "net/url_request/redirect_info.h"
 
 namespace oldhttp = ::fuchsia::net::oldhttp;
@@ -337,8 +339,6 @@ bool URLLoaderImpl::WriteResponseBytes(int result) {
       DCHECK(response_body_mode_ == oldhttp::ResponseBodyMode::STREAM ||
              response_body_mode_ ==
                  oldhttp::ResponseBodyMode::BUFFER_OR_STREAM);
-      // In socket mode, attempt to shut down the socket and close it.
-      write_socket_.shutdown(ZX_SOCKET_SHUTDOWN_WRITE);
       write_socket_ = zx::socket();
     } else {
       DCHECK_EQ(response_body_mode_, oldhttp::ResponseBodyMode::BUFFER);

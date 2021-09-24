@@ -6,7 +6,8 @@ Does **not** test usage scopes (resource_usages/) or programmable pass stuff (pr
 
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
 import { DefaultLimits } from '../../../../constants.js';
-import { kResourceStates, ResourceState, ValidationTest } from '../../validation_test.js';
+import { kResourceStates, ResourceState } from '../../../../gpu_test.js';
+import { ValidationTest } from '../../validation_test.js';
 
 class F extends ValidationTest {
   createComputePipeline(state: 'valid' | 'invalid'): GPUComputePipeline {

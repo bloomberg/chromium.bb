@@ -64,15 +64,15 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
     // paints the background.
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       auto paint_location = layout_block_.GetBackgroundPaintLocation();
-      if (!(paint_location & kBackgroundPaintInGraphicsLayer))
+      if (!(paint_location & kBackgroundPaintInBorderBoxSpace))
         local_paint_info.SetSkipsBackground(true);
       layout_block_.PaintObject(local_paint_info, paint_offset);
       local_paint_info.SetSkipsBackground(false);
 
-      if (paint_location & kBackgroundPaintInScrollingContents) {
-        local_paint_info.SetIsPaintingScrollingBackground(true);
+      if (paint_location & kBackgroundPaintInContentsSpace) {
+        local_paint_info.SetIsPaintingBackgroundInContentsSpace(true);
         layout_block_.PaintObject(local_paint_info, paint_offset);
-        local_paint_info.SetIsPaintingScrollingBackground(false);
+        local_paint_info.SetIsPaintingBackgroundInContentsSpace(false);
       }
     } else {
       layout_block_.PaintObject(local_paint_info, paint_offset);

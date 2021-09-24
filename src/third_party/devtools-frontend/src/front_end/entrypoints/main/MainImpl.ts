@@ -166,6 +166,8 @@ export class MainImpl {
         lookupClosestDevToolsLocale: i18n.i18n.lookupClosestSupportedDevToolsLocale,
       },
     });
+    // Record the intended locale, regardless whether we are able to fetch it or not.
+    Host.userMetrics.language(devToolsLocale.locale);
 
     if (devToolsLocale.locale !== 'en-US') {
       // Always load en-US locale data as a fallback. This is important, newly added
@@ -198,15 +200,21 @@ export class MainImpl {
 
     let localStorage;
     if (!Host.InspectorFrontendHost.isUnderTest() && window.localStorage) {
-      localStorage = new Common.Settings.SettingsStorage(
-          window.localStorage, undefined, undefined, () => window.localStorage.clear(), storagePrefix);
+      const localbackingStore: Common.Settings.SettingsBackingStore = {
+        ...Common.Settings.NOOP_STORAGE,
+        clear: () => window.localStorage.clear(),
+      };
+      localStorage = new Common.Settings.SettingsStorage(window.localStorage, localbackingStore, storagePrefix);
     } else {
-      localStorage = new Common.Settings.SettingsStorage({}, undefined, undefined, undefined, storagePrefix);
+      localStorage = new Common.Settings.SettingsStorage({}, Common.Settings.NOOP_STORAGE, storagePrefix);
     }
-    const globalStorage = new Common.Settings.SettingsStorage(
-        prefs, Host.InspectorFrontendHost.InspectorFrontendHostInstance.setPreference,
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.removePreference,
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.clearPreferences, storagePrefix);
+
+    const hostStorage: Common.Settings.SettingsBackingStore = {
+      set: Host.InspectorFrontendHost.InspectorFrontendHostInstance.setPreference,
+      remove: Host.InspectorFrontendHost.InspectorFrontendHostInstance.removePreference,
+      clear: Host.InspectorFrontendHost.InspectorFrontendHostInstance.clearPreferences,
+    };
+    const globalStorage = new Common.Settings.SettingsStorage(prefs, hostStorage, storagePrefix);
     Common.Settings.Settings.instance({forceNew: true, globalStorage, localStorage});
 
     // @ts-ignore layout test global
@@ -306,7 +314,9 @@ export class MainImpl {
     Root.Runtime.experiments.register('experimentalCookieFeatures', 'Enable experimental cookie features');
 
     // Hide Issues Feature.
-    Root.Runtime.experiments.register('hideIssuesFeature', 'Enable experimental hide issues menu');
+    Root.Runtime.experiments.register(
+        'hideIssuesFeature', 'Enable experimental hide issues menu', undefined,
+        'https://developer.chrome.com/blog/new-in-devtools-94/#hide-issues');
 
     // Localized DevTools, hide "locale selector" setting behind an experiment.
     Root.Runtime.experiments.register(Root.Runtime.ExperimentName.LOCALIZED_DEVTOOLS, 'Enable localized DevTools');
@@ -314,6 +324,8 @@ export class MainImpl {
     Root.Runtime.experiments.enableExperimentsByDefault([
       Root.Runtime.ExperimentName.LOCALIZED_DEVTOOLS,
       'sourceOrderViewer',
+      'hideIssuesFeature',
+      'bfcacheDebugging',
     ]);
 
     Root.Runtime.experiments.cleanUpStaleExperiments();
@@ -583,8 +595,8 @@ export class MainImpl {
       return;
     }
 
-    function listener(event: Common.EventTarget.EventTargetEvent): void {
-      const uiSourceCode = (event.data as Workspace.UISourceCode.UISourceCode);
+    function listener(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.UISourceCode>): void {
+      const uiSourceCode = event.data;
       if (uiSourceCode.url() === url) {
         Common.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
         Workspace.Workspace.WorkspaceImpl.instance().removeEventListener(
@@ -767,19 +779,18 @@ export class MainMenuItem implements UI.Toolbar.Provider {
       right.addEventListener(UI.Toolbar.ToolbarButton.Events.MouseDown, event => event.data.consume());
       left.addEventListener(UI.Toolbar.ToolbarButton.Events.MouseDown, event => event.data.consume());
       undock.addEventListener(
-          UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, UI.DockController.State.Undocked));
+          UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, UI.DockController.DockState.UNDOCKED));
       bottom.addEventListener(
-          UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, UI.DockController.State.DockedToBottom));
+          UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, UI.DockController.DockState.BOTTOM));
       right.addEventListener(
-          UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, UI.DockController.State.DockedToRight));
+          UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, UI.DockController.DockState.RIGHT));
       left.addEventListener(
-          UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, UI.DockController.State.DockedToLeft));
-      undock.setToggled(UI.DockController.DockController.instance().dockSide() === UI.DockController.State.Undocked);
-      bottom.setToggled(
-          UI.DockController.DockController.instance().dockSide() === UI.DockController.State.DockedToBottom);
-      right.setToggled(
-          UI.DockController.DockController.instance().dockSide() === UI.DockController.State.DockedToRight);
-      left.setToggled(UI.DockController.DockController.instance().dockSide() === UI.DockController.State.DockedToLeft);
+          UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, UI.DockController.DockState.LEFT));
+      undock.setToggled(
+          UI.DockController.DockController.instance().dockSide() === UI.DockController.DockState.UNDOCKED);
+      bottom.setToggled(UI.DockController.DockController.instance().dockSide() === UI.DockController.DockState.BOTTOM);
+      right.setToggled(UI.DockController.DockController.instance().dockSide() === UI.DockController.DockState.RIGHT);
+      left.setToggled(UI.DockController.DockController.instance().dockSide() === UI.DockController.DockState.LEFT);
       dockItemToolbar.appendToolbarItem(undock);
       dockItemToolbar.appendToolbarItem(left);
       dockItemToolbar.appendToolbarItem(bottom);
@@ -806,7 +817,7 @@ export class MainMenuItem implements UI.Toolbar.Provider {
 
     const button = (this.itemInternal.element as HTMLButtonElement);
 
-    function setDockSide(side: string): void {
+    function setDockSide(side: UI.DockController.DockState): void {
       UI.DockController.DockController.instance().once(UI.DockController.Events.AfterDockSideChanged).then(() => {
         button.focus();
       });
@@ -814,7 +825,7 @@ export class MainMenuItem implements UI.Toolbar.Provider {
       contextMenu.discard();
     }
 
-    if (UI.DockController.DockController.instance().dockSide() === UI.DockController.State.Undocked) {
+    if (UI.DockController.DockController.instance().dockSide() === UI.DockController.DockState.UNDOCKED) {
       const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
       if (mainTarget && mainTarget.type() === SDK.Target.Type.Frame) {
         contextMenu.defaultSection().appendAction('inspector_main.focus-debuggee', i18nString(UIStrings.focusDebuggee));

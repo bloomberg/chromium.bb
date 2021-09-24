@@ -10,7 +10,7 @@ load("//lib/branches.star", "branches")
 load("//project.star", "settings")
 
 lucicfg.check_version(
-    min = "1.27.0",
+    min = "1.28.0",
     message = "Update depot_tools",
 )
 
@@ -22,21 +22,21 @@ lucicfg.config(
     config_dir = "generated",
     tracked_files = [
         "builders/*/*/*",
-        "commit-queue.cfg",
         "cq-builders.md",
         "cq-usage/default.cfg",
         "cq-usage/full.cfg",
-        "cr-buildbucket.cfg",
-        "luci-logdog.cfg",
-        "luci-milo.cfg",
-        "luci-notify.cfg",
-        "luci-notify/email-templates/*.template",
-        "luci-scheduler.cfg",
+        "luci/commit-queue.cfg",
+        "luci/cr-buildbucket.cfg",
+        "luci/luci-logdog.cfg",
+        "luci/luci-milo.cfg",
+        "luci/luci-notify.cfg",
+        "luci/luci-notify/email-templates/*.template",
+        "luci/luci-scheduler.cfg",
+        "luci/project.cfg",
+        "luci/realms.cfg",
+        "luci/tricium-prod.cfg",
         "outages.pyl",
-        "project.cfg",
         "project.pyl",
-        "realms.cfg",
-        "tricium-prod.cfg",
     ],
     fail_on_warnings = True,
     lint_checks = [
@@ -52,12 +52,13 @@ lucicfg.config(
 
 # Just copy tricium-prod.cfg to the generated outputs
 lucicfg.emit(
-    dest = "tricium-prod.cfg",
+    dest = "luci/tricium-prod.cfg",
     data = io.read_file("tricium-prod.cfg"),
 )
 
 luci.project(
     name = settings.project,
+    config_dir = "luci",
     buildbucket = "cr-buildbucket.appspot.com",
     logdog = "luci-logdog.appspot.com",
     milo = "luci-milo.appspot.com",

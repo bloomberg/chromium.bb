@@ -11,6 +11,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/guid.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,6 +23,7 @@
 #include "base/win/wrapped_window_proc.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
+#include "media/base/media_log.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
@@ -72,8 +74,10 @@ bool MediaFoundationRenderer::IsSupported() {
 
 MediaFoundationRenderer::MediaFoundationRenderer(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
+    std::unique_ptr<MediaLog> media_log,
     bool force_dcomp_mode_for_testing)
     : task_runner_(std::move(task_runner)),
+      media_log_(std::move(media_log)),
       force_dcomp_mode_for_testing_(force_dcomp_mode_for_testing) {
   DVLOG_FUNC(1);
 }
@@ -268,6 +272,7 @@ HRESULT MediaFoundationRenderer::InitializeDXGIDeviceManager() {
       D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, 0, creation_flags,
                         feature_levels, base::size(feature_levels),
                         D3D11_SDK_VERSION, &d3d11_device, nullptr, nullptr));
+  RETURN_IF_FAILED(media::SetDebugName(d3d11_device.Get(), "Media_MFRenderer"));
 
   ComPtr<ID3D10Multithread> multithreaded_device;
   RETURN_IF_FAILED(d3d11_device.As(&multithreaded_device));
@@ -452,10 +457,9 @@ void MediaFoundationRenderer::SetVideoStreamEnabled(bool enabled) {
   }
 }
 
-void MediaFoundationRenderer::SetOutputParams(const gfx::Rect& output_rect) {
+void MediaFoundationRenderer::SetOutputRect(const gfx::Rect& output_rect,
+                                            SetOutputRectCB callback) {
   DVLOG_FUNC(2);
-
-  output_rect_ = output_rect;
 
   if (virtual_video_window_ &&
       !::SetWindowPos(virtual_video_window_, HWND_BOTTOM, output_rect.x(),
@@ -463,16 +467,22 @@ void MediaFoundationRenderer::SetOutputParams(const gfx::Rect& output_rect) {
                       output_rect.height(), SWP_NOACTIVATE)) {
     DLOG(ERROR) << "Failed to SetWindowPos: "
                 << PrintHr(HRESULT_FROM_WIN32(GetLastError()));
+    std::move(callback).Run(false);
     return;
   }
 
-  ignore_result(UpdateVideoStream(output_rect));
+  if (FAILED(UpdateVideoStream(output_rect))) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  std::move(callback).Run(true);
 }
 
 HRESULT MediaFoundationRenderer::UpdateVideoStream(const gfx::Rect& rect) {
   ComPtr<IMFMediaEngineEx> mf_media_engine_ex;
   RETURN_IF_FAILED(mf_media_engine_.As(&mf_media_engine_ex));
-  RECT dest_rect = rect.ToRECT();
+  RECT dest_rect = {0, 0, rect.width(), rect.height()};
   RETURN_IF_FAILED(mf_media_engine_ex->UpdateVideoStream(
       /*pSrc=*/nullptr, &dest_rect, /*pBorderClr=*/nullptr));
   return S_OK;
@@ -518,7 +528,8 @@ void MediaFoundationRenderer::SendStatistics() {
   PipelineStatistics new_stats = {};
   HRESULT hr = PopulateStatistics(new_stats);
   if (FAILED(hr)) {
-    DVLOG_FUNC(3) << "Unable to populate pipeline stats: " << PrintHr(hr);
+    LIMITED_MEDIA_LOG(INFO, media_log_, populate_statistics_failure_count_, 3)
+        << "MediaFoundationRenderer failed to populate stats: " + PrintHr(hr);
     return;
   }
 
@@ -562,12 +573,19 @@ base::TimeDelta MediaFoundationRenderer::GetMediaTime() {
   return media_time;
 }
 
-void MediaFoundationRenderer::OnPlaybackError(PipelineStatus status) {
-  DVLOG_FUNC(1) << "status=" << status;
+void MediaFoundationRenderer::OnPlaybackError(PipelineStatus status,
+                                              HRESULT hr) {
+  DVLOG_FUNC(1) << "status=" << status << ", hr=" << hr;
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  base::UmaHistogramSparse("Media.MediaFoundationRenderer.PlaybackError", hr);
 
   if (status == PIPELINE_ERROR_HARDWARE_CONTEXT_RESET && cdm_proxy_)
     cdm_proxy_->OnHardwareContextReset();
+
+  MEDIA_LOG(ERROR, media_log_)
+      << "MediaFoundationRenderer OnPlaybackError: " << status << ", "
+      << PrintHr(hr);
 
   renderer_client_->OnError(status);
   StopSendingStatistics();
@@ -628,9 +646,14 @@ void MediaFoundationRenderer::OnVideoNaturalSizeChange() {
                           base::checked_cast<int>(native_height)};
   }
 
-  // If `output_rect_` is not available yet, use `native_video_size_` for now.
-  if (output_rect_.IsEmpty())
-    ignore_result(UpdateVideoStream(gfx::Rect(native_video_size_)));
+  // TODO(frankli): Let test code to call `UpdateVideoStream()`.
+  if (force_dcomp_mode_for_testing_) {
+    const gfx::Rect test_rect(/*x=*/0, /*y=*/0, /*width=*/640, /*height=*/320);
+    // This invokes IMFMediaEngineEx::UpdateVideoStream() for video frames to
+    // be presented. Otherwise, the Media Foundation video renderer will not
+    // request video samples from our source.
+    ignore_result(UpdateVideoStream(test_rect));
+  }
 
   renderer_client_->OnVideoNaturalSizeChange(native_video_size_);
 }

@@ -32,7 +32,7 @@ const CGFloat kButtonSpacing = 8;
 
 }  // namespace
 
-@interface NewPasswordTableCell ()
+@interface NewPasswordTableCell () <UITextFieldDelegate>
 
 // Label for the row title.
 @property(nonatomic, strong) UILabel* titleLabel;
@@ -81,11 +81,20 @@ const CGFloat kButtonSpacing = 8;
     _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _titleLabel.numberOfLines = 0;
 
+    // The text field should neither shrink or grow if possible
+    [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh + 1
+                                   forAxis:UILayoutConstraintAxisHorizontal];
+    [_titleLabel
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
+
     _textField = [[UITextField alloc] init];
     _textField.translatesAutoresizingMaskIntoConstraints = NO;
     _textField.hidden = YES;
     _textField.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _textField.textColor = [UIColor colorNamed:kTextPrimaryColor];
+    _textField.delegate = self;
     [_textField addTarget:self
                    action:@selector(textFieldDidChange:)
          forControlEvents:UIControlEventEditingChanged];
@@ -189,6 +198,12 @@ const CGFloat kButtonSpacing = 8;
   [self.delegate textFieldDidChangeInCell:self];
 }
 
+#pragma mark - UITextFieldDelegate
+
+- (BOOL)textFieldShouldReturn:(UITextField*)textField {
+  return [self.delegate textFieldShouldReturnInCell:self];
+}
+
 #pragma mark - Accessors
 
 - (UIImage*)hidePasswordImage {
@@ -208,6 +223,14 @@ const CGFloat kButtonSpacing = 8;
   UIImage* newImage =
       _passwordHidden ? self.revealPasswordImage : self.hidePasswordImage;
   [self.hidePasswordButton setImage:newImage forState:UIControlStateNormal];
+  self.hidePasswordButton.accessibilityLabel =
+      _passwordHidden
+          ? NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_NEW_PASSWORD_"
+                              @"REVEAL_PASSWORD_HINT",
+                              @"Reveal Password")
+          : NSLocalizedString(
+                @"IDS_IOS_CREDENTIAL_PROVIDER_NEW_PASSWORD_HIDE_PASSWORD_HINT",
+                @"Hide Password");
 }
 
 // After |-prepareForReuse|, all views in the stack view are hidden. This method
@@ -221,6 +244,7 @@ const CGFloat kButtonSpacing = 8;
           @"IDS_IOS_CREDENTIAL_PROVIDER_NEW_PASSWORD_USERNAME", @"Username");
 
       self.textField.hidden = NO;
+      self.textField.returnKeyType = UIReturnKeyNext;
       self.textField.placeholder = NSLocalizedString(
           @"IDS_IOS_CREDENTIAL_PROVIDER_NEW_PASSWORD_USERNAME_PLACEHOLDER",
           @"Placeholder marking username field as optional");
@@ -230,12 +254,12 @@ const CGFloat kButtonSpacing = 8;
           @"IDS_IOS_CREDENTIAL_PROVIDER_NEW_PASSWORD_PASSWORD", @"Password");
 
       self.textField.hidden = NO;
+      self.textField.returnKeyType = UIReturnKeyDone;
       self.textField.placeholder = NSLocalizedString(
           @"IDS_IOS_CREDENTIAL_PROVIDER_NEW_PASSWORD_PASSWORD_PLACEHOLDER",
           @"Placeholder for password field");
 
       self.hidePasswordButton.hidden = NO;
-      self.passwordHidden = YES;
       break;
     case NewPasswordTableCellTypeSuggestStrongPassword:
       self.titleLabel.text = NSLocalizedString(

@@ -136,3 +136,16 @@ void LacrosExtensionAppsController::SetWindowMode(
   // standalone window.
   NOTIMPLEMENTED();
 }
+
+void LacrosExtensionAppsController::Launch(
+    crosapi::mojom::LaunchParamsPtr launch_params,
+    LaunchCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+void LacrosExtensionAppsController::ExecuteContextMenuCommand(
+    const std::string& app_id,
+    const std::string& id,
+    ExecuteContextMenuCommandCallback callback) {
+  NOTIMPLEMENTED();
+}

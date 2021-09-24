@@ -10,8 +10,6 @@
 #include <ostream>
 #include <string>
 
-#include "absl/types/span.h"
-
 namespace openscreen {
 
 // Enable compile-time checking of the printf format argument, if available.

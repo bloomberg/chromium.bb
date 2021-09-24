@@ -76,7 +76,7 @@ void FileSystemAccessDirectoryHandleImpl::GetFile(const std::string& basename,
   }
 
   if (create) {
-    // If |create| is true, write permission is required unconditionally, i.e.
+    // If `create` is true, write permission is required unconditionally, i.e.
     // even if the file already exists. This is intentional, and matches the
     // behavior that is specified in the spec.
     RunWithWritePermission(
@@ -121,7 +121,7 @@ void FileSystemAccessDirectoryHandleImpl::GetDirectory(
   }
 
   if (create) {
-    // If |create| is true, write permission is required unconditionally, i.e.
+    // If `create` is true, write permission is required unconditionally, i.e.
     // even if the file already exists. This is intentional, and matches the
     // behavior that is specified in the spec.
     RunWithWritePermission(
@@ -172,6 +172,28 @@ void FileSystemAccessDirectoryHandleImpl::GetEntries(
           &FileSystemAccessDirectoryHandleImpl::DidReadDirectory,
           weak_factory_.GetWeakPtr(), base::Owned(std::move(listener))),
       url());
+}
+
+void FileSystemAccessDirectoryHandleImpl::Move(
+    mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken>
+        destination_directory,
+    const std::string& new_entry_name,
+    MoveCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(crbug.com/1250534): Implement move for directory handles.
+  std::move(callback).Run(file_system_access_error::FromStatus(
+      blink::mojom::FileSystemAccessStatus::kOperationAborted));
+}
+
+void FileSystemAccessDirectoryHandleImpl::Rename(
+    const std::string& new_entry_name,
+    RenameCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(crbug.com/1250534): Implement rename for directory handles.
+  std::move(callback).Run(file_system_access_error::FromStatus(
+      blink::mojom::FileSystemAccessStatus::kOperationAborted));
 }
 
 void FileSystemAccessDirectoryHandleImpl::Remove(bool recurse,

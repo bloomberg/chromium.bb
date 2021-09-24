@@ -19,9 +19,11 @@ limitations under the License.
 #include "absl/memory/memory.h"
 #include "absl/types/optional.h"
 #include "tensorflow/c/c_api_internal.h"
+#include "tensorflow/c/eager/immediate_execution_distributed_manager.h"
 #include "tensorflow/c/tf_status_helper.h"
 #include "tensorflow/core/common_runtime/device_mgr.h"
 #include "tensorflow/core/common_runtime/eager/context.h"
+#include "tensorflow/core/common_runtime/eager/context_distributed_manager.h"
 #include "tensorflow/core/common_runtime/eager/eager_operation.h"
 #include "tensorflow/core/common_runtime/eager/execute.h"
 #include "tensorflow/core/common_runtime/function.h"
@@ -156,17 +158,25 @@ Status TensorHandleShape(TensorHandle* handle, TensorShapeProto* proto) {
   const tensorflow::Tensor* t = nullptr;
 
   // TODO(nareshmodi): This call makes async calls sync calls. Fix this.
-  TF_RETURN_IF_ERROR(handle->Tensor(&t));
+  if (handle->Type() == TensorHandle::LOCAL) {
+    TF_RETURN_IF_ERROR(handle->Tensor(&t));
 
-  t->shape().AsProto(proto);
+    t->shape().AsProto(proto);
+  } else {
+    TensorShape shape;
+    TF_RETURN_IF_ERROR(handle->Shape(&shape));
+    shape.AsProto(proto);
+  }
 
   return Status::OK();
 }
 
 Status AddOpRetvalsToResponse(
     EagerContext* eager_context, int op_id, int num_retvals,
-    TensorHandle** retvals, std::function<TensorProto*()> add_tensor_proto_fn,
-    std::function<TensorShapeProto*()> add_shape_proto_fn) {
+    const std::vector<int32>& output_nums, TensorHandle** retvals,
+    std::function<TensorProto*()> add_tensor_proto_fn,
+    std::function<TensorShapeProto*()> add_shape_proto_fn,
+    std::function<string*()> add_device_fn = nullptr) {
   if (op_id == kInvalidRemoteOpId) {
     // Copy the output tensors back along with the response, since the op id
     // is invalid which cannot be added to RemoteMgr.
@@ -175,10 +185,19 @@ Status AddOpRetvalsToResponse(
       retvals[i]->Unref();
     }
   } else {
-    eager_context->RemoteMgr()->AddOperationOutputs(
-        absl::MakeSpan(retvals, num_retvals), op_id);
     for (int i = 0; i < num_retvals; i++) {
       TF_RETURN_IF_ERROR(TensorHandleShape(retvals[i], add_shape_proto_fn()));
+      if (add_device_fn) {
+        Device* device = retvals[i]->device();
+        *add_device_fn() = device ? device->name() : "";
+      }
+      if (retvals[i]->Type() == TensorHandle::REMOTE) {
+        retvals[i]->Unref();
+      } else {
+        const int output_num = output_nums.empty() ? i : output_nums.at(i);
+        eager_context->RemoteMgr()->AddOperationOutput(retvals[i], op_id,
+                                                       output_num);
+      }
     }
   }
   return Status::OK();
@@ -224,7 +243,7 @@ Status EagerServiceImpl::CreateContext(const CreateContextRequest* request,
   TF_RETURN_IF_ERROR(env_->session_mgr->CreateSession(
       session_name, request->server_def(), request->cluster_device_attributes(),
       true));
-  int64 context_id = request->context_id();
+  int64_t context_id = request->context_id();
   std::function<void()> session_destroyer = [this, context_id, session_name]() {
     env_->rendezvous_mgr->Cleanup(context_id);
     auto s = env_->session_mgr->DeleteSession(session_name);
@@ -238,13 +257,13 @@ Status EagerServiceImpl::CreateContext(const CreateContextRequest* request,
   TF_RETURN_IF_ERROR(env_->session_mgr->WorkerSessionForSession(
       session_name, &worker_session));
 
-  const tensorflow::DeviceMgr* device_mgr = worker_session->device_mgr();
+  tensorflow::DeviceMgr* device_mgr = worker_session->device_mgr();
 
   // Initialize remote tensor communication based on worker session.
   TF_RETURN_IF_ERROR(r->Initialize(worker_session.get()));
 
-  std::function<Rendezvous*(const int64)> rendezvous_creator =
-      [worker_session, this](const int64 step_id) {
+  std::function<Rendezvous*(const int64_t)> rendezvous_creator =
+      [worker_session, this](const int64_t step_id) {
         auto* r = env_->rendezvous_mgr->Find(step_id);
         r->Initialize(worker_session.get()).IgnoreError();
         return r;
@@ -257,9 +276,8 @@ Status EagerServiceImpl::CreateContext(const CreateContextRequest* request,
   opts.config = request->server_def().default_session_config();
   tensorflow::EagerContext* ctx = new tensorflow::EagerContext(
       opts, tensorflow::ContextDevicePlacementPolicy::DEVICE_PLACEMENT_SILENT,
-      tensorflow::ContextMirroringPolicy::MIRRORING_NONE, request->async(),
-      request->lazy_copy_remote_function_inputs(), device_mgr, false, r,
-      GetDefaultCustomKernelCreator(), worker_session->cluster_flr());
+      request->async(), device_mgr, false, r, worker_session->cluster_flr(),
+      env_->collective_executor_mgr.get());
   // Ownership will be transferred to the ServerContext, or else in an error
   // case ctx will be deleted by this unref.
   core::ScopedUnref unref_ctx(ctx);
@@ -288,6 +306,29 @@ Status EagerServiceImpl::CreateContext(const CreateContextRequest* request,
             << s.ToString();
     return s;
   }
+
+#if !defined(IS_MOBILE_PLATFORM)
+  const auto& config = request->server_def().default_session_config();
+  const bool enable_coordination =
+      !config.experimental().coordination_service().empty();
+  if (enable_coordination) {
+    auto dist_mgr = std::make_unique<EagerContextDistributedManager>(ctx);
+    ctx->SetDistributedManager(std::move(dist_mgr));
+    TF_RETURN_IF_ERROR(ctx->GetDistributedManager()->EnableCoordinationService(
+        config.experimental().coordination_service(), env_,
+        request->server_def(), worker_session->worker_cache()));
+    std::unique_ptr<CoordinationClientCache> client_cache;
+    TF_RETURN_IF_ERROR(
+        worker_session->worker_cache()->GetCoordinationClientCache(
+            &client_cache));
+    TF_RETURN_IF_ERROR(
+        ctx->GetDistributedManager()->GetCoordinationServiceAgent()->Initialize(
+            env_, request->server_def(), std::move(client_cache),
+            /*error_fn=*/[](Status s) {
+              LOG(ERROR) << "Coordination agent is set to error: " << s;
+            }));
+  }
+#endif  // !IS_MOBILE_PLATFORM
 
   std::vector<DeviceAttributes> device_attributes;
   device_mgr->ListDeviceAttributes(&device_attributes);
@@ -341,8 +382,6 @@ Status EagerServiceImpl::UpdateContext(const UpdateContextRequest* request,
             << ctx->HostCPU()->name();
     return Status::OK();
   }
-  // TODO(b/143914772): Potential memory leak if rendezvous has pending
-  // tensors for removed / replaced workers.
 
   auto session_name =
       tensorflow::strings::StrCat("eager_", request->context_id());
@@ -446,10 +485,20 @@ void EagerServiceImpl::RunComponentFunction(
         "Received RunComponentFunction request with remote function device. "));
     return;
   }
+  s = op->SetAttrBool("is_component_function", true);
+  if (!s.ok()) {
+    done(errors::Internal("Error setting is_component_function attribute: ",
+                          s.error_message()));
+    return;
+  }
 
   auto* retvals = new absl::FixedArray<TensorHandle*>(*num_retvals);
   VLOG(3) << "ServerContext: Calling EagerLocalExecuteAsync for op "
           << operation.id();
+  std::vector<int32> output_nums;
+  for (const int32_t output_num : request->output_num()) {
+    output_nums.push_back(output_num);
+  }
 
   auto cm = std::make_shared<CancellationManager>();
   op->SetCancellationManager(cm.get());
@@ -458,8 +507,8 @@ void EagerServiceImpl::RunComponentFunction(
   context->Ref();
   EagerLocalExecuteAsync(
       op, retvals->data(), num_retvals,
-      [op, op_id = operation.id(), num_retvals, retvals, cm, call_opts,
-       response, eager_context, context,
+      [op, op_id = operation.id(), num_retvals, retvals, output_nums, cm,
+       call_opts, response, eager_context, context,
        done = std::move(done)](const Status& status) {
         call_opts->ClearCancelCallback();
         auto wrapped_done = [&](const Status& status) {
@@ -473,14 +522,17 @@ void EagerServiceImpl::RunComponentFunction(
           wrapped_done(status);
           return;
         }
+        // The output device of a component function is the component device
+        // which is known on the default device of it's parent function.
         wrapped_done(AddOpRetvalsToResponse(
-            eager_context, op_id, *num_retvals, retvals->data(),
+            eager_context, op_id, *num_retvals, output_nums, retvals->data(),
             [response] { return response->add_tensor(); },
             [response] { return response->add_shape(); }));
       });
 }
 
-Status EagerServiceImpl::ExecuteOp(const Operation& operation,
+Status EagerServiceImpl::ExecuteOp(CallOptions* call_opts,
+                                   const Operation& operation,
                                    EagerContext* eager_context,
                                    EagerExecutor* eager_executor,
                                    QueueResponse* queue_response) {
@@ -488,6 +540,12 @@ Status EagerServiceImpl::ExecuteOp(const Operation& operation,
   int num_retvals = 0;
   TF_RETURN_IF_ERROR(GetEagerOperationAndNumRetvals(
       operation, eager_context, eager_executor, &op, &num_retvals));
+
+  auto cm = std::make_shared<CancellationManager>();
+  if (call_opts) {
+    op.SetCancellationManager(cm.get());
+    call_opts->SetCancelCallback([cm] { cm->StartCancel(); });
+  }
 
   absl::FixedArray<tensorflow::TensorHandle*> retvals(num_retvals);
   VLOG(3) << "ServerContext: Calling EagerExecute for op " << operation.id();
@@ -497,13 +555,23 @@ Status EagerServiceImpl::ExecuteOp(const Operation& operation,
           num_retvals),
       &num_retvals));
 
+  std::function<string*()> add_device_fn = nullptr;
+  // Send the output devices of a function back to let a client know where the
+  // outputs are. For a primitive op, an output devics is the op device which is
+  // known on a client.
+  if (op.is_function()) {
+    add_device_fn = [queue_response] { return queue_response->add_device(); };
+  }
+
   return AddOpRetvalsToResponse(
-      eager_context, operation.id(), num_retvals, retvals.data(),
-      [queue_response] { return queue_response->add_tensor(); },
-      [queue_response] { return queue_response->add_shape(); });
+      eager_context, operation.id(), num_retvals, /*output_nums=*/{},
+      retvals.data(), [queue_response] { return queue_response->add_tensor(); },
+      [queue_response] { return queue_response->add_shape(); },
+      std::move(add_device_fn));
 }
 
-Status EagerServiceImpl::Enqueue(const EnqueueRequest* request,
+Status EagerServiceImpl::Enqueue(CallOptions* call_opts,
+                                 const EnqueueRequest* request,
                                  EnqueueResponse* response, uint64 stream_id) {
   profiler::TraceMe activity(
       [&] {
@@ -524,7 +592,7 @@ Status EagerServiceImpl::Enqueue(const EnqueueRequest* request,
   for (const auto& item : request->queue()) {
     auto* queue_response = response->add_queue_response();
     if (item.has_operation()) {
-      s = ExecuteOp(item.operation(), context->Context(), &executor,
+      s = ExecuteOp(call_opts, item.operation(), context->Context(), &executor,
                     queue_response);
     } else if (item.has_handle_to_decref()) {
       auto handle_to_decref = absl::make_unique<RemoteTensorHandleInternal>(
@@ -547,7 +615,6 @@ Status EagerServiceImpl::Enqueue(const EnqueueRequest* request,
 
     if (!s.ok()) {
       if (stream_id != kInvalidStreamId) {
-        // TODO(b/138847548): Cleanup the executor when StreamCall is deleted.
         context->Context()->RemoteMgr()->DeleteExecutorForStream(stream_id);
       }
       return s;
@@ -707,7 +774,7 @@ tensorflow::Status EagerServiceImpl::GetServerContext(
   auto iter = contexts_.find(context_id);
   if (iter == contexts_.end()) {
     *server_context = nullptr;
-    return errors::InvalidArgument(strings::Printf(
+    return errors::Unavailable(strings::Printf(
         "Unable to find a context_id matching the specified one "
         "(%llu). Perhaps the worker was restarted, or the context was GC'd?",
         static_cast<unsigned long long>(context_id)));

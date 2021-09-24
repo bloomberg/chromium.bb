@@ -77,9 +77,21 @@ struct FrontendFeatures : angle::FeatureSetBase
         "enableCompressingPipelineCacheInThreadPool", angle::FeatureCategory::FrontendWorkarounds,
         "Enable compressing pipeline cache in thread pool.", &members, "http://anglebug.com/4722"};
 
+    // Forces on robust resource init. Useful for some tests to avoid undefined values.
     angle::Feature forceRobustResourceInit = {
-        "forceRobustResourceInit", angle::FeatureCategory::FrontendWorkarounds,
+        "forceRobustResourceInit", angle::FeatureCategory::FrontendFeatures,
         "Force-enable robust resource init", &members, "http://anglebug.com/6041"};
+
+    // Forces on shader variable init to avoid undefined values in tests. This feature is enabled
+    // for WebGL and frame capture, which both require deterministic results.
+    angle::Feature forceInitShaderVariables = {
+        "forceInitShaderVariables", angle::FeatureCategory::FrontendFeatures,
+        "Force-enable shader variable initialization", &members};
+
+    angle::Feature enableProgramBinaryForCapture = {
+        "enableProgramBinaryForCapture", angle::FeatureCategory::FrontendFeatures,
+        "Even if FrameCapture is enabled, enable GL_OES_get_program_binary", &members,
+        "http://anglebug.com/5658"};
 };
 
 inline FrontendFeatures::FrontendFeatures()  = default;

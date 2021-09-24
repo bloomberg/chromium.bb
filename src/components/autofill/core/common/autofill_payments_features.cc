@@ -89,8 +89,13 @@ const base::Feature kAutofillEnableOffersInDownstream{
 // When enabled and user is signed in, a footer indicating user's e-mail address
 // and profile picture will appear at the bottom of SaveCardInfoBar.
 const base::Feature kAutofillEnableSaveCardInfoBarAccountIndicationFooter{
-    "AutofillEnableSaveCardInfoBarAccountIndicationFooter",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+  "AutofillEnableSaveCardInfoBarAccountIndicationFooter",
+#if defined(OS_IOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // When enabled, if the user interacts with the manual fallback bottom sheet
 // on Android, it'll remain sticky until the user dismisses it.
@@ -107,6 +112,12 @@ const base::Feature kAutofillEnableToolbarStatusChip{
 // when all requirements are met.
 const base::Feature kAutofillEnableVirtualCard{
     "AutofillEnableVirtualCard", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, virtual card retrieval will pass an optional
+// authentication based on risk level.
+const base::Feature kAutofillEnableVirtualCardsRiskBasedAuthentication{
+    "AutofillEnableVirtualCardsRiskBasedAuthentication",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, Autofill will attempt to fill merchant promo/coupon/gift code
 // fields when data is available.
@@ -154,12 +165,6 @@ const base::Feature kAutofillSortSuggestionsBasedOnOfferPresence{
 const base::Feature kAutofillSuggestVirtualCardsOnIncompleteForm{
     "AutofillSuggestVirtualCardsOnIncompleteForm",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, if the Autofill Assistant is running, credit card save (both
-// local and upload) will not be offered.
-const base::Feature kAutofillSuppressCreditCardSaveForAssistant{
-    "AutofillSuppressCreditCardSaveForAssistant",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because the feature state depends on the user's country.

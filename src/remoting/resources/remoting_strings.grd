@@ -837,7 +837,7 @@
         Would you like to allow <ph name="CLIENT_USERNAME">{0}<ex>client@email.com</ex></ph> to see and control your computer?
       </message>
       <message desc="Message displayed before sharing computer when admin initiated the connection remotely" name="IDS_SHARE_CONFIRM_DIALOG_MESSAGE_ADMIN_INITIATED">
-        <ph name="CLIENT_USERNAME">{0}<ex>client@email.com</ex></ph> has requested access to see and control your computer. Press ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE">{1}<ex>cancel</ex></ph>'' if you do not know this person or if you need to make any changes before sharing.  Otherwise select ''<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM">{2}<ex>share</ex></ph>'' to allow connection.
+        <ph name="CLIENT_USERNAME">{0}<ex>client@email.com</ex></ph> has requested access to see your screen and control your keyboard and mouse. Press ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE">{1}<ex>cancel</ex></ph>'' if you are not expecting this request. Otherwise select ''<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM">{2}<ex>share</ex></ph>'' to allow the connection when ready.
       </message>
       <message desc="Label for the button to accept sharing the computer in 'It2Me' mode." meaning="Accept share request." name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" >
         Share
@@ -917,6 +917,9 @@ If '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></
       </message>
       <message name="IDS_BROWSER_IS_INVALID" desc="Message shown when the user has chosen an invalid app as the browser to open URLs locally.">
         The chosen browser cannot be used to open URLs on the local machine.
+      </message>
+      <message name="IDS_URL_FORWARDER_INCORRECTLY_CONFIGURED" desc="Message shown when the Chrome Remote Desktop URL forwarder is incorrectly configured.">
+        <ph name="URL_FORWARDER_NAME">%s<ex>Chrome Remote Desktop URL Forwarder</ex></ph> is not configured correctly. Please choose a different default web browser and then enable URL forwarding again.
       </message>
       <if expr="is_linux">
         <message name="IDS_SESSION_DIALOG_MESSAGE" desc="The message to show at the top of the session-selection dialog.">

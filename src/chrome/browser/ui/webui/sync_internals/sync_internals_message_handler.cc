@@ -96,58 +96,58 @@ void SyncInternalsMessageHandler::OnJavascriptDisallowed() {
 void SyncInternalsMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestDataAndRegisterForUpdates,
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleRequestDataAndRegisterForUpdates,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestListOfTypes,
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleRequestListOfTypes,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestIncludeSpecificsInitialState,
       base::BindRepeating(&SyncInternalsMessageHandler::
                               HandleRequestIncludeSpecificsInitialState,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kSetIncludeSpecifics,
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleSetIncludeSpecifics,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kWriteUserEvent,
       base::BindRepeating(&SyncInternalsMessageHandler::HandleWriteUserEvent,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestStart,
       base::BindRepeating(&SyncInternalsMessageHandler::HandleRequestStart,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestStopKeepData,
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleRequestStopKeepData,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestStopClearData,
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleRequestStopClearData,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kTriggerRefresh,
       base::BindRepeating(&SyncInternalsMessageHandler::HandleTriggerRefresh,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kGetAllNodes,
       base::BindRepeating(&SyncInternalsMessageHandler::HandleGetAllNodes,
                           base::Unretained(this)));
@@ -187,7 +187,7 @@ void SyncInternalsMessageHandler::HandleRequestListOfTypes(
   ListValue type_list;
   syncer::ModelTypeSet protocol_types = syncer::ProtocolTypes();
   for (syncer::ModelType type : protocol_types) {
-    type_list.AppendString(ModelTypeToString(type));
+    type_list.Append(ModelTypeToString(type));
   }
   event_details.SetKey(syncer::sync_ui_util::kTypes, std::move(type_list));
   FireWebUIListener(syncer::sync_ui_util::kOnReceivedListOfTypes,
@@ -208,7 +208,7 @@ void SyncInternalsMessageHandler::HandleRequestIncludeSpecificsInitialState(
 }
 
 void SyncInternalsMessageHandler::HandleGetAllNodes(const ListValue* args) {
-  DCHECK_EQ(1U, args->GetSize());
+  DCHECK_EQ(1U, args->GetList().size());
   AllowJavascript();
 
   std::string callback_id;
@@ -229,14 +229,14 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(const ListValue* args) {
 
 void SyncInternalsMessageHandler::HandleSetIncludeSpecifics(
     const ListValue* args) {
-  DCHECK_EQ(1U, args->GetSize());
+  DCHECK_EQ(1U, args->GetList().size());
   AllowJavascript();
   include_specifics_ = args->GetList()[0].GetBool();
 }
 
 void SyncInternalsMessageHandler::HandleWriteUserEvent(
     const base::ListValue* args) {
-  DCHECK_EQ(2U, args->GetSize());
+  DCHECK_EQ(2U, args->GetList().size());
   AllowJavascript();
 
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -261,7 +261,7 @@ void SyncInternalsMessageHandler::HandleWriteUserEvent(
 
 void SyncInternalsMessageHandler::HandleRequestStart(
     const base::ListValue* args) {
-  DCHECK_EQ(0U, args->GetSize());
+  DCHECK_EQ(0U, args->GetList().size());
 
   SyncService* service = GetSyncService();
   if (!service)
@@ -277,7 +277,7 @@ void SyncInternalsMessageHandler::HandleRequestStart(
 
 void SyncInternalsMessageHandler::HandleRequestStopKeepData(
     const base::ListValue* args) {
-  DCHECK_EQ(0U, args->GetSize());
+  DCHECK_EQ(0U, args->GetList().size());
 
   SyncService* service = GetSyncService();
   if (!service)
@@ -288,7 +288,7 @@ void SyncInternalsMessageHandler::HandleRequestStopKeepData(
 
 void SyncInternalsMessageHandler::HandleRequestStopClearData(
     const base::ListValue* args) {
-  DCHECK_EQ(0U, args->GetSize());
+  DCHECK_EQ(0U, args->GetList().size());
 
   SyncService* service = GetSyncService();
   if (!service)

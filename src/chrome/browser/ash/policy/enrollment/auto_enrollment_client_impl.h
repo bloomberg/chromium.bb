@@ -65,27 +65,6 @@ enum class PsmResult {
   kMaxValue = kTimeout,
 };
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class PsmHashDanceComparison {
-  kEqualResults = 0,
-  kDifferentResults = 1,
-  kPSMErrorHashDanceSuccess = 2,
-  kPSMSuccessHashDanceError = 3,
-  kBothError = 4,
-  kMaxValue = kBothError,
-};
-
-// Indicates all possible different results of PSM and Hash dance protocols,
-// after both protocols have executed successfully. These values are persisted
-// to logs. Entries should not be renumbered and numeric values should never be
-// reused.
-enum class PsmHashDanceDifferentResultsComparison {
-  kHashDanceTruePsmFalse = 0,
-  kPsmTrueHashDanceFalse = 1,
-  kMaxValue = kPsmTrueHashDanceFalse,
-};
-
 // Interacts with the device management service and determines whether this
 // machine should automatically enter the Enterprise Enrollment screen during
 // OOBE.
@@ -93,9 +72,10 @@ class AutoEnrollmentClientImpl
     : public AutoEnrollmentClient,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
-  // Subclasses of this class provide an identifier and specify the identifier
-  // set for the DeviceAutoEnrollmentRequest,
-  class DeviceIdentifierProvider;
+  // Provides device identifier for Forced Re-Enrollment (FRE), where the
+  // server-backed state key is used. It will set the identifier for the
+  // DeviceAutoEnrollmentRequest.
+  class DeviceIdentifierProviderFRE;
 
   // Subclasses of this class generate the request to download the device state
   // (after determining that there is server-side device state) and parse the
@@ -125,7 +105,6 @@ class AutoEnrollmentClientImpl
         const std::string& device_brand_code,
         int power_initial,
         int power_limit,
-        int power_outdated_server_detect,
         PrivateMembershipRlweClient::Factory* psm_rlwe_client_factory) override;
 
    private:
@@ -163,12 +142,12 @@ class AutoEnrollmentClientImpl
       DeviceManagementService* device_management_service,
       PrefService* local_state,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      std::unique_ptr<DeviceIdentifierProvider> device_identifier_provider,
+      std::unique_ptr<DeviceIdentifierProviderFRE>
+          device_identifier_provider_fre,
       std::unique_ptr<StateDownloadMessageProcessor>
           state_download_message_processor,
       int power_initial,
       int power_limit,
-      absl::optional<int> power_outdated_server_detect,
       std::string uma_suffix,
       std::unique_ptr<PsmHelper> psm_helper);
 
@@ -240,7 +219,7 @@ class AutoEnrollmentClientImpl
       const enterprise_management::DeviceManagementResponse& response);
 
   // Returns true if the identifier hash provided by
-  // |device_identifier_provider_| is contained in |hashes|.
+  // |device_identifier_provider_fre_| is contained in |hashes|.
   bool IsIdHashInProtobuf(
       const google::protobuf::RepeatedPtrField<std::string>& hashes);
 
@@ -277,11 +256,6 @@ class AutoEnrollmentClientImpl
   // a retry response from the server.
   int power_limit_;
 
-  // If set and the modulus requested by the server is higher than
-  // |1<<power_outdated_server_detect|, this client will assume that the server
-  // is outdated.
-  absl::optional<int> power_outdated_server_detect_;
-
   // Number of requests for a different modulus received from the server.
   // Used to determine if the server keeps asking for different moduli.
   int modulus_updates_received_;
@@ -299,9 +273,8 @@ class AutoEnrollmentClientImpl
   // The loader factory to use to perform the auto enrollment request.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  // Specifies the identifier set and the hash of the device's current
-  // identifier.
-  std::unique_ptr<DeviceIdentifierProvider> device_identifier_provider_;
+  // Specifies the device identifier for FRE and its corresponding hash.
+  std::unique_ptr<DeviceIdentifierProviderFRE> device_identifier_provider_fre_;
 
   // Fills and parses state retrieval request / response.
   std::unique_ptr<StateDownloadMessageProcessor>

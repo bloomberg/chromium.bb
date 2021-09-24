@@ -149,11 +149,11 @@ public class StartSurfaceLayout extends Layout {
             @Override
             public void finishedHiding() {
                 // The Android View version of GTS overview is hidden.
-                // If not doing GTS-to-Tab transition animation or single tab switcher is shown on
-                // start surface, we show the fade-out instead, which was already done.
+                // If not doing GTS-to-Tab transition animation or start surface homepage is hiding
+                // (instead of grid tab switcher), we show the fade-out instead, which was already
+                // done.
                 if (!TabUiFeatureUtilities.isTabToGtsAnimationEnabled()
-                        || StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY
-                                   .getValue()) {
+                        || isHidingStartSurfaceHomepage()) {
                     postHiding();
                     return;
                 }
@@ -226,9 +226,10 @@ public class StartSurfaceLayout extends Layout {
             mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
 
             boolean quick;
-            boolean isShowingStartSurface = isShowingStartSurface();
-            // If start surface is showing, carousel or grid tab switcher is used.
-            if (isShowingStartSurface) {
+            boolean isShowingStartSurfaceHomepage = isShowingStartSurfaceHomepage();
+            // If start surface homepage is showing, carousel or single tab switcher is used.
+            // Otherwise grid tab switcher is used.
+            if (isShowingStartSurfaceHomepage) {
                 quick = getCarouselOrSingleTabListDelegate().prepareOverview();
             } else {
                 quick = getGridTabListDelegate().prepareOverview();
@@ -239,7 +240,7 @@ public class StartSurfaceLayout extends Layout {
             boolean isCurrentTabModelEmpty = mTabModelSelector.getCurrentModel().getCount() == 0;
             boolean showShrinkingAnimation = animate
                     && TabUiFeatureUtilities.isTabToGtsAnimationEnabled() && !isCurrentTabModelEmpty
-                    && !isShowingStartSurface;
+                    && !isShowingStartSurfaceHomepage;
 
             boolean skipSlowZooming = TabUiFeatureUtilities.SKIP_SLOW_ZOOMING.getValue();
             Log.d(TAG, "SkipSlowZooming = " + skipSlowZooming);
@@ -504,7 +505,7 @@ public class StartSurfaceLayout extends Layout {
     }
 
     private Rect getThumbnailLocationOfCurrentTab() {
-        if (isHidingStartSurface()) {
+        if (isHidingStartSurfaceHomepage()) {
             return getCarouselOrSingleTabListDelegate().getThumbnailLocationOfCurrentTab(true);
         } else {
             return getGridTabListDelegate().getThumbnailLocationOfCurrentTab(true);
@@ -525,13 +526,39 @@ public class StartSurfaceLayout extends Layout {
         return mGridTabListDelegate;
     }
 
-    private boolean isShowingStartSurface() {
-        return mController.getStartSurfaceState() == StartSurfaceState.SHOWN_HOMEPAGE
-                || mController.getStartSurfaceState() == StartSurfaceState.SHOWING_HOMEPAGE
-                || mController.getStartSurfaceState() == StartSurfaceState.SHOWING_START;
+    private TabListDelegate getLastUsedTabListDelegate() {
+        // It is possible that the StartSurfaceState becomes StartSurfaceState.NOT_SHOWN when hiding
+        // the overview page, thus, the last used TabListDelegate is returned.
+        if (mController.getStartSurfaceState() == StartSurfaceState.NOT_SHOWN) {
+            assert mGridTabListDelegate != null || mCarouselOrSingleTabListDelegate != null;
+            return mGridTabListDelegate != null ? mGridTabListDelegate
+                                                : mCarouselOrSingleTabListDelegate;
+        }
+        return isShowingStartSurfaceHomepage() ? getCarouselOrSingleTabListDelegate()
+                                               : getGridTabListDelegate();
     }
 
-    private boolean isHidingStartSurface() {
+    /**
+     * When state is SHOWN_HOMEPAGE or SHOWING_HOMEPAGE or SHOWING_START, state surface homepage is
+     * showing. When state is StartSurfaceState.SHOWING_PREVIOUS and the previous state is
+     * SHOWN_HOMEPAGE or NOT_SHOWN, homepage is showing.
+     * @return Whether start surface homepage is showing.
+     */
+    private boolean isShowingStartSurfaceHomepage() {
+        @StartSurfaceState
+        int currentState = mController.getStartSurfaceState();
+        @StartSurfaceState
+        int previousState = mController.getPreviousStartSurfaceState();
+
+        return currentState == StartSurfaceState.SHOWN_HOMEPAGE
+                || currentState == StartSurfaceState.SHOWING_HOMEPAGE
+                || currentState == StartSurfaceState.SHOWING_START
+                || (currentState == StartSurfaceState.SHOWING_PREVIOUS
+                        && (previousState == StartSurfaceState.SHOWN_HOMEPAGE
+                                || previousState == StartSurfaceState.NOT_SHOWN));
+    }
+
+    private boolean isHidingStartSurfaceHomepage() {
         return mController.getPreviousStartSurfaceState() == StartSurfaceState.SHOWN_HOMEPAGE;
     }
 
@@ -560,7 +587,7 @@ public class StartSurfaceLayout extends Layout {
         long elapsedMs = SystemClock.elapsedRealtime() - mStartTime;
         // If it's hiding start surface, TabListDelegate for carousel/single tab switcher should be
         // used.
-        long lastDirty = isHidingStartSurface()
+        long lastDirty = isHidingStartSurfaceHomepage()
                 ? getCarouselOrSingleTabListDelegate().getLastDirtyTime()
                 : getGridTabListDelegate().getLastDirtyTime();
         int dirtySpan = (int) (lastDirty - mStartTime);
@@ -602,9 +629,8 @@ public class StartSurfaceLayout extends Layout {
         super.updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
                 resourceManager, browserControls);
         assert mSceneLayer != null;
-        TabListDelegate currentTabListDelegate = isShowingStartSurface()
-                ? getCarouselOrSingleTabListDelegate()
-                : getGridTabListDelegate();
+        TabListDelegate currentTabListDelegate = getLastUsedTabListDelegate();
+
         // The content viewport is intentionally sent as both params below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
                 layerTitleCache, tabContentManager, resourceManager, browserControls,

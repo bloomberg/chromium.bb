@@ -15,6 +15,12 @@
 6142 VULKAN : BlitFramebufferTest.BlitDepthStencilPixelByPixel/* = SKIP
 6153 VULKAN WIN INTEL : GLSLTest_ES31.StructAndArrayEqualOperator/ES3_1_Vulkan_DirectSPIRVGen = SKIP
 6153 VULKAN PIXEL4ORXL : GLSLTest_ES31.StructAndArrayEqualOperator/ES3_1_Vulkan_DirectSPIRVGen = SKIP
+6344 PIXEL4ORXL : GLSLTest_ES31_InitShaderVariables.InitIOBlockWithStruct/ES3_1_Vulkan_InitShaderVars = SKIP
+6344 PIXEL4ORXL : GLSLTest_ES31_InitShaderVariables.InitIOBlockWithComplexTypes/ES3_1_Vulkan_InitShaderVars = SKIP
+6347 OPENGL : FramebufferTestWithFormatFallback.R5G5B5A1_BlitCopyTexImage/* = SKIP
+6347 OPENGL : FramebufferTestWithFormatFallback.RGBA4444_BlitCopyTexImage/* = SKIP
+6347 GLES : FramebufferTestWithFormatFallback.R5G5B5A1_BlitCopyTexImage/* = SKIP
+6347 GLES : FramebufferTestWithFormatFallback.RGBA4444_BlitCopyTexImage/* = SKIP
 
 // Direct SPIR-V generation.  The following tests pass on some platforms but not others.  Need to investigate.
 4889 VULKAN : GeometryShaderTest.LayeredFramebufferPreRenderClear2DArrayColor/ES3_1_Vulkan_DirectSPIRVGen = SKIP
@@ -42,6 +48,9 @@
 1230024 LINUX AMD GLES : GLSLTest_ES31.TypesUsedInDifferentBlockStorages/* = SKIP
 1230024 LINUX AMD OPENGL : GLSLTest_ES31.TypesUsedInDifferentBlockStorages/* = SKIP
 6192 LINUX AMD OPENGL : GLSLTest_ES31.BoolInInterfaceBlocks/ES3_1_OpenGL = SKIP
+5945 LINUX NVIDIA VULKAN : MultithreadingTest.MultiContextClear/* = SKIP
+5945 LINUX NVIDIA VULKAN : MultithreadingTest.MultiCreateContext/* = SKIP
+6367 LINUX INTEL OPENGL : ComputeShaderTest.DispatchGenerateMipmapDispatch/ES3_1_OpenGL = SKIP
 
 // Nvidia
 6115 NVIDIA OPENGL : GLSLTestLoops.DoWhileContinue/* = SKIP
@@ -82,6 +91,11 @@
 1227129 MAC METAL : StateChangeTestES3.SamplerMetadataUpdateOnSetProgram/* = SKIP
 772651 MAC NVIDIA OPENGL : GLSLTest.VectorScalarDivideAndAddInLoop/* = SKIP
 772651 MAC NVIDIA OPENGL : GLSLTest.VectorScalarMultiplyAndAddInLoop/* = SKIP
+6318 MAC METAL : EGLBlobCacheTest.FragmentOutputLocationKey/* = SKIP
+6347 MAC OPENGL : FramebufferTestWithFormatFallback.R5G5B5A1_TexImage/* = SKIP
+6347 MAC OPENGL : FramebufferTestWithFormatFallback.R5G5B5A1_CopyTexImage/* = SKIP
+6347 MAC OPENGL : FramebufferTestWithFormatFallback.R5G5B5A1_CubeTexImage/* = SKIP
+6347 MAC OPENGL : FramebufferTestWithFormatFallback.R4G4B4A4_OutOfRangeStagedUpdateReformated/* = SKIP
 
 // D3D
 6091 WIN D3D11 : GLSLTest_ES3.InitGlobalComplexConstant/* = SKIP
@@ -101,6 +115,8 @@
 // Nexus 5X expectations.
 6149 NEXUS5X GLES : GLSLTest_ES31.StructAndArrayEqualOperator/* = SKIP
 6193 NEXUS5X GLES : GLSLTest_ES31.BuiltInsWithOutParameters/* = SKIP
+5505 NEXUS5X GLES : GLSLTest_ES3.CompareInequalityOfArrayOfVectors/ES3_OpenGLES = SKIP
+5505 NEXUS5X GLES : GLSLTest_ES3.CompareEqualityOfArrayOfVectors/ES3_OpenGLES = SKIP
 
 // Pixel 4 expectations.
 5981 PIXEL4ORXL GLES : BlitFramebufferTest.BlitSRGBToRGBOversizedDestArea/* = SKIP
@@ -212,3 +228,13 @@
 
 // Test is disabled as it only pertains to desktop GLSL
 6197 : GLSLTest_ES31.InterpolateAtWithSwizzle/* = SKIP
+
+// Slow tests
+5076 : GLSLTest.VerifyMaxVertexUniformVectors* = TIMEOUT
+6251 : MultiThreadingTest* = TIMEOUT
+
+6336 VULKAN : GetImageTest.InconsistentTexture2D/* = SKIP
+
+6358 D3D11 : GLSLTest_ES3.UnsuccessfulRelinkWithBindAttribLocation/* = SKIP
+6358 SWIFTSHADER : GLSLTest_ES3.UnsuccessfulRelinkWithBindAttribLocation/* = SKIP
+6358 METAL : GLSLTest_ES3.UnsuccessfulRelinkWithBindAttribLocation/* = SKIP

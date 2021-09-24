@@ -40,7 +40,7 @@ RTCEncodedAudioFrame::RTCEncodedAudioFrame(
     scoped_refptr<RTCEncodedAudioFrameDelegate> delegate)
     : delegate_(std::move(delegate)) {}
 
-uint64_t RTCEncodedAudioFrame::timestamp() const {
+uint32_t RTCEncodedAudioFrame::timestamp() const {
   return delegate_->Timestamp();
 }
 
@@ -56,30 +56,21 @@ RTCEncodedAudioFrameMetadata* RTCEncodedAudioFrame::getMetadata() const {
       RTCEncodedAudioFrameMetadata::Create();
   metadata->setSynchronizationSource(delegate_->Ssrc());
   metadata->setContributingSources(delegate_->ContributingSources());
+  if (delegate_->PayloadType() != 255) {
+    metadata->setPayloadType(delegate_->PayloadType());
+  }
   return metadata;
-}
-
-DOMArrayBuffer* RTCEncodedAudioFrame::additionalData() const {
-  return nullptr;
 }
 
 void RTCEncodedAudioFrame::setData(DOMArrayBuffer* data) {
   frame_data_ = data;
 }
 
-uint32_t RTCEncodedAudioFrame::synchronizationSource() const {
-  return delegate_->Ssrc();
-}
-
-Vector<uint32_t> RTCEncodedAudioFrame::contributingSources() const {
-  return delegate_->ContributingSources();
-}
-
 String RTCEncodedAudioFrame::toString() const {
   StringBuilder sb;
-  sb.Append("RTCEncodedAudioFrame{timestamp: ");
+  sb.Append("RTCEncodedAudioFrame{rtpTimestamp: ");
   sb.AppendNumber(timestamp());
-  sb.Append("us, size: ");
+  sb.Append(", size: ");
   sb.AppendNumber(data() ? data()->ByteLength() : 0);
   sb.Append("}");
   return sb.ToString();

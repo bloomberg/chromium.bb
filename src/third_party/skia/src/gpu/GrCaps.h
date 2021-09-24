@@ -51,7 +51,6 @@ public:
     bool oversizedStencilSupport() const { return fOversizedStencilSupport; }
     bool textureBarrierSupport() const { return fTextureBarrierSupport; }
     bool sampleLocationsSupport() const { return fSampleLocationsSupport; }
-    bool multisampleDisableSupport() const { return fMultisampleDisableSupport; }
     bool drawInstancedSupport() const { return fDrawInstancedSupport; }
     // Is there hardware support for indirect draws? (Ganesh always supports indirect draws as long
     // as it can polyfill them with instanced calls, but this cap tells us if they are supported
@@ -221,8 +220,9 @@ public:
 
     bool isFormatCompressed(const GrBackendFormat& format) const;
 
-    // Can a texture be made with the GrBackendFormat, and then be bound and sampled in a shader.
-    virtual bool isFormatTexturable(const GrBackendFormat&) const = 0;
+    // Can a texture be made with the GrBackendFormat and texture type, and then be bound and
+    // sampled in a shader.
+    virtual bool isFormatTexturable(const GrBackendFormat&, GrTextureType) const = 0;
 
     // Returns whether a texture of the given format can be copied to a texture of the same format.
     virtual bool isFormatCopyable(const GrBackendFormat&) const = 0;
@@ -393,7 +393,7 @@ public:
     // Should we disable the clip mask atlas due to a faulty driver?
     bool driverDisableMSAAClipAtlas() const { return fDriverDisableMSAAClipAtlas; }
 
-    // Should we disable GrTessellationPathRenderer due to a faulty driver?
+    // Should we disable TessellationPathRenderer due to a faulty driver?
     bool disableTessellationPathRenderer() const { return fDisableTessellationPathRenderer; }
 
     // Returns how to sample the dst values for the passed in GrRenderTargetProxy.
@@ -420,7 +420,7 @@ public:
     }
 
     bool validateSurfaceParams(const SkISize&, const GrBackendFormat&, GrRenderable renderable,
-                               int renderTargetSampleCnt, GrMipmapped) const;
+                               int renderTargetSampleCnt, GrMipmapped, GrTextureType) const;
 
     bool areColorTypeAndFormatCompatible(GrColorType grCT, const GrBackendFormat& format) const;
 
@@ -488,6 +488,8 @@ public:
 
     bool supportsDynamicMSAA(const GrRenderTargetProxy*) const;
 
+    virtual bool dmsaaResolveCanBeUsedAsTextureInSameRenderPass() const { return true; }
+
     // skbug.com/11935. Task reordering is disabled for some GPUs on GL due to driver bugs.
     bool avoidReorderingRenderTasks() const {
         return fAvoidReorderingRenderTasks;
@@ -533,7 +535,6 @@ protected:
     bool fOversizedStencilSupport                    : 1;
     bool fTextureBarrierSupport                      : 1;
     bool fSampleLocationsSupport                     : 1;
-    bool fMultisampleDisableSupport                  : 1;
     bool fDrawInstancedSupport                       : 1;
     bool fNativeDrawIndirectSupport                  : 1;
     bool fUseClientSideIndirectBuffers               : 1;

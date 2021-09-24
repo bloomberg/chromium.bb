@@ -10,12 +10,14 @@ import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryContentManager;
 import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.HistoryProvider;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.util.date.CalendarUtils;
 import org.chromium.components.browser_ui.util.date.StringUtils;
 import org.chromium.components.page_info.PageInfoAction;
@@ -31,6 +33,8 @@ import java.util.Date;
  */
 public class PageInfoHistoryController
         implements PageInfoSubpageController, HistoryContentManager.Observer {
+    public static final int HISTORY_ROW_ID = View.generateViewId();
+
     private static HistoryProvider sProviderForTests;
     /** Clock to use so we can mock time in tests. */
     public interface Clock {
@@ -41,6 +45,7 @@ public class PageInfoHistoryController
     private final PageInfoMainController mMainController;
     private final PageInfoRowView mRowView;
     private final PageInfoControllerDelegate mDelegate;
+    private final Supplier<Tab> mTabSupplier;
     private final String mTitle;
     private final String mHost;
     private boolean mDataIsStale;
@@ -49,12 +54,13 @@ public class PageInfoHistoryController
     private long mLastVisitedTimestamp;
 
     public PageInfoHistoryController(PageInfoMainController mainController, PageInfoRowView rowView,
-            PageInfoControllerDelegate delegate) {
+            PageInfoControllerDelegate delegate, Supplier<Tab> tabSupplier) {
         mMainController = mainController;
         mRowView = rowView;
         mDelegate = delegate;
         mTitle = mRowView.getContext().getResources().getString(R.string.page_info_history_title);
         mHost = mainController.getURL().getHost();
+        mTabSupplier = tabSupplier;
 
         updateLastVisit();
     }
@@ -76,8 +82,7 @@ public class PageInfoHistoryController
                 /* isSeparateActivity */ false,
                 /* isIncognito */ false, /* shouldShowPrivacyDisclaimers */ true,
                 /* shouldShowClearData */ false, mHost,
-                /* selectionDelegate */ null, /* tabCreatorManager */ null,
-                /* tabSupplier */ null);
+                /* selectionDelegate */ null, /* tabCreatorManager */ null, mTabSupplier);
         mContentManager.initialize();
         return mContentManager.getRecyclerView();
     }
@@ -171,7 +176,12 @@ public class PageInfoHistoryController
     public void onItemRemoved(HistoryItem item) {
         mMainController.recordAction(PageInfoAction.PAGE_INFO_HISTORY_ENTRY_REMOVED);
         mDataIsStale = true;
-        return;
+        if (mContentManager.getItemCount() == 0) {
+            // Do the update right away if there are no entries left.
+            mLastVisitedTimestamp = 0;
+            setupHistoryRow();
+            mMainController.exitSubpage();
+        }
     }
 
     // HistoryContentManager.Observer

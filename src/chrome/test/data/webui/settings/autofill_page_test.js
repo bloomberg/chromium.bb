@@ -143,15 +143,15 @@ suite('PasswordsAndForms', function() {
 
     // Override the PasswordManagerImpl for testing.
     passwordManager = new TestPasswordManagerProxy();
-    PasswordManagerImpl.instance_ = passwordManager;
+    PasswordManagerImpl.setInstance(passwordManager);
 
     // Override the AutofillManagerImpl for testing.
     autofillManager = new TestAutofillManager();
-    AutofillManagerImpl.instance_ = autofillManager;
+    AutofillManagerImpl.setInstance(autofillManager);
 
     // Override the PaymentsManagerImpl for testing.
     paymentsManager = new TestPaymentsManager();
-    PaymentsManagerImpl.instance_ = paymentsManager;
+    PaymentsManagerImpl.setInstance(paymentsManager);
   });
 
   test('baseLoadAndRemove', function() {
@@ -310,10 +310,10 @@ suite('PasswordsUITest', function() {
 
   setup(function() {
     openWindowProxy = new TestOpenWindowProxy();
-    OpenWindowProxyImpl.instance_ = openWindowProxy;
+    OpenWindowProxyImpl.setInstance(openWindowProxy);
     // Override the PasswordManagerImpl for testing.
     passwordManager = new TestPasswordManagerProxy();
-    PasswordManagerImpl.instance_ = passwordManager;
+    PasswordManagerImpl.setInstance(passwordManager);
     pluralString = new TestPluralStringProxy();
     SettingsPluralStringProxyImpl.setInstance(pluralString);
 

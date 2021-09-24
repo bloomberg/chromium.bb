@@ -235,6 +235,9 @@ public final class EventConstants {
     /** Screenshot events */
     public static final String SHARE_SCREENSHOT_SELECTED = "share_screenshot_clicked";
 
+    /** Sharing Hub link toggle events. */
+    public static final String SHARING_HUB_LINK_TOGGLE_CLICKED = "sharing_hub_link_toggle_clicked";
+
     /** Mic toolbar IPH event */
     public static final String SUCCESSFUL_VOICE_SEARCH = "successful_voice_search";
 
@@ -256,6 +259,10 @@ public final class EventConstants {
     /** Tab switcher home button events. */
     public static final String START_SURFACE_TAB_SWITCHER_HOME_BUTTON_CLICKED =
             "start_surface_tab_switcher_home_button_clicked";
+
+    /** Shared Highlighting button event */
+    public static final String IPH_SHARED_HIGHLIGHTING_BUTTON_CLICKED =
+            "iph_shared_highlighting_button_clicked";
 
     /**
      * Do not instantiate.

@@ -235,7 +235,6 @@ class ResourceLoader::CodeCacheRequest {
         should_use_source_hash_(
             SchemeRegistry::SchemeSupportsCodeCacheWithHashing(
                 url.Protocol())) {
-    DCHECK(RuntimeEnabledFeatures::IsolatedCodeCacheEnabled());
   }
 
   ~CodeCacheRequest() = default;
@@ -482,9 +481,6 @@ void ResourceLoader::Trace(Visitor* visitor) const {
 }
 
 bool ResourceLoader::ShouldFetchCodeCache() {
-  if (!RuntimeEnabledFeatures::IsolatedCodeCacheEnabled())
-    return false;
-
   // Since code cache requests use a per-frame interface, don't fetch cached
   // code for keep-alive requests. These are only used for beaconing and we
   // don't expect code cache to help there.
@@ -1089,6 +1085,9 @@ void ResourceLoader::DidReceiveResponseInternal(
       return;
   }
 
+  scheduler_->SetConnectionInfo(scheduler_client_id_,
+                                response.ConnectionInfo());
+
   // A response should not serve partial content if it was not requested via a
   // Range header: https://fetch.spec.whatwg.org/#main-fetch
   if (response.GetType() == network::mojom::FetchResponseType::kOpaque &&
@@ -1298,7 +1297,8 @@ void ResourceLoader::HandleError(const ResourceError& error) {
         cors::GetErrorString(
             *error.CorsErrorStatus(), resource_->GetResourceRequest().Url(),
             resource_->LastResourceRequest().Url(), *resource_->GetOrigin(),
-            resource_->GetType(), resource_->Options().initiator_info.name));
+            resource_->GetType(), resource_->Options().initiator_info.name),
+        false /* discard_duplicates */, mojom::ConsoleMessageCategory::Cors);
   }
 
   Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,

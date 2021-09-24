@@ -158,15 +158,17 @@ class ScriptStreamingTest : public testing::Test {
 
   ScriptSourceCode GetScriptSourceCode() const {
     ScriptStreamer* streamer = resource_->TakeStreamer();
+    ScriptCacheConsumer* cache_consumer = resource_->TakeCacheConsumer();
     if (streamer) {
       if (streamer->IsStreamingSuppressed()) {
-        return ScriptSourceCode(nullptr, resource_,
+        return ScriptSourceCode(nullptr, cache_consumer, resource_,
                                 streamer->StreamingSuppressedReason());
       }
-      return ScriptSourceCode(streamer, resource_,
+      return ScriptSourceCode(streamer, cache_consumer, resource_,
                               ScriptStreamer::NotStreamingReason::kInvalid);
     }
-    return ScriptSourceCode(nullptr, resource_, resource_->NoStreamerReason());
+    return ScriptSourceCode(nullptr, cache_consumer, resource_,
+                            resource_->NoStreamerReason());
   }
 
   Settings* GetSettings() const {
@@ -251,8 +253,7 @@ TEST_F(ScriptStreamingTest, DISABLED_CompilingStreamedScript) {
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code,
                   SanitizeScriptErrors::kDoNotSanitize, compile_options,
-                  no_cache_reason,
-                  ReferrerScriptInfo::CreateNoReferencingScript())
+                  no_cache_reason, ReferrerScriptInfo())
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }
@@ -289,8 +290,7 @@ TEST_F(ScriptStreamingTest, DISABLED_CompilingStreamedScriptWithParseError) {
   EXPECT_FALSE(V8ScriptRunner::CompileScript(
                    scope.GetScriptState(), source_code,
                    SanitizeScriptErrors::kDoNotSanitize, compile_options,
-                   no_cache_reason,
-                   ReferrerScriptInfo::CreateNoReferencingScript())
+                   no_cache_reason, ReferrerScriptInfo())
                    .ToLocal(&script));
   EXPECT_TRUE(try_catch.HasCaught());
 }
@@ -445,8 +445,7 @@ TEST_F(ScriptStreamingTest, DISABLED_ScriptsWithSmallFirstChunk) {
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code,
                   SanitizeScriptErrors::kDoNotSanitize, compile_options,
-                  no_cache_reason,
-                  ReferrerScriptInfo::CreateNoReferencingScript())
+                  no_cache_reason, ReferrerScriptInfo())
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }
@@ -482,8 +481,7 @@ TEST_F(ScriptStreamingTest, DISABLED_EncodingChanges) {
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code,
                   SanitizeScriptErrors::kDoNotSanitize, compile_options,
-                  no_cache_reason,
-                  ReferrerScriptInfo::CreateNoReferencingScript())
+                  no_cache_reason, ReferrerScriptInfo())
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }
@@ -520,8 +518,7 @@ TEST_F(ScriptStreamingTest, DISABLED_EncodingFromBOM) {
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code,
                   SanitizeScriptErrors::kDoNotSanitize, compile_options,
-                  no_cache_reason,
-                  ReferrerScriptInfo::CreateNoReferencingScript())
+                  no_cache_reason, ReferrerScriptInfo())
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }

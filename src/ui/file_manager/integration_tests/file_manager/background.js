@@ -45,6 +45,8 @@ import './trash.js';
 import './traverse.js';
 import './zip_files.js';
 
+import {FilesAppState} from 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/files_app_state.js';
+
 import {RemoteCall, RemoteCallFilesApp} from '../remote_call.js';
 import {addEntries, checkIfNoErrorsOccuredOnApp, ENTRIES, getCaller, getRootPathsResult, pending, repeatUntil, RootPath, sendBrowserTestCommand, sendTestMessage, TestEntryInfo, testPromiseAndApps} from '../test_util.js';
 import {testcase} from '../testcase.js';
@@ -87,8 +89,8 @@ export const videoPlayerApp = new RemoteCall(VIDEO_PLAYER_APP_ID);
  *
  * @param {?string} initialRoot Root path to be used as a default current
  *     directory during initialization. Can be null, for no default path.
- * @param {Object} appState App state to be passed with on opening the Files
- *     app.
+ * @param {?FilesAppState=} appState App state to be passed with on opening the
+ *     Files app.
  * @return {Promise} Promise to be fulfilled after window creating.
  */
 export async function openNewWindow(initialRoot, appState = {}) {
@@ -163,7 +165,7 @@ export async function openAndWaitForClosingDialog(
       appId, TestEntryInfo.getExpectedRows(expectedSet));
   await closeDialog(appId);
   await repeatUntil(async () => {
-    const windows = await remoteCall.callRemoteTestUtil('getWindows', null, []);
+    const windows = await remoteCall.getWindows();
     if (windows[appId]) {
       return pending(caller, 'Waiting for Window %s to hide.', appId);
     }
@@ -183,8 +185,8 @@ export async function openAndWaitForClosingDialog(
  *     entries to load in Downloads (defaults to a basic entry set).
  * @param {!Array<TestEntryInfo>} initialDriveEntries List of initial
  *     entries to load in Google Drive (defaults to a basic entry set).
- * @param {Object} appState App state to be passed with on opening the Files
- *     app.
+ * @param {?FilesAppState=} appState App state to be passed with on opening the
+ *     Files app.
  * @return {Promise} Promise to be fulfilled with the window ID.
  */
 export async function setupAndWaitUntilReady(
@@ -254,7 +256,8 @@ export async function awaitAsyncTestResult(resultPromise) {
 
   try {
     const result = await resultPromise;
-    if (result !== IGNORE_APP_ERRORS) {
+    // SWA doesn't have background page so we can't always check for errors.
+    if (result !== IGNORE_APP_ERRORS && !remoteCall.isSwaMode()) {
       await checkIfNoErrorsOccuredOnApp(remoteCall);
     }
   } catch (error) {

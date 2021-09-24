@@ -6,12 +6,17 @@
 
 #include <string>
 
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/quick_pair/common/device.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/proto/fastpair.pb.h"
 #include "ash/quick_pair/repository/fast_pair/fast_pair_image_decoder.h"
 #include "ash/quick_pair/repository/fast_pair_repository.h"
 #include "ash/quick_pair/ui/actions.h"
+#include "ash/shell.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/tray/tray_utils.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -66,16 +71,47 @@ void FastPairPresenter::OnDiscoveryDismissed(DiscoveryCallback callback,
 }
 
 void FastPairPresenter::ShowPairing(scoped_refptr<Device> device) {
+  const auto metadata_id = device->metadata_id;
+  FastPairRepository::Get()->GetDeviceMetadata(
+      metadata_id,
+      base::BindOnce(&FastPairPresenter::OnPairingMetadataRetrieved,
+                     weak_pointer_factory_.GetWeakPtr(), std::move(device)));
+}
+
+void FastPairPresenter::OnPairingMetadataRetrieved(
+    scoped_refptr<Device> device,
+    DeviceMetadata* device_metadata) {
+  if (!device_metadata) {
+    return;
+  }
+
   notification_controller_->ShowPairingNotification(
-      base::ASCIIToUTF16(device->metadata_id), gfx::Image(), base::DoNothing(),
-      base::DoNothing());
+      base::ASCIIToUTF16(device_metadata->device.name()),
+      device_metadata->image, base::DoNothing(), base::DoNothing());
 }
 
 void FastPairPresenter::ShowPairingFailed(scoped_refptr<Device> device,
                                           PairingFailedCallback callback) {
+  const auto metadata_id = device->metadata_id;
+  FastPairRepository::Get()->GetDeviceMetadata(
+      metadata_id,
+      base::BindOnce(&FastPairPresenter::OnPairingFailedMetadataRetrieved,
+                     weak_pointer_factory_.GetWeakPtr(), std::move(device),
+                     std::move(callback)));
+}
+
+void FastPairPresenter::OnPairingFailedMetadataRetrieved(
+    scoped_refptr<Device> device,
+    PairingFailedCallback callback,
+    DeviceMetadata* device_metadata) {
+  if (!device_metadata) {
+    return;
+  }
+
   auto split_callback = base::SplitOnceCallback(std::move(callback));
   notification_controller_->ShowErrorNotification(
-      base::ASCIIToUTF16(device->metadata_id), gfx::Image(),
+      base::ASCIIToUTF16(device_metadata->device.name()),
+      device_metadata->image,
       base::BindOnce(&FastPairPresenter::OnNavigateToSettings,
                      weak_pointer_factory_.GetWeakPtr(),
                      std::move(split_callback.first)),
@@ -85,6 +121,13 @@ void FastPairPresenter::ShowPairingFailed(scoped_refptr<Device> device,
 }
 
 void FastPairPresenter::OnNavigateToSettings(PairingFailedCallback callback) {
+  if (TrayPopupUtils::CanOpenWebUISettings()) {
+    Shell::Get()->system_tray_model()->client()->ShowBluetoothSettings();
+  } else {
+    QP_LOG(WARNING) << "Cannot open Bluetooth Settings since it's not possible "
+                       "to opening WebUI settings";
+  }
+
   std::move(callback).Run(PairingFailedAction::kNavigateToSettings);
 }
 
@@ -100,6 +143,10 @@ void FastPairPresenter::ShowAssociateAccount(
 
 void FastPairPresenter::ShowCompanionApp(scoped_refptr<Device> device,
                                          CompanionAppCallback callback) {}
+
+void FastPairPresenter::RemoveNotifications(scoped_refptr<Device> device) {
+  notification_controller_->RemoveNotifications();
+}
 
 }  // namespace quick_pair
 }  // namespace ash

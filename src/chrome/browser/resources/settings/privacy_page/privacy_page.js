@@ -116,14 +116,6 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
       },
 
       /** @private */
-      enableContentSettingsRedesign_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('enableContentSettingsRedesign');
-        }
-      },
-
-      /** @private */
       enablePaymentHandlerContentSetting_: {
         type: Boolean,
         value() {
@@ -161,12 +153,6 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
         type: Boolean,
         value: () =>
             loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
-      },
-
-      /** @private */
-      enablePrivacySandboxSettings_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('privacySandboxSettingsEnabled'),
       },
 
       /** @private */

@@ -23,6 +23,7 @@
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/media_switches.h"
+#include "media/cdm/win/media_foundation_cdm.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
@@ -39,6 +40,20 @@ base::FilePath GetCdmPath(const base::FilePath& install_dir) {
   return install_dir.AppendASCII(
       base::GetNativeLibraryName(kMediaFoundationWidevineCdmLibraryName));
 }
+
+// Name of the Widevine CDM architecture to avoid registering the wrong CDM.
+const char kWidevineCdmArch[] =
+#if defined(ARCH_CPU_X86)
+    "x86";
+#elif defined(ARCH_CPU_X86_64)
+    "x64";
+#elif defined(ARCH_CPU_ARMEL)
+    "arm";
+#elif defined(ARCH_CPU_ARM64)
+    "arm64";
+#else
+#error This file should only be included for supported architecture.
+#endif
 
 }  // namespace
 
@@ -102,11 +117,14 @@ bool MediaFoundationWidevineCdmComponentInstallerPolicy::VerifyInstallation(
   return base::PathExists(GetCdmPath(install_dir));
 }
 
+// The relative install directory looks like:
+// <user-data-dir>\MediaFoundationWidevineCdm\<arch>.
 base::FilePath
 MediaFoundationWidevineCdmComponentInstallerPolicy::GetRelativeInstallDir()
     const {
   return base::FilePath::FromUTF8Unsafe(
-      kMediaFoundationWidevineCdmBaseDirection);
+             kMediaFoundationWidevineCdmBaseDirection)
+      .AppendASCII(kWidevineCdmArch);
 }
 
 void MediaFoundationWidevineCdmComponentInstallerPolicy::GetHash(
@@ -128,7 +146,8 @@ MediaFoundationWidevineCdmComponentInstallerPolicy::GetInstallerAttributes()
 
 void RegisterMediaFoundationWidevineCdmComponent(
     component_updater::ComponentUpdateService* cus) {
-  if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
+  if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption) &&
+      media::MediaFoundationCdm::IsAvailable()) {
     VLOG(1) << "Registering Media Foundation Widevine CDM component.";
     auto installer = base::MakeRefCounted<ComponentInstaller>(
         std::make_unique<MediaFoundationWidevineCdmComponentInstallerPolicy>());

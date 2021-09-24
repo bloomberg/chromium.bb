@@ -22,6 +22,7 @@
 #include "extensions/browser/api/lock_screen_data/operation_result.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/browser/api/storage/local_value_store_cache.h"
+#include "extensions/browser/api/storage/value_store_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/browser/value_store/test_value_store_factory.h"
@@ -95,7 +96,8 @@ class DataItemTest : public testing::Test {
 
     ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
-    value_store_factory_ = base::MakeRefCounted<TestValueStoreFactory>();
+    value_store_factory_ =
+        base::MakeRefCounted<value_store::TestValueStoreFactory>();
     value_store_cache_ =
         std::make_unique<LocalValueStoreCache>(value_store_factory_);
 
@@ -234,10 +236,15 @@ class DataItemTest : public testing::Test {
     return result;
   }
 
-  void SetReturnCodeForValueStoreOperations(const std::string& extension_id,
-                                            ValueStore::StatusCode code) {
-    TestingValueStore* store = static_cast<TestingValueStore*>(
-        value_store_factory_->GetExisting(extension_id));
+  void SetReturnCodeForValueStoreOperations(
+      const std::string& extension_id,
+      value_store::ValueStore::StatusCode code) {
+    base::FilePath value_store_dir = value_store_util::GetValueStoreDir(
+        settings_namespace::LOCAL, value_store_util::ModelType::APP,
+        extension_id);
+    value_store::TestingValueStore* store =
+        static_cast<value_store::TestingValueStore*>(
+            value_store_factory_->GetExisting(value_store_dir));
     ASSERT_TRUE(store);
     store->set_status_code(code);
   }
@@ -299,7 +306,7 @@ class DataItemTest : public testing::Test {
 
   std::unique_ptr<TestExtensionsBrowserClient> extensions_browser_client_;
 
-  scoped_refptr<TestValueStoreFactory> value_store_factory_;
+  scoped_refptr<value_store::TestValueStoreFactory> value_store_factory_;
   std::unique_ptr<ValueStoreCache> value_store_cache_;
 
   scoped_refptr<const Extension> extension_;
@@ -357,7 +364,7 @@ TEST_F(DataItemTest, ValueStoreErrors) {
             WriteItemAndWaitForResult(item.get(), content));
 
   SetReturnCodeForValueStoreOperations(extension()->id(),
-                                       ValueStore::OTHER_ERROR);
+                                       value_store::ValueStore::OTHER_ERROR);
 
   EXPECT_EQ(OperationResult::kNotFound,
             ReadItemAndWaitForResult(item.get(), nullptr));

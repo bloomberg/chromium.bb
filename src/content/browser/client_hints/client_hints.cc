@@ -36,6 +36,7 @@
 #include "net/nqe/network_quality_estimator_params.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/client_hints/enabled_client_hints.h"
@@ -205,7 +206,7 @@ void SetHeaderToDouble(net::HttpRequestHeaders* headers,
                        WebClientHintsType client_hint_type,
                        double value) {
   headers->SetHeader(
-      blink::kClientHintsHeaderMapping[static_cast<int>(client_hint_type)],
+      network::kClientHintsNameMapping[static_cast<int>(client_hint_type)],
       DoubleToSpecCompliantString(value));
 }
 
@@ -213,7 +214,7 @@ void SetHeaderToInt(net::HttpRequestHeaders* headers,
                     WebClientHintsType client_hint_type,
                     double value) {
   headers->SetHeader(
-      blink::kClientHintsHeaderMapping[static_cast<int>(client_hint_type)],
+      network::kClientHintsNameMapping[static_cast<int>(client_hint_type)],
       base::NumberToString(std::round(value)));
 }
 
@@ -221,14 +222,14 @@ void SetHeaderToString(net::HttpRequestHeaders* headers,
                        WebClientHintsType client_hint_type,
                        const std::string& value) {
   headers->SetHeader(
-      blink::kClientHintsHeaderMapping[static_cast<int>(client_hint_type)],
+      network::kClientHintsNameMapping[static_cast<int>(client_hint_type)],
       value);
 }
 
 void RemoveClientHintHeader(WebClientHintsType client_hint_type,
                             net::HttpRequestHeaders* headers) {
   headers->RemoveHeader(
-      blink::kClientHintsHeaderMapping[static_cast<int>(client_hint_type)]);
+      network::kClientHintsNameMapping[static_cast<int>(client_hint_type)]);
 }
 
 void AddDeviceMemoryHeader(net::HttpRequestHeaders* headers) {
@@ -237,7 +238,8 @@ void AddDeviceMemoryHeader(net::HttpRequestHeaders* headers) {
   const float device_memory =
       blink::ApproximatedDeviceMemory::GetApproximatedDeviceMemory();
   DCHECK_LT(0.0, device_memory);
-  SetHeaderToDouble(headers, WebClientHintsType::kDeviceMemory, device_memory);
+  SetHeaderToDouble(headers, WebClientHintsType::kDeviceMemory_DEPRECATED,
+                    device_memory);
 }
 
 void AddDPRHeader(net::HttpRequestHeaders* headers,
@@ -247,7 +249,7 @@ void AddDPRHeader(net::HttpRequestHeaders* headers,
   DCHECK(context);
   double device_scale_factor = GetDeviceScaleFactor();
   double zoom_factor = GetZoomFactor(context, url);
-  SetHeaderToDouble(headers, WebClientHintsType::kDpr,
+  SetHeaderToDouble(headers, WebClientHintsType::kDpr_DEPRECATED,
                     device_scale_factor * zoom_factor);
 }
 
@@ -271,8 +273,26 @@ void AddViewportWidthHeader(net::HttpRequestHeaders* headers,
   DCHECK_LT(0, viewport_width);
   // TODO(yoav): Find out why this 0 check is needed...
   if (viewport_width > 0) {
-    SetHeaderToInt(headers, WebClientHintsType::kViewportWidth, viewport_width);
+    SetHeaderToInt(headers, WebClientHintsType::kViewportWidth_DEPRECATED, viewport_width);
   }
+}
+
+void AddViewportHeightHeader(net::HttpRequestHeaders* headers,
+                             BrowserContext* context,
+                             const GURL& url) {
+  DCHECK(headers);
+  DCHECK(context);
+
+  double viewport_height = (display::Screen::GetScreen()
+                                ->GetPrimaryDisplay()
+                                .GetSizeInPixel()
+                                .height()) /
+                           GetZoomFactor(context, url) / GetDeviceScaleFactor();
+
+  DCHECK_LT(0, viewport_height);
+
+  SetHeaderToInt(headers, network::mojom::WebClientHintsType::kViewportHeight,
+                 viewport_height);
 }
 
 void AddRttHeader(net::HttpRequestHeaders* headers,
@@ -293,7 +313,7 @@ void AddRttHeader(net::HttpRequestHeaders* headers,
     http_rtt = net::NetworkQualityEstimatorParams::GetDefaultTypicalHttpRtt(
         net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
   }
-  SetHeaderToInt(headers, WebClientHintsType::kRtt,
+  SetHeaderToInt(headers, WebClientHintsType::kRtt_DEPRECATED,
                  RoundRtt(url.host(), http_rtt));
 }
 
@@ -319,7 +339,7 @@ void AddDownlinkHeader(net::HttpRequestHeaders* headers,
             net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
   }
 
-  SetHeaderToDouble(headers, WebClientHintsType::kDownlink,
+  SetHeaderToDouble(headers, WebClientHintsType::kDownlink_DEPRECATED,
                     RoundKbpsToMbps(url.host(), downlink_throughput_kbps));
 }
 
@@ -347,7 +367,7 @@ void AddEctHeader(net::HttpRequestHeaders* headers,
   }
 
   SetHeaderToString(
-      headers, WebClientHintsType::kEct,
+      headers, WebClientHintsType::kEct_DEPRECATED,
       blink::kWebEffectiveConnectionTypeMapping[effective_connection_type]);
 }
 
@@ -633,24 +653,28 @@ void AddRequestClientHintsHeaders(
   }
 
   // Add Headers
-  if (ShouldAddClientHint(data, WebClientHintsType::kDeviceMemory)) {
+  if (ShouldAddClientHint(data, WebClientHintsType::kDeviceMemory_DEPRECATED)) {
     AddDeviceMemoryHeader(headers);
   }
-  if (ShouldAddClientHint(data, WebClientHintsType::kDpr)) {
+  if (ShouldAddClientHint(data, WebClientHintsType::kDpr_DEPRECATED)) {
     AddDPRHeader(headers, context, url);
   }
-  if (ShouldAddClientHint(data, WebClientHintsType::kViewportWidth)) {
+  if (ShouldAddClientHint(data, WebClientHintsType::kViewportWidth_DEPRECATED)) {
     AddViewportWidthHeader(headers, context, url);
+  }
+  if (ShouldAddClientHint(
+          data, network::mojom::WebClientHintsType::kViewportHeight)) {
+    AddViewportHeightHeader(headers, context, url);
   }
   network::NetworkQualityTracker* network_quality_tracker =
       delegate->GetNetworkQualityTracker();
-  if (ShouldAddClientHint(data, WebClientHintsType::kRtt)) {
+  if (ShouldAddClientHint(data, WebClientHintsType::kRtt_DEPRECATED)) {
     AddRttHeader(headers, network_quality_tracker, url);
   }
-  if (ShouldAddClientHint(data, WebClientHintsType::kDownlink)) {
+  if (ShouldAddClientHint(data, WebClientHintsType::kDownlink_DEPRECATED)) {
     AddDownlinkHeader(headers, network_quality_tracker, url);
   }
-  if (ShouldAddClientHint(data, WebClientHintsType::kEct)) {
+  if (ShouldAddClientHint(data, WebClientHintsType::kEct_DEPRECATED)) {
     AddEctHeader(headers, network_quality_tracker, url);
   }
   if (ShouldAddClientHint(data, WebClientHintsType::kLang)) {
@@ -672,7 +696,8 @@ void AddRequestClientHintsHeaders(
   // If possible, logic should be added above so that the request headers for
   // the newly added client hint can be added to the request.
   static_assert(
-      WebClientHintsType::kUAReduced == WebClientHintsType::kMaxValue,
+      network::mojom::WebClientHintsType::kViewportHeight ==
+          network::mojom::WebClientHintsType::kMaxValue,
       "Consider adding client hint request headers from the browser process");
 
   // TODO(crbug.com/735518): If the request is redirected, the client hint
@@ -769,26 +794,38 @@ ParseAndPersistAcceptCHForNavigation(
   for (const WebClientHintsType type : parsed_headers->accept_ch.value()) {
     enabled_hints.SetIsEnabled(url, response_headers, type, true);
   }
+
   const std::vector<WebClientHintsType> persisted_hints =
       enabled_hints.GetEnabledHints();
-
-  base::TimeDelta persist_duration;
-  if (IsPermissionsPolicyForClientHintsEnabled()) {
-    // JSON cannot store "non-finite" values (i.e. NaN or infinite) so
-    // base::TimeDelta::Max cannot be used. As this will be removed once
-    // the FeaturePolicyForClientHints feature is shipped, a reasonably
-    // large was chosen instead
-    persist_duration = base::TimeDelta::FromDays(1000000);
-  } else {
-    persist_duration = parsed_headers->accept_ch_lifetime;
-    if (persist_duration.is_zero())
-      return persisted_hints;
-  }
-
-  delegate->PersistClientHints(url::Origin::Create(url), persisted_hints,
-                               persist_duration);
-
+  PersistAcceptCH(url, delegate, persisted_hints,
+                  &parsed_headers->accept_ch_lifetime);
   return persisted_hints;
+}
+
+void PersistAcceptCH(const GURL& url,
+                     ClientHintsControllerDelegate* delegate,
+                     const std::vector<WebClientHintsType>& hints,
+                     base::TimeDelta* persist_duration) {
+  DCHECK(delegate);
+
+  // TODO(https://crbug.com/1243060): Remove the checking and persistence of the
+  // expiration time.
+  const bool use_persist_duration =
+      persist_duration && !IsPermissionsPolicyForClientHintsEnabled();
+
+  if (use_persist_duration && persist_duration->is_zero())
+    return;
+
+  // JSON cannot store "non-finite" values (i.e. NaN or infinite) so
+  // base::TimeDelta::Max cannot be used. As this will be removed once the
+  // FeaturePolicyForClientHints feature is shipped, a reasonably large value
+  // was chosen instead.
+  base::TimeDelta duration = use_persist_duration
+                                 ? *persist_duration
+                                 : base::TimeDelta::FromDays(1000000);
+
+  delegate->PersistClientHints(url::Origin::Create(url), hints,
+                               std::move(duration));
 }
 
 CONTENT_EXPORT std::vector<WebClientHintsType> LookupAcceptCHForCommit(

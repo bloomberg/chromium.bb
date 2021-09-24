@@ -92,9 +92,8 @@ void CreateRequestValueFromJSON(const std::string& json,
       base::JSONReader::ReadAndReturnValueWithError(json);
   ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
 
-  base::ListValue* value_as_list;
-  ASSERT_TRUE(parsed_json.value->GetAsList(&value_as_list));
-  std::unique_ptr<Params> params(Params::Create(*value_as_list));
+  ASSERT_TRUE(parsed_json.value->is_list());
+  std::unique_ptr<Params> params(Params::Create(parsed_json.value->GetList()));
   ASSERT_TRUE(params.get());
   *result = RequestValue::CreateForReadDirectorySuccess(std::move(params));
   ASSERT_TRUE(result->get());
@@ -139,7 +138,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute) {
                 kEventName,
             event->event_name);
   base::ListValue* event_args = event->event_args.get();
-  ASSERT_EQ(1u, event_args->GetSize());
+  ASSERT_EQ(1u, event_args->GetList().size());
 
   const base::DictionaryValue* options_as_value = NULL;
   ASSERT_TRUE(event_args->GetDictionary(0, &options_as_value));

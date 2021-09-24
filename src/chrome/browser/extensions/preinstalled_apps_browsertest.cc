@@ -15,16 +15,16 @@
 #include "build/branding_buildflags.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
-#include "chrome/browser/web_applications/components/preinstalled_app_install_features.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extension_status_utils.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
+#include "chrome/browser/web_applications/preinstalled_app_install_features.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_utils.h"
 #include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -198,7 +198,7 @@ class PreinstalledAppsMigrationBrowserTest
 
     {
       web_app::PreinstalledWebAppManager& web_app_manager =
-          web_app::WebAppProvider::Get(profile())
+          web_app::WebAppProvider::GetForTest(profile())
               ->preinstalled_web_app_manager();
       base::RunLoop run_loop;
       auto quit =
@@ -240,15 +240,17 @@ class PreinstalledAppsMigrationBrowserTest
   bool IsWebAppCurrentlyInstalled() {
     const web_app::AppId app_id =
         web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GetAppUrl());
-    return web_app::WebAppProvider::Get(profile())->registrar().IsInstalled(
-        app_id);
+    return web_app::WebAppProvider::GetForTest(profile())
+        ->registrar()
+        .IsInstalled(app_id);
   }
 
   bool CanWebAppAlwaysUpdateIdentity() {
     const web_app::AppId app_id =
         web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GetAppUrl());
     const web_app::WebApp* web_app =
-        web_app::WebAppProvider::Get(profile())->registrar().GetAppById(app_id);
+        web_app::WebAppProvider::GetForTest(profile())->registrar().GetAppById(
+            app_id);
     return CanWebAppUpdateIdentity(web_app);
   }
 
@@ -321,6 +323,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledAppsBrowserTest, TestUninstall) {
   EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // A fun back-and-forth with enabling-and-disabling the web app migration
 // feature. This is designed to exercise the flow needed in case of a rollback.
 IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
@@ -418,6 +421,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
 
   EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
                        PRE_PRE_TestExtensionWasAlreadyUninstalled) {

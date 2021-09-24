@@ -104,6 +104,10 @@
     void getTranslatedShaderSource(ShaderProgramID shaderPacked, GLsizei bufsize, GLsizei *length, \
                                    GLchar *source);                                                \
     /* GL_EXT_EGL_image_array */                                                                   \
+    /* GL_EXT_EGL_image_storage */                                                                 \
+    void eGLImageTargetTexStorage(GLenum target, GLeglImageOES image, const GLint *attrib_list);   \
+    void eGLImageTargetTextureStorage(GLuint texture, GLeglImageOES image,                         \
+                                      const GLint *attrib_list);                                   \
     /* GL_EXT_YUV_target */                                                                        \
     /* GL_EXT_blend_func_extended */                                                               \
     void bindFragDataLocation(ShaderProgramID programPacked, GLuint color, const GLchar *name);    \
@@ -185,6 +189,7 @@
     /* GL_EXT_occlusion_query_boolean */                                                           \
     /* GL_EXT_primitive_bounding_box */                                                            \
     /* GL_EXT_protected_textures */                                                                \
+    /* GL_EXT_pvrtc_sRGB */                                                                        \
     /* GL_EXT_read_format_bgra */                                                                  \
     /* GL_EXT_robustness */                                                                        \
     /* GL_EXT_sRGB */                                                                              \
@@ -223,10 +228,15 @@
     /* GL_EXT_texture_sRGB_RG8 */                                                                  \
     /* GL_EXT_texture_storage */                                                                   \
     void texStorage1D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width);        \
+    /* GL_IMG_texture_compression_pvrtc */                                                         \
+    /* GL_IMG_texture_compression_pvrtc2 */                                                        \
     /* GL_KHR_blend_equation_advanced */                                                           \
     /* GL_KHR_debug */                                                                             \
     /* GL_KHR_parallel_shader_compile */                                                           \
     void maxShaderCompilerThreads(GLuint count);                                                   \
+    /* GL_KHR_texture_compression_astc_hdr */                                                      \
+    /* GL_KHR_texture_compression_astc_ldr */                                                      \
+    /* GL_KHR_texture_compression_astc_sliced_3d */                                                \
     /* GL_NV_fence */                                                                              \
     void deleteFencesNV(GLsizei n, const FenceNVID *fencesPacked);                                 \
     void finishFenceNV(FenceNVID fencePacked);                                                     \

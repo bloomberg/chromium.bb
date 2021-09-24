@@ -49,8 +49,8 @@ StreamingAv1Encoder::StreamingAv1Encoder(const Parameters& params,
   encode_thread_ = std::thread([this] { ProcessWorkUnitsUntilTimeToQuit(); });
 
   OSP_DCHECK(params_.codec == VideoCodec::kAv1);
-  const auto result =
-      aom_codec_enc_config_default(aom_codec_av1_cx(), &config_, 0);
+  const auto result = aom_codec_enc_config_default(aom_codec_av1_cx(), &config_,
+                                                   AOM_USAGE_REALTIME);
   OSP_CHECK_EQ(result, AOM_CODEC_OK);
 
   // This is set to non-zero in ConfigureForNewFrameSize() later, to flag that

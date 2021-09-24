@@ -3,22 +3,18 @@
 // found in the LICENSE file.
 
 import {$$, driveDescriptor, DriveProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {installMock} from 'chrome://test/new_tab_page/test_support.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
-import {isVisible} from 'chrome://test/test_util.m.js';
+import {isVisible} from 'chrome://test/test_util.js';
 
 suite('NewTabPageModulesDriveModuleTest', () => {
-  /**
-   * @implements {DriveProxy}
-   * @extends {TestBrowserProxy}
-   */
-  let testProxy;
+  /** @type {!TestBrowserProxy} */
+  let handler;
 
   setup(() => {
     PolymerTest.clearBody();
-    testProxy = TestBrowserProxy.fromClass(DriveProxy);
-    testProxy.handler =
-        TestBrowserProxy.fromClass(drive.mojom.DriveHandlerRemote);
-    DriveProxy.setInstance(testProxy);
+    handler =
+        installMock(drive.mojom.DriveHandlerRemote, DriveProxy.setHandler);
   });
 
   test('module appears on render', async () => {
@@ -47,11 +43,11 @@ suite('NewTabPageModulesDriveModuleTest', () => {
         }
       ]
     };
-    testProxy.handler.setResultFor('getFiles', Promise.resolve(data));
+    handler.setResultFor('getFiles', Promise.resolve(data));
 
     const module = await driveDescriptor.initialize();
     document.body.append(module);
-    await testProxy.handler.whenCalled('getFiles');
+    await handler.whenCalled('getFiles');
     module.$.fileRepeat.render();
 
     const items = Array.from(module.shadowRoot.querySelectorAll('.file'));
@@ -78,10 +74,10 @@ suite('NewTabPageModulesDriveModuleTest', () => {
   });
 
   test('documents do not show without data', async () => {
-    testProxy.handler.setResultFor('getFiles', Promise.resolve({files: []}));
+    handler.setResultFor('getFiles', Promise.resolve({files: []}));
 
     const module = await driveDescriptor.initialize();
-    await testProxy.handler.whenCalled('getFiles');
+    await handler.whenCalled('getFiles');
     assertFalse(!!module);
   });
 
@@ -98,7 +94,7 @@ suite('NewTabPageModulesDriveModuleTest', () => {
         },
       ]
     };
-    testProxy.handler.setResultFor('getFiles', Promise.resolve(data));
+    handler.setResultFor('getFiles', Promise.resolve(data));
     const moduleElement = await driveDescriptor.initialize();
     document.body.append(moduleElement);
 
@@ -110,13 +106,13 @@ suite('NewTabPageModulesDriveModuleTest', () => {
 
     // Assert.
     assertEquals('Files hidden', dismiss.event.detail.message);
-    assertEquals(1, testProxy.handler.getCallCount('dismissModule'));
+    assertEquals(1, handler.getCallCount('dismissModule'));
 
     // Act.
     dismiss.event.detail.restoreCallback();
 
     // Assert.
-    assertEquals(1, testProxy.handler.getCallCount('restoreModule'));
+    assertEquals(1, handler.getCallCount('restoreModule'));
   });
 
   test('info button click opens info dialog', async () => {
@@ -132,7 +128,7 @@ suite('NewTabPageModulesDriveModuleTest', () => {
         },
       ]
     };
-    testProxy.handler.setResultFor('getFiles', Promise.resolve(data));
+    handler.setResultFor('getFiles', Promise.resolve(data));
     const module = await driveDescriptor.initialize();
     document.body.append(module);
 

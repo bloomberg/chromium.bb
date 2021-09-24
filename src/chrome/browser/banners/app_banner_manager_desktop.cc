@@ -16,15 +16,16 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/webapps/browser/banners/app_banner_metrics.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
@@ -85,7 +86,7 @@ AppBannerManagerDesktop::AppBannerManagerDesktop(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   extension_registry_ = extensions::ExtensionRegistry::Get(profile);
-  auto* provider = web_app::WebAppProvider::Get(profile);
+  auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
   // May be null in unit tests e.g. TabDesktopMediaListTest.*.
   if (provider)
     registrar_observation_.Observe(&provider->registrar());
@@ -148,6 +149,11 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled() const {
              Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
              manifest().start_url)
       .has_value();
+}
+
+std::string AppBannerManagerDesktop::GetAppIdentifier() {
+  DCHECK(!blink::IsEmptyManifest(manifest()));
+  return web_app::GenerateAppIdUnhashedFromManifest(manifest());
 }
 
 web_app::WebAppRegistrar& AppBannerManagerDesktop::registrar() {

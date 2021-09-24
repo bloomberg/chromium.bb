@@ -24,7 +24,7 @@ limitations under the License.
 #include "tensorflow/core/lib/strings/strcat.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/mutex.h"
-#include "tensorflow/python/lib/core/safe_ptr.h"
+#include "tensorflow/python/lib/core/safe_pyobject_ptr.h"
 
 namespace tensorflow {
 namespace swig {
@@ -306,6 +306,16 @@ int IsTensorHelper(PyObject* o) {
   return check_cache->CachedLookup(o);
 }
 
+// Returns 1 if `o` is a TensorSpec.
+// Returns 0 otherwise.
+// Returns -1 if an error occurred.
+int IsTensorSpecHelper(PyObject* o) {
+  static auto* const check_cache = new CachedTypeCheck([](PyObject* to_check) {
+    return IsInstanceOfRegisteredType(to_check, "TensorSpec");
+  });
+  return check_cache->CachedLookup(o);
+}
+
 // Returns 1 if `o` is an EagerTensor.
 // Returns 0 otherwise.
 // Returns -1 if an error occurred.
@@ -322,6 +332,16 @@ int IsEagerTensorHelper(PyObject* o) {
 int IsResourceVariableHelper(PyObject* o) {
   static auto* const check_cache = new CachedTypeCheck([](PyObject* to_check) {
     return IsInstanceOfRegisteredType(to_check, "ResourceVariable");
+  });
+  return check_cache->CachedLookup(o);
+}
+
+// Returns 1 if `o` is a OwnedIterator.
+// Returns 0 otherwise.
+// Returns -1 if an error occurred.
+int IsOwnedIteratorHelper(PyObject* o) {
+  static auto* const check_cache = new CachedTypeCheck([](PyObject* to_check) {
+    return IsInstanceOfRegisteredType(to_check, "OwnedIterator");
   });
   return check_cache->CachedLookup(o);
 }
@@ -357,6 +377,16 @@ int IsSequenceHelper(PyObject* o) {
     if (is_instance == -1) return -1;
 
     return static_cast<int>(is_instance != 0 && !IsString(to_check));
+  });
+  return check_cache->CachedLookup(o);
+}
+
+// Returns 1 if `o`'s class has a `__tf_dispatch__` attribute.
+// Returns 0 otherwise.
+int IsDispatchableHelper(PyObject* o) {
+  static auto* const check_cache = new CachedTypeCheck([](PyObject* to_check) {
+    return PyObject_HasAttrString(
+        reinterpret_cast<PyObject*>(to_check->ob_type), "__tf_dispatch__");
   });
   return check_cache->CachedLookup(o);
 }
@@ -911,12 +941,15 @@ bool IsMutableMapping(PyObject* o) { return IsMutableMappingHelper(o) == 1; }
 bool IsMappingView(PyObject* o) { return IsMappingViewHelper(o) == 1; }
 bool IsAttrs(PyObject* o) { return IsAttrsHelper(o) == 1; }
 bool IsTensor(PyObject* o) { return IsTensorHelper(o) == 1; }
+bool IsTensorSpec(PyObject* o) { return IsTensorSpecHelper(o) == 1; }
 bool IsEagerTensorSlow(PyObject* o) { return IsEagerTensorHelper(o) == 1; }
 bool IsResourceVariable(PyObject* o) {
   return IsResourceVariableHelper(o) == 1;
 }
+bool IsOwnedIterator(PyObject* o) { return IsOwnedIteratorHelper(o) == 1; }
 bool IsVariable(PyObject* o) { return IsVariableHelper(o) == 1; }
 bool IsIndexedSlices(PyObject* o) { return IsIndexedSlicesHelper(o) == 1; }
+bool IsDispatchable(PyObject* o) { return IsDispatchableHelper(o) == 1; }
 
 bool IsTuple(PyObject* o) {
   tensorflow::Safe_PyObjectPtr wrapped;

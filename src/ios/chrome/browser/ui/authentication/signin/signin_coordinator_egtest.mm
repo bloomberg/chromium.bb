@@ -8,8 +8,11 @@
 #import "base/test/ios/wait_util.h"
 #import "components/signin/ios/browser/features.h"
 #include "components/signin/public/base/account_consistency_method.h"
-#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/metrics/metrics_app_interface.h"
+#include "ios/chrome/browser/policy/policy_util.h"
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
@@ -38,7 +41,7 @@ using chrome_test_util::BookmarksNavigationBarDoneButton;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ClearBrowsingDataButton;
 using chrome_test_util::ConfirmClearBrowsingDataButton;
-using chrome_test_util::GoogleServicesSettingsView;
+using chrome_test_util::GoogleServicesSettingsButton;
 using chrome_test_util::IdentityCellMatcherForEmail;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
@@ -49,10 +52,8 @@ using chrome_test_util::SettingsImportDataContinueButton;
 using chrome_test_util::SettingsImportDataImportButton;
 using chrome_test_util::SettingsImportDataKeepSeparateButton;
 using chrome_test_util::SettingsLink;
-using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
 using chrome_test_util::StaticTextWithAccessibilityLabelId;
-using chrome_test_util::SyncSettingsConfirmButton;
 using l10n_util::GetNSString;
 using testing::ButtonWithAccessibilityLabel;
 
@@ -66,13 +67,6 @@ typedef NS_ENUM(NSInteger, OpenSigninMethod) {
 namespace {
 
 NSString* const kPassphrase = @"hello";
-
-// Returns a matcher for |userEmail| in IdentityChooserViewController.
-id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
-  return grey_allOf(grey_accessibilityID(userEmail),
-                    grey_kindOfClassName(@"TableViewIdentityCell"),
-                    grey_sufficientlyVisible(), nil);
-}
 
 void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // Set up the fake identities.
@@ -110,6 +104,30 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
       performAction:grey_tap()];
 }
 
+void ExpectSigninConsentHistogram(
+    signin_metrics::SigninAccountType signinAccountType) {
+  NSError* error = [MetricsAppInterface
+      expectTotalCount:1
+          forHistogram:@"Signin.AccountType.SigninConsent"];
+  GREYAssertNil(error, @"Failed to record show count histogram");
+  error = [MetricsAppInterface expectCount:1
+                                 forBucket:static_cast<int>(signinAccountType)
+                              forHistogram:@"Signin.AccountType.SigninConsent"];
+  GREYAssertNil(error, @"Failed to record show count histogram");
+}
+
+void ExpectSyncConsentHistogram(
+    signin_metrics::SigninAccountType signinAccountType) {
+  NSError* error =
+      [MetricsAppInterface expectTotalCount:1
+                               forHistogram:@"Signin.AccountType.SyncConsent"];
+  GREYAssertNil(error, @"Failed to record show count histogram");
+  error = [MetricsAppInterface expectCount:1
+                                 forBucket:static_cast<int>(signinAccountType)
+                              forHistogram:@"Signin.AccountType.SyncConsent"];
+  GREYAssertNil(error, @"Failed to record show count histogram");
+}
+
 }  // namespace
 
 // Sign-in interaction tests that work both with Unified Consent enabled or
@@ -124,6 +142,14 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // Remove closed tab history to make sure the sign-in promo is always visible
   // in recent tabs.
   [ChromeEarlGrey clearBrowsingHistory];
+  GREYAssertNil([MetricsAppInterface setupHistogramTester],
+                @"Failed to set up histogram tester.");
+}
+
+- (void)tearDown {
+  [super tearDown];
+  GREYAssertNil([MetricsAppInterface releaseHistogramTester],
+                @"Cannot reset histogram tester.");
 }
 
 // Tests that opening the sign-in screen from the Settings and signing in works
@@ -135,6 +161,8 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
   // Check |fakeIdentity| is signed-in.
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+  ExpectSigninConsentHistogram(signin_metrics::SigninAccountType::kRegular);
+  ExpectSyncConsentHistogram(signin_metrics::SigninAccountType::kRegular);
 }
 
 // Tests signing in with one account, switching sync account to a second and
@@ -165,6 +193,8 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // Sign-in with a managed account.
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeManagedIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  ExpectSigninConsentHistogram(signin_metrics::SigninAccountType::kManaged);
+  ExpectSyncConsentHistogram(signin_metrics::SigninAccountType::kManaged);
 
   // Sign out.
   [SigninEarlGreyUI
@@ -424,9 +454,9 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
                             "www.example.com")];
 }
 
-// Verifies that advanced sign-in shows an alert dialog when being swiped to
-// dismiss.
-- (void)testSwipeDownToCancelAdvancedSignin {
+// Verifies that the user is signed in when selecting "Yes I'm In", after the
+// advanced settings were swiped to dismiss.
+- (void)testSwipeDownInAdvancedSettings {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [self openSigninFromView:OpenSigninMethodFromSettings tapSettingsLink:YES];
@@ -435,12 +465,9 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
       selectElementWithMatcher:grey_accessibilityID(
                                    kManageSyncTableViewAccessibilityIdentifier)]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
-  [[EarlGrey
-      selectElementWithMatcher:
-          ButtonWithAccessibilityLabel(GetNSString(
-              IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_SYNC_ALERT_CANCEL_SYNC_BUTTON))]
-      performAction:grey_tap()];
-  [SigninEarlGrey verifySignedOut];
+
+  [SigninEarlGreyUI tapSigninConfirmationDialog];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 }
 
 #pragma mark - Utils
@@ -551,14 +578,14 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // Open the identity chooser.
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
-  [ChromeEarlGrey waitForMatcher:identityChooserButtonMatcherWithEmail(
-                                     fakeIdentity.userEmail)];
+  [ChromeEarlGrey
+      waitForMatcher:IdentityCellMatcherForEmail(fakeIdentity.userEmail)];
 
   // Remove the fake identity.
   [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
 
   // Check that the identity has been removed.
-  [[EarlGrey selectElementWithMatcher:identityChooserButtonMatcherWithEmail(
+  [[EarlGrey selectElementWithMatcher:IdentityCellMatcherForEmail(
                                           fakeIdentity.userEmail)]
       assertWithMatcher:grey_notVisible()];
 }
@@ -625,7 +652,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // progress this test will likely be flaky.
   [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
   // Check that the identity has been removed.
-  [[EarlGrey selectElementWithMatcher:identityChooserButtonMatcherWithEmail(
+  [[EarlGrey selectElementWithMatcher:IdentityCellMatcherForEmail(
                                           fakeIdentity.userEmail)]
       assertWithMatcher:grey_notVisible()];
 }
@@ -636,7 +663,8 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // Disable browser sign-in only after the "Sign in to Chrome" button is
   // visible.
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kSigninAllowedByPolicy];
+  [ChromeEarlGrey setIntegerValue:static_cast<int>(BrowserSigninMode::kDisabled)
+                forLocalStatePref:prefs::kBrowserSigninPolicy];
 
   // Verify the sign-in view isn't showing.
   id<GREYMatcher> signin_matcher = StaticTextWithAccessibilityLabelId(
@@ -645,7 +673,8 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
       assertWithMatcher:grey_notVisible()];
 
   // Prefs clean-up.
-  [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kSigninAllowedByPolicy];
+  [ChromeEarlGrey setIntegerValue:static_cast<int>(BrowserSigninMode::kEnabled)
+                forLocalStatePref:prefs::kBrowserSigninPolicy];
 }
 
 // Tests that a signed-in user can open "Settings" screen from the NTP.
@@ -721,6 +750,46 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
                                    grey_accessibilityValue(
                                        l10n_util::GetNSString(
                                            IDS_IOS_SETTING_ON)),
+                                   grey_accessibilityID(
+                                       kSettingsGoogleSyncAndServicesCellId),
+                                   grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
+}
+
+// Tests that opening the sign-in screen from the Sync Off tab and canceling the
+// sign-in flow will leave a signed-in with sync off user in the same state.
+- (void)testCancelFromSyncOffLink {
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  [ChromeEarlGreyUI openSettingsMenu];
+  // Check Sync Off label is visible and user is signed in.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityValue(
+                                       l10n_util::GetNSString(
+                                           IDS_IOS_SETTING_OFF)),
+                                   grey_accessibilityID(
+                                       kSettingsGoogleSyncAndServicesCellId),
+                                   nil)] performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)]
+      performAction:grey_tap()];
+
+  // Check Sync Off label is visible and user is signed in.
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityValue(
+                                       l10n_util::GetNSString(
+                                           IDS_IOS_SETTING_OFF)),
                                    grey_accessibilityID(
                                        kSettingsGoogleSyncAndServicesCellId),
                                    nil)]
@@ -843,12 +912,17 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
   [SigninEarlGreyUI tapSigninConfirmationDialog];
 
+  // Give the Sync state a chance to finish UI updates.
+  [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
+                      GoogleServicesSettingsButton()];
+
   [[EarlGrey
       selectElementWithMatcher:
           grey_allOf(grey_accessibilityValue(l10n_util::GetNSString(
                          IDS_IOS_SYNC_ENCRYPTION_DESCRIPTION)),
                      grey_accessibilityID(kSettingsGoogleSyncAndServicesCellId),
-                     nil)] performAction:grey_tap()];
+                     grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
 
   // Scroll to bottom of Manage Sync Settings, if necessary.
   [[EarlGrey selectElementWithMatcher:

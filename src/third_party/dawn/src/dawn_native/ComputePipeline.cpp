@@ -19,6 +19,31 @@
 
 namespace dawn_native {
 
+    FlatComputePipelineDescriptor::FlatComputePipelineDescriptor(
+        const ComputePipelineDescriptor* descriptor)
+        : mLabel(descriptor->label != nullptr ? descriptor->label : ""),
+          mLayout(descriptor->layout) {
+        label = mLabel.c_str();
+        layout = mLayout.Get();
+
+        // TODO(dawn:800): Remove after deprecation period.
+        if (descriptor->compute.module == nullptr && descriptor->computeStage.module != nullptr) {
+            mComputeModule = descriptor->computeStage.module;
+            mEntryPoint = descriptor->computeStage.entryPoint;
+        } else {
+            mComputeModule = descriptor->compute.module;
+            mEntryPoint = descriptor->compute.entryPoint;
+        }
+
+        compute.entryPoint = mEntryPoint.c_str();
+        compute.module = mComputeModule.Get();
+    }
+
+    void FlatComputePipelineDescriptor::SetLayout(Ref<PipelineLayoutBase> appliedLayout) {
+        mLayout = std::move(appliedLayout);
+        layout = mLayout.Get();
+    }
+
     MaybeError ValidateComputePipelineDescriptor(DeviceBase* device,
                                                  const ComputePipelineDescriptor* descriptor) {
         if (descriptor->nextInChain != nullptr) {
@@ -51,6 +76,7 @@ namespace dawn_native {
                                              const ComputePipelineDescriptor* descriptor)
         : PipelineBase(device,
                        descriptor->layout,
+                       descriptor->label,
                        {{SingleShaderStage::Compute, descriptor->compute.module,
                          descriptor->compute.entryPoint}}) {
     }

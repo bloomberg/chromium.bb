@@ -237,7 +237,7 @@ angle::Result HardwareBufferImageSiblingVkAndroid::initImpl(DisplayVk *displayVk
 
     const vk::Format &vkFormat         = renderer->getFormat(internalFormat);
     const vk::Format &externalVkFormat = renderer->getFormat(angle::FormatID::NONE);
-    const angle::Format &imageFormat   = vkFormat.actualImageFormat();
+    const angle::Format &imageFormat   = vkFormat.getActualRenderableImageFormat();
     bool isDepthOrStencilFormat        = imageFormat.hasDepthOrStencilBits();
 
     // Query AHB description and do the following -
@@ -283,12 +283,13 @@ angle::Result HardwareBufferImageSiblingVkAndroid::initImpl(DisplayVk *displayVk
     {
         imageCreateFlags |= VK_IMAGE_CREATE_PROTECTED_BIT;
     }
+    const vk::Format &format =
+        bufferFormatProperties.format == VK_FORMAT_UNDEFINED ? externalVkFormat : vkFormat;
     ANGLE_TRY(mImage->initExternal(
-        displayVk, gl::TextureType::_2D, vkExtents,
-        bufferFormatProperties.format == VK_FORMAT_UNDEFINED ? externalVkFormat : vkFormat, 1,
-        usage, imageCreateFlags, vk::ImageLayout::ExternalPreInitialized,
-        &externalMemoryImageCreateInfo, gl::LevelIndex(0), 1, 1, robustInitEnabled, nullptr,
-        hasProtectedContent()));
+        displayVk, gl::TextureType::_2D, vkExtents, format.getIntendedFormatID(),
+        format.getActualRenderableImageFormatID(), 1, usage, imageCreateFlags,
+        vk::ImageLayout::ExternalPreInitialized, &externalMemoryImageCreateInfo, gl::LevelIndex(0),
+        1, 1, robustInitEnabled, nullptr, hasProtectedContent()));
 
     VkImportAndroidHardwareBufferInfoANDROID importHardwareBufferInfo = {};
     importHardwareBufferInfo.sType  = VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID;
@@ -341,15 +342,15 @@ angle::Result HardwareBufferImageSiblingVkAndroid::initImpl(DisplayVk *displayVk
 
     constexpr uint32_t kColorRenderableRequiredBits        = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT;
     constexpr uint32_t kDepthStencilRenderableRequiredBits = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT;
-    mRenderable = renderer->hasImageFormatFeatureBits(vkFormat.actualImageFormatID,
+    mRenderable = renderer->hasImageFormatFeatureBits(vkFormat.getActualRenderableImageFormatID(),
                                                       kColorRenderableRequiredBits) ||
-                  renderer->hasImageFormatFeatureBits(vkFormat.actualImageFormatID,
+                  renderer->hasImageFormatFeatureBits(vkFormat.getActualRenderableImageFormatID(),
                                                       kDepthStencilRenderableRequiredBits);
 
     constexpr uint32_t kTextureableRequiredBits =
         VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
-    mTextureable =
-        renderer->hasImageFormatFeatureBits(vkFormat.actualImageFormatID, kTextureableRequiredBits);
+    mTextureable = renderer->hasImageFormatFeatureBits(vkFormat.getActualRenderableImageFormatID(),
+                                                       kTextureableRequiredBits);
 
     return angle::Result::Continue;
 }

@@ -16,6 +16,7 @@ extern const base::Feature kBootCompletedBroadcastFeature;
 extern const base::Feature kCleanArcDataOnRegularToChildTransitionFeature;
 extern const base::Feature kCustomTabsExperimentFeature;
 extern const base::Feature kDocumentsProviderUnknownSizeFeature;
+extern const base::Feature kEnableArcNearbyShare;
 extern const base::Feature kEnableChildToRegularTransitionFeature;
 extern const base::Feature kEnableRegularToChildTransitionFeature;
 extern const base::Feature kEnableThrottlingNotification;
@@ -38,6 +39,10 @@ extern const base::Feature kVideoDecoder;
 extern const base::Feature kVmMemorySize;
 extern const base::FeatureParam<int> kVmMemorySizeShiftMiB;
 extern const base::FeatureParam<int> kVmMemorySizeMaxMiB;
+extern const base::Feature kVmBalloonPolicy;
+extern const base::FeatureParam<int> kVmBalloonPolicyModerateKiB;
+extern const base::FeatureParam<int> kVmBalloonPolicyCriticalKiB;
+extern const base::FeatureParam<int> kVmBalloonPolicyReclaimKiB;
 
 }  // namespace arc
 

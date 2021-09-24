@@ -134,12 +134,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                                  const IPC::Message& message);
 
-  // Allows the delegate to filter incoming interface requests.
-  virtual void OnInterfaceRequest(
-      RenderFrameHostImpl* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) {}
-
   // Notification from the renderer host that a suspicious navigation of the
   // main frame has been blocked. Allows the delegate to provide some UI to let
   // the user know about the blocked navigation and give them the option to
@@ -158,10 +152,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Notifies that the manifest URL is updated.
   virtual void OnManifestUrlChanged(const PageImpl& page) {}
-
-  // Gets the last committed URL. See WebContents::GetLastCommittedURL for a
-  // description of the semantics.
-  virtual const GURL& GetMainFrameLastCommittedURL();
 
   // A message was added to to the console. |source_id| is a URL.
   // |untrusted_stack_trace| is not present for most messages; only when
@@ -527,7 +517,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual bool IsAllowedToGoToEntryAtOffset(int32_t offset);
 
   virtual media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
-  GetRecordAggregateWatchTimeCallback();
+  GetRecordAggregateWatchTimeCallback(
+      const GURL& page_main_frame_last_committed_url);
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  Possible data types supported for paste can be
@@ -557,10 +548,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Notified when the main frame adjusts the page scale.
   virtual void OnPageScaleFactorChanged(RenderFrameHostImpl* source,
                                         float page_scale_factor) {}
-
-  virtual void OnTextAutosizerPageInfoChanged(
-      RenderFrameHostImpl* source,
-      blink::mojom::TextAutosizerPageInfoPtr page_info);
 
   // Binds a ScreenOrientation object associated to |render_frame_host|.
   virtual void BindScreenOrientation(
@@ -612,7 +599,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const GURL& url,
       const std::string& http_request,
       const std::string& mime_type,
-      network::mojom::RequestDestination request_destination) {}
+      network::mojom::RequestDestination request_destination,
+      bool include_credentials) {}
 
   // Called when the renderer sends a response via DomAutomationController.
   // For example, `window.domAutomationController.send(foo())` sends the result

@@ -75,7 +75,8 @@ export class ModulesElement extends mixinBehaviors
       /** @private */
       dragEnabled_: {
         type: Boolean,
-        value: loadTimeData.getBoolean('modulesDragAndDropEnabled'),
+        value: () => loadTimeData.getBoolean('modulesDragAndDropEnabled'),
+        reflectToAttribute: true,
       },
     };
   }
@@ -131,10 +132,11 @@ export class ModulesElement extends mixinBehaviors
       modules.forEach(module => {
         const moduleWrapper = new ModuleWrapperElement();
         moduleWrapper.module = module;
-        moduleWrapper.setAttribute('draggable', this.dragEnabled_);
-        moduleWrapper.addEventListener('mousedown', event => {
-          this.onDragStart_(/** @type {!DragEvent} */ (event));
-        });
+        if (this.dragEnabled_) {
+          moduleWrapper.addEventListener('mousedown', event => {
+            this.onDragStart_(/** @type {!DragEvent} */ (event));
+          });
+        }
         moduleWrapper.addEventListener('dismiss-module', event => {
           this.onDismissModule_(
               /**
@@ -192,13 +194,12 @@ export class ModulesElement extends mixinBehaviors
   /** @private */
   onModulesLoadedAndVisibilityDeterminedChange_() {
     if (this.modulesLoadedAndVisibilityDetermined_) {
-      this.shadowRoot.querySelectorAll('ntp-module-wrapper')
-          .forEach(({module}) => {
-            chrome.metricsPrivate.recordBoolean(
-                `NewTabPage.Modules.EnabledOnNTPLoad.${module.descriptor.id}`,
-                !this.disabledModules_.all &&
-                    !this.disabledModules_.ids.includes(module.descriptor.id));
-          });
+      ModuleRegistry.getInstance().getDescriptors().forEach(({id}) => {
+        chrome.metricsPrivate.recordBoolean(
+            `NewTabPage.Modules.EnabledOnNTPLoad.${id}`,
+            !this.disabledModules_.all &&
+                !this.disabledModules_.ids.includes(id));
+      });
       chrome.metricsPrivate.recordBoolean(
           'NewTabPage.Modules.VisibleOnNTPLoad', !this.disabledModules_.all);
       this.dispatchEvent(new Event('modules-loaded'));
@@ -397,7 +398,7 @@ export class ModulesElement extends mixinBehaviors
       dragElement.style.removeProperty('left');
       dragElement.style.removeProperty('top');
 
-      const lastRect = dragElement.parentElement.getBoundingClientRect();
+      const lastRect = dragElement.getBoundingClientRect();
       const invertX = firstRect.left - lastRect.left;
       const invertY = firstRect.top - lastRect.top;
 

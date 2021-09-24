@@ -416,6 +416,8 @@ libtint_source_set("libtint_core_all_src") {
     "symbol_table.cc",
     "symbol_table.h",
     "traits.h",
+    "transform/add_empty_entry_point.cc",
+    "transform/add_empty_entry_point.h",
     "transform/array_length_from_uniform.cc",
     "transform/array_length_from_uniform.h",
     "transform/binding_remapper.cc",
@@ -444,6 +446,8 @@ libtint_source_set("libtint_core_all_src") {
     "transform/loop_to_for_loop.h",
     "transform/manager.cc",
     "transform/manager.h",
+    "transform/module_scope_var_to_entry_point_param.cc",
+    "transform/module_scope_var_to_entry_point_param.h",
     "transform/pad_array_elements.cc",
     "transform/pad_array_elements.h",
     "transform/promote_initializers_to_const_var.cc",
@@ -617,8 +621,6 @@ libtint_source_set("libtint_spv_reader_src") {
 
 libtint_source_set("libtint_spv_writer_src") {
   sources = [
-    "transform/spirv.cc",
-    "transform/spirv.h",
     "writer/spirv/binary_writer.cc",
     "writer/spirv/binary_writer.h",
     "writer/spirv/builder.cc",
@@ -666,8 +668,6 @@ libtint_source_set("libtint_wgsl_writer_src") {
 
 libtint_source_set("libtint_msl_writer_src") {
   sources = [
-    "transform/msl.cc",
-    "transform/msl.h",
     "writer/msl/generator.cc",
     "writer/msl/generator.h",
     "writer/msl/generator_impl.cc",
@@ -679,8 +679,6 @@ libtint_source_set("libtint_msl_writer_src") {
 
 libtint_source_set("libtint_hlsl_writer_src") {
   sources = [
-    "transform/hlsl.cc",
-    "transform/hlsl.h",
     "writer/hlsl/generator.cc",
     "writer/hlsl/generator.h",
     "writer/hlsl/generator_impl.cc",

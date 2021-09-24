@@ -34,6 +34,7 @@ public class BitmapGenerator implements LongScreenshotsTabService.CaptureProcess
 
     protected GeneratorCallBack mGeneratorCallBack;
     private ScreenshotBoundsManager mBoundsManager;
+    private float mScaleFactor;
 
     /**
      * Users of the {@link LongScreenshotsEntry} class have to implement and pass this interface in
@@ -53,7 +54,7 @@ public class BitmapGenerator implements LongScreenshotsTabService.CaptureProcess
 
     /**
      * @param tab The current tab being screen-shotted.
-     * @param rect The area of the webpage to capture
+     * @param boundsManager The bounds manager of the page to determine capture regions.
      * @param callback Callback to receive updates from the generation.
      */
     public BitmapGenerator(
@@ -72,6 +73,7 @@ public class BitmapGenerator implements LongScreenshotsTabService.CaptureProcess
         }
         mTabService.setCaptureProcessor(this);
         mTabService.captureTab(mTab, mBoundsManager.getCaptureBounds());
+        mScaleFactor = 0f;
     }
 
     /**
@@ -104,8 +106,12 @@ public class BitmapGenerator implements LongScreenshotsTabService.CaptureProcess
             Rect rect, Runnable errorCallback, Callback<Bitmap> onBitmapGenerated) {
         // Check if the compositor is ready and whether the rect is within the bounds of the
         // the capture.
+        if (mScaleFactor == 0f) {
+            mScaleFactor =
+                    mBoundsManager.getBitmapScaleFactorFromCompositedWidth(mCompositor.getWidth());
+        }
         return mCompositor.requestBitmap(mBoundsManager.calculateBoundsRelativeToCapture(rect),
-                errorCallback, onBitmapGenerated);
+                mScaleFactor, errorCallback, onBitmapGenerated);
     }
 
     /**

@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "build/chromeos_buildflags.h"
+#include "ui_features.h"
 
 namespace features {
 
@@ -45,6 +46,11 @@ const base::Feature kEnterpriseCastingUI{"EnterpriseCastingUI",
 // Enables showing the EV certificate details in the Page Info bubble.
 const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables showing the new extensions menu and toolbar that allows the user to
+// access control permissions.
+const base::Feature kExtensionsMenuAccessControl{
+    "ExtensionsMenuAccessControl", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the hosting of an extension in the left aligned side panel of the
 // browser window. Currently used for a hosted extension experiment.
@@ -94,7 +100,7 @@ const base::Feature kScrollableTabStripButtons{
 // Changes the layout of the chrome://settings page to only show one section at
 // a time, crbug.com/1204457.
 const base::Feature kSettingsLandingPageRedesign{
-    "SettingsLandingPageRedesign", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SettingsLandingPageRedesign", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Updated managed profile sign-in popup. https://crbug.com/1141224
@@ -108,7 +114,7 @@ const base::Feature kTabGroupsAutoCreate{"TabGroupsAutoCreate",
 
 // Enables tabs to be frozen when collapsed. https://crbug.com/1110108
 const base::Feature kTabGroupsCollapseFreezing{
-    "TabGroupsCollapseFreezing", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TabGroupsCollapseFreezing", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the feedback through the tab group editor bubble.
 // https://crbug.com/1067062
@@ -126,6 +132,7 @@ const base::Feature kTabGroupsNewBadgePromo{"TabGroupsNewBadgePromo",
 // https://crbug.com/1223929
 const base::Feature kTabGroupsSave{"TabGroupsSave",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const char kTabGroupsSaveUIVariationsParameterName[] = "UI variation";
 
 // Enables preview images in tab-hover cards.
 // https://crbug.com/928954

@@ -1120,7 +1120,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
       pak_fd = global_descriptors->Get(extra_pak_key);
       pak_region = global_descriptors->GetRegion(extra_pak_key);
       ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
-          base::File(pak_fd), pak_region, ui::SCALE_FACTOR_100P);
+          base::File(pak_fd), pak_region, ui::k100Percent);
     }
 
     // For Android: Native resources for DFMs should only be used by the browser
@@ -1137,7 +1137,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
     base::FilePath resources_pack_path;
     base::PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        resources_pack_path, ui::SCALE_FACTOR_NONE);
+        resources_pack_path, ui::kScaleFactorNone);
 #endif
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " <<
         locale;
@@ -1179,7 +1179,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
   }  // !cef::IsChromeRuntimeEnabled()
 
 #if BUILDFLAG(ENABLE_PDF)
-  MaybeInitializeGDI();
+  MaybePatchGdiGetFontData();
 #endif
 }
 

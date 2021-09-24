@@ -8,9 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "ash/services/quick_pair/public/cpp/decrypted_passkey.h"
+#include "ash/services/quick_pair/public/cpp/decrypted_response.h"
+#include "base/callback.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
 #include <array>
 
-#include "ash/quick_pair/pairing/fast_pair/fast_pair_key_pair.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
@@ -21,30 +25,32 @@ constexpr int kBlockSizeBytes = 16;
 
 namespace ash {
 namespace quick_pair {
-namespace fast_pair_encryption {
 
 // Holds a secret key for a device and has methods to encrypt bytes, decrypt
 // response and decrypt passkey.
 class FastPairDataEncryptor {
  public:
-  FastPairDataEncryptor(const KeyPair& key_pair);
-  ~FastPairDataEncryptor();
-  FastPairDataEncryptor(const FastPairDataEncryptor&) = delete;
-  FastPairDataEncryptor& operator=(const FastPairDataEncryptor&) = delete;
+  // Encrypts bytes with the stored secret key.
+  virtual const std::array<uint8_t, kBlockSizeBytes> EncryptBytes(
+      const std::array<uint8_t, kBlockSizeBytes>& bytes_to_encrypt) = 0;
 
-  const std::array<uint8_t, kBlockSizeBytes> EncryptBytes(
-      const std::array<uint8_t, kBlockSizeBytes>& bytes_to_encrypt);
+  virtual const absl::optional<std::array<uint8_t, 64>>& GetPublicKey() = 0;
 
- private:
-  std::array<uint8_t, kPrivateKeyByteSize> secret_key_;
+  // Decrypt and parse decrypted response bytes with the stored secret key.
+  virtual void ParseDecryptedResponse(
+      const std::vector<uint8_t>& encrypted_response_bytes,
+      base::OnceCallback<void(const absl::optional<DecryptedResponse>&)>
+          callback) = 0;
 
-  // The public key is only required during initial pairing and optional during
-  // communication with paired devices.
-  absl::optional<std::array<uint8_t, kPublicKeyByteSize>> public_key_ =
-      absl::nullopt;
+  // Decrypt and parse decrypted passkey bytes with the stored secret key.
+  virtual void ParseDecryptedPasskey(
+      const std::vector<uint8_t>& encrypted_passkey_bytes,
+      base::OnceCallback<void(const absl::optional<DecryptedPasskey>&)>
+          callback) = 0;
+
+  virtual ~FastPairDataEncryptor() = default;
 };
 
-}  // namespace fast_pair_encryption
 }  // namespace quick_pair
 }  // namespace ash
 

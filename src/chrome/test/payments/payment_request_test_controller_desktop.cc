@@ -38,7 +38,7 @@ class TestAuthenticator : public content::InternalAuthenticatorImpl {
 
   ~TestAuthenticator() override = default;
 
-  // autofill::InternalAuthenticator
+  // webauthn::InternalAuthenticator
   void IsUserVerifyingPlatformAuthenticatorAvailable(
       blink::mojom::Authenticator::
           IsUserVerifyingPlatformAuthenticatorAvailableCallback callback)
@@ -78,11 +78,10 @@ class ChromePaymentRequestTestDelegate : public ChromePaymentRequestDelegate {
   PrefService* GetPrefService() override { return prefs_; }
   bool IsBrowserWindowActive() const override { return true; }
   std::string GetTwaPackageName() const override { return twa_package_name_; }
-  std::unique_ptr<autofill::InternalAuthenticator> CreateInternalAuthenticator()
+  std::unique_ptr<webauthn::InternalAuthenticator> CreateInternalAuthenticator()
       const override {
     auto* rfh = content::RenderFrameHost::FromID(frame_routing_id_);
-    return rfh ? std::make_unique<TestAuthenticator>(rfh->GetMainFrame(),
-                                                     has_authenticator_)
+    return rfh ? std::make_unique<TestAuthenticator>(rfh, has_authenticator_)
                : nullptr;
   }
   const base::WeakPtr<PaymentUIObserver> GetPaymentUIObserver() const override {

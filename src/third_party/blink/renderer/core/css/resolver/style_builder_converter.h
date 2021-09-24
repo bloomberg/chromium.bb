@@ -278,8 +278,6 @@ class StyleBuilderConverter {
       const CSSValue&,
       bool is_animation_tainted);
 
-  static LengthSize ConvertIntrinsicSize(StyleResolverState&, const CSSValue&);
-
   static StyleAspectRatio ConvertAspectRatio(const StyleResolverState&,
                                              const CSSValue&);
 
@@ -298,6 +296,10 @@ class StyleBuilderConverter {
 
   static AtomicString ConvertContainerName(StyleResolverState&,
                                            const CSSValue&);
+
+  static absl::optional<StyleIntrinsicLength> ConvertIntrinsicDimension(
+      const StyleResolverState&,
+      const CSSValue&);
 
   static void CountSystemColorComputeToSelfUsage(
       const StyleResolverState& state);

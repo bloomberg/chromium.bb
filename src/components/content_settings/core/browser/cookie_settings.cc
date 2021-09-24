@@ -18,6 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/site_for_cookies.h"
 #include "url/gurl.h"
 
 #if defined(OS_IOS)
@@ -134,8 +135,8 @@ void CookieSettings::GetSettingForLegacyCookieAccess(
 
 bool CookieSettings::ShouldIgnoreSameSiteRestrictions(
     const GURL& url,
-    const GURL& site_for_cookies) const {
-  return site_for_cookies.SchemeIs(kChromeUIScheme) &&
+    const net::SiteForCookies& site_for_cookies) const {
+  return site_for_cookies.RepresentativeUrl().SchemeIs(kChromeUIScheme) &&
          url.SchemeIsCryptographic();
 }
 
@@ -264,17 +265,14 @@ void CookieSettings::OnCookiePreferencesChanged() {
 
   bool new_block_third_party_cookies = ShouldBlockThirdPartyCookiesInternal();
 
-  // Safe to read |block_third_party_cookies_| without locking here because the
-  // only place that writes to it is this method and it will always be run on
-  // the same thread.
-  if (block_third_party_cookies_ != new_block_third_party_cookies) {
-    {
-      base::AutoLock auto_lock(lock_);
-      block_third_party_cookies_ = new_block_third_party_cookies;
-    }
-    for (Observer& obs : observers_)
-      obs.OnThirdPartyCookieBlockingChanged(new_block_third_party_cookies);
+  {
+    base::AutoLock auto_lock(lock_);
+    if (block_third_party_cookies_ == new_block_third_party_cookies)
+      return;
+    block_third_party_cookies_ = new_block_third_party_cookies;
   }
+  for (Observer& obs : observers_)
+    obs.OnThirdPartyCookieBlockingChanged(new_block_third_party_cookies);
 }
 
 bool CookieSettings::ShouldBlockThirdPartyCookies() const {

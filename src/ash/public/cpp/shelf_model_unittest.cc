@@ -8,8 +8,8 @@
 #include <set>
 #include <string>
 
-#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model_observer.h"
+#include "ash/public/cpp/test/test_shelf_item_delegate.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,23 +65,6 @@ class TestShelfModelObserver : public ShelfModelObserver {
   DISALLOW_COPY_AND_ASSIGN(TestShelfModelObserver);
 };
 
-class TestShelfItemDelegate : public ShelfItemDelegate {
- public:
-  explicit TestShelfItemDelegate(const ShelfID& shelf_id)
-      : ShelfItemDelegate(shelf_id) {}
-
-  void ItemSelected(std::unique_ptr<ui::Event> event,
-                    int64_t display_id,
-                    ash::ShelfLaunchSource source,
-                    ItemSelectedCallback callback,
-                    const ItemFilterPredicate& filter_predicate) override {}
-  void ExecuteCommand(bool from_context_menu,
-                      int64_t command_id,
-                      int32_t event_flags,
-                      int64_t display_id) override {}
-  void Close() override {}
-};
-
 }  // namespace
 
 class ShelfModelTest : public testing::Test {
@@ -126,7 +109,7 @@ TEST_F(ShelfModelTest, BasicAssertions) {
   EXPECT_EQ(1, model_->item_count());
   EXPECT_LE(0, model_->ItemIndexByID(item1.id));
   EXPECT_TRUE(model_->ItemByID(item1.id));
-  EXPECT_EQ("added=1 delegate_changed=1", observer_->StateStringAndClear());
+  EXPECT_EQ("added=1", observer_->StateStringAndClear());
 
   // Change to a platform app item.
   item1.type = TYPE_APP;
@@ -152,7 +135,7 @@ TEST_F(ShelfModelTest, BasicAssertions) {
   EXPECT_EQ(1, model_->item_count());
   EXPECT_LE(0, model_->ItemIndexByID(item2.id));
   EXPECT_TRUE(model_->ItemByID(item2.id));
-  EXPECT_EQ("added=1 delegate_changed=1", observer_->StateStringAndClear());
+  EXPECT_EQ("added=1", observer_->StateStringAndClear());
 
   // Change the item type.
   item2.type = TYPE_APP;
@@ -170,7 +153,7 @@ TEST_F(ShelfModelTest, BasicAssertions) {
   EXPECT_EQ(2, model_->item_count());
   EXPECT_LE(0, model_->ItemIndexByID(item3.id));
   EXPECT_TRUE(model_->ItemByID(item3.id));
-  EXPECT_EQ("added=1 delegate_changed=1", observer_->StateStringAndClear());
+  EXPECT_EQ("added=1", observer_->StateStringAndClear());
 
   // Move the second to the first.
   model_->Move(1, 0);
@@ -358,14 +341,17 @@ TEST_F(ShelfModelTest, ClosedAppPinning) {
   EXPECT_EQ(0, model_->item_count());
 
   // Pinning a previously unknown app should add an item.
-  model_->PinAppWithID(app_id);
+  ShelfItem item;
+  item.id = ShelfID(app_id);
+  item.type = TYPE_PINNED_APP;
+  model_->Add(item, std::make_unique<TestShelfItemDelegate>(item.id));
   EXPECT_TRUE(model_->IsAppPinned(app_id));
   EXPECT_EQ(1, model_->item_count());
   EXPECT_EQ(TYPE_PINNED_APP, model_->items()[0].type);
   EXPECT_EQ(app_id, model_->items()[0].id.app_id);
 
   // Pinning the same app id again should have no change.
-  model_->PinAppWithID(app_id);
+  model_->PinExistingItemWithID(app_id);
   EXPECT_TRUE(model_->IsAppPinned(app_id));
   EXPECT_EQ(1, model_->item_count());
   EXPECT_EQ(TYPE_PINNED_APP, model_->items()[0].type);
@@ -404,14 +390,14 @@ TEST_F(ShelfModelTest, RunningAppPinning) {
   EXPECT_EQ(item.id, model_->items()[index].id);
 
   // Pinning the item should just change its type.
-  model_->PinAppWithID(app_id);
+  model_->PinExistingItemWithID(app_id);
   EXPECT_TRUE(model_->IsAppPinned(app_id));
   EXPECT_EQ(1, model_->item_count());
   EXPECT_EQ(TYPE_PINNED_APP, model_->items()[index].type);
   EXPECT_EQ(item.id, model_->items()[index].id);
 
   // Pinning the same app id again should have no change.
-  model_->PinAppWithID(app_id);
+  model_->PinExistingItemWithID(app_id);
   EXPECT_TRUE(model_->IsAppPinned(app_id));
   EXPECT_EQ(1, model_->item_count());
   EXPECT_EQ(TYPE_PINNED_APP, model_->items()[index].type);
@@ -465,7 +451,7 @@ TEST_F(ShelfModelTest, RemoveItemAndTakeShelfItemDelegate) {
   EXPECT_EQ(1, model_->item_count());
   EXPECT_LE(0, model_->ItemIndexByID(item1.id));
   EXPECT_TRUE(model_->ItemByID(item1.id));
-  EXPECT_EQ("added=1 delegate_changed=1", observer_->StateStringAndClear());
+  EXPECT_EQ("added=1", observer_->StateStringAndClear());
 
   // Set item delegate.
   auto* delegate = new TestShelfItemDelegate(item1.id);

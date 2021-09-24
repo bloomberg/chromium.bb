@@ -12,13 +12,29 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
 import '../common/icons.js';
 import {assert} from 'chrome://resources/js/assert.m.js'
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {isNonEmptyArray} from '../common/utils.js';
 import {getWallpaperProvider} from './mojo_interface_provider.js';
-import {getCurrentWallpaper, getDailyRefreshCollectionId, setCustomWallpaperLayout, setDailyRefreshCollectionId, updateDailyRefreshWallpaper} from './personalization_controller.js';
+import {beginLoadSelectedImageAction, setSelectedImageAction} from './personalization_actions.js';
+import {getDailyRefreshCollectionId, setCustomWallpaperLayout, setDailyRefreshCollectionId, updateDailyRefreshWallpaper} from './personalization_controller.js';
 import {WallpaperLayout, WallpaperType} from './personalization_reducers.js';
 import {Paths} from './personalization_router_element.js';
 import {WithPersonalizationStore} from './personalization_store.js';
+
+/**
+ * Set up the observer to listen for wallpaper changes.
+ * @param {!chromeos.personalizationApp.mojom.WallpaperProviderInterface}
+ *     wallpaperProvider
+ * @param {!chromeos.personalizationApp.mojom.WallpaperObserverInterface} target
+ * @return {!chromeos.personalizationApp.mojom.WallpaperObserverReceiver}
+ */
+function initWallpaperObserver(wallpaperProvider, target) {
+  const receiver =
+      new chromeos.personalizationApp.mojom.WallpaperObserverReceiver(target);
+  wallpaperProvider.setWallpaperObserver(receiver.$.bindNewPipeAndPassRemote());
+  return receiver;
+}
 
 /**
  * Wallpaper images sometimes have a resolution suffix appended to the end of
@@ -41,7 +57,10 @@ function hasHttpScheme(url) {
   return url.startsWith('http://') || url.startsWith('https://');
 }
 
-/** @polymer */
+/**
+ * @polymer
+ * @implements {chromeos.personalizationApp.mojom.WallpaperObserverInterface}
+ */
 export class WallpaperSelected extends WithPersonalizationStore {
   static get is() {
     return 'wallpaper-selected';
@@ -170,6 +189,13 @@ export class WallpaperSelected extends WithPersonalizationStore {
         type: String,
         value: null,
       },
+
+      showPreviewButton_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('fullScreenPreviewEnabled');
+        }
+      }
     };
   }
 
@@ -177,22 +203,40 @@ export class WallpaperSelected extends WithPersonalizationStore {
     super();
     /** @private */
     this.wallpaperProvider_ = getWallpaperProvider();
+    /** @private */
+    this.wallpaperObserver_ = null;
   }
 
   /** @override */
   connectedCallback() {
     super.connectedCallback();
+    this.dispatch(beginLoadSelectedImageAction());
+    this.wallpaperObserver_ =
+        initWallpaperObserver(this.wallpaperProvider_, this);
     this.watch('error_', state => state.error);
     this.watch('image_', state => state.currentSelected);
     this.watch(
         'isLoading_',
-        state => Math.max(state.loading.selected, state.loading.setImage) > 0 ||
+        state => state.loading.setImage > 0 || state.loading.selected ||
             state.loading.refreshWallpaper);
     this.watch(
         'dailyRefreshCollectionId_', state => state.dailyRefresh.collectionId);
     this.updateFromStore();
-    getCurrentWallpaper(this.wallpaperProvider_, this.getStore());
     getDailyRefreshCollectionId(this.wallpaperProvider_, this.getStore());
+  }
+
+  /** @override */
+  disconnectedCallback() {
+    this.wallpaperObserver_.$.close();
+  }
+
+  /**
+   * Called when the wallpaper changes.
+   * @param {?chromeos.personalizationApp.mojom.CurrentWallpaper}
+   *     currentWallpaper
+   */
+  onWallpaperChanged(currentWallpaper) {
+    this.dispatch(setSelectedImageAction(currentWallpaper));
   }
 
   /**
@@ -334,12 +378,15 @@ export class WallpaperSelected extends WithPersonalizationStore {
    * @private
    */
   onClickLayoutIcon_(event) {
-    const layout = event.currentTarget.dataset.layout;
-    assert(layout === 'CENTER' || layout === 'FILL');
-    setCustomWallpaperLayout(
-        layout === 'CENTER' ? WallpaperLayout.kCenter :
-                              WallpaperLayout.kCenterCropped,
-        this.wallpaperProvider_, this.getStore());
+    const image = this.getState().currentSelected;
+    const layout =
+        this.getWallpaperLayoutEnum(event.currentTarget.dataset.layout);
+    if (image.layout === layout)
+      return;
+    assert(
+        layout === WallpaperLayout.kCenter ||
+        layout === WallpaperLayout.kCenterCropped);
+    setCustomWallpaperLayout(layout, this.wallpaperProvider_, this.getStore());
   }
 
   /**
@@ -485,6 +532,37 @@ export class WallpaperSelected extends WithPersonalizationStore {
       console.warn('Unable to get attribution from local storage.', key);
     }
     return attribution;
+  }
+
+  /**
+   * @param {string} layout
+   * @return {chromeos.personalizationApp.mojom.WallpaperLayout}
+   */
+  getWallpaperLayoutEnum(layout) {
+    switch (layout) {
+      case 'CENTER':
+        return WallpaperLayout.kCenter;
+      case 'FILL':
+        return WallpaperLayout.kCenterCropped;
+      default:
+        return WallpaperLayout.kCenter;
+    }
+  }
+
+  /**
+   * Return a container class depending on loading state.
+   * @param {boolean} isLoading
+   * @param {boolean} showImage
+   * @return {string}
+   * @private
+   */
+  getContainerClass_(isLoading, showImage) {
+    return this.showPlaceholders_(isLoading, showImage) ? 'loading' : '';
+  }
+
+  /** @private */
+  onClickPreview_() {
+    console.log('Full screen preview not implemented yet');
   }
 }
 

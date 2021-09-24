@@ -21,6 +21,7 @@
 #include "dawn_native/Error.h"
 #include "dawn_native/d3d12/BufferD3D12.h"
 #include "dawn_native/d3d12/CommandRecordingContext.h"
+#include "dawn_native/d3d12/D3D11on12Util.h"
 #include "dawn_native/d3d12/D3D12Error.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
 #include "dawn_native/d3d12/HeapD3D12.h"
@@ -202,6 +203,46 @@ namespace dawn_native { namespace d3d12 {
                 case wgpu::TextureFormat::BC7RGBAUnormSrgb:
                     return DXGI_FORMAT_BC7_TYPELESS;
 
+                case wgpu::TextureFormat::ETC2RGB8Unorm:
+                case wgpu::TextureFormat::ETC2RGB8UnormSrgb:
+                case wgpu::TextureFormat::ETC2RGB8A1Unorm:
+                case wgpu::TextureFormat::ETC2RGB8A1UnormSrgb:
+                case wgpu::TextureFormat::ETC2RGBA8Unorm:
+                case wgpu::TextureFormat::ETC2RGBA8UnormSrgb:
+                case wgpu::TextureFormat::EACR11Unorm:
+                case wgpu::TextureFormat::EACR11Snorm:
+                case wgpu::TextureFormat::EACRG11Unorm:
+                case wgpu::TextureFormat::EACRG11Snorm:
+
+                case wgpu::TextureFormat::ASTC4x4Unorm:
+                case wgpu::TextureFormat::ASTC4x4UnormSrgb:
+                case wgpu::TextureFormat::ASTC5x4Unorm:
+                case wgpu::TextureFormat::ASTC5x4UnormSrgb:
+                case wgpu::TextureFormat::ASTC5x5Unorm:
+                case wgpu::TextureFormat::ASTC5x5UnormSrgb:
+                case wgpu::TextureFormat::ASTC6x5Unorm:
+                case wgpu::TextureFormat::ASTC6x5UnormSrgb:
+                case wgpu::TextureFormat::ASTC6x6Unorm:
+                case wgpu::TextureFormat::ASTC6x6UnormSrgb:
+                case wgpu::TextureFormat::ASTC8x5Unorm:
+                case wgpu::TextureFormat::ASTC8x5UnormSrgb:
+                case wgpu::TextureFormat::ASTC8x6Unorm:
+                case wgpu::TextureFormat::ASTC8x6UnormSrgb:
+                case wgpu::TextureFormat::ASTC8x8Unorm:
+                case wgpu::TextureFormat::ASTC8x8UnormSrgb:
+                case wgpu::TextureFormat::ASTC10x5Unorm:
+                case wgpu::TextureFormat::ASTC10x5UnormSrgb:
+                case wgpu::TextureFormat::ASTC10x6Unorm:
+                case wgpu::TextureFormat::ASTC10x6UnormSrgb:
+                case wgpu::TextureFormat::ASTC10x8Unorm:
+                case wgpu::TextureFormat::ASTC10x8UnormSrgb:
+                case wgpu::TextureFormat::ASTC10x10Unorm:
+                case wgpu::TextureFormat::ASTC10x10UnormSrgb:
+                case wgpu::TextureFormat::ASTC12x10Unorm:
+                case wgpu::TextureFormat::ASTC12x10UnormSrgb:
+                case wgpu::TextureFormat::ASTC12x12Unorm:
+                case wgpu::TextureFormat::ASTC12x12UnormSrgb:
+
                 case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
                 case wgpu::TextureFormat::Stencil8:
                 case wgpu::TextureFormat::Undefined:
@@ -329,6 +370,46 @@ namespace dawn_native { namespace d3d12 {
             case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
                 return DXGI_FORMAT_NV12;
 
+            case wgpu::TextureFormat::ETC2RGB8Unorm:
+            case wgpu::TextureFormat::ETC2RGB8UnormSrgb:
+            case wgpu::TextureFormat::ETC2RGB8A1Unorm:
+            case wgpu::TextureFormat::ETC2RGB8A1UnormSrgb:
+            case wgpu::TextureFormat::ETC2RGBA8Unorm:
+            case wgpu::TextureFormat::ETC2RGBA8UnormSrgb:
+            case wgpu::TextureFormat::EACR11Unorm:
+            case wgpu::TextureFormat::EACR11Snorm:
+            case wgpu::TextureFormat::EACRG11Unorm:
+            case wgpu::TextureFormat::EACRG11Snorm:
+
+            case wgpu::TextureFormat::ASTC4x4Unorm:
+            case wgpu::TextureFormat::ASTC4x4UnormSrgb:
+            case wgpu::TextureFormat::ASTC5x4Unorm:
+            case wgpu::TextureFormat::ASTC5x4UnormSrgb:
+            case wgpu::TextureFormat::ASTC5x5Unorm:
+            case wgpu::TextureFormat::ASTC5x5UnormSrgb:
+            case wgpu::TextureFormat::ASTC6x5Unorm:
+            case wgpu::TextureFormat::ASTC6x5UnormSrgb:
+            case wgpu::TextureFormat::ASTC6x6Unorm:
+            case wgpu::TextureFormat::ASTC6x6UnormSrgb:
+            case wgpu::TextureFormat::ASTC8x5Unorm:
+            case wgpu::TextureFormat::ASTC8x5UnormSrgb:
+            case wgpu::TextureFormat::ASTC8x6Unorm:
+            case wgpu::TextureFormat::ASTC8x6UnormSrgb:
+            case wgpu::TextureFormat::ASTC8x8Unorm:
+            case wgpu::TextureFormat::ASTC8x8UnormSrgb:
+            case wgpu::TextureFormat::ASTC10x5Unorm:
+            case wgpu::TextureFormat::ASTC10x5UnormSrgb:
+            case wgpu::TextureFormat::ASTC10x6Unorm:
+            case wgpu::TextureFormat::ASTC10x6UnormSrgb:
+            case wgpu::TextureFormat::ASTC10x8Unorm:
+            case wgpu::TextureFormat::ASTC10x8UnormSrgb:
+            case wgpu::TextureFormat::ASTC10x10Unorm:
+            case wgpu::TextureFormat::ASTC10x10UnormSrgb:
+            case wgpu::TextureFormat::ASTC12x10Unorm:
+            case wgpu::TextureFormat::ASTC12x10UnormSrgb:
+            case wgpu::TextureFormat::ASTC12x12Unorm:
+            case wgpu::TextureFormat::ASTC12x12UnormSrgb:
+
             case wgpu::TextureFormat::Stencil8:
             case wgpu::TextureFormat::Undefined:
                 UNREACHABLE();
@@ -418,18 +499,20 @@ namespace dawn_native { namespace d3d12 {
     }
 
     // static
-    ResultOrError<Ref<Texture>> Texture::CreateExternalImage(Device* device,
-                                                             const TextureDescriptor* descriptor,
-                                                             ComPtr<ID3D12Resource> d3d12Texture,
-                                                             ExternalMutexSerial acquireMutexKey,
-                                                             ExternalMutexSerial releaseMutexKey,
-                                                             bool isSwapChainTexture,
-                                                             bool isInitialized) {
+    ResultOrError<Ref<Texture>> Texture::CreateExternalImage(
+        Device* device,
+        const TextureDescriptor* descriptor,
+        ComPtr<ID3D12Resource> d3d12Texture,
+        Ref<D3D11on12ResourceCacheEntry> d3d11on12Resource,
+        ExternalMutexSerial acquireMutexKey,
+        ExternalMutexSerial releaseMutexKey,
+        bool isSwapChainTexture,
+        bool isInitialized) {
         Ref<Texture> dawnTexture =
             AcquireRef(new Texture(device, descriptor, TextureState::OwnedExternal));
-        DAWN_TRY(dawnTexture->InitializeAsExternalTexture(descriptor, std::move(d3d12Texture),
-                                                          acquireMutexKey, releaseMutexKey,
-                                                          isSwapChainTexture));
+        DAWN_TRY(dawnTexture->InitializeAsExternalTexture(
+            descriptor, std::move(d3d12Texture), std::move(d3d11on12Resource), acquireMutexKey,
+            releaseMutexKey, isSwapChainTexture));
 
         // Importing a multi-planar format must be initialized. This is required because
         // a shared multi-planar format cannot be initialized by Dawn.
@@ -453,22 +536,20 @@ namespace dawn_native { namespace d3d12 {
         return std::move(dawnTexture);
     }
 
-    MaybeError Texture::InitializeAsExternalTexture(const TextureDescriptor* descriptor,
-                                                    ComPtr<ID3D12Resource> d3d12Texture,
-                                                    ExternalMutexSerial acquireMutexKey,
-                                                    ExternalMutexSerial releaseMutexKey,
-                                                    bool isSwapChainTexture) {
-        Device* dawnDevice = ToBackend(GetDevice());
-
-        ComPtr<IDXGIKeyedMutex> dxgiKeyedMutex;
-        DAWN_TRY_ASSIGN(dxgiKeyedMutex, dawnDevice->CreateKeyedMutexForTexture(d3d12Texture.Get()));
-
-        DAWN_TRY(CheckHRESULT(dxgiKeyedMutex->AcquireSync(uint64_t(acquireMutexKey), INFINITE),
+    MaybeError Texture::InitializeAsExternalTexture(
+        const TextureDescriptor* descriptor,
+        ComPtr<ID3D12Resource> d3d12Texture,
+        Ref<D3D11on12ResourceCacheEntry> d3d11on12Resource,
+        ExternalMutexSerial acquireMutexKey,
+        ExternalMutexSerial releaseMutexKey,
+        bool isSwapChainTexture) {
+        DAWN_TRY(CheckHRESULT(d3d11on12Resource->GetDXGIKeyedMutex()->AcquireSync(
+                                  uint64_t(acquireMutexKey), INFINITE),
                               "D3D12 acquiring shared mutex"));
 
         mAcquireMutexKey = acquireMutexKey;
         mReleaseMutexKey = releaseMutexKey;
-        mDxgiKeyedMutex = std::move(dxgiKeyedMutex);
+        mD3D11on12Resource = std::move(d3d11on12Resource);
         mSwapChainTexture = isSwapChainTexture;
 
         D3D12_RESOURCE_DESC desc = d3d12Texture->GetDesc();
@@ -481,7 +562,7 @@ namespace dawn_native { namespace d3d12 {
         // memory management.
         mResourceAllocation = {info, 0, std::move(d3d12Texture), nullptr};
 
-        DAWN_TRY(mResourceAllocation.SetDebugName("Dawn_ExternalTexture"));
+        SetLabelHelper("Dawn_ExternalTexture");
 
         return {};
     }
@@ -520,7 +601,7 @@ namespace dawn_native { namespace d3d12 {
                             ->AllocateMemory(D3D12_HEAP_TYPE_DEFAULT, resourceDescriptor,
                                              D3D12_RESOURCE_STATE_COMMON));
 
-        DAWN_TRY(mResourceAllocation.SetDebugName("Dawn_InternalTexture"));
+        SetLabelImpl();
 
         Device* device = ToBackend(GetDevice());
 
@@ -543,7 +624,8 @@ namespace dawn_native { namespace d3d12 {
         // memory management.
         mResourceAllocation = {info, 0, std::move(d3d12Texture), nullptr};
 
-        DAWN_TRY(mResourceAllocation.SetDebugName("Dawn_SwapChainTexture"));
+        SetLabelHelper("Dawn_SwapChainTexture");
+
         return {};
     }
 
@@ -583,9 +665,8 @@ namespace dawn_native { namespace d3d12 {
         // ID3D12SharingContract::Present.
         mSwapChainTexture = false;
 
-        if (mDxgiKeyedMutex != nullptr) {
-            mDxgiKeyedMutex->ReleaseSync(uint64_t(mReleaseMutexKey));
-            device->ReleaseKeyedMutexForTexture(std::move(mDxgiKeyedMutex));
+        if (mD3D11on12Resource != nullptr) {
+            mD3D11on12Resource->GetDXGIKeyedMutex()->ReleaseSync(uint64_t(mReleaseMutexKey));
         }
     }
 
@@ -754,7 +835,7 @@ namespace dawn_native { namespace d3d12 {
         // Textures with keyed mutexes can be written from other graphics queues. Hence, they
         // must be acquired before command list submission to ensure work from the other queues
         // has finished. See Device::ExecuteCommandContext.
-        if (mDxgiKeyedMutex != nullptr) {
+        if (mD3D11on12Resource != nullptr) {
             commandContext->AddToSharedTextureList(this);
         }
     }
@@ -1024,6 +1105,15 @@ namespace dawn_native { namespace d3d12 {
             GetDevice()->IncrementLazyClearCountForTesting();
         }
         return {};
+    }
+
+    void Texture::SetLabelHelper(const char* prefix) {
+        SetDebugName(ToBackend(GetDevice()), mResourceAllocation.GetD3D12Resource(), prefix,
+                     GetLabel());
+    }
+
+    void Texture::SetLabelImpl() {
+        SetLabelHelper("Dawn_InternalTexture");
     }
 
     void Texture::EnsureSubresourceContentInitialized(CommandRecordingContext* commandContext,

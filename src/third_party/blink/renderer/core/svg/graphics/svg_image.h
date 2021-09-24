@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_SVG_IMAGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_SVG_IMAGE_H_
 
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
@@ -167,9 +168,7 @@ class CORE_EXPORT SVGImage final : public Image {
             const cc::PaintFlags&,
             const FloatRect& dst_rect,
             const FloatRect& src_rect,
-            const ImageDrawOptions& draw_options,
-            ImageClampingMode,
-            ImageDecodingMode) override;
+            const ImageDrawOptions&) override;
   void DrawForContainer(const DrawInfo&,
                         cc::PaintCanvas*,
                         const cc::PaintFlags&,

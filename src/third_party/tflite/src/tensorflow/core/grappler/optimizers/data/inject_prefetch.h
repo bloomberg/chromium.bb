@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,15 +16,16 @@ limitations under the License.
 #ifndef TENSORFLOW_CORE_GRAPPLER_OPTIMIZERS_DATA_INJECT_PREFETCH_H_
 #define TENSORFLOW_CORE_GRAPPLER_OPTIMIZERS_DATA_INJECT_PREFETCH_H_
 
+#include "tensorflow/core/framework/attr_value.pb.h"
 #include "tensorflow/core/grappler/optimizers/data/optimizer_base.h"
 
 namespace tensorflow {
 namespace grappler {
 
-// This optimization adds `Prefetch(AUTOTUNE)` after all asynchronous tf.data
-// transformations. This reduces the problem of tuning buffer sizes of these
-// asynchronous transformations to tuning buffer sizes of the prefetch
-// transformation.
+constexpr char kAutotune[] = "autotune";
+
+// If autotune is ON and the last transformation in the input pipeline is not
+// `prefetch()`, this optimization adds `prefetch(AUTOTUNE)` after it.
 class InjectPrefetch : public TFDataOptimizerBase {
  public:
   InjectPrefetch() = default;
@@ -36,6 +37,17 @@ class InjectPrefetch : public TFDataOptimizerBase {
 
   Status Init(
       const tensorflow::RewriterConfig_CustomGraphOptimizer* config) override {
+    if (!config) return Status::OK();
+
+    const string& autotune = config->parameter_map().at(kAutotune).s();
+    if (autotune == "true") {
+      autotune_ = true;
+    } else if (autotune == "false") {
+      autotune_ = false;
+    } else {
+      return errors::InvalidArgument("Received an invalid value for parameter ",
+                                     kAutotune, ": ", autotune);
+    }
     return Status::OK();
   }
 
@@ -43,8 +55,8 @@ class InjectPrefetch : public TFDataOptimizerBase {
                                  GraphDef* output,
                                  OptimizationStats* stats) override;
 
-  void Feedback(Cluster* cluster, const GrapplerItem& item,
-                const GraphDef& optimize_output, double result) override;
+ private:
+  bool autotune_ = true;
 };
 
 }  // namespace grappler

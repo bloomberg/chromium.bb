@@ -23,6 +23,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_delegate.h"
 #include "net/base/upload_data_stream.h"
+#include "net/cert/x509_certificate.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/same_party_context.h"
@@ -34,6 +35,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_private_key.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request_context.h"
@@ -544,7 +546,8 @@ URLRequest::URLRequest(const GURL& url,
                        RequestPriority priority,
                        Delegate* delegate,
                        const URLRequestContext* context,
-                       NetworkTrafficAnnotationTag traffic_annotation)
+                       NetworkTrafficAnnotationTag traffic_annotation,
+                       bool is_for_websockets)
     : context_(context),
       net_log_(NetLogWithSource::Make(context->net_log(),
                                       NetLogSourceType::URL_REQUEST)),
@@ -564,6 +567,7 @@ URLRequest::URLRequest(const GURL& url,
       reporting_upload_depth_(0),
 #endif
       delegate_(delegate),
+      is_for_websockets_(is_for_websockets),
       status_(OK),
       is_pending_(false),
       is_redirecting_(false),

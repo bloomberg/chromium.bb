@@ -229,6 +229,7 @@ tint_unittests_source_set("tint_unittests_core_src") {
     "../src/intrinsic_table_test.cc",
     "../src/program_builder_test.cc",
     "../src/program_test.cc",
+    "../src/resolver/array_accessor_test.cc",
     "../src/resolver/assignment_validation_test.cc",
     "../src/resolver/atomics_test.cc",
     "../src/resolver/atomics_validation_test.cc",
@@ -286,6 +287,7 @@ tint_unittests_source_set("tint_unittests_core_src") {
     "../src/symbol_table_test.cc",
     "../src/symbol_test.cc",
     "../src/traits_test.cc",
+    "../src/transform/add_empty_entry_point_test.cc",
     "../src/transform/array_length_from_uniform_test.cc",
     "../src/transform/binding_remapper_test.cc",
     "../src/transform/calculate_array_length_test.cc",
@@ -299,6 +301,7 @@ tint_unittests_source_set("tint_unittests_core_src") {
     "../src/transform/for_loop_to_loop_test.cc",
     "../src/transform/inline_pointer_lets_test.cc",
     "../src/transform/loop_to_for_loop_test.cc",
+    "../src/transform/module_scope_var_to_entry_point_param_test.cc",
     "../src/transform/pad_array_elements_test.cc",
     "../src/transform/promote_initializers_to_const_var_test.cc",
     "../src/transform/renamer_test.cc",
@@ -317,6 +320,7 @@ tint_unittests_source_set("tint_unittests_core_src") {
     "../src/utils/io/command_test.cc",
     "../src/utils/io/tmpfile_test.cc",
     "../src/utils/math_test.cc",
+    "../src/utils/reverse_test.cc",
     "../src/utils/scoped_assignment_test.cc",
     "../src/utils/unique_vector_test.cc",
     "../src/writer/append_vector_test.cc",
@@ -376,7 +380,6 @@ tint_unittests_source_set("tint_unittests_spv_reader_src") {
 
 tint_unittests_source_set("tint_unittests_spv_writer_src") {
   sources = [
-    "../src/transform/spirv_test.cc",
     "../src/writer/spirv/binary_writer_test.cc",
     "../src/writer/spirv/builder_accessor_expression_test.cc",
     "../src/writer/spirv/builder_assign_test.cc",
@@ -544,7 +547,6 @@ tint_unittests_source_set("tint_unittests_wgsl_writer_src") {
 
 tint_unittests_source_set("tint_unittests_msl_writer_src") {
   sources = [
-    "../src/transform/msl_test.cc",
     "../src/writer/msl/generator_impl_array_accessor_test.cc",
     "../src/writer/msl/generator_impl_assign_test.cc",
     "../src/writer/msl/generator_impl_binary_test.cc",
@@ -583,7 +585,6 @@ tint_unittests_source_set("tint_unittests_msl_writer_src") {
 
 tint_unittests_source_set("tint_unittests_hlsl_writer_src") {
   sources = [
-    "../src/transform/hlsl_test.cc",
     "../src/writer/hlsl/generator_impl_array_accessor_test.cc",
     "../src/writer/hlsl/generator_impl_assign_test.cc",
     "../src/writer/hlsl/generator_impl_binary_test.cc",

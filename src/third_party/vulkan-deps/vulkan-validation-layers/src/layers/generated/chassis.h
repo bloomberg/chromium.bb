@@ -20,6 +20,7 @@
  * limitations under the License.
  *
  * Author: Mark Lobodzinski <mark@lunarg.com>
+ * Author: Nadav Geva <nadav.geva@amd.com>
  */
 #pragma once
 
@@ -1814,6 +1815,7 @@ VKAPI_ATTR VkResult VKAPI_CALL GetPipelineExecutableInternalRepresentationsKHR(
 
 
 
+
 #ifdef VK_ENABLE_BETA_EXTENSIONS
 
 VKAPI_ATTR void VKAPI_CALL CmdEncodeVideoKHR(
@@ -2888,6 +2890,7 @@ VKAPI_ATTR void VKAPI_CALL CmdSetVertexInputEXT(
     const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions);
 
 
+
 #ifdef VK_USE_PLATFORM_FUCHSIA
 
 VKAPI_ATTR VkResult VKAPI_CALL GetMemoryZirconHandleFUCHSIA(
@@ -3178,6 +3181,7 @@ typedef enum ValidationCheckDisables {
 
 typedef enum ValidationCheckEnables {
     VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ARM,
+    VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_AMD,
     VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ALL,
 } ValidationCheckEnables;
 
@@ -3209,6 +3213,7 @@ typedef enum EnableFlags {
     gpu_validation_reserve_binding_slot,
     best_practices,
     vendor_specific_arm,
+    vendor_specific_amd,
     debug_printf,
     sync_validation,
     // Insert new enables above this line

@@ -41,6 +41,7 @@
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_info.h"
@@ -78,9 +79,6 @@ constexpr const char kPrefManifest[] = "manifest";
 
 // The version number.
 constexpr const char kPrefManifestVersion[] = "manifest.version";
-
-// Indicates whether an extension is blocklisted.
-constexpr const char kPrefBlocklist[] = "blacklist";
 
 // The count of how many times we prompted the user to acknowledge an
 // extension.
@@ -586,9 +584,14 @@ bool ExtensionPrefs::ReadPrefAsBoolean(const std::string& extension_id,
   DCHECK_EQ(PrefType::kBool, pref.type);
 
   const base::DictionaryValue* ext = GetExtensionPref(extension_id);
-  if (!ext || !ext->GetBoolean(pref.name, out_value))
+  if (!ext)
     return false;
 
+  absl::optional<bool> value = ext->FindBoolPath(pref.name);
+  if (!value)
+    return false;
+
+  *out_value = *value;
   return true;
 }
 
@@ -658,9 +661,14 @@ bool ExtensionPrefs::ReadPrefAsBoolean(const std::string& extension_id,
                                        base::StringPiece pref_key,
                                        bool* out_value) const {
   const base::DictionaryValue* ext = GetExtensionPref(extension_id);
-  if (!ext || !ext->GetBoolean(pref_key, out_value))
+  if (!ext)
     return false;
 
+  absl::optional<bool> value = ext->FindBoolPath(pref_key);
+  if (!value)
+    return false;
+
+  *out_value = *value;
   return true;
 }
 
@@ -1074,10 +1082,6 @@ base::StringPiece ExtensionPrefs::GetPrefBlocklistAcknowledgedKey() {
   return kPrefBlocklistAcknowledged;
 }
 
-base::StringPiece ExtensionPrefs::GetPrefBlocklistKey() {
-  return kPrefBlocklist;
-}
-
 namespace {
 
 // Serializes a 64bit integer as a string value.
@@ -1161,9 +1165,8 @@ void ExtensionPrefs::SetLastActivePingDay(const std::string& extension_id,
 
 bool ExtensionPrefs::GetActiveBit(const std::string& extension_id) const {
   const base::DictionaryValue* dictionary = GetExtensionPref(extension_id);
-  bool result = false;
-  if (dictionary && dictionary->GetBoolean(kActiveBit, &result))
-    return result;
+  if (dictionary)
+    return dictionary->FindBoolKey(kActiveBit).value_or(false);
   return false;
 }
 
@@ -1260,11 +1263,9 @@ void ExtensionPrefs::SetExtensionRunning(const std::string& extension_id,
 
 bool ExtensionPrefs::IsExtensionRunning(const std::string& extension_id) const {
   const base::DictionaryValue* extension = GetExtensionPref(extension_id);
-  if (!extension)
-    return false;
-  bool running = false;
-  extension->GetBoolean(kPrefRunning, &running);
-  return running;
+  if (extension)
+    return extension->FindBoolKey(kPrefRunning).value_or(false);
+  return false;
 }
 
 void ExtensionPrefs::SetIsActive(const std::string& extension_id,
@@ -1275,11 +1276,9 @@ void ExtensionPrefs::SetIsActive(const std::string& extension_id,
 
 bool ExtensionPrefs::IsActive(const std::string& extension_id) const {
   const base::DictionaryValue* extension = GetExtensionPref(extension_id);
-  if (!extension)
-    return false;
-  bool is_active = false;
-  extension->GetBoolean(kIsActive, &is_active);
-  return is_active;
+  if (extension)
+    return extension->FindBoolKey(kIsActive).value_or(false);
+  return false;
 }
 
 bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) const {
@@ -1684,18 +1683,16 @@ ExtensionPrefs::GetAllDelayedInstallInfo() const {
 bool ExtensionPrefs::IsFromWebStore(
     const std::string& extension_id) const {
   const base::DictionaryValue* dictionary = GetExtensionPref(extension_id);
-  bool result = false;
-  if (dictionary && dictionary->GetBoolean(kPrefFromWebStore, &result))
-    return result;
+  if (dictionary)
+    return dictionary->FindBoolKey(kPrefFromWebStore).value_or(false);
   return false;
 }
 
 bool ExtensionPrefs::IsFromBookmark(
     const std::string& extension_id) const {
   const base::DictionaryValue* dictionary = GetExtensionPref(extension_id);
-  bool result = false;
-  if (dictionary && dictionary->GetBoolean(kPrefFromBookmark, &result))
-    return result;
+  if (dictionary)
+    return dictionary->FindBoolKey(kPrefFromBookmark).value_or(false);
   return false;
 }
 
@@ -1729,18 +1726,15 @@ int ExtensionPrefs::GetDelayedInstallCreationFlags(
 bool ExtensionPrefs::WasInstalledByDefault(
     const std::string& extension_id) const {
   const base::DictionaryValue* dictionary = GetExtensionPref(extension_id);
-  bool result = false;
-  if (dictionary &&
-      dictionary->GetBoolean(kPrefWasInstalledByDefault, &result))
-    return result;
-  return false;
+  if (!dictionary)
+    return false;
+  return dictionary->FindBoolKey(kPrefWasInstalledByDefault).value_or(false);
 }
 
 bool ExtensionPrefs::WasInstalledByOem(const std::string& extension_id) const {
   const base::DictionaryValue* dictionary = GetExtensionPref(extension_id);
-  bool result = false;
-  if (dictionary && dictionary->GetBoolean(kPrefWasInstalledByOem, &result))
-    return result;
+  if (dictionary)
+    return dictionary->FindBoolKey(kPrefWasInstalledByOem).value_or(false);
   return false;
 }
 
@@ -2235,6 +2229,8 @@ ExtensionPrefs::ExtensionPrefs(
   MigrateYoutubeOffBookmarkApps();
 
   MigrateDeprecatedDisableReasons();
+
+  MigrateOldBlocklistPrefs();
 }
 
 AppSorting* ExtensionPrefs::app_sorting() const {
@@ -2268,6 +2264,9 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterStringPref(pref_names::kLastChromeVersion, std::string());
   registry->RegisterDictionaryPref(kInstallSignature);
   registry->RegisterListPref(kExternalUninstalls);
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+  registry->RegisterBooleanPref(pref_names::kChromeAppsEnabled, false);
+#endif
 
   registry->RegisterListPref(pref_names::kNativeMessagingBlocklist);
   registry->RegisterListPref(pref_names::kNativeMessagingAllowlist);
@@ -2327,7 +2326,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     int install_flags,
     const std::string& install_parameter,
     const declarative_net_request::RulesetInstallPrefs& ruleset_install_prefs,
-    prefs::DictionaryValueUpdate* extension_dict) const {
+    prefs::DictionaryValueUpdate* extension_dict) {
   extension_dict->SetInteger(kPrefState, initial_state);
   extension_dict->SetInteger(kPrefLocation,
                              static_cast<int>(extension->location()));
@@ -2340,8 +2339,13 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
                              extension->was_installed_by_oem());
   extension_dict->SetString(
       kPrefInstallTime, base::NumberToString(install_time.ToInternalValue()));
-  if (install_flags & kInstallFlagIsBlocklistedForMalware)
-    extension_dict->SetBoolean(kPrefBlocklist, true);
+  if (install_flags & kInstallFlagIsBlocklistedForMalware) {
+    // Keep the acknowledged state during an update, because we wouldn't want to
+    // reset the acknowledged state if the extension was already on the
+    // blocklist.
+    blocklist_prefs::SetSafeBrowsingExtensionBlocklistStateKeepAcknowledged(
+        extension->id(), BitMapBlocklistState::BLOCKLISTED_MALWARE, this);
+  }
 
   // If |ruleset_install_prefs| is empty, explicitly remove
   // the |kDNRStaticRulesetPref| entry to ensure any remaining old entries from
@@ -2668,6 +2672,26 @@ void ExtensionPrefs::MigrateToNewExternalUninstallPref() {
       current_ids->Append(id);
 
     DeleteExtensionPrefs(id);
+  }
+}
+
+void ExtensionPrefs::MigrateOldBlocklistPrefs() {
+  static constexpr char kLegacyBlocklistPref[] = "blacklist";
+  std::unique_ptr<ExtensionsInfo> extensions_info(GetInstalledExtensionsInfo());
+
+  for (const auto& info : *extensions_info) {
+    const ExtensionId& extension_id = info->extension_id;
+    bool was_blocklisted = false;
+    if (!ReadPrefAsBoolean(extension_id, kLegacyBlocklistPref,
+                           &was_blocklisted))
+      continue;  // Pref wasn't present.
+    // Migrate the old value.
+    if (was_blocklisted) {
+      blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+          extension_id, BitMapBlocklistState::BLOCKLISTED_MALWARE, this);
+    }
+    UpdateExtensionPref(extension_id, kLegacyBlocklistPref, nullptr);
+    DeleteExtensionPrefsIfPrefEmpty(extension_id);
   }
 }
 

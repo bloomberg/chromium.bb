@@ -71,23 +71,27 @@ struct FeaturePointer {
     FeaturePointer(VkBool32 VkPhysicalDeviceFragmentDensityMapFeaturesEXT::*ptr)
         : IsEnabled([=](const DeviceFeatures &features) { return features.fragment_density_map_features.*ptr; }) {}
     FeaturePointer(VkBool32 VkPhysicalDeviceBufferDeviceAddressFeaturesEXT::*ptr)
-        : IsEnabled([=](const DeviceFeatures &features) { return features.buffer_device_address_ext.*ptr; }) {}
+        : IsEnabled([=](const DeviceFeatures &features) { return features.buffer_device_address_ext_features.*ptr; }) {}
     FeaturePointer(VkBool32 VkPhysicalDeviceFragmentShadingRateFeaturesKHR::*ptr)
         : IsEnabled([=](const DeviceFeatures &features) { return features.fragment_shading_rate_features.*ptr; }) {}
     FeaturePointer(VkBool32 VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL::*ptr)
         : IsEnabled([=](const DeviceFeatures &features) { return features.shader_integer_functions2_features.*ptr; }) {}
     FeaturePointer(VkBool32 VkPhysicalDeviceShaderSMBuiltinsFeaturesNV::*ptr)
-        : IsEnabled([=](const DeviceFeatures &features) { return features.shader_sm_builtins_feature.*ptr; }) {}
+        : IsEnabled([=](const DeviceFeatures &features) { return features.shader_sm_builtins_features.*ptr; }) {}
     FeaturePointer(VkBool32 VkPhysicalDeviceShadingRateImageFeaturesNV::*ptr)
-        : IsEnabled([=](const DeviceFeatures &features) { return features.shading_rate_image.*ptr; }) {}
+        : IsEnabled([=](const DeviceFeatures &features) { return features.shading_rate_image_features.*ptr; }) {}
     FeaturePointer(VkBool32 VkPhysicalDeviceShaderAtomicFloatFeaturesEXT::*ptr)
-        : IsEnabled([=](const DeviceFeatures &features) { return features.shader_atomic_float_feature.*ptr; }) {}
+        : IsEnabled([=](const DeviceFeatures &features) { return features.shader_atomic_float_features.*ptr; }) {}
     FeaturePointer(VkBool32 VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT::*ptr)
-        : IsEnabled([=](const DeviceFeatures &features) { return features.shader_image_atomic_int64_feature.*ptr; }) {}
+        : IsEnabled([=](const DeviceFeatures &features) { return features.shader_image_atomic_int64_features.*ptr; }) {}
     FeaturePointer(VkBool32 VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR::*ptr)
         : IsEnabled([=](const DeviceFeatures &features) { return features.workgroup_memory_explicit_layout_features.*ptr; }) {}
     FeaturePointer(VkBool32 VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT::*ptr)
         : IsEnabled([=](const DeviceFeatures &features) { return features.shader_atomic_float2_features.*ptr; }) {}
+    FeaturePointer(VkBool32 VkPhysicalDeviceRayTracingMotionBlurFeaturesNV::*ptr)
+        : IsEnabled([=](const DeviceFeatures &features) { return features.ray_tracing_motion_blur_features.*ptr; }) {}
+    FeaturePointer(VkBool32 VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR::*ptr)
+        : IsEnabled([=](const DeviceFeatures &features) { return features.shader_integer_dot_product_features.*ptr; }) {}
 };
 
 // Each instance of the struct will only have a singel field non-null
@@ -129,6 +133,10 @@ static const std::unordered_multimap<uint32_t, RequiredSpirvInfo> spirvCapabilit
     {spv::CapabilityDerivativeControl, {VK_API_VERSION_1_0, nullptr, nullptr, ""}},
     {spv::CapabilityDeviceGroup, {VK_API_VERSION_1_1, nullptr, nullptr, ""}},
     {spv::CapabilityDeviceGroup, {0, nullptr, &DeviceExtensions::vk_khr_device_group, ""}},
+    {spv::CapabilityDotProductInput4x8BitKHR, {0, &VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR::shaderIntegerDotProduct, nullptr, ""}},
+    {spv::CapabilityDotProductInput4x8BitPackedKHR, {0, &VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR::shaderIntegerDotProduct, nullptr, ""}},
+    {spv::CapabilityDotProductInputAllKHR, {0, &VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR::shaderIntegerDotProduct, nullptr, ""}},
+    {spv::CapabilityDotProductKHR, {0, &VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR::shaderIntegerDotProduct, nullptr, ""}},
     {spv::CapabilityDrawParameters, {0, &VkPhysicalDeviceVulkan11Features::shaderDrawParameters, nullptr, ""}},
     {spv::CapabilityDrawParameters, {0, nullptr, &DeviceExtensions::vk_khr_shader_draw_parameters, ""}},
     {spv::CapabilityFloat16, {0, &VkPhysicalDeviceVulkan12Features::shaderFloat16, nullptr, ""}},
@@ -188,8 +196,7 @@ static const std::unordered_multimap<uint32_t, RequiredSpirvInfo> spirvCapabilit
     {spv::CapabilityPhysicalStorageBufferAddresses, {0, &VkPhysicalDeviceBufferDeviceAddressFeaturesEXT::bufferDeviceAddress, nullptr, ""}},
     {spv::CapabilityRayQueryKHR, {0, &VkPhysicalDeviceRayQueryFeaturesKHR::rayQuery, nullptr, ""}},
     {spv::CapabilityRayTracingKHR, {0, &VkPhysicalDeviceRayTracingPipelineFeaturesKHR::rayTracingPipeline, nullptr, ""}},
-    // Not found in current SPIR-V Headers
-    //    {spv::CapabilityRayTracingMotionBlurNV, {0, &VkPhysicalDeviceRayTracingMotionBlurFeaturesNV::rayTracingMotionBlur, nullptr, ""}},
+    {spv::CapabilityRayTracingMotionBlurNV, {0, &VkPhysicalDeviceRayTracingMotionBlurFeaturesNV::rayTracingMotionBlur, nullptr, ""}},
     {spv::CapabilityRayTracingNV, {0, nullptr, &DeviceExtensions::vk_nv_ray_tracing, ""}},
     {spv::CapabilityRayTraversalPrimitiveCullingKHR, {0, &VkPhysicalDeviceRayTracingPipelineFeaturesKHR::rayTraversalPrimitiveCulling, nullptr, ""}},
     {spv::CapabilityRoundingModeRTE, {0, nullptr, nullptr, "(VkPhysicalDeviceVulkan12Properties::shaderRoundingModeRTEFloat16 & VK_TRUE) != 0"}},
@@ -293,6 +300,7 @@ static const std::unordered_multimap<std::string, RequiredSpirvInfo> spirvExtens
     {"SPV_KHR_float_controls", {VK_API_VERSION_1_2, nullptr, nullptr, ""}},
     {"SPV_KHR_float_controls", {0, nullptr, &DeviceExtensions::vk_khr_shader_float_controls, ""}},
     {"SPV_KHR_fragment_shading_rate", {0, nullptr, &DeviceExtensions::vk_khr_fragment_shading_rate, ""}},
+    {"SPV_KHR_integer_dot_product", {0, nullptr, &DeviceExtensions::vk_khr_shader_integer_dot_product, ""}},
     {"SPV_KHR_multiview", {VK_API_VERSION_1_1, nullptr, nullptr, ""}},
     {"SPV_KHR_multiview", {0, nullptr, &DeviceExtensions::vk_khr_multiview, ""}},
     {"SPV_KHR_non_semantic_info", {0, nullptr, &DeviceExtensions::vk_khr_shader_non_semantic_info, ""}},
@@ -365,6 +373,14 @@ static inline const char* string_SpvCapability(uint32_t input_value) {
             return "DerivativeControl";
          case spv::CapabilityDeviceGroup:
             return "DeviceGroup";
+         case spv::CapabilityDotProductInput4x8BitKHR:
+            return "DotProductInput4x8BitKHR";
+         case spv::CapabilityDotProductInput4x8BitPackedKHR:
+            return "DotProductInput4x8BitPackedKHR";
+         case spv::CapabilityDotProductInputAllKHR:
+            return "DotProductInputAllKHR";
+         case spv::CapabilityDotProductKHR:
+            return "DotProductKHR";
          case spv::CapabilityDrawParameters:
             return "DrawParameters";
          case spv::CapabilityFloat16:
@@ -467,6 +483,8 @@ static inline const char* string_SpvCapability(uint32_t input_value) {
             return "RayQueryKHR";
          case spv::CapabilityRayTracingKHR:
             return "RayTracingKHR";
+         case spv::CapabilityRayTracingMotionBlurNV:
+            return "RayTracingMotionBlurNV";
          case spv::CapabilityRayTracingNV:
             return "RayTracingNV";
          case spv::CapabilityRayTraversalPrimitiveCullingKHR:

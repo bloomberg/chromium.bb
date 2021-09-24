@@ -62,6 +62,7 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   bool ValidateAddressToken(absl::string_view token) const override;
   void OnNewTokenReceived(absl::string_view token) override;
   bool ShouldSendExpectCTHeader() const override;
+  bool DidCertMatchSni() const override;
   const ProofSource::Details* ProofSourceDetails() const override;
 
   // From QuicCryptoServerStreamBase and TlsHandshaker
@@ -169,10 +170,11 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   bool HasValidSignature(size_t max_signature_size) const;
 
   // ProofSourceHandleCallback implementation:
-  void OnSelectCertificateDone(
-      bool ok, bool is_sync, const ProofSource::Chain* chain,
-      absl::string_view handshake_hints,
-      absl::string_view ticket_encryption_key) override;
+  void OnSelectCertificateDone(bool ok, bool is_sync,
+                               const ProofSource::Chain* chain,
+                               absl::string_view handshake_hints,
+                               absl::string_view ticket_encryption_key,
+                               bool cert_matched_sni) override;
 
   void OnComputeSignatureDone(
       bool ok,
@@ -188,9 +190,6 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
 
   void SetIgnoreTicketOpen(bool value) { ignore_ticket_open_ = value; }
 
-  const bool allow_ignore_ticket_open_ =
-      GetQuicReloadableFlag(quic_tls_allow_ignore_ticket_open);
-
  private:
   class QUIC_EXPORT_PRIVATE DecryptCallback
       : public ProofSource::DecryptCallback {
@@ -200,6 +199,11 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
 
     // If called, Cancel causes the pending callback to be a no-op.
     void Cancel();
+
+    // Return true if either
+    // - Cancel() has been called.
+    // - Run() has been called, or is in the middle of it.
+    bool IsDone() const { return handshaker_ == nullptr; }
 
    private:
     TlsServerHandshaker* handshaker_;
@@ -259,22 +263,12 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
           return;
         }
 
-        if (GetQuicReloadableFlag(quic_run_default_signature_callback_once)) {
-          QUIC_RELOADABLE_FLAG_COUNT(quic_run_default_signature_callback_once);
-          DefaultProofSourceHandle* handle = handle_;
-          handle_ = nullptr;
+        DefaultProofSourceHandle* handle = handle_;
+        handle_ = nullptr;
 
-          handle->signature_callback_ = nullptr;
-          if (handle->handshaker_ != nullptr) {
-            handle->handshaker_->OnComputeSignatureDone(
-                ok, is_sync_, std::move(signature), std::move(details));
-          }
-          return;
-        }
-
-        handle_->signature_callback_ = nullptr;
-        if (handle_->handshaker_ != nullptr) {
-          handle_->handshaker_->OnComputeSignatureDone(
+        handle->signature_callback_ = nullptr;
+        if (handle->handshaker_ != nullptr) {
+          handle->handshaker_->OnComputeSignatureDone(
               ok, is_sync_, std::move(signature), std::move(details));
         }
       }
@@ -321,6 +315,11 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   }
   QuicTime now() const { return session()->GetClock()->Now(); }
 
+  QuicConnectionContext* connection_context() {
+    QUICHE_DCHECK(restore_connection_context_in_callbacks_);
+    return session()->connection()->context();
+  }
+
   std::unique_ptr<ProofSourceHandle> proof_source_handle_;
   ProofSource* proof_source_;
 
@@ -365,6 +364,10 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
       crypto_negotiated_params_;
   TlsServerConnection tls_connection_;
   const QuicCryptoServerConfig* crypto_config_;  // Unowned.
+  const bool restore_connection_context_in_callbacks_ =
+      GetQuicReloadableFlag(quic_tls_restore_connection_context_in_callbacks);
+
+  bool cert_matched_sni_ = false;
 };
 
 }  // namespace quic

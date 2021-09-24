@@ -13,14 +13,19 @@
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/signin/public/base/signin_switches.h"
+#include "components/sync/base/pref_names.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/policy/policy_util.h"
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_constants.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
@@ -69,8 +74,11 @@ class SigninUtilsTest : public PlatformTest {
     return prefs;
   }
 
+  PrefService* GetLocalState() { return scoped_testing_local_state_.Get(); }
+
  protected:
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   ChromeAccountManagerService* account_manager_service_;
 };
@@ -240,19 +248,15 @@ TEST_F(SigninUtilsTest, TestWillNotShowIfDisabledByPolicy) {
   const base::Version version_1_0("1.0");
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->AddIdentities(@[ @"foo1" ]);
-  chrome_browser_state_->GetPrefs()->SetBoolean(prefs::kSigninAllowedByPolicy,
-                                                false);
+  GetLocalState()->SetInteger(prefs::kBrowserSigninPolicy,
+                              static_cast<int>(BrowserSigninMode::kDisabled));
 
   EXPECT_FALSE(signin::ShouldPresentUserSigninUpgrade(
       chrome_browser_state_.get(), version_1_0));
 }
 
-// signin::IsSigninAllowed should respect the kSigninAllowed pref with MICE
-// enabled.
+// signin::IsSigninAllowed should respect the kSigninAllowed pref.
 TEST_F(SigninUtilsTest, TestSigninAllowedPref) {
-  base::test::ScopedFeatureList scoped_feature;
-  scoped_feature.InitAndEnableFeature(signin::kMobileIdentityConsistency);
-
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->AddIdentities(@[ @"foo", @"bar" ]);
   // Sign-in is allowed by default.
@@ -264,20 +268,18 @@ TEST_F(SigninUtilsTest, TestSigninAllowedPref) {
       signin::IsSigninAllowed(chrome_browser_state_.get()->GetPrefs()));
 }
 
-// signin::IsSigninAllowedByPolicy should respect the kSigninAllowedByPolicy
+// signin::IsSigninAllowedByPolicy should respect the kBrowserSigninPolicy
 // pref.
 TEST_F(SigninUtilsTest, TestSigninAllowedByPolicyPref) {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->AddIdentities(@[ @"foo", @"bar" ]);
   // Sign-in is allowed by default.
-  EXPECT_TRUE(
-      signin::IsSigninAllowedByPolicy(chrome_browser_state_.get()->GetPrefs()));
+  EXPECT_TRUE(signin::IsSigninAllowedByPolicy());
 
   // When sign-in is disabled by policy, the accessor should return false.
-  chrome_browser_state_->GetPrefs()->SetBoolean(prefs::kSigninAllowedByPolicy,
-                                                false);
-  EXPECT_FALSE(
-      signin::IsSigninAllowedByPolicy(chrome_browser_state_.get()->GetPrefs()));
+  GetLocalState()->SetInteger(prefs::kBrowserSigninPolicy,
+                              static_cast<int>(BrowserSigninMode::kDisabled));
+  EXPECT_FALSE(signin::IsSigninAllowedByPolicy());
   EXPECT_FALSE(
       signin::IsSigninAllowed(chrome_browser_state_.get()->GetPrefs()));
 
@@ -285,8 +287,7 @@ TEST_F(SigninUtilsTest, TestSigninAllowedByPolicyPref) {
   // changed the accessor should return false.
   chrome_browser_state_->GetPrefs()->SetBoolean(prefs::kSigninAllowed, true);
 
-  EXPECT_FALSE(
-      signin::IsSigninAllowedByPolicy(chrome_browser_state_.get()->GetPrefs()));
+  EXPECT_FALSE(signin::IsSigninAllowedByPolicy());
   EXPECT_FALSE(
       signin::IsSigninAllowed(chrome_browser_state_.get()->GetPrefs()));
 }
@@ -305,16 +306,79 @@ TEST_F(SigninUtilsTest, TestWillNotShowWhenPromosDisabled) {
       chrome_browser_state_.get(), version_1_0));
 }
 
-// signin::IsSigninAllowed should not use kSigninAllowed pref when MICE is
-// disabled.
-TEST_F(SigninUtilsTest, TestSigninAllowedPrefPreMICE) {
-  base::test::ScopedFeatureList scoped_feature;
-  scoped_feature.InitAndDisableFeature(signin::kMobileIdentityConsistency);
+// signin::GetPrimaryIdentitySigninState for a signed-out user should
+// return the signed out state.
+TEST_F(SigninUtilsTest, TestGetPrimaryIdentitySigninStateSignedOut) {
+  IdentitySigninState state =
+      signin::GetPrimaryIdentitySigninState(chrome_browser_state_.get());
+  EXPECT_EQ(IdentitySigninStateSignedOut, state);
+}
 
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-      ->AddIdentities(@[ @"foo", @"bar" ]);
-  // Sign-in is allowed by default.
-  EXPECT_TRUE(signin::IsSigninAllowed(chrome_browser_state_.get()->GetPrefs()));
+// signin::GetPrimaryIdentitySigninState for a signed-in user should
+// return the signed-in, sync disabled state.
+TEST_F(SigninUtilsTest, TestGetPrimaryIdentitySigninStateSignedInSyncDisabled) {
+  FakeChromeIdentity* identity =
+      [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
+                                     gaiaID:@"foo1ID"
+                                       name:@"Fake Foo 1"];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      identity);
+  AuthenticationService* authentication_service =
+      AuthenticationServiceFactory::GetForBrowserState(
+          chrome_browser_state_.get());
+  authentication_service->SignIn(identity);
+
+  IdentitySigninState state =
+      signin::GetPrimaryIdentitySigninState(chrome_browser_state_.get());
+  EXPECT_EQ(IdentitySigninStateSignedInWithSyncDisabled, state);
+}
+
+// signin::GetPrimaryIdentitySigninState for a syncing user who has
+// completed the sync setup should return the signed-in, sync enabled state.
+TEST_F(SigninUtilsTest,
+       TestGetPrimaryIdentitySigninStateSyncGrantedSetupComplete) {
+  FakeChromeIdentity* identity =
+      [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
+                                     gaiaID:@"foo1ID"
+                                       name:@"Fake Foo 1"];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      identity);
+  AuthenticationService* authentication_service =
+      AuthenticationServiceFactory::GetForBrowserState(
+          chrome_browser_state_.get());
+  authentication_service->SignIn(identity);
+  authentication_service->GrantSyncConsent(identity);
+  chrome_browser_state_->GetPrefs()->SetBoolean(
+      syncer::prefs::kSyncFirstSetupComplete, true);
+
+  IdentitySigninState state =
+      signin::GetPrimaryIdentitySigninState(chrome_browser_state_.get());
+  EXPECT_EQ(IdentitySigninStateSignedInWithSyncEnabled, state);
+
+  chrome_browser_state_->GetPrefs()->ClearPref(
+      syncer::prefs::kSyncFirstSetupComplete);
+}
+
+// Regression test for crbug.com/1248042.
+// signin::GetPrimaryIdentitySigninState for a syncing user who has not
+// completed the sync setup (due to a crash while in advanced settings) should
+// return the signed-in, sync disabled state.
+TEST_F(SigninUtilsTest, TestGetPrimaryIdentitySigninStateSyncGranted) {
+  FakeChromeIdentity* identity =
+      [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
+                                     gaiaID:@"foo1ID"
+                                       name:@"Fake Foo 1"];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      identity);
+  AuthenticationService* authentication_service =
+      AuthenticationServiceFactory::GetForBrowserState(
+          chrome_browser_state_.get());
+  authentication_service->SignIn(identity);
+  authentication_service->GrantSyncConsent(identity);
+
+  IdentitySigninState state =
+      signin::GetPrimaryIdentitySigninState(chrome_browser_state_.get());
+  EXPECT_EQ(IdentitySigninStateSignedInWithSyncDisabled, state);
 }
 
 }  // namespace

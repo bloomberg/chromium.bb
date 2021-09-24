@@ -455,6 +455,19 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
       shill_dictionary, std::move(callback), std::move(error_callback));
 }
 
+void ManagedNetworkConfigurationHandlerImpl::ConfigurePolicyNetwork(
+    const base::Value& shill_properties,
+    base::OnceClosure callback) const {
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
+  network_configuration_handler_->CreateShillConfiguration(
+      shill_properties,
+      base::BindOnce(
+          &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,
+          weak_ptr_factory_.GetWeakPtr(), std::move(split_callback.first)),
+      base::BindOnce(&LogErrorWithDictAndCallCallback,
+                     std::move(split_callback.second), FROM_HERE));
+}
+
 void ManagedNetworkConfigurationHandlerImpl::RemoveConfiguration(
     const std::string& service_path,
     base::OnceClosure callback,
@@ -480,7 +493,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
     ::onc::ONCSource onc_source,
     const std::string& userhash,
     const base::Value& network_configs_onc,
-    const base::DictionaryValue& global_network_config) {
+    const base::Value& global_network_config) {
   VLOG(1) << "Setting policies from: " << ToDebugString(onc_source, userhash);
 
   // |userhash| must be empty for device policies.
@@ -496,16 +509,17 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
   policies->global_network_config.MergeDictionary(&global_network_config);
 
   // Update prohibited technologies.
-  const base::ListValue* prohibited_list = nullptr;
-  if (policies->global_network_config.GetListWithoutPathExpansion(
-          ::onc::global_network_config::kDisableNetworkTypes,
-          &prohibited_list) &&
-      prohibited_technologies_handler_) {
-    // Prohibited technologies are only allowed in device policy.
-    DCHECK_EQ(::onc::ONC_SOURCE_DEVICE_POLICY, onc_source);
+  if (prohibited_technologies_handler_) {
+    const base::Value* prohibited_list =
+        policies->global_network_config.FindListKey(
+            ::onc::global_network_config::kDisableNetworkTypes);
+    if (prohibited_list) {
+      // Prohibited technologies are only allowed in device policy.
+      DCHECK_EQ(::onc::ONC_SOURCE_DEVICE_POLICY, onc_source);
 
-    prohibited_technologies_handler_->SetProhibitedTechnologies(
-        prohibited_list);
+      prohibited_technologies_handler_->SetProhibitedTechnologies(
+          *prohibited_list);
+    }
   }
 
   GuidToPolicyMap old_per_network_config;
@@ -621,14 +635,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnProfileRemoved(
 void ManagedNetworkConfigurationHandlerImpl::CreateConfigurationFromPolicy(
     const base::Value& shill_properties,
     base::OnceClosure callback) {
-  auto split_callback = base::SplitOnceCallback(std::move(callback));
-  network_configuration_handler_->CreateShillConfiguration(
-      shill_properties,
-      base::BindOnce(
-          &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,
-          weak_ptr_factory_.GetWeakPtr(), std::move(split_callback.first)),
-      base::BindOnce(&LogErrorWithDictAndCallCallback,
-                     std::move(split_callback.second), FROM_HERE));
+  ConfigurePolicyNetwork(shill_properties, std::move(callback));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::

@@ -10,6 +10,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as DataGrid from '../../ui/components/data_grid/data_grid.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
@@ -26,7 +27,7 @@ const UIStrings = {
   * the particular protocol message was travelling. Values in this column will either be 'sent' or
   * 'received'.
   */
-  direction: 'Direction',
+  type: 'Type',
   /**
   * @description Text in Protocol Monitor of the Protocol Monitor tab. Noun relating to a network request.
   */
@@ -157,26 +158,26 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     const dataGridInitialData: DataGrid.DataGridController.DataGridControllerData = {
       columns: [
         {
+          id: 'type',
+          title: i18nString(UIStrings.type),
+          sortable: true,
+          widthWeighting: 1,
+          visible: true,
+          hideable: true,
+        },
+        {
           id: 'method',
           title: i18nString(UIStrings.method),
           sortable: false,
-          widthWeighting: 1,
+          widthWeighting: 5,
           visible: true,
           hideable: false,
-        },
-        {
-          id: 'direction',
-          title: i18nString(UIStrings.direction),
-          sortable: true,
-          widthWeighting: 1,
-          visible: false,
-          hideable: true,
         },
         {
           id: 'request',
           title: i18nString(UIStrings.request),
           sortable: false,
-          widthWeighting: 1,
+          widthWeighting: 5,
           visible: true,
           hideable: true,
         },
@@ -184,7 +185,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
           id: 'response',
           title: i18nString(UIStrings.response),
           sortable: false,
-          widthWeighting: 1,
+          widthWeighting: 5,
           visible: true,
           hideable: true,
         },
@@ -192,7 +193,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
           id: 'timestamp',
           title: i18nString(UIStrings.timestamp),
           sortable: true,
-          widthWeighting: 1,
+          widthWeighting: 5,
           visible: false,
           hideable: true,
         },
@@ -200,7 +201,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
           id: 'target',
           title: i18nString(UIStrings.target),
           sortable: true,
-          widthWeighting: 1,
+          widthWeighting: 5,
           visible: false,
           hideable: true,
         },
@@ -208,7 +209,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
           id: 'session',
           title: i18nString(UIStrings.session),
           sortable: true,
-          widthWeighting: 1,
+          widthWeighting: 5,
           visible: false,
           hideable: true,
         },
@@ -219,7 +220,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
             (menu: UI.ContextMenu.ContextMenu, columns: readonly DataGrid.DataGridUtils.Column[],
              row: Readonly<DataGrid.DataGridUtils.Row>): void => {
               const methodColumn = DataGrid.DataGridUtils.getRowEntryForColumnId(row, 'method');
-              const directionColumn = DataGrid.DataGridUtils.getRowEntryForColumnId(row, 'direction');
+              const typeColumn = DataGrid.DataGridUtils.getRowEntryForColumnId(row, 'type');
 
               /**
              * You can click the "Filter" item in the context menu to filter the
@@ -240,7 +241,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
                   return;
                 }
                 const [domain, method] = String(methodColumn.value).split('.');
-                const type = directionColumn.value === 'sent' ? 'method' : 'event';
+                const type = typeColumn.value === 'sent' ? 'method' : 'event';
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(
                     `https://chromedevtools.github.io/devtools-protocol/tot/${domain}#${type}-${method}`);
               });
@@ -256,7 +257,8 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
       const infoWidgetData = {
         request: DataGrid.DataGridUtils.getRowEntryForColumnId(focusedRow, 'request'),
         response: DataGrid.DataGridUtils.getRowEntryForColumnId(focusedRow, 'response'),
-        direction: DataGrid.DataGridUtils.getRowEntryForColumnId(focusedRow, 'direction'),
+        type:
+            DataGrid.DataGridUtils.getRowEntryForColumnId(focusedRow, 'type').title as 'sent' | 'received' | undefined,
       };
       this.infoWidget.render(infoWidgetData);
     });
@@ -266,7 +268,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     });
     split.setMainWidget(this.dataGridIntegrator);
     split.setSidebarWidget(this.infoWidget);
-    const keys = ['method', 'request', 'response', 'direction', 'target', 'session'];
+    const keys = ['method', 'request', 'response', 'type', 'target', 'session'];
     this.filterParser = new TextUtils.TextUtils.FilterParser(keys);
     this.suggestionBuilder = new UI.FilterSuggestionBuilder.FilterSuggestionBuilder(keys);
 
@@ -388,6 +390,8 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     }
 
     const sdkTarget = target as SDK.Target.Target | null;
+    const responseIcon = new IconButton.Icon.Icon();
+    responseIcon.data = {iconName: 'ic_response', color: 'var(--color-text-disabled)', width: '16px', height: '16px'};
     const newRow: DataGrid.DataGridUtils.Row = {
       cells: [
         {columnId: 'method', value: message.method},
@@ -402,7 +406,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
           value: Date.now() - this.startTime,
           renderer: timestampRenderer,
         },
-        {columnId: 'direction', value: 'received'},
+        {columnId: 'type', value: responseIcon, title: 'received'},
         {columnId: 'target', value: this.targetToString(sdkTarget)},
         {columnId: 'session', value: message.sessionId || ''},
       ],
@@ -421,7 +425,11 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     if (this.isRecording) {
       this.messages.push({...message, type: 'send'});
     }
+
     const sdkTarget = target as SDK.Target.Target | null;
+    const requestResponseIcon = new IconButton.Icon.Icon();
+    requestResponseIcon
+        .data = {iconName: 'ic_request_response', color: 'var(--color-primary)', width: '16px', height: '16px'};
     const newRow: DataGrid.DataGridUtils.Row = {
       styles: {
         '--override-data-grid-row-background-color': 'var(--override-data-grid-sent-message-row-background-color)',
@@ -439,7 +447,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
           value: Date.now() - this.startTime,
           renderer: timestampRenderer,
         },
-        {columnId: 'direction', value: 'sent'},
+        {columnId: 'type', value: requestResponseIcon, title: 'sent'},
         {columnId: 'target', value: this.targetToString(sdkTarget)},
         {columnId: 'session', value: message.sessionId || ''},
       ],
@@ -482,7 +490,7 @@ export class InfoWidget extends UI.Widget.VBox {
   render(data: {
     request: DataGrid.DataGridUtils.Cell|undefined,
     response: DataGrid.DataGridUtils.Cell|undefined,
-    direction: DataGrid.DataGridUtils.Cell|undefined,
+    type: 'sent'|'received'|undefined,
   }|null): void {
     if (!data || !data.request || !data.response) {
       this.tabbedPane.changeTabView('request', new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMessageSelected)));
@@ -491,7 +499,7 @@ export class InfoWidget extends UI.Widget.VBox {
       return;
     }
 
-    const requestEnabled = data && data.direction && data.direction.value === 'sent';
+    const requestEnabled = data && data.type && data.type === 'sent';
     this.tabbedPane.setTabEnabled('request', Boolean(requestEnabled));
     if (!requestEnabled) {
       this.tabbedPane.selectTab('response');

@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include <string>
+
 #include "tensorflow/core/framework/attr_value.pb.h"
 #include "tensorflow/core/framework/common_shape_fns.h"
 #include "tensorflow/core/framework/op.h"
@@ -64,13 +66,12 @@ REGISTER_OP("RecvTPUEmbeddingActivations")
     .Attr("config: string")
     .SetIsStateful()
     .SetShapeFn([](shape_inference::InferenceContext* c) -> Status {
-      string config_string;
+      std::string config_string;
       TF_RETURN_IF_ERROR(c->GetAttr("config", &config_string));
       tpu::TPUEmbeddingConfiguration config;
       if (!config.ParseFromString(config_string)) {
         return errors::InvalidArgument("Malformed tpu_embedding_config.");
       }
-      tpu::AddDefaultEmbeddingOutputLayoutIfNeeded(&config);
       std::vector<TensorShapeProto> output_shapes;
       TF_RETURN_IF_ERROR(ComputeOutputTensorShapes(config, &output_shapes));
       if (c->num_outputs() != output_shapes.size()) {
@@ -165,6 +166,7 @@ REGISTER_OP("EnqueueTPUEmbeddingSparseTensorBatch")
     .Attr("combiners: list(string) = []")
     .Attr("table_ids: list(int)")
     .Attr("max_sequence_lengths: list(int) = []")
+    .Attr("num_features: list(int) = []")
     .SetIsStateful()
     .SetShapeFn(shape_inference::UnknownShape);
 
@@ -181,6 +183,7 @@ REGISTER_OP("EnqueueTPUEmbeddingRaggedTensorBatch")
     .Attr("combiners: list(string) = []")
     .Attr("table_ids: list(int)")
     .Attr("max_sequence_lengths: list(int) = []")
+    .Attr("num_features: list(int) = []")
     .SetIsStateful()
     .SetShapeFn(shape_inference::UnknownShape);
 

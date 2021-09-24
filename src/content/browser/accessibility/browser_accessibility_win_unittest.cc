@@ -360,7 +360,7 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
   text_field.AddState(ax::mojom::State::kEditable);
   text_field.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "input");
   text_field.SetValue(text_value);
-  text_field.AddIntListAttribute(ax::mojom::IntListAttribute::kCachedLineStarts,
+  text_field.AddIntListAttribute(ax::mojom::IntListAttribute::kLineStarts,
                                  {15});
   text_field.child_ids = {text_container.id};
 
@@ -485,8 +485,16 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
                             /*text=*/L"Seven eight nine.");
 
   EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, 1, IA2_TEXT_BOUNDARY_PARAGRAPH,
-                            /*expected_hr=*/S_OK, /*start=*/0, /*end=*/30,
-                            /*text=*/L"One two three.\nFour five six.\n");
+                            /*expected_hr=*/S_OK, /*start=*/0, /*end=*/15,
+                            /*text=*/L"One two three.\n");
+
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, 29, IA2_TEXT_BOUNDARY_PARAGRAPH,
+                            /*expected_hr=*/S_OK, /*start=*/15, /*end=*/30,
+                            /*text=*/L"Four five six.\n");
+
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, 30, IA2_TEXT_BOUNDARY_PARAGRAPH,
+                            /*expected_hr=*/S_OK, /*start=*/30, /*end=*/47,
+                            /*text=*/L"Seven eight nine.");
 
   EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, text_len - 1,
                             IA2_TEXT_BOUNDARY_PARAGRAPH,
@@ -544,13 +552,21 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
                                 /*text=*/L"Four five six.\n");
 
   EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, 18, IA2_TEXT_BOUNDARY_PARAGRAPH,
-                                /*expected_hr=*/S_FALSE, /*start=*/0, /*end=*/0,
-                                /*text=*/nullptr);
+                                /*expected_hr=*/S_OK, /*start=*/0, /*end=*/15,
+                                /*text=*/L"One two three.\n");
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, 29, IA2_TEXT_BOUNDARY_PARAGRAPH,
+                                /*expected_hr=*/S_OK, /*start=*/0, /*end=*/15,
+                                /*text=*/L"One two three.\n");
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, 30, IA2_TEXT_BOUNDARY_PARAGRAPH,
+                                /*expected_hr=*/S_OK, /*start=*/15, /*end=*/30,
+                                /*text=*/L"Four five six.\n");
 
   EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, text_len - 1,
                                 IA2_TEXT_BOUNDARY_PARAGRAPH,
-                                /*expected_hr=*/S_OK, /*start=*/0, /*end=*/30,
-                                /*text=*/L"One two three.\nFour five six.\n");
+                                /*expected_hr=*/S_OK, /*start=*/15, /*end=*/30,
+                                /*text=*/L"Four five six.\n");
 
   EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, 0, IA2_TEXT_BOUNDARY_CHAR,
                                /*expected_hr=*/S_OK, /*start=*/1, /*end=*/2,
@@ -588,6 +604,10 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
                                /*text=*/nullptr);
 
   EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, 18, IA2_TEXT_BOUNDARY_PARAGRAPH,
+                               /*expected_hr=*/S_OK, /*start=*/30, /*end=*/47,
+                               /*text=*/L"Seven eight nine.");
+
+  EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, 29, IA2_TEXT_BOUNDARY_PARAGRAPH,
                                /*expected_hr=*/S_OK, /*start=*/30, /*end=*/47,
                                /*text=*/L"Seven eight nine.");
 

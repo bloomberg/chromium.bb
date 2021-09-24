@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/smartlock_state.h"
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -42,7 +43,6 @@ namespace {
 
 // TODO(https://crbug.com/1164001): remove after moving to ash::
 using ::chromeos::TPMTokenLoader;
-using ::proximity_auth::SmartLockState;
 
 // The maximum allowed backoff interval when waiting for cryptohome to start.
 uint32_t kMaxCryptohomeBackoffIntervalMs = 10000u;
@@ -129,18 +129,17 @@ std::vector<multidevice::BeaconSeed> DeserializeBeaconSeeds(
     return beacon_seeds;
   }
 
-  base::ListValue* beacon_seed_list;
-  if (!deserialized_value->GetAsList(&beacon_seed_list)) {
+  if (!deserialized_value->is_list()) {
     PA_LOG(ERROR) << "Deserialized BeaconSeeds value is not list.";
     return beacon_seeds;
   }
 
-  for (size_t i = 0; i < beacon_seed_list->GetSize(); ++i) {
-    std::string b64_beacon_seed;
-    if (!beacon_seed_list->GetString(i, &b64_beacon_seed)) {
+  for (const base::Value& beacon_seed_value : deserialized_value->GetList()) {
+    if (!beacon_seed_value.is_string()) {
       PA_LOG(ERROR) << "Expected Base64 BeaconSeed.";
       continue;
     }
+    const std::string& b64_beacon_seed = beacon_seed_value.GetString();
 
     std::string proto_serialized_beacon_seed;
     if (!base::Base64UrlDecode(b64_beacon_seed,

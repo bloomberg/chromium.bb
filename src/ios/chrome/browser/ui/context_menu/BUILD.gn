@@ -1,0 +1,70 @@
+# Copyright 2021 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("context_menu") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "context_menu_utils.h",
+    "context_menu_utils.mm",
+    "link_no_preview_view.h",
+    "link_no_preview_view.mm",
+    "link_no_preview_view_controller.h",
+    "link_no_preview_view_controller.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/url_formatter",
+    "//ios/chrome/browser/ui/elements",
+    "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/favicon",
+    "//ios/web/common:features",
+    "//ios/web/public/ui",
+    "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+
+  deps = [
+    ":context_menu",
+    "//base",
+    "//base/test:test_support",
+    "//components/url_formatter",
+    "//ios/web/common",
+    "//ios/web/public",
+    "//net",
+    "//testing/gtest",
+  ]
+
+  sources = [ "context_menu_utils_unittest.mm" ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [ "context_menu_egtest.mm" ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//components/strings",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/fullscreen:feature_flags",
+    "//ios/chrome/browser/ui/fullscreen/test:eg_test_support+eg2",
+    "//ios/chrome/test:eg_test_support+eg2",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/common:features",
+    "//ios/web/public/test:element_selector",
+    "//net:test_support",
+    "//url",
+  ]
+  frameworks = [ "UIKit.framework" ]
+}

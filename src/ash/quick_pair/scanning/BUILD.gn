@@ -25,6 +25,8 @@ source_set("scanning") {
 
   deps = [
     "//ash/quick_pair/common",
+    "//ash/quick_pair/repository",
+    "//ash/services/quick_pair",
     "//base",
     "//device/bluetooth",
     "//device/bluetooth/public/cpp",
@@ -66,9 +68,13 @@ source_set("unit_tests") {
     ":scanning",
     ":test_support",
     "//ash/quick_pair/common",
+    "//ash/quick_pair/repository:test_support",
+    "//ash/services/quick_pair",
+    "//ash/services/quick_pair:test_support",
     "//base/test:test_support",
     "//device/bluetooth",
     "//device/bluetooth:mocks",
+    "//mojo/public/cpp/bindings",
     "//testing/gtest",
   ]
 }

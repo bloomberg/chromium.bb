@@ -32,7 +32,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.CommittedNavigationHasContext" enum="Boolean"
-    expires_after="2021-09-24">
+    expires_after="2022-09-24">
   <owner>ajuma@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -46,7 +46,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.CommittedURLMatchesCurrentItem" enum="Boolean"
-    expires_after="2021-09-24">
+    expires_after="2022-09-24">
   <owner>ajuma@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -193,6 +193,28 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="IOS.CredentialExtension.NewCredentialUsername"
+    units="IOSCredentialProviderNewCredentialUsername"
+    expires_after="2022-03-31">
+  <owner>javierrobles@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
+  <summary>
+    Recorded when a new credential is created via the Credential Provider
+    extension and tracks the username state of the new credential. Reported when
+    Chrome is put in the foreground.
+  </summary>
+</histogram>
+
+<histogram name="IOS.CredentialExtension.PasswordCreated"
+    units="IOSCredentialProviderPasswordCreated" expires_after="2022-03-31">
+  <owner>javierrobles@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
+  <summary>
+    Recorded when a new password is created via the Credential Provider
+    extension. Reported when Chrome is put in the foreground.
+  </summary>
+</histogram>
+
 <histogram name="IOS.CredentialExtension.PasswordUseCount" units="count"
     expires_after="2021-12-11">
   <owner>javierrobles@chromium.org</owner>
@@ -205,7 +227,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.QuickPasswordUseCount" units="count"
-    expires_after="2021-12-11">
+    expires_after="2022-02-20">
   <owner>javierrobles@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -978,7 +1000,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.Reauth.Password.Autofill" enum="ReauthenticationEvent"
-    expires_after="2021-12-11">
+    expires_after="2022-02-20">
   <owner>javierrobles@chromium.org</owner>
   <owner>sarraf@google.com</owner>
   <summary>
@@ -988,7 +1010,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.Reauth.Password.ManualFallback"
-    enum="ReauthenticationEvent" expires_after="2021-12-11">
+    enum="ReauthenticationEvent" expires_after="2022-02-20">
   <owner>javierrobles@chromium.org</owner>
   <owner>sarraf@google.com</owner>
   <summary>
@@ -1348,8 +1370,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram name="IOS.WindowIDInjection.ElapsedTime" units="ms"
+    expires_after="2021-12-11">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    Measures the time taken for windowID injection to complete. Logged once per
+    pageload.
+  </summary>
+</histogram>
+
 <histogram name="IOS.WKWebViewClobberedHistory" enum="Boolean"
-    expires_after="2021-09-24">
+    expires_after="2022-09-24">
   <owner>ajuma@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>

@@ -185,7 +185,10 @@ export interface InspectorFrontendHostAPI {
   isHostedMode(): boolean;
 
   setAddExtensionCallback(callback: (arg0: ExtensionDescriptor) => void): void;
+
+  initialTargetId(): Promise<string|null>;
 }
+
 export interface ContextMenuDescriptor {
   type: string;
   id?: number;
@@ -227,7 +230,6 @@ export interface CanShowSurveyResult {
 // eslint-disable-next-line rulesdir/const_enum
 export enum EnumeratedHistogram {
   ActionTaken = 'DevTools.ActionTaken',
-  ColorPickerFixedColor = 'DevTools.ColorPicker.FixedColor',
   PanelClosed = 'DevTools.PanelClosed',
   PanelShown = 'DevTools.PanelShown',
   SidebarPaneShown = 'DevTools.SidebarPaneShown',
@@ -246,4 +248,5 @@ export enum EnumeratedHistogram {
   DeveloperResourceScheme = 'DevTools.DeveloperResourceScheme',
   LinearMemoryInspectorRevealedFrom = 'DevTools.LinearMemoryInspector.RevealedFrom',
   LinearMemoryInspectorTarget = 'DevTools.LinearMemoryInspector.Target',
+  Language = 'DevTools.Language',
 }

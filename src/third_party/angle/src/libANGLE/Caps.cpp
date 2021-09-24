@@ -1076,6 +1076,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_APPLE_clip_distance"] = enableableExtension(&Extensions::clipDistanceAPPLE);
         map["GL_EXT_clip_control"] = enableableExtension(&Extensions::clipControlEXT);
         map["GL_EXT_EGL_image_array"] = enableableExtension(&Extensions::eglImageArray);
+        map["GL_EXT_EGL_image_storage"] = enableableExtension(&Extensions::eglImageStorageEXT);
         map["GL_EXT_buffer_storage"] = enableableExtension(&Extensions::bufferStorageEXT);
         map["GL_EXT_external_buffer"] = enableableExtension(&Extensions::externalBufferEXT);
         map["GL_OES_texture_stencil8"] = enableableExtension(&Extensions::stencilIndex8);
@@ -1520,6 +1521,7 @@ std::vector<std::string> DisplayExtensions::getStrings() const
     InsertExtensionString("EGL_EXT_buffer_age",                                  bufferAgeEXT,                       &extensionStrings);
     InsertExtensionString("EGL_KHR_mutable_render_buffer",                       mutableRenderBufferKHR,             &extensionStrings);
     InsertExtensionString("EGL_EXT_protected_content",                           protectedContentEXT,                &extensionStrings);
+    InsertExtensionString("EGL_ANGLE_create_surface_swap_interval",              createSurfaceSwapIntervalANGLE,     &extensionStrings);
     // clang-format on
 
     return extensionStrings;

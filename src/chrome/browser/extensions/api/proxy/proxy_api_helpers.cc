@@ -278,7 +278,7 @@ bool JoinUrlList(const base::ListValue* list,
                  std::string* error,
                  bool* bad_message) {
   std::string result;
-  for (size_t i = 0; i < list->GetSize(); ++i) {
+  for (size_t i = 0; i < list->GetList().size(); ++i) {
     if (!result.empty())
       result.append(joiner);
 
@@ -518,7 +518,7 @@ std::unique_ptr<base::ListValue> TokenizeToStringList(
   auto out = std::make_unique<base::ListValue>();
   base::StringTokenizer entries(in, delims);
   while (entries.GetNext())
-    out->AppendString(entries.token_piece());
+    out->Append(entries.token_piece());
   return out;
 }
 

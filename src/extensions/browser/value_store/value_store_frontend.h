@@ -12,27 +12,24 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "extensions/browser/value_store/value_store.h"
 
 namespace base {
+class FilePath;
 class SequencedTaskRunner;
 }
 
-namespace extensions {
+namespace value_store {
 class ValueStoreFactory;
 
 // A frontend for a LeveldbValueStore, for use on the UI thread.
 class ValueStoreFrontend {
  public:
-  // TODO(crbug.com/1226956): Move extensions specific enum out of ValueStore.
-  // The kind of extensions data stored in a backend.
-  enum class BackendType { RULES, STATE };
-
   using ReadCallback = base::OnceCallback<void(std::unique_ptr<base::Value>)>;
 
   ValueStoreFrontend(
       const scoped_refptr<ValueStoreFactory>& store_factory,
-      BackendType backend_type,
+      const base::FilePath& directory,
+      const std::string& uma_client_name,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~ValueStoreFrontend();
   ValueStoreFrontend(const ValueStoreFrontend&) = delete;
@@ -58,6 +55,6 @@ class ValueStoreFrontend {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
-}  // namespace extensions
+}  // namespace value_store
 
 #endif  // EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_FRONTEND_H_

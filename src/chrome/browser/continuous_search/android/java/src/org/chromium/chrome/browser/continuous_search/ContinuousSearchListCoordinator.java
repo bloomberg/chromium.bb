@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 import androidx.recyclerview.widget.RecyclerView.State;
 
 import org.chromium.base.Callback;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.continuous_search.ContinuousSearchContainerCoordinator.VisibilitySettings;
@@ -114,6 +115,8 @@ public class ContinuousSearchListCoordinator {
             @Override
             public void smoothScrollToPosition(
                     RecyclerView recyclerView, State state, int position) {
+                TraceEvent.startAsync("ContinuousSearchListCoordinator#smoothScrollToPosition",
+                        userInputScrollListener.hashCode());
                 LinearSmoothScroller scroller =
                         new LinearSmoothScroller(recyclerView.getContext()) {
                             @Override
@@ -135,6 +138,9 @@ public class ContinuousSearchListCoordinator {
                         if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                             recyclerView.removeOnScrollListener(this);
                             recyclerView.addOnScrollListener(userInputScrollListener);
+                            TraceEvent.finishAsync(
+                                    "ContinuousSearchListCoordinator#smoothScrollToPosition",
+                                    userInputScrollListener.hashCode());
                         }
                     }
                 });
@@ -161,13 +167,10 @@ public class ContinuousSearchListCoordinator {
 
     private static class SpaceItemDecoration extends ItemDecoration {
         private final int mChipSpacingPx;
-        private final int mSidePaddingPx;
 
         public SpaceItemDecoration(Resources resources) {
             mChipSpacingPx =
                     (int) resources.getDimensionPixelSize(R.dimen.csn_chip_list_chip_spacing);
-            mSidePaddingPx =
-                    (int) resources.getDimensionPixelSize(R.dimen.csn_chip_list_side_padding);
         }
 
         @Override
@@ -176,10 +179,10 @@ public class ContinuousSearchListCoordinator {
             boolean isFirst = position == 0;
             boolean isLast = position == parent.getAdapter().getItemCount() - 1;
 
-            // Provider icon/text already has the required padding so the first item doesn't need to
-            // have any.
+            // Border chip paddings are provided by the provider icon and the dismiss button so no
+            // need to add any paddings here.
             outRect.left = isFirst ? 0 : mChipSpacingPx;
-            outRect.right = isLast ? mSidePaddingPx : mChipSpacingPx;
+            outRect.right = isLast ? 0 : mChipSpacingPx;
         }
     }
 }

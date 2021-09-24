@@ -19,6 +19,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/installable/installable_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/url_and_title.h"
@@ -40,7 +41,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #else
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #endif
@@ -374,16 +375,18 @@ void PopulateInfoMapWithInstalledEngagedInTimePeriod(
 
   // Check with WebAppRegistrar to make sure the apps have not yet been
   // uninstalled.
-  const web_app::WebAppRegistrar& registrar =
-      web_app::WebAppProvider::Get(profile)->registrar();
-  auto app_ids = registrar.GetAppIds();
   std::map<std::string, std::string> installed_origins_map;
-  for (auto& app_id : app_ids) {
-    GURL scope = registrar.GetAppScope(app_id);
-    DCHECK(scope.is_valid());
-    auto app_name = registrar.GetAppShortName(app_id);
-    installed_origins_map.emplace(
-        std::make_pair(scope.GetOrigin().spec(), app_name));
+  if (web_app::AreWebAppsUserInstallable(profile)) {
+    const web_app::WebAppRegistrar& registrar =
+        web_app::WebAppProvider::GetForWebApps(profile)->registrar();
+    auto app_ids = registrar.GetAppIds();
+    for (auto& app_id : app_ids) {
+      GURL scope = registrar.GetAppScope(app_id);
+      DCHECK(scope.is_valid());
+      auto app_name = registrar.GetAppShortName(app_id);
+      installed_origins_map.emplace(
+          std::make_pair(scope.GetOrigin().spec(), app_name));
+    }
   }
 
   for (const auto& detail : engagement_details) {

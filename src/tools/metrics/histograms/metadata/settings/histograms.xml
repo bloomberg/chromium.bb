@@ -30,6 +30,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Settings.AllSites.DeprecatedRedirect" enum="BooleanRedirected"
+    expires_after="M101">
+  <owner>sauski@google.com</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    Whether or not navigations to the All Sites page occured because the user
+    was redirected from the deprecated Site Data page.
+  </summary>
+</histogram>
+
 <histogram name="Settings.AutocompleteSearches.OnStartup" enum="BooleanEnabled"
     expires_after="M98">
   <owner>harrisonsean@chromium.org</owner>
@@ -78,7 +88,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Settings.Homepage.LocationType" enum="HomepageLocationType"
-    expires_after="2021-12-12">
+    expires_after="2022-02-20">
   <owner>bttk@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
@@ -199,7 +209,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Settings.PrivacySandbox.Enabled"
-    enum="SettingsPrivacySandboxEnabled" expires_after="2021-12-12">
+    enum="SettingsPrivacySandboxEnabled" expires_after="2022-02-20">
   <owner>harrisonseean@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
@@ -223,7 +233,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Settings.SafetyCheck.ChromeCleanerResult"
-    enum="SafetyCheckChromeCleanerStatus" expires_after="2021-12-12">
+    enum="SafetyCheckChromeCleanerStatus" expires_after="2022-02-20">
   <owner>rainhard@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
@@ -240,7 +250,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Settings.SafetyCheck.Interactions"
-    enum="SettingsSafetyCheckInteractions" expires_after="2021-12-26">
+    enum="SettingsSafetyCheckInteractions" expires_after="2022-02-27">
   <owner>rainhard@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <owner>anaudrey@chromium.org</owner>

@@ -743,6 +743,13 @@ def SubmitChange(host, change):
   return ReadHttpJsonResponse(conn)
 
 
+def GetChangesSubmittedTogether(host, change):
+  """Get all changes submitted with the given one."""
+  path = 'changes/%s/submitted_together?o=NON_VISIBLE_CHANGES' % change
+  conn = CreateHttpConn(host, path, reqtype='GET')
+  return ReadHttpJsonResponse(conn)
+
+
 def PublishChangeEdit(host, change, notify=True):
   """Publish a Gerrit change edit."""
   path = 'changes/%s/edit:publish' % change

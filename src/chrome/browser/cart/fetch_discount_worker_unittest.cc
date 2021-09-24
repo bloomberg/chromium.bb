@@ -18,12 +18,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-cart_db::DiscountInfoProto BuildPercentOffDiscountInfoProto(
+cart_db::RuleDiscountInfoProto BuildPercentOffDiscountInfoProto(
     const std::string& rule_id,
     const std::string& merchant_rule_id,
     const std::string& raw_merchant_offer_id,
     const int percent_off) {
-  cart_db::DiscountInfoProto proto;
+  cart_db::RuleDiscountInfoProto proto;
   proto.set_rule_id(rule_id);
   proto.set_merchant_rule_id(merchant_rule_id);
   proto.set_percent_off(percent_off);
@@ -44,9 +44,9 @@ cart_db::ChromeCartContentProto BuildCartContentProto(const char* domain,
 cart_db::ChromeCartContentProto AddDiscountToProto(
     cart_db::ChromeCartContentProto proto,
     const std::string& merchant_id,
-    cart_db::DiscountInfoProto discount_proto) {
+    cart_db::RuleDiscountInfoProto discount_proto) {
   proto.mutable_discount_info()->set_merchant_id(merchant_id);
-  (*(proto.mutable_discount_info()->add_discount_info())) = discount_proto;
+  (*(proto.mutable_discount_info()->add_rule_discount_info())) = discount_proto;
   return proto;
 }
 
@@ -69,7 +69,7 @@ const cart_db::ChromeCartContentProto kMockMerchantACartContentProto =
     BuildCartContentProto(kMockMerchantA,
                           kMockMerchantACartUrl,
                           kMockMerchantATimestamp);
-const std::vector<cart_db::DiscountInfoProto> kMockMerchantADiscounts = {
+const std::vector<cart_db::RuleDiscountInfoProto> kMockMerchantADiscounts = {
     BuildPercentOffDiscountInfoProto(kMockMerchantARuleId,
                                      kMockMerchantARuleId,
                                      kMockMerchantARawMerchantOfferId,
@@ -84,7 +84,8 @@ class FakeCartDiscountFetcher : public CartDiscountFetcher {
       CartDiscountFetcherCallback callback,
       std::vector<CartDB::KeyAndValue> proto_pairs,
       const bool is_oauth_fetch,
-      const std::string access_token_str) override {
+      const std::string access_token_str,
+      const std::string fetch_for_locale) override {
     FakeCartDiscountFetcher::fetcher_fetch_count_++;
     // Only oauth fetch has a chance to be a tester.
     bool is_tester = is_tester_ && is_oauth_fetch;
@@ -118,7 +119,8 @@ class MockCartDiscountFetcher : public CartDiscountFetcher {
        CartDiscountFetcherCallback callback,
        std::vector<CartDB::KeyAndValue> proto_pairs,
        const bool is_oauth_fetch,
-       const std::string access_token_str),
+       const std::string access_token_str,
+       const std::string fetch_for_locale),
       (override));
 
   void DelegateToFake(CartDiscountMap fake_result, bool is_tester) {
@@ -132,11 +134,12 @@ class MockCartDiscountFetcher : public CartDiscountFetcher {
                    CartDiscountFetcherCallback callback,
                    std::vector<CartDB::KeyAndValue> proto_pairs,
                    const bool is_oauth_fetch,
-                   const std::string access_token_str) {
+                   const std::string access_token_str,
+                   const std::string fetch_for_locale) {
               return fake_cart_discount_fetcher_.Fetch(
                   std::move(pending_factory), std::move(callback),
                   std::move(proto_pairs), is_oauth_fetch,
-                  std::move(access_token_str));
+                  std::move(access_token_str), std::move(fetch_for_locale));
             });
   }
 
@@ -201,16 +204,17 @@ class FakeCartDiscountUpdater : public CartDiscountUpdater {
               const bool is_tester) override {
     // Verify discount_info.
     int new_proto_discount_size =
-        new_proto.discount_info().discount_info_size();
+        new_proto.discount_info().rule_discount_info_size();
     EXPECT_EQ(new_proto_discount_size,
-              expected_update_data_.discount_info().discount_info_size());
+              expected_update_data_.discount_info().rule_discount_info_size());
 
     EXPECT_EQ(new_proto_discount_size != 0, has_discounts_);
 
     for (int i = 0; i < new_proto_discount_size; i++) {
       EXPECT_THAT(
-          new_proto.discount_info().discount_info(i),
-          EqualsProto(expected_update_data_.discount_info().discount_info(i)));
+          new_proto.discount_info().rule_discount_info(i),
+          EqualsProto(
+              expected_update_data_.discount_info().rule_discount_info(i)));
     }
 
     const std::string& discount_text =

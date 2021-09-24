@@ -9,9 +9,11 @@
 #include <utility>
 
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
@@ -82,6 +84,10 @@ class MODULES_EXPORT UserMediaProcessor
   void StopAllProcessing();
 
   bool HasActiveSources() const;
+
+#if !defined(OS_ANDROID)
+  void FocusCapturedSurface(const String& label, bool focus);
+#endif
 
   void OnDeviceStopped(const blink::MediaStreamDevice& device);
   void OnDeviceChanged(const blink::MediaStreamDevice& old_device,

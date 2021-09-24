@@ -59,11 +59,15 @@
   /* variable), we need two separate copies of the registry with different */ \
   /* storage specifiers. */                                                   \
   /**/                                                                        \
+  /* Note that because of a Clang/Windows bug, the constexpr category */      \
+  /* registry isn't given the enabled/disabled state array. All access */     \
+  /* to the category states should therefore be done through the */           \
+  /* non-constexpr registry. See */                                           \
+  /* https://bugs.llvm.org/show_bug.cgi?id=51558 */                           \
+  /**/                                                                        \
   /* TODO(skyostil): Unify these using a C++17 inline constexpr variable. */  \
   constexpr ::perfetto::internal::TrackEventCategoryRegistry                  \
-      kConstExprCategoryRegistry(kCategoryCount,                              \
-                                 &kCategories[0],                             \
-                                 &g_category_state_storage[0]);               \
+      kConstExprCategoryRegistry(kCategoryCount, &kCategories[0], nullptr);   \
   PERFETTO_COMPONENT_EXPORT extern const ::perfetto::internal::               \
       TrackEventCategoryRegistry kCategoryRegistry;                           \
   static_assert(kConstExprCategoryRegistry.ValidateCategories(),              \
@@ -83,10 +87,9 @@
   }  // namespace internal
 
 // Defines the TrackEvent data source for the current track event namespace.
-#define PERFETTO_INTERNAL_DECLARE_TRACK_EVENT_DATA_SOURCE() \
-  struct PERFETTO_COMPONENT_EXPORT TrackEvent               \
-      : public ::perfetto::internal::TrackEventDataSource<  \
-            TrackEvent, &internal::kCategoryRegistry> {}
+#define PERFETTO_INTERNAL_DECLARE_TRACK_EVENT_DATA_SOURCE()              \
+  struct TrackEvent : public ::perfetto::internal::TrackEventDataSource< \
+                          TrackEvent, &internal::kCategoryRegistry> {}
 
 // At compile time, turns a category name represented by a static string into an
 // index into the current category registry. A build error will be generated if

@@ -16,7 +16,7 @@ import '../../settings_page_css.js';
 import '../../settings_shared_css.js';
 import '../os_icons.m.js';
 import '../os_reset_page/os_powerwash_dialog.js';
-import '../localized_link/localized_link.js';
+import '//resources/cr_components/chromeos/localized_link/localized_link.js';
 import './detailed_build_info.js';
 import './update_warning_dialog.js';
 import '//resources/cr_elements/cr_button/cr_button.m.js';
@@ -37,7 +37,7 @@ import {Route, RouteObserverBehavior, Router} from '../../router.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
 import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
 import {routes} from '../os_route.m.js';
-import {MainPageBehavior} from '../os_settings_page/main_page_behavior.m.js';
+import {MainPageBehavior} from '../os_settings_page/main_page_behavior.js';
 
 import {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, AboutPageUpdateInfo, BrowserChannel, browserChannelToI18nId, ChannelInfo, isTargetChannelMoreStable, RegulatoryInfo, TPMFirmwareUpdateStatusChangedEvent, UpdateStatus, UpdateStatusChangedEvent, VersionInfo} from './about_page_browser_proxy.js';
 

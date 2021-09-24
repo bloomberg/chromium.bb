@@ -279,9 +279,8 @@ bool Validator::ValidateRecommendedField(
     return true;
   }
 
-  base::ListValue* recommended_list = nullptr;
-  recommended_value->GetAsList(&recommended_list);
-  DCHECK(recommended_list);  // The types of field values are already verified.
+  // The types of field values are already verified.
+  DCHECK(recommended_value->is_list());
 
   if (!managed_onc_) {
     std::ostringstream msg;
@@ -292,7 +291,7 @@ bool Validator::ValidateRecommendedField(
   }
 
   base::ListValue repaired_recommended;
-  for (const auto& entry : recommended_list->GetList()) {
+  for (const auto& entry : recommended_value->GetList()) {
     const std::string* field_name = entry.GetIfString();
     if (!field_name) {
       NOTREACHED();  // The types of field values are already verified.
@@ -325,7 +324,7 @@ bool Validator::ValidateRecommendedField(
       continue;
     }
 
-    repaired_recommended.AppendString(*field_name);
+    repaired_recommended.Append(*field_name);
   }
 
   result->SetKey(::onc::kRecommended, std::move(repaired_recommended));
@@ -448,12 +447,11 @@ bool Validator::FieldExistsAndIsEmpty(const base::DictionaryValue& object,
     return false;
 
   const std::string* str = value->GetIfString();
-  const base::ListValue* list = NULL;
   if (str) {
     if (!(*str).empty())
       return false;
-  } else if (value->GetAsList(&list)) {
-    if (!list->GetList().empty())
+  } else if (value->is_list()) {
+    if (!value->GetList().empty())
       return false;
   } else {
     NOTREACHED();
@@ -681,13 +679,14 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
 
     std::string type = GetStringFromDict(*result, ::onc::network_config::kType);
 
-    // Prohibit anything but WiFi, Ethernet and VPN for device-level policy
-    // (which corresponds to shared networks). See also
+    // Prohibit anything but WiFi, Ethernet, VPN and Cellular for device-level
+    // policy (which corresponds to shared networks). See also
     // http://crosbug.com/28741.
     if (onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY && !type.empty() &&
         type != ::onc::network_type::kVPN &&
         type != ::onc::network_type::kWiFi &&
-        type != ::onc::network_type::kEthernet) {
+        type != ::onc::network_type::kEthernet &&
+        type != ::onc::network_type::kCellular) {
       std::ostringstream msg;
       msg << "Networks of type '" << type
           << "' are prohibited in ONC device policies.";
@@ -710,6 +709,9 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
     } else if (type == ::onc::network_type::kTether) {
       all_required_exist &=
           RequireField(*result, ::onc::network_config::kTether);
+    } else if (type == ::onc::network_type::kCellular) {
+      all_required_exist &=
+          RequireField(*result, ::onc::network_config::kCellular);
     }
   }
 

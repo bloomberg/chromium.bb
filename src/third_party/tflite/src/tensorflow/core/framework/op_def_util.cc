@@ -431,6 +431,9 @@ string SummarizeOpDef(const OpDef& op_def) {
   if (op_def.allows_uninitialized_input()) {
     strings::StrAppend(&ret, "; allows_uninitialized_input=true");
   }
+  if (op_def.is_distributed_communication()) {
+    strings::StrAppend(&ret, "; is_distributed_communication=true");
+  }
   strings::StrAppend(&ret, ">");
   return ret;
 }
@@ -661,7 +664,7 @@ Status OpDefCompatible(const OpDef& old_op, const OpDef& new_op) {
            "' vs. '", new_in_sig, "'");
   VALIDATE(old_in_ref.size() == new_in_ref.size(),  // Should not happen
            "Unexpected change in input ref lists.");
-  for (int i = 0; i < old_in_ref.size(); ++i) {
+  for (int i = 0, end = old_in_ref.size(); i < end; ++i) {
     // Allowed to remove "ref" from an input (or leave it unchanged).
     VALIDATE(old_in_ref[i] || !new_in_ref[i], "Input ", i,
              " changed from non-ref to ref");
@@ -677,7 +680,7 @@ Status OpDefCompatible(const OpDef& old_op, const OpDef& new_op) {
            old_out_sig, "' vs. '", new_out_sig, "'");
   VALIDATE(old_out_ref.size() == new_out_ref.size(),  // Should not happen
            "Unexpected change in output ref lists");
-  for (int i = 0; i < old_out_ref.size(); ++i) {
+  for (int i = 0, end = old_out_ref.size(); i < end; ++i) {
     // Allowed to add "ref" to an output (or leave it unchanged).
     VALIDATE(!old_out_ref[i] || new_out_ref[i], "Output ", i,
              " changed from ref to non-ref");

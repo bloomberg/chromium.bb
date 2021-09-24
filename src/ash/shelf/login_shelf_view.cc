@@ -153,6 +153,8 @@ LoginMetricsRecorder::ShelfButtonClickTarget GetUserClickTarget(int button_id) {
     case LoginShelfView::kEnterpriseEnrollment:
       return LoginMetricsRecorder::ShelfButtonClickTarget::
           kEnterpriseEnrollmentButton;
+    case LoginShelfView::kSignIn:
+      return LoginMetricsRecorder::ShelfButtonClickTarget::kSignIn;
     case LoginShelfView::kOsInstall:
       return LoginMetricsRecorder::ShelfButtonClickTarget::kOsInstallButton;
   }
@@ -218,6 +220,7 @@ class LoginShelfButton : public views::LabelButton {
     color_provider->DecoratePillButton(this, &icon);
 
     SetFocusBehavior(FocusBehavior::ALWAYS);
+    set_suppress_default_focus_handling();
     SetInstallFocusRingOnFocus(true);
     views::InstallRoundRectHighlightPathGenerator(
         this, GetButtonInsets(), ShelfConfig::Get()->control_border_radius());
@@ -318,6 +321,7 @@ class KioskAppsButton : public views::MenuButton,
                    l10n_util::GetStringUTF16(IDS_ASH_SHELF_APPS_BUTTON)),
         ui::SimpleMenuModel(this) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
+    set_suppress_default_focus_handling();
     SetInstallFocusRingOnFocus(true);
     views::InstallRoundRectHighlightPathGenerator(
         this, GetButtonInsets(), ShelfConfig::Get()->control_border_radius());

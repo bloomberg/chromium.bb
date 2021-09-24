@@ -19,7 +19,6 @@
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cors/cors.h"
-#include "services/network/public/cpp/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
@@ -31,7 +30,7 @@
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_loader_factory.h"
-#include "services/network/web_bundle_url_loader_factory.h"
+#include "services/network/web_bundle/web_bundle_url_loader_factory.h"
 #include "url/origin.h"
 
 namespace network {
@@ -262,8 +261,10 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
             resource_request.url, *resource_request.web_bundle_token_params,
             process_id_, std::move(devtools_observer),
             resource_request.devtools_request_id);
-    client =
-        web_bundle_url_loader_factory->WrapURLLoaderClient(std::move(client));
+    client = web_bundle_url_loader_factory->MaybeWrapURLLoaderClient(
+        std::move(client));
+    if (!client)
+      return;
   }
 
   mojom::URLLoaderFactory* const inner_url_loader_factory =

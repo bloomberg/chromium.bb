@@ -649,8 +649,8 @@ UIWindow* GetAnyKeyWindow();
 // can, open multiple windows.
 - (BOOL)areMultipleWindowsSupported;
 
-// Returns whether the Close All Tabs Confirmation feature is enabled.
-- (BOOL)isCloseAllTabsConfirmationEnabled;
+// Returns whether the ContextMenuActionsRefresh feature is enabled.
+- (BOOL)isContextMenuActionsRefreshEnabled;
 
 #pragma mark - Popup Blocking
 
@@ -681,6 +681,12 @@ UIWindow* GetAnyKeyWindow();
 - (bool)localStateBooleanPref:(const std::string&)prefName;
 - (int)localStateIntegerPref:(const std::string&)prefName;
 - (std::string)localStateStringPref:(const std::string&)prefName;
+
+// Sets the integer values for the local state pref with |prefName|. |value|
+// can be either a casted enum or any other numerical value. Local State
+// contains the preferences that are shared between all browser states.
+- (void)setIntegerValue:(int)value
+      forLocalStatePref:(const std::string&)prefName;
 
 // Gets the value of a user pref in the original browser state.
 - (bool)userBooleanPref:(const std::string&)prefName;

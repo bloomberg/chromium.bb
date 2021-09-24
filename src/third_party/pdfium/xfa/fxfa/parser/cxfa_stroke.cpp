@@ -66,7 +66,7 @@ void XFA_StrokeTypeSetLineDash(CFGAS_GEGraphics* pGraphics,
 
 CXFA_Stroke::CXFA_Stroke(CXFA_Document* pDoc,
                          XFA_PacketType ePacket,
-                         uint32_t validPackets,
+                         Mask<XFA_XDPPACKET> validPackets,
                          XFA_ObjectType oType,
                          XFA_Element eType,
                          pdfium::span<const PropertyData> properties,
@@ -110,8 +110,8 @@ void CXFA_Stroke::SetMSThickness(CXFA_Measurement msThinkness) {
   JSObject()->SetMeasure(XFA_Attribute::Thickness, msThinkness, false);
 }
 
-FX_ARGB CXFA_Stroke::GetColor() {
-  CXFA_Color* pNode = GetChild<CXFA_Color>(0, XFA_Element::Color, false);
+FX_ARGB CXFA_Stroke::GetColor() const {
+  const auto* pNode = GetChild<CXFA_Color>(0, XFA_Element::Color, false);
   if (!pNode)
     return 0xFF000000;
 
@@ -149,12 +149,13 @@ float CXFA_Stroke::GetRadius() const {
       .ToUnit(XFA_Unit::Pt);
 }
 
-bool CXFA_Stroke::SameStyles(CXFA_Stroke* stroke, uint32_t dwFlags) {
+bool CXFA_Stroke::SameStyles(CXFA_Stroke* stroke,
+                             Mask<SameStyleOption> dwFlags) {
   if (this == stroke)
     return true;
   if (fabs(GetThickness() - stroke->GetThickness()) >= 0.01f)
     return false;
-  if ((dwFlags & XFA_STROKE_SAMESTYLE_NoPresence) == 0 &&
+  if (!(dwFlags & SameStyleOption::kNoPresence) &&
       IsVisible() != stroke->IsVisible()) {
     return false;
   }
@@ -162,7 +163,7 @@ bool CXFA_Stroke::SameStyles(CXFA_Stroke* stroke, uint32_t dwFlags) {
     return false;
   if (GetColor() != stroke->GetColor())
     return false;
-  if ((dwFlags & XFA_STROKE_SAMESTYLE_Corner) != 0 &&
+  if ((dwFlags & CXFA_Stroke::SameStyleOption::kCorner) &&
       fabs(GetRadius() - stroke->GetRadius()) >= 0.01f) {
     return false;
   }
@@ -185,7 +186,7 @@ void CXFA_Stroke::Stroke(CFGAS_GEGraphics* pGS,
 
   pGS->SetLineWidth(fThickness);
   pGS->EnableActOnDash();
-  pGS->SetLineCap(CFX_GraphStateData::LineCapButt);
+  pGS->SetLineCap(CFX_GraphStateData::LineCap::kButt);
   XFA_StrokeTypeSetLineDash(pGS, GetStrokeType(), XFA_AttributeValue::Butt);
   pGS->SetStrokeColor(CFGAS_GEColor(GetColor()));
   pGS->StrokePath(pPath, matrix);

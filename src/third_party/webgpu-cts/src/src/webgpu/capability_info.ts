@@ -8,6 +8,7 @@ import { assertTypeTrue, TypeEqual } from '../common/util/types.js';
 import { assert, unreachable } from '../common/util/util.js';
 
 import { GPUConst } from './constants.js';
+import { ImageCopyType } from './util/texture/layout.js';
 
 // Base device limits can be found in constants.ts.
 
@@ -307,16 +308,28 @@ const kDepthStencilFormatCapabilityInBufferTextureCopy = {
 } as const;
 
 /**
+ * Gets all copyable aspects for copies between texture and buffer for specified depth/stencil format and copy type, by spec.
+ */
+export function depthStencilFormatCopyableAspects(
+  type: ImageCopyType,
+  format: DepthStencilFormat
+): readonly GPUTextureAspect[] {
+  const appliedType = type === 'WriteTexture' ? 'CopyB2T' : type;
+  return kDepthStencilFormatCapabilityInBufferTextureCopy[format][appliedType];
+}
+
+/**
  * Computes whether a copy between a depth/stencil texture aspect and a buffer is supported, by spec.
  */
 export function depthStencilBufferTextureCopySupported(
-  type: 'CopyB2T' | 'CopyT2B' | 'WriteTexture',
+  type: ImageCopyType,
   format: DepthStencilFormat,
   aspect: GPUTextureAspect
 ): boolean {
-  const appliedType = type === 'WriteTexture' ? 'CopyB2T' : type;
-  const supportedAspects: readonly GPUTextureAspect[] =
-    kDepthStencilFormatCapabilityInBufferTextureCopy[format][appliedType];
+  const supportedAspects: readonly GPUTextureAspect[] = depthStencilFormatCopyableAspects(
+    type,
+    format
+  );
   return supportedAspects.includes(aspect);
 }
 
@@ -355,8 +368,8 @@ export const kTextureUsageInfo: {
 } = {
   [GPUConst.TextureUsage.COPY_SRC]: {},
   [GPUConst.TextureUsage.COPY_DST]: {},
-  [GPUConst.TextureUsage.SAMPLED]: {},
-  [GPUConst.TextureUsage.STORAGE]: {},
+  [GPUConst.TextureUsage.TEXTURE_BINDING]: {},
+  [GPUConst.TextureUsage.STORAGE_BINDING]: {},
   [GPUConst.TextureUsage.RENDER_ATTACHMENT]: {},
 };
 /** List of all GPUTextureUsage values. */
@@ -395,47 +408,61 @@ export type VertexFormatInfo = {
   readonly type: 'float' | 'unorm' | 'snorm' | 'uint' | 'sint';
   /** Number of components. */
   readonly componentCount: 1 | 2 | 3 | 4;
+  /** The completely matching WGSL type for vertex format */
+  readonly wgslType:
+    | 'f32'
+    | 'vec2<f32>'
+    | 'vec3<f32>'
+    | 'vec4<f32>'
+    | 'u32'
+    | 'vec2<u32>'
+    | 'vec3<u32>'
+    | 'vec4<u32>'
+    | 'i32'
+    | 'vec2<i32>'
+    | 'vec3<i32>'
+    | 'vec4<i32>';
   // Add fields as needed
 };
 /** Per-GPUVertexFormat info. */
 export const kVertexFormatInfo: {
   readonly [k in GPUVertexFormat]: VertexFormatInfo;
 } = /* prettier-ignore */ makeTable(
-               ['bytesPerComponent',  'type', 'componentCount'] as const,
-               [                   ,        ,                 ] as const, {
+               ['bytesPerComponent',  'type', 'componentCount',  'wgslType'] as const,
+               [                   ,        ,                 ,            ] as const, {
   // 8 bit components
-  'uint8x2':   [                  1,  'uint',                2],
-  'uint8x4':   [                  1,  'uint',                4],
-  'sint8x2':   [                  1,  'sint',                2],
-  'sint8x4':   [                  1,  'sint',                4],
-  'unorm8x2':  [                  1, 'unorm',                2],
-  'unorm8x4':  [                  1, 'unorm',                4],
-  'snorm8x2':  [                  1, 'snorm',                2],
-  'snorm8x4':  [                  1, 'snorm',                4],
+  'uint8x2':   [                  1,  'uint',                2, 'vec2<u32>'],
+  'uint8x4':   [                  1,  'uint',                4, 'vec4<u32>'],
+  'sint8x2':   [                  1,  'sint',                2, 'vec2<i32>'],
+  'sint8x4':   [                  1,  'sint',                4, 'vec4<i32>'],
+  'unorm8x2':  [                  1, 'unorm',                2, 'vec2<f32>'],
+  'unorm8x4':  [                  1, 'unorm',                4, 'vec4<f32>'],
+  'snorm8x2':  [                  1, 'snorm',                2, 'vec2<f32>'],
+  'snorm8x4':  [                  1, 'snorm',                4, 'vec4<f32>'],
   // 16 bit components
-  'uint16x2':  [                  2,  'uint',                2],
-  'uint16x4':  [                  2,  'uint',                4],
-  'sint16x2':  [                  2,  'sint',                2],
-  'sint16x4':  [                  2,  'sint',                4],
-  'unorm16x2': [                  2, 'unorm',                2],
-  'unorm16x4': [                  2, 'unorm',                4],
-  'snorm16x2': [                  2, 'snorm',                2],
-  'snorm16x4': [                  2, 'snorm',                4],
-  'float16x2': [                  2, 'float',                2],
-  'float16x4': [                  2, 'float',                4],
+  'uint16x2':  [                  2,  'uint',                2, 'vec2<u32>'],
+  'uint16x4':  [                  2,  'uint',                4, 'vec4<u32>'],
+  'sint16x2':  [                  2,  'sint',                2, 'vec2<i32>'],
+  'sint16x4':  [                  2,  'sint',                4, 'vec4<i32>'],
+  'unorm16x2': [                  2, 'unorm',                2, 'vec2<f32>'],
+  'unorm16x4': [                  2, 'unorm',                4, 'vec4<f32>'],
+  'snorm16x2': [                  2, 'snorm',                2, 'vec2<f32>'],
+  'snorm16x4': [                  2, 'snorm',                4, 'vec4<f32>'],
+  'float16x2': [                  2, 'float',                2, 'vec2<f32>'],
+  'float16x4': [                  2, 'float',                4, 'vec4<f32>'],
   // 32 bit components
-  'float32':   [                  4, 'float',                1],
-  'float32x2': [                  4, 'float',                2],
-  'float32x3': [                  4, 'float',                3],
-  'float32x4': [                  4, 'float',                4],
-  'uint32':    [                  4,  'uint',                1],
-  'uint32x2':  [                  4,  'uint',                2],
-  'uint32x3':  [                  4,  'uint',                3],
-  'uint32x4':  [                  4,  'uint',                4],
-  'sint32':    [                  4,  'sint',                1],
-  'sint32x2':  [                  4,  'sint',                2],
-  'sint32x3':  [                  4,  'sint',                3],
-  'sint32x4':  [                  4,  'sint',                4]
+  'float32':   [                  4, 'float',                1,       'f32'],
+  'float32x2': [                  4, 'float',                2, 'vec2<f32>'],
+  'float32x3': [                  4, 'float',                3, 'vec3<f32>'],
+  'float32x4': [                  4, 'float',                4, 'vec4<f32>'],
+  'uint32':    [                  4,  'uint',                1,       'u32'],
+  'uint32x2':  [                  4,  'uint',                2, 'vec2<u32>'],
+  'uint32x3':  [                  4,  'uint',                3, 'vec3<u32>'],
+  'uint32x4':  [                  4,  'uint',                4, 'vec4<u32>'],
+  'sint32':    [                  4,  'sint',                1,       'i32'],
+  'sint32x2':  [                  4,  'sint',                2, 'vec2<i32>'],
+  'sint32x3':  [                  4,  'sint',                3, 'vec3<i32>'],
+  'sint32x4':  [                  4,  'sint',                4, 'vec4<i32>']
 } as const);
 /** List of all GPUVertexFormat values. */
 export const kVertexFormats = keysOf(kVertexFormatInfo);
@@ -458,7 +485,7 @@ export type PerStageBindingLimitClass =
  */
 export type PerPipelineBindingLimitClass = PerStageBindingLimitClass;
 
-type ValidBindableResource =
+export type ValidBindableResource =
   | 'uniformBuf'
   | 'storageBuf'
   | 'filtSamp'
@@ -593,9 +620,9 @@ assertTypeTrue<TypeEqual<GPUSamplerBindingType, typeof kSamplerBindingTypes[numb
 export function sampledTextureBindingTypeInfo(d: GPUTextureBindingLayout) {
   /* prettier-ignore */
   if (d.multisampled) {
-    return { usage: GPUConst.TextureUsage.SAMPLED, ...kBindingKind.sampledTexMS, ...kValidStagesAll, };
+    return { usage: GPUConst.TextureUsage.TEXTURE_BINDING, ...kBindingKind.sampledTexMS, ...kValidStagesAll, };
   } else {
-    return { usage: GPUConst.TextureUsage.SAMPLED, ...kBindingKind.sampledTex,   ...kValidStagesAll, };
+    return { usage: GPUConst.TextureUsage.TEXTURE_BINDING, ...kBindingKind.sampledTex,   ...kValidStagesAll, };
   }
 }
 /** List of all GPUTextureSampleType values. */

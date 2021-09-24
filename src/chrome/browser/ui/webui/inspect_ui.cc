@@ -202,72 +202,72 @@ class InspectMessageHandler : public WebUIMessageHandler {
 };
 
 void InspectMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiInitUICommand,
       base::BindRepeating(&InspectMessageHandler::HandleInitUICommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiInspectCommand,
       base::BindRepeating(&InspectMessageHandler::HandleInspectCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiInspectFallbackCommand,
       base::BindRepeating(&InspectMessageHandler::HandleInspectFallbackCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiActivateCommand,
       base::BindRepeating(&InspectMessageHandler::HandleActivateCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiCloseCommand,
       base::BindRepeating(&InspectMessageHandler::HandleCloseCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiPauseCommand,
       base::BindRepeating(&InspectMessageHandler::HandlePauseCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiDiscoverUsbDevicesEnabledCommand,
       base::BindRepeating(&InspectMessageHandler::HandleBooleanPrefChanged,
                           base::Unretained(this),
                           &prefs::kDevToolsDiscoverUsbDevicesEnabled[0]));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiPortForwardingEnabledCommand,
       base::BindRepeating(&InspectMessageHandler::HandleBooleanPrefChanged,
                           base::Unretained(this),
                           &prefs::kDevToolsPortForwardingEnabled[0]));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiPortForwardingConfigCommand,
       base::BindRepeating(
           &InspectMessageHandler::HandlePortForwardingConfigCommand,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiDiscoverTCPTargetsEnabledCommand,
       base::BindRepeating(&InspectMessageHandler::HandleBooleanPrefChanged,
                           base::Unretained(this),
                           &prefs::kDevToolsDiscoverTCPTargetsEnabled[0]));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiLaunchUIDevToolsCommand,
       base::BindRepeating(&InspectMessageHandler::HandleLaunchUIDevToolsCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiTCPDiscoveryConfigCommand,
       base::BindRepeating(
           &InspectMessageHandler::HandleTCPDiscoveryConfigCommand,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiOpenNodeFrontendCommand,
       base::BindRepeating(&InspectMessageHandler::HandleOpenNodeFrontendCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiReloadCommand,
       base::BindRepeating(&InspectMessageHandler::HandleReloadCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiOpenCommand,
       base::BindRepeating(&InspectMessageHandler::HandleOpenCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiInspectBrowser,
       base::BindRepeating(&InspectMessageHandler::HandleInspectBrowserCommand,
                           base::Unretained(this)));
@@ -281,7 +281,7 @@ static bool ParseStringArgs(const base::ListValue* args,
                             std::string* arg0,
                             std::string* arg1,
                             std::string* arg2 = 0) {
-  int arg_size = args->GetSize();
+  int arg_size = args->GetList().size();
   return (!arg0 || (arg_size > 0 && args->GetString(0, arg0))) &&
          (!arg1 || (arg_size > 1 && args->GetString(1, arg1))) &&
          (!arg2 || (arg_size > 2 && args->GetString(2, arg2)));
@@ -357,7 +357,7 @@ void InspectMessageHandler::HandleBooleanPrefChanged(
     return;
 
   bool enabled;
-  if (args->GetSize() == 1 && args->GetBoolean(0, &enabled))
+  if (args->GetList().size() == 1 && args->GetBoolean(0, &enabled))
     profile->GetPrefs()->SetBoolean(pref_name, enabled);
 }
 
@@ -368,7 +368,7 @@ void InspectMessageHandler::HandlePortForwardingConfigCommand(
     return;
 
   const base::DictionaryValue* dict_src;
-  if (args->GetSize() == 1 && args->GetDictionary(0, &dict_src))
+  if (args->GetList().size() == 1 && args->GetDictionary(0, &dict_src))
     profile->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig, *dict_src);
 }
 

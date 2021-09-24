@@ -119,8 +119,7 @@
 2715 LINUX VULKAN : dEQP-EGL.functional.query_surface.simple.pbuffer.rgb888_depth_stencil = FAIL
 2715 LINUX VULKAN : dEQP-EGL.functional.query_surface.simple.pbuffer.rgb888_no_depth_no_stencil = FAIL
 2716 LINUX VULKAN : dEQP-EGL.functional.preserve_swap.no_preserve.* = FAIL
-5753 LINUX VULKAN NVIDIA : dEQP-EGL.functional.resize.surface_size.grow = FAIL
-5884 LINUX VULKAN NVIDIA : dEQP-EGL.functional.resize.surface_size.stretch_width = FAIL
+5753 LINUX VULKAN : dEQP-EGL.functional.resize.surface_size.* = FAIL
 
 // Mac failures
 2546 MAC : dEQP-EGL.functional.native_color_mapping.native_window.* = FAIL
@@ -171,6 +170,16 @@
 2546 ANDROID VULKAN : dEQP-EGL.functional.query_surface.set_attribute.window.other = SKIP
 2546 ANDROID VULKAN : dEQP-EGL.functional.query_surface.simple.window.other = SKIP
 2546 ANDROID VULKAN : dEQP-EGL.functional.resize.pixel_density.* = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.api.create_image_gles2_android_native_rgb8 = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_read_pixels = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_texture = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgb565_texture_array = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgb8_texture_array = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgba8_texture_array = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.modify.android_native_rgb8_renderbuffer_clear_color = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.modify.android_native_rgb8_tex_subimage_rgb8 = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_android_native_rgb8_read_pixels = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_android_native_rgb8_texture = SKIP
 
 // Robustness failures on multiple platforms
 3711 : dEQP-EGL.functional.robustness.reset_context.shaders.out_of_bounds.reset_status.reads.* = FAIL

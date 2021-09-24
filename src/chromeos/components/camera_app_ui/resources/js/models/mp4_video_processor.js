@@ -23,8 +23,8 @@ let FileStream;  // eslint-disable-line no-unused-vars
  * The set of callbacks for an emulated device in Emscripten. ref:
  * https://emscripten.org/docs/api_reference/Filesystem-API.html#FS.registerDevice
  * @typedef {{
- *   open: function(!FileStream): undefined,
- *   close: function(!FileStream): undefined,
+ *   open: function(!FileStream): void,
+ *   close: function(!FileStream): void,
  *   read: function(!FileStream, !Int8Array, number, number, number): number,
  *   write: function(!FileStream, !Int8Array, number, number, number=): number,
  *   llseek: function(!FileStream, number, number): number,
@@ -147,7 +147,7 @@ class InputDevice {
     return {
       open: () => {},
       close: () => {},
-      read: this.read.bind(this),
+      read: (...args) => this.read(...args),
       write: () => assertNotReached('write should not be called on stdin'),
       llseek: () => assertNotReached('llseek should not be called on stdin'),
     };
@@ -156,7 +156,7 @@ class InputDevice {
   /**
    * Sets the readable callback. The callback would be called immediately if
    * the device is in a readable state.
-   * @param {function(number): undefined} callback
+   * @param {function(number): void} callback
    */
   setReadableCallback(callback) {
     if (this.data_.length > 0 || this.ended_) {
@@ -254,10 +254,10 @@ class OutputDevice {
   getFileOps() {
     return {
       open: () => {},
-      close: this.close.bind(this),
+      close: () => this.close(),
       read: () => assertNotReached('read should not be called on output'),
-      write: this.write.bind(this),
-      llseek: this.llseek.bind(this),
+      write: (...args) => this.write(...args),
+      llseek: (...args) => this.llseek(...args),
     };
   }
 }

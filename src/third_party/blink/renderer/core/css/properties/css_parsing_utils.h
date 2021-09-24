@@ -105,11 +105,11 @@ CSSPrimitiveValue* ConsumeSVGGeometryPropertyLength(CSSParserTokenRange&,
                                                     const CSSParserContext&,
                                                     ValueRange);
 
-CSSPrimitiveValue* ConsumeAngle(
+CORE_EXPORT CSSPrimitiveValue* ConsumeAngle(
     CSSParserTokenRange&,
     const CSSParserContext&,
     absl::optional<WebFeature> unitless_zero_feature);
-CSSPrimitiveValue* ConsumeAngle(
+CORE_EXPORT CSSPrimitiveValue* ConsumeAngle(
     CSSParserTokenRange&,
     const CSSParserContext&,
     absl::optional<WebFeature> unitless_zero_feature,
@@ -177,6 +177,16 @@ CSSValue* ConsumeImage(
 CSSValue* ConsumeImageOrNone(CSSParserTokenRange&, const CSSParserContext&);
 
 CSSValue* ConsumeAxis(CSSParserTokenRange&, const CSSParserContext& context);
+
+// Old syntax: auto | <length>
+CSSValue* ConsumeIntrinsicSizeLonghandOld(CSSParserTokenRange&,
+                                          const CSSParserContext&);
+// New syntax: none | <length> | auto && <length>
+CSSValue* ConsumeIntrinsicSizeLonghandNew(CSSParserTokenRange&,
+                                          const CSSParserContext&);
+// Picks between Old and New based on RuntimeEnabledFeatures
+CSSValue* ConsumeIntrinsicSizeLonghand(CSSParserTokenRange&,
+                                       const CSSParserContext&);
 
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenRange&);
 

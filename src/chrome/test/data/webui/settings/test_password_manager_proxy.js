@@ -5,8 +5,6 @@
 /** @fileoverview Test implementation of PasswordManagerProxy. */
 
 // clang-format off
-import {PasswordManagerProxy} from 'chrome://settings/settings.js';
-
 import {assertEquals} from '../chai_assert.js';
 import {TestBrowserProxy} from '../test_browser_proxy.js';
 
@@ -288,7 +286,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
     }
 
     const newCredential =
-        /** @type {PasswordManagerProxy.InsecureCredential} */ (
+        /** @type {chrome.passwordsPrivate.InsecureCredential} */ (
             Object.assign({}, credential));
     newCredential.password = this.plaintextPassword_;
     return Promise.resolve(newCredential);

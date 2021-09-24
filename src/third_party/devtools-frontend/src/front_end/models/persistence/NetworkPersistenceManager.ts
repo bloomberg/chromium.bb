@@ -14,7 +14,7 @@ import {PersistenceBinding, PersistenceImpl} from './PersistenceImpl.js';
 
 let networkPersistenceManagerInstance: NetworkPersistenceManager|null;
 
-export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrapper {
+export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
   private bindings: WeakMap<Workspace.UISourceCode.UISourceCode, PersistenceBinding>;
   private readonly originalResponseContentPromises: WeakMap<Workspace.UISourceCode.UISourceCode, Promise<string|null>>;
   private savingForOverrides: WeakSet<Workspace.UISourceCode.UISourceCode>;
@@ -54,10 +54,10 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
     this.enabled = false;
 
     this.workspace.addEventListener(Workspace.Workspace.Events.ProjectAdded, event => {
-      this.onProjectAdded(event.data as Workspace.Workspace.Project);
+      this.onProjectAdded(event.data);
     });
     this.workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, event => {
-      this.onProjectRemoved(event.data as Workspace.Workspace.Project);
+      this.onProjectRemoved(event.data);
     });
 
     PersistenceImpl.instance().addNetworkInterceptor(this.canHandleNetworkUISourceCode.bind(this));
@@ -122,8 +122,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
             }),
         Workspace.Workspace.WorkspaceImpl.instance().addEventListener(
             Workspace.Workspace.Events.WorkingCopyCommitted,
-            event => this.onUISourceCodeWorkingCopyCommitted(
-                event.data.uiSourceCode as Workspace.UISourceCode.UISourceCode)),
+            event => this.onUISourceCodeWorkingCopyCommitted(event.data.uiSourceCode)),
       ];
       await this.updateActiveProject();
     } else {
@@ -132,18 +131,21 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
     }
   }
 
-  private async uiSourceCodeRenamedListener(event: Common.EventTarget.EventTargetEvent): Promise<void> {
-    const uiSourceCode = event.data.uiSourceCode as Workspace.UISourceCode.UISourceCode;
+  private async uiSourceCodeRenamedListener(
+      event: Common.EventTarget.EventTargetEvent<Workspace.Workspace.UISourceCodeRenamedEvent>): Promise<void> {
+    const uiSourceCode = event.data.uiSourceCode;
     await this.onUISourceCodeRemoved(uiSourceCode);
     await this.onUISourceCodeAdded(uiSourceCode);
   }
 
-  private async uiSourceCodeRemovedListener(event: Common.EventTarget.EventTargetEvent): Promise<void> {
-    await this.onUISourceCodeRemoved(event.data as Workspace.UISourceCode.UISourceCode);
+  private async uiSourceCodeRemovedListener(
+      event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.UISourceCode>): Promise<void> {
+    await this.onUISourceCodeRemoved(event.data);
   }
 
-  private async uiSourceCodeAdded(event: Common.EventTarget.EventTargetEvent): Promise<void> {
-    await this.onUISourceCodeAdded(event.data as Workspace.UISourceCode.UISourceCode);
+  private async uiSourceCodeAdded(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.UISourceCode>):
+      Promise<void> {
+    await this.onUISourceCodeAdded(event.data);
   }
 
   private async updateActiveProject(): Promise<void> {
@@ -497,6 +499,12 @@ const RESERVED_FILENAMES = new Set<string>([
   'com8', 'com9', 'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9',
 ]);
 
-export const Events = {
-  ProjectChanged: Symbol('ProjectChanged'),
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum Events {
+  ProjectChanged = 'ProjectChanged',
+}
+
+export type EventTypes = {
+  [Events.ProjectChanged]: Workspace.Workspace.Project|null,
 };

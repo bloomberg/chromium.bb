@@ -90,7 +90,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   void beginLayer();
   // Pop state stack if top state was pushed by beginLayer, restore state and draw the bitmap.
   void endLayer();
-  void reset();
+  void reset();          // Called by the javascript interface
+  void ResetInternal();  // Called from within blink
 
   void scale(double sx, double sy);
   void scale(double sx, double sy, double sz);
@@ -297,7 +298,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   virtual sk_sp<PaintFilter> StateGetFilter() = 0;
   virtual void SnapshotStateForFilter() = 0;
 
-  virtual CanvasRenderingContextHost* GetCanvasRenderingContextHost() {
+  CanvasRenderingContextHost* GetCanvasRenderingContextHost() override {
     return nullptr;
   }
 
@@ -583,10 +584,6 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
     NOTREACHED();
     return false;
   }
-
-  int getScaledElapsedTime(float width,
-                           float height,
-                           base::TimeTicks start_time);
 
   // Only call if identifiability_study_helper_.ShouldUpdateBuilder() returns
   // true.

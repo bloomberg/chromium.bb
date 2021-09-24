@@ -16,6 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/optional_trace_event.h"
+#include "base/trace_event/typed_macros.h"
 #include "base/unguessable_token.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
@@ -40,6 +41,8 @@
 namespace content {
 
 namespace {
+
+using perfetto::protos::pbzero::ChromeTrackEvent;
 
 // Helper function to collect SiteInstances involved in rendering a single
 // FrameTree (which is a subset of SiteInstances in main frame's proxy_hosts_
@@ -300,11 +303,18 @@ FrameTreeNode* FrameTree::AddFrame(
     bool was_discarded,
     blink::mojom::FrameOwnerElementType owner_type) {
   CHECK_NE(new_routing_id, MSG_ROUTING_NONE);
-  // Normally this path is for blink adding a child local frame. But portals are
-  // making a remote frame, as the local frame is only created in a nested
-  // FrameTree.
-  DCHECK_NE(frame_remote.is_valid(),
-            owner_type == blink::mojom::FrameOwnerElementType::kPortal);
+  // Normally this path is for blink adding a child local frame. But both
+  // portals and fenced frames add a dummy child frame that never gets a
+  // corresponding RenderFrameImpl in any renderer process, and therefore its
+  // `frame_remote` is invalid. Also its RenderFrameHostImpl is exempt from
+  // having `RenderFrameCreated()` called on it (see later in this method, as
+  // well as `WebContentsObserverConsistencyChecker::RenderFrameHostChanged()`).
+  bool is_dummy_frame_for_portal_or_fenced_frame =
+      owner_type == blink::mojom::FrameOwnerElementType::kPortal ||
+      (owner_type == blink::mojom::FrameOwnerElementType::kFencedframe &&
+       blink::features::kFencedFramesImplementationTypeParam.Get() ==
+           blink::features::FencedFramesImplementationType::kMPArch);
+  DCHECK_NE(frame_remote.is_valid(), is_dummy_frame_for_portal_or_fenced_frame);
 
   // A child frame always starts with an initial empty document, which means
   // it is in the same SiteInstance as the parent frame. Ensure that the process
@@ -361,9 +371,9 @@ FrameTreeNode* FrameTree::AddFrame(
   // exists in the renderer process.
   // For consistency with navigating to a new RenderFrameHost case, we dispatch
   // RenderFrameCreated before RenderFrameHostChanged.
-  if (added_node->frame_owner_element_type() !=
-      blink::mojom::FrameOwnerElementType::kPortal) {
-    // Portals do not have a live RenderFrame in the renderer process.
+  if (!is_dummy_frame_for_portal_or_fenced_frame) {
+    // The outer dummy FrameTreeNode for both portals and fenced frames does not
+    // have a live RenderFrame in the renderer process.
     added_node->current_frame_host()->RenderFrameCreated();
   }
 
@@ -537,12 +547,16 @@ FrameTree::RenderViewHostMapId FrameTree::GetRenderViewHostMapId(
 
 void FrameTree::RegisterRenderViewHost(RenderViewHostMapId id,
                                        RenderViewHostImpl* rvh) {
+  TRACE_EVENT_INSTANT("navigation", "FrameTree::RegisterRenderViewHost",
+                      ChromeTrackEvent::kRenderViewHost, *rvh);
   CHECK(!base::Contains(render_view_host_map_, id));
   render_view_host_map_[id] = rvh;
 }
 
 void FrameTree::UnregisterRenderViewHost(RenderViewHostMapId id,
                                          RenderViewHostImpl* rvh) {
+  TRACE_EVENT_INSTANT("navigation", "FrameTree::UnregisterRenderViewHost",
+                      ChromeTrackEvent::kRenderViewHost, *rvh);
   auto it = render_view_host_map_.find(id);
   CHECK(it != render_view_host_map_.end());
   CHECK_EQ(it->second, rvh);

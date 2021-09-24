@@ -40,7 +40,7 @@ namespace {
 const QuicPacketLength kMinClientInitialPacketLength = 1200;
 
 // An alarm that informs the QuicDispatcher to delete old sessions.
-class DeleteSessionsAlarm : public QuicAlarm::Delegate {
+class DeleteSessionsAlarm : public QuicAlarm::DelegateWithoutContext {
  public:
   explicit DeleteSessionsAlarm(QuicDispatcher* dispatcher)
       : dispatcher_(dispatcher) {}
@@ -48,6 +48,24 @@ class DeleteSessionsAlarm : public QuicAlarm::Delegate {
   DeleteSessionsAlarm& operator=(const DeleteSessionsAlarm&) = delete;
 
   void OnAlarm() override { dispatcher_->DeleteSessions(); }
+
+ private:
+  // Not owned.
+  QuicDispatcher* dispatcher_;
+};
+
+// An alarm that informs the QuicDispatcher to clear
+// recent_stateless_reset_addresses_.
+class ClearStatelessResetAddressesAlarm
+    : public QuicAlarm::DelegateWithoutContext {
+ public:
+  explicit ClearStatelessResetAddressesAlarm(QuicDispatcher* dispatcher)
+      : dispatcher_(dispatcher) {}
+  ClearStatelessResetAddressesAlarm(const DeleteSessionsAlarm&) = delete;
+  ClearStatelessResetAddressesAlarm& operator=(const DeleteSessionsAlarm&) =
+      delete;
+
+  void OnAlarm() override { dispatcher_->ClearStatelessResetAddresses(); }
 
  private:
   // Not owned.
@@ -311,8 +329,7 @@ bool MaybeHandleLegacyVersionEncapsulation(
 }  // namespace
 
 QuicDispatcher::QuicDispatcher(
-    const QuicConfig* config,
-    const QuicCryptoServerConfig* crypto_config,
+    const QuicConfig* config, const QuicCryptoServerConfig* crypto_config,
     QuicVersionManager* version_manager,
     std::unique_ptr<QuicConnectionHelperInterface> helper,
     std::unique_ptr<QuicCryptoServerStreamBase::Helper> session_helper,
@@ -335,6 +352,8 @@ QuicDispatcher::QuicDispatcher(
       allow_short_initial_server_connection_ids_(false),
       expected_server_connection_id_length_(
           expected_server_connection_id_length),
+      clear_stateless_reset_addresses_alarm_(alarm_factory_->CreateAlarm(
+          new ClearStatelessResetAddressesAlarm(this))),
       should_update_expected_server_connection_id_length_(false) {
   QUIC_BUG_IF(quic_bug_12724_1, GetSupportedVersions().empty())
       << "Trying to create dispatcher without any supported versions";
@@ -347,6 +366,9 @@ QuicDispatcher::~QuicDispatcher() {
   if (GetQuicRestartFlag(quic_alarm_add_permanent_cancel) &&
       delete_sessions_alarm_ != nullptr) {
     delete_sessions_alarm_->PermanentCancel();
+  }
+  if (clear_stateless_reset_addresses_alarm_ != nullptr) {
+    clear_stateless_reset_addresses_alarm_->PermanentCancel();
   }
   reference_counted_session_map_.clear();
   closed_ref_counted_session_list_.clear();
@@ -512,19 +534,16 @@ bool QuicDispatcher::MaybeDispatchPacket(
     return true;
   }
 
-  if (GetQuicReloadableFlag(quic_discard_packets_with_invalid_cid)) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_discard_packets_with_invalid_cid);
-    if (packet_info.version_flag && packet_info.version.IsKnown() &&
-        !QuicUtils::IsConnectionIdLengthValidForVersion(
-            server_connection_id.length(),
-            packet_info.version.transport_version)) {
-      QUIC_DLOG(INFO) << "Packet with destination connection ID "
-                      << server_connection_id << " is invalid with version "
-                      << packet_info.version;
-      // Drop the packet silently.
-      QUIC_CODE_COUNT(quic_dropped_invalid_initial_connection_id);
-      return true;
-    }
+  if (packet_info.version_flag && packet_info.version.IsKnown() &&
+      !QuicUtils::IsConnectionIdLengthValidForVersion(
+          server_connection_id.length(),
+          packet_info.version.transport_version)) {
+    QUIC_DLOG(INFO) << "Packet with destination connection ID "
+                    << server_connection_id << " is invalid with version "
+                    << packet_info.version;
+    // Drop the packet silently.
+    QUIC_CODE_COUNT(quic_dropped_invalid_initial_connection_id);
+    return true;
   }
 
   // Packets with connection IDs for active connections are processed
@@ -942,6 +961,10 @@ void QuicDispatcher::DeleteSessions() {
     }
   }
   closed_ref_counted_session_list_.clear();
+}
+
+void QuicDispatcher::ClearStatelessResetAddresses() {
+  recent_stateless_reset_addresses_.clear();
 }
 
 void QuicDispatcher::OnCanWrite() {
@@ -1369,8 +1392,14 @@ bool QuicDispatcher::IsSupportedVersion(const ParsedQuicVersion version) {
 void QuicDispatcher::MaybeResetPacketsWithNoVersion(
     const ReceivedPacketInfo& packet_info) {
   QUICHE_DCHECK(!packet_info.version_flag);
-  if (GetQuicRestartFlag(quic_fix_stateless_reset2) &&
-      packet_info.form != GOOGLE_QUIC_PACKET) {
+  // Do not send a stateless reset if a reset has been sent to this address
+  // recently.
+  if (recent_stateless_reset_addresses_.contains(packet_info.peer_address)) {
+    QUIC_CODE_COUNT(quic_donot_send_reset_repeatedly);
+    QUICHE_DCHECK(use_recent_reset_addresses_);
+    return;
+  }
+  if (packet_info.form != GOOGLE_QUIC_PACKET) {
     // Drop IETF packets smaller than the minimal stateless reset length.
     if (packet_info.packet.length() <=
         QuicFramer::GetMinStatelessResetPacketLength()) {
@@ -1386,8 +1415,24 @@ void QuicDispatcher::MaybeResetPacketsWithNoVersion(
       QUIC_CODE_COUNT(drop_too_small_packets);
       return;
     }
-    // TODO(fayang): Consider rate limiting reset packets if reset packet size >
-    // packet_length.
+  }
+  if (use_recent_reset_addresses_) {
+    QUIC_RESTART_FLAG_COUNT(quic_use_recent_reset_addresses);
+    // Do not send a stateless reset if there are too many stateless reset
+    // addresses.
+    if (recent_stateless_reset_addresses_.size() >=
+        GetQuicFlag(FLAGS_quic_max_recent_stateless_reset_addresses)) {
+      QUIC_CODE_COUNT(quic_too_many_recent_reset_addresses);
+      return;
+    }
+    if (recent_stateless_reset_addresses_.empty()) {
+      clear_stateless_reset_addresses_alarm_->Update(
+          helper()->GetClock()->ApproximateNow() +
+              QuicTime::Delta::FromMilliseconds(GetQuicFlag(
+                  FLAGS_quic_recent_stateless_reset_addresses_lifetime_ms)),
+          QuicTime::Delta::Zero());
+    }
+    recent_stateless_reset_addresses_.emplace(packet_info.peer_address);
   }
 
   time_wait_list_manager()->SendPublicReset(

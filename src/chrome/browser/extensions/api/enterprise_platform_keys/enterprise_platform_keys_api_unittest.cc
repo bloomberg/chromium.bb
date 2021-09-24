@@ -39,12 +39,14 @@ namespace {
 
 const char kUserEmail[] = "test@google.com";
 
-void FakeRunCheckNotRegister(chromeos::attestation::AttestationKeyType key_type,
-                             Profile* profile,
-                             ash::attestation::TpmChallengeKeyCallback callback,
-                             const std::string& challenge,
-                             bool register_key,
-                             const std::string& key_name_for_spkac) {
+void FakeRunCheckNotRegister(
+    chromeos::attestation::AttestationKeyType key_type,
+    Profile* profile,
+    ash::attestation::TpmChallengeKeyCallback callback,
+    const std::string& challenge,
+    bool register_key,
+    const std::string& key_name_for_spkac,
+    const absl::optional<::attestation::DeviceTrustSignals>& signals) {
   EXPECT_FALSE(register_key);
   std::move(callback).Run(
       ash::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
@@ -217,7 +219,7 @@ TEST_F(EPKChallengeMachineKeyTest, KeyNotRegisteredByDefault) {
   SetMockTpmChallenger();
 
   base::ListValue allowlist;
-  allowlist.AppendString(extension_->id());
+  allowlist.Append(extension_->id());
   prefs_->Set(prefs::kAttestationExtensionAllowlist, allowlist);
 
   EXPECT_CALL(*mock_tpm_challenge_key_, BuildResponse)

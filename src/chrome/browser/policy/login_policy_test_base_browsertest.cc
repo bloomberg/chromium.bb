@@ -37,7 +37,7 @@ namespace policy {
 
 IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedLanguages) {
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+  LogIn();
 
   Profile* const profile = GetProfileForActiveUser();
   PrefService* prefs = profile->GetPrefs();
@@ -50,14 +50,15 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedLanguages) {
   std::unique_ptr<base::DictionaryValue> policy =
       std::make_unique<base::DictionaryValue>();
   base::ListValue allowed_languages;
-  allowed_languages.AppendString("fr");
+  allowed_languages.Append("fr");
   policy->SetKey(key::kAllowedLanguages, std::move(allowed_languages));
+
   user_policy_helper()->SetPolicyAndWait(*policy, base::DictionaryValue(),
                                          profile);
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedLanguages) {
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+  LogIn();
 
   Profile* const profile = GetProfileForActiveUser();
   const PrefService* prefs = profile->GetPrefs();
@@ -66,7 +67,8 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedLanguages) {
   // (see |GetMandatoryPoliciesValue|)
   Browser* browser = CreateBrowser(profile);
   EXPECT_EQ("fr", prefs->GetString(language::prefs::kApplicationLocale));
-  ui_test_utils::NavigateToURL(browser, GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser, GURL(chrome::kChromeUINewTabURL)));
   std::u16string french_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
   std::u16string title;
   EXPECT_TRUE(ui_test_utils::GetCurrentTabTitle(browser, &title));
@@ -87,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedLanguages) {
 
 IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+  LogIn();
 
   Profile* const profile = GetProfileForActiveUser();
 
@@ -110,14 +112,14 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[1]));
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
 
-  // Set policy to only allow "xkb:fr::fra", "xkb:de::ger" an an invalid value
+  // Set policy to only allow "xkb:fr::fra", "xkb:de::ger" and an invalid value
   // as input method.
   std::unique_ptr<base::DictionaryValue> policy =
       std::make_unique<base::DictionaryValue>();
   base::ListValue allowed_input_methods;
-  allowed_input_methods.AppendString("xkb:fr::fra");
-  allowed_input_methods.AppendString("xkb:de::ger");
-  allowed_input_methods.AppendString("invalid_value_will_be_ignored");
+  allowed_input_methods.Append("xkb:fr::fra");
+  allowed_input_methods.Append("xkb:de::ger");
+  allowed_input_methods.Append("invalid_value_will_be_ignored");
   policy->SetKey(key::kAllowedInputMethods, std::move(allowed_input_methods));
   user_policy_helper()->SetPolicyAndWait(*policy, base::DictionaryValue(),
                                          profile);
@@ -135,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   std::unique_ptr<base::DictionaryValue> policy_invalid =
       std::make_unique<base::DictionaryValue>();
   base::ListValue invalid_input_methods;
-  invalid_input_methods.AppendString("invalid_value_will_be_ignored");
+  invalid_input_methods.Append("invalid_value_will_be_ignored");
   policy_invalid->SetKey(key::kAllowedInputMethods,
                          std::move(invalid_input_methods));
   user_policy_helper()->SetPolicyAndWait(*policy_invalid,
@@ -178,7 +180,7 @@ class StartupBrowserWindowLaunchSuppressedTest : public LoginPolicyTestBase {
 
   void CheckLaunchedBrowserCount(unsigned int count) {
     SkipToLoginScreen();
-    LogIn(kAccountId, kAccountPassword, kEmptyServices);
+    LogIn();
 
     Profile* const profile = GetProfileForActiveUser();
 
@@ -236,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(PrimaryUserPoliciesProxiedTest,
   SkipToLoginScreen();
 
   ProfileWaiter profile_waiter;
-  TriggerLogIn(kAccountId, kAccountPassword, kEmptyServices);
+  TriggerLogIn();
   profile_waiter.WaitForProfileAdded();
 
   const base::Value* policy_value =

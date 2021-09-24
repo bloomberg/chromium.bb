@@ -165,7 +165,7 @@ enum class GrSemaphoreWrapType {
 };
 
 /**
- * This enum is used to specify the load operation to be used when an GrOpsTask/GrOpsRenderPass
+ * This enum is used to specify the load operation to be used when an OpsTask/GrOpsRenderPass
  * begins execution.
  */
 enum class GrLoadOp {
@@ -175,7 +175,7 @@ enum class GrLoadOp {
 };
 
 /**
- * This enum is used to specify the store operation to be used when an GrOpsTask/GrOpsRenderPass
+ * This enum is used to specify the store operation to be used when an OpsTask/GrOpsRenderPass
  * ends execution.
  */
 enum class GrStoreOp {
@@ -354,7 +354,6 @@ enum class GrTextureType {
 
 enum GrShaderType {
     kVertex_GrShaderType,
-    kGeometry_GrShaderType,
     kFragment_GrShaderType,
 
     kLastkFragment_GrShaderType = kFragment_GrShaderType
@@ -362,12 +361,11 @@ enum GrShaderType {
 static const int kGrShaderTypeCount = kLastkFragment_GrShaderType + 1;
 
 enum GrShaderFlags {
-    kNone_GrShaderFlags = 0,
-    kVertex_GrShaderFlag = 1,
-    kTessControl_GrShaderFlag = 1 << 2,
+    kNone_GrShaderFlags          = 0,
+    kVertex_GrShaderFlag         = 1 << 0,
+    kTessControl_GrShaderFlag    = 1 << 1,
     kTessEvaluation_GrShaderFlag = 1 << 2,
-    kGeometry_GrShaderFlag = 1 << 3,
-    kFragment_GrShaderFlag = 1 << 4
+    kFragment_GrShaderFlag       = 1 << 3
 };
 GR_MAKE_BITFIELD_OPS(GrShaderFlags)
 
@@ -854,7 +852,7 @@ typedef uint64_t GrFence;
  * Used to include or exclude specific GPU path renderers for testing purposes.
  */
 enum class GpuPathRenderers {
-    kNone              =   0,  // Always use software masks and/or GrDefaultPathRenderer.
+    kNone              =   0,  // Always use software masks and/or DefaultPathRenderer.
     kDashLine          =   1 << 0,
     kAtlas             =   1 << 1,
     kTessellation      =   1 << 2,
@@ -940,8 +938,7 @@ static constexpr SkColorType GrColorTypeToSkColorType(GrColorType ct) {
         case GrColorType::kBGR_565:          return kRGB_565_SkColorType;
         case GrColorType::kABGR_4444:        return kARGB_4444_SkColorType;
         case GrColorType::kRGBA_8888:        return kRGBA_8888_SkColorType;
-        // Once we add kRGBA_8888_SRGB_SkColorType we should return that here.
-        case GrColorType::kRGBA_8888_SRGB:   return kRGBA_8888_SkColorType;
+        case GrColorType::kRGBA_8888_SRGB:   return kSRGBA_8888_SkColorType;
         case GrColorType::kRGB_888x:         return kRGB_888x_SkColorType;
         case GrColorType::kRG_88:            return kR8G8_unorm_SkColorType;
         case GrColorType::kBGRA_8888:        return kBGRA_8888_SkColorType;
@@ -978,6 +975,7 @@ static constexpr GrColorType SkColorTypeToGrColorType(SkColorType ct) {
         case kRGB_565_SkColorType:            return GrColorType::kBGR_565;
         case kARGB_4444_SkColorType:          return GrColorType::kABGR_4444;
         case kRGBA_8888_SkColorType:          return GrColorType::kRGBA_8888;
+        case kSRGBA_8888_SkColorType:         return GrColorType::kRGBA_8888_SRGB;
         case kRGB_888x_SkColorType:           return GrColorType::kRGB_888x;
         case kBGRA_8888_SkColorType:          return GrColorType::kBGRA_8888;
         case kGray_8_SkColorType:             return GrColorType::kGray_8;
@@ -997,12 +995,6 @@ static constexpr GrColorType SkColorTypeToGrColorType(SkColorType ct) {
     }
     SkUNREACHABLE;
 }
-
-// This is a temporary means of mapping an SkColorType and format to a
-// GrColorType::kRGBA_8888_SRGB. Once we have an SRGB SkColorType this can go away.
-GrColorType SkColorTypeAndFormatToGrColorType(const GrCaps* caps,
-                                              SkColorType skCT,
-                                              const GrBackendFormat& format);
 
 static constexpr uint32_t GrColorTypeChannelFlags(GrColorType ct) {
     switch (ct) {

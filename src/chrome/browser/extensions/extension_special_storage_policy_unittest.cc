@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/cxx17_backports.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -99,7 +100,9 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     DISALLOW_COPY_AND_ASSIGN(PolicyChangeObserver);
   };
 
-  void SetUp() override { policy_ = new ExtensionSpecialStoragePolicy(NULL); }
+  void SetUp() override {
+    policy_ = base::MakeRefCounted<ExtensionSpecialStoragePolicy>(nullptr);
+  }
 
   scoped_refptr<Extension> CreateProtectedApp() {
 #if defined(OS_WIN)
@@ -112,8 +115,8 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     manifest.SetString(keys::kVersion, "1");
     manifest.SetString(keys::kLaunchWebURL, "http://explicit/protected/start");
     auto list = std::make_unique<base::ListValue>();
-    list->AppendString("http://explicit/protected");
-    list->AppendString("*://*.wildcards/protected");
+    list->Append("http://explicit/protected");
+    list->Append("*://*.wildcards/protected");
     manifest.Set(keys::kWebURLs, std::move(list));
     std::string error;
     scoped_refptr<Extension> protected_app =
@@ -134,11 +137,11 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     manifest.SetString(keys::kVersion, "1");
     manifest.SetString(keys::kLaunchWebURL, "http://explicit/unlimited/start");
     auto list = std::make_unique<base::ListValue>();
-    list->AppendString("unlimitedStorage");
+    list->Append("unlimitedStorage");
     manifest.Set(keys::kPermissions, std::move(list));
     list = std::make_unique<base::ListValue>();
-    list->AppendString("http://explicit/unlimited");
-    list->AppendString("*://*.wildcards/unlimited");
+    list->Append("http://explicit/unlimited");
+    list->Append("*://*.wildcards/unlimited");
     manifest.Set(keys::kWebURLs, std::move(list));
     std::string error;
     scoped_refptr<Extension> unlimited_app =
@@ -305,7 +308,8 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
   TestingProfile profile;
   content_settings::CookieSettings* cookie_settings =
       CookieSettingsFactory::GetForProfile(&profile).get();
-  policy_ = new ExtensionSpecialStoragePolicy(cookie_settings);
+  policy_ =
+      base::MakeRefCounted<ExtensionSpecialStoragePolicy>(cookie_settings);
 
   EXPECT_FALSE(policy_->HasSessionOnlyOrigins());
 
@@ -332,7 +336,8 @@ TEST_F(ExtensionSpecialStoragePolicyTest, IsStorageDurableTest) {
   TestingProfile profile;
   content_settings::CookieSettings* cookie_settings =
       CookieSettingsFactory::GetForProfile(&profile).get();
-  policy_ = new ExtensionSpecialStoragePolicy(cookie_settings);
+  policy_ =
+      base::MakeRefCounted<ExtensionSpecialStoragePolicy>(cookie_settings);
   const GURL kHttpUrl("http://foo.com");
 
   EXPECT_FALSE(policy_->IsStorageDurable(kHttpUrl));

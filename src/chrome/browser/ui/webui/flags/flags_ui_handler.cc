@@ -26,24 +26,24 @@ FlagsUIHandler::FlagsUIHandler()
 FlagsUIHandler::~FlagsUIHandler() {}
 
 void FlagsUIHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       flags_ui::kRequestExperimentalFeatures,
       base::BindRepeating(&FlagsUIHandler::HandleRequestExperimentalFeatures,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       flags_ui::kEnableExperimentalFeature,
       base::BindRepeating(
           &FlagsUIHandler::HandleEnableExperimentalFeatureMessage,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       flags_ui::kSetOriginListFlag,
       base::BindRepeating(&FlagsUIHandler::HandleSetOriginListFlagMessage,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       flags_ui::kRestartBrowser,
       base::BindRepeating(&FlagsUIHandler::HandleRestartBrowser,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       flags_ui::kResetAllFlags,
       base::BindRepeating(&FlagsUIHandler::HandleResetAllFlags,
                           base::Unretained(this)));
@@ -117,8 +117,8 @@ void FlagsUIHandler::SendExperimentalFeatures() {
 void FlagsUIHandler::HandleEnableExperimentalFeatureMessage(
     const base::ListValue* args) {
   DCHECK(flags_storage_);
-  DCHECK_EQ(2u, args->GetSize());
-  if (args->GetSize() != 2)
+  DCHECK_EQ(2u, args->GetList().size());
+  if (args->GetList().size() != 2)
     return;
 
   std::string entry_internal_name;
@@ -136,7 +136,7 @@ void FlagsUIHandler::HandleEnableExperimentalFeatureMessage(
 void FlagsUIHandler::HandleSetOriginListFlagMessage(
     const base::ListValue* args) {
   DCHECK(flags_storage_);
-  if (args->GetSize() != 2) {
+  if (args->GetList().size() != 2) {
     NOTREACHED();
     return;
   }

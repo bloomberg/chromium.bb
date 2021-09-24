@@ -129,10 +129,6 @@ MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoder;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderIgnoreWorkarounds;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderVP9Profile2;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderAV1;
-MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderSkipMultithreaded;
-MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderAlwaysCopy;
-MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderAllowOverlay;
-MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderForceEnableHDR;
 MEDIA_EXPORT extern const base::Feature kEnableMediaInternals;
 MEDIA_EXPORT extern const base::Feature kExposeSwDecodersToWebRTC;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
@@ -205,6 +201,7 @@ MEDIA_EXPORT extern const base::Feature kVaapiVideoMinResolutionForPerformance;
 MEDIA_EXPORT extern const base::Feature kVaapiVP8Encoder;
 MEDIA_EXPORT extern const base::Feature kVaapiVP9Encoder;
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
+MEDIA_EXPORT extern const base::Feature kVaapiH264TemporalLayerHWEncoding;
 MEDIA_EXPORT extern const base::Feature kVaapiVp9kSVCHWDecoding;
 MEDIA_EXPORT extern const base::Feature kVaapiVp9kSVCHWEncoding;
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)

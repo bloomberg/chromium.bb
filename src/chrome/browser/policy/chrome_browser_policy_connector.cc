@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/policy/configuration_policy_handler_list_factory.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/channel_info.h"
@@ -119,6 +120,12 @@ void ChromeBrowserPolicyConnector::Init(
 
   InitInternal(local_state, std::move(device_management_service));
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+bool ChromeBrowserPolicyConnector::IsMainUserManaged() const {
+  return PolicyLoaderLacros::IsMainUserManaged();
+}
+#endif
 
 bool ChromeBrowserPolicyConnector::IsDeviceEnterpriseManaged() const {
   NOTREACHED() << "This method is only defined for Chrome OS";
@@ -236,7 +243,7 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
   std::unique_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
-      kRegistryChromePolicyKey));
+      ManagementServiceFactory::GetForPlatform(), kRegistryChromePolicyKey));
   return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
                                                std::move(loader));
 #elif defined(OS_MAC)

@@ -21,6 +21,7 @@
 #include "chrome/browser/metrics/usertype_by_devicetype_metrics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -41,6 +42,7 @@
 #include "extensions/common/extension.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "ui/aura/window.h"
 
 namespace {
 
@@ -54,6 +56,7 @@ constexpr char kAppsRunningPercentageHistogramPrefix[] =
 constexpr char kAppsActivatedCountHistogramPrefix[] = "Apps.ActivatedCount.";
 constexpr char kAppsUsageTimeHistogramPrefix[] = "Apps.UsageTime.";
 constexpr char kAppsUsageTimeHistogramPrefixV2[] = "Apps.UsageTimeV2.";
+constexpr char kAppPreviousReadinessStatus[] = "Apps.PreviousReadinessStatus.";
 
 constexpr char kInstallSourceUnknownHistogram[] = "Unknown";
 constexpr char kInstallSourceSystemHistogram[] = "System";
@@ -141,16 +144,27 @@ apps::AppTypeName GetAppTypeNameForWebApp(
     Profile* profile,
     const std::string& app_id,
     apps::mojom::LaunchContainer container) {
-  auto* provider = web_app::WebAppProvider::Get(profile);
-  DCHECK(provider);
+  apps::AppTypeName type_name = apps::AppTypeName::kChromeBrowser;
+  apps::mojom::WindowMode window_mode = apps::mojom::WindowMode::kBrowser;
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->AppRegistryCache()
+      .ForOneApp(
+          app_id, [&type_name, &window_mode](const apps::AppUpdate& update) {
+            DCHECK(update.AppType() == apps::mojom::AppType::kWeb ||
+                   update.AppType() == apps::mojom::AppType::kSystemWeb);
 
-  const auto* web_app = provider->registrar().GetAppById(app_id);
-  if (!web_app) {
-    return apps::AppTypeName::kChromeBrowser;
-  }
+            // For system web apps, the install source is |kSystem|.
+            // The app type may be kSystemWeb (system web apps in Ash when
+            // Lacros web apps are enabled), or kWeb (all other cases).
+            type_name =
+                (update.InstallSource() == apps::mojom::InstallSource::kSystem)
+                    ? apps::AppTypeName::kSystemWeb
+                    : apps::AppTypeName::kWeb;
+            window_mode = update.WindowMode();
+          });
 
-  if (web_app->IsSystemApp()) {
-    return apps::AppTypeName::kSystemWeb;
+  if (type_name != apps::AppTypeName::kWeb) {
+    return type_name;
   }
 
   switch (container) {
@@ -162,48 +176,11 @@ apps::AppTypeName GetAppTypeNameForWebApp(
       break;
   }
 
-  if (web_app::ConvertDisplayModeToAppLaunchContainer(
-          provider->registrar().GetAppEffectiveDisplayMode(app_id)) ==
-      apps::mojom::LaunchContainer::kLaunchContainerTab) {
+  if (window_mode == apps::mojom::WindowMode::kBrowser) {
     return apps::AppTypeName::kChromeBrowser;
   }
 
   return apps::AppTypeName::kWeb;
-}
-
-// Returns AppTypeName used for app launch metrics.
-apps::AppTypeName GetAppTypeName(Profile* profile,
-                                 apps::mojom::AppType app_type,
-                                 const std::string& app_id,
-                                 apps::mojom::LaunchContainer container) {
-  switch (app_type) {
-    case apps::mojom::AppType::kUnknown:
-      return apps::AppTypeName::kUnknown;
-    case apps::mojom::AppType::kArc:
-      return apps::AppTypeName::kArc;
-    case apps::mojom::AppType::kBuiltIn:
-      return apps::AppTypeName::kBuiltIn;
-    case apps::mojom::AppType::kCrostini:
-      return apps::AppTypeName::kCrostini;
-    case apps::mojom::AppType::kExtension:
-      return GetAppTypeNameForChromeApp(profile, app_id, container);
-    case apps::mojom::AppType::kWeb:
-      return GetAppTypeNameForWebApp(profile, app_id, container);
-    case apps::mojom::AppType::kMacOs:
-      return apps::AppTypeName::kMacOs;
-    case apps::mojom::AppType::kPluginVm:
-      return apps::AppTypeName::kPluginVm;
-    case apps::mojom::AppType::kStandaloneBrowser:
-      return apps::AppTypeName::kStandaloneBrowser;
-    case apps::mojom::AppType::kRemote:
-      return apps::AppTypeName::kRemote;
-    case apps::mojom::AppType::kBorealis:
-      return apps::AppTypeName::kBorealis;
-    case apps::mojom::AppType::kSystemWeb:
-      return apps::AppTypeName::kSystemWeb;
-    case apps::mojom::AppType::kStandaloneBrowserExtension:
-      return apps::AppTypeName::kStandaloneBrowserExtension;
-  }
 }
 
 std::string GetInstallSource(apps::mojom::InstallSource install_source) {
@@ -235,6 +212,14 @@ bool IsBrowser(aura::Window* window) {
   return true;
 }
 
+// Returns true if the app with |app_id| is opened as a tab in a browser window.
+// Otherwise, return false;
+bool IsAppOpenedInTab(apps::AppTypeName app_type_name,
+                      const std::string& app_id) {
+  return app_type_name == apps::AppTypeName::kChromeBrowser &&
+         app_id != extension_misc::kChromeAppId;
+}
+
 // Determines what app type a web app should be logged as based on |window|. In
 // particular, web apps in tabs are logged as part of Chrome browser.
 apps::AppTypeName GetAppTypeNameForWebAppWindow(Profile* profile,
@@ -255,10 +240,10 @@ apps::AppTypeName GetAppTypeNameForWebAppWindow(Profile* profile,
 }
 
 // Returns AppTypeName used for app running metrics.
-apps::AppTypeName GetAppTypeName(Profile* profile,
-                                 apps::mojom::AppType app_type,
-                                 const std::string& app_id,
-                                 aura::Window* window) {
+apps::AppTypeName GetAppTypeNameForWindow(Profile* profile,
+                                          apps::mojom::AppType app_type,
+                                          const std::string& app_id,
+                                          aura::Window* window) {
   switch (app_type) {
     case apps::mojom::AppType::kUnknown:
       return apps::AppTypeName::kUnknown;
@@ -503,6 +488,40 @@ const std::set<apps::AppTypeName>& GetAppTypeNameSet() {
   return ::GetAppTypeNameSet();
 }
 
+apps::AppTypeName GetAppTypeName(Profile* profile,
+                                 apps::mojom::AppType app_type,
+                                 const std::string& app_id,
+                                 apps::mojom::LaunchContainer container) {
+  switch (app_type) {
+    case apps::mojom::AppType::kUnknown:
+      return apps::AppTypeName::kUnknown;
+    case apps::mojom::AppType::kArc:
+      return apps::AppTypeName::kArc;
+    case apps::mojom::AppType::kBuiltIn:
+      return apps::AppTypeName::kBuiltIn;
+    case apps::mojom::AppType::kCrostini:
+      return apps::AppTypeName::kCrostini;
+    case apps::mojom::AppType::kExtension:
+      return GetAppTypeNameForChromeApp(profile, app_id, container);
+    case apps::mojom::AppType::kWeb:
+      return GetAppTypeNameForWebApp(profile, app_id, container);
+    case apps::mojom::AppType::kMacOs:
+      return apps::AppTypeName::kMacOs;
+    case apps::mojom::AppType::kPluginVm:
+      return apps::AppTypeName::kPluginVm;
+    case apps::mojom::AppType::kStandaloneBrowser:
+      return apps::AppTypeName::kStandaloneBrowser;
+    case apps::mojom::AppType::kRemote:
+      return apps::AppTypeName::kRemote;
+    case apps::mojom::AppType::kBorealis:
+      return apps::AppTypeName::kBorealis;
+    case apps::mojom::AppType::kSystemWeb:
+      return apps::AppTypeName::kSystemWeb;
+    case apps::mojom::AppType::kStandaloneBrowserExtension:
+      return apps::AppTypeName::kStandaloneBrowserExtension;
+  }
+}
+
 void RecordAppLaunchMetrics(Profile* profile,
                             apps::mojom::AppType app_type,
                             const std::string& app_id,
@@ -522,6 +541,12 @@ void RecordAppLaunchMetrics(Profile* profile,
                                                     launch_source, container);
   }
 }
+
+AppPlatformMetrics::BrowserToTab::BrowserToTab(
+    const Instance::InstanceKey& browser_key,
+    const Instance::InstanceKey& tab_key)
+    : browser_key(Instance::InstanceKey(browser_key)),
+      tab_key(Instance::InstanceKey(tab_key)) {}
 
 AppPlatformMetrics::AppPlatformMetrics(
     Profile* profile,
@@ -653,6 +678,7 @@ void AppPlatformMetrics::RecordAppLaunchUkm(
       .SetLaunchSource((int)launch_source)
       .SetUserDeviceMatrix(GetUserTypeByDeviceTypeMetrics())
       .Record(ukm::UkmRecorder::Get());
+  ukm::AppSourceUrlRecorder::MarkSourceForDeletion(source_id);
 }
 
 void AppPlatformMetrics::RecordAppUninstallUkm(
@@ -676,14 +702,13 @@ void AppPlatformMetrics::RecordAppUninstallUkm(
       .SetUninstallSource((int)uninstall_source)
       .SetUserDeviceMatrix(user_type_by_device_type_)
       .Record(ukm::UkmRecorder::Get());
+  ukm::AppSourceUrlRecorder::MarkSourceForDeletion(source_id);
 }
 
 void AppPlatformMetrics::OnAppTypeInitialized(apps::mojom::AppType app_type) {
   if (should_record_metrics_on_new_day_) {
     RecordAppsCount(app_type);
   }
-
-  initialized_app_types.insert(app_type);
 }
 
 void AppPlatformMetrics::OnAppRegistryCacheWillBeDestroyed(
@@ -701,8 +726,14 @@ void AppPlatformMetrics::OnAppUpdate(const apps::AppUpdate& update) {
     return;
   }
 
+  if (update.AppId() == extension_misc::kFilesManagerAppId ||
+      update.AppId() == arc::kPlayStoreAppId ||
+      update.AppId() == arc::kAndroidContactsAppId) {
+    RecordAppReadinessStatus(update);
+  }
+
   InstallTime install_time =
-      base::Contains(initialized_app_types, update.AppType())
+      app_registry_cache_.IsAppTypeInitialized(update.AppType())
           ? InstallTime::kRunning
           : InstallTime::kInit;
   RecordAppsInstallUkm(update, install_time);
@@ -720,69 +751,197 @@ void AppPlatformMetrics::OnInstanceUpdate(const apps::InstanceUpdate& update) {
   }
 
   bool is_active = update.State() & apps::InstanceState::kActive;
-  auto it = running_start_time_.find(update.Window());
   if (is_active) {
-    if (it == running_start_time_.end()) {
-      AppTypeName app_type_name = GetAppTypeName(
-          profile_, app_type, app_id, update.Window()->GetToplevelWindow());
-      if (app_type_name == apps::AppTypeName::kUnknown) {
-        return;
-      }
-
-      // For browser tabs, record the top browser window running duration only,
-      // and skip web apps opened in browser tabs to avoid duration duplicated
-      // calculation.
-      if (app_type_name == AppTypeName::kChromeBrowser &&
-          app_id != extension_misc::kChromeAppId) {
-        return;
-      }
-
-      AppTypeNameV2 app_type_name_v2 = GetAppTypeNameV2(
-          profile_, app_type, app_id, update.Window()->GetToplevelWindow());
-
-      running_start_time_[update.Window()].start_time = base::TimeTicks::Now();
-      running_start_time_[update.Window()].app_type_name = app_type_name;
-      running_start_time_[update.Window()].app_type_name_v2 = app_type_name_v2;
-
-      ++activated_count_[app_type_name];
-      should_refresh_activated_count_pref = true;
-
-      start_time_per_five_minutes_[update.Window()].start_time =
-          base::TimeTicks::Now();
-      start_time_per_five_minutes_[update.Window()].app_type_name =
-          app_type_name;
-      start_time_per_five_minutes_[update.Window()].app_type_name_v2 =
-          app_type_name_v2;
-      start_time_per_five_minutes_[update.Window()].app_id = app_id;
+    auto* window = update.InstanceKey().GetEnclosingAppWindow();
+    AppTypeName app_type_name =
+        GetAppTypeNameForWindow(profile_, app_type, app_id, window);
+    if (app_type_name == apps::AppTypeName::kUnknown) {
+      return;
     }
+
+    apps::InstanceState kInActivated = static_cast<apps::InstanceState>(
+        apps::InstanceState::kVisible | apps::InstanceState::kRunning);
+
+    // For the browser window, if a tab of the browser is activated, we don't
+    // need to calculate the browser window running time.
+    if (app_id == extension_misc::kChromeAppId &&
+        HasActivatedTab(update.InstanceKey())) {
+      SetWindowInActivated(app_id, update.InstanceKey(), kInActivated);
+      return;
+    }
+
+    // For web apps open in tabs, set the top browser window as inactive to stop
+    // calculating the browser window running time.
+    if (IsAppOpenedInTab(app_type_name, app_id)) {
+      RemoveActivatedTab(update.InstanceKey());
+      auto browser_key = Instance::InstanceKey::ForWindowBasedApp(window);
+      AddActivatedTab(browser_key, update.InstanceKey());
+      SetWindowInActivated(extension_misc::kChromeAppId, browser_key,
+                           kInActivated);
+    }
+
+    AppTypeNameV2 app_type_name_v2 =
+        GetAppTypeNameV2(profile_, app_type, app_id, window);
+
+    SetWindowActivated(app_type, app_type_name, app_type_name_v2, app_id,
+                       update.InstanceKey());
     return;
   }
 
-  // The app window is inactivated.
+  AppTypeName app_type_name = AppTypeName::kUnknown;
+  auto it = running_start_time_.find(update.InstanceKey());
+  if (it != running_start_time_.end()) {
+    app_type_name = it->second.app_type_name;
+  }
+
+  if (IsAppOpenedInTab(app_type_name, app_id)) {
+    UpdateBrowserWindowStatus(update.InstanceKey());
+  }
+
+  SetWindowInActivated(app_id, update.InstanceKey(), update.State());
+}
+
+void AppPlatformMetrics::OnInstanceRegistryWillBeDestroyed(
+    apps::InstanceRegistry* cache) {
+  apps::InstanceRegistry::Observer::Observe(nullptr);
+}
+
+void AppPlatformMetrics::UpdateBrowserWindowStatus(
+    const Instance::InstanceKey& tab_key) {
+  auto* browser_window = GetBrowserWindow(tab_key);
+  if (!browser_window) {
+    return;
+  }
+
+  // Remove `instance_key` from `active_browser_to_tabs_`.
+  RemoveActivatedTab(tab_key);
+
+  // If there are other activated web app tab, we don't need to set the browser
+  // window as activated.
+  auto browser_key = Instance::InstanceKey::ForWindowBasedApp(browser_window);
+  if (HasActivatedTab(browser_key)) {
+    return;
+  }
+
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
+  DCHECK(proxy);
+  auto state = proxy->InstanceRegistry().GetState(browser_key);
+  if (state & InstanceState::kActive) {
+    // The browser window is activated, start calculating the browser window
+    // running time.
+    SetWindowActivated(apps::mojom::AppType::kExtension,
+                       AppTypeName::kChromeBrowser,
+                       AppTypeNameV2::kChromeBrowser,
+                       extension_misc::kChromeAppId, browser_key);
+  }
+}
+
+bool AppPlatformMetrics::HasActivatedTab(
+    const Instance::InstanceKey& browser_key) {
+  for (const auto& it : active_browsers_to_tabs_) {
+    if (it.browser_key == browser_key) {
+      return true;
+    }
+  }
+  return false;
+}
+
+aura::Window* AppPlatformMetrics::GetBrowserWindow(
+    const Instance::InstanceKey& tab_key) const {
+  for (const auto& it : active_browsers_to_tabs_) {
+    if (it.tab_key == tab_key) {
+      return it.browser_key.GetEnclosingAppWindow();
+    }
+  }
+  return nullptr;
+}
+
+void AppPlatformMetrics::AddActivatedTab(
+    const Instance::InstanceKey& browser_key,
+    const Instance::InstanceKey& tab_key) {
+  bool found = false;
+  for (const auto& it : active_browsers_to_tabs_) {
+    if (it.browser_key == browser_key && it.tab_key == tab_key) {
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    active_browsers_to_tabs_.push_back(BrowserToTab(browser_key, tab_key));
+  }
+}
+
+void AppPlatformMetrics::RemoveActivatedTab(
+    const Instance::InstanceKey& tab_key) {
+  active_browsers_to_tabs_.remove_if(
+      [&tab_key](const BrowserToTab& item) { return item.tab_key == tab_key; });
+}
+
+void AppPlatformMetrics::SetWindowActivated(
+    apps::mojom::AppType app_type,
+    AppTypeName app_type_name,
+    AppTypeNameV2 app_type_name_v2,
+    const std::string& app_id,
+    const apps::Instance::InstanceKey& instance_key) {
+  auto it = running_start_time_.find(instance_key);
+  if (it != running_start_time_.end()) {
+    return;
+  }
+
+  running_start_time_[instance_key].start_time = base::TimeTicks::Now();
+  running_start_time_[instance_key].app_type_name = app_type_name;
+  running_start_time_[instance_key].app_type_name_v2 = app_type_name_v2;
+
+  ++activated_count_[app_type_name];
+  should_refresh_activated_count_pref = true;
+
+  start_time_per_five_minutes_[instance_key].start_time =
+      base::TimeTicks::Now();
+  start_time_per_five_minutes_[instance_key].app_type_name = app_type_name;
+  start_time_per_five_minutes_[instance_key].app_type_name_v2 =
+      app_type_name_v2;
+  start_time_per_five_minutes_[instance_key].app_id = app_id;
+}
+
+void AppPlatformMetrics::SetWindowInActivated(
+    const std::string& app_id,
+    const apps::Instance::InstanceKey& instance_key,
+    apps::InstanceState state) {
+  bool is_close = state & apps::InstanceState::kDestroyed;
+  auto usage_time_it = usage_time_per_five_minutes_.find(instance_key);
+  if (is_close && usage_time_it != usage_time_per_five_minutes_.end()) {
+    usage_time_it->second.window_is_closed = true;
+  }
+
+  auto it = running_start_time_.find(instance_key);
   if (it == running_start_time_.end()) {
     return;
   }
 
   AppTypeName app_type_name = it->second.app_type_name;
   AppTypeNameV2 app_type_name_v2 = it->second.app_type_name_v2;
+
+  if (usage_time_it == usage_time_per_five_minutes_.end()) {
+    usage_time_per_five_minutes_[it->first].source_id = GetSourceId(app_id);
+    usage_time_it = usage_time_per_five_minutes_.find(it->first);
+  }
+  usage_time_it->second.app_type_name = app_type_name;
+
   running_duration_[app_type_name] +=
       base::TimeTicks::Now() - it->second.start_time;
-  running_start_time_.erase(it);
 
   base::TimeDelta running_time =
       base::TimeTicks::Now() -
-      start_time_per_five_minutes_[update.Window()].start_time;
+      start_time_per_five_minutes_[instance_key].start_time;
   app_type_running_time_per_five_minutes_[app_type_name] += running_time;
   app_type_v2_running_time_per_five_minutes_[app_type_name_v2] += running_time;
-  app_id_running_time_per_five_minutes_[app_id] += running_time;
-  start_time_per_five_minutes_.erase(update.Window());
+  usage_time_it->second.running_time += running_time;
+
+  running_start_time_.erase(it);
+  start_time_per_five_minutes_.erase(instance_key);
 
   should_refresh_duration_pref = true;
-}
-
-void AppPlatformMetrics::OnInstanceRegistryWillBeDestroyed(
-    apps::InstanceRegistry* cache) {
-  apps::InstanceRegistry::Observer::Observe(nullptr);
 }
 
 void AppPlatformMetrics::InitRunningDuration() {
@@ -907,7 +1066,15 @@ void AppPlatformMetrics::RecordAppsUsageTime() {
         running_time;
     app_type_v2_running_time_per_five_minutes_[it.second.app_type_name_v2] +=
         running_time;
-    app_id_running_time_per_five_minutes_[it.second.app_id] += running_time;
+
+    auto usage_time_it = usage_time_per_five_minutes_.find(it.first);
+    if (usage_time_it == usage_time_per_five_minutes_.end()) {
+      usage_time_per_five_minutes_[it.first].source_id =
+          GetSourceId(it.second.app_id);
+      usage_time_it = usage_time_per_five_minutes_.find(it.first);
+    }
+    usage_time_it->second.app_type_name = it.second.app_type_name;
+    usage_time_it->second.running_time += running_time;
     it.second.start_time = base::TimeTicks::Now();
   }
 
@@ -934,26 +1101,33 @@ void AppPlatformMetrics::RecordAppsUsageTimeUkm() {
     return;
   }
 
-  for (auto it : app_id_running_time_per_five_minutes_) {
-    const std::string& app_id = it.first;
-    apps::AppTypeName app_type_name =
-        GetAppTypeName(profile_, app_registry_cache_.GetAppType(app_id), app_id,
-                       apps::mojom::LaunchContainer::kLaunchContainerWindow);
-
+  std::vector<apps::Instance::InstanceKey> closed_window_instances;
+  for (auto& it : usage_time_per_five_minutes_) {
+    apps::AppTypeName app_type_name = it.second.app_type_name;
     if (!ShouldRecordUkmForAppTypeName(app_type_name)) {
       continue;
     }
 
-    ukm::SourceId source_id = GetSourceId(app_id);
-    if (source_id != ukm::kInvalidSourceId) {
+    ukm::SourceId source_id = it.second.source_id;
+    if (source_id != ukm::kInvalidSourceId &&
+        !it.second.running_time.is_zero()) {
       ukm::builders::ChromeOSApp_UsageTime builder(source_id);
       builder.SetAppType((int)app_type_name)
-          .SetDuration(it.second.InMilliseconds())
+          .SetDuration(it.second.running_time.InMilliseconds())
           .SetUserDeviceMatrix(user_type_by_device_type_)
           .Record(ukm::UkmRecorder::Get());
     }
+    if (it.second.window_is_closed) {
+      closed_window_instances.push_back(it.first);
+      ukm::AppSourceUrlRecorder::MarkSourceForDeletion(source_id);
+    } else {
+      it.second.running_time = base::TimeDelta();
+    }
   }
-  app_id_running_time_per_five_minutes_.clear();
+
+  for (const auto& closed_instance : closed_window_instances) {
+    usage_time_per_five_minutes_.erase(closed_instance);
+  }
 }
 
 void AppPlatformMetrics::RecordAppsInstallUkm(const apps::AppUpdate& update,
@@ -976,6 +1150,7 @@ void AppPlatformMetrics::RecordAppsInstallUkm(const apps::AppUpdate& update,
       .SetInstallTime((int)install_time)
       .SetUserDeviceMatrix(user_type_by_device_type_)
       .Record(ukm::UkmRecorder::Get());
+  ukm::AppSourceUrlRecorder::MarkSourceForDeletion(source_id);
 }
 
 bool AppPlatformMetrics::ShouldRecordUkm() {
@@ -992,12 +1167,7 @@ bool AppPlatformMetrics::ShouldRecordUkm() {
 }
 
 ukm::SourceId AppPlatformMetrics::GetSourceId(const std::string& app_id) {
-  auto it = app_id_to_source_id_.find(app_id);
-  if (it != app_id_to_source_id_.end()) {
-    return it->second;
-  }
-
-  ukm::SourceId source_id;
+  ukm::SourceId source_id = ukm::kInvalidSourceId;
   apps::mojom::AppType app_type = app_registry_cache_.GetAppType(app_id);
   switch (app_type) {
     case apps::mojom::AppType::kBuiltIn:
@@ -1034,8 +1204,36 @@ ukm::SourceId AppPlatformMetrics::GetSourceId(const std::string& app_id) {
     case apps::mojom::AppType::kBorealis:
       return ukm::kInvalidSourceId;
   }
-  app_id_to_source_id_[app_id] = source_id;
   return source_id;
+}
+
+void AppPlatformMetrics::RecordAppReadinessStatus(
+    const apps::AppUpdate& update) {
+  std::string histogram_name = kAppPreviousReadinessStatus;
+  auto readiness = update.PriorReadiness();
+  const std::set<apps::mojom::AppType>& initialized_app_types =
+      app_registry_cache_.GetInitializedAppTypes();
+  if (update.AppId() == extension_misc::kFilesManagerAppId) {
+    histogram_name += "FileManager";
+    if (!base::Contains(initialized_app_types,
+                        apps::mojom::AppType::kExtension)) {
+      readiness = apps::mojom::Readiness::kReady;
+    }
+  } else if (update.AppId() == arc::kPlayStoreAppId) {
+    histogram_name += "PlayStore";
+    if (!base::Contains(initialized_app_types, apps::mojom::AppType::kArc)) {
+      readiness = apps::mojom::Readiness::kReady;
+    }
+  } else if (update.AppId() == arc::kAndroidContactsAppId) {
+    histogram_name += "Contacts";
+    if (!base::Contains(initialized_app_types, apps::mojom::AppType::kArc)) {
+      readiness = apps::mojom::Readiness::kReady;
+    }
+  } else {
+    return;
+  }
+
+  base::UmaHistogramEnumeration(histogram_name, readiness);
 }
 
 }  // namespace apps

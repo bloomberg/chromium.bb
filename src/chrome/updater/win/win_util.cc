@@ -412,11 +412,11 @@ void GetAdminDaclSecurityAttributes(CSecurityAttributes* sec_attr,
 }
 
 std::wstring GetRegistryKeyClientsUpdater() {
-  return base::ASCIIToWide(base::StrCat({CLIENTS_KEY, kUpdaterAppId}));
+  return base::StrCat({CLIENTS_KEY, base::ASCIIToWide(kUpdaterAppId)});
 }
 
 std::wstring GetRegistryKeyClientStateUpdater() {
-  return base::ASCIIToWide(base::StrCat({CLIENT_STATE_KEY, kUpdaterAppId}));
+  return base::StrCat({CLIENT_STATE_KEY, base::ASCIIToWide(kUpdaterAppId)});
 }
 
 int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes) {
@@ -555,6 +555,23 @@ std::wstring GetServiceDisplayName(bool is_internal_service) {
       {base::ASCIIToWide(PRODUCT_FULLNAME_STRING), L" ",
        is_internal_service ? kWindowsInternalServiceName : kWindowsServiceName,
        L" ", kUpdaterVersionUtf16});
+}
+
+std::wstring GetTaskName(UpdaterScope scope) {
+  std::wstring task_name = GetTaskDisplayName(scope);
+  task_name.erase(std::remove_if(task_name.begin(), task_name.end(), isspace),
+                  task_name.end());
+  return task_name;
+}
+
+std::wstring GetTaskDisplayName(UpdaterScope scope) {
+  return base::StrCat({base::ASCIIToWide(PRODUCT_FULLNAME_STRING), L" Task ",
+                       scope == UpdaterScope::kSystem ? L" System " : L" User ",
+                       kUpdaterVersionUtf16});
+}
+
+REGSAM Wow6432(REGSAM access) {
+  return KEY_WOW64_32KEY | access;
 }
 
 }  // namespace updater

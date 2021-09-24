@@ -130,7 +130,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentIndex.ContentAdded" enum="ContentIndexCategory"
-    expires_after="M95">
+    expires_after="M99">
   <owner>rayankans@chromium.org</owner>
   <owner>platform-capabilities@chromium.org</owner>
   <summary>Records the category of the content when registered.</summary>
@@ -149,14 +149,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentIndex.ContentOpened" enum="ContentIndexCategory"
-    expires_after="M95">
+    expires_after="M99">
   <owner>rayankans@chromium.org</owner>
   <owner>platform-capabilities@chromium.org</owner>
   <summary>Records the category of the entry clicked on by a user.</summary>
 </histogram>
 
 <histogram base="true" name="ContentIndex.Database"
-    enum="ServiceWorkerStatusCode" expires_after="M95">
+    enum="ServiceWorkerStatusCode" expires_after="M99">
 <!-- Name completed by histogram_suffixes name="ContentIndexDatabaseTask" -->
 
   <owner>rayankans@chromium.org</owner>
@@ -165,7 +165,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentIndex.NumEntriesAvailable" units="entries"
-    expires_after="M95">
+    expires_after="M99">
   <owner>rayankans@chromium.org</owner>
   <owner>platform-capabilities@chromium.org</owner>
   <summary>
@@ -174,7 +174,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentIndex.RegistrationBlocked" enum="ContentIndexCategory"
-    expires_after="M95">
+    expires_after="M99">
   <owner>rayankans@chromium.org</owner>
   <owner>platform-capabilities@chromium.org</owner>
   <summary>
@@ -517,7 +517,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups" enum="ContentSettingPopupAction"
-    expires_after="2022-01-02">
+    expires_after="2022-03-06">
   <owner>charleszhao@chromium.org</owner>
   <owner>lazzzis@google.com</owner>
   <owner>src/components/blocked_content/OWNERS</owner>
@@ -594,7 +594,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups.StrongBlockerActions"
-    enum="StrongPopupBlockerAction" expires_after="2021-12-19">
+    enum="StrongPopupBlockerAction" expires_after="2022-02-20">
   <owner>csharrison@chromium.org</owner>
   <summary>
     Counts of various events related to the strong popup blocker (aka abusive
@@ -1035,7 +1035,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.NoticeCardFulfilled2" enum="Boolean"
-    expires_after="2021-12-19">
+    expires_after="2022-02-20">
   <owner>vincb@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1492,7 +1492,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.WebFeed.FollowByIdResult"
-    units="index" expires_after="2022-07-01">
+    enum="WebFeedSubscriptionRequestStatus" expires_after="2022-07-01">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1516,7 +1516,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="ContentShown"
         summary="after the Following feed is shown, and some content is
                  displayed."/>
-    <variant name="EngagedWithFeed"
+    <variant name="Engaged"
         summary="after the user has been recorded as FeedEngagementType
                  'Engaged', reported at most once per day when the user
                  interacts with the Following Feed."/>
@@ -1848,6 +1848,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Android: status of pulling-to-refresh the {FeedType} stream per the user
     request. Reported when the refresh completes.
   </summary>
+  <token key="FeedType">
+    <variant name="Feed" summary="For-You Feed"/>
+    <variant name="Feed.WebFeed" summary="Web Feed"/>
+  </token>
 </histogram>
 
 <histogram name="ContentSuggestions.{FeedType}.ReachedEndOfFeed" units="index"

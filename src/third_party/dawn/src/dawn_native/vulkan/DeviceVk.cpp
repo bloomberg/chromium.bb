@@ -108,8 +108,9 @@ namespace dawn_native { namespace vulkan {
         return BindGroup::Create(this, descriptor);
     }
     ResultOrError<Ref<BindGroupLayoutBase>> Device::CreateBindGroupLayoutImpl(
-        const BindGroupLayoutDescriptor* descriptor) {
-        return BindGroupLayout::Create(this, descriptor);
+        const BindGroupLayoutDescriptor* descriptor,
+        PipelineCompatibilityToken pipelineCompatibilityToken) {
+        return BindGroupLayout::Create(this, descriptor, pipelineCompatibilityToken);
     }
     ResultOrError<Ref<BufferBase>> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return Buffer::Create(this, descriptor);
@@ -161,11 +162,13 @@ namespace dawn_native { namespace vulkan {
         const TextureViewDescriptor* descriptor) {
         return TextureView::Create(texture, descriptor);
     }
-    void Device::CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
-                                                size_t blueprintHash,
-                                                WGPUCreateComputePipelineAsyncCallback callback,
-                                                void* userdata) {
-        ComputePipeline::CreateAsync(this, descriptor, blueprintHash, callback, userdata);
+    void Device::CreateComputePipelineAsyncImpl(
+        std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
+        size_t blueprintHash,
+        WGPUCreateComputePipelineAsyncCallback callback,
+        void* userdata) {
+        ComputePipeline::CreateAsync(this, std::move(descriptor), blueprintHash, callback,
+                                     userdata);
     }
 
     MaybeError Device::TickImpl() {
@@ -346,6 +349,18 @@ namespace dawn_native { namespace vulkan {
             ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.textureCompressionBC ==
                    VK_TRUE);
             usedKnobs.features.textureCompressionBC = VK_TRUE;
+        }
+
+        if (IsExtensionEnabled(Extension::TextureCompressionETC2)) {
+            ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.textureCompressionETC2 ==
+                   VK_TRUE);
+            usedKnobs.features.textureCompressionETC2 = VK_TRUE;
+        }
+
+        if (IsExtensionEnabled(Extension::TextureCompressionASTC)) {
+            ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.textureCompressionASTC_LDR ==
+                   VK_TRUE);
+            usedKnobs.features.textureCompressionASTC_LDR = VK_TRUE;
         }
 
         if (IsExtensionEnabled(Extension::PipelineStatisticsQuery)) {
@@ -864,6 +879,16 @@ namespace dawn_native { namespace vulkan {
 
             VkResult result = VkResult::WrapUnsafe(VK_TIMEOUT);
             do {
+                // If WaitForIdleForDesctruction is called while we are Disconnected, it means that
+                // the device lost came from the ErrorInjector and we need to wait without allowing
+                // any more error to be injected. This is because the device lost was "fake" and
+                // commands might still be running.
+                if (GetState() == State::Disconnected) {
+                    result = VkResult::WrapUnsafe(
+                        fn.WaitForFences(mVkDevice, 1, &*fence, true, UINT64_MAX));
+                    continue;
+                }
+
                 result = VkResult::WrapUnsafe(
                     INJECT_ERROR_OR_RUN(fn.WaitForFences(mVkDevice, 1, &*fence, true, UINT64_MAX),
                                         VK_ERROR_DEVICE_LOST));
@@ -923,7 +948,11 @@ namespace dawn_native { namespace vulkan {
         }
         mRecordingContext.signalSemaphores.clear();
 
+        // Some commands might still be marked as in-flight if we shut down because of a device
+        // loss. Recycle them as unused so that we free them below.
+        RecycleCompletedCommands();
         ASSERT(mCommandsInFlight.Empty());
+
         for (const CommandPoolAndBuffer& commands : mUnusedCommands) {
             // The VkCommandBuffer memory should be wholly owned by the pool and freed when it is
             // destroyed, but that's not the case in some drivers and the leak memory.
@@ -933,6 +962,13 @@ namespace dawn_native { namespace vulkan {
             fn.DestroyCommandPool(mVkDevice, commands.pool, nullptr);
         }
         mUnusedCommands.clear();
+
+        // Some fences might still be marked as in-flight if we shut down because of a device loss.
+        // Delete them since at this point all commands are complete.
+        while (!mFencesInFlight.empty()) {
+            fn.DestroyFence(mVkDevice, *mFencesInFlight.front().first, nullptr);
+            mFencesInFlight.pop();
+        }
 
         for (VkFence fence : mUnusedFences) {
             fn.DestroyFence(mVkDevice, fence, nullptr);

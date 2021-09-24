@@ -405,6 +405,16 @@ const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 const char kContextualSearchEnabled[] = "search.contextual_search_enabled";
 const char kContextualSearchDisabledValue[] = "false";
 const char kContextualSearchEnabledValue[] = "true";
+
+// A integer preference to store the number of times the Contextual Search promo
+// card shown.
+const char kContextualSearchPromoCardShownCount[] =
+    "search.contextual_search_promo_card_shown_count";
+
+// Boolean that indicates whether the user chose to fully opt in for Contextual
+// Search.
+const char kContextualSearchWasFullyPrivacyEnabled[] =
+    "search.contextual_search_fully_opted_in";
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MAC)
@@ -476,11 +486,6 @@ const char kPrintingAPIExtensionsAllowlist[] =
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// An integer preference to store the number of times the Chrome OS Account
-// Manager migration flow ran successfully.
-const char kAccountManagerNumTimesMigrationRanSuccessfully[] =
-    "account_manager.num_times_migration_ran_successfully";
-
 // An integer preference to store the number of times the Chrome OS Account
 // Manager welcome screen has been shown.
 const char kAccountManagerNumTimesWelcomeScreenShown[] =
@@ -1375,6 +1380,9 @@ const char kPrintRasterizePdfDpi[] = "printing.rasterize_pdf_dpi";
 #endif
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
+// An integer pref that holds the PostScript mode to use when printing.
+const char kPrintPostScriptMode[] = "printing.postscript_mode";
+
 // An integer pref that holds the rasterization mode to use when printing.
 const char kPrintRasterizationMode[] = "printing.rasterization_mode";
 #endif
@@ -1847,12 +1855,6 @@ const char kNtpModulesOrder[] = "NewTabPage.ModulesOrder";
 const char kNtpModulesVisible[] = "NewTabPage.ModulesVisible";
 // List of promos that the user has dismissed while on the NTP.
 const char kNtpPromoBlocklist[] = "ntp.promo_blocklist";
-// Data associated with search suggestions that appear on the NTP.
-const char kNtpSearchSuggestionsBlocklist[] =
-    "ntp.search_suggestions_blocklist";
-const char kNtpSearchSuggestionsImpressions[] =
-    "ntp.search_suggestions_impressions";
-const char kNtpSearchSuggestionsOptOut[] = "ntp.search_suggestions_opt_out";
 #endif  // defined(OS_ANDROID)
 
 // Which page should be visible on the new tab page v4
@@ -2854,6 +2856,12 @@ const char kLatestVersionWhenClickedUpdateMenuItem[] =
     "omaha.latest_version_when_clicked_upate_menu_item";
 #endif
 
+#if defined(OS_ANDROID)
+// The serialized timestamps of latest shown merchant viewer messages.
+const char kCommerceMerchantViewerMessagesShownTime[] =
+    "commerce_merchant_viewer_messages_shown_time";
+#endif
+
 // Policy that indicates the state of updates for the binary components.
 const char kComponentUpdatesEnabled[] =
     "component_updates.component_updates_enabled";
@@ -2920,6 +2928,11 @@ const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";
 // A boolean value, controlling whether Chrome renderer processes have the CIG
 // mitigation enabled.
 const char kRendererCodeIntegrityEnabled[] = "renderer_code_integrity_enabled";
+
+// A boolean that controls whether the Browser process has
+// ProcessExtensionPointDisablePolicy enabled.
+const char kBlockBrowserLegacyExtensionPoints[] =
+    "block_browser_legacy_extension_points";
 #endif  // defined(OS_WIN)
 
 // An integer that keeps track of prompt waves for the settings reset
@@ -3208,10 +3221,6 @@ const char kShowCaretBrowsingDialog[] =
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// Boolean pref indicating whether the Lacros browser is allowed. This is set by
-// a policy, and the default value for managed users is false. Admins willing to
-// give rights to use Lacros can set the policy to true.
-const char kLacrosAllowed[] = "lacros_allowed";
 // Enum pref indicating how to launch the Lacros browser. It is managed by
 // LacrosAvailability policy can have one of the following values:
 // 0: User choice (default value).

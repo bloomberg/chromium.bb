@@ -68,10 +68,19 @@ namespace dawn_native { namespace vulkan {
                 VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO_EXT);
         }
 
-        return CheckVkSuccess(
+        DAWN_TRY(CheckVkSuccess(
             device->fn.CreateComputePipelines(device->GetVkDevice(), ::VK_NULL_HANDLE, 1,
                                               &createInfo, nullptr, &*mHandle),
-            "CreateComputePipeline");
+            "CreateComputePipeline"));
+
+        SetLabelImpl();
+
+        return {};
+    }
+
+    void ComputePipeline::SetLabelImpl() {
+        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_PIPELINE,
+                     reinterpret_cast<uint64_t&>(mHandle), "Dawn_ComputePipeline", GetLabel());
     }
 
     ComputePipeline::~ComputePipeline() {
@@ -86,14 +95,14 @@ namespace dawn_native { namespace vulkan {
     }
 
     void ComputePipeline::CreateAsync(Device* device,
-                                      const ComputePipelineDescriptor* descriptor,
+                                      std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
                                       size_t blueprintHash,
                                       WGPUCreateComputePipelineAsyncCallback callback,
                                       void* userdata) {
-        Ref<ComputePipeline> pipeline = AcquireRef(new ComputePipeline(device, descriptor));
+        Ref<ComputePipeline> pipeline = AcquireRef(new ComputePipeline(device, descriptor.get()));
         std::unique_ptr<CreateComputePipelineAsyncTask> asyncTask =
-            std::make_unique<CreateComputePipelineAsyncTask>(pipeline, descriptor, blueprintHash,
-                                                             callback, userdata);
+            std::make_unique<CreateComputePipelineAsyncTask>(pipeline, std::move(descriptor),
+                                                             blueprintHash, callback, userdata);
         CreateComputePipelineAsyncTask::RunAsync(std::move(asyncTask));
     }
 

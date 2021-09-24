@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/constants/app_types.h"
+#include "ash/constants/ash_features.h"
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/ash_typography.h"
@@ -45,6 +46,7 @@
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -109,7 +111,7 @@ class ShortcutsListScrollView : public views::ScrollView {
   // views::View:
   void OnFocus() override {
     SetHasFocusIndicator(true);
-    NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+    views::ScrollView::OnFocus();
   }
 
   void OnBlur() override { SetHasFocusIndicator(false); }
@@ -125,6 +127,10 @@ std::unique_ptr<ShortcutsListScrollView> CreateScrollView(
   scroller->ClipHeightTo(0, 0);
   scroller->SetContents(std::move(content_view));
   scroller->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
+  // able to submit accessibility checks. This crashes if fetching a11y node
+  // data during paint because message_view_ is null.
+  scroller->SetProperty(views::kSkipAccessibilityPaintChecks, true);
   return scroller;
 }
 
@@ -147,6 +153,8 @@ bool ShouldExcludeItem(const ash::KeyboardShortcutItem& item) {
       return ui::DeviceKeyboardHasAssistantKey();
     case IDS_KSV_DESCRIPTION_PRIVACY_SCREEN_TOGGLE:
       return !ash::Shell::Get()->privacy_screen_controller()->IsSupported();
+    case IDS_KSV_DESCRIPTION_FLOAT:
+      return !ash::features::IsWindowControlMenuEnabled();
   }
 
   return false;
@@ -234,10 +242,6 @@ views::Widget* KeyboardShortcutView::Toggle(aura::Window* context) {
 
 const char* KeyboardShortcutView::GetClassName() const {
   return "KeyboardShortcutView";
-}
-
-ax::mojom::Role KeyboardShortcutView::GetAccessibleWindowRole() {
-  return ax::mojom::Role::kWindow;
 }
 
 std::u16string KeyboardShortcutView::GetAccessibleWindowTitle() const {

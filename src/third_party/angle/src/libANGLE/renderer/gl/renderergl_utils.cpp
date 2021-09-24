@@ -2191,13 +2191,17 @@ void InitializeFeatures(const FunctionsGL *functions, angle::FeaturesGL *feature
     // http://crbug.com/594016
     bool isLinuxVivante = IsLinux() && IsVivante(device);
 
+    // Temporarily disable on all of Android. http://crbug.com/1238327
     ANGLE_FEATURE_CONDITION(features, disableMultisampledRenderToTexture,
-                            isAdreno4xxOnAndroidLessThan51 || isAdreno4xxOnAndroid70 ||
-                                isAdreno5xxOnAndroidLessThan70 || isAdreno5xxOnAndroid71 ||
-                                isLinuxVivante);
+                            IsAndroid() || isAdreno4xxOnAndroidLessThan51 ||
+                                isAdreno4xxOnAndroid70 || isAdreno5xxOnAndroidLessThan70 ||
+                                isAdreno5xxOnAndroid71 || isLinuxVivante);
 
     // http://crbug.com/1181068
     ANGLE_FEATURE_CONDITION(features, uploadTextureDataInChunks, IsApple());
+
+    // https://crbug.com/1060012
+    ANGLE_FEATURE_CONDITION(features, emulateImmutableCompressedTexture3D, isQualcomm);
 }
 
 void InitializeFrontendFeatures(const FunctionsGL *functions, angle::FrontendFeatures *features)

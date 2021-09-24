@@ -538,15 +538,29 @@ Resource* ResourceFetcher::CachedResource(const KURL& resource_url) const {
   if (resource_url.IsEmpty())
     return nullptr;
   KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(resource_url);
-  const WeakMember<Resource>& resource =
-      cached_resources_map_.DeprecatedAtOrEmptyValue(url);
-  return resource.Get();
+  const auto it = cached_resources_map_.find(url);
+  if (it == cached_resources_map_.end())
+    return nullptr;
+  return it->value.Get();
 }
 
 mojom::ControllerServiceWorkerMode
 ResourceFetcher::IsControlledByServiceWorker() const {
   return properties_->GetControllerServiceWorkerMode();
 }
+
+namespace {
+
+bool ShouldDeferFontLoad(const FetchParameters& params) {
+  if (params.IsLinkPreload())
+    return false;
+  if (RuntimeEnabledFeatures::SyncLoadDataUrlFontsEnabled() &&
+      params.Url().ProtocolIsData())
+    return false;
+  return true;
+}
+
+}  // namespace
 
 bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
                                         const FetchParameters& params,
@@ -557,8 +571,8 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
     return false;
 
   // Defer a font load until it is actually needed unless this is a link
-  // preload.
-  if (resource->GetType() == ResourceType::kFont && !params.IsLinkPreload())
+  // preload or a data url font (that doesn't consume network resources).
+  if (resource->GetType() == ResourceType::kFont && ShouldDeferFontLoad(params))
     return false;
 
   // Defer loading images either when:
@@ -777,7 +791,10 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 
   DCHECK(options.synchronous_policy == kRequestAsynchronously ||
          resource_type == ResourceType::kRaw ||
-         resource_type == ResourceType::kXSLStyleSheet);
+         resource_type == ResourceType::kXSLStyleSheet ||
+         (RuntimeEnabledFeatures::SyncLoadDataUrlFontsEnabled() &&
+          resource_type == ResourceType::kFont &&
+          params.Url().ProtocolIsData()));
 
   KURL bundle_url_for_urn_resources;
   if (resource_request.GetWebBundleTokenParams()) {
@@ -878,8 +895,13 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     resource_request.SetRequestDestination(
         DetermineRequestDestination(resource_type));
   }
-  if (resource_type == ResourceType::kLinkPrefetch)
+
+  // Add the "Purpose: prefetch" header to requests for prefetch or issued from
+  // prerendered pages.
+  if (resource_type == ResourceType::kLinkPrefetch ||
+      Context().IsPrerendering()) {
     resource_request.SetPurposeHeader("prefetch");
+  }
 
   // Indicate whether the network stack can return a stale resource. If a
   // stale resource is returned a StaleRevalidation request will be scheduled.
@@ -949,6 +971,11 @@ void ResourceFetcher::AttachWebBundleTokenIfNeeded(
       ResourceRequestHead::WebBundleTokenParams(bundle->GetBundleUrl(),
                                                 bundle->WebBundleToken(),
                                                 mojo::NullRemote()));
+
+  // Skip the service worker for a short term solution.
+  // TODO(crbug.com/1240424): Figure out the ideal design of the service
+  // worker integration.
+  resource_request.SetSkipServiceWorker(true);
 }
 
 SubresourceWebBundleList*

@@ -615,6 +615,10 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
                                     ShCompileOptions compileOptions)
 {
     mValidateASTOptions = {};
+
+    // Desktop GLSL shaders don't have precision, so don't expect them to be specified.
+    mValidateASTOptions.validatePrecision = !IsDesktopGLSpec(mShaderSpec);
+
     if (!validateAST(root))
     {
         return false;
@@ -678,9 +682,24 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
     bool highPrecisionSupported        = isHighPrecisionSupported();
     bool enableNonConstantInitializers = IsExtensionEnabled(
         mExtensionBehavior, TExtension::EXT_shader_non_constant_global_initializers);
+    // forceDeferGlobalInitializers is needed for MSL
+    // to convert a non-const global. For example:
+    //
+    //    int someGlobal = 123;
+    //
+    // to
+    //
+    //    int someGlobal;
+    //    void main() {
+    //        someGlobal = 123;
+    //
+    // This is because MSL doesn't allow statically initialized globals.
+    bool forceDeferGlobalInitializers = getOutputType() == SH_MSL_METAL_OUTPUT;
+
     if (enableNonConstantInitializers &&
         !DeferGlobalInitializers(this, root, initializeLocalsAndGlobals, canUseLoopsToInitialize,
-                                 highPrecisionSupported, &mSymbolTable))
+                                 highPrecisionSupported, forceDeferGlobalInitializers,
+                                 &mSymbolTable))
     {
         return false;
     }
@@ -843,7 +862,7 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
 
     // Note that separate declarations need to be run before other AST transformations that
     // generate new statements from expressions.
-    if (!SeparateDeclarations(this, root))
+    if (!SeparateDeclarations(this, root, &getSymbolTable()))
     {
         return false;
     }
@@ -974,7 +993,8 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
     // be optimized out
     if (!enableNonConstantInitializers &&
         !DeferGlobalInitializers(this, root, initializeLocalsAndGlobals, canUseLoopsToInitialize,
-                                 highPrecisionSupported, &mSymbolTable))
+                                 highPrecisionSupported, forceDeferGlobalInitializers,
+                                 &mSymbolTable))
     {
         return false;
     }

@@ -100,11 +100,11 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
   @staticmethod
   def gen_revision(project):
     """Hash project to bogus deterministic git hash values."""
-    h = hashlib.sha1(project)
+    h = hashlib.sha1(project.encode('utf-8'))
     return h.hexdigest()
 
   @staticmethod
   def gen_commit_position(project):
     """Hash project to bogus deterministic Cr-Commit-Position values."""
-    h = hashlib.sha1(project)
+    h = hashlib.sha1(project.encode('utf-8'))
     return struct.unpack('!I', h.digest()[:4])[0] % 300000

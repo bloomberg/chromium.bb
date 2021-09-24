@@ -40,6 +40,7 @@ ChromeBrowserProvider::ChromeBrowserProvider()
     : mailto_handler_provider_(std::make_unique<MailtoHandlerProvider>()) {}
 
 ChromeBrowserProvider::~ChromeBrowserProvider() {
+  chrome_identity_service_.reset();
   for (auto& observer : observer_list_)
     observer.OnChromeBrowserProviderWillBeDestroyed();
 }
@@ -50,15 +51,17 @@ void ChromeBrowserProvider::AppendSwitchesFromExperimentalSettings(
 
 void ChromeBrowserProvider::Initialize() const {}
 
-SigninResourcesProvider* ChromeBrowserProvider::GetSigninResourcesProvider() {
-  return nullptr;
+void ChromeBrowserProvider::SetChromeIdentityServiceForTesting(
+    std::unique_ptr<ChromeIdentityService> service) {
+  chrome_identity_service_ = std::move(service);
+  FireChromeIdentityServiceDidChange(chrome_identity_service_.get());
 }
 
-void ChromeBrowserProvider::SetChromeIdentityServiceForTesting(
-    std::unique_ptr<ChromeIdentityService> service) {}
-
 ChromeIdentityService* ChromeBrowserProvider::GetChromeIdentityService() {
-  return nullptr;
+  if (!chrome_identity_service_) {
+    chrome_identity_service_ = CreateChromeIdentityService();
+  }
+  return chrome_identity_service_.get();
 }
 
 ChromeTrustedVaultService*
@@ -72,30 +75,13 @@ UITextField* ChromeBrowserProvider::CreateStyledTextField() const {
 
 void ChromeBrowserProvider::AttachBrowserAgents(Browser* browser) const {}
 
-VoiceSearchProvider* ChromeBrowserProvider::GetVoiceSearchProvider() const {
-  return nullptr;
-}
-
 id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
     Browser* browser,
     web::WebState* web_state) const {
   return nil;
 }
 
-OmahaServiceProvider* ChromeBrowserProvider::GetOmahaServiceProvider() const {
-  return nullptr;
-}
-
 UserFeedbackProvider* ChromeBrowserProvider::GetUserFeedbackProvider() const {
-  return nullptr;
-}
-
-BrowserURLRewriterProvider*
-ChromeBrowserProvider::GetBrowserURLRewriterProvider() const {
-  return nullptr;
-}
-
-OverridesProvider* ChromeBrowserProvider::GetOverridesProvider() const {
   return nullptr;
 }
 

@@ -169,6 +169,8 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
 
   size_t ExpectedPerPacketOverhead() const override;
 
+  void OnPacketSendingThreadSwitched() override;
+
   // RTCP part.
 
   // Get RTCP status.
@@ -211,6 +213,7 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
   // which is the SSRC of the corresponding outbound RTP stream, is unique.
   std::vector<ReportBlockData> GetLatestReportBlockData() const override;
   absl::optional<SenderReportStats> GetSenderReportStats() const override;
+  absl::optional<NonSenderRttStats> GetNonSenderRttStats() const override;
 
   // (REMB) Receiver Estimated Max Bitrate.
   void SetRemb(int64_t bitrate_bps, std::vector<uint32_t> ssrcs) override;
@@ -261,20 +264,13 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
   FRIEND_TEST_ALL_PREFIXES(RtpRtcpImpl2Test, Rtt);
   FRIEND_TEST_ALL_PREFIXES(RtpRtcpImpl2Test, RttForReceiverOnly);
 
-  struct RtpSenderContext : public SequenceNumberAssigner {
+  struct RtpSenderContext {
     explicit RtpSenderContext(const RtpRtcpInterface::Configuration& config);
-    void AssignSequenceNumber(RtpPacketToSend* packet) override;
     // Storage of packets, for retransmissions and padding, if applicable.
     RtpPacketHistory packet_history;
-    // If false, sequencing is owned by `packet_generator` and can happen on
-    // several threads. If true, sequencing always happens on the pacer thread.
-    const bool deferred_sequencing_;
-    // TODO(bugs.webrtc.org/11340): Remove lock one we can guarantee that
-    // setting/getting rtp state only happens after removal from packet sending
-    // code path.
-    mutable Mutex mutex_sequencer_;
+    SequenceChecker sequencing_checker;
     // Handles sequence number assignment and padding timestamp generation.
-    PacketSequencer sequencer_ RTC_GUARDED_BY(mutex_sequencer_);
+    PacketSequencer sequencer RTC_GUARDED_BY(sequencing_checker);
     // Handles final time timestamping/stats/etc and handover to Transport.
     RtpSenderEgress packet_sender;
     // If no paced sender configured, this class will be used to pass packets
@@ -314,8 +310,7 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
                                                TimeDelta duration);
 
   TaskQueueBase* const worker_queue_;
-  RTC_NO_UNIQUE_ADDRESS SequenceChecker packet_sequence_checker_;
-  RTC_NO_UNIQUE_ADDRESS SequenceChecker pacer_thread_checker_;
+  RTC_NO_UNIQUE_ADDRESS SequenceChecker rtcp_thread_checker_;
 
   std::unique_ptr<RtpSenderContext> rtp_sender_;
   RTCPSender rtcp_sender_;

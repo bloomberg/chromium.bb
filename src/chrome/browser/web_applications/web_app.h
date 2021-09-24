@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/values.h"
-#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_system_web_app_data.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_chromeos_data.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_system_web_app_data.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
@@ -113,11 +113,13 @@ class WebApp {
   const base::Time& last_launch_time() const { return last_launch_time_; }
   // Represents the time when this app is installed.
   const base::Time& install_time() const { return install_time_; }
+  // Represents the time when this app is updated.
+  const base::Time& manifest_update_time() const {
+    return manifest_update_time_;
+  }
 
   // Represents the "icons" field in the manifest.
-  const std::vector<WebApplicationIconInfo>& icon_infos() const {
-    return icon_infos_;
-  }
+  const std::vector<apps::IconInfo>& icon_infos() const { return icon_infos_; }
 
   // Represents which icon sizes we successfully downloaded from the
   // |icon_infos| for the given |purpose|.
@@ -182,7 +184,7 @@ class WebApp {
     std::string name;
     absl::optional<SkColor> theme_color;
     GURL scope;
-    std::vector<WebApplicationIconInfo> icon_infos;
+    std::vector<apps::IconInfo> icon_infos;
   };
   const SyncFallbackData& sync_fallback_data() const {
     return sync_fallback_data_;
@@ -249,7 +251,7 @@ class WebApp {
   void SetIsFromSyncAndPendingInstallation(
       bool is_from_sync_and_pending_installation);
   void SetIsUninstalling(bool is_uninstalling);
-  void SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos);
+  void SetIconInfos(std::vector<apps::IconInfo> icon_infos);
   // Performs sorting and uniquifying of |sizes| if passed as vector.
   void SetDownloadedIconSizes(IconPurpose purpose, SortedSizesPx sizes);
   void SetIsGeneratedIcon(bool is_generated_icon);
@@ -270,6 +272,7 @@ class WebApp {
   void SetLastBadgingTime(const base::Time& time);
   void SetLastLaunchTime(const base::Time& time);
   void SetInstallTime(const base::Time& time);
+  void SetManifestUpdateTime(const base::Time& time);
   void SetRunOnOsLoginMode(RunOnOsLoginMode mode);
   void SetSyncFallbackData(SyncFallbackData sync_fallback_data);
   void SetCaptureLinks(blink::mojom::CaptureLinks capture_links);
@@ -317,7 +320,7 @@ class WebApp {
   // other places to save it to the database, and then make sure to continue
   // uninstallation on startup if any web apps have this field set to true.
   bool is_uninstalling_ = false;
-  std::vector<WebApplicationIconInfo> icon_infos_;
+  std::vector<apps::IconInfo> icon_infos_;
   SortedSizesPx downloaded_icon_sizes_any_;
   SortedSizesPx downloaded_icon_sizes_monochrome_;
   SortedSizesPx downloaded_icon_sizes_maskable_;
@@ -334,6 +337,7 @@ class WebApp {
   base::Time last_badging_time_;
   base::Time last_launch_time_;
   base::Time install_time_;
+  base::Time manifest_update_time_;
   RunOnOsLoginMode run_on_os_login_mode_ = RunOnOsLoginMode::kNotRun;
   SyncFallbackData sync_fallback_data_;
   blink::mojom::CaptureLinks capture_links_ =

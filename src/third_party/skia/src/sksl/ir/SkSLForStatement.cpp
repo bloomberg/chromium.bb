@@ -42,12 +42,18 @@ static bool is_simple_initializer(const Statement* stmt) {
 }
 
 std::unique_ptr<Statement> ForStatement::clone() const {
+    std::unique_ptr<LoopUnrollInfo> unrollInfo;
+    if (fUnrollInfo) {
+        unrollInfo = std::make_unique<LoopUnrollInfo>(*fUnrollInfo);
+    }
+
     return std::make_unique<ForStatement>(
             fOffset,
             this->initializer() ? this->initializer()->clone() : nullptr,
             this->test() ? this->test()->clone() : nullptr,
             this->next() ? this->next()->clone() : nullptr,
             this->statement()->clone(),
+            std::move(unrollInfo),
             SymbolTable::WrapIfBuiltin(this->symbols()));
 }
 
@@ -81,7 +87,7 @@ std::unique_ptr<Statement> ForStatement::Convert(const Context& context, int off
             !isSimpleInitializer && is_vardecl_block_initializer(initializer.get());
 
     if (!isSimpleInitializer && !isVardeclBlockInitializer) {
-        context.errors().error(initializer->fOffset, "invalid for loop initializer");
+        context.fErrors->error(initializer->fOffset, "invalid for loop initializer");
         return nullptr;
     }
 
@@ -92,10 +98,21 @@ std::unique_ptr<Statement> ForStatement::Convert(const Context& context, int off
         }
     }
 
+    if (next) {
+        // The type of the next-expression doesn't matter, but it needs to be a complete expression.
+        // Report an error on intermediate expressions like FunctionReference or TypeReference.
+        const Type& nextType = next->type();
+        next = nextType.coerceExpression(std::move(next), context);
+        if (!next) {
+            return nullptr;
+        }
+    }
+
+    std::unique_ptr<LoopUnrollInfo> unrollInfo;
     if (context.fConfig->strictES2Mode()) {
-        if (!Analysis::ForLoopIsValidForES2(offset, initializer.get(), test.get(), next.get(),
-                                            statement.get(), /*outLoopInfo=*/nullptr,
-                                            &context.errors())) {
+        unrollInfo = Analysis::GetLoopUnrollInfo(offset, initializer.get(), test.get(),
+                                                 next.get(), statement.get(), context.fErrors);
+        if (!unrollInfo) {
             return nullptr;
         }
     }
@@ -111,12 +128,17 @@ std::unique_ptr<Statement> ForStatement::Convert(const Context& context, int off
         scope.push_back(std::move(initializer));
         scope.push_back(ForStatement::Make(context, offset, /*initializer=*/nullptr,
                                            std::move(test), std::move(next), std::move(statement),
-                                           std::move(symbolTable)));
+                                           std::move(unrollInfo), std::move(symbolTable)));
         return Block::Make(offset, std::move(scope));
     }
 
+    if (Analysis::DetectVarDeclarationWithoutScope(*statement, context.fErrors)) {
+        return nullptr;
+    }
+
     return ForStatement::Make(context, offset, std::move(initializer), std::move(test),
-                              std::move(next), std::move(statement), std::move(symbolTable));
+                              std::move(next), std::move(statement), std::move(unrollInfo),
+                              std::move(symbolTable));
 }
 
 std::unique_ptr<Statement> ForStatement::ConvertWhile(const Context& context, int offset,
@@ -124,7 +146,7 @@ std::unique_ptr<Statement> ForStatement::ConvertWhile(const Context& context, in
                                                       std::unique_ptr<Statement> statement,
                                                       std::shared_ptr<SymbolTable> symbolTable) {
     if (context.fConfig->strictES2Mode()) {
-        context.errors().error(offset, "while loops are not supported");
+        context.fErrors->error(offset, "while loops are not supported");
         return nullptr;
     }
     return ForStatement::Convert(context, offset, /*initializer=*/nullptr, std::move(test),
@@ -136,18 +158,23 @@ std::unique_ptr<Statement> ForStatement::Make(const Context& context, int offset
                                               std::unique_ptr<Expression> test,
                                               std::unique_ptr<Expression> next,
                                               std::unique_ptr<Statement> statement,
+                                              std::unique_ptr<LoopUnrollInfo> unrollInfo,
                                               std::shared_ptr<SymbolTable> symbolTable) {
     SkASSERT(is_simple_initializer(initializer.get()) ||
              is_vardecl_block_initializer(initializer.get()));
     SkASSERT(!test || test->type() == *context.fTypes.fBool);
-    SkASSERT(!context.fConfig->strictES2Mode() ||
-             Analysis::ForLoopIsValidForES2(offset, initializer.get(), test.get(), next.get(),
-                                            statement.get(), /*outLoopInfo=*/nullptr,
-                                            /*errors=*/nullptr));
+    SkASSERT(!Analysis::DetectVarDeclarationWithoutScope(*statement));
+
+    // If the caller didn't provide us with unroll info, we can compute it here if needed.
+    if (!unrollInfo && context.fConfig->strictES2Mode()) {
+        unrollInfo = Analysis::GetLoopUnrollInfo(offset, initializer.get(), test.get(),
+                                                 next.get(), statement.get(), /*errors=*/nullptr);
+        SkASSERT(unrollInfo);
+    }
 
     return std::make_unique<ForStatement>(offset, std::move(initializer), std::move(test),
                                           std::move(next), std::move(statement),
-                                          std::move(symbolTable));
+                                          std::move(unrollInfo), std::move(symbolTable));
 }
 
 }  // namespace SkSL

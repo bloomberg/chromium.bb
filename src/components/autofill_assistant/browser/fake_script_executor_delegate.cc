@@ -89,6 +89,20 @@ std::string FakeScriptExecutorDelegate::GetBubbleMessage() const {
   return bubble_message_;
 }
 
+void FakeScriptExecutorDelegate::SetTtsMessage(const std::string& message) {
+  tts_message_ = message;
+}
+
+std::string FakeScriptExecutorDelegate::GetTtsMessage() const {
+  return tts_message_;
+}
+
+TtsButtonState FakeScriptExecutorDelegate::GetTtsButtonState() const {
+  return TtsButtonState::DEFAULT;
+}
+
+void FakeScriptExecutorDelegate::MaybePlayTtsMessage() {}
+
 void FakeScriptExecutorDelegate::SetDetails(std::unique_ptr<Details> details,
                                             base::TimeDelta delay) {
   // We ignore |delay|.
@@ -230,6 +244,11 @@ void FakeScriptExecutorDelegate::SetExpandSheetForPromptAction(bool expand) {
 void FakeScriptExecutorDelegate::SetBrowseDomainsAllowlist(
     std::vector<std::string> domains) {
   browse_domains_ = std::move(domains);
+}
+
+void FakeScriptExecutorDelegate::SetClientSettings(
+    const ClientSettingsProto& client_settings) {
+  client_settings_.UpdateFromProto(client_settings);
 }
 
 bool FakeScriptExecutorDelegate::SetForm(

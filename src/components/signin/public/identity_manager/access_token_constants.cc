@@ -50,6 +50,9 @@ const std::set<std::string> GetUnconsentedOAuth2Scopes() {
       // Required by Permission Request Creator.
       GaiaConstants::kClassifyUrlKidPermissionOAuth2Scope,
 
+      // Required by the feedback uploader.
+      GaiaConstants::kSupportContentOAuth2Scope,
+
     // Required by ChromeOS only.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       GaiaConstants::kAccountsReauthOAuth2Scope,
@@ -65,6 +68,7 @@ const std::set<std::string> GetUnconsentedOAuth2Scopes() {
       GaiaConstants::kKidManagementOAuth2Scope,
       GaiaConstants::kKidManagementPrivilegedOAuth2Scope,
       GaiaConstants::kKidsSupervisionSetupChildOAuth2Scope,
+      GaiaConstants::kCloudPlatformProjectsOAuth2Scope,
       GaiaConstants::kNearbyShareOAuth2Scope,
       GaiaConstants::kOAuth1LoginScope,
       GaiaConstants::kPeopleApiReadOnlyOAuth2Scope,

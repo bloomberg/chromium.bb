@@ -50,6 +50,7 @@
 #include "ipc/ipc_message.h"
 #include "mojo/public/c/system/types.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
@@ -1904,8 +1905,13 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   // more than once.
   params->outside_fetch_client_settings_object =
       outside_fetch_client_settings_object_.Clone();
-  params->user_agent = GetContentClient()->browser()->GetUserAgent();
-  params->ua_metadata = GetContentClient()->browser()->GetUserAgentMetadata();
+
+  ContentBrowserClient* browser_client = GetContentClient()->browser();
+  params->user_agent = (origin_trial_tokens_ &&
+                        origin_trial_tokens_->contains("UserAgentReduction"))
+                           ? browser_client->GetReducedUserAgent()
+                           : browser_client->GetUserAgent();
+  params->ua_metadata = browser_client->GetUserAgentMetadata();
   params->is_installed = IsInstalled(status_);
   params->script_url_to_skip_throttling = updated_script_url_;
   params->main_script_load_params = std::move(main_script_load_params_);
@@ -2353,7 +2359,8 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
   // disallow this scope. Since this worker might not be used for a specific
   // tab, pass a null callback as WebContents getter.
   if (!GetContentClient()->browser()->AllowServiceWorker(
-          scope_, scope_, url::Origin::Create(scope_), script_url_,
+          scope_, net::SiteForCookies::FromUrl(scope_),
+          url::Origin::Create(scope_), script_url_,
           context_->wrapper()->browser_context())) {
     return false;
   }
@@ -2438,7 +2445,7 @@ bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
   // limited by the automatic shutdown mechanism.
   for (const auto& controllee : controllee_map_) {
     ServiceWorkerContainerHost* container_host = controllee.second;
-    if (container_host->process_id() != worker_process_id)
+    if (container_host->GetProcessId() != worker_process_id)
       return true;
   }
   return false;

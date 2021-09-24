@@ -23,7 +23,6 @@
 #include "absl/base/internal/raw_logging.h"
 #include "absl/base/optimization.h"
 #include "absl/strings/internal/cord_internal.h"
-#include "absl/strings/internal/cord_rep_btree.h"
 #include "absl/strings/internal/cord_rep_flat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
@@ -623,7 +622,7 @@ inline void CordRepBtree::Destroy(CordRepBtree* tree) {
 inline CordRepBtree* CordRepBtree::CopyRaw() const {
   auto* tree = static_cast<CordRepBtree*>(::operator new(sizeof(CordRepBtree)));
   memcpy(static_cast<void*>(tree), this, sizeof(CordRepBtree));
-  new (&tree->refcount) Refcount;
+  new (&tree->refcount) RefcountAndFlags;
   return tree;
 }
 

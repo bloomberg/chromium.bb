@@ -23,6 +23,9 @@ declare_args() {
       (is_linux || is_chromeos) && (!is_chromecast || is_cast_desktop_build) &&
       (angle_use_x11 || use_ozone) && angle_has_build
 
+  # Enable using Vulkan to collect system info as a fallback.
+  angle_enable_vulkan_system_info = false
+
   # Link in system libGL, to work with apitrace.  See doc/DebuggingTips.md.
   angle_link_glx = false
 
@@ -45,9 +48,6 @@ declare_args() {
 
   # Optional feature that forces dirty state whenever we use a new context regardless of thread.
   angle_force_context_check_every_call = false
-
-  # Indicate if the rapidJSON library is available to build with in third_party/.
-  angle_has_rapidjson = angle_has_build
 }
 
 if (angle_build_all) {
@@ -455,7 +455,9 @@ angle_static_library("angle_gpu_info_util") {
       "$angle_root/src/common/vulkan:angle_libvulkan_loader",
       "$angle_vulkan_headers_dir:vulkan_headers",
     ]
-    defines += [ "ANGLE_HAS_VULKAN_SYSTEM_INFO" ]
+    if (angle_enable_vulkan_system_info) {
+      defines += [ "ANGLE_HAS_VULKAN_SYSTEM_INFO" ]
+    }
   }
 
   if (is_android) {
@@ -530,6 +532,14 @@ template("translator_lib") {
     _needs_glsl_and_vulkan_base = false
     _uses_spirv = false
 
+    # Frontend support:
+    if (angle_enable_desktop_glsl) {
+      sources += angle_translator_glsl_symbol_table_sources
+    } else {
+      sources += angle_translator_essl_symbol_table_sources
+    }
+
+    # Backend support:
     if (angle_enable_essl || use_fuzzing_engine) {
       _needs_glsl_base = true
       sources += angle_translator_essl_sources
@@ -940,10 +950,12 @@ angle_source_set("libANGLE") {
 }
 
 angle_source_set("angle_gl_enum_utils") {
-  public_deps = [ ":libANGLE_base" ]
+  deps = [ ":angle_common" ]
   sources = [
     "src/libANGLE/capture/gl_enum_utils.cpp",
+    "src/libANGLE/capture/gl_enum_utils.h",
     "src/libANGLE/capture/gl_enum_utils_autogen.cpp",
+    "src/libANGLE/capture/gl_enum_utils_autogen.h",
   ]
 }
 

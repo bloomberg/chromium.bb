@@ -164,12 +164,11 @@ void HostFrameSinkManager::CreateCompositorFrameSink(
 }
 
 void HostFrameSinkManager::CreateFrameSinkBundle(
-    const FrameSinkId& parent_frame_sink_id,
     const FrameSinkBundleId& bundle_id,
     mojo::PendingReceiver<mojom::FrameSinkBundle> receiver,
     mojo::PendingRemote<mojom::FrameSinkBundleClient> client) {
-  frame_sink_manager_->CreateFrameSinkBundle(
-      parent_frame_sink_id, bundle_id, std::move(receiver), std::move(client));
+  frame_sink_manager_->CreateFrameSinkBundle(bundle_id, std::move(receiver),
+                                             std::move(client));
 }
 
 void HostFrameSinkManager::CreateBundledCompositorFrameSink(
@@ -409,6 +408,15 @@ void HostFrameSinkManager::EvictCachedBackBuffer(uint32_t cache_id) {
   // platform window is destroyed.
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   frame_sink_manager_remote_->EvictBackBuffer(cache_id);
+}
+
+void HostFrameSinkManager::CreateHitTestQueryForSynchronousCompositor(
+    const FrameSinkId& frame_sink_id) {
+  display_hit_test_query_[frame_sink_id] = std::make_unique<HitTestQuery>();
+}
+void HostFrameSinkManager::EraseHitTestQueryForSynchronousCompositor(
+    const FrameSinkId& frame_sink_id) {
+  display_hit_test_query_.erase(frame_sink_id);
 }
 
 void HostFrameSinkManager::UpdateDebugRendererSettings(

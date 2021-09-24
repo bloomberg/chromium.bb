@@ -138,11 +138,11 @@
           </div>
           <div id="highVisibilitySubtitle"
               class="secondary" aria-hidden="true">
-            <settings-localized-link id="highVisibilityOff"
+            <localized-link id="highVisibilityOff"
                 localized-string="[[getHighVisibilityToggleText_(
                     inHighVisibility_)]]"
                 link-url="$i18n{nearbyShareLearnMoreLink}">
-            </settings-localized-link>
+            </localized-link>
           </div>
         </div>
         <div class="separator"></div>
@@ -183,6 +183,28 @@
           $i18n{nearbyShareEditDataUsage}
         </cr-button>
       </div>
+      <template is="dom-if" if="[[isBackgroundScanningEnabled_]]" restamp>
+        <div class="settings-box two-line" id="fastInitiationNotificationRow">
+          <div class="start">
+            <div id="fastInitiationNotificationRowTitle" aria-hidden="true">
+              $i18n{fastInitiationNotificationToggleTitle}
+            </div>
+            <div aria-hidden="true" class="secondary"
+                id="fastInitiationNotificationRowDescription">
+              $i18n{fastInitiationNotificationToggleDescription}
+            </div>
+          </div>
+          <cr-toggle
+              id="fastInitiationNotificationToggle"
+              aria-labelledby="fastInitiationNotificationRowTitle"
+              aria-describedby="fastInitiationNotificationRowDescription"
+              checked="[[settings.fastInitiationNotificationEnabled]]"
+              disabled="[[shouldDisableFastInitiationNotificationToggle_(
+                  settings.enabled,  settings.isOnboardingComplete)]]"
+              on-change="onFastInitiationNotificationToggledByUser_">
+          </cr-toggle>
+        </div>
+      </template>
     </template>
     <template is="dom-if" if="[[showDataUsageDialog_]]" restamp>
       <nearby-share-data-usage-dialog prefs="{{prefs}}" id="dataUsageDialog"
@@ -193,10 +215,10 @@
         if="[[prefs.nearby_sharing.enabled.value]]" restamp>
       <div id="help" class="settings-box">
         <iron-icon id="helpIcon" icon="nearby20:info"></iron-icon>
-        <settings-localized-link id="helpText"
+        <localized-link id="helpText"
             localized-string="$i18n{nearbyShareSettingsHelpCaption}"
             link-url="$i18n{nearbyShareLearnMoreLink}">
-        </settings-localized-link>
+        </localized-link>
       </div>
     </template>
     <template is="dom-if" if="[[showReceiveDialog_]]" restamp>

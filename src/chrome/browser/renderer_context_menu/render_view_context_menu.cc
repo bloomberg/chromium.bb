@@ -87,8 +87,9 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -229,7 +230,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if (defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)) && \
+    BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/lens/region_search/lens_region_search_controller.h"
 #endif
 
@@ -272,6 +274,8 @@ using extensions::MenuItem;
 using extensions::MenuManager;
 
 namespace {
+
+constexpr char16_t kGoogleLens[] = u"Google Lens";
 
 base::OnceCallback<void(RenderViewContextMenu*)>* GetMenuShownCallback() {
   static base::NoDestructor<base::OnceCallback<void(RenderViewContextMenu*)>>
@@ -674,9 +678,9 @@ RenderViewContextMenu::RenderViewContextMenu(
   set_content_type(
       ContextMenuContentTypeFactory::Create(source_web_contents_, params));
 
-  system_app_type_ = GetBrowser() && GetBrowser()->app_controller()
-                         ? GetBrowser()->app_controller()->system_app_type()
-                         : absl::nullopt;
+  system_app_ = GetBrowser() && GetBrowser()->app_controller()
+                    ? GetBrowser()->app_controller()->system_app()
+                    : nullptr;
 
   auto* cb = GetMenuCreatedCallback();
   if (!cb->is_null()) {
@@ -1001,16 +1005,6 @@ void RenderViewContextMenu::InitMenu() {
     AppendCurrentExtensionItems();
   }
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
-  if (content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_LENS_REGION_SEARCH)) {
-    if (IsLensRegionSearchEnabled()) {
-      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-      AppendLensRegionSearchItem();
-    }
-  }
-#endif
-
   // Accessibility label items are appended to all menus when a screen reader
   // is enabled. It can be difficult to open a specific context menu with a
   // screen reader, so this is a UX approved solution.
@@ -1286,16 +1280,14 @@ void RenderViewContextMenu::AppendLinkItems() {
     Profile* profile = GetProfile();
     absl::optional<web_app::SystemAppType> link_system_app_type =
         GetLinkSystemAppType(profile, params_.link_url);
-    if (system_app_type_ && link_system_app_type) {
+    if (system_app_ && link_system_app_type) {
       // Show "Open in new tab" if this link points to the current app, and the
       // app has a tab strip.
       //
       // We don't show "open in tab" for links to a different SWA, because two
       // SWAs can't share the same browser window.
-      if (system_app_type_ == link_system_app_type &&
-          web_app::WebAppProvider::GetForSystemWebApps(profile)
-              ->system_web_app_manager()
-              .ShouldHaveTabStrip(system_app_type_.value())) {
+      if (system_app_->GetType() == link_system_app_type &&
+          system_app_->ShouldHaveTabStrip()) {
         menu_model_.AddItemWithStringId(
             IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
             IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP);
@@ -1508,6 +1500,11 @@ void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
   if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
     return;
 
+  auto* const provider =
+      web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
+  if (!provider)
+    return;
+
   absl::optional<web_app::AppId> link_app_id =
       web_app::FindInstalledAppWithUrlInScope(profile, params_.link_url);
   if (!link_app_id)
@@ -1515,12 +1512,10 @@ void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
 
   // Don't show "Open link in new app window", if the link points to the
   // current app, and the app is single windowed.
-  if (system_app_type_ &&
-      system_app_type_ ==
+  if (system_app_ &&
+      system_app_->GetType() ==
           web_app::GetSystemWebAppTypeForAppId(profile, *link_app_id) &&
-      web_app::WebAppProvider::GetForSystemWebApps(GetProfile())
-          ->system_web_app_manager()
-          .IsSingleWindow(*system_app_type_)) {
+      system_app_->ShouldBeSingleWindow()) {
     return;
   }
 
@@ -1533,7 +1528,6 @@ void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
     open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP;
   }
 
-  auto* const provider = web_app::WebAppProvider::Get(profile);
   menu_model_.AddItem(
       IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
       l10n_util::GetStringFUTF16(
@@ -1685,6 +1679,12 @@ void RenderViewContextMenu::AppendPageItems() {
                                   IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   AppendMediaRouterItem();
+#if (defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)) && \
+    BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (IsLensRegionSearchEnabled()) {
+    AppendLensRegionSearchItem();
+  }
+#endif
 
   if (ShouldUseShareMenu()) {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
@@ -2148,9 +2148,15 @@ void RenderViewContextMenu::AppendLensRegionSearchItem() {
     resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT2;
   } else if (lens::features::kRegionSearchUseMenuItemAltText3.Get()) {
     resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT3;
+  } else if (lens::features::kRegionSearchUseMenuItemAltText4.Get()) {
+    resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT4;
   }
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH,
-                                  resource_id);
+
+  // TODO(crbug.com/1234592): When support is added for non-Google default
+  // search providers, set the name here using the provider |short_name|.
+  menu_model_.AddItem(
+      IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH,
+      l10n_util::GetStringFUTF16(resource_id, std::u16string(kGoogleLens)));
 }
 
 // Menu delegate functions -----------------------------------------------------
@@ -2290,6 +2296,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     }
 
     case IDC_CONTENT_CONTEXT_COPYAVLOCATION:
+      return params_.src_url.is_valid() && !params_.src_url.SchemeIsBlob();
+
     case IDC_CONTENT_CONTEXT_COPYIMAGELOCATION:
       return params_.src_url.is_valid();
 
@@ -2399,8 +2407,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CLIPBOARD_HISTORY_MENU:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      if (chromeos::features::IsClipboardHistoryEnabled())
-        return ash::ClipboardHistoryController::Get()->CanShowMenu();
+      return chromeos::features::IsClipboardHistoryEnabled() &&
+             ash::ClipboardHistoryController::Get()->CanShowMenu();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
     {
       auto* service = chromeos::LacrosService::Get();
@@ -2409,8 +2417,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     }
 #else
       NOTREACHED();
-#endif
       return false;
+#endif
     default:
       NOTREACHED();
       return false;
@@ -3082,10 +3090,14 @@ bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
 }
 
 bool RenderViewContextMenu::IsLensRegionSearchEnabled() const {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return base::FeatureList::IsEnabled(lens::features::kLensRegionSearch) &&
          search::DefaultSearchProviderIsGoogle(GetProfile()) &&
          GetPrefs(browser_context_)
              ->GetBoolean(prefs::kLensRegionSearchEnabled);
+#else
+  return false;
+#endif
 }
 
 void RenderViewContextMenu::AppendQRCodeGeneratorItem(bool for_image,
@@ -3325,15 +3337,17 @@ void RenderViewContextMenu::ExecSearchLensForImage() {
 
   core_tab_helper->SearchWithLensInNewTab(
       render_frame_host, params().src_url,
-      lens::EntryPoint::CHROME_SEARCH_WITH_GOOGLE_LENS_CONTEXT_MENU_ITEM);
+      lens::EntryPoint::CHROME_SEARCH_WITH_GOOGLE_LENS_CONTEXT_MENU_ITEM,
+      lens::features::kEnableSidePanelForLensImageSearch.Get());
 }
 
 void RenderViewContextMenu::ExecLensRegionSearch() {
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if (defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)) && \
+    BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (!lens_region_search_controller_)
     lens_region_search_controller_ =
-        std::make_unique<lens::LensRegionSearchController>(
-            source_web_contents_);
+        std::make_unique<lens::LensRegionSearchController>(source_web_contents_,
+                                                           GetBrowser());
   lens_region_search_controller_->Start();
 #endif
 }

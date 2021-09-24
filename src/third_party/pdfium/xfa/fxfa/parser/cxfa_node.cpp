@@ -848,7 +848,7 @@ class CXFA_TextLayoutData final : public CXFA_WidgetLayoutData {
 
     m_pTextProvider = cppgc::MakeGarbageCollected<CXFA_TextProvider>(
         doc->GetHeap()->GetAllocationHandle(), pNode,
-        XFA_TEXTPROVIDERTYPE_Text);
+        CXFA_TextProvider::Type::kText);
     m_pTextLayout = cppgc::MakeGarbageCollected<CXFA_TextLayout>(
         doc->GetHeap()->GetAllocationHandle(), doc, m_pTextProvider);
   }
@@ -917,7 +917,7 @@ class CXFA_FieldLayoutData : public CXFA_WidgetLayoutData {
 
     m_pCapTextProvider = cppgc::MakeGarbageCollected<CXFA_TextProvider>(
         doc->GetHeap()->GetAllocationHandle(), pNode,
-        XFA_TEXTPROVIDERTYPE_Caption);
+        CXFA_TextProvider::Type::kCaption);
     m_pCapTextLayout = cppgc::MakeGarbageCollected<CXFA_TextLayout>(
         doc->GetHeap()->GetAllocationHandle(), doc, m_pCapTextProvider);
     return true;
@@ -978,7 +978,7 @@ class CXFA_ImageEditData final : public CXFA_FieldLayoutData {
 
 CXFA_Node::CXFA_Node(CXFA_Document* pDoc,
                      XFA_PacketType ePacket,
-                     uint32_t validPackets,
+                     Mask<XFA_XDPPACKET> validPackets,
                      XFA_ObjectType oType,
                      XFA_Element eType,
                      pdfium::span<const PropertyData> properties,
@@ -1077,7 +1077,8 @@ CXFA_Node* CXFA_Node::GetContainerParent() const {
 }
 
 bool CXFA_Node::IsValidInPacket(XFA_PacketType packet) const {
-  return !!(m_ValidPackets & (1 << static_cast<uint8_t>(packet)));
+  uint32_t bitflag = 1 << static_cast<uint8_t>(packet);
+  return !!(m_ValidPackets & static_cast<XFA_XDPPACKET>(bitflag));
 }
 
 const CXFA_Node::PropertyData* CXFA_Node::GetPropertyData(
@@ -1094,9 +1095,10 @@ bool CXFA_Node::HasProperty(XFA_Element property) const {
   return !!GetPropertyData(property);
 }
 
-bool CXFA_Node::HasPropertyFlags(XFA_Element property, uint8_t flags) const {
+bool CXFA_Node::HasPropertyFlag(XFA_Element property,
+                                XFA_PropertyFlag flag) const {
   const PropertyData* data = GetPropertyData(property);
-  return data && !!(data->flags & flags);
+  return data && !!(data->flags & flag);
 }
 
 uint8_t CXFA_Node::PropertyOccuranceCount(XFA_Element property) const {
@@ -1133,10 +1135,10 @@ CXFA_Node* CXFA_Node::GetOrCreateProperty(int32_t index,
   if (node)
     return node;
 
-  if (HasPropertyFlags(eProperty, XFA_PropertyFlag_OneOf)) {
+  if (HasPropertyFlag(eProperty, XFA_PropertyFlag::kOneOf)) {
     for (CXFA_Node* pNode = GetFirstChild(); pNode;
          pNode = pNode->GetNextSibling()) {
-      if (HasPropertyFlags(pNode->GetElementType(), XFA_PropertyFlag_OneOf)) {
+      if (HasPropertyFlag(pNode->GetElementType(), XFA_PropertyFlag::kOneOf)) {
         return nullptr;
       }
     }
@@ -1155,7 +1157,7 @@ CXFA_Node* CXFA_Node::GetOrCreateProperty(int32_t index,
 }
 
 Optional<XFA_Element> CXFA_Node::GetFirstPropertyWithFlag(
-    XFA_PropertyFlagMask flag) const {
+    XFA_PropertyFlag flag) const {
   for (const auto& prop : m_Properties) {
     if (prop.flags & flag)
       return prop.property;
@@ -1222,8 +1224,8 @@ std::vector<CXFA_Node*> CXFA_Node::GetNodeListWithFilter(
       if (bFilterProperties) {
         nodes.push_back(pChild);
       } else if (bFilterOneOfProperties &&
-                 HasPropertyFlags(pChild->GetElementType(),
-                                  XFA_PropertyFlag_OneOf)) {
+                 HasPropertyFlag(pChild->GetElementType(),
+                                 XFA_PropertyFlag::kOneOf)) {
         nodes.push_back(pChild);
       } else if (bFilterChildren &&
                  (pChild->GetElementType() == XFA_Element::Variables ||
@@ -1239,7 +1241,7 @@ std::vector<CXFA_Node*> CXFA_Node::GetNodeListWithFilter(
     return nodes;
 
   Optional<XFA_Element> property =
-      GetFirstPropertyWithFlag(XFA_PropertyFlag_DefaultOneOf);
+      GetFirstPropertyWithFlag(XFA_PropertyFlag::kDefaultOneOf);
   if (!property.has_value())
     return nodes;
 
@@ -2226,7 +2228,7 @@ void CXFA_Node::SyncValue(const WideString& wsValue, bool bNotify) {
   JSObject()->SetContent(wsValue, wsFormatValue, bNotify, false, true);
 }
 
-WideString CXFA_Node::GetRawValue() {
+WideString CXFA_Node::GetRawValue() const {
   return JSObject()->GetContent(false);
 }
 
@@ -2478,14 +2480,7 @@ XFA_EventError CXFA_Node::ProcessCalculate(CXFA_FFDocView* pDocView) {
 
 void CXFA_Node::ProcessScriptTestValidate(CXFA_FFDocView* pDocView,
                                           CXFA_Validate* validate,
-                                          XFA_EventError iRet,
-                                          bool bRetValue,
                                           bool bVersionFlag) {
-  if (iRet != XFA_EventError::kSuccess)
-    return;
-  if (bRetValue)
-    return;
-
   CXFA_FFApp::CallbackIface* pAppProvider =
       pDocView->GetDoc()->GetApp()->GetAppProvider();
   if (!pAppProvider)
@@ -2588,18 +2583,12 @@ XFA_EventError CXFA_Node::ProcessNullTestValidate(CXFA_FFDocView* pDocView,
   XFA_AttributeValue eNullTest = validate->GetNullTest();
   WideString wsNullMsg = validate->GetNullMessageText();
   if (iFlags & 0x01) {
-    XFA_EventError iRet = XFA_EventError::kSuccess;
-    if (eNullTest != XFA_AttributeValue::Disabled)
-      iRet = XFA_EventError::kError;
+    if (eNullTest == XFA_AttributeValue::Disabled)
+      return XFA_EventError::kSuccess;
 
-    if (wsNullMsg.IsEmpty())
-      return iRet;
-
-    if (eNullTest != XFA_AttributeValue::Disabled) {
-      pDocView->m_NullTestMsgArray.push_back(wsNullMsg);
-      return XFA_EventError::kError;
-    }
-    return XFA_EventError::kSuccess;
+    if (!wsNullMsg.IsEmpty())
+      pDocView->AddNullTestMsg(wsNullMsg);
+    return XFA_EventError::kError;
   }
   if (wsNullMsg.IsEmpty() && bVersionFlag &&
       eNullTest != XFA_AttributeValue::Disabled) {
@@ -2657,8 +2646,10 @@ XFA_EventError CXFA_Node::ProcessValidate(CXFA_FFDocView* pDocView,
   if (!validate)
     return XFA_EventError::kNotExist;
 
-  bool bInitDoc = validate->NeedsInitApp();
-  bool bStatus = pDocView->GetLayoutStatus() < XFA_DOCVIEW_LAYOUTSTATUS_End;
+  const bool bInitDoc = validate->NeedsInitApp();
+  const bool bStatus =
+      pDocView->GetLayoutStatus() != CXFA_FFDocView::LayoutStatus::kEnd;
+
   XFA_EventError iFormat = XFA_EventError::kNotExist;
   XFA_EventError iRet = XFA_EventError::kNotExist;
   CXFA_Script* script = validate->GetScriptIfExists();
@@ -2684,9 +2675,10 @@ XFA_EventError CXFA_Node::ProcessValidate(CXFA_FFDocView* pDocView,
         &iRet,
         ProcessNullTestValidate(pDocView, validate, iFlags, bVersionFlag));
   }
-  if (iFormat != XFA_EventError::kSuccess && hasBoolResult)
-    ProcessScriptTestValidate(pDocView, validate, iRet, bRet, bVersionFlag);
-
+  if (iRet == XFA_EventError::kSuccess && iFormat != XFA_EventError::kSuccess &&
+      hasBoolResult && !bRet) {
+    ProcessScriptTestValidate(pDocView, validate, bVersionFlag);
+  }
   XFA_EventErrorAccumulate(&iRet, iFormat);
   return iRet;
 }
@@ -3932,8 +3924,8 @@ RetainPtr<CFGAS_GEFont> CXFA_Node::GetFGASFont(CXFA_FFDoc* doc) {
                                                  dwFontStyle);
 }
 
-bool CXFA_Node::HasButtonRollover() {
-  CXFA_Items* pItems = GetChild<CXFA_Items>(0, XFA_Element::Items, false);
+bool CXFA_Node::HasButtonRollover() const {
+  const auto* pItems = GetChild<CXFA_Items>(0, XFA_Element::Items, false);
   if (!pItems)
     return false;
 
@@ -3948,8 +3940,8 @@ bool CXFA_Node::HasButtonRollover() {
   return false;
 }
 
-bool CXFA_Node::HasButtonDown() {
-  CXFA_Items* pItems = GetChild<CXFA_Items>(0, XFA_Element::Items, false);
+bool CXFA_Node::HasButtonDown() const {
+  const auto* pItems = GetChild<CXFA_Items>(0, XFA_Element::Items, false);
   if (!pItems)
     return false;
 
@@ -4614,8 +4606,9 @@ bool CXFA_Node::IsMultiLine() {
   return pUIChild && pUIChild->JSObject()->GetBoolean(XFA_Attribute::MultiLine);
 }
 
-std::pair<XFA_Element, int32_t> CXFA_Node::GetMaxChars() {
-  if (CXFA_Value* pNode = GetChild<CXFA_Value>(0, XFA_Element::Value, false)) {
+std::pair<XFA_Element, int32_t> CXFA_Node::GetMaxChars() const {
+  const auto* pNode = GetChild<CXFA_Value>(0, XFA_Element::Value, false);
+  if (pNode) {
     if (CXFA_Node* pChild = pNode->GetFirstChild()) {
       switch (pChild->GetElementType()) {
         case XFA_Element::Text:
@@ -4634,12 +4627,12 @@ std::pair<XFA_Element, int32_t> CXFA_Node::GetMaxChars() {
   return {XFA_Element::Unknown, 0};
 }
 
-int32_t CXFA_Node::GetFracDigits() {
-  CXFA_Value* pNode = GetChild<CXFA_Value>(0, XFA_Element::Value, false);
+int32_t CXFA_Node::GetFracDigits() const {
+  const auto* pNode = GetChild<CXFA_Value>(0, XFA_Element::Value, false);
   if (!pNode)
     return -1;
 
-  CXFA_Decimal* pChild =
+  const auto* pChild =
       pNode->GetChild<CXFA_Decimal>(0, XFA_Element::Decimal, false);
   if (!pChild)
     return -1;
@@ -4649,12 +4642,12 @@ int32_t CXFA_Node::GetFracDigits() {
       .value_or(-1);
 }
 
-int32_t CXFA_Node::GetLeadDigits() {
-  CXFA_Value* pNode = GetChild<CXFA_Value>(0, XFA_Element::Value, false);
+int32_t CXFA_Node::GetLeadDigits() const {
+  const auto* pNode = GetChild<CXFA_Value>(0, XFA_Element::Value, false);
   if (!pNode)
     return -1;
 
-  CXFA_Decimal* pChild =
+  const auto* pChild =
       pNode->GetChild<CXFA_Decimal>(0, XFA_Element::Decimal, false);
   if (!pChild)
     return -1;
@@ -4717,10 +4710,11 @@ WideString CXFA_Node::GetPictureContent(XFA_ValuePicture ePicture) {
   CXFA_LocaleValue widgetValue = XFA_GetLocaleValue(this);
   switch (ePicture) {
     case XFA_ValuePicture::kDisplay: {
-      if (CXFA_Format* pFormat =
-              GetChild<CXFA_Format>(0, XFA_Element::Format, false)) {
-        if (CXFA_Picture* pPicture = pFormat->GetChild<CXFA_Picture>(
-                0, XFA_Element::Picture, false)) {
+      auto* pFormat = GetChild<CXFA_Format>(0, XFA_Element::Format, false);
+      if (pFormat) {
+        auto* pPicture =
+            pFormat->GetChild<CXFA_Picture>(0, XFA_Element::Picture, false);
+        if (pPicture) {
           Optional<WideString> picture =
               pPicture->JSObject()->TryContent(false, true);
           if (picture.has_value())

@@ -8,6 +8,7 @@ import cssAngleStyles from './cssAngle.css.js';
 
 import type {Angle} from './CSSAngleUtils.js';
 import {AngleUnit, convertAngleUnit, getNewAngleFromEvent, getNextUnit, parseText, roundAngleByUnit} from './CSSAngleUtils.js';
+import {ValueChangedEvent} from './InlineEditorUtils.js';
 
 import type {CSSAngleEditorData} from './CSSAngleEditor.js';
 import {CSSAngleEditor} from './CSSAngleEditor.js';
@@ -20,28 +21,21 @@ const styleMap = LitHtml.Directives.styleMap;
 const ContextAwareProperties = new Set(['color', 'background', 'background-color']);
 
 export class PopoverToggledEvent extends Event {
+  static readonly eventName = 'popovertoggled';
   data: {open: boolean};
 
   constructor(open: boolean) {
-    super('popovertoggled', {});
+    super(PopoverToggledEvent.eventName, {});
     this.data = {open};
   }
 }
 
-export class ValueChangedEvent extends Event {
-  data: {value: string};
-
-  constructor(value: string) {
-    super('valuechanged', {});
-    this.data = {value};
-  }
-}
-
 export class UnitChangedEvent extends Event {
+  static readonly eventName = 'unitchanged';
   data: {value: string};
 
   constructor(value: string) {
-    super('unitchanged', {});
+    super(UnitChangedEvent.eventName, {});
     this.data = {value};
   }
 }

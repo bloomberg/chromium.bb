@@ -15,16 +15,16 @@
 #include "base/metrics/user_metrics.h"
 #include "base/types/pass_key.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_sync_install_delegate.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/channel_info.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
@@ -126,8 +126,8 @@ WebAppSyncBridge::WebAppSyncBridge(
     WebAppRegistrarMutable* registrar,
     SyncInstallDelegate* install_delegate,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
-    : AppRegistryController(profile),
-      syncer::ModelTypeSyncBridge(std::move(change_processor)),
+    : syncer::ModelTypeSyncBridge(std::move(change_processor)),
+      profile_(profile),
       registrar_(registrar),
       install_delegate_(install_delegate) {
   DCHECK(database_factory);
@@ -195,6 +195,10 @@ void WebAppSyncBridge::SetAppUserDisplayMode(const AppId& app_id,
       case DisplayMode::kBrowser:
         base::RecordAction(base::UserMetricsAction("WebApp.SetWindowMode.Tab"));
         break;
+      case DisplayMode::kTabbed:
+        base::RecordAction(
+            base::UserMetricsAction("WebApp.SetWindowMode.Tabbed"));
+        break;
       default:
         NOTREACHED();
     }
@@ -255,24 +259,6 @@ void WebAppSyncBridge::UpdateAppsDisableMode() {
   registrar_->NotifyWebAppsDisabledModeChanged();
 }
 
-void WebAppSyncBridge::SetExperimentalTabbedWindowMode(const AppId& app_id,
-                                                       bool enabled,
-                                                       bool is_user_action) {
-  if (enabled) {
-    DCHECK(base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip));
-    UpdateBoolWebAppPref(profile()->GetPrefs(), app_id,
-                         kExperimentalTabbedWindowMode, true);
-
-    // Set non-experimental window mode to standalone for when the user disables
-    // this flag.
-    SetAppUserDisplayMode(app_id, DisplayMode::kStandalone, is_user_action);
-  } else {
-    RemoveWebAppPref(profile()->GetPrefs(), app_id,
-                     kExperimentalTabbedWindowMode);
-  }
-  registrar_->NotifyWebAppExperimentalTabbedWindowModeChanged(app_id, enabled);
-}
-
 void WebAppSyncBridge::SetAppIsLocallyInstalled(const AppId& app_id,
                                                 bool is_locally_installed) {
   {
@@ -287,10 +273,13 @@ void WebAppSyncBridge::SetAppIsLocallyInstalled(const AppId& app_id,
 
 void WebAppSyncBridge::SetAppLastBadgingTime(const AppId& app_id,
                                              const base::Time& time) {
-  ScopedRegistryUpdate update(this);
-  WebApp* web_app = update->UpdateApp(app_id);
-  if (web_app)
-    web_app->SetLastBadgingTime(time);
+  {
+    ScopedRegistryUpdate update(this);
+    WebApp* web_app = update->UpdateApp(app_id);
+    if (web_app)
+      web_app->SetLastBadgingTime(time);
+  }
+  registrar_->NotifyWebAppLastBadgingTimeChanged(app_id, time);
 }
 
 void WebAppSyncBridge::SetAppLastLaunchTime(const AppId& app_id,
@@ -315,8 +304,14 @@ void WebAppSyncBridge::SetAppInstallTime(const AppId& app_id,
   registrar_->NotifyWebAppInstallTimeChanged(app_id, time);
 }
 
-WebAppSyncBridge* WebAppSyncBridge::AsWebAppSyncBridge() {
-  return this;
+void WebAppSyncBridge::SetAppManifestUpdateTime(const AppId& app_id,
+                                                const base::Time& time) {
+  {
+    ScopedRegistryUpdate update(this);
+    WebApp* web_app = update->UpdateApp(app_id);
+    if (web_app)
+      web_app->SetManifestUpdateTime(time);
+  }
 }
 
 void WebAppSyncBridge::SetUserPageOrdinal(const AppId& app_id,
@@ -375,7 +370,7 @@ std::vector<std::unique_ptr<WebApp>> WebAppSyncBridge::UpdateRegistrar(
   for (std::unique_ptr<WebApp>& web_app : update_data->apps_to_create) {
     AppId app_id = web_app->app_id();
     DCHECK(!registrar_->GetAppById(app_id));
-    DCHECK(web_app->IsSystemApp() || AreWebAppsUserInstallable(profile()));
+    DCHECK(web_app->IsSystemApp() || AreWebAppsUserInstallable(profile_));
     registrar_->registry().emplace(std::move(app_id), std::move(web_app));
   }
 

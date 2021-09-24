@@ -14,7 +14,6 @@ import("//third_party/protobuf/proto_library.gni")
 group("all_tests") {
   testonly = true
   deps = [
-    ":ios_chrome_perftests",
     ":ios_chrome_unittests",
     "//ios/chrome/test/xcuitest:ios_chrome_device_check_xcuitests_module",
     "//ios/chrome/test/xcuitest:ios_chrome_xcuitests",
@@ -157,33 +156,11 @@ source_set("run_all_unittests") {
   }
 }
 
-test("ios_chrome_perftests") {
-  deps = [
-    # Ensure that all perf tests are run, use fake hooks and pack resources.
-    ":run_all_unittests",
-    "//ios/chrome/app:tests_fake_hook",
-    "//ios/chrome/app/resources:packed_resources",
-    "//ios/chrome/browser/ui/main",
-
-    # Use the same provider as Chromium.app to have meaningful perf numbers.
-    ios_provider_target,
-
-    # Add perf_tests target here.
-    "//ios/chrome/browser/ui/ntp:perf_tests",
-    "//ios/chrome/browser/ui/omnibox:perf_tests",
-    "//ios/chrome/browser/web:perf_tests",
-  ]
-
-  assert_no_deps = ios_assert_no_deps
-}
-
 bundle_data_ib_file("base_scene_storyboard") {
   source = "BaseScene.storyboard"
 }
 
 test("ios_chrome_unittests") {
-  info_plist = "//ios/chrome/test/unittest-scene-lifecycle-Info.plist"
-
   deps = [
     # Ensure that all unit tests are run, use fake hooks and pack resources.
     ":run_all_unittests",
@@ -289,6 +266,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/content_suggestions:unit_tests",
     "//ios/chrome/browser/ui/content_suggestions/cells:unit_tests",
     "//ios/chrome/browser/ui/content_suggestions/identifier:unit_tests",
+    "//ios/chrome/browser/ui/context_menu:unit_tests",
     "//ios/chrome/browser/ui/default_promo:unit_tests",
     "//ios/chrome/browser/ui/dialogs:unit_tests",
     "//ios/chrome/browser/ui/dialogs:unit_tests_internal",

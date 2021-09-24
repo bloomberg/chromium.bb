@@ -26,10 +26,11 @@ enum class RefreshTaskId {
   kRefreshWebFeed,
 };
 
-// Information about the Chrome build.
+// Information about the Chrome build and feature flags.
 struct ChromeInfo {
   version_info::Channel channel{};
   base::Version version;
+  bool start_surface;
 };
 // Device display metrics.
 struct DisplayMetrics {
@@ -149,6 +150,7 @@ struct WebFeedMetadata {
   WebFeedMetadata();
   WebFeedMetadata(const WebFeedMetadata&);
   WebFeedMetadata(WebFeedMetadata&&);
+  ~WebFeedMetadata();
   WebFeedMetadata& operator=(const WebFeedMetadata&);
   WebFeedMetadata& operator=(WebFeedMetadata&&);
 
@@ -163,6 +165,7 @@ struct WebFeedMetadata {
   GURL publisher_url;
   WebFeedSubscriptionStatus subscription_status =
       WebFeedSubscriptionStatus::kUnknown;
+  GURL favicon_url;
 };
 std::ostream& operator<<(std::ostream& out, const WebFeedMetadata& value);
 

@@ -186,7 +186,7 @@ struct SecurePaymentConfirmationAppFactory::Request
       base::WeakPtr<PaymentAppFactory::Delegate> delegate,
       scoped_refptr<payments::PaymentManifestWebDataService> web_data_service,
       mojom::SecurePaymentConfirmationRequestPtr mojo_request,
-      std::unique_ptr<autofill::InternalAuthenticator> authenticator)
+      std::unique_ptr<webauthn::InternalAuthenticator> authenticator)
       : content::WebContentsObserver(delegate->GetWebContents()),
         delegate(delegate),
         web_data_service(web_data_service),
@@ -210,7 +210,7 @@ struct SecurePaymentConfirmationAppFactory::Request
   base::WeakPtr<PaymentAppFactory::Delegate> delegate;
   scoped_refptr<payments::PaymentManifestWebDataService> web_data_service;
   mojom::SecurePaymentConfirmationRequestPtr mojo_request;
-  std::unique_ptr<autofill::InternalAuthenticator> authenticator;
+  std::unique_ptr<webauthn::InternalAuthenticator> authenticator;
   absl::optional<int> pending_icon_download_request_id;
 };
 
@@ -273,8 +273,6 @@ void SecurePaymentConfirmationAppFactory::OnAppIcon(
     return;
 
   if (!request->delegate->GetSpec() || !request->authenticator ||
-      request->authenticator->GetRenderFrameHost() !=
-          request->web_contents()->GetMainFrame() ||
       !instrument) {
     request->delegate->OnDoneCreatingPaymentApps();
     return;

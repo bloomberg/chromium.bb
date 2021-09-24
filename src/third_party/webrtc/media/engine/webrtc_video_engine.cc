@@ -1220,7 +1220,7 @@ bool WebRtcVideoChannel::GetChangedRecvParameters(
 bool WebRtcVideoChannel::SetRecvParameters(const VideoRecvParameters& params) {
   RTC_DCHECK_RUN_ON(&thread_checker_);
   TRACE_EVENT0("webrtc", "WebRtcVideoChannel::SetRecvParameters");
-  RTC_DLOG(LS_INFO) << "SetRecvParameters: " << params.ToString();
+  RTC_LOG(LS_INFO) << "SetRecvParameters: " << params.ToString();
   ChangedRecvParameters changed_params;
   if (!GetChangedRecvParameters(params, &changed_params)) {
     return false;
@@ -3018,13 +3018,20 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::SetRecvParameters(
   if (params.rtp_header_extensions) {
     if (config_.rtp.extensions != *params.rtp_header_extensions) {
       config_.rtp.extensions = *params.rtp_header_extensions;
-      video_needs_recreation = true;
+      if (stream_) {
+        stream_->SetRtpExtensions(config_.rtp.extensions);
+      } else {
+        video_needs_recreation = true;
+      }
     }
 
     if (flexfec_config_.rtp.extensions != *params.rtp_header_extensions) {
       flexfec_config_.rtp.extensions = *params.rtp_header_extensions;
-      if (flexfec_stream_ || flexfec_config_.IsCompleteAndEnabled())
+      if (flexfec_stream_) {
+        flexfec_stream_->SetRtpExtensions(flexfec_config_.rtp.extensions);
+      } else if (flexfec_config_.IsCompleteAndEnabled()) {
         video_needs_recreation = true;
+      }
     }
   }
   if (params.flexfec_payload_type) {

@@ -11,7 +11,7 @@ import '//resources/cr_elements/cr_button/cr_button.m.js';
 import '//resources/cr_elements/policy/cr_policy_indicator.m.js';
 import '//resources/cr_elements/policy/cr_tooltip_icon.m.js';
 import '../../settings_shared_css.js';
-import '../localized_link/localized_link.js';
+import '//resources/cr_components/chromeos/localized_link/localized_link.js';
 import './channel_switcher_dialog.js';
 import './edit_hostname_dialog.js';
 
@@ -77,6 +77,7 @@ Polymer({
       type: Object,
       value: () => new Set([
         chromeos.settings.mojom.Setting.kChangeChromeChannel,
+        chromeos.settings.mojom.Setting.kChangeDeviceName,
         chromeos.settings.mojom.Setting.kCopyDetailedBuildInfo,
       ]),
     },
@@ -124,7 +125,7 @@ Polymer({
     if (this.isHostnameSettingEnabled_) {
       this.addWebUIListener(
           'settings.updateDeviceNameMetadata',
-          this.updateDeviceNameMetadata_.bind(this));
+          (data) => this.updateDeviceNameMetadata_(data));
       DeviceNameBrowserProxyImpl.getInstance().notifyReadyForDeviceName();
     }
   },
@@ -192,6 +193,19 @@ Polymer({
   },
 
   /**
+   * @return {string}
+   * @private
+   */
+  getDeviceNameEditButtonA11yDescription_() {
+    if (!this.deviceNameMetadata_) {
+      return '';
+    }
+
+    return this.i18n(
+        'aboutDeviceNameEditBtnA11yDescription', this.getDeviceNameText_());
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
@@ -202,6 +216,36 @@ Polymer({
 
     return this.deviceNameMetadata_.deviceNameState ===
         DeviceNameState.CAN_BE_MODIFIED;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowPolicyIndicator_() {
+    return this.getDeviceNameIndicatorType_() !== CrPolicyIndicatorType.NONE;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getDeviceNameIndicatorType_() {
+    if (!this.deviceNameMetadata_) {
+      return CrPolicyIndicatorType.NONE;
+    }
+
+    if (this.deviceNameMetadata_.deviceNameState ===
+        DeviceNameState.CANNOT_BE_MODIFIED_BECAUSE_OF_POLICIES) {
+      return CrPolicyIndicatorType.DEVICE_POLICY;
+    }
+
+    if (this.deviceNameMetadata_.deviceNameState ===
+        DeviceNameState.CANNOT_BE_MODIFIED_BECAUSE_NOT_DEVICE_OWNER) {
+      return CrPolicyIndicatorType.OWNER;
+    }
+
+    return CrPolicyIndicatorType.NONE;
   },
 
   /**
@@ -299,6 +343,5 @@ Polymer({
   onEditHostnameDialogClosed_() {
     this.showEditHostnameDialog_ = false;
     focusWithoutInk(assert(this.$$('cr-button')));
-    // TODO(jhawkins): Verify hostname property updated at this point.
   },
 });

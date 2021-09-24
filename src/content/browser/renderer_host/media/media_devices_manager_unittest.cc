@@ -60,7 +60,7 @@ MediaDeviceSaltAndOrigin GetSaltAndOrigin(int /* process_id */,
                                           int /* frame_id */) {
   return MediaDeviceSaltAndOrigin(
       "fake_media_device_salt", "fake_group_id_salt",
-      url::Origin::Create(GURL("https://test.com")));
+      url::Origin::Create(GURL("https://test.com")), /*has_focus=*/true);
 }
 
 // This class mocks the audio manager and overrides some methods to ensure that
@@ -969,7 +969,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesWithCapabilities) {
 
 TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugDefaultDevice) {
   // This tests does not apply to CrOS, which is to seamlessly switch device.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   std::string default_device_id("fake_device_id_1");
   std::string new_default_device_id("fake_device_id_2");
 
@@ -1003,7 +1003,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugDefaultDevice) {
   EXPECT_TRUE(base::Contains(removed_device_ids_, default_device_id));
   EXPECT_TRUE(base::Contains(removed_device_ids_,
                              media::AudioDeviceDescription::kDefaultDeviceId));
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugCommunicationsDevice) {

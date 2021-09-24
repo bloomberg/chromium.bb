@@ -132,7 +132,10 @@ static_library("metrics") {
   ]
 
   if (is_chromeos_ash) {
-    deps += [ ":serialization" ]
+    deps += [
+      ":serialization",
+      "//components/metrics/structured:neutrino_logging",
+    ]
   }
 
   if (is_android) {
@@ -282,6 +285,7 @@ static_library("net") {
 
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
     "//components/encrypted_messages:encrypted_message_proto",
     "//components/encrypted_messages:encrypted_messages",
     "//components/variations",

@@ -6,6 +6,7 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_THREAD_CACHE_H_
 
 #include <atomic>
+#include <limits>
 #include <memory>
 
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
@@ -30,6 +31,12 @@ namespace base {
 
 namespace internal {
 
+namespace tools {
+
+class ThreadCacheInspector;
+
+}
+
 class ThreadCache;
 
 extern BASE_EXPORT PartitionTlsKey g_thread_cache_key;
@@ -52,8 +59,12 @@ extern BASE_EXPORT PartitionTlsKey g_thread_cache_key;
 //       base::internal::g_thread_cache
 //   libbase.dylib`base::internal::ThreadCache::Get()
 // where tlv_allocate_and_initialize_for_key performs memory allocation.
+//
+// Finally, we have crashes with component builds on macOS,
+// see crbug.com/1243375.
 #if !(defined(OS_WIN) && defined(COMPONENT_BUILD)) && !defined(OS_ANDROID) && \
-    !(defined(OS_APPLE) && BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC))
+    !(defined(OS_APPLE) &&                                                    \
+      (BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) || defined(COMPONENT_BUILD)))
 #define PA_THREAD_CACHE_FAST_TLS
 #endif
 
@@ -114,6 +125,8 @@ class BASE_EXPORT ThreadCacheRegistry {
   static constexpr size_t kMinCachedMemoryForPurging = 500 * 1024;
 
  private:
+  friend class tools::ThreadCacheInspector;
+
   void PeriodicPurge();
   void PostDelayedPurgeTask();
   friend class NoDestructor<ThreadCacheRegistry>;
@@ -178,6 +191,14 @@ class BASE_EXPORT ThreadCache {
   static void Init(PartitionRoot<ThreadSafe>* root);
   static void Init(PartitionRoot<NotThreadSafe>* root) { IMMEDIATE_CRASH(); }
 
+  static void DeleteForTesting(ThreadCache* tcache);
+
+  // Deletes existing thread cache and creates a new one for |root|.
+  static void SwapForTesting(PartitionRoot<ThreadSafe>* root);
+
+  // Removes the tombstone marker that would be returned by Get() otherwise.
+  static void RemoveTombstoneForTesting();
+
   // Can be called several times, must be called before any ThreadCache
   // interactions.
   static void EnsureThreadSpecificDataInitialized();
@@ -240,7 +261,7 @@ class BASE_EXPORT ThreadCache {
   void Purge();
   // Amount of cached memory for this thread's cache, in bytes.
   size_t CachedMemory() const;
-  void AccumulateStats(ThreadCacheStats* stats) const;
+  void AccumulateStats(ThreadCacheStats* stats, bool with_alloc_stats) const;
 
   // Purge the thread cache of the current thread, if one exists.
   static void PurgeCurrentThread();
@@ -248,6 +269,8 @@ class BASE_EXPORT ThreadCache {
   size_t bucket_count_for_testing(size_t index) const {
     return buckets_[index].count;
   }
+
+  PlatformThreadId thread_id() const { return thread_id_; }
 
   // Sets the maximum size of allocations that may be cached by the thread
   // cache. This applies to all threads. However, the maximum size is bounded by
@@ -272,6 +295,8 @@ class BASE_EXPORT ThreadCache {
                 "");
 
  private:
+  friend class tools::ThreadCacheInspector;
+
   struct Bucket {
     PartitionFreelistEntry* freelist_head = nullptr;
     // Want to keep sizeof(Bucket) small, using small types.
@@ -331,11 +356,17 @@ class BASE_EXPORT ThreadCache {
   // improve locality, and open the door to per-thread settings.
   static uint16_t largest_active_bucket_index_;
 
-  Bucket buckets_[kBucketCount];
-  size_t cached_memory_ = 0;
+  // These are at the beginning as they're accessed for each allocation.
+  uint32_t cached_memory_ = 0;
   std::atomic<bool> should_purge_;
   ThreadCacheStats stats_;
+
+  // Buckets are quite big, though each is only 2 pointers.
+  Bucket buckets_[kBucketCount];
+
+  // Cold data below.
   PartitionRoot<ThreadSafe>* const root_;
+  const PlatformThreadId thread_id_;
 #if DCHECK_IS_ON()
   bool is_in_thread_cache_ = false;
 #endif
@@ -440,7 +471,7 @@ ALWAYS_INLINE void* ThreadCache::GetFromCache(size_t bucket_index,
   // corruption, we know the bucket size that lead to the crash, helping to
   // narrow down the search for culprit. |bucket| was touched just now, so this
   // does not introduce another cache miss.
-  auto* next = result->GetNext(bucket.slot_size);
+  auto* next = result->GetNextForThreadCache(bucket.slot_size);
   PA_DCHECK(result != next);
   bucket.count--;
   PA_DCHECK(bucket.count != 0 || !next);
@@ -453,7 +484,8 @@ ALWAYS_INLINE void* ThreadCache::GetFromCache(size_t bucket_index,
 }
 
 ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket, void* slot_start) {
-#if defined(ARCH_CPU_X86_64) && defined(PA_HAS_64_BITS_POINTERS)
+#if defined(PA_HAS_FREELIST_HARDENING) && defined(ARCH_CPU_X86_64) && \
+    defined(PA_HAS_64_BITS_POINTERS)
   // We see freelist corruption crashes happening in the wild.  These are likely
   // due to out-of-bounds accesses in the previous slot, or to a Use-After-Free
   // somewhere in the code.
@@ -495,7 +527,8 @@ ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket, void* slot_start) {
     memcpy(address_aligned, poison_16_bytes, sizeof(poison_16_bytes));
     address_aligned += 4;
   }
-#endif  // defined(ARCH_CPU_X86_64) && defined(PA_HAS_64_BITS_POINTERS)
+#endif  // defined(PA_HAS_FREELIST_HARDENING) && defined(ARCH_CPU_X86_64) &&
+        // defined(PA_HAS_64_BITS_POINTERS)
 
   auto* entry = PartitionFreelistEntry::InitForThreadCache(
       slot_start, bucket.freelist_head);

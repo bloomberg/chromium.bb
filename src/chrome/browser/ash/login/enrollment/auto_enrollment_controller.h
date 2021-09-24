@@ -43,10 +43,6 @@ class AutoEnrollmentController {
   static const char kInitialEnrollmentNever[];
   static const char kInitialEnrollmentOfficialBuild[];
 
-  // Parameter values for the kEnterpriseEnablePsm flag.
-  static const char kEnablePsmAlways[];
-  static const char kEnablePsmNever[];
-
   // Requirement for forced re-enrollment check.
   enum class FRERequirement {
     // The device was setup (has kActivateDateKey) but doesn't have the
@@ -102,12 +98,8 @@ class AutoEnrollmentController {
   // Returns true if any either FRE or initial enrollment are enabled.
   static bool IsEnabled();
 
-  // Returns true if the use of PSM (private set membership) is enabled based on
-  // command-line flags.
-  static bool IsPsmEnabled();
-
-  // Returns true if it is determined to use the fake PSM RLWE client based on
-  // command-line flags.
+  // Returns true if it is determined to use the fake PSM (private set
+  // membership) RLWE client based on command-line flags.
   static bool ShouldUseFakePsmRlweClient();
 
   // Returns whether the FRE auto-enrollment check is required. When

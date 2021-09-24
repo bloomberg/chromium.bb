@@ -103,6 +103,7 @@
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/outline_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
@@ -133,9 +134,11 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   LayoutRectOutsets margin_box_outsets;
   MinMaxSizes intrinsic_logical_widths;
   LayoutUnit intrinsic_logical_widths_initial_block_size;
-  void* pointers[4];
+  void* pointers[3];
   Vector<scoped_refptr<const NGLayoutResult>, 1> layout_results;
-  Persistent<void*> rare_data;
+  Member<void*> inline_box_wrapper;
+  wtf_size_t first_fragment_item_index_;
+  Member<void*> rare_data;
 };
 
 ASSERT_SIZE(LayoutBox, SameSizeAsLayoutBox);
@@ -402,12 +405,17 @@ int HypotheticalScrollbarThickness(const LayoutBox& box,
 
 }  // namespace
 
-BoxLayoutExtraInput::BoxLayoutExtraInput(LayoutBox& box) : box(box) {
-  box.SetBoxLayoutExtraInput(this);
+BoxLayoutExtraInput::BoxLayoutExtraInput(LayoutBox& layout_box)
+    : box(&layout_box) {
+  box->SetBoxLayoutExtraInput(this);
 }
 
 BoxLayoutExtraInput::~BoxLayoutExtraInput() {
-  box.SetBoxLayoutExtraInput(nullptr);
+  box->SetBoxLayoutExtraInput(nullptr);
+}
+
+void BoxLayoutExtraInput::Trace(Visitor* visitor) const {
+  visitor->Trace(box);
 }
 
 LayoutBoxRareData::LayoutBoxRareData()
@@ -420,10 +428,13 @@ LayoutBoxRareData::LayoutBoxRareData()
       has_override_percentage_resolution_block_size_(false),
       has_previous_content_box_rect_(false),
       percent_height_container_(nullptr),
-      snap_container_(nullptr),
-      snap_areas_(nullptr) {}
+      snap_container_(nullptr) {}
 
 void LayoutBoxRareData::Trace(Visitor* visitor) const {
+  visitor->Trace(spanner_placeholder_);
+  visitor->Trace(percent_height_container_);
+  visitor->Trace(snap_container_);
+  visitor->Trace(snap_areas_);
   visitor->Trace(layout_child_);
 }
 
@@ -435,6 +446,12 @@ LayoutBox::LayoutBox(ContainerNode* node)
   SetIsBox();
   if (blink::IsA<HTMLLegendElement>(node))
     SetIsHTMLLegendElement();
+}
+
+void LayoutBox::Trace(Visitor* visitor) const {
+  visitor->Trace(inline_box_wrapper_);
+  visitor->Trace(rare_data_);
+  LayoutBoxModelObject::Trace(visitor);
 }
 
 LayoutBox::~LayoutBox() = default;
@@ -561,6 +578,14 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
         // recalculation.
         SetNeedsLayoutAndIntrinsicWidthsRecalc(
             layout_invalidation_reason::kStyleChange);
+
+        // Grid placement is different for out-of-flow elements, so if the
+        // containing block is a grid, dirty the grid's placement. The converse
+        // (going from out of flow to in flow) is handled in
+        // LayoutBox::UpdateGridPositionAfterStyleChange.
+        LayoutBlock* containing_block = ContainingBlock();
+        if (containing_block && containing_block->IsLayoutNGGrid())
+          containing_block->SetGridPlacementDirty(true);
 
         if (IsInLayoutNGInlineFormattingContext() &&
             FirstInlineFragmentItemIndex()) {
@@ -793,6 +818,14 @@ void LayoutBox::UpdateGridPositionAfterStyleChange(
   LayoutBlock* containing_block = ContainingBlock();
   if (containing_block && containing_block->IsLayoutNGGrid() &&
       GridStyleChanged(old_style, StyleRef())) {
+    // Out-of-flow items do not impact grid placement.
+    // TODO(kschmi): Scope this so that it only dirties the grid when track
+    // sizing depends on grid item sizes.
+    if (!old_style->HasOutOfFlowPosition() ||
+        !StyleRef().HasOutOfFlowPosition()) {
+      containing_block->SetGridPlacementDirty(true);
+    }
+
     // For out-of-flow elements with grid container as containing block, we need
     // to run the entire algorithm to place and size them correctly. As a
     // result, we trigger a full layout for GridNG.
@@ -1210,8 +1243,7 @@ bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
   if (!ShouldApplySizeContainment())
     return false;
 
-  const Length& intrinsic_length = StyleRef().ContainIntrinsicSize().Width();
-  return !intrinsic_length.IsAuto();
+  return StyleRef().ContainIntrinsicWidth().has_value();
 }
 
 bool LayoutBox::HasOverrideIntrinsicContentHeight() const {
@@ -1219,30 +1251,31 @@ bool LayoutBox::HasOverrideIntrinsicContentHeight() const {
   if (!ShouldApplySizeContainment())
     return false;
 
-  const Length& intrinsic_length = StyleRef().ContainIntrinsicSize().Height();
-  return !intrinsic_length.IsAuto();
+  return StyleRef().ContainIntrinsicHeight().has_value();
 }
 
 LayoutUnit LayoutBox::OverrideIntrinsicContentWidth() const {
   NOT_DESTROYED();
   DCHECK(HasOverrideIntrinsicContentWidth());
   const auto& style = StyleRef();
-  const Length& intrinsic_length = style.ContainIntrinsicSize().Width();
-  DCHECK(!intrinsic_length.IsAuto());
-  DCHECK(intrinsic_length.IsFixed());
-  DCHECK_GE(intrinsic_length.Value(), 0.f);
-  return LayoutUnit(intrinsic_length.Value());
+  const absl::optional<StyleIntrinsicLength>& intrinsic_length =
+      style.ContainIntrinsicWidth();
+  DCHECK(intrinsic_length);
+  DCHECK(intrinsic_length->GetLength().IsFixed());
+  DCHECK_GE(intrinsic_length->GetLength().Value(), 0.f);
+  return LayoutUnit(intrinsic_length->GetLength().Value());
 }
 
 LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
   NOT_DESTROYED();
   DCHECK(HasOverrideIntrinsicContentHeight());
   const auto& style = StyleRef();
-  const Length& intrinsic_length = style.ContainIntrinsicSize().Height();
-  DCHECK(!intrinsic_length.IsAuto());
-  DCHECK(intrinsic_length.IsFixed());
-  DCHECK_GE(intrinsic_length.Value(), 0.f);
-  return LayoutUnit(intrinsic_length.Value());
+  const absl::optional<StyleIntrinsicLength>& intrinsic_length =
+      style.ContainIntrinsicHeight();
+  DCHECK(intrinsic_length);
+  DCHECK(intrinsic_length->GetLength().IsFixed());
+  DCHECK_GE(intrinsic_length->GetLength().Value(), 0.f);
+  return LayoutUnit(intrinsic_length->GetLength().Value());
 }
 
 LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
@@ -3177,7 +3210,7 @@ PhysicalOffset LayoutBox::OffsetFromContainerInternal(
 
 InlineBox* LayoutBox::CreateInlineBox() {
   NOT_DESTROYED();
-  return new InlineBox(LineLayoutItem(this));
+  return MakeGarbageCollected<InlineBox>(LineLayoutItem(this));
 }
 
 void LayoutBox::DirtyLineBoxes(bool full_layout) {
@@ -7058,7 +7091,7 @@ LayoutRectOutsets LayoutBox::ComputeVisualEffectOverflowOutsets() {
     PhysicalRect rect = UnionRect(outline_rects);
     bool outline_affected = rect.size != PhysicalSizeToBeNoop(Size());
     SetOutlineMayBeAffectedByDescendants(outline_affected);
-    rect.Inflate(LayoutUnit(style.OutlineOutsetExtent()));
+    rect.Inflate(LayoutUnit(OutlinePainter::OutlineOutsetExtent(style)));
     outsets.Unite(LayoutRectOutsets(-rect.Y(), rect.Right() - Size().Width(),
                                     rect.Bottom() - Size().Height(),
                                     -rect.X()));
@@ -7328,7 +7361,7 @@ void LayoutBox::SetVisualOverflow(const PhysicalRect& self,
   // changes. Update to the actual value here.
   const ComputedStyle& style = StyleRef();
   if (style.HasOutline()) {
-    const LayoutUnit outline_extent(style.OutlineOutsetExtent());
+    const LayoutUnit outline_extent(OutlinePainter::OutlineOutsetExtent(style));
     SetOutlineMayBeAffectedByDescendants(
         outsets.Top() != outline_extent || outsets.Right() != outline_extent ||
         outsets.Bottom() != outline_extent || outsets.Left() != outline_extent);
@@ -7478,19 +7511,24 @@ bool LayoutBox::PercentageLogicalHeightIsResolvable() const {
 }
 
 DISABLE_CFI_PERF
-bool LayoutBox::HasUnsplittableScrollingOverflow() const {
+bool LayoutBox::HasUnsplittableScrollingOverflow(
+    FragmentationEngine engine) const {
   NOT_DESTROYED();
+  // Fragmenting scrollbars is only problematic in interactive media, e.g.
+  // multicol on a screen. If we're printing, which is non-interactive media, we
+  // should allow objects with non-visible overflow to be paginated as normally.
+  if (GetDocument().Printing())
+    return false;
+
+  // In LayoutNG, treat any scrollable container as monolithic.
+  if (engine == kNGFragmentationEngine && StyleRef().IsScrollContainer())
+    return true;
+
   // We will paginate as long as we don't scroll overflow in the pagination
   // direction.
   bool is_horizontal = IsHorizontalWritingMode();
   if ((is_horizontal && !ScrollsOverflowY()) ||
       (!is_horizontal && !ScrollsOverflowX()))
-    return false;
-
-  // Fragmenting scrollbars is only problematic in interactive media, e.g.
-  // multicol on a screen. If we're printing, which is non-interactive media, we
-  // should allow objects with non-visible overflow to be paginated as normally.
-  if (GetDocument().Printing())
     return false;
 
   // We do have overflow. We'll still be willing to paginate as long as the
@@ -7512,7 +7550,8 @@ bool LayoutBox::HasUnsplittableScrollingOverflow() const {
 LayoutBox::PaginationBreakability LayoutBox::GetPaginationBreakability(
     FragmentationEngine engine) const {
   NOT_DESTROYED();
-  if (ShouldBeConsideredAsReplaced() || HasUnsplittableScrollingOverflow() ||
+  if (ShouldBeConsideredAsReplaced() ||
+      HasUnsplittableScrollingOverflow(engine) ||
       (Parent() && IsWritingModeRoot()) ||
       (IsFixedPositioned() && GetDocument().Printing() &&
        IsA<LayoutView>(Container())) ||
@@ -8087,7 +8126,7 @@ void LayoutBox::SetSnapContainer(LayoutBox* new_container) {
 void LayoutBox::ClearSnapAreas() {
   NOT_DESTROYED();
   if (SnapAreaSet* areas = SnapAreas()) {
-    for (auto* const snap_area : *areas)
+    for (const auto& snap_area : *areas)
       snap_area->rare_data_->snap_container_ = nullptr;
     areas->clear();
   }
@@ -8095,15 +8134,15 @@ void LayoutBox::ClearSnapAreas() {
 
 void LayoutBox::AddSnapArea(LayoutBox& snap_area) {
   NOT_DESTROYED();
-  EnsureRareData().EnsureSnapAreas().insert(&snap_area);
+  EnsureRareData().snap_areas_.insert(&snap_area);
 }
 
 void LayoutBox::RemoveSnapArea(const LayoutBox& snap_area) {
   NOT_DESTROYED();
   // const_cast is safe here because we only need to modify the type to match
   // the key type, and not actually mutate the object.
-  if (rare_data_ && rare_data_->snap_areas_)
-    rare_data_->snap_areas_->erase(const_cast<LayoutBox*>(&snap_area));
+  if (rare_data_)
+    rare_data_->snap_areas_.erase(const_cast<LayoutBox*>(&snap_area));
 }
 
 void LayoutBox::ReassignSnapAreas(LayoutBox& new_container) {
@@ -8111,7 +8150,7 @@ void LayoutBox::ReassignSnapAreas(LayoutBox& new_container) {
   SnapAreaSet* areas = SnapAreas();
   if (!areas)
     return;
-  for (auto* const snap_area : *areas) {
+  for (const auto& snap_area : *areas) {
     snap_area->rare_data_->snap_container_ = &new_container;
     new_container.AddSnapArea(*snap_area);
   }
@@ -8132,7 +8171,7 @@ bool LayoutBox::AllowedToPropagateRecursiveScrollToParentFrame(
 
 SnapAreaSet* LayoutBox::SnapAreas() const {
   NOT_DESTROYED();
-  return rare_data_ ? rare_data_->snap_areas_.get() : nullptr;
+  return rare_data_ ? &rare_data_->snap_areas_ : nullptr;
 }
 
 CustomLayoutChild* LayoutBox::GetCustomLayoutChild() const {
@@ -8273,6 +8312,119 @@ void LayoutBox::InvalidatePaintForTickmarks() {
   if (!scrollbar)
     return;
   scrollbar->SetNeedsPaintInvalidation(static_cast<ScrollbarPart>(~kThumbPart));
+}
+
+static bool HasInsetBoxShadow(const ComputedStyle& style) {
+  if (!style.BoxShadow())
+    return false;
+  for (const ShadowData& shadow : style.BoxShadow()->Shadows()) {
+    if (shadow.Style() == ShadowStyle::kInset)
+      return true;
+  }
+  return false;
+}
+
+BackgroundPaintLocation LayoutBox::ComputeBackgroundPaintLocationIfComposited()
+    const {
+  NOT_DESTROYED();
+  bool may_have_scrolling_layers_without_scrolling = IsA<LayoutView>(this);
+  const auto* scrollable_area = GetScrollableArea();
+  bool scrolls_overflow = scrollable_area && scrollable_area->ScrollsOverflow();
+  if (!scrolls_overflow && !may_have_scrolling_layers_without_scrolling)
+    return kBackgroundPaintInBorderBoxSpace;
+
+  // If we care about LCD text, paint root backgrounds into scrolling contents
+  // layer even if style suggests otherwise. (For non-root scrollers, we just
+  // avoid compositing - see PLSA::ComputeNeedsCompositedScrolling.)
+  if (IsA<LayoutView>(this)) {
+    if (!GetDocument().GetSettings()->GetPreferCompositingToLCDTextEnabled())
+      return kBackgroundPaintInContentsSpace;
+  }
+
+  // Inset box shadow is painted in the scrolling area above the background, and
+  // it doesn't scroll, so the background can only be painted in the main layer.
+  if (HasInsetBoxShadow(StyleRef()))
+    return kBackgroundPaintInBorderBoxSpace;
+
+  // TODO(flackr): Detect opaque custom scrollbars which would cover up a
+  // border-box background.
+  bool has_custom_scrollbars =
+      scrollable_area &&
+      ((scrollable_area->HorizontalScrollbar() &&
+        scrollable_area->HorizontalScrollbar()->IsCustomScrollbar()) ||
+       (scrollable_area->VerticalScrollbar() &&
+        scrollable_area->VerticalScrollbar()->IsCustomScrollbar()));
+
+  // Assume optimistically that the background can be painted in the scrolling
+  // contents until we find otherwise.
+  BackgroundPaintLocation paint_location = kBackgroundPaintInContentsSpace;
+
+  Color background_color = ResolveColor(GetCSSPropertyBackgroundColor());
+  const FillLayer* layer = &(StyleRef().BackgroundLayers());
+  for (; layer; layer = layer->Next()) {
+    if (layer->Attachment() == EFillAttachment::kLocal)
+      continue;
+
+    // The background color is either the only background or it's the
+    // bottommost value from the background property (see final-bg-layer in
+    // https://drafts.csswg.org/css-backgrounds/#the-background).
+    if (!layer->GetImage() && !layer->Next() && background_color.Alpha() > 0 &&
+        StyleRef().IsScrollbarGutterAuto()) {
+      // Solid color layers with an effective background clip of the padding box
+      // can be treated as local.
+      EFillBox clip = layer->Clip();
+      if (clip == EFillBox::kPadding)
+        continue;
+      // A border box can be treated as a padding box if the border is opaque or
+      // there is no border and we don't have custom scrollbars.
+      if (clip == EFillBox::kBorder) {
+        if (!has_custom_scrollbars &&
+            (StyleRef().BorderTopWidth() == 0 ||
+             (!ResolveColor(GetCSSPropertyBorderTopColor()).HasAlpha() &&
+              StyleRef().BorderTopStyle() == EBorderStyle::kSolid)) &&
+            (StyleRef().BorderLeftWidth() == 0 ||
+             (!ResolveColor(GetCSSPropertyBorderLeftColor()).HasAlpha() &&
+              StyleRef().BorderLeftStyle() == EBorderStyle::kSolid)) &&
+            (StyleRef().BorderRightWidth() == 0 ||
+             (!ResolveColor(GetCSSPropertyBorderRightColor()).HasAlpha() &&
+              StyleRef().BorderRightStyle() == EBorderStyle::kSolid)) &&
+            (StyleRef().BorderBottomWidth() == 0 ||
+             (!ResolveColor(GetCSSPropertyBorderBottomColor()).HasAlpha() &&
+              StyleRef().BorderBottomStyle() == EBorderStyle::kSolid))) {
+          continue;
+        }
+        // If we have an opaque background color, we can safely paint it into
+        // both the scrolling contents layer and the graphics layer to preserve
+        // LCD text. The background color is either the only background or
+        // behind background-attachment:local images (ensured by previous
+        // iterations of the loop). For the latter case, the first paint of the
+        // images doesn't matter because it will be covered by the second paint
+        // of the opaque color.
+        if (!background_color.HasAlpha()) {
+          paint_location = kBackgroundPaintInBothSpaces;
+          continue;
+        }
+      } else if (clip == EFillBox::kContent &&
+                 StyleRef().PaddingTop().IsZero() &&
+                 StyleRef().PaddingLeft().IsZero() &&
+                 StyleRef().PaddingRight().IsZero() &&
+                 StyleRef().PaddingBottom().IsZero()) {
+        // A content fill box can be treated as a padding fill box if there is
+        // no padding.
+        continue;
+      }
+    }
+    return kBackgroundPaintInBorderBoxSpace;
+  }
+
+  // It can't paint in the scrolling contents because it has different 3d
+  // context than the scrolling contents.
+  if (!StyleRef().Preserves3D() && Parent() &&
+      Parent()->StyleRef().Preserves3D()) {
+    return kBackgroundPaintInBorderBoxSpace;
+  }
+
+  return paint_location;
 }
 
 }  // namespace blink

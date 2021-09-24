@@ -148,7 +148,7 @@ bool HTMLVideoElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
 
 LayoutObject* HTMLVideoElement::CreateLayoutObject(const ComputedStyle&,
                                                    LegacyLayout) {
-  return new LayoutVideo(this);
+  return MakeGarbageCollected<LayoutVideo>(this);
 }
 
 void HTMLVideoElement::AttachLayoutTree(AttachContext& context) {
@@ -735,9 +735,18 @@ void HTMLVideoElement::OnIntersectionChangedForLazyLoad(
   if (!is_visible || !web_media_player_)
     return;
 
-  web_media_player_->OnBecameVisible();
   lazy_load_intersection_observer_->disconnect();
   lazy_load_intersection_observer_ = nullptr;
+
+  auto notify_visible = [](HTMLVideoElement* self) {
+    if (self->web_media_player_)
+      self->web_media_player_->OnBecameVisible();
+  };
+
+  GetDocument()
+      .GetTaskRunner(TaskType::kInternalMedia)
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(notify_visible, WrapWeakPersistent(this)));
 }
 
 void HTMLVideoElement::OnWebMediaPlayerCreated() {

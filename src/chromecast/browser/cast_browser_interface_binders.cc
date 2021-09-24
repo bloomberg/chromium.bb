@@ -6,12 +6,15 @@
 
 #include "base/bind.h"
 #include "chromecast/browser/application_media_capabilities.h"
+#include "chromecast/browser/application_media_info_manager.h"
+#include "chromecast/browser/cast_navigation_ui_data.h"
 #include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/common/mojom/application_media_capabilities.mojom.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
 #include "components/network_hints/common/network_hints.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "media/mojo/mojom/cast_application_media_info_manager.mojom.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 
 namespace chromecast {
@@ -33,11 +36,10 @@ void BindApplicationMediaCapabilities(
   if (!web_contents)
     return;
   auto* cast_web_contents = CastWebContents::FromWebContents(web_contents);
-  if (!cast_web_contents || !cast_web_contents->can_bind_interfaces())
+  if (!cast_web_contents)
     return;
-  auto interface_pipe = receiver.PassPipe();
-  cast_web_contents->binder_registry()->TryBindInterface(
-      mojom::ApplicationMediaCapabilities::Name_, &interface_pipe);
+  mojo::GenericPendingReceiver generic_receiver(std::move(receiver));
+  cast_web_contents->TryBindReceiver(generic_receiver);
 }
 
 void BindMediaRemotingRemotee(
@@ -47,11 +49,25 @@ void BindMediaRemotingRemotee(
   if (!web_contents)
     return;
   auto* cast_web_contents = CastWebContents::FromWebContents(web_contents);
-  if (!cast_web_contents || !cast_web_contents->can_bind_interfaces())
+  if (!cast_web_contents)
     return;
-  auto interface_pipe = receiver.PassPipe();
-  cast_web_contents->binder_registry()->TryBindInterface(
-      ::media::mojom::Remotee::Name_, &interface_pipe);
+  mojo::GenericPendingReceiver generic_receiver(std::move(receiver));
+  cast_web_contents->TryBindReceiver(generic_receiver);
+}
+
+void BindApplicationMediaInfoManager(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<::media::mojom::CastApplicationMediaInfoManager>
+        receiver) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+  if (!web_contents) {
+    return;
+  }
+  auto application_session_id =
+      CastNavigationUIData::GetSessionIdForWebContents(web_contents);
+  media::CreateApplicationMediaInfoManager(
+      frame_host, std::move(application_session_id),
+      /*mixer_audio_enabled=*/false, std::move(receiver));
 }
 
 // Some Cast internals still dynamically set up interface binders after
@@ -79,11 +95,6 @@ bool HandleGenericReceiver(content::RenderFrameHost* frame_host,
     return false;
   }
 
-  if (!cast_web_contents->can_bind_interfaces()) {
-    LOG(ERROR) << "Target CastWebContents cannot bind receivers.";
-    return false;
-  }
-
   if (!cast_web_contents->TryBindReceiver(receiver)) {
     LOG(ERROR) << "Attempt to bind receiver to CastWebContents failed.";
     return false;
@@ -103,6 +114,8 @@ void PopulateCastFrameBinders(
       base::BindRepeating(&BindApplicationMediaCapabilities));
   binder_map->Add<::media::mojom::Remotee>(
       base::BindRepeating(&BindMediaRemotingRemotee));
+  binder_map->Add<::media::mojom::CastApplicationMediaInfoManager>(
+      base::BindRepeating(&BindApplicationMediaInfoManager));
 
   binder_map->SetDefaultBinderDeprecated(
       base::BindRepeating(&HandleGenericReceiver));

@@ -70,11 +70,13 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/window_container_type.mojom.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
+#include "net/cert/x509_certificate.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/ssl/client_cert_identity.h"
+#include "net/ssl/ssl_private_key.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/network_service.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -184,8 +186,9 @@ bool IsSafebrowsingSupported() {
   // TODO(timvolodine): consider refactoring this out into safe_browsing/.
 #if defined(OS_ANDROID)
   return true;
-#endif
+#else
   return false;
+#endif
 }
 
 bool IsNetworkErrorAutoReloadEnabled() {
@@ -324,7 +327,7 @@ std::string ContentBrowserClientImpl::GetAcceptLangs(
 
 bool ContentBrowserClientImpl::AllowAppCache(
     const GURL& manifest_url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     content::BrowserContext* context) {
   return embedder_support::AllowAppCache(
@@ -334,7 +337,7 @@ bool ContentBrowserClientImpl::AllowAppCache(
 
 content::AllowServiceWorkerResult ContentBrowserClientImpl::AllowServiceWorker(
     const GURL& scope,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
     content::BrowserContext* context) {
@@ -346,7 +349,7 @@ content::AllowServiceWorkerResult ContentBrowserClientImpl::AllowServiceWorker(
 
 bool ContentBrowserClientImpl::AllowSharedWorker(
     const GURL& worker_url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     const std::string& name,
     const blink::StorageKey& storage_key,
@@ -463,9 +466,10 @@ void ContentBrowserClientImpl::ConfigureNetworkContextParams(
   context_params->allow_any_cors_exempt_header_for_browser = true;
   context_params->accept_language = GetAcceptLangs(context);
   if (!context->IsOffTheRecord()) {
-    base::FilePath cookie_path = context->GetPath();
-    cookie_path = cookie_path.Append(FILE_PATH_LITERAL("Cookies"));
-    context_params->cookie_path = cookie_path;
+    context_params->file_paths = network::mojom::NetworkContextFilePaths::New();
+    context_params->file_paths->data_path = context->GetPath();
+    context_params->file_paths->cookie_database_name =
+        base::FilePath(FILE_PATH_LITERAL("Cookies"));
     context_params->http_cache_path =
         ProfileImpl::GetCachePath(context).Append(FILE_PATH_LITERAL("Cache"));
   }
@@ -592,13 +596,6 @@ bool ContentBrowserClientImpl::IsHandledURL(const GURL& url) {
     if (scheme == supported_protocol)
       return true;
   }
-
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  if (scheme == url::kFtpScheme &&
-      base::FeatureList::IsEnabled(network::features::kFtpProtocol)) {
-    return true;
-  }
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
   return false;
 }

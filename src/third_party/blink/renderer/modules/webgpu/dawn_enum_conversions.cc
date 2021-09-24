@@ -68,9 +68,6 @@ WGPUTextureSampleType AsDawnEnum<WGPUTextureSampleType>(
 template <>
 WGPUStorageTextureAccess AsDawnEnum<WGPUStorageTextureAccess>(
     const WTF::String& webgpu_enum) {
-  if (webgpu_enum == "read-only") {
-    return WGPUStorageTextureAccess_ReadOnly;
-  }
   if (webgpu_enum == "write-only") {
     return WGPUStorageTextureAccess_WriteOnly;
   }
@@ -535,26 +532,6 @@ WGPUBlendFactor AsDawnEnum<WGPUBlendFactor>(const WTF::String& webgpu_enum) {
   }
   if (webgpu_enum == "one-minus-constant") {
     return WGPUBlendFactor_OneMinusConstant;
-  }
-
-  // Deprecated Formats
-  if (webgpu_enum == "src-color") {
-    return WGPUBlendFactor_SrcColor;
-  }
-  if (webgpu_enum == "one-minus-src-color") {
-    return WGPUBlendFactor_OneMinusSrcColor;
-  }
-  if (webgpu_enum == "dst-color") {
-    return WGPUBlendFactor_DstColor;
-  }
-  if (webgpu_enum == "one-minus-dst-color") {
-    return WGPUBlendFactor_OneMinusDstColor;
-  }
-  if (webgpu_enum == "blend-color") {
-    return WGPUBlendFactor_BlendColor;
-  }
-  if (webgpu_enum == "one-minus-blend-color") {
-    return WGPUBlendFactor_OneMinusBlendColor;
   }
   NOTREACHED();
   return WGPUBlendFactor_Force32;

@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -159,7 +159,7 @@ class UrlHidingWebContentsObserver : public content::WebContentsObserver {
       return;
 
     security_interstitials::SecurityInterstitialTabHelper::
-        AssociateBlockingPage(web_contents(), handle->GetNavigationId(),
+        AssociateBlockingPage(handle,
                               std::make_unique<UrlHidingInterstitialPage>(
                                   web_contents(), handle->GetURL()));
   }
@@ -205,7 +205,7 @@ class CustomTabBarViewBrowserTest
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
-    web_app_info->open_as_window = true;
+    web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
     Install(std::move(web_app_info));
   }
 
@@ -213,7 +213,7 @@ class CustomTabBarViewBrowserTest
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetOrigin();
-    web_app_info->open_as_window = true;
+    web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
     Install(std::move(web_app_info));
   }
 

@@ -26,6 +26,8 @@ static_library("eche_app_ui") {
     "eche_feature_status_provider.h",
     "eche_notification_click_handler.cc",
     "eche_notification_click_handler.h",
+    "eche_notification_generator.cc",
+    "eche_notification_generator.h",
     "eche_recent_app_click_handler.cc",
     "eche_recent_app_click_handler.h",
     "eche_signaler.cc",
@@ -36,6 +38,8 @@ static_library("eche_app_ui") {
     "feature_status.h",
     "feature_status_provider.cc",
     "feature_status_provider.h",
+    "launch_app_helper.cc",
+    "launch_app_helper.h",
     "system_info.cc",
     "system_info.h",
     "system_info_provider.cc",
@@ -47,6 +51,7 @@ static_library("eche_app_ui") {
   ]
 
   deps = [
+    "//ash",
     "//ash/constants",
     "//ash/public/cpp",
     "//chromeos/components/eche_app_ui/mojom",
@@ -84,6 +89,7 @@ source_set("unit_tests") {
   sources = [
     "eche_feature_status_provider_unittest.cc",
     "eche_notification_click_handler_unittest.cc",
+    "eche_notification_generator_unittest.cc",
     "eche_recent_app_click_handler_unittest.cc",
     "eche_uid_provider_unittest.cc",
     "system_info_provider_unittest.cc",

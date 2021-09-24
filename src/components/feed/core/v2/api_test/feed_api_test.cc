@@ -793,6 +793,11 @@ bool FeedApiTest::IsOffline() {
 std::string FeedApiTest::GetSyncSignedInGaia() {
   return signed_in_gaia_;
 }
+void FeedApiTest::RegisterFollowingFeedFollowCountFieldTrial(
+    size_t follow_count) {
+  register_following_feed_follow_count_field_trial_calls_.push_back(
+      follow_count);
+}
 DisplayMetrics FeedApiTest::GetDisplayMetrics() {
   DisplayMetrics result;
   result.density = 200;
@@ -815,10 +820,12 @@ void FeedApiTest::PrefetchImage(const GURL& url) {
   prefetch_image_call_count_++;
 }
 
-void FeedApiTest::CreateStream(bool wait_for_initialization) {
+void FeedApiTest::CreateStream(bool wait_for_initialization,
+                               bool start_surface) {
   ChromeInfo chrome_info;
   chrome_info.channel = version_info::Channel::STABLE;
   chrome_info.version = base::Version({99, 1, 9911, 2});
+  chrome_info.start_surface = start_surface;
   stream_ = std::make_unique<FeedStream>(
       &refresh_scheduler_, metrics_reporter_.get(), this, &profile_prefs_,
       &network_, image_fetcher_.get(), store_.get(),

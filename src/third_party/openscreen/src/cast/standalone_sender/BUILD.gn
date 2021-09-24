@@ -29,7 +29,6 @@ if (!build_with_chromium) {
       "../../discovery:public",
       "../../platform",
       "../../platform:standalone_impl",
-      "../../third_party/aomedia",
       "../../third_party/jsoncpp",
       "../../util",
       "../common:public",

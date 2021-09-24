@@ -25,13 +25,13 @@ SigninReauthHandler::SigninReauthHandler(
 SigninReauthHandler::~SigninReauthHandler() = default;
 
 void SigninReauthHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "initialize", base::BindRepeating(&SigninReauthHandler::HandleInitialize,
                                         base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "confirm", base::BindRepeating(&SigninReauthHandler::HandleConfirm,
                                      base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "cancel", base::BindRepeating(&SigninReauthHandler::HandleCancel,
                                     base::Unretained(this)));
 }
@@ -77,7 +77,7 @@ void SigninReauthHandler::HandleCancel(const base::ListValue* args) {
 
 sync_pb::UserConsentTypes::AccountPasswordsConsent
 SigninReauthHandler::BuildConsent(const base::ListValue* args) const {
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   base::Value::ConstListView consent_description = args->GetList()[0].GetList();
   const std::string& consent_confirmation = args->GetList()[1].GetString();
 

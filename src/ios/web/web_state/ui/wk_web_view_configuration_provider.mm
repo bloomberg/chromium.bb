@@ -15,10 +15,11 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "ios/web/common/features.h"
-#import "ios/web/js_messaging/crw_wk_script_message_router.h"
 #import "ios/web/js_messaging/java_script_feature_manager.h"
 #include "ios/web/js_messaging/java_script_feature_util_impl.h"
 #import "ios/web/js_messaging/page_script_util.h"
+#import "ios/web/js_messaging/web_frames_manager_java_script_feature.h"
+#import "ios/web/navigation/session_restore_java_script_feature.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/wk_content_rule_list_provider.h"
@@ -53,16 +54,6 @@ WKUserScript* InternalGetDocumentStartScriptForAllFrames(
   return [[WKUserScript alloc]
         initWithSource:GetDocumentStartScriptForAllFrames(browser_state)
          injectionTime:WKUserScriptInjectionTimeAtDocumentStart
-      forMainFrameOnly:NO];
-}
-
-// Returns a WKUserScript for JavsScript injected into all frames at the
-// end of the document load.
-WKUserScript* InternalGetDocumentEndScriptForAllFrames(
-    BrowserState* browser_state) {
-  return [[WKUserScript alloc]
-        initWithSource:GetDocumentEndScriptForAllFrames(browser_state)
-         injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
       forMainFrameOnly:NO];
 }
 
@@ -182,18 +173,6 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
   return [configuration_ copy];
 }
 
-CRWWKScriptMessageRouter*
-WKWebViewConfigurationProvider::GetScriptMessageRouter() {
-  DCHECK([NSThread isMainThread]);
-  if (!router_) {
-    WKUserContentController* userContentController =
-        [GetWebViewConfiguration() userContentController];
-    router_ = [[CRWWKScriptMessageRouter alloc]
-        initWithUserContentController:userContentController];
-  }
-  return router_;
-}
-
 WKContentRuleListProvider*
 WKWebViewConfigurationProvider::GetContentRuleListProvider() {
   return content_rule_list_provider_.get();
@@ -216,20 +195,24 @@ void WKWebViewConfigurationProvider::UpdateScripts() {
   }
   java_script_feature_manager->ConfigureFeatures(features);
 
+  WKUserContentController* userContentController =
+      GetWebViewConfiguration().userContentController;
+  WebFramesManagerJavaScriptFeature::FromBrowserState(browser_state_)
+      ->ConfigureHandlers(userContentController);
+  SessionRestoreJavaScriptFeature::FromBrowserState(browser_state_)
+      ->ConfigureHandlers(userContentController);
+
   // Main frame script depends upon scripts injected into all frames, so the
   // "AllFrames" scripts must be injected first.
   [configuration_.userContentController
       addUserScript:InternalGetDocumentStartScriptForAllFrames(browser_state_)];
   [configuration_.userContentController
       addUserScript:InternalGetDocumentStartScriptForMainFrame(browser_state_)];
-  [configuration_.userContentController
-      addUserScript:InternalGetDocumentEndScriptForAllFrames(browser_state_)];
 }
 
 void WKWebViewConfigurationProvider::Purge() {
   DCHECK([NSThread isMainThread]);
   configuration_ = nil;
-  router_ = nil;
 }
 
 void WKWebViewConfigurationProvider::AddObserver(

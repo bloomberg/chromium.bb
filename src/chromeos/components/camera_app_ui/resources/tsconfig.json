@@ -4,7 +4,14 @@
     "checkJs": true,
     "noEmit": true,
     "module": "esnext",
-    "target": "esnext"
+    "target": "esnext",
+    "typeRoots": ["../../../../third_party/node/node_modules/@types"],
+    "types": [
+      "dom-mediacapture-record",
+      "google.analytics",
+      "w3c-css-typed-object-model-level-1",
+      "w3c-image-capture"
+    ]
   },
   "files": [
     "js/externs/types.d.ts",

@@ -173,6 +173,15 @@
 #   without any user interface for administrator. It can only be used for
 #   policies with the 'cloud_only' tag. Policy with the 'unlisted' tag will be
 #   hidden from all documentations, policy templates and Admin Console UI.
+#   'metapolicy_type' determines the type of metapolicy a policy is. A
+#   metapolicy is a policy which affects how other policies are applied.
+#   Precedence metapolicies affect how policies are prioritized depending on
+#   their scope, source, and other factors. Merging metapolicies determine which
+#   list or dictionary policies can have their values combined into a single
+#   policy. If the setting is missing, it is assumed that the policy is not a
+#   metapolicy. The supported types are 'merge' (example policy is
+#   PolicyListMultipleSourceMergeList) and 'precedence' (example policy is
+#   CloudPolicyOverridesPlatformPolicy).
 #
 #   The 'max_size' key is used to specify the maximal size of the external data
 #   that a policy can reference, in bytes. This annotation is compulsory for
@@ -285,11 +294,12 @@
 #   handling must be manually implemented.
 #
 # Atomic Policy Group:
-#   An atomic policy group is a group of policies that logically belong together and influence
-#   a certain aspect of the browser only when considered together and should be treated as a single policy
-#   when merging policies from multiple sources. They all have to be set in the same
-#   source to take effect. In case members of a policy group are set at different sources,
-#   only the policies from the source with the highest priority will be used.
+#   An atomic policy group is a group of policies that logically belong together
+#   and influence a certain aspect of the browser only when considered together
+#   and should be treated as a single policy when merging policies from multiple
+#   sources. They all have to be set in the same source to take effect. In case
+#   members of a policy group are set at different sources, only the policies
+#   from the source with the highest priority will be used.
 #
 
   'risk_tag_definitions' : [
@@ -986,6 +996,7 @@
         'DeviceAutoUpdateP2PEnabled',
         'DeviceAutoUpdateTimeRestrictions',
         'DeviceTargetVersionPrefix',
+        'DeviceTargetVersionSelector',
         'DeviceUpdateStagingSchedule',
         'DeviceUpdateScatterFactor',
         'DeviceUpdateAllowedConnectionTypes',
@@ -1126,6 +1137,7 @@
         'PrintRasterizePdfDpi',
         'DeletePrintJobHistoryAllowed',
         'CloudPrintWarningsSuppressed',
+        'PrintPostScriptMode',
       ]
     },
     {
@@ -1852,6 +1864,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable JavaScript',
+        },
+        {
+          'value': False,
+          'caption': 'Disable JavaScript',
+        },
+      ],
       'deprecated': True,
       'example_value': True,
       'id': 9,
@@ -1875,6 +1897,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Incognito mode',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Incognito mode',
+        },
+      ],
       'deprecated': True,
       'example_value': False,
       'id': 10,
@@ -1957,6 +1989,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Disable saving browser history',
+        },
+        {
+          'value': False,
+          'caption': 'Enable saving browser history',
+        },
+      ],
       'example_value': True,
       'id': 11,
       'caption': '''Disable saving browser history''',
@@ -1975,6 +2017,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable deleting browser and download history',
+        },
+        {
+          'value': False,
+          'caption': 'Disable deleting browser and download history',
+        },
+      ],
       'example_value': True,
       'id': 187,
       'caption': '''Enable deleting browser and download history''',
@@ -1993,6 +2045,16 @@
         'dynamic_refresh': False,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable dinosaur easter egg game',
+        },
+        {
+          'value': False,
+          'caption': 'Disable dinosaur easter egg game',
+        },
+      ],
       'example_value': False,
       'id': 309,
       'default_for_enterprise_users': False,
@@ -2012,6 +2074,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Use a default referrer policy of no-referrer-when-downgrade',
+        },
+        {
+          'value': False,
+          'caption': 'Do not use a default referrer policy of no-referrer-when-downgrade',
+        },
+      ],
       'deprecated': True,
       'example_value': False,
       'id': 648,
@@ -2103,6 +2175,16 @@
         'per_profile': False,
         'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable firewall traversal from remote access host',
+        },
+        {
+          'value': False,
+          'caption': 'Disable firewall traversal from remote access host',
+        },
+      ],
       'example_value': False,
       'id': 95,
       'caption': '''Enable firewall traversal from remote access host''',
@@ -2215,6 +2297,16 @@
         'per_profile': False,
         'platform_only': True,  # No cloud-policy support.
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable curtaining of the remote access host',
+        },
+        {
+          'value': False,
+          'caption': 'Disable curtaining of the remote access host',
+        },
+      ],
       'example_value': False,
       'id': 157,
       'caption': '''Enable curtaining of remote access hosts''',
@@ -2234,6 +2326,16 @@
         'per_profile': False,
         'platform_only': True,  # No cloud-policy support.
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable PIN-less authentication for the remote access host',
+        },
+        {
+          'value': False,
+          'caption': 'Disable PIN-less authentication for the remote access host',
+        },
+      ],
       'example_value': False,
       'id': 234,
       'caption': '''Enable or disable PIN-less authentication for remote access hosts''',
@@ -2254,6 +2356,16 @@
         'per_profile': False,
         'platform_only': True,  # No cloud-policy support.
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable gnubby authentication for the remote access host',
+        },
+        {
+          'value': False,
+          'caption': 'Disable gnubby authentication for the remote access host',
+        },
+      ],
       'example_value': True,
       'id': 257,
       'caption': '''Allow gnubby authentication for remote access hosts''',
@@ -2275,11 +2387,21 @@
         'per_profile': False,
         'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the use of relay servers by the remote access host',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the use of relay servers by the remote access host',
+        },
+      ],
       'example_value': False,
       'id': 263,
       'caption': '''Enable the use of relay servers by the remote access host''',
       'tags': [],
-      'desc': '''If <ph name="REMOTE_ACCESS_HOST_FIREWALL_TRAVERSAL_POLICY_NAME">RemoteAccessHostFirewallTraversal</ph> is set to Enabled, setting <ph name="REMOTE_ACCESS_HOST_ALLOW_RELAYED_CONNECTION_POLICY_NAME">RemoteAccessHostAllowRelayedConnection</ph>to Enabled or leaving it unset allows the use of remote clients to use relay servers to connect to this machine when a direct connection is not available, for example, because of firewall restrictions.
+      'desc': '''If <ph name="REMOTE_ACCESS_HOST_FIREWALL_TRAVERSAL_POLICY_NAME">RemoteAccessHostFirewallTraversal</ph> is set to Enabled, setting <ph name="REMOTE_ACCESS_HOST_ALLOW_RELAYED_CONNECTION_POLICY_NAME">RemoteAccessHostAllowRelayedConnection</ph> to Enabled or leaving it unset allows the use of remote clients to use relay servers to connect to this machine when a direct connection is not available, for example, because of firewall restrictions.
 
       Setting the policy to Disabled doesn't turn remote access off, but only allows connections from the same network (not NAT traversal or relay).''',
     },
@@ -2315,6 +2437,16 @@
         'per_profile': False,
         'platform_only': True,  # No cloud-policy support.
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Require matching local user and remote access host owner',
+        },
+        {
+          'value': False,
+          'caption': 'Do not require matching local user and remote access host owner',
+        },
+      ],
       'example_value': False,
       'id': 285,
       'caption': '''Require that the name of the local user and the remote access host owner match''',
@@ -2414,6 +2546,16 @@
         'per_profile': False,
         'platform_only': True,  # No cloud-policy support.
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable remote user interaction with elevated windows in remote assistance sessions',
+        },
+        {
+          'value': False,
+          'caption': 'Disable remote user interaction with elevated windows in remote assistance sessions',
+        },
+      ],
       'default': False,
       'example_value': True,
       'id': 344,
@@ -2434,6 +2576,16 @@
         'per_profile': False,
         'platform_only': True,  # No cloud-policy support.
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable remote access users to transfer files to and from the remote host',
+        },
+        {
+          'value': False,
+          'caption': 'Disable remote access users from transferring files to and from the remote host',
+        },
+      ],
       'default': True,
       'example_value': False,
       'id': 534,
@@ -2455,6 +2607,16 @@
         'per_profile': False,
         'platform_only': True,  # No cloud-policy support.
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable connection-related UI on the remote host desktop when a connection is active',
+        },
+        {
+          'value': False,
+          'caption': 'Disable connection-related UI on the remote host desktop when a connection is active',
+        },
+      ],
       'default': True,
       'example_value': False,
       'id': 803,
@@ -2556,6 +2718,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable printing',
+        },
+        {
+          'value': False,
+          'caption': 'Disable printing',
+        },
+      ],
       'example_value': True,
       'id': 12,
       'caption': '''Enable printing''',
@@ -2575,11 +2747,21 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> proxy',
+        },
+        {
+          'value': False,
+          'caption': 'Disable <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> proxy',
+        },
+      ],
       'example_value': True,
       'id': 13,
       'caption': '''Enable <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> proxy''',
       'tags': [],
-      'desc': '''Setting the policy to Enabled or leaving it unset lets <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> act as a proxy between <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>and legacy printers connected to the machine. Using their Google Account, users may turn on the cloud print proxy by authentication.
+      'desc': '''Setting the policy to Enabled or leaving it unset lets <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> act as a proxy between <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> and legacy printers connected to the machine. Using their Google Account, users may turn on the cloud print proxy by authentication.
 
       Setting the policy to Disabled means users can't turn on the proxy, and the machine can't share its printers with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.''',
     },
@@ -2724,7 +2906,7 @@
         {
           'name': 'any',
           'value': 'any',
-          'caption': '''Allow printing both with and without background graphcis''',
+          'caption': '''Allow printing both with and without background graphics''',
         },
         {
           'name': 'enabled',
@@ -3092,6 +3274,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable sending username and filename to native printers',
+        },
+        {
+          'value': False,
+          'caption': 'Disable sending username and filename to native printers',
+        },
+      ],
       'example_value': True,
       'id': 506,
       'caption': '''Send username and filename to native printers''',
@@ -3128,6 +3320,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Force AppCache to be enabled',
+        },
+        {
+          'value': False,
+          'caption': 'Use default AppCache behavior',
+        },
+      ],
       'example_value': False,
       'id': 704,
       'caption': '''Allows the AppCache feature to be re-enabled even if it is off by default.''',
@@ -3214,6 +3416,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Force the use of SafeSearch in Google Search and YouTube Restricted Mode to be at least Moderate',
+        },
+        {
+          'value': False,
+          'caption': 'Do not enforce the use of SafeSearch in Google Search or YouTube Restricted Mode',
+        },
+      ],
       'deprecated': True,
       'example_value': False,
       'id': 162,
@@ -3238,6 +3450,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Force the use of SafeSearch in Google Search',
+        },
+        {
+          'value': False,
+          'caption': 'Do not enforce the use of SafeSearch in Google Search',
+        },
+      ],
       'example_value': False,
       'id': 282,
       'caption': '''Force Google SafeSearch''',
@@ -3257,6 +3479,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Force YouTube Restricted Mode to be at least Moderate',
+        },
+        {
+          'value': False,
+          'caption': 'Do not enforce YouTube Restricted Mode',
+        },
+      ],
       'deprecated': True,
       'example_value': False,
       'id': 283,
@@ -3331,6 +3563,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Safe Browsing',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Safe Browsing',
+        },
+      ],
       'deprecated': True,
       'example_value': True,
       'id': 14,
@@ -3417,6 +3659,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable reporting of usage and crash-related data',
+        },
+        {
+          'value': False,
+          'caption': 'Disable reporting of usage and crash-related data',
+        },
+      ],
       'example_value': True,
       'id': 15,
       'caption': '''Enable reporting of usage and crash-related data''',
@@ -3447,6 +3699,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable saving passwords using the password manager',
+        },
+        {
+          'value': False,
+          'caption': 'Disable saving passwords using the password manager',
+        },
+      ],
       'example_value': True,
       'id': 16,
       'caption': '''Enable saving passwords to the password manager''',
@@ -3496,6 +3758,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable password leak detection',
+        },
+        {
+          'value': False,
+          'caption': 'Disable password leak detection',
+        },
+      ],
       'example_value': True,
       'id': 580,
       'caption': '''Enable leak detection for entered credentials''',
@@ -3521,12 +3793,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable AutoFill',
+        },
+        {
+          'value': False,
+          'caption': 'Disable AutoFill',
+        },
+      ],
       'deprecated': True,
       'example_value': False,
       'id': 18,
       'caption': '''Enable AutoFill''',
       'tags': [],
-      'desc': '''This policy is deprecated in M70, please use AutofillAddressEnabled and AutofillCreditCardEnabled instead.
+      'desc': '''This policy is deprecated in M70, please use <ph name="AUTOFILL_ADDRESS_ENABLED_POLICY_NAME">AutofillAddressEnabled</ph> and <ph name="AUTOFILL_CREDIT_CARD_ENABLED_POLICY_NAME">AutofillCreditCardEnabled</ph> instead.
 
       Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill feature and allows users to auto complete web forms using previously stored information such as address or credit card information.
 
@@ -3550,6 +3832,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable AutoFill for addresses',
+        },
+        {
+          'value': False,
+          'caption': 'Disable AutoFill for addresses',
+        },
+      ],
       'example_value': False,
       'id': 459,
       'caption': '''Enable AutoFill for addresses''',
@@ -3574,6 +3866,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable AutoFill for credit cards',
+        },
+        {
+          'value': False,
+          'caption': 'Disable AutoFill for credit cards',
+        },
+      ],
       'example_value': False,
       'id': 392,
       'caption': '''Enable AutoFill for credit cards''',
@@ -3688,6 +3990,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Always open PDF files using an external PDF viewer',
+        },
+        {
+          'value': False,
+          'caption': 'Always open PDF files using the internal PDF viewer',
+        },
+      ],
       'example_value': True,
       'id': 347,
       'caption': '''Always Open PDF files externally''',
@@ -3708,6 +4020,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the plugin finder',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the plugin finder',
+        },
+      ],
       'deprecated': True,
       'example_value': True,
       'id': 66,
@@ -3729,18 +4051,27 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Disable <ph name="CHROME_SYNC_NAME">Chrome Sync</ph>',
+        },
+        {
+          'value': False,
+          'caption': 'Allow users to choose whether to enable <ph name="CHROME_SYNC_NAME">Chrome Sync</ph>',
+        },
+      ],
       'example_value': True,
       'id': 20,
       'caption': '''Disable synchronization of data with Google''',
       'tags': ['filtering', 'google-sharing'],
-      'desc': '''Disables data synchronization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> using Google-hosted synchronization services and prevents users from changing this setting.
+      'desc': '''Setting the policy to Enabled turns off data synchronization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> using Google-hosted synchronization services.
+      To fully turn off <ph name="CHROME_SYNC_NAME">Chrome Sync</ph> services, we recommend that you turn off the service in the <ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME">Google Admin console</ph>.
 
-      If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      If the policy is set to Disabled or not set, users are allowed to choose whether to use <ph name="CHROME_SYNC_NAME">Chrome Sync</ph>.
 
-      If this policy is left not set Google Sync will be available for the user to choose whether to use it or not.
-
-      To fully disable Google Sync, it is recommended that you disable the Google Sync service in the Google Admin console.''',
-      'arc_support': 'Disabling Google Sync will cause Android Backup and Restore to not function properly.',
+      Note: Do not turn on this policy when <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME">RoamingProfileSupportEnabled</ph> is Enabled, because that feature shares the same client-side functionality. The Google-hosted synchronization is off completely in this case.''',
+      'arc_support': 'Disabling <ph name="CHROME_SYNC_NAME">Chrome Sync</ph> will cause Android Backup and Restore to not function properly.',
     },
     {
       'name': 'SyncTypesListDisabled',
@@ -3760,7 +4091,7 @@
       'id': 649,
       'caption': '''List of types that should be excluded from synchronization''',
       'tags': ['system-security'],
-      'desc': '''If this policy is set all specified data types will be excluded from synchronization both for Google Sync as well as for roaming profile synchronization. This can be beneficial to reduce the size of the roaming profile or limit the type of data uploaded to the Google Sync Servers.
+      'desc': '''If this policy is set all specified data types will be excluded from synchronization both for <ph name="CHROME_SYNC_NAME">Chrome Sync</ph> as well as for roaming profile synchronization. This can be beneficial to reduce the size of the roaming profile or limit the type of data uploaded to the <ph name="CHROME_SYNC_NAME">Chrome Sync</ph> Servers.
 
       The current data types for this policy are: "bookmarks", "readingList", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfigurations". Those names are case sensitive!''',
     },
@@ -3774,6 +4105,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable creation of roaming profiles',
+        },
+        {
+          'value': False,
+          'caption': 'Disable creation of roaming profiles',
+        },
+      ],
       'example_value': True,
       'id': 358,
       'caption': '''Enable the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data''',
@@ -3818,6 +4159,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow users to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent users from signing in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>',
+        },
+      ],
       'deprecated': True,
       'example_value': True,
       'id': 190,
@@ -3827,7 +4178,7 @@
 
       Allows the user to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If you set this policy, you can configure whether a user is allowed to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Setting this policy to 'False' will prevent apps and extensions that use the chrome.identity API from functioning, so you may want to use SyncDisabled instead.''',
+      If you set this policy, you can configure whether a user is allowed to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Setting this policy to 'False' will prevent apps and extensions that use the chrome.identity API from functioning, so you may want to use <ph name="SYNC_DISABLED_POLICY_NAME">SyncDisabled</ph> instead.''',
     },
     {
       'name': 'EnableDeprecatedWebBasedSignin',
@@ -4185,6 +4536,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow captive portal authentication to ignore proxy settings',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent captive portal authentication from ignoring proxy settings',
+        },
+      ],
       'example_value': True,
       'default_for_enterprise_users': False,
       'id': 295,
@@ -4510,6 +4871,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Disable CNAME lookup during Kerberos authentication',
+        },
+        {
+          'value': False,
+          'caption': 'Use CNAME lookup during Kerberos authentication',
+        },
+      ],
       'example_value': False,
       'id': 27,
       'caption': '''Disable CNAME lookup when negotiating Kerberos authentication''',
@@ -4528,6 +4899,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Include non-standard port in generated Kerberos SPN',
+        },
+        {
+          'value': False,
+          'caption': 'Do not include port in generated Kerberos SPN',
+        },
+      ],
       'example_value': False,
       'id': 28,
       'caption': '''Include non-standard port in Kerberos SPN''',
@@ -4659,6 +5040,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Use KDC policy approval during HTTP authentication',
+        },
+        {
+          'value': False,
+          'caption': 'Ignore KDC policy approval during HTTP authentication',
+        },
+      ],
       'example_value': True,
       'id': 528,
       'caption': '''Use KDC policy to delegate credentials.''',
@@ -4746,6 +5137,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow third-party images to show an authentication prompt',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent third-party images from showing an authentication prompt',
+        },
+      ],
       'example_value': False,
       'id': 89,
       'caption': '''Cross-origin HTTP Authentication prompts''',
@@ -4955,6 +5356,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow installation and updates for extensions hosted outside of Chrome Web Store',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent installation and updates for extensions hosted outside of Chrome Web Store',
+        },
+      ],
       'example_value': False,
       'id': 516,
       'caption': '''Allow insecure algorithms in integrity checks on extension updates and installs''',
@@ -5186,6 +5597,16 @@
         'dynamic_refresh': False,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Block installation of external extensions',
+        },
+        {
+          'value': False,
+          'caption': 'Allow installation of external extensions',
+        },
+      ],
       'example_value': True,
       'id': 637,
       'caption': '''Blocks external extensions from being installed''',
@@ -5210,6 +5631,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Show the Home button on the toolbar',
+        },
+        {
+          'value': False,
+          'caption': 'Hide the Home button from the toolbar',
+        },
+      ],
       'example_value': True,
       'id': 35,
       'caption': '''Show Home button on toolbar''',
@@ -5228,6 +5659,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Disable Developer Tools',
+        },
+        {
+          'value': False,
+          'caption': 'Enable Developer Tools',
+        },
+      ],
       'deprecated': True,
       'example_value': False,
       'id': 36,
@@ -8803,6 +9244,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
+        'metapolicy_type': 'merge',
       },
       'example_value': ['ExtensionInstallAllowlist', 'ExtensionInstallBlocklist'],
       'id': 554,
@@ -8871,6 +9313,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
+        'metapolicy_type': 'merge',
       },
       'example_value': ['ExtensionSettings'],
       'id': 565,
@@ -8896,6 +9339,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
+        'metapolicy_type': 'merge',
       },
       'items': [
         {
@@ -10911,6 +11355,35 @@
       Warning: It is not recommended to configure version restrictions as they may prevent users from receiving software updates and critical security fixes. Restricting updates to a specific version prefix might leave users at risk.''',
     },
     {
+      'name': 'DeviceTargetVersionSelector',
+      'owners': ['vsavu@google.com', 'asumaneev@google.com', 'file://components/policy/resources/OWNERS'],
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome_os:95-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': '0,1626155736-',
+      'id': 891,
+      'caption': '''Allow devices to select a specific version to update to''',
+      'tags': ['system-security'],
+      'desc': '''This setting allows devices to select a specific target version of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> they will update to.
+
+      If not set, devices will update according to other settings or to the latest available version.
+
+      If set, devices will update up to a selected version.
+
+      The exact format of this policy value is an impelmentation details of the update service and may change. The policy value is not processed on the device.
+
+      If used together with <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME">DeviceTargetVersionPrefix</ph>, this policy will be checked first by update service.
+      Unlike <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME">DeviceTargetVersionPrefix</ph> (which may allow minor updates), devices will stay on the selected version until the value of this policy is changed.
+
+      If used together with <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME">DeviceRollbackToTargetVersion</ph>, device version can be reverted to a specific previous version.
+
+      Warning: It is not recommended to configure version restrictions as they may prevent users from receiving software updates and critical security fixes. Restricting updates to a specific version might leave users at risk.''',
+    },
+    {
       'name': 'DeviceUpdateScatterFactor',
       'owners': ['file://components/policy/resources/OWNERS', 'emaxx@chromium.org'],
       'type': 'int',
@@ -12057,7 +12530,7 @@
     },
     {
       'name': 'ScreenDimDelayAC',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': {
         'type': 'integer',
@@ -12088,7 +12561,7 @@
     },
     {
       'name': 'ScreenOffDelayAC',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': {
         'type': 'integer',
@@ -12119,7 +12592,7 @@
     },
     {
       'name': 'ScreenLockDelayAC',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': {
         'type': 'integer',
@@ -12152,7 +12625,7 @@
     },
     {
       'name': 'IdleWarningDelayAC',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': {
         'type': 'integer',
@@ -12183,7 +12656,7 @@
     },
     {
       'name': 'IdleDelayAC',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': {
         'type': 'integer',
@@ -12212,7 +12685,7 @@
     },
     {
       'name': 'ScreenDimDelayBattery',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': {
         'type': 'integer',
@@ -12243,7 +12716,7 @@
     },
     {
       'name': 'ScreenOffDelayBattery',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': {
         'type': 'integer',
@@ -12274,7 +12747,7 @@
     },
     {
       'name': 'ScreenLockDelayBattery',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': {
         'type': 'integer',
@@ -12307,7 +12780,7 @@
     },
     {
       'name': 'IdleWarningDelayBattery',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': {
         'type': 'integer',
@@ -12338,7 +12811,7 @@
     },
     {
       'name': 'IdleDelayBattery',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': {
         'type': 'integer',
@@ -12367,7 +12840,7 @@
     },
     {
       'name': 'IdleAction',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -12414,7 +12887,7 @@
     },
     {
       'name': 'IdleActionAC',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -12463,7 +12936,7 @@
     },
     {
       'name': 'IdleActionBattery',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -12512,7 +12985,7 @@
     },
     {
       'name': 'LidCloseAction',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -12557,7 +13030,7 @@
     },
     {
       'name': 'PowerManagementUsesAudioActivity',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:26-'],
@@ -12575,7 +13048,7 @@
     },
     {
       'name': 'PowerManagementUsesVideoActivity',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:26-'],
@@ -12594,7 +13067,7 @@
     },
     {
       'name': 'PresentationIdleDelayScale',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:26-28'],
@@ -12611,7 +13084,7 @@
     },
     {
       'name': 'PresentationScreenDimDelayScale',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:29-'],
@@ -12660,7 +13133,7 @@
     },
     {
       'name': 'AllowScreenWakeLocks',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:28-'],
@@ -12689,7 +13162,7 @@
     },
     {
       'name': 'UserActivityScreenDimDelayScale',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'int',
       'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:29-'],
@@ -12709,7 +13182,7 @@
     },
     {
       'name': 'WaitForInitialUserActivity',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:32-'],
@@ -12727,7 +13200,7 @@
     },
     {
       'name': 'PowerManagementIdleSettings',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'dict',
       'schema': {
         'type': 'object',
@@ -12831,7 +13304,7 @@
     },
     {
       'name': 'ScreenLockDelays',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['reinauer@google.com', 'chromeos-power@google.com'],
       'type': 'dict',
       'schema': {
         'type': 'object',
@@ -14833,7 +15306,7 @@
 
       If the policy is set to "Enable browser sign-in," then the user is allowed to sign in to the browser. On all platforms except <ph name="IOS_NAME">iOS</ph>, the user is automatically signed in to the browser when signed in to Google web services like Gmail. Being signed in to the browser means the user's account information will be kept by the browser. However, it does not mean that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync will be turned on by default; the user must separately opt-in to use this feature. Enabling this policy will prevent the user from turning off the setting that allows browser sign-in. To control the availability of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync, use the <ph name="SYNC_POLICY_NAME">SyncDisabled</ph> policy.
 
-      If the policy is set to "Force browser sign-in" the user is presented with an account selection dialog and has to choose and sign in to an account to use the browser. This ensures that for managed accounts the policies associated with the account are applied and enforced. By default this turns on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync for the account, except for the case when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync was disabled by the domain admin or via the <ph name="SYNC_POLICY_NAME">SyncDisabled</ph> policy. The default value of <ph name="GUEST_MODE_POLICY_NAME">BrowserGuestModeEnabled</ph> will be set to disabled. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help center article: https://support.google.com/chrome/a/answer/7572556 . This option is not supported on <ph name="LINUX_OS_NAME">Linux</ph>, <ph name="ANDROID_NAME">Android</ph> or <ph name="IOS_NAME">iOS</ph>. It will fall back to "Enable browser sign-in" if used.
+      If the policy is set to "Force browser sign-in" the user is presented with an account selection dialog and has to choose and sign in to an account to use the browser. This ensures that for managed accounts the policies associated with the account are applied and enforced. The default value of <ph name="GUEST_MODE_POLICY_NAME">BrowserGuestModeEnabled</ph> will be set to disabled. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help center article: https://support.google.com/chrome/a/answer/7572556 . This option is not supported on <ph name="LINUX_OS_NAME">Linux</ph>, <ph name="ANDROID_NAME">Android</ph> or <ph name="IOS_NAME">iOS</ph>. It will fall back to "Enable browser sign-in" if used.
 
       If this policy is not set then the user can decide if they want to enable browser sign-in in the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings and use it as they see fit.''',
     },
@@ -14885,15 +15358,17 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': 'tls1',
+      'example_value': 'tls1.2',
       'id': 279,
       'caption': '''Minimum SSL version enabled''',
       'tags': [],
-      'desc': '''Warning: Support for suppressing the TLS 1.0/1.1 warning will be removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> starting in version 91 (around May 2021) and this policy will stop working then.
+      'desc': '''Setting the policy to a valid value means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> won't use SSL/TLS versions less than the specified version. Unrecognized values are ignored.
 
-      Setting the policy to a valid value means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> won't use SSL/TLS versions less than the specified version. Unrecognized values are ignored.
+      If this policy is not set, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show an error for TLS 1.0 and TLS 1.1, but the user will be able to bypass it.
 
-      If this policy is not set, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show an error for TLS 1.0 and TLS 1.1, but the user will be able to bypass it.''',
+      If this policy is set to "tls1.2", the user will not be able to bypass this error.
+
+      Support for setting this policy to "tls1" or "tls1.1" was removed in version 91. Suppressing the TLS 1.0/1.1 warning is no longer supported.''',
     },
     {
       'name': 'SSLVersionFallbackMin',
@@ -16960,7 +17435,7 @@
       'tags': [],
       'desc': '''If <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE_POLICY_NAME">DevicePrintersAccessMode</ph>, then setting <ph name="DEVICE_NATIVE_PRINTERS_WHITELIST_POLICY_NAME">DeviceNativePrintersWhitelist</ph> specifies which printers users can use. Only the printers with IDs matching the values in this policy are available to users. The IDs must correspond to the <ph name="ID_FIELD">"id"</ph> or <ph name="GUID_FIELD">"guid"</ph> fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY_NAME">DevicePrinters</ph>.
 
-      This policy is deprecated, please use <ph name="DEVICE_PRINTERS_ALLOWLIST_POLICY_NAME">DevicePrintersAllowlist</ph>instead.''',
+      This policy is deprecated, please use <ph name="DEVICE_PRINTERS_ALLOWLIST_POLICY_NAME">DevicePrintersAllowlist</ph> instead.''',
     },
     {
       'name': 'DevicePrinters',
@@ -17582,7 +18057,7 @@
 
       If this setting is disabled, users will not be allowed to sync Wi-Fi network configurations.
 
-      This feature depends on the <ph name="WIFI_CONFIGURATIONS_DATATYPE_NAME">wifiConfigurations</ph> datatype in Chrome Sync being enabled. If <ph name="WIFI_CONFIGURATIONS_DATATYPE_NAME">wifiConfigurations</ph> is disabled in the <ph name="SYNC_TYPES_LIST_DISABLED_POLICY_NAME">SyncTypesListDisabled</ph> policy, or Chrome Sync is disabled in the <ph name="SYNC_DISABLED_POLICY_NAME">SyncDisabled</ph> policy this feature will not be enabled.
+      This feature depends on the <ph name="WIFI_CONFIGURATIONS_DATATYPE_NAME">wifiConfigurations</ph> datatype in <ph name="CHROME_SYNC_NAME">Chrome Sync</ph> being enabled. If <ph name="WIFI_CONFIGURATIONS_DATATYPE_NAME">wifiConfigurations</ph> is disabled in the <ph name="SYNC_TYPES_LIST_DISABLED_POLICY_NAME">SyncTypesListDisabled</ph> policy, or <ph name="CHROME_SYNC_NAME">Chrome Sync</ph> is disabled in the <ph name="SYNC_DISABLED_POLICY_NAME">SyncDisabled</ph> policy this feature will not be enabled.
 
       If this policy is left not set, the default is not allowed for managed users.''',
     },
@@ -18177,6 +18652,7 @@
         'dynamic_refresh': False,
         'per_profile': False,
         'platform_only': True,
+        'metapolicy_type': 'precedence',
       },
       'example_value': False,
       'id': 381,
@@ -18466,7 +18942,7 @@
         },
       ],
       'example_value': True,
-      'default': True,
+      'default': False,
       'id': 878,
       'caption': '''Specifies whether WebAssembly modules can be sent cross-origin''',
       'tags': ['system-security'],
@@ -18481,8 +18957,8 @@
       When set to True, sites can send WebAssembly modules also cross-origin
       without restrictions.
 
-      When set to False, sites can only send WebAssembly modules to windows
-      and workers in the same origin.''',
+      When set to False or not set, sites can only send WebAssembly modules to
+      windows and workers in the same origin.''',
     },
     {
       'name': 'DisplayCapturePermissionsPolicyEnabled',
@@ -20496,7 +20972,16 @@
               ]
             },
             'create_desktop_shortcut': { 'type': 'boolean' },
-            'fallback_app_name': { 'type': 'string' }
+            'fallback_app_name': { 'type': 'string' },
+            'custom_name': { 'type': 'string' },
+            'custom_icon': {
+              'type': 'object',
+              'properties': {
+                'url': { 'type': 'string'},
+                'hash': { 'type': 'string' },
+              },
+              'required': ['url', 'hash']
+            },
           },
           'required': ['url']
         }
@@ -20506,6 +20991,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'max_size': 1048576,
       'example_value': [{
         'url': 'https://www.google.com/maps',
         'default_launch_container': 'window',
@@ -20517,6 +21003,16 @@
         'url': 'https://docs.google.com/editor',
         'default_launch_container': 'window',
         'fallback_app_name': 'Editor'
+      }, {
+        'url': 'https://docs.google.com/sheets',
+        'default_launch_container': 'window',
+        'custom_name': 'Spreadsheets'
+      }, {
+        'url': 'https://weather.example.com',
+        'custom_icon': {
+          'url': 'https://mydomain.example.com/sunny_icon.png',
+          'hash': 'c28f469c450e9ab2b86ea47038d2b324c6ad3b1e9a4bd8960da13214afd0ca38'
+        }
       }],
       'id': 468,
       'caption': '''Configure list of force-installed Web Apps''',
@@ -20526,7 +21022,7 @@
       Each list item of the policy is an object with a mandatory member:
       <ph name="URL_LABEL">url</ph> (the URL of the web app to install)
 
-      and 3 optional members:
+      and 5 optional members:
       - <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL">default_launch_container</ph>
       (for how the web app opens—a new tab is the default)
 
@@ -20539,7 +21035,22 @@
       allows you to override the app name if it is not a
       Progressive Web App (PWA), or the app name that is temporarily
       installed if it is a PWA but authentication is required before the
-      installation can be completed.)
+      installation can be completed. If both
+      <ph name="CUSTOM_NAME_LABEL">custom_name</ph> and
+      <ph name="FALLBACK_APP_NAME_LABEL">fallback_app_name</ph> are provided,
+      the latter will be ignored.)
+
+      - <ph name="OVERRIDE_APP_NAME_LABEL">custom_name</ph>
+      (Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+      version 96, allows you to permanently override the app name for all web
+      apps and PWAs.)
+
+      - <ph name="CUSTOM_ICON_LABEL">custom_icon</ph>
+      (Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+      version 96, allows you to override the app icon of installed apps. The
+      icons have to be square, maximal 1 MB in size, and in one of the following
+      formats: jpeg, png, gif, webp, ico. The hash value has to be the SHA256
+      hash of the icon file.)
 
       See <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME">PinnedLauncherApps</ph> for pinning apps to the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shelf.''',
       'label': '''URLs for Web Apps to be silently installed.''',
@@ -21163,7 +21674,7 @@
         'per_profile': True,
       },
       'default': 0,
-      'future_on': ['chrome.*'],
+      'supported_on': ['chrome.*:95-'],
       'caption': '''Sitelist parsing mode''',
       'tags': [],
       'desc': '''This policy controls how <ph name="PRODUCT_NAME">Google Chrome</ph> interprets sitelist/greylist policies for the Legacy Browser Support feature. It affects the following policies: <ph name="URL_LIST_POLICY_NAME">BrowserSwitcherUrlList</ph>, <ph name="URL_GREYLIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph>, <ph name="USE_IE_SITELIST_POLICY_NAME">BrowserSwitcherUseIeSitelist</ph>, <ph name="EXTERNAL_SITELIST_POLICY_NAME">BrowserSwitcherExternalSitelistUrl</ph>, and <ph name="EXTERNAL_GREYLIST_POLICY_NAME">BrowserSwitcherExternalGreylistUrl</ph>.
@@ -21973,8 +22484,8 @@
     },
     {
       'name': 'ContextAwareAccessSignalsAllowlist',
-      'owners': ['rodmartin@google.com', 'rogerta@chromium.org', 'mad@chromium.org'],
-      'future_on': ['chrome.*', 'chrome_os'],
+      'owners': ['rodmartin@google.com', 'rogerta@chromium.org', 'mad@chromium.org', 'seblalancette@chromium.org'],
+      'supported_on': ['chrome.*:95-', 'chrome_os:95-'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -23299,6 +23810,37 @@
       Note: Read more about Process mitigation policies ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).''',
     },
     {
+      'name': 'BrowserLegacyExtensionPointsBlocked',
+      'owners': ['wfh@chromium.org', 'ssmole@microsoft.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Block legacy extension points in the Browser process',
+        },
+        {
+          'value': False,
+          'caption': 'Do not block legacy extension points in the Browser process',
+        },
+      ],
+      'supported_on': ['chrome.win:95-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'default': True,
+      'example_value': False,
+      'id': 893,
+      'caption': '''Block Browser Legacy Extension Points''',
+      'tags': ['system-security'],
+      'desc': '''Setting the policy to Enabled or leaving it unset will enable <ph name="LEGACY_EXTENSION_DISABLE_API">ProcessExtensionPointDisablePolicy</ph> to block legacy extension points in the Browser process.
+
+      Setting the policy to Disabled has a detrimental effect on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s security and stability as unknown and potentially hostile code can load inside <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s browser process. Only turn off the policy if there are compatibility issues with third-party software that must run inside <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s browser process.
+
+      Note: Read more about Process mitigation policies ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).''',
+    },
+    {
       'name': 'HSTSPolicyBypassList',
       'owners': ['asymmetric@chromium.org', 'rsleevi@chromium.org'],
       'type': 'list',
@@ -24002,6 +24544,46 @@
       Local printers are also known as native printing destinations, and include destinations available to the local machine and shared network printers.'''
     },
     {
+      'name': 'PrintPostScriptMode',
+      'owners': ['thestig@chromium.org', 'file://printing/OWNERS'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1 ],
+      },
+      'items': [
+        {
+          'name': 'Default',
+          'value': 0,
+          'caption': '''Default''',
+        },
+        {
+          'name': 'Type42',
+          'value': 1,
+          'caption': '''Type42''',
+        },
+      ],
+      'supported_on': ['chrome.win:95-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 1,
+      'default': 0,
+      'id': 895,
+      'caption': '''Print PostScript Mode''',
+      'tags': [],
+      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> prints on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>.
+
+      When printing to a PostScript printer on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> different PostScript generation methods can affect printing performance.
+
+      When this policy is set to Default, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use a set of default options when generating PostScript. For text in particular, text will always be rendered using Type 3 fonts.
+
+      When this policy is set to Type42, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will render text using Type 42 fonts if possible. This should increase printing speed for some PostScript printers.
+
+      When this policy is not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will be in Default mode.'''
+    },
+    {
       'name': 'PrintRasterizationMode',
       'owners': ['thestig@chromium.org', 'file://printing/OWNERS'],
       'type': 'int-enum',
@@ -24031,9 +24613,9 @@
       'id': 706,
       'caption': '''Print Rasterization Mode''',
       'tags': [],
-      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> prints on Windows.
+      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> prints on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>.
 
-      When printing to a non-PostScript printer on Windows, sometimes print jobs need to be rasterized to print correctly.
+      When printing to a non-PostScript printer on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, sometimes print jobs need to be rasterized to print correctly.
 
       When this policy is set to Full, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will do full page rasterization if necessary.
 
@@ -24435,8 +25017,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'future_on': ['chrome.*'],
-      'supported_on': ['chrome_os:94-'],
+      'supported_on': ['chrome_os:94-', 'chrome.*:95-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -24463,8 +25044,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'future_on': ['chrome.*'],
-      'supported_on': ['chrome_os:94-'],
+      'supported_on': ['chrome_os:94-', 'chrome.*:95-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -24491,8 +25071,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'future_on': ['chrome.*'],
-      'supported_on': ['chrome_os:94-'],
+      'supported_on': ['chrome_os:94-', 'chrome.*:95-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -24521,8 +25100,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'future_on': ['chrome.*'],
-      'supported_on': ['chrome_os:94-'],
+      'supported_on': ['chrome_os:94-', 'chrome.*:95-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -25705,7 +26283,8 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['igorcov@chromium.org', 'okalitova@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:88-'],
+      'supported_on': ['chrome_os:88-95'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -25726,7 +26305,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'default_for_enterprise_users': False,
       'caption': '''Allow usage of <ph name="LACROS_NAME">Lacros</ph>''',
       'tags': [],
-      'desc': '''This setting allows users to use the <ph name="LACROS_NAME">Lacros</ph> browser.
+      'desc': '''This setting is deprecated. Use <ph name="LACROS_AVAILABILITY_POLICY_NAME">LacrosAvailability</ph> instead.
 
       If this policy is set to Disabled or unset, the user cannot use <ph name="LACROS_NAME">Lacros</ph>.
 
@@ -25820,13 +26399,13 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'tags': [],
       'desc': '''This setting provides several availability options for the <ph name="LACROS_NAME">Lacros</ph> browser.
 
-      If the policy is set to <ph name="LACROS_AVAILABILITY_USER_CHOICE_VALUE">user_choice</ph>, the user can enable <ph name="LACROS_NAME">Lacros</ph> and make it primary. <ph name="LACROS_NAME">Lacros</ph> can still be disallowed with <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy.
+      If the policy is set to <ph name="LACROS_AVAILABILITY_USER_CHOICE_VALUE">user_choice</ph>, the user can enable <ph name="LACROS_NAME">Lacros</ph> and make it primary.
 
-      If the policy is set to <ph name="LACROS_AVAILABILITY_LACROS_DISALLOWED_VALUE">lacros_disallowed</ph>, the user cannot use <ph name="LACROS_NAME">Lacros</ph>. <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy is ignored.
+      If the policy is set to <ph name="LACROS_AVAILABILITY_LACROS_DISALLOWED_VALUE">lacros_disallowed</ph>, the user cannot use <ph name="LACROS_NAME">Lacros</ph>.
 
-      If the policy is set to <ph name="LACROS_AVAILABILITY_SIDE_BY_SIDE_VALUE">side_by_side</ph>, <ph name="LACROS_NAME">Lacros</ph> is enabled but is not the primary browser. <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy is ignored.
+      If the policy is set to <ph name="LACROS_AVAILABILITY_SIDE_BY_SIDE_VALUE">side_by_side</ph>, <ph name="LACROS_NAME">Lacros</ph> is enabled but is not the primary browser.
 
-      If the policy is set to <ph name="LACROS_AVAILABILITY_LACROS_PRIMARY_VALUE">lacros_primary</ph>, <ph name="LACROS_NAME">Lacros</ph> is enabled and is the primary browser. <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy is ignored.
+      If the policy is set to <ph name="LACROS_AVAILABILITY_LACROS_PRIMARY_VALUE">lacros_primary</ph>, <ph name="LACROS_NAME">Lacros</ph> is enabled and is the primary browser.
 
       If the policy is unset, the default is <ph name="LACROS_AVAILABILITY_LACROS_DISALLOWED_VALUE">lacros_disallowed</ph> for enterprise-managed users and <ph name="LACROS_AVAILABILITY_USER_CHOICE_VALUE">user_choice</ph> for non-managed users.
 
@@ -26924,7 +27503,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
           'force_enabled'
         ],
       },
-      'future_on': ['chrome.*', 'chrome_os', 'android'],
+      'supported_on': ['chrome.*:94-', 'chrome_os:94-', 'android:94-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -26986,11 +27565,12 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
        Setting the policy to False removes the sharing icon from the omnibox and the entry from the 3-dot menu.''',
     },
     {
-      'name': 'RestrictedManagedGuestSessionEnabled',
+      'name': 'DeviceRestrictedManagedGuestSessionEnabled',
       'owners': ['mpetrisor@chromium.org', 'hendrich@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'future_on': ['chrome_os'],
+      'device_only': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -27007,7 +27587,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       ],
       'default': False,
       'example_value': True,
-      'id': 872,
+      'id': 894,
       'caption': '''Restricted managed guest sessions''',
       'tags': [],
       'desc': '''The policy only applies to managed guest sessions. It has to be enabled for Imprivata's shared workstation mode to allow in-session user switches.
@@ -27035,7 +27615,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'caption': '''Configure the list of extension IDs exempt from the restricted managed guest session clean-up procedure''',
       'tags': [],
       'desc': '''The policy only applies to managed guest sessions.
-      Setting the policy specifies a list of extension IDs that are exempt from the restricted managed guest session clean-up procedure (see <ph name="RESTRICTED_MANAGED_GUEST_SESSION_ENABLED_POLICY_NAME">RestrictedManagedGuestSessionEnabled</ph>).
+      Setting the policy specifies a list of extension IDs that are exempt from the restricted managed guest session clean-up procedure (see <ph name="DEVICE_RESTRICTED_MANAGED_GUEST_SESSION_ENABLED_POLICY_NAME">DeviceRestrictedManagedGuestSessionEnabled</ph>).
       Leaving the policy unset means no extensions are exempt from the reset procedure.''',
     },
     {
@@ -27043,7 +27623,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'owners': ['tsergeant@chromium.org', 'chromeos-apps-foundation-team@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:94-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -27098,6 +27678,36 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
           If this policy is set to false, the enhanced network text-to-speech voices feature in Select-to-speak will always be disabled.
 
           If this policy is set to true or unset, the enhanced network text-to-speech voices feature in Select-to-speak can be enabled or disabled by the user.''',
+    },
+    {
+      'name': 'ChromeAppsEnabled',
+      'owners': ['mattm@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome.win', 'chrome.mac', 'chrome.linux'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Chrome Apps will be allowed to run on these platforms.',
+        },
+        {
+          'value': False,
+          'caption': 'Chrome Apps may not be allowed to run, depending on the status of the deprecation rollout.',
+        },
+      ],
+      'default': False,
+      'example_value': True,
+      'id': 892,
+      'tags': [],
+      'caption': '''Extend support for Chrome Apps on Windows, Mac, and Linux.''',
+      'desc': '''Chrome Apps are deprecated on Windows, Mac, and Linux.
+      If this policy is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will continue to allow Chrome Apps to be run on these platforms until the final date when Chrome Apps support is removed on all platforms, June 2022.
+      If this policy is disabled or unset, Chrome Apps may not be allowed to run, depending on the status of the deprecation rollout.
+      In either case, Chrome Apps that are force installed by policy will continue to be allowed.''',
     },
   ],
   'messages': {
@@ -27263,6 +27873,10 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'doc_feature_unlisted': {
       'desc': '''The name of the feature that indicates whether a policy is set from cloud without any user interface.''',
       'text': '''Unlisted'''
+    },
+    'doc_feature_metapolicy_type': {
+      'desc': '''The name of the feature that indicates the type of metapolicy a policy is, if any.''',
+      'text': '''Metapolicy Type'''
     },
     'doc_deprecated': {
       'desc': '''Text appended in parentheses to the policy name to indicate that it has been deprecated''',
@@ -27431,6 +28045,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceChannelDowngradeBehavior': 'auto_update_settings.channel_downgrade_behavior',
     'DeviceAutoUpdateDisabled': 'auto_update_settings.update_disabled',
     'DeviceTargetVersionPrefix': 'auto_update_settings.target_version_prefix',
+    'DeviceTargetVersionSelector': 'auto_update_settings.target_version_selector',
     'DeviceRollbackToTargetVersion': 'auto_update_settings.rollback_to_target_version',
     'DeviceRollbackAllowedMilestones': 'auto_update_settings.rollback_allowed_milestones',
     'DeviceUpdateScatterFactor': 'auto_update_settings.scatter_factor_in_seconds',
@@ -27548,6 +28163,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceDebugPacketCaptureAllowed': 'device_debug_packet_capture_allowed.allowed',
     'DeviceScheduledReboot': 'device_scheduled_reboot.device_scheduled_reboot_settings',
     'DevicePciPeripheralDataAccessEnabled': 'device_pci_peripheral_data_access_enabled_v2.enabled',
+    'DeviceRestrictedManagedGuestSessionEnabled': 'device_restricted_managed_guest_session_enabled.enabled',
   },
   'policy_atomic_group_definitions': [
     {
@@ -28050,8 +28666,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
+  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 890,
+  'highest_id_currently_used': 895,
   'highest_atomic_group_id_currently_used': 41
 }

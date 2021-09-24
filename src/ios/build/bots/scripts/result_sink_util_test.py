@@ -1,3 +1,4 @@
+#!/usr/bin/env vpython
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -41,6 +42,9 @@ class UnitTest(unittest.TestCase):
         'status': 'PASS',
         'expected': True,
         'tags': [],
+        'testMetadata': {
+            'name': 'TestCase/testSomething'
+        },
     }
     self.assertEqual(test_result, expected)
     short_log = 'Some logs.'
@@ -58,6 +62,9 @@ class UnitTest(unittest.TestCase):
             },
         },
         'tags': [],
+        'testMetadata': {
+            'name': 'TestCase/testSomething'
+        },
     }
     self.assertEqual(test_result, expected)
 
@@ -79,6 +86,9 @@ class UnitTest(unittest.TestCase):
             },
         },
         'tags': [],
+        'testMetadata': {
+            'name': 'TestCase/testSomething'
+        },
     }
     test_result = result_sink_util._compose_test_result(
         'TestCase/testSomething', 'PASS', True, len_4128_str)
@@ -114,7 +124,10 @@ class UnitTest(unittest.TestCase):
         'tags': [{
             'key': 'disabled_test',
             'value': 'true',
-        }]
+        }],
+        'testMetadata': {
+            'name': 'TestCase/testSomething'
+        },
     }
     test_result = result_sink_util._compose_test_result(
         'TestCase/testSomething',
@@ -135,7 +148,10 @@ class UnitTest(unittest.TestCase):
         'tags': [{
             'key': 'disabled_test',
             'value': 'true',
-        }]
+        }],
+        'testMetadata': {
+            'name': 'TestCase/testSomething'
+        },
     }
     client = result_sink_util.ResultSinkClient()
 

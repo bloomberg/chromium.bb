@@ -23,9 +23,13 @@ import numpy as np
 from tensorflow.core.framework import attr_value_pb2
 from tensorflow.core.protobuf import config_pb2
 from tensorflow.python.client import session
-from tensorflow.python.eager import def_function as eager_def_function
-from tensorflow.python.eager import function as eager_function
 from tensorflow.python.data.ops import iterator_ops
+from tensorflow.python.eager import cancellation
+from tensorflow.python.eager import context
+from tensorflow.python.eager import def_function as eager_def_function
+from tensorflow.python.eager import executor
+from tensorflow.python.eager import function as eager_function
+from tensorflow.python.framework import config as framework_config
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors
@@ -33,6 +37,7 @@ from tensorflow.python.framework import function
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
+from tensorflow.python.ops import collective_ops
 from tensorflow.python.ops import functional_ops
 from tensorflow.python.ops import gen_functional_ops
 from tensorflow.python.ops import gradients_impl
@@ -257,7 +262,7 @@ class FunctionalOpsTest(test.TestCase):
     elems = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
     initializer = np.array(1.0)
     # Multiply a * 1 each time
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         ValueError, "two structures don't have the same nested structure"):
       functional_ops.scan(lambda a, x: (a, -a), elems, initializer)
 
@@ -340,7 +345,7 @@ class FunctionalOpsTest(test.TestCase):
         lambda elem_, input_: (a, b), elems, initializer=(0., 0.))
     loss = l0 + array_ops.stop_gradient(l1)
     grad = gradients_impl.gradients(ys=[loss], xs=[a, b])
-    with self.test_session(use_gpu=True) as sess:
+    with self.test_session():
       self.evaluate(variables.global_variables_initializer())
       self.evaluate(grad)
 
@@ -569,6 +574,48 @@ class FunctionalOpsTest(test.TestCase):
       mul = self.evaluate(remote_op)
       self.assertEqual(mul, 9)
 
+  @test_util.run_v2_only
+  def testRemoteFunctionCancellation(self):
+    context._reset_context()
+    logical_devices = []
+    logical_devices.append(context.LogicalDeviceConfiguration())
+    logical_devices.append(context.LogicalDeviceConfiguration())
+    framework_config.set_logical_device_configuration(
+        framework_config.list_physical_devices("CPU")[0], logical_devices)
+
+    @function.Defun(dtypes.float32)
+    def _remote_fn(v):
+      # We run two collectives here to make sure we cancel in the middle of the
+      # RemoteCall. The second one should never finish.
+      anchor = collective_ops.all_reduce_v2(
+          v, group_size=2, group_key=1, instance_key=1)
+      with ops.control_dependencies([anchor]):
+        return collective_ops.all_reduce_v2(
+            v, group_size=2, group_key=1, instance_key=2)
+
+    @eager_def_function.function
+    def run():
+      with ops.device("/cpu:0"):
+        return functional_ops.remote_call(
+            args=[constant_op.constant([1.])],
+            Tout=[dtypes.float32],
+            f=_remote_fn,
+            target="/cpu:1")[0]
+
+    async_executor = executor.new_executor(enable_async=True)
+    cancel_mgr = cancellation.CancellationManager()
+    with context.executor_scope(async_executor):
+      # This should never finish.
+      cancel_mgr.get_cancelable_function(run.get_concrete_function())()
+    with ops.device("/cpu:0"):
+      collective_ops.all_reduce_v2([1.],
+                                   group_size=2,
+                                   group_key=1,
+                                   instance_key=1)
+    cancel_mgr.start_cancel()
+    with self.assertRaises(errors.CancelledError):
+      async_executor.wait()
+
   @test_util.run_deprecated_v1
   def testIf(self):
 
@@ -712,12 +759,12 @@ class FunctionalOpsTest(test.TestCase):
           return n - 1, x + n, x
 
         with self.session(graph=g, use_gpu=use_gpu):
-          with self.assertRaisesRegexp(
+          with self.assertRaisesRegex(
               errors.InvalidArgumentError,
               "Expected a single scalar.*got 2 tensors."):
             functional_ops.While([5., 0.], CondReturnsTooManyArgs,
                                  Body)[0].eval()
-          with self.assertRaisesRegexp(
+          with self.assertRaisesRegex(
               errors.InvalidArgumentError,
               "While loop body returned 3 arguments. Expected: 2"):
             functional_ops.While([5., 0.], Cond,
@@ -933,14 +980,14 @@ class FunctionalOpsTest(test.TestCase):
     def ReturnsTooManyArgs(unused_i, v):
       return v, v
 
-    with self.test_session(use_gpu=True):
-      with self.assertRaisesRegexp(errors.InvalidArgumentError,
-                                   "must be a scalar"):
+    with self.test_session():
+      with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                  "must be a scalar"):
         functional_ops.For([0], 10, 1, [0.0], Foo)[0].eval()
-      with self.assertRaisesRegexp(errors.InvalidArgumentError,
-                                   "Invalid start/limit/delta"):
+      with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                  "Invalid start/limit/delta"):
         functional_ops.For(0, 10, -1, [0.0], Foo)[0].eval()
-      with self.assertRaisesRegexp(
+      with self.assertRaisesRegex(
           errors.InvalidArgumentError,
           "For loop body returned 2 arguments. Expected: 1"):
         functional_ops.For(0, 10, 1, [0.0], ReturnsTooManyArgs)[0].eval()
@@ -965,6 +1012,32 @@ class FunctionalOpsTest(test.TestCase):
       bvals = [Poly(b), Grad(b)]
       self.assertAllEqual(self.evaluate(avals), [8., 4.])
       self.assertAllEqual(self.evaluate(bvals), [17., 16.])
+
+  @test_util.run_v2_only
+  def testCollective(self):
+    context._reset_context()
+    logical_devices = []
+    logical_devices.append(context.LogicalDeviceConfiguration())
+    logical_devices.append(context.LogicalDeviceConfiguration())
+    framework_config.set_logical_device_configuration(
+        framework_config.list_physical_devices("CPU")[0], logical_devices)
+
+    @function.Defun(dtypes.float32)
+    def collective_fn(t):
+      # Run a dummy collective of group size 1 to test the setup.
+      return collective_ops.all_reduce_v2(
+          t, group_size=1, group_key=1, instance_key=1)
+
+    @eager_def_function.function
+    def run():
+      with ops.device("/cpu:0"):
+        return functional_ops.remote_call(
+            args=[constant_op.constant([1.])],
+            Tout=[dtypes.float32],
+            f=collective_fn,
+            target="/cpu:1")
+
+    self.assertAllEqual(run(), [[1.]])
 
 
 # TODO(akshayka): Replace `function.Defun` with tf.contrib.eager.defun` in the
@@ -1039,7 +1112,7 @@ class PartitionedCallTest(test.TestCase):
       output, = functional_ops.partitioned_call(
           args=[constant_op.constant(1.),
                 constant_op.constant(2.)], f=Body)
-      self.assertEqual(output.eval(), 12.)
+      self.assertEqual(self.evaluate(output), 12.)
 
   @test_util.run_deprecated_v1
   def testBasicMultiDeviceGPU(self):
@@ -1169,8 +1242,7 @@ class PartitionedCallTest(test.TestCase):
         args=[constant_op.constant([1, 2, 3], dtype=dtypes.int32)],
         f=AddFive,
         executor_type="NON_EXISTENT_EXECUTOR")
-    with self.assertRaisesRegexp(errors.NotFoundError,
-                                 "NON_EXISTENT_EXECUTOR"):
+    with self.assertRaisesRegex(errors.NotFoundError, "NON_EXISTENT_EXECUTOR"):
       self.evaluate(op)
 
 

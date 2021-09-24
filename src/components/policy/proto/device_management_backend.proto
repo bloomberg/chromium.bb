@@ -373,6 +373,8 @@ message BrowserDeviceIdentifier {
   optional string computer_name = 1;
   // Device serial number (definition depending on the platform).
   optional string serial_number = 2;
+  // Android-specific identifiers.
+  optional AndroidIdentifier android_identifier = 3;
 }
 
 message PolicyFetchRequest {
@@ -1367,6 +1369,7 @@ message SmbiosInfo {
   optional string sys_vendor = 1;
   optional string product_name = 2;
   optional string product_version = 3;
+  optional string bios_version = 4;
 }
 
 // Information about the parameters passed to the kernel.
@@ -1380,6 +1383,19 @@ message KernelParameters {
 message EFIVars {
   // True if Secure Boot is enabled on the device.
   optional bool secure_boot = 1;
+}
+
+// Information about how the OS was booted. This is information
+// such as boot method and other bios settings
+message BootInfo {
+  enum BootMethod {
+    UNKNOWN = 0;
+    CROS_SECURE = 1;
+    CROS_UEFI = 2;
+    CROS_LEGACY = 3;
+  }
+  optional BootMethod boot_method = 1;
+  optional bool secure_boot = 2;
 }
 
 // Report device level status.
@@ -1510,6 +1526,12 @@ message DeviceStatusReportRequest {
 
   // Information about the device's EFI Variables from efivarfs.
   optional EFIVars efi_vars = 43;
+
+  // KernelParameters(42) and EFIVars(43) are deprecated
+  // and rolled into BootInfo(44)
+
+  // Information about how the os was booted.
+  optional BootInfo boot_info = 44;
 }
 
 message OsUpdateStatus {
@@ -1978,6 +2000,13 @@ message OSReport {
 enum PartialReportType {
   UNSPECIFIED = 0;
   EXTENSION_REQUEST = 1;
+}
+
+// Android-specific IDs to be reported in addition to the Client ID. Explicit
+// approval from Chrome Privacy is required for new IDs.
+message AndroidIdentifier {
+  // Gservices Android ID, only uploaded for Android version S and older.
+  optional string gservices_android_id = 1;
 }
 
 // Report the status of a Chrome installation on non-Chrome OS platform.
@@ -2574,7 +2603,8 @@ message RemoteCommand {
   // the names should also be updated:
   // - components/policy/core/common/cloud/enterprise_metrics.cc;
   // - components/policy/core/common/remote_commands/remote_commands_service.cc;
-  // - Enterprise.RemoteCommandType in tools/metrics/histograms/histograms.xml;
+  // - Enterprise.RemoteCommandType in
+  //     tools/metrics/histograms/metadata/enterprise/histograms.xml;
   enum Type {
     // Simple echo command for testing, will be ignored in production code.
     COMMAND_ECHO_TEST = -1;
@@ -2618,6 +2648,10 @@ message RemoteCommand {
 
     // Clear the cache and cookies associated with a given profile.
     BROWSER_CLEAR_BROWSING_DATA = 12;
+
+    // Reset the cellular EUICC (Embedded Universal Integrated Circuit Card) on
+    // the device.
+    DEVICE_RESET_EUICC = 13;
 
     // Please update metrics after adding a new item - see the comment above.
   }
@@ -3496,6 +3530,9 @@ message PrintJobEvent {
 
     // URI of the printer, which serves as a unique identifier.
     optional string uri = 2;
+
+    // Printer ID.
+    optional string id = 3;
   }
 
   // The finishing settings of the print job.

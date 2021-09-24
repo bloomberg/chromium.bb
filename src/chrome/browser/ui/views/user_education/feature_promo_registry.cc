@@ -81,6 +81,11 @@ views::View* GetReadingListStarView(BrowserView* browser_view) {
       ->GetIconView(PageActionIconType::kBookmarkStar);
 }
 
+// kIPHReadingListInSidePanelFeature:
+views::View* GetSidePanelButton(BrowserView* browser_view) {
+  return browser_view->toolbar()->read_later_button();
+}
+
 // kIPHReopenTabFeature:
 views::View* GetAppMenuButton(BrowserView* browser_view) {
   return browser_view->toolbar()->app_menu_button();
@@ -224,6 +229,16 @@ void FeaturePromoRegistry::RegisterKnownFeatures() {
                     base::BindRepeating(GetMediaButton));
   }
 
+  {
+    // kIPHGMCCastStartStopFeature:
+    FeaturePromoBubbleParams params;
+    params.body_string_specifier =
+        IDS_GLOBAL_MEDIA_CONTROLS_CONTROL_CAST_SESSIONS_PROMO;
+    params.arrow = views::BubbleBorder::Arrow::TOP_RIGHT;
+    RegisterFeature(feature_engagement::kIPHGMCCastStartStopFeature, params,
+                    base::BindRepeating(GetMediaButton));
+  }
+
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   {
     // kIPHSwitchProfileFeature:
@@ -264,6 +279,16 @@ void FeaturePromoRegistry::RegisterKnownFeatures() {
 
     RegisterFeature(feature_engagement::kIPHReadingListEntryPointFeature,
                     params, base::BindRepeating(GetReadingListStarView));
+  }
+
+  {
+    // kIPHReadingListInSidePanelFeature:
+    FeaturePromoBubbleParams params;
+    params.body_string_specifier = IDS_READING_LIST_IN_SIDE_PANEL_PROMO;
+    params.arrow = views::BubbleBorder::TOP_RIGHT;
+
+    RegisterFeature(feature_engagement::kIPHReadingListInSidePanelFeature,
+                    params, base::BindRepeating(GetSidePanelButton));
   }
 
   {

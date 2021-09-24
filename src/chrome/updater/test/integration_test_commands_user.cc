@@ -91,6 +91,11 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::ExpectAppUnregisteredExistenceCheckerPath(app_id);
   }
 
+  void ExpectAppVersion(const std::string& app_id,
+                        const base::Version& version) const override {
+    updater::test::ExpectAppVersion(kUpdaterScope, app_id, version);
+  }
+
   void SetActive(const std::string& app_id) const override {
     updater::test::SetActive(kUpdaterScope, app_id);
   }
@@ -107,12 +112,14 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::RunWake(kUpdaterScope, exit_code);
   }
 
-  void RegisterApp(const std::string& app_id) const override {
-    updater::test::RegisterApp(app_id);
+  void Update(const std::string& app_id) const override {
+    updater::test::Update(app_id);
   }
 
-  void RegisterTestApp() const override {
-    updater::test::RegisterTestApp(kUpdaterScope);
+  void UpdateAll() const override { updater::test::UpdateAll(); }
+
+  void RegisterApp(const std::string& app_id) const override {
+    updater::test::RegisterApp(app_id);
   }
 
   void WaitForServerExit() const override {

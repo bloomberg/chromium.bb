@@ -31,6 +31,7 @@
 
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -704,6 +705,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void BindTextFragmentReceiver(
       mojo::PendingReceiver<mojom::blink::TextFragmentReceiver> receiver);
+
+  void CreateTextFragmentHandler();
 
 #if defined(OS_MAC)
   void ResetTextInputHostForTesting();

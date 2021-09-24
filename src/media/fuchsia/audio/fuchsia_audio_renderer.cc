@@ -29,22 +29,22 @@ absl::optional<std::unique_ptr<fuchsia::media::Compression>>
 GetFuchsiaCompressionFromDecoderConfig(AudioDecoderConfig config) {
   auto compression = std::make_unique<fuchsia::media::Compression>();
   switch (config.codec()) {
-    case kCodecAAC:
+    case AudioCodec::kAAC:
       compression->type = fuchsia::media::AUDIO_ENCODING_AAC;
       break;
-    case kCodecMP3:
+    case AudioCodec::kMP3:
       compression->type = fuchsia::media::AUDIO_ENCODING_MP3;
       break;
-    case kCodecVorbis:
+    case AudioCodec::kVorbis:
       compression->type = fuchsia::media::AUDIO_ENCODING_VORBIS;
       break;
-    case kCodecOpus:
+    case AudioCodec::kOpus:
       compression->type = fuchsia::media::AUDIO_ENCODING_OPUS;
       break;
-    case kCodecFLAC:
+    case AudioCodec::kFLAC:
       compression->type = fuchsia::media::AUDIO_ENCODING_FLAC;
       break;
-    case kCodecPCM:
+    case AudioCodec::kPCM:
       compression.reset();
       break;
 
@@ -74,6 +74,35 @@ GetFuchsiaSampleFormatFromSampleFormat(SampleFormat sample_format) {
     default:
       return absl::nullopt;
   }
+}
+
+// Helper that converts a PCM stream in kStreamFormatS24 to the layout
+// expected by AudioConsumer (i.e. SIGNED_24_IN_32).
+scoped_refptr<media::DecoderBuffer> PreparePcm24Buffer(
+    scoped_refptr<media::DecoderBuffer> buffer) {
+  static_assert(ARCH_CPU_LITTLE_ENDIAN,
+                "Only little-endian CPUs are supported.");
+
+  size_t samples = buffer->data_size() / 3;
+  scoped_refptr<media::DecoderBuffer> result =
+      base::MakeRefCounted<media::DecoderBuffer>(samples * 4);
+  for (size_t i = 0; i < samples - 1; ++i) {
+    reinterpret_cast<uint32_t*>(result->writable_data())[i] =
+        *reinterpret_cast<const uint32_t*>(buffer->data() + i * 3) & 0x00ffffff;
+  }
+  size_t last_sample = samples - 1;
+  reinterpret_cast<uint32_t*>(result->writable_data())[last_sample] =
+      buffer->data()[last_sample * 3] |
+      (buffer->data()[last_sample * 3 + 1] << 8) |
+      (buffer->data()[last_sample * 3 + 2] << 16);
+
+  result->set_timestamp(buffer->timestamp());
+  result->set_duration(buffer->duration());
+
+  if (buffer->decrypt_config())
+    result->set_decrypt_config(buffer->decrypt_config()->Clone());
+
+  return result;
 }
 
 }  // namespace
@@ -124,7 +153,7 @@ void FuchsiaAudioRenderer::Initialize(DemuxerStream* stream,
   // produce decoded stream without ADTS headers which are required for AAC
   // streams in AudioConsumer.
   // TODO(crbug.com/1120095): Reconsider this logic.
-  if (stream->audio_decoder_config().codec() == kCodecAAC) {
+  if (stream->audio_decoder_config().codec() == AudioCodec::kAAC) {
     stream->EnableBitstreamConverter();
   }
 
@@ -208,7 +237,7 @@ void FuchsiaAudioRenderer::InitializeStreamSink() {
   stream_type.frames_per_second = config.samples_per_second();
 
   // Set sample_format for uncompressed streams.
-  if (!compression) {
+  if (!compression.value()) {
     absl::optional<fuchsia::media::AudioSampleFormat> sample_format =
         GetFuchsiaSampleFormatFromSampleFormat(config.sample_format());
     if (!sample_format) {
@@ -422,6 +451,10 @@ void FuchsiaAudioRenderer::OnError(PipelineStatus status) {
   stream_sink_.Unbind();
   sysmem_buffer_stream_.reset();
 
+  if (is_demuxer_read_pending_) {
+    drop_next_demuxer_read_result_ = true;
+  }
+
   if (init_cb_) {
     std::move(init_cb_).Run(status);
   } else if (client_) {
@@ -577,6 +610,14 @@ void FuchsiaAudioRenderer::OnDemuxerStreamReadDone(
     last_packet_timestamp_ = buffer->timestamp();
     if (buffer->duration() != kNoTimestamp)
       last_packet_timestamp_ += buffer->duration();
+  }
+
+  // Update layout for 24-bit PCM streams.
+  if (!buffer->end_of_stream() &&
+      demuxer_stream_->audio_decoder_config().codec() == AudioCodec::kPCM &&
+      demuxer_stream_->audio_decoder_config().sample_format() ==
+          kSampleFormatS24) {
+    buffer = PreparePcm24Buffer(std::move(buffer));
   }
 
   sysmem_buffer_stream_->EnqueueBuffer(std::move(buffer));

@@ -12,13 +12,13 @@
 #include "include/private/SkTArray.h"
 #include "include/sksl/DSLBlock.h"
 #include "include/sksl/DSLCase.h"
-#include "include/sksl/DSLErrorHandling.h"
 #include "include/sksl/DSLExpression.h"
 #include "include/sksl/DSLFunction.h"
 #include "include/sksl/DSLStatement.h"
 #include "include/sksl/DSLType.h"
 #include "include/sksl/DSLVar.h"
 #include "include/sksl/DSLWrapper.h"
+#include "include/sksl/SkSLErrorReporter.h"
 
 #define SKSL_DSL_PARSER 0
 
@@ -59,16 +59,15 @@ void End();
 std::unique_ptr<SkSL::Program> ReleaseProgram(std::unique_ptr<SkSL::String> source = nullptr);
 
 /**
- * Returns the ErrorHandler which will be notified of any errors that occur during DSL calls. The
- * default error handler is null, which means any errors encountered will be fatal.
+ * Returns the ErrorReporter which will be notified of any errors that occur during DSL calls. The
+ * default error reporter aborts on any error.
  */
-ErrorHandler* GetErrorHandler();
+ErrorReporter& GetErrorReporter();
 
 /**
- * Installs an ErrorHandler which will be notified of any errors that occur during DSL calls. If
- * no ErrorHandler is installed, any errors will be fatal.
+ * Installs an ErrorReporter which will be notified of any errors that occur during DSL calls.
  */
-void SetErrorHandler(ErrorHandler* errorHandler);
+void SetErrorReporter(ErrorReporter* errorReporter);
 
 DSLGlobalVar sk_FragColor();
 
@@ -77,14 +76,24 @@ DSLGlobalVar sk_FragCoord();
 DSLExpression sk_Position();
 
 /**
+ * #extension <name> : enable
+ */
+void AddExtension(skstd::string_view name, PositionInfo pos = PositionInfo::Capture());
+
+/**
  * break;
  */
-DSLStatement Break();
+DSLStatement Break(PositionInfo pos = PositionInfo::Capture());
 
 /**
  * continue;
  */
-DSLStatement Continue();
+DSLStatement Continue(PositionInfo pos = PositionInfo::Capture());
+
+/**
+ * Adds a modifiers declaration to the current program.
+ */
+void Declare(const DSLModifiers& modifiers, PositionInfo pos = PositionInfo::Capture());
 
 /**
  * Creates a local variable declaration statement.
@@ -117,7 +126,7 @@ DSLCase Default(Statements... statements) {
 /**
  * discard;
  */
-DSLStatement Discard();
+DSLStatement Discard(PositionInfo pos = PositionInfo::Capture());
 
 /**
  * do stmt; while (test);
@@ -156,7 +165,8 @@ DSLStatement StaticIf(DSLExpression test, DSLStatement ifTrue,
                       DSLStatement ifFalse = DSLStatement(),
                       PositionInfo pos = PositionInfo::Capture());
 
-DSLPossibleStatement StaticSwitch(DSLExpression value, SkTArray<DSLCase> cases);
+DSLPossibleStatement StaticSwitch(DSLExpression value, SkTArray<DSLCase> cases,
+                                  PositionInfo info = PositionInfo::Capture());
 
 /**
  * @switch (value) { cases }
@@ -169,7 +179,8 @@ DSLPossibleStatement StaticSwitch(DSLExpression value, Cases... cases) {
     return StaticSwitch(std::move(value), std::move(caseArray));
 }
 
-DSLPossibleStatement Switch(DSLExpression value, SkTArray<DSLCase> cases);
+DSLPossibleStatement Switch(DSLExpression value, SkTArray<DSLCase> cases,
+                            PositionInfo info = PositionInfo::Capture());
 
 /**
  * switch (value) { cases }

@@ -105,9 +105,6 @@
 
 namespace {
 
-// Max number of users to show.
-const size_t kMaxUsers = 18;
-
 // Timeout to delay first notification about offline state for a
 // current network.
 constexpr base::TimeDelta kOfflineTimeout = base::TimeDelta::FromSeconds(1);
@@ -386,16 +383,6 @@ void SigninScreenHandler::SetOfflineTimeoutForTesting(
     base::TimeDelta offline_timeout) {
   is_offline_timeout_for_test_set_ = true;
   offline_timeout_for_test_ = offline_timeout;
-}
-
-// TODO (crbug.com/1168114): Such method should be implemented in
-// native-view-based UI, and be removed here.
-bool SigninScreenHandler::GetKeyboardRemappedPrefValue(
-    const std::string& pref_name,
-    int* value) {
-  return focused_pod_account_id_ && focused_pod_account_id_->is_valid() &&
-         user_manager::known_user::GetIntegerPref(*focused_pod_account_id_,
-                                                  pref_name, value);
 }
 
 // SigninScreenHandler, private: -----------------------------------------------
@@ -720,10 +707,7 @@ void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
   if (!webui_visible_) {
     // There might be multiple messages from OOBE UI so send notifications after
     // the first one only.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
+    session_manager::SessionManager::Get()->NotifyLoginOrLockScreenVisible();
     TRACE_EVENT_NESTABLE_ASYNC_END0(
         "ui", "ShowLoginWebUI",
         TRACE_ID_WITH_SCOPE(LoginDisplayHostWebUI::kShowLoginWebUIid,
@@ -759,39 +743,6 @@ void SigninScreenHandler::HandleShowLoadingTimeoutError() {
 
 void SigninScreenHandler::HandleNoPodFocused() {
   focused_pod_account_id_.reset();
-}
-
-bool SigninScreenHandler::AllAllowlistedUsersPresent() {
-  CrosSettings* cros_settings = CrosSettings::Get();
-  bool allow_new_user = false;
-  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  if (allow_new_user)
-    return false;
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  const user_manager::UserList& users = user_manager->GetUsers();
-  if (!delegate_ || users.size() > kMaxUsers) {
-    return false;
-  }
-
-  bool allow_family_link = false;
-  cros_settings->GetBoolean(kAccountsPrefFamilyLinkAccountsAllowed,
-                            &allow_family_link);
-  if (allow_family_link)
-    return false;
-
-  const base::ListValue* allowlist = nullptr;
-  if (!cros_settings->GetList(kAccountsPrefUsers, &allowlist) || !allowlist)
-    return false;
-  for (size_t i = 0; i < allowlist->GetSize(); ++i) {
-    std::string allowlisted_user;
-    // NB: Wildcards in the allowlist are also detected as not present here.
-    if (!allowlist->GetString(i, &allowlisted_user) ||
-        !user_manager->IsKnownUser(
-            AccountId::FromUserEmail(allowlisted_user))) {
-      return false;
-    }
-  }
-  return true;
 }
 
 bool SigninScreenHandler::IsGaiaVisible() {

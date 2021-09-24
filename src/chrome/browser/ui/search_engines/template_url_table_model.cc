@@ -116,6 +116,7 @@ void TemplateURLTableModel::Add(int index,
   data.SetShortName(short_name);
   data.SetKeyword(keyword);
   data.SetURL(url);
+  data.is_active = TemplateURLData::ActiveStatus::kTrue;
   template_url_service_->Add(std::make_unique<TemplateURL>(data));
 }
 
@@ -166,6 +167,13 @@ void TemplateURLTableModel::MakeDefaultTemplateURL(int index) {
     return;
 
   template_url_service_->SetUserSelectedDefaultSearchProvider(keyword);
+}
+
+void TemplateURLTableModel::SetIsActiveTemplateURL(int index, bool is_active) {
+  DCHECK(index >= 0 && index <= RowCount());
+  TemplateURL* keyword = GetTemplateURL(index);
+
+  template_url_service_->SetIsActiveTemplateURL(keyword, is_active);
 }
 
 void TemplateURLTableModel::OnTemplateURLServiceChanged() {

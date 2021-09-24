@@ -56,7 +56,7 @@ SecurePaymentConfirmationApp::SecurePaymentConfirmationApp(
     const url::Origin& merchant_origin,
     base::WeakPtr<PaymentRequestSpec> spec,
     mojom::SecurePaymentConfirmationRequestPtr request,
-    std::unique_ptr<autofill::InternalAuthenticator> authenticator)
+    std::unique_ptr<webauthn::InternalAuthenticator> authenticator)
     : PaymentApp(/*icon_resource_id=*/0, PaymentApp::Type::INTERNAL),
       content::WebContentsObserver(web_contents_to_observe),
       authenticator_frame_routing_id_(
@@ -69,8 +69,6 @@ SecurePaymentConfirmationApp::SecurePaymentConfirmationApp(
       spec_(spec),
       request_(std::move(request)),
       authenticator_(std::move(authenticator)) {
-  DCHECK(web_contents_to_observe->GetMainFrame()->GetGlobalId() ==
-         authenticator_frame_routing_id_);
   DCHECK(!credential_id_.empty());
 
   app_method_names_.insert(methods::kSecurePaymentConfirmation);
@@ -112,13 +110,7 @@ void SecurePaymentConfirmationApp::InvokePaymentApp(
   options->challenge = request_->challenge;
   authenticator_->SetPaymentOptions(blink::mojom::PaymentOptions::New(
       spec_->GetTotal(/*selected_app=*/this)->amount.Clone(),
-      request_->instrument.Clone()));
-
-  // We are nullifying the security check by design, and the origin that created
-  // the credential isn't saved anywhere.
-  authenticator_->SetEffectiveOrigin(url::Origin::Create(
-      GURL(base::StrCat({url::kHttpsScheme, url::kStandardSchemeSeparator,
-                         effective_relying_party_identity_}))));
+      request_->instrument.Clone(), request_->payee_origin));
 
   authenticator_->GetAssertion(
       std::move(options),

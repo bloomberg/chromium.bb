@@ -336,7 +336,7 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
     RespectImageOrientationEnum respect_image_orientation,
     PhysicalBoxSides sides_to_include,
     bool is_inline,
-    bool is_painting_scrolling_background)
+    bool is_painting_background_in_contents_space)
     : image(layer.GetImage()),
       color(bg_color),
       respect_image_orientation(respect_image_orientation),
@@ -376,7 +376,7 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
   // BorderFillBox radius clipping is taken care of by
   // BackgroundBleedClip{Only,Layer}
   is_rounded_fill =
-      has_rounded_border && !is_painting_scrolling_background &&
+      has_rounded_border && !is_painting_background_in_contents_space &&
       !(is_border_fill && BleedAvoidanceIsClipping(bleed_avoidance));
   is_printing = doc.Printing();
 
@@ -882,9 +882,16 @@ bool ShouldApplyBlendOperation(const BoxPainterBase::FillLayerInfo& info,
 
 }  // anonymous namespace
 
+LayoutRectOutsets BoxPainterBase::ComputeSnappedBorders() const {
+  const LayoutRectOutsets border_widths = ComputeBorders();
+  return LayoutRectOutsets(
+      border_widths.Top().ToInt(), border_widths.Right().ToInt(),
+      border_widths.Bottom().ToInt(), border_widths.Left().ToInt());
+}
+
 LayoutRectOutsets BoxPainterBase::AdjustedBorderOutsets(
     const FillLayerInfo& info) const {
-  return AdjustOutsetsForEdgeInclusion(ComputeBorders(), info);
+  return AdjustOutsetsForEdgeInclusion(ComputeSnappedBorders(), info);
 }
 
 void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
@@ -900,7 +907,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
 
   const FillLayerInfo fill_layer_info =
       GetFillLayerInfo(color, bg_layer, bleed_avoidance,
-                       IsPaintingScrollingBackground(paint_info));
+                       IsPaintingBackgroundInContentsSpace(paint_info));
   // If we're not actually going to paint anything, abort early.
   if (!fill_layer_info.should_paint_image &&
       !fill_layer_info.should_paint_color)
@@ -931,7 +938,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
     }
   }
 
-  LayoutRectOutsets border = ComputeBorders();
+  LayoutRectOutsets border = ComputeSnappedBorders();
   LayoutRectOutsets padding = ComputePadding();
   LayoutRectOutsets border_padding_insets = -(border + padding);
   FloatRoundedRect border_rect = RoundedBorderRectForClip(

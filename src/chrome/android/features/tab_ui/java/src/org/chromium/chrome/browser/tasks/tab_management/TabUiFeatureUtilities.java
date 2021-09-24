@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
-import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.Random;
@@ -92,6 +91,11 @@ public class TabUiFeatureUtilities {
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, TAB_GROUP_AUTO_CREATION_PARAM, true);
 
+    private static final String TAB_GROUP_SHARING_PARAM = "enable_tab_group_sharing";
+    public static final BooleanCachedFieldTrialParameter ENABLE_TAB_GROUP_SHARING =
+            new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
+                    TAB_GROUP_SHARING_PARAM, false);
+
     private static Boolean sTabManagementModuleSupportedForTesting;
 
     /**
@@ -137,7 +141,7 @@ public class TabUiFeatureUtilities {
             return false;
         }
 
-        return !DeviceClassManager.enableAccessibilityLayout()
+        return !DeviceClassManager.enableAccessibilityLayout(context)
                 && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
                 && isTabManagementModuleSupported();
     }
@@ -180,15 +184,14 @@ public class TabUiFeatureUtilities {
         Log.d(TAG, "GTS.MinMemoryMB = " + ZOOMING_MIN_MEMORY.getValue());
         return CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
                 && Build.VERSION.SDK_INT >= ZOOMING_MIN_SDK.getValue()
-                && SysUtils.amountOfPhysicalMemoryKB() / 1024 >= ZOOMING_MIN_MEMORY.getValue()
-                && !StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled();
+                && SysUtils.amountOfPhysicalMemoryKB() / 1024 >= ZOOMING_MIN_MEMORY.getValue();
     }
 
     /**
      * @return Whether the instant start is supported.
      */
-    public static boolean supportInstantStart(boolean isTablet) {
-        return !DeviceClassManager.enableAccessibilityLayout()
+    public static boolean supportInstantStart(boolean isTablet, Context context) {
+        return !DeviceClassManager.enableAccessibilityLayout(context)
                 && CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START) && !isTablet
                 && !SysUtils.isLowEndDevice();
     }

@@ -1453,42 +1453,11 @@ class InputApiUnittest(PresubmitTestsBase):
         self.fake_change, './PRESUBMIT.py', False, None, False)
     self.assertEqual(len(input_api.DEFAULT_FILES_TO_CHECK), 24)
     self.assertEqual(len(input_api.DEFAULT_FILES_TO_SKIP), 12)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_WHITE_LIST)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_ALLOW_LIST)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLACK_LIST)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLOCK_LIST)
 
     input_api.DEFAULT_FILES_TO_CHECK = (r'.+\.c$',)
     input_api.DEFAULT_FILES_TO_SKIP = (r'.+\.patch$', r'.+\.diff')
     self.assertEqual(len(input_api.DEFAULT_FILES_TO_CHECK), 1)
     self.assertEqual(len(input_api.DEFAULT_FILES_TO_SKIP), 2)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_WHITE_LIST)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_ALLOW_LIST)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLACK_LIST)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLOCK_LIST)
-
-    # Test backward compatiblity of setting old property names
-    # TODO(https://crbug.com/1098562): Remove once no longer used
-    input_api.DEFAULT_WHITE_LIST = ()
-    input_api.DEFAULT_BLACK_LIST = ()
-    self.assertEqual(len(input_api.DEFAULT_FILES_TO_CHECK), 0)
-    self.assertEqual(len(input_api.DEFAULT_FILES_TO_SKIP), 0)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_WHITE_LIST)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_ALLOW_LIST)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLACK_LIST)
-    self.assertEqual(
-        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLOCK_LIST)
 
   def testCustomFilter(self):
     def FilterSourceFile(affected_file):

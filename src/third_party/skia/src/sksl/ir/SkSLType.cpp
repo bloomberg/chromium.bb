@@ -13,12 +13,15 @@
 #include "src/sksl/ir/SkSLConstructorArrayCast.h"
 #include "src/sksl/ir/SkSLConstructorCompoundCast.h"
 #include "src/sksl/ir/SkSLConstructorScalarCast.h"
+#include "src/sksl/ir/SkSLExternalFunctionReference.h"
 #include "src/sksl/ir/SkSLFunctionReference.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLTypeReference.h"
 
 namespace SkSL {
+
+static constexpr int kMaxStructDepth = 8;
 
 class ArrayType final : public Type {
 public:
@@ -28,8 +31,8 @@ public:
         : INHERITED(name, abbrev, kTypeKind)
         , fComponentType(componentType)
         , fCount(count) {
-        // Allow either explicitly-sized or unsized arrays.
-        SkASSERT(count > 0 || count == kUnsizedArray);
+        // Only allow explicitly-sized arrays.
+        SkASSERT(count > 0);
         // Disallow multi-dimensional arrays.
         SkASSERT(!componentType.is<ArrayType>());
     }
@@ -48,6 +51,10 @@ public:
 
     int bitWidth() const override {
         return this->componentType().bitWidth();
+    }
+
+    bool allowedInES2() const override {
+        return fComponentType.allowedInES2();
     }
 
 private:
@@ -128,7 +135,7 @@ class ScalarType final : public Type {
 public:
     static constexpr TypeKind kTypeKind = TypeKind::kScalar;
 
-    ScalarType(const char* name, const char* abbrev, NumberKind numberKind, int8_t priority,
+    ScalarType(skstd::string_view name, const char* abbrev, NumberKind numberKind, int8_t priority,
                int8_t bitWidth)
         : INHERITED(name, abbrev, kTypeKind)
         , fNumberKind(numberKind)
@@ -157,6 +164,10 @@ public:
 
     bool isScalar() const override {
         return true;
+    }
+
+    bool allowedInES2() const override {
+        return fNumberKind != NumberKind::kUnsigned;
     }
 
 private:
@@ -199,6 +210,10 @@ public:
 
     bool isMatrix() const override {
         return true;
+    }
+
+    bool allowedInES2() const override {
+        return fColumns == fRows;
     }
 
 private:
@@ -306,6 +321,12 @@ public:
         return true;
     }
 
+    bool allowedInES2() const override {
+        return std::all_of(fFields.begin(), fFields.end(), [](const Field& f) {
+            return f.fType->allowedInES2();
+        });
+    }
+
 private:
     using INHERITED = Type;
 
@@ -344,6 +365,10 @@ public:
         return true;
     }
 
+    bool allowedInES2() const override {
+        return fComponentType.allowedInES2();
+    }
+
 private:
     using INHERITED = Type;
 
@@ -353,9 +378,7 @@ private:
 
 String Type::getArrayName(int arraySize) const {
     skstd::string_view name = this->name();
-    return (arraySize != kUnsizedArray)
-                   ? String::printf("%.*s[%d]", (int)name.size(), name.data(), arraySize)
-                   : String::printf("%.*s[]", (int)name.size(), name.data());
+    return String::printf("%.*s[%d]", (int)name.size(), name.data(), arraySize);
 }
 
 std::unique_ptr<Type> Type::MakeArrayType(skstd::string_view name, const Type& componentType,
@@ -373,7 +396,7 @@ std::unique_ptr<Type> Type::MakeLiteralType(const char* name, const Type& scalar
     return std::make_unique<LiteralType>(name, scalarType, priority);
 }
 
-std::unique_ptr<Type> Type::MakeMatrixType(const char* name, const char* abbrev,
+std::unique_ptr<Type> Type::MakeMatrixType(skstd::string_view name, const char* abbrev,
                                            const Type& componentType, int columns, int8_t rows) {
     return std::make_unique<MatrixType>(name, abbrev, componentType, columns, rows);
 }
@@ -387,7 +410,7 @@ std::unique_ptr<Type> Type::MakeSpecialType(const char* name, const char* abbrev
     return std::unique_ptr<Type>(new Type(name, abbrev, typeKind));
 }
 
-std::unique_ptr<Type> Type::MakeScalarType(const char* name, const char* abbrev,
+std::unique_ptr<Type> Type::MakeScalarType(skstd::string_view name, const char* abbrev,
                                            Type::NumberKind numberKind, int8_t priority,
                                            int8_t bitWidth) {
     return std::make_unique<ScalarType>(name, abbrev, numberKind, priority, bitWidth);
@@ -406,7 +429,7 @@ std::unique_ptr<Type> Type::MakeTextureType(const char* name, SpvDim_ dimensions
                                          isMultisampled, isSampled);
 }
 
-std::unique_ptr<Type> Type::MakeVectorType(const char* name, const char* abbrev,
+std::unique_ptr<Type> Type::MakeVectorType(skstd::string_view name, const char* abbrev,
                                            const Type& componentType, int columns) {
     return std::make_unique<VectorType>(name, abbrev, componentType, columns);
 }
@@ -465,12 +488,12 @@ const Type* Type::applyPrecisionQualifiers(const Context& context,
     if (!ProgramConfig::IsRuntimeEffect(context.fConfig->fKind)) {
         // We want to discourage precision modifiers internally. Instead, use the type that
         // corresponds to the precision you need. (e.g. half vs float, short vs int)
-        context.errors().error(offset, "precision qualifiers are not allowed");
+        context.fErrors->error(offset, "precision qualifiers are not allowed");
         return nullptr;
     }
 
     if ((int(lowp) + int(mediump) + int(highp)) != 1) {
-        context.errors().error(offset, "only one precision qualifier can be used");
+        context.fErrors->error(offset, "only one precision qualifier can be used");
         return nullptr;
     }
 
@@ -509,7 +532,7 @@ const Type* Type::applyPrecisionQualifiers(const Context& context,
         }
     }
 
-    context.errors().error(offset, "type '" + this->displayName() +
+    context.fErrors->error(offset, "type '" + this->displayName() +
                                    "' does not support precision qualifiers");
     return nullptr;
 }
@@ -683,12 +706,12 @@ std::unique_ptr<Expression> Type::coerceExpression(std::unique_ptr<Expression> e
         return nullptr;
     }
     const int offset = expr->fOffset;
-    if (expr->is<FunctionReference>()) {
-        context.errors().error(offset, "expected '(' to begin function call");
+    if (expr->is<FunctionReference>() || expr->is<ExternalFunctionReference>()) {
+        context.fErrors->error(offset, "expected '(' to begin function call");
         return nullptr;
     }
     if (expr->is<TypeReference>()) {
-        context.errors().error(offset, "expected '(' to begin constructor invocation");
+        context.fErrors->error(offset, "expected '(' to begin constructor invocation");
         return nullptr;
     }
     if (expr->type() == *this) {
@@ -697,7 +720,7 @@ std::unique_ptr<Expression> Type::coerceExpression(std::unique_ptr<Expression> e
 
     const Program::Settings& settings = context.fConfig->fSettings;
     if (!expr->coercionCost(*this).isPossible(settings.fAllowNarrowingConversions)) {
-        context.errors().error(offset, "expected '" + this->displayName() + "', but found '" +
+        context.fErrors->error(offset, "expected '" + this->displayName() + "', but found '" +
                                        expr->type().displayName() + "'");
         return nullptr;
     }
@@ -711,7 +734,7 @@ std::unique_ptr<Expression> Type::coerceExpression(std::unique_ptr<Expression> e
     if (this->isArray()) {
         return ConstructorArrayCast::Make(context, offset, *this, std::move(expr));
     }
-    context.errors().error(offset, "cannot construct '" + this->displayName() + "'");
+    context.fErrors->error(offset, "cannot construct '" + this->displayName() + "'");
     return nullptr;
 }
 
@@ -728,34 +751,104 @@ bool Type::isOrContainsArray() const {
     return this->isArray();
 }
 
+
+bool Type::containsPrivateFields() const {
+    if (this->isPrivate()) {
+        return true;
+    }
+    if (this->isStruct()) {
+        for (const auto& f : this->fields()) {
+            if (f.fType->containsPrivateFields()) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Type::isTooDeeplyNested(int limit) const {
+    if (limit < 0) {
+        return true;
+    }
+
+    if (this->isStruct()) {
+        for (const Type::Field& f : this->fields()) {
+            if (f.fType->isTooDeeplyNested(limit - 1)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool Type::isTooDeeplyNested() const {
+    return this->isTooDeeplyNested(kMaxStructDepth);
+}
+
 bool Type::checkForOutOfRangeLiteral(const Context& context, const Expression& expr) const {
     bool foundError = false;
     const Type& baseType = this->componentType();
     if (baseType.isInteger()) {
         // Replace constant expressions with their corresponding values.
         const Expression* valueExpr = ConstantFolder::GetConstantValueForVariable(expr);
-
-        // Iterate over every constant subexpression in the value.
-        int numSlots = valueExpr->type().slotCount();
-        for (int slot = 0; slot < numSlots; ++slot) {
-            const Expression* subexpr = valueExpr->getConstantSubexpression(slot);
-            if (!subexpr || !subexpr->is<IntLiteral>()) {
-                continue;
-            }
-            // Look for an IntLiteral value that is out of range for the corresponding type.
-            SKSL_INT value = subexpr->as<IntLiteral>().value();
-            if (value < baseType.minimumValue() || value > baseType.maximumValue()) {
-                // We found a value that can't fit in the type. Flag it as an error.
-                context.errors().error(expr.fOffset,
-                                       String("integer is out of range for type '") +
-                                       this->displayName().c_str() + "': " + to_string(value));
-                foundError = true;
+        if (valueExpr->allowsConstantSubexpressions()) {
+            // Iterate over every constant subexpression in the value.
+            int numSlots = valueExpr->type().slotCount();
+            for (int slot = 0; slot < numSlots; ++slot) {
+                const Expression* subexpr = valueExpr->getConstantSubexpression(slot);
+                if (!subexpr || !subexpr->is<IntLiteral>()) {
+                    continue;
+                }
+                // Look for an IntLiteral value that is out of range for the corresponding type.
+                SKSL_INT value = subexpr->as<IntLiteral>().value();
+                if (value < baseType.minimumValue() || value > baseType.maximumValue()) {
+                    // We found a value that can't fit in the type. Flag it as an error.
+                    context.fErrors->error(expr.fOffset,
+                                           String("integer is out of range for type '") +
+                                           this->displayName().c_str() + "': " + to_string(value));
+                    foundError = true;
+                }
             }
         }
     }
 
     // We don't need range checks for floats or booleans; any matched-type value is acceptable.
     return foundError;
+}
+
+SKSL_INT Type::convertArraySize(const Context& context, std::unique_ptr<Expression> size) const {
+    size = context.fTypes.fInt->coerceExpression(std::move(size), context);
+    if (!size) {
+        return 0;
+    }
+    if (this->isArray()) {
+        context.fErrors->error(size->fOffset, "multi-dimensional arrays are not supported");
+        return 0;
+    }
+    if (this->isVoid()) {
+        context.fErrors->error(size->fOffset, "type 'void' may not be used in an array");
+        return 0;
+    }
+    if (this->isOpaque()) {
+        context.fErrors->error(size->fOffset, "opaque type '" + this->name() +
+                                              "' may not be used in an array");
+        return 0;
+    }
+    if (!size->is<IntLiteral>()) {
+        context.fErrors->error(size->fOffset, "array size must be an integer");
+        return 0;
+    }
+    SKSL_INT count = size->as<IntLiteral>().value();
+    if (count <= 0) {
+        context.fErrors->error(size->fOffset, "array size must be positive");
+        return 0;
+    }
+    if (!SkTFitsIn<int32_t>(count)) {
+        context.fErrors->error(size->fOffset, "array size is too large");
+        return 0;
+    }
+    return static_cast<int>(count);
 }
 
 }  // namespace SkSL

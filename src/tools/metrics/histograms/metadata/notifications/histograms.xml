@@ -21,6 +21,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<variants name="MacOSNotificationStyle">
+  <variant name="Alert" summary="Alert: Stays on screen"/>
+  <variant name="Alerts">
+    <obsolete>
+      Replaced by Alert in 2021/09.
+    </obsolete>
+  </variant>
+  <variant name="Banner" summary="Banner: Auto dismisses"/>
+  <variant name="Banners">
+    <obsolete>
+      Replaced by Banner in 2021/09.
+    </obsolete>
+  </variant>
+</variants>
+
 <histogram name="Notifications.Actions" enum="NotificationActionType"
     expires_after="M85">
   <owner>dewittj@chromium.org</owner>
@@ -309,7 +324,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     units="minutes" expires_after="2021-12-26">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
-  <owner>adelm@google.com</owner>
   <summary>
     Records the age of the oldest notification for an origin. Logged after
     handling a push event for that origin.
@@ -442,10 +456,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     will continue to pass along the event. Logged on every action received by
     the system (click or close) on any {Style} style notification.
   </summary>
-  <token key="Style">
-    <variant name="Alert"/>
-    <variant name="Banner"/>
-  </token>
+  <token key="Style" variants="MacOSNotificationStyle"/>
 </histogram>
 
 <histogram name="Notifications.macOS.Delivered.{Style}" enum="BooleanSuccess"
@@ -456,10 +467,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Whether delivering a notification to the system was successful or not.
     Logged every time we pass a notification with {Style} style to the system.
   </summary>
-  <token key="Style">
-    <variant name="Alert"/>
-    <variant name="Banner"/>
-  </token>
+  <token key="Style" variants="MacOSNotificationStyle"/>
 </histogram>
 
 <histogram name="Notifications.macOS.LaunchedViaNotificationAction"
@@ -562,9 +570,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram
+    name="Notifications.Permissions.UNNotification.{Style}.PermissionRequest"
+    enum="UNNotificationPermissionRequestResult" expires_after="M98">
+  <owner>knollr@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    The permission request result for sending out UNNotifications through the
+    MacNotificationServiceUN. This is recorded when instantiating the service
+    which happens at Chrome startup and each time we start the service after
+    shutting it down when there were no more notifications on screen.
+  </summary>
+  <token key="Style" variants="MacOSNotificationStyle"/>
+</histogram>
+
+<histogram
     name="Notifications.Permissions.UNNotification.{Style}.PermissionStatus"
-    enum="UNNotificationPermissionStatus" expires_after="2021-10-25">
-  <owner>adelm@google.com</owner>
+    enum="UNNotificationPermissionStatus" expires_after="M98">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -573,15 +594,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     which happens at Chrome startup and each time we start the service after
     shutting it down when there were no more notifications on screen.
   </summary>
-  <token key="Style">
-    <variant name="Alerts"/>
-    <variant name="Banners"/>
-  </token>
+  <token key="Style" variants="MacOSNotificationStyle"/>
 </histogram>
 
 <histogram name="Notifications.Permissions.UNNotification.{Style}.Style"
-    enum="UNNotificationStyle" expires_after="M94">
-  <owner>adelm@google.com</owner>
+    enum="UNNotificationStyle" expires_after="M98">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -591,10 +608,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     service after shutting it down when there were no more notifications on
     screen.
   </summary>
-  <token key="Style">
-    <variant name="Alerts"/>
-    <variant name="Banners"/>
-  </token>
+  <token key="Style" variants="MacOSNotificationStyle"/>
 </histogram>
 
 <histogram name="Notifications.PerNotificationActions"
@@ -658,7 +672,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.PersistentWebNotificationCloseResult"
-    enum="PlatformNotificationStatus" expires_after="2021-12-26">
+    enum="PlatformNotificationStatus" expires_after="2022-02-27">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -1007,7 +1021,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.CloseStatus"
-    enum="WindowsNotificationCloseStatus" expires_after="M94">
+    enum="WindowsNotificationCloseStatus" expires_after="M98">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1017,7 +1031,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.CreateToastManagerErrorCode"
-    enum="Hresult" expires_after="M94">
+    enum="Hresult" expires_after="M98">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1029,7 +1043,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.DisplayFailure" enum="Hresult"
-    expires_after="M94">
+    expires_after="M98">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1052,7 +1066,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.GetDisplayedLaunchIdStatus"
-    enum="WindowsNotificationGetDisplayedLaunchIdStatus" expires_after="M94">
+    enum="WindowsNotificationGetDisplayedLaunchIdStatus" expires_after="M98">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1063,7 +1077,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.GetDisplayedStatus"
-    enum="WindowsNotificationGetDisplayedStatus" expires_after="M94">
+    enum="WindowsNotificationGetDisplayedStatus" expires_after="M98">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1086,7 +1100,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.GetSettingPolicy"
-    enum="WindowsNotificationGetSettingPolicy" expires_after="M94">
+    enum="WindowsNotificationGetSettingPolicy" expires_after="M98">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1117,7 +1131,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.GetSettingStatusStartup"
-    enum="WindowsNotificationGetSettingStatus" expires_after="M94">
+    enum="WindowsNotificationGetSettingStatus" expires_after="M98">
   <owner>finnur@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
@@ -1138,7 +1152,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.HistoryStatus"
-    enum="WindowsNotificationHistoryStatus" expires_after="M94">
+    enum="WindowsNotificationHistoryStatus" expires_after="M98">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1158,7 +1172,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.OnFailedStatus"
-    enum="WindowsNotificationOnFailedStatus" expires_after="M94">
+    enum="WindowsNotificationOnFailedStatus" expires_after="M98">
   <owner>chengx@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1168,7 +1182,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.SetReadyCallbackStatus2"
-    enum="WindowsNotificationSetReadyCallbackStatus2" expires_after="M94">
+    enum="WindowsNotificationSetReadyCallbackStatus2" expires_after="M98">
   <owner>chengx@chromium.org</owner>
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
@@ -1179,7 +1193,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.ShowFailedErrorCode" enum="Hresult"
-    expires_after="M94">
+    expires_after="M98">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1190,7 +1204,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.StartMenuShortcutStatus"
-    enum="WindowsNotificationStartMenuShortcutStatus" expires_after="M94">
+    enum="WindowsNotificationStartMenuShortcutStatus" expires_after="M98">
   <owner>chengx@chromium.org</owner>
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>

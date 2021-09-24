@@ -17,6 +17,10 @@
 #include "ui/display/display_observer.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 
+class PrefChangeRegistrar;
+class PrefRegistrySimple;
+class PrefService;
+
 namespace aura {
 class Window;
 }  // namespace aura
@@ -45,6 +49,8 @@ class ASH_EXPORT PersistentDesksBarController
       delete;
   ~PersistentDesksBarController() override;
 
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
   const views::Widget* persistent_desks_bar_widget() const {
     return persistent_desks_bar_widget_.get();
   }
@@ -53,13 +59,12 @@ class ASH_EXPORT PersistentDesksBarController
     return persistent_desks_bar_view_;
   }
 
-  bool is_enabled() const { return is_enabled_; }
-
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
+  void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
 
   // OverviewObserver:
-  void OnOverviewModeWillStart() override;
+  void OnOverviewModeStarting() override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // DesksController::Observer:
@@ -91,6 +96,9 @@ class ASH_EXPORT PersistentDesksBarController
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
+  // Returns the value of the pref 'kBentoBarEnabled'.
+  bool IsEnabled() const;
+
   // Toggles the value of `is_enabled_` and destroys the bar if it is togggled
   // to false.
   void ToggleEnabledState();
@@ -104,17 +112,25 @@ class ASH_EXPORT PersistentDesksBarController
   // Destroys `persistent_desks_bar_widget_` and `persistent_desks_bar_view_`.
   void DestroyBarWidget();
 
+  // Updates the bar's status on window state changes.
+  void UpdateBarOnWindowStateChanges(aura::Window* window);
+
+  // Updates the bar's status when the given `window` is destroying.
+  void UpdateBarOnWindowDestroying(aura::Window* window);
+
  private:
   // Returns true if the persistent desks bar should be created and shown.
   bool ShouldPersistentDesksBarBeCreated() const;
+
+  // Updates bar's state on the pref `kBentoBarEnabled` changes.
+  void UpdateBarStateOnPrefChanges();
 
   views::UniqueWidgetPtr persistent_desks_bar_widget_;
   // The contents view of the above |persistent_desks_bar_widget_| if created.
   PersistentDesksBarView* persistent_desks_bar_view_ = nullptr;
 
-  // Showing the bar if it is enabled and hiding the bar if it is disabled. This
-  // can be set through the context menu of the bar.
-  bool is_enabled_ = true;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  PrefService* active_user_pref_service_ = nullptr;
 };
 
 }  // namespace ash

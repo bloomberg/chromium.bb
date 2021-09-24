@@ -23,6 +23,7 @@
     autocorrectionOccured,
     blur,
     busyChanged,
+    caretBoundsChanged,
     checkedStateChanged,
     checkedStateDescriptionChanged,
     childrenChanged,
@@ -305,7 +306,9 @@
     staticText,
     status,
     strong,
+    subscript,
     suggestion,
+    superscript,
     svgRoot,
     switch,
     tab,
@@ -575,7 +578,9 @@ enum IntentInputEventType {
 // A text boundary associated with an $(ref:automation.AutomationIntent).
 enum IntentTextBoundaryType {
   character,
-  format,
+  formatEnd,
+  formatStart,
+  formatStartOrEnd,
   lineEnd,
   lineStart,
   lineStartOrEnd,
@@ -811,8 +816,10 @@ enum SortDirectionType {
     static void moveToPreviousLineStartPosition();
     static void moveToNextLineEndPosition();
     static void moveToPreviousLineEndPosition();
+    static void moveToNextFormatStartPosition();
     static void moveToPreviousFormatStartPosition();
     static void moveToNextFormatEndPosition();
+    static void moveToPreviousFormatEndPosition();
     static void moveToNextParagraphStartPosition();
     static void moveToPreviousParagraphStartPosition();
     static void moveToNextParagraphEndPosition();
@@ -909,6 +916,9 @@ enum SortDirectionType {
 
     // The level of a heading or tree item.
     long? hierarchicalLevel;
+
+    // The current caret bounds in screen coordinates.
+    Rect? caretBounds;
 
     // The start and end index of each word in an inline text box.
     long[]? wordStarts;

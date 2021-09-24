@@ -108,7 +108,7 @@ class AutomationApiCanvasTest : public AutomationApiTest {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
   StartEmbeddedTestServer();
   const GURL url = GetURLForPath(kDomain, "/index.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   content::WebContents* const tab =
@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, SanityCheck) {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageLabels) {
   StartEmbeddedTestServer();
   const GURL url = GetURLForPath(kDomain, "/index.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Enable image labels.
   browser()->profile()->GetPrefs()->SetBoolean(
@@ -224,8 +224,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TableProperties) {
       << message_;
 }
 
-// Flaky on Mac: crbug.com/1235249
-#if defined(OS_MAC)
+// Flaky on Mac and Windows: crbug.com/1235249
+#if defined(OS_MAC) || defined(OS_WIN)
 #define MAYBE_TabsAutomationBooleanPermissions \
   DISABLED_TabsAutomationBooleanPermissions
 #else
@@ -239,8 +239,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest,
       << message_;
 }
 
-// Flaky on Mac: crbug.com/1235249
-#if defined(OS_MAC)
+// Flaky on Mac and Windows: crbug.com/1235249
+#if defined(OS_MAC) || defined(OS_WIN)
 #define MAYBE_TabsAutomationBooleanActions \
   DISABLED_TabsAutomationBooleanActions
 #else
@@ -268,8 +268,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest,
       << message_;
 }
 
-// Flaky on Mac: crbug.com/1235249
-#if defined(OS_MAC)
+// Flaky on Mac and Windows: crbug.com/1235249
+#if defined(OS_MAC) || defined(OS_WIN)
 #define MAYBE_CloseTab DISABLED_CloseTab
 #else
 #define MAYBE_CloseTab CloseTab

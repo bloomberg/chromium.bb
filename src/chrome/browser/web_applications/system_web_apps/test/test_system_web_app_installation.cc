@@ -13,13 +13,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_url_data_source.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/url_constants.h"
 #include "ui/webui/webui_allowlist.h"
@@ -269,7 +269,7 @@ std::unique_ptr<WebApplicationInfo> GenerateWebApplicationInfoForTestApp() {
   info->title = u"Test System App";
   info->theme_color = 0xFF00FF00;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
-  info->open_as_window = true;
+  info->user_display_mode = DisplayMode::kStandalone;
   return info;
 }
 
@@ -423,7 +423,7 @@ TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation() {
             info->title = u"Test System App";
             info->theme_color = 0xFF00FF00;
             info->display_mode = blink::mojom::DisplayMode::kStandalone;
-            info->open_as_window = true;
+            info->user_display_mode = DisplayMode::kStandalone;
             return info;
           })));
   auto factory = std::make_unique<TestSystemWebAppWebUIControllerFactory>(
@@ -590,7 +590,7 @@ CreateSystemAppDelegateWithWindowConfig(
         info->title = u"Test System App";
         info->theme_color = 0xFF00FF00;
         info->display_mode = blink::mojom::DisplayMode::kStandalone;
-        info->open_as_window = true;
+        info->user_display_mode = DisplayMode::kStandalone;
         return info;
       }));
 
@@ -697,7 +697,7 @@ TestSystemWebAppInstallation::CreateWebAppProviderWithNoSystemWebApps(
 
 void TestSystemWebAppInstallation::WaitForAppInstall() {
   base::RunLoop run_loop;
-  WebAppProvider::Get(profile_)
+  WebAppProvider::GetForTest(profile_)
       ->system_web_app_manager()
       .on_apps_synchronized()
       .Post(FROM_HERE, base::BindLambdaForTesting([&]() {
@@ -710,14 +710,15 @@ void TestSystemWebAppInstallation::WaitForAppInstall() {
 }
 
 AppId TestSystemWebAppInstallation::GetAppId() {
-  return WebAppProvider::Get(profile_)
+  return WebAppProvider::GetForTest(profile_)
       ->system_web_app_manager()
       .GetAppIdForSystemApp(type_.value())
       .value();
 }
 
 const GURL& TestSystemWebAppInstallation::GetAppUrl() {
-  return WebAppProvider::Get(profile_)->registrar().GetAppStartUrl(GetAppId());
+  return WebAppProvider::GetForTest(profile_)->registrar().GetAppStartUrl(
+      GetAppId());
 }
 
 SystemAppType TestSystemWebAppInstallation::GetType() {

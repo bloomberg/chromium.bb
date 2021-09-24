@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -70,7 +68,7 @@ export class ConsoleFilter {
     }
 
     if (message.type === SDK.ConsoleModel.FrontendMessageType.Command ||
-        message.type === SDK.ConsoleModel.FrontendMessageType.Result || message.isGroupMessage()) {
+        message.type === SDK.ConsoleModel.FrontendMessageType.Result) {
       return true;
     }
     if (message.level && !this.levelsMask[message.level as string]) {

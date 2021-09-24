@@ -1,33 +1,34 @@
 <style include="settings-shared">
-  .battery {
-    color: var(--google-green-500);
+  os-settings-bluetooth-device-battery-info {
+    padding-top: 3px;
   }
 </style>
 <div focus-row-container>
-  <!-- TODO(crbug.com/1010321): Populate with dynamic data. -->
-  <!-- TODO(crbug.com/1010321): Add a11y label. -->
   <div class="list-item"
       focus-row-control
       focus-type="rowWrapper"
       role="button"
-      selectable>
-    <!-- TODO(crbug.com/1010321): Add updated device type icon. -->
-    <iron-icon icon="os-settings:headset">
-    </iron-icon>
+      selectable
+      aria-label="[[getAriaLabel_(device, itemIndex, listSize)]]"
+      on-keydown="onKeydown_"
+      on-click="onSelected_">
+    <bluetooth-icon device="[[device]]"></bluetooth-icon>
     <div class="middle" aria-hidden="true">
-      <div>
-        Device Name
-      </div>
-      <!-- TODO(crbug.com/1010321): Add battery icon. -->
-      <div class="battery secondary">
-        96%
-      </div>
+      <div id="deviceName">[[getDeviceName_(device)]]</div>
+      <template is="dom-if"
+          if="[[shouldShowBatteryInfo_(device)]]" restamp>
+        <os-settings-bluetooth-device-battery-info
+            device="[[device]]">
+        </os-settings-bluetooth-device-battery-info>
+      </template>
     </div>
     <div>
-      <!-- TODO(crbug.com/1010321): Add click listener. -->
-      <cr-icon-button class="subpage-arrow"
+      <cr-icon-button id="subpageButton"
+          class="subpage-arrow"
           focus-row-control
-          focus-type="subpageButton">
+          focus-type="subpageButton"
+          aria-label="[[getSubpageButtonA11yLabel_(device)]]"
+          on-click="onSelected_">
       </cr-icon-button>
     </div>
   </div>

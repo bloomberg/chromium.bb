@@ -497,15 +497,16 @@ class Map : public TorqueGeneratedMap<Map, HeapObject> {
   };
 
   FieldCounts GetFieldCounts() const;
-  int NumberOfFields() const;
+  int NumberOfFields(ConcurrencyMode cmode) const;
 
   bool HasOutOfObjectProperties() const;
 
   // TODO(ishell): candidate with JSObject::MigrateToMap().
-  bool InstancesNeedRewriting(Map target) const;
+  bool InstancesNeedRewriting(Map target, ConcurrencyMode cmode) const;
   bool InstancesNeedRewriting(Map target, int target_number_of_fields,
                               int target_inobject, int target_unused,
-                              int* old_number_of_fields) const;
+                              int* old_number_of_fields,
+                              ConcurrencyMode cmode) const;
   // Returns true if the |field_type| is the most general one for
   // given |representation|.
   static inline bool IsMostGeneralFieldType(Representation representation,
@@ -564,6 +565,7 @@ class Map : public TorqueGeneratedMap<Map, HeapObject> {
   // The field also overlaps with the native context pointer for context maps,
   // and with the Wasm type info for WebAssembly object maps.
   DECL_ACCESSORS(constructor_or_back_pointer, Object)
+  DECL_RELAXED_ACCESSORS(constructor_or_back_pointer, Object)
   DECL_ACCESSORS(native_context, NativeContext)
   DECL_ACCESSORS(native_context_or_null, Object)
   DECL_ACCESSORS(wasm_type_info, WasmTypeInfo)
@@ -849,6 +851,12 @@ class Map : public TorqueGeneratedMap<Map, HeapObject> {
       InstanceType instance_type);
   inline bool CanHaveFastTransitionableElementsKind() const;
 
+  // Maps for Wasm objects can use certain fields for other purposes.
+  inline uint8_t WasmByte1() const;
+  inline uint8_t WasmByte2() const;
+  inline void SetWasmByte1(uint8_t value);
+  inline void SetWasmByte2(uint8_t value);
+
  private:
   // This byte encodes either the instance size without the in-object slack or
   // the slack size in properties backing store.
@@ -880,8 +888,9 @@ class Map : public TorqueGeneratedMap<Map, HeapObject> {
                                 Handle<Map> child, Handle<Name> name,
                                 SimpleTransitionFlag flag);
 
-  bool EquivalentToForTransition(const Map other) const;
-  bool EquivalentToForElementsKindTransition(const Map other) const;
+  bool EquivalentToForTransition(const Map other, ConcurrencyMode cmode) const;
+  bool EquivalentToForElementsKindTransition(const Map other,
+                                             ConcurrencyMode cmode) const;
   static Handle<Map> RawCopy(Isolate* isolate, Handle<Map> map,
                              int instance_size, int inobject_properties);
   static Handle<Map> ShareDescriptor(Isolate* isolate, Handle<Map> map,

@@ -486,9 +486,6 @@ GrMtlPipelineState* GrMtlPipelineStateBuilder::finalize(
         const GrMtlPrecompiledLibraries* precompiledLibs) {
     TRACE_EVENT0("skia.shaders", TRACE_FUNC);
 
-    // Geometry shaders are not supported
-    SkASSERT(!this->geometryProcessor().willUseGeoShader());
-
     // Set up for cache if needed
     std::unique_ptr<SkBinaryWriteBuffer> writer;
 
@@ -548,11 +545,6 @@ GrMtlPipelineState* GrMtlPipelineStateBuilder::finalize(
         }
     } else {
         id<MTLLibrary> shaderLibraries[kGrShaderTypeCount];
-
-        fVS.extensions().appendf("#extension GL_ARB_separate_shader_objects : enable\n");
-        fFS.extensions().appendf("#extension GL_ARB_separate_shader_objects : enable\n");
-        fVS.extensions().appendf("#extension GL_ARB_shading_language_420pack : enable\n");
-        fFS.extensions().appendf("#extension GL_ARB_shading_language_420pack : enable\n");
 
         this->finalizeShaders();
 

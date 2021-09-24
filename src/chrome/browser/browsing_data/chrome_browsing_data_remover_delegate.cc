@@ -153,7 +153,6 @@
 #include "components/installedapp/android/jni_headers/PackageHash_jni.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
-#include "sql/database.h"
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -178,6 +177,10 @@
 #if defined(OS_MAC)
 #include "device/fido/mac/credential_store.h"
 #endif  // defined(OS_MAC)
+
+#if defined(OS_WIN)
+#include "chrome/browser/media/cdm_document_service_impl.h"
+#endif  // defined(OS_WIN)
 
 using base::UserMetricsAction;
 using content::BrowserContext;
@@ -237,16 +240,6 @@ void ClearPnaclCacheOnProcessThread(base::Time begin,
 
   pnacl::PnaclHost::GetInstance()->ClearTranslationCacheEntriesBetween(
       begin, end, std::move(callback));
-}
-#endif
-
-#if defined(OS_ANDROID)
-void ClearPrecacheInBackground(content::BrowserContext* browser_context) {
-  // Precache code was removed in M61 but the sqlite database file could be
-  // still here.
-  base::FilePath db_path(browser_context->GetPath().Append(
-      base::FilePath(FILE_PATH_LITERAL("PrecacheDatabase"))));
-  sql::Database::Delete(db_path);
 }
 #endif
 
@@ -539,11 +532,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         CreateTaskCompletionClosure(TracingDataType::kWebrtcLogs));
 
 #if defined(OS_ANDROID)
-    base::ThreadPool::PostTaskAndReply(
-        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-        base::BindOnce(&ClearPrecacheInBackground, profile_),
-        CreateTaskCompletionClosure(TracingDataType::kPrecache));
-
     // Clear the history information (last launch time and origin URL) of any
     // registered webapps.
     webapp_registry_->ClearWebappHistoryForUrls(filter);
@@ -798,6 +786,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
   if ((remove_mask & constants::DATA_TYPE_SITE_USAGE_DATA) ||
       (remove_mask & constants::DATA_TYPE_HISTORY)) {
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        ContentSettingsType::FORMFILL_METADATA, delete_begin_, delete_end_,
+        website_settings_filter);
+
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
         ContentSettingsType::APP_BANNER, base::Time(), base::Time::Max(),
         website_settings_filter);
@@ -1118,8 +1110,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #if defined(OS_ANDROID)
     cdm::MediaDrmStorageImpl::ClearMatchingLicenses(
         prefs, delete_begin_, delete_end, nullable_filter,
-        CreateTaskCompletionClosure(TracingDataType::kDrmLicenses));
+        CreateTaskCompletionClosure(TracingDataType::kCdmLicenses));
 #endif  // defined(OS_ANDROID);
+
+#if defined(OS_WIN)
+    CdmDocumentServiceImpl::ClearCdmData(
+        profile_, delete_begin, delete_end, nullable_filter,
+        CreateTaskCompletionClosure(TracingDataType::kCdmLicenses));
+#endif  // defined(OS_WIN)
   }
 
   //////////////////////////////////////////////////////////////////////////////

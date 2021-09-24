@@ -71,6 +71,7 @@ class FormStructure;
 class LogManager;
 class MigratableCreditCard;
 class PersonalDataManager;
+class SingleFieldFormFillRouter;
 class StrikeDatabase;
 enum class WebauthnDialogCallbackType;
 enum class WebauthnDialogState;
@@ -307,6 +308,10 @@ class AutofillClient : public RiskDataLoader {
   // Gets the AutocompleteHistoryManager instance associate with the client.
   virtual AutocompleteHistoryManager* GetAutocompleteHistoryManager() = 0;
 
+  // Creates and returns a SingleFieldFormFillRouter using the
+  // AutocompleteHistoryManager instance associated with the client.
+  std::unique_ptr<SingleFieldFormFillRouter> GetSingleFieldFormFillRouter();
+
   // Gets the preferences associated with the client.
   virtual PrefService* GetPrefs() = 0;
   virtual const PrefService* GetPrefs() const = 0;
@@ -365,7 +370,7 @@ class AutofillClient : public RiskDataLoader {
   // Creates the appropriate implementation of InternalAuthenticator. May be
   // null for platforms that don't support this, in which case standard CVC
   // authentication will be used instead.
-  virtual std::unique_ptr<InternalAuthenticator>
+  virtual std::unique_ptr<webauthn::InternalAuthenticator>
   CreateCreditCardInternalAuthenticator(content::RenderFrameHost* rfh);
 #endif
 

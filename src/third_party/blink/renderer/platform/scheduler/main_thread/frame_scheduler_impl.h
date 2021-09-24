@@ -161,7 +161,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void OnTraceLogEnabled() { tracing_controller_.OnTraceLogEnabled(); }
 
   void SetPageVisibilityForTracing(PageVisibilityState page_visibility);
-  void SetPageKeepActiveForTracing(bool keep_active);
   void SetPageFrozenForTracing(bool frozen);
 
   // Computes the priority of |task_queue| if it is associated to this frame
@@ -200,6 +199,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   std::unique_ptr<WebSchedulingTaskQueue> CreateWebSchedulingTaskQueue(
       WebSchedulingPriority) override;
   void OnWebSchedulingTaskQueuePriorityChanged(MainThreadTaskQueue*);
+  void OnWebSchedulingTaskQueueDestroyed(MainThreadTaskQueue*);
 
   const base::UnguessableToken& GetAgentClusterId() const;
 
@@ -364,9 +364,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   base::sequence_manager::TaskQueue::QueuePriority
       default_loading_task_priority_ =
           base::sequence_manager::TaskQueue::QueuePriority::kNormalPriority;
-  // Whether we should freeze task queues or not when KeepActive is true.
-  TraceableState<bool, TracingCategoryName::kInfo>
-      is_freeze_while_keep_active_enabled_;
 
   // These are the states of the Page.
   // They should be accessed via GetPageScheduler()->SetPageState().
@@ -374,8 +371,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   TraceableState<bool, TracingCategoryName::kInfo> page_frozen_for_tracing_;
   TraceableState<PageVisibilityState, TracingCategoryName::kInfo>
       page_visibility_for_tracing_;
-  TraceableState<bool, TracingCategoryName::kInfo>
-      page_keep_active_for_tracing_;
 
   TraceableState<bool, TracingCategoryName::kInfo>
       waiting_for_dom_content_loaded_;

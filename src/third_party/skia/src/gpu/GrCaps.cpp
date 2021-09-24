@@ -26,7 +26,6 @@ GrCaps::GrCaps(const GrContextOptions& options) {
     fOversizedStencilSupport = false;
     fTextureBarrierSupport = false;
     fSampleLocationsSupport = false;
-    fMultisampleDisableSupport = false;
     fDrawInstancedSupport = false;
     fNativeDrawIndirectSupport = false;
     fUseClientSideIndirectBuffers = false;
@@ -205,7 +204,6 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Oversized Stencil Support", fOversizedStencilSupport);
     writer->appendBool("Texture Barrier Support", fTextureBarrierSupport);
     writer->appendBool("Sample Locations Support", fSampleLocationsSupport);
-    writer->appendBool("Multisample disable support", fMultisampleDisableSupport);
     writer->appendBool("Draw Instanced Support", fDrawInstancedSupport);
     writer->appendBool("Native Draw Indirect Support", fNativeDrawIndirectSupport);
     writer->appendBool("Use client side indirect buffers", fUseClientSideIndirectBuffers);
@@ -239,7 +237,7 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Read pixels row bytes support", fReadPixelsRowBytesSupport);
     writer->appendBool("Disable msaa clip mask atlas on current driver [workaround]",
                        fDriverDisableMSAAClipAtlas);
-    writer->appendBool("Disable GrTessellationPathRenderer current driver [workaround]",
+    writer->appendBool("Disable TessellationPathRenderer current driver [workaround]",
                        fDisableTessellationPathRenderer);
     writer->appendBool("Clamp-to-border", fClampToBorderSupport);
 
@@ -309,9 +307,11 @@ bool GrCaps::canCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src
 
 bool GrCaps::validateSurfaceParams(const SkISize& dimensions, const GrBackendFormat& format,
                                    GrRenderable renderable, int renderTargetSampleCnt,
-                                   GrMipmapped mipped) const {
-    if (!this->isFormatTexturable(format)) {
-        return false;
+                                   GrMipmapped mipped, GrTextureType textureType) const {
+    if (textureType != GrTextureType::kNone) {
+        if (!this->isFormatTexturable(format, textureType)) {
+            return false;
+        }
     }
 
     if (GrMipmapped::kYes == mipped && !this->mipmapSupport()) {
@@ -386,7 +386,7 @@ GrBackendFormat GrCaps::getDefaultBackendFormat(GrColorType colorType,
     }
 
     auto format = this->onGetDefaultBackendFormat(colorType);
-    if (!this->isFormatTexturable(format)) {
+    if (!this->isFormatTexturable(format, GrTextureType::k2D)) {
         return {};
     }
     if (!this->areColorTypeAndFormatCompatible(colorType, format)) {

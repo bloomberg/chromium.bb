@@ -56,13 +56,10 @@ GrPathTessellationShader* GrPathTessellationShader::MakeSimpleTriangleShader(
 const GrPipeline* GrPathTessellationShader::MakeStencilOnlyPipeline(
         const ProgramArgs& args,
         GrAAType aaType,
-        GrTessellationPathRenderer::PathFlags pathFlags,
+        GrTessellationPathFlags pathFlags,
         const GrAppliedHardClip& hardClip) {
-    using PathFlags = GrTessellationPathRenderer::PathFlags;
+    using PathFlags = GrTessellationPathFlags;
     GrPipeline::InitArgs pipelineArgs;
-    if (aaType == GrAAType::kMSAA) {
-        pipelineArgs.fInputFlags |= GrPipeline::InputFlags::kHWAntialias;
-    }
     if (args.fCaps->wireframeSupport() && (pathFlags & PathFlags::kWireframe)) {
         pipelineArgs.fInputFlags |= GrPipeline::InputFlags::kWireframe;
     }

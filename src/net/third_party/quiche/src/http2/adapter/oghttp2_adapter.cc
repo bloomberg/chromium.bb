@@ -34,7 +34,7 @@ bool OgHttp2Adapter::IsServerSession() const {
   return session_->IsServerSession();
 }
 
-ssize_t OgHttp2Adapter::ProcessBytes(absl::string_view bytes) {
+int64_t OgHttp2Adapter::ProcessBytes(absl::string_view bytes) {
   return session_->ProcessBytes(bytes);
 }
 
@@ -76,7 +76,10 @@ void OgHttp2Adapter::SubmitWindowUpdate(Http2StreamId stream_id,
 }
 
 void OgHttp2Adapter::SubmitMetadata(Http2StreamId stream_id,
+                                    size_t /* max_frame_size */,
                                     std::unique_ptr<MetadataSource> source) {
+  // Not necessary to pass max_frame_size along, since OgHttp2Session tracks the
+  // peer's advertised max frame size.
   session_->SubmitMetadata(stream_id, std::move(source));
 }
 

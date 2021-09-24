@@ -99,6 +99,8 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::FEDERATED_IDENTITY_REQUEST, 78},
     {ContentSettingsType::JAVASCRIPT_JIT, 79},
     {ContentSettingsType::HTTP_ALLOWED, 80},
+    {ContentSettingsType::FORMFILL_METADATA, 81},
+    {ContentSettingsType::FEDERATED_IDENTITY_ACTIVE_SESSION, 82},
 };
 
 }  // namespace

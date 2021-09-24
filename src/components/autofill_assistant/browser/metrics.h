@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_METRICS_H_
 
 #include <ostream>
+#include "base/time/time.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/startup_util.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -78,6 +79,36 @@ class Metrics {
     OB_NO_ANSWER = 4,
 
     kMaxValue = OB_NO_ANSWER
+  };
+
+  // The different actions that can be performed on TTS button click.
+  //
+  // This enum is used in histograms, do not remove/renumber entries. Only add
+  // at the end and update kMaxValue. Also remember to update the
+  // AutofillAssistantTextToSpeechButtonAction enum listing in
+  // tools/metrics/histograms/enums.xml.
+  enum class TtsButtonAction {
+    PLAY_TTS = 0,
+    DISABLE_BUTTON = 1,
+    ENABLE_BUTTON_AND_PLAY_TTS = 2,
+
+    kMaxValue = ENABLE_BUTTON_AND_PLAY_TTS
+  };
+
+  // The different TTS engine events that are received by the autofill
+  // assistant TTS controller.
+  //
+  // This enum is used in histograms, do not remove/renumber entries. Only add
+  // at the end and update kMaxValue. Also remember to update the
+  // AutofillAssistantTextToSpeechEngineEvent enum listing in
+  // tools/metrics/histograms/enums.xml.
+  enum class TtsEngineEvent {
+    TTS_EVENT_START = 0,
+    TTS_EVENT_END = 1,
+    TTS_EVENT_ERROR = 2,
+    TTS_EVENT_OTHER = 3,
+
+    kMaxValue = TTS_EVENT_OTHER
   };
 
   // The different ways for payment request to succeed or fail, broken down by
@@ -401,9 +432,16 @@ class Metrics {
                                           ukm::SourceId source_id,
                                           InChromeTriggerAction event);
   static void RecordOnboardingResult(OnBoarding event);
+  static void RecordTtsButtonAction(TtsButtonAction action);
+  static void RecordTtsEngineEvent(TtsEngineEvent event);
   static void RecordFeatureModuleInstallation(FeatureModuleInstallation event);
+  static void RecordTriggerConditionEvaluationTime(
+      ukm::UkmRecorder* ukm_recorder,
+      ukm::SourceId source_id,
+      base::TimeDelta evaluation_time);
 
-  // Intended for debugging: writes string representation of |reason| to |out|.
+  // Intended for debugging: writes string representation of |reason| to
+  // |out|.
   friend std::ostream& operator<<(std::ostream& out,
                                   const DropOutReason& reason) {
 #ifdef NDEBUG

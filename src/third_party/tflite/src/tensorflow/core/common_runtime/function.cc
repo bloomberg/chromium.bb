@@ -31,8 +31,10 @@ limitations under the License.
 #include "tensorflow/core/common_runtime/memory_types.h"
 #include "tensorflow/core/common_runtime/process_function_library_runtime.h"
 #include "tensorflow/core/common_runtime/rendezvous_mgr.h"
+#include "tensorflow/core/common_runtime/single_threaded_executor.h"
 #include "tensorflow/core/framework/collective.h"
 #include "tensorflow/core/framework/function.h"
+#include "tensorflow/core/framework/function_handle_cache.h"
 #include "tensorflow/core/framework/node_def.pb.h"
 #include "tensorflow/core/framework/node_def_util.h"
 #include "tensorflow/core/framework/op.h"
@@ -45,6 +47,8 @@ limitations under the License.
 #include "tensorflow/core/lib/core/threadpool.h"
 #include "tensorflow/core/lib/gtl/map_util.h"
 #include "tensorflow/core/platform/macros.h"
+#include "tensorflow/core/platform/str_util.h"
+#include "tensorflow/core/profiler/lib/connected_traceme.h"
 #include "tensorflow/core/profiler/lib/traceme.h"
 #include "tensorflow/core/protobuf/config.pb.h"
 
@@ -325,7 +329,6 @@ class FunctionLibraryRuntimeImpl : public FunctionLibraryRuntime {
                              const FunctionLibraryDefinition* lib_def,
                              thread::ThreadPool* default_thread_pool,
                              const OptimizerOptions& optimizer_options,
-                             const CustomKernelCreator* custom_kernel_creator,
                              const SessionMetadata* session_metadata,
                              ProcessFunctionLibraryRuntime* parent);
 
@@ -389,7 +392,6 @@ class FunctionLibraryRuntimeImpl : public FunctionLibraryRuntime {
   const int graph_def_version_;
   const FunctionLibraryDefinition* const base_lib_def_;
   GraphOptimizer optimizer_;
-  const CustomKernelCreator* custom_kernel_creator_;
   const SessionMetadata* const session_metadata_;
   Executor::Args::Runner default_runner_;
   const string device_name_;
@@ -420,9 +422,9 @@ class FunctionLibraryRuntimeImpl : public FunctionLibraryRuntime {
       delete this->overlay_flr;
     }
   };
-  std::unique_ptr<std::unordered_map<Handle, std::unique_ptr<Item>>> items_
+  std::unique_ptr<absl::flat_hash_map<Handle, std::unique_ptr<Item>>> items_
       TF_GUARDED_BY(mu_);
-
+  std::unique_ptr<FunctionHandleCache> function_handle_cache_;
   ProcessFunctionLibraryRuntime* parent_ = nullptr;  // not owned.
 
   // Overloads the CreateKernel method, providing a FunctionLibraryRuntime
@@ -461,7 +463,6 @@ FunctionLibraryRuntimeImpl::FunctionLibraryRuntimeImpl(
     int graph_def_version, const FunctionLibraryDefinition* lib_def,
     thread::ThreadPool* default_thread_pool,
     const OptimizerOptions& optimizer_options,
-    const CustomKernelCreator* custom_kernel_creator,
     const SessionMetadata* session_metadata,
     ProcessFunctionLibraryRuntime* parent)
     : device_mgr_(dmgr),
@@ -471,14 +472,15 @@ FunctionLibraryRuntimeImpl::FunctionLibraryRuntimeImpl(
       graph_def_version_(graph_def_version),
       base_lib_def_(lib_def),
       optimizer_(optimizer_options),
-      custom_kernel_creator_(custom_kernel_creator),
       session_metadata_(session_metadata),
       default_runner_(nullptr),
       device_name_(device_ == nullptr
                        ? ProcessFunctionLibraryRuntime::kDefaultFLRDevice
                        : device_->name()),
       next_handle_(0),
-      items_(new std::unordered_map<Handle, std::unique_ptr<Item>>),
+      items_(absl::make_unique<
+             absl::flat_hash_map<Handle, std::unique_ptr<Item>>>()),
+      function_handle_cache_(absl::make_unique<FunctionHandleCache>(this)),
       parent_(parent) {
   get_func_sig_ = [this](const string& op, const OpDef** sig) {
     return base_lib_def_->LookUpOpDef(op, sig);
@@ -608,10 +610,12 @@ Status FunctionLibraryRuntimeImpl::CreateKernel(
     FunctionLibraryRuntime* flr, OpKernel** kernel) {
   // If a custom kernel creator is given, try that.
   Status s;
-  if (custom_kernel_creator_ != nullptr &&
-      custom_kernel_creator_->CanCreateKernel(*this, props)) {
+  const CustomKernelCreator* custom_kernel_creator =
+      GetDefaultCustomKernelCreator();
+  if (custom_kernel_creator &&
+      custom_kernel_creator->CanCreateKernel(*flr, props)) {
     std::unique_ptr<OpKernel> ret;
-    s = custom_kernel_creator_->CreateKernel(this, props, &ret);
+    s = custom_kernel_creator->CreateKernel(flr, props, &ret);
     if (s.ok()) {
       *kernel = ret.release();
     } else {
@@ -745,6 +749,13 @@ Status FunctionLibraryRuntimeImpl::Instantiate(
     return parent_->Instantiate(function_name, attrs, options, handle);
   }
 
+  if (options.use_function_cache) {
+    InstantiateOptions options_copy(options);
+    options_copy.use_function_cache = false;
+    return function_handle_cache_->Instantiate(function_name, attrs,
+                                               options_copy, handle);
+  }
+
   // Since this is a local target, ensure that the local `device_name_` appears
   // in the canonical key.
   InstantiateOptions options_copy(options);
@@ -863,6 +874,7 @@ Status FunctionLibraryRuntimeImpl::ReleaseHandle(Handle handle) {
 }
 
 namespace {
+
 // Removes all stateless nodes that do not contribute to a return
 // value from the function body. Unlike `RemoveDeadNodes()`, which is
 // triggered by `OptimizerOptions.do_function_inlining`, this pass
@@ -902,6 +914,81 @@ void PruneFunctionBody(const FunctionDef& fdef, Graph* g) {
     FixupSourceAndSinkEdges(g);
   }
 }
+
+constexpr int kMaxNodesForSingleThreadedExecutor = 32;
+
+// Returns true if the given operation is suitable to execute via
+// SingleThreadedExecutor. This is an intentional subset of the ops which
+// technically can be run via single-threaded execution to avoid issues with
+// recursion or function invocation.
+//
+// SingleThreadedExecutor runs asynchronous kernels synchronously: this can lead
+// to deadlocks. This function attempts to exclude all async kernels in lieu of
+// kernel instantiation.
+bool IsOpSingleThreadedExecutorCompatible(const Node& n) {
+  if (n.IsFunctionCall() || n.IsPartitionedCall() || n.IsIfNode() ||
+      n.IsWhileNode() || n.IsCaseNode()) {
+    return false;
+  }
+  if (n.IsControlFlow()) {
+    return false;
+  }
+  if (n.IsSend() || n.IsHostSend() || n.IsRecv() || n.IsHostRecv()) {
+    return false;
+  }
+  if (n.IsCollective()) {
+    return false;
+  }
+  for (DataType dt : n.output_types()) {
+    if (IsRefType(dt)) {
+      return false;
+    }
+  }
+  std::string lower = str_util::Lowercase(n.op_def().name());
+  if (str_util::StrContains(lower, "pyfunc") ||
+      str_util::StrContains(lower, "queue") ||
+      str_util::StrContains(lower, "rpc")) {
+    return false;
+  }
+
+  return true;
+}
+
+// Returns true if the given Graph is safe & efficient to run via the single
+// threaded executor. The single-threaded executor has lower dispatch overhead
+// for simple functions.
+//
+// This currently specializes for the case of a single operation, as created
+// via eager execution.
+bool IsSingleThreadedExecutorCompatible(const Graph* g) {
+  // TODO(b/187729969): Temporarily disabled due to b/187306798.
+  return false;
+
+  // Not worth analyzing large graphs.
+  if (g->num_nodes() > kMaxNodesForSingleThreadedExecutor) {
+    return false;
+  }
+
+  int count = 0;
+  for (Node* n : g->nodes()) {
+    if (!IsOpSingleThreadedExecutorCompatible(*n)) {
+      return false;
+    }
+    if (n->op_def().name() == "_Arg" || n->op_def().name() == "_Retval" ||
+        n->op_def().name() == "NoOp") {
+      continue;
+    }
+
+    count += 1;
+  }
+
+  if (count == 1) {
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 Status FunctionLibraryRuntimeImpl::CreateItem(Item** item) {
@@ -918,7 +1005,7 @@ Status FunctionLibraryRuntimeImpl::CreateItem(Item** item) {
   }
   const FunctionLibraryDefinition* lib_def =
       flr->GetFunctionLibraryDefinition();
-  std::unique_ptr<Graph> g(new Graph(lib_def));
+  auto g = absl::make_unique<Graph>(lib_def);
   CopyGraph(*fbody->graph, g.get());
 
   PruneFunctionBody(fbody->fdef, g.get());
@@ -945,6 +1032,10 @@ Status FunctionLibraryRuntimeImpl::CreateItem(Item** item) {
   };
   params.session_metadata = session_metadata_;
   std::unique_ptr<Executor> exec;
+
+  if (executor_type.empty() && IsSingleThreadedExecutorCompatible(g.get())) {
+    executor_type = "SINGLE_THREADED_EXECUTOR";
+  }
   TF_RETURN_IF_ERROR(NewExecutor(executor_type, params, *g, &exec));
   {
     // Guard item since it is already inserted in items_.
@@ -993,6 +1084,8 @@ void FunctionLibraryRuntimeImpl::ExecutorArgsFromOptions(
   exec_args->collective_executor = run_opts.collective_executor;
   exec_args->call_frame = frame;
   exec_args->run_all_kernels_inline = run_opts.run_all_kernels_inline;
+  exec_args->user_intra_op_threadpool = run_opts.user_intra_op_threadpool;
+  exec_args->coordination_service_agent = run_opts.coordination_service_agent;
 }
 
 void FunctionLibraryRuntimeImpl::RunRemote(const Options& opts, Handle handle,
@@ -1008,7 +1101,7 @@ void FunctionLibraryRuntimeImpl::RunRemote(const Options& opts, Handle handle,
     done(s);
     return;
   }
-  int64 src_incarnation, target_incarnation;
+  int64_t src_incarnation, target_incarnation;
   s = parent_->GetDeviceIncarnation(source_device, &src_incarnation);
   s.Update(parent_->GetDeviceIncarnation(target_device, &target_incarnation));
   if (!s.ok()) {
@@ -1143,6 +1236,15 @@ void FunctionLibraryRuntimeImpl::Run(const Options& opts, Handle handle,
     return;
   }
 
+  profiler::TraceMeProducer activity(
+      // To TraceMeConsumers in ExecutorState::Process/Finish.
+      [&opts] {
+        return profiler::TraceMeEncode("FunctionRun",
+                                       {{"id", opts.step_id}, {"_r", 1}});
+      },
+      profiler::ContextType::kTfExecutor, opts.step_id,
+      profiler::TraceMeLevel::kInfo);
+
   Executor::Args exec_args;
   ExecutorArgsFromOptions(run_opts, frame, &exec_args);
 
@@ -1206,6 +1308,15 @@ void FunctionLibraryRuntimeImpl::Run(const Options& opts, Handle handle,
     run_opts.runner = &default_runner_;
   }
   DCHECK(run_opts.runner != nullptr);
+
+  profiler::TraceMeProducer activity(
+      // To TraceMeConsumers in ExecutorState::Process/Finish.
+      [&opts] {
+        return profiler::TraceMeEncode("FunctionRun",
+                                       {{"id", opts.step_id}, {"_r", 1}});
+      },
+      profiler::ContextType::kTfExecutor, opts.step_id,
+      profiler::TraceMeLevel::kInfo);
 
   Executor::Args exec_args;
   ExecutorArgsFromOptions(run_opts, frame, &exec_args);
@@ -1311,9 +1422,9 @@ Status FunctionLibraryRuntimeImpl::Clone(
     std::unique_ptr<FunctionLibraryDefinition>* out_lib_def,
     std::unique_ptr<ProcessFunctionLibraryRuntime>* out_pflr,
     FunctionLibraryRuntime** out_flr, bool skip_flib_def) {
-  TF_RETURN_IF_ERROR(parent_->Clone(
-      env_, graph_def_version_, optimizer_.options(), custom_kernel_creator_,
-      out_lib_def, out_pflr, skip_flib_def));
+  TF_RETURN_IF_ERROR(parent_->Clone(env_, graph_def_version_,
+                                    optimizer_.options(), out_lib_def, out_pflr,
+                                    skip_flib_def));
   *out_flr = (*out_pflr)->GetFLR(device_->name());
   if (*out_flr != nullptr) {
     return Status::OK();
@@ -1359,12 +1470,11 @@ std::unique_ptr<FunctionLibraryRuntime> NewFunctionLibraryRuntime(
     Device* device, int graph_def_version,
     const FunctionLibraryDefinition* lib_def, thread::ThreadPool* thread_pool,
     const OptimizerOptions& optimizer_options,
-    const CustomKernelCreator* custom_kernel_creator,
     const SessionMetadata* session_metadata,
     ProcessFunctionLibraryRuntime* parent) {
   return std::unique_ptr<FunctionLibraryRuntime>(new FunctionLibraryRuntimeImpl(
       device_mgr, env, config, device, graph_def_version, lib_def, thread_pool,
-      optimizer_options, custom_kernel_creator, session_metadata, parent));
+      optimizer_options, session_metadata, parent));
 }
 
 class SymbolicGradientHelper {

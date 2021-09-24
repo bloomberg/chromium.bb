@@ -97,6 +97,11 @@ void RecordSeedFreshness(base::TimeDelta seed_age) {
                               1, base::TimeDelta::FromDays(30).InMinutes(), 50);
 }
 
+// Records details about Chrome's attempt to apply a variations seed.
+void RecordVariationsSeedUsage(SeedUsage usage) {
+  base::UmaHistogramEnumeration("Variations.SeedUsage", usage);
+}
+
 // If an invalid command-line to force field trials was specified, exit the
 // browser with a helpful error message, so that the user can correct their
 // mistake.
@@ -179,17 +184,17 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     SafeSeedManager* safe_seed_manager,
     absl::optional<int> low_entropy_source_value,
     bool extend_variations_safe_mode) {
-#if !defined(OS_ANDROID)
-  if (extend_variations_safe_mode)
-    MaybeExtendVariationsSafeMode(metrics_state_manager);
-#endif
-
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableBenchmarking) ||
       command_line->HasSwitch(kEnableGpuBenchmarking)) {
     base::FieldTrial::EnableBenchmarking();
   }
+
+#if !defined(OS_ANDROID)
+  if (extend_variations_safe_mode)
+    MaybeExtendVariationsSafeMode(metrics_state_manager);
+#endif
 
   if (command_line->HasSwitch(switches::kForceFieldTrialParams)) {
     bool result = AssociateParamsFromString(
@@ -354,7 +359,7 @@ std::string VariationsFieldTrialCreator::LoadPermanentConsistencyCountry(
 
   // Determine if the saved pref value is present and valid.
   const bool is_pref_empty = list_value->GetList().empty();
-  const bool is_pref_valid = list_value->GetSize() == 2 &&
+  const bool is_pref_valid = list_value->GetList().size() == 2 &&
                              list_value->GetString(0, &stored_version_string) &&
                              list_value->GetString(1, &stored_country) &&
                              base::Version(stored_version_string).IsValid();
@@ -414,8 +419,8 @@ void VariationsFieldTrialCreator::StorePermanentCountry(
     const base::Version& version,
     const std::string& country) {
   base::ListValue new_list_value;
-  new_list_value.AppendString(version.GetString());
-  new_list_value.AppendString(country);
+  new_list_value.Append(version.GetString());
+  new_list_value.Append(country);
   local_state()->Set(prefs::kVariationsPermanentConsistencyCountry,
                      new_list_value);
 }
@@ -501,37 +506,56 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
                                 client_filterable_state->policy_restriction);
 
   VariationsSeed seed;
-  bool run_in_safe_mode = safe_seed_manager->ShouldRunInSafeMode();
-  if (run_in_safe_mode) {
+  bool should_run_in_safe_mode = safe_seed_manager->ShouldRunInSafeMode();
+  bool run_in_safe_mode = should_run_in_safe_mode;
+  if (should_run_in_safe_mode) {
     LoadSeedResult result =
         GetSeedStore()->LoadSafeSeed(&seed, client_filterable_state.get());
-    if (result == LoadSeedResult::kSuccess &&
-        HasSeedExpired(/*is_safe_seed=*/true)) {
-      return false;
-    }
-    if (result != LoadSeedResult::kSuccess &&
-        result != LoadSeedResult::kEmpty) {
-      // If Chrome should run in safe mode but the safe seed is corrupted or has
-      // an invalid signature, then fall back to the client-side defaults.
-      return false;
-    }
-    if (result == LoadSeedResult::kEmpty) {
+    if (result == LoadSeedResult::kSuccess) {
+      if (HasSeedExpired(/*is_safe_seed=*/true)) {
+        RecordVariationsSeedUsage(SeedUsage::kExpiredSafeSeedNotUsed);
+        return false;
+      }
+      RecordVariationsSeedUsage(SeedUsage::kSafeSeedUsed);
+      run_in_safe_mode = true;  // This line is a no-op. Added for clarity.
+    } else if (result == LoadSeedResult::kEmpty) {
       // If the safe seed is empty, attempt to run with the most recent seed
       // instead of falling back to client-side defaults.
       run_in_safe_mode = false;
+    } else {
+      // If Chrome should run in safe mode but the safe seed is corrupted or has
+      // an invalid signature, then fall back to the client-side defaults.
+      RecordVariationsSeedUsage(SeedUsage::kCorruptedSafeSeedNotUsed);
+      return false;
     }
   }
 
   std::string seed_data;
   std::string base64_seed_signature;
-  if (!run_in_safe_mode &&
-      (!GetSeedStore()->LoadSeed(&seed, &seed_data, &base64_seed_signature) ||
-       HasSeedExpired(/*is_safe_seed=*/false))) {
-    return false;
+  if (!run_in_safe_mode) {
+    SeedUsage seed_usage;
+    if (GetSeedStore()->LoadSeed(&seed, &seed_data, &base64_seed_signature)) {
+      if (HasSeedExpired(/*is_safe_seed=*/false)) {
+        seed_usage =
+            should_run_in_safe_mode
+                ? SeedUsage::kExpiredRegularSeedNotUsedAfterEmptySafeSeedLoaded
+                : SeedUsage::kExpiredRegularSeedNotUsed;
+        RecordVariationsSeedUsage(seed_usage);
+        return false;
+      }
+      seed_usage = should_run_in_safe_mode
+                       ? SeedUsage::kRegularSeedUsedAfterEmptySafeSeedLoaded
+                       : SeedUsage::kRegularSeedUsed;
+      RecordVariationsSeedUsage(seed_usage);
+    } else {  // The seed was not successfully loaded.
+      seed_usage =
+          should_run_in_safe_mode
+              ? SeedUsage::kCorruptedRegularSeedNotUsedAfterEmptySafeSeedLoaded
+              : SeedUsage::kCorruptedSeedNotUsed;
+      RecordVariationsSeedUsage(seed_usage);
+      return false;
+    }
   }
-
-  UMA_HISTOGRAM_BOOLEAN("Variations.SafeMode.FellBackToSafeMode2",
-                        run_in_safe_mode);
 
   // Note that passing base::Unretained(this) below is safe because the callback
   // is executed synchronously. It is not possible to pass UIStringOverrider
@@ -594,7 +618,8 @@ Study::Platform VariationsFieldTrialCreator::GetPlatform() {
 void VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode(
     metrics::MetricsStateManager* metrics_state_manager) const {
   version_info::Channel channel = client_->GetChannelForVariations();
-  if (channel != version_info::Channel::CANARY &&
+  if (channel != version_info::Channel::UNKNOWN &&
+      channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::DEV) {
     return;
   }
@@ -612,7 +637,6 @@ void VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode(
   trial->AppendGroup(kSignalAndWriteViaFileUtilGroup, 25);
   const int assigned_group = trial->group();
 
-  DCHECK_NE(assigned_group, default_group);
   if (assigned_group == control_group)
     return;
 

@@ -5,9 +5,10 @@
 #import "ios/chrome/browser/ui/authentication/views/identity_view.h"
 
 #import "base/check.h"
+#import "base/check_op.h"
 #import "base/notreached.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -95,7 +96,7 @@ constexpr CGFloat kHorizontalAvatarLeadingMargin = 16.;
     _title.adjustsFontForContentSizeCategory = YES;
     _title.translatesAutoresizingMaskIntoConstraints = NO;
     _title.numberOfLines = 1;
-    _title.textColor = UIColor.cr_labelColor;
+    _title.textColor = [UIColor colorNamed:kTextPrimaryColor];
     _title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
     _title.adjustsFontSizeToFitWidth = NO;
     _title.lineBreakMode = NSLineBreakByTruncatingTail;
@@ -105,7 +106,7 @@ constexpr CGFloat kHorizontalAvatarLeadingMargin = 16.;
     _subtitle.adjustsFontForContentSizeCategory = YES;
     _subtitle.translatesAutoresizingMaskIntoConstraints = NO;
     _subtitle.numberOfLines = 1;
-    _subtitle.textColor = UIColor.cr_secondaryLabelColor;
+    _subtitle.textColor = [UIColor colorNamed:kTextSecondaryColor];
     _subtitle.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _subtitle.adjustsFontSizeToFitWidth = NO;
     _subtitle.lineBreakMode = NSLineBreakByTruncatingTail;
@@ -175,6 +176,8 @@ constexpr CGFloat kHorizontalAvatarLeadingMargin = 16.;
                                                    .minimumBottomMargin],
     ];
     [NSLayoutConstraint activateConstraints:_bottomConstraints];
+    // Initialize the style.
+    [self updateStyle];
   }
   return self;
 }
@@ -182,12 +185,14 @@ constexpr CGFloat kHorizontalAvatarLeadingMargin = 16.;
 #pragma mark - Setter
 
 - (void)setAvatar:(UIImage*)avatarImage {
-  if (avatarImage) {
+  if (!avatarImage) {
+    self.avatarView.image = nil;
+  } else {
     const StyleValues* style = [self styleValues];
+    DCHECK_EQ(avatarImage.size.width, style->avatarSize);
+    DCHECK_EQ(avatarImage.size.height, style->avatarSize);
     self.avatarView.image = avatarImage;
     self.avatarView.layer.cornerRadius = style->avatarSize / 2.0;
-  } else {
-    self.avatarView.image = nil;
   }
 }
 

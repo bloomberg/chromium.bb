@@ -19,10 +19,10 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_navigation_browsertest.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/account_id/account_id.h"
@@ -201,7 +201,7 @@ void TestOpenSettingFromArc(Browser* browser,
                             const GURL& expected_url,
                             size_t expected_setting_window_count) {
   // Install the Settings App.
-  web_app::WebAppProvider::Get(browser->profile())
+  web_app::WebAppProvider::GetForTest(browser->profile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
 
@@ -257,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientWebAppBrowserTest,
   web_app_info->scope =
       https_server().GetURL(GetAppUrlHost(), GetAppScopePath());
   web_app_info->title = base::UTF8ToUTF16(GetAppName());
-  web_app_info->open_as_window = true;
+  web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
   apps::ShareTarget share_target;
   share_target.method = apps::ShareTarget::Method::kGet;
   share_target.action = app_url;
@@ -475,7 +475,7 @@ void TestAllAboutPages() {
 
 IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest, TestOpenChromePage) {
   // Install the Settings App.
-  web_app::WebAppProvider::Get(browser()->profile())
+  web_app::WebAppProvider::GetForTest(browser()->profile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
 

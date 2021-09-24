@@ -11,7 +11,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -27,7 +29,7 @@ class AutocompleteResult;
 class OmniboxClient;
 class OmniboxEditController;
 class OmniboxPopupModel;
-class OmniboxView;
+class OmniboxPopupView;
 
 namespace gfx {
 class Image;
@@ -73,16 +75,10 @@ class OmniboxEditModel {
     return omnibox_controller_->autocomplete_controller();
   }
 
-  void set_popup_model(OmniboxPopupModel* popup_model) {
-    omnibox_controller_->set_popup_model(popup_model);
-  }
+  void set_popup_view(OmniboxPopupView* popup_view);
 
-  // TODO(jdonnelly): The edit and popup should be siblings owned by the
-  // LocationBarView, making this accessor unnecessary.
   // NOTE: popup_model() can be NULL for testing.
-  OmniboxPopupModel* popup_model() const {
-    return omnibox_controller_->popup_model();
-  }
+  OmniboxPopupModel* popup_model() const { return popup_model_.get(); }
 
   OmniboxEditController* controller() const { return controller_; }
 
@@ -213,8 +209,10 @@ class OmniboxEditModel {
       WindowOpenDisposition disposition,
       base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
-  // Executes the |action| associated with given match.
+  // Executes the action associated with `match`. `match_position` is also
+  // passed for metrics.
   void ExecuteAction(const AutocompleteMatch& match,
+                     size_t match_position,
                      base::TimeTicks match_selection_timestamp);
 
   // Asks the browser to load |match|. |index| is only used for logging, and
@@ -419,6 +417,20 @@ class OmniboxEditModel {
   // Returns whether to prevent elision of the display URL.
   bool ShouldPreventElision() const;
 
+  // Returns true if the destination URL of the match is bookmarked.
+  bool IsStarredMatch(const AutocompleteMatch& match) const;
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Gets the icon for the given `match`.
+  gfx::Image GetMatchIcon(const AutocompleteMatch& match,
+                          SkColor vector_icon_color);
+#endif
+
+ protected:
+  // Utility method to get current PrefService; protected instead of private
+  // because it may be overridden by derived test classes.
+  virtual PrefService* GetPrefService() const;
+
  private:
   friend class OmniboxControllerTest;
   FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKey);
@@ -511,6 +523,8 @@ class OmniboxEditModel {
   // change). If the caret visibility changes, we call ApplyCaretVisibility() on
   // the view.
   void SetFocusState(OmniboxFocusState state, OmniboxFocusChangeReason reason);
+
+  std::unique_ptr<OmniboxPopupModel> popup_model_;
 
   // NOTE: |client_| must outlive |omnibox_controller_|, as the latter has a
   // reference to the former.

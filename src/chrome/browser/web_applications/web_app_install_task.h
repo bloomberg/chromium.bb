@@ -11,13 +11,13 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_url_loader.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "chrome/browser/web_applications/web_app_url_loader.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -119,6 +119,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   // WebAppInstallManager doesn't fetch a manifest.
   void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool overwrite_existing_manifest_fields,
       ForInstallableSite for_installable_site,
       webapps::WebappInstallSource install_source,
       OnceInstallCallback callback);
@@ -240,9 +241,9 @@ class WebAppInstallTask : content::WebContentsObserver {
       std::unique_ptr<WebApplicationInfo> web_app_info,
       const AppId& app_id,
       InstallResultCode code);
-  void OnOsHooksCreated(bool open_as_window,
+  void OnOsHooksCreated(DisplayMode user_display_mode,
                         const AppId& app_id,
-                        const OsHooksResults os_hooks_results);
+                        const OsHooksErrors os_hook_errors);
 
   // Whether the install task has been 'initiated' by calling one of the public
   // methods.

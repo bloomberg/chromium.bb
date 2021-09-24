@@ -451,7 +451,6 @@ bool ClipboardNonBacked::IsFormatAvailable(
   if (format == ClipboardFormatType::WebKitSmartPasteType())
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kWeb);
-  // Only support filenames if chrome://flags#clipboard-filenames is enabled.
   if (format == ClipboardFormatType::FilenamesType())
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kFilenames);
@@ -465,6 +464,29 @@ void ClipboardNonBacked::Clear(ClipboardBuffer buffer) {
   clipboard_internal_->Clear();
 }
 
+std::vector<std::u16string> ClipboardNonBacked::GetStandardFormats(
+    ClipboardBuffer buffer,
+    const DataTransferEndpoint* data_dst) const {
+  std::vector<std::u16string> types;
+  if (IsFormatAvailable(ClipboardFormatType::PlainTextType(), buffer, data_dst))
+    types.push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::PlainTextType().GetName()));
+  if (IsFormatAvailable(ClipboardFormatType::HtmlType(), buffer, data_dst))
+    types.push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::HtmlType().GetName()));
+  if (IsFormatAvailable(ClipboardFormatType::SvgType(), buffer, data_dst))
+    types.push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::SvgType().GetName()));
+  if (IsFormatAvailable(ClipboardFormatType::RtfType(), buffer, data_dst))
+    types.push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::RtfType().GetName()));
+  if (IsFormatAvailable(ClipboardFormatType::BitmapType(), buffer, data_dst))
+    types.push_back(base::UTF8ToUTF16(kMimeTypePNG));
+  if (IsFormatAvailable(ClipboardFormatType::FilenamesType(), buffer, data_dst))
+    types.push_back(base::UTF8ToUTF16(kMimeTypeURIList));
+  return types;
+}
+
 void ClipboardNonBacked::ReadAvailableTypes(
     ClipboardBuffer buffer,
     const DataTransferEndpoint* data_dst,
@@ -476,19 +498,7 @@ void ClipboardNonBacked::ReadAvailableTypes(
     return;
 
   types->clear();
-  if (IsFormatAvailable(ClipboardFormatType::PlainTextType(), buffer, data_dst))
-    types->push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::PlainTextType().GetName()));
-  if (IsFormatAvailable(ClipboardFormatType::HtmlType(), buffer, data_dst))
-    types->push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::HtmlType().GetName()));
-  if (IsFormatAvailable(ClipboardFormatType::RtfType(), buffer, data_dst))
-    types->push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::RtfType().GetName()));
-  if (IsFormatAvailable(ClipboardFormatType::BitmapType(), buffer, data_dst))
-    types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
-  if (IsFormatAvailable(ClipboardFormatType::FilenamesType(), buffer, data_dst))
-    types->push_back(base::UTF8ToUTF16(kMimeTypeURIList));
+  *types = GetStandardFormats(buffer, data_dst);
 
   if (clipboard_internal_->IsFormatAvailable(
           ClipboardInternalFormat::kCustom) &&
@@ -511,24 +521,7 @@ ClipboardNonBacked::ReadAvailablePlatformSpecificFormatNames(
     return types;
 
   // Includes all non-pickled AvailableTypes.
-  if (IsFormatAvailable(ClipboardFormatType::PlainTextType(), buffer,
-                        data_dst)) {
-    types.push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::PlainTextType().GetName()));
-  }
-  if (IsFormatAvailable(ClipboardFormatType::HtmlType(), buffer, data_dst)) {
-    types.push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::HtmlType().GetName()));
-  }
-  if (IsFormatAvailable(ClipboardFormatType::RtfType(), buffer, data_dst)) {
-    types.push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::RtfType().GetName()));
-  }
-  if (IsFormatAvailable(ClipboardFormatType::BitmapType(), buffer, data_dst)) {
-    types.push_back(base::UTF8ToUTF16(kMimeTypePNG));
-  }
-
-  return types;
+  return GetStandardFormats(buffer, data_dst);
 }
 
 void ClipboardNonBacked::ReadText(ClipboardBuffer buffer,

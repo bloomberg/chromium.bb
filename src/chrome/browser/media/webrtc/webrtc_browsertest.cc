@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, TestWebAudioMediaStream) {
   // integration.
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/webrtc/webaudio_crash.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -324,9 +324,17 @@ IN_PROC_BROWSER_TEST_F(
   DetectVideoAndHangUp();
 }
 
+// Test is flaky on windows. https://crbug.com/1239275
+#if defined(OS_WIN)
+#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange_ConnectionCount \
+  DISABLED_RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange_ConnectionCount
+#else
+#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange_ConnectionCount \
+  RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange_ConnectionCount
+#endif
 IN_PROC_BROWSER_TEST_F(
     MAYBE_WebRtcBrowserTest,
-    RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange_ConnectionCount) {
+    MAYBE_RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange_ConnectionCount) {
   EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);

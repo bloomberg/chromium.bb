@@ -10,13 +10,14 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/test/bind.h"
+#include "base/test/test_future.h"
 #include "components/cast/message_port/fuchsia/message_port_fuchsia.h"
 #include "content/public/test/browser_test.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/test/fit_adapter.h"
 #include "fuchsia/base/test/frame_test_util.h"
-#include "fuchsia/base/test/result_receiver.h"
 #include "fuchsia/base/test/test_navigation_listener.h"
+#include "fuchsia/engine/test/frame_for_test.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "fuchsia/runners/cast/api_bindings_client.h"
 #include "fuchsia/runners/cast/create_web_message.h"
@@ -34,6 +35,9 @@ class ApiBindingsClientTest : public cr_fuchsia::WebEngineBrowserTest {
 
   ~ApiBindingsClientTest() override = default;
 
+  ApiBindingsClientTest(const ApiBindingsClientTest&) = delete;
+  ApiBindingsClientTest& operator=(const ApiBindingsClientTest&) = delete;
+
   void SetUp() override { cr_fuchsia::WebEngineBrowserTest::SetUp(); }
 
  protected:
@@ -49,8 +53,8 @@ class ApiBindingsClientTest : public cr_fuchsia::WebEngineBrowserTest {
     run_loop.Run();
     ASSERT_TRUE(client_->HasBindings());
 
-    frame_ = WebEngineBrowserTest::CreateFrame(&navigation_listener_);
-    frame_->GetNavigationController(controller_.NewRequest());
+    frame_ = cr_fuchsia::FrameForTest::Create(
+        context(), fuchsia::web::CreateFrameParams());
     connector_ =
         std::make_unique<NamedMessagePortConnectorFuchsia>(frame_.get());
 
@@ -73,15 +77,11 @@ class ApiBindingsClientTest : public cr_fuchsia::WebEngineBrowserTest {
     client_.reset();
   }
 
-  fuchsia::web::FramePtr frame_;
+  cr_fuchsia::FrameForTest frame_;
   std::unique_ptr<NamedMessagePortConnectorFuchsia> connector_;
   FakeApiBindingsImpl api_service_;
   fidl::Binding<chromium::cast::ApiBindings> api_service_binding_;
   std::unique_ptr<ApiBindingsClient> client_;
-  cr_fuchsia::TestNavigationListener navigation_listener_;
-  fuchsia::web::NavigationControllerPtr controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ApiBindingsClientTest);
 };
 
 // Tests API registration, injection, and message IPC.
@@ -106,8 +106,9 @@ IN_PROC_BROWSER_TEST_F(ApiBindingsClientTest, EndToEnd) {
   // Navigate to a test page that makes use of the injected bindings.
   const GURL test_url = embedded_test_server()->GetURL("/echo.html");
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      controller_.get(), fuchsia::web::LoadUrlParams(), test_url.spec()));
-  navigation_listener_.RunUntilUrlEquals(test_url);
+      frame_.GetNavigationController(), fuchsia::web::LoadUrlParams(),
+      test_url.spec()));
+  frame_.navigation_listener().RunUntilUrlEquals(test_url);
 
   std::string connect_message;
   std::unique_ptr<cast_api_bindings::MessagePort> connect_port;
@@ -133,16 +134,14 @@ IN_PROC_BROWSER_TEST_F(ApiBindingsClientTest, EndToEnd) {
                     });
 
   // Handle the ping response.
-  base::RunLoop response_loop;
-  cr_fuchsia::ResultReceiver<fuchsia::web::WebMessage> response(
-      response_loop.QuitClosure());
+  base::test::TestFuture<fuchsia::web::WebMessage> response;
   port->ReceiveMessage(
-      cr_fuchsia::CallbackToFitFunction(response.GetReceiveCallback()));
-  response_loop.Run();
+      cr_fuchsia::CallbackToFitFunction(response.GetCallback()));
+  ASSERT_TRUE(response.Wait());
 
   std::string response_string;
   EXPECT_TRUE(
-      cr_fuchsia::StringFromMemBuffer(response->data(), &response_string));
+      cr_fuchsia::StringFromMemBuffer(response.Get().data(), &response_string));
   EXPECT_EQ("ack ping", response_string);
 
   // Ensure that we've received acks for all messages.

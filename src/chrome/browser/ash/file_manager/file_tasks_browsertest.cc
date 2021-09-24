@@ -13,9 +13,9 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/profile_test_helper.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
@@ -95,7 +95,7 @@ class FileTasksBrowserTestBase
  public:
   void SetUpOnMainThread() override {
     test::AddDefaultComponentExtensionsOnMainThread(browser()->profile());
-    web_app::WebAppProvider::Get(browser()->profile())
+    web_app::WebAppProvider::GetForTest(browser()->profile())
         ->system_web_app_manager()
         .InstallSystemAppsForTesting();
   }
@@ -109,6 +109,7 @@ class FileTasksBrowserTestBase
 
     for (const Expectation& test : expectations) {
       std::vector<extensions::EntryInfo> entries;
+      std::vector<GURL> file_urls;
       std::vector<base::StringPiece> all_extensions =
           base::SplitStringPiece(test.file_extensions, "/",
                                  base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -125,8 +126,11 @@ class FileTasksBrowserTestBase
           EXPECT_FALSE(mime_type.empty()) << "No mime type for " << path;
         }
         entries.push_back({path, mime_type, false});
+        GURL url = GURL(base::JoinString(
+            {"filesystem:https://site.com/isolated/foo.", extension}, ""));
+        ASSERT_TRUE(url.is_valid());
+        file_urls.push_back(url);
       }
-      std::vector<GURL> file_urls{entries.size(), GURL()};
 
       // task_verifier callback is invoked synchronously from
       // FindAllTypesOfTasks.

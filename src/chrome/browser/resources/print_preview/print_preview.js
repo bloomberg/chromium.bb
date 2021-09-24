@@ -52,8 +52,26 @@ export {PrintPreviewDestinationSelectElement} from './ui/destination_select.js';
 // <if expr="chromeos or lacros">
 export {PrintPreviewDestinationSelectCrosElement} from './ui/destination_select_cros.js';
 // </if>
-export {DestinationState, NUM_PERSISTED_DESTINATIONS} from './ui/destination_settings.js';
+export {DestinationState, NUM_PERSISTED_DESTINATIONS, PrintPreviewDestinationSettingsElement} from './ui/destination_settings.js';
+export {PrintPreviewDpiSettingsElement} from './ui/dpi_settings.js';
+export {PrintPreviewDuplexSettingsElement} from './ui/duplex_settings.js';
+export {PrintPreviewHeaderElement} from './ui/header.js';
+export {PrintPreviewLayoutSettingsElement} from './ui/layout_settings.js';
+// <if expr="not chromeos and not lacros">
+export {PrintPreviewLinkContainerElement} from './ui/link_container.js';
+// </if>
+export {PrintPreviewMarginControlElement} from './ui/margin_control.js';
+export {PrintPreviewMarginControlContainerElement} from './ui/margin_control_container.js';
+export {PrintPreviewMarginsSettingsElement} from './ui/margins_settings.js';
+export {PrintPreviewMediaSizeSettingsElement} from './ui/media_size_settings.js';
+export {PrintPreviewNumberSettingsSectionElement} from './ui/number_settings_section.js';
+export {PrintPreviewOtherOptionsSettingsElement} from './ui/other_options_settings.js';
+export {PrintPreviewPagesPerSheetSettingsElement} from './ui/pages_per_sheet_settings.js';
+export {PrintPreviewPagesSettingsElement} from './ui/pages_settings.js';
 export {PDFPlugin, PluginProxy, PluginProxyImpl} from './ui/plugin_proxy.js';
-export {PreviewAreaState} from './ui/preview_area.js';
+export {PreviewAreaState, PrintPreviewPreviewAreaElement} from './ui/preview_area.js';
+export {PrintPreviewSearchBoxElement} from './ui/print_preview_search_box.js';
+export {PrintPreviewScalingSettingsElement} from './ui/scaling_settings.js';
 export {SelectBehavior} from './ui/select_behavior.js';
-export {SelectOption} from './ui/settings_select.js';
+export {PrintPreviewSettingsSelectElement, SelectOption} from './ui/settings_select.js';
+export {PrintPreviewSidebarElement} from './ui/sidebar.js';

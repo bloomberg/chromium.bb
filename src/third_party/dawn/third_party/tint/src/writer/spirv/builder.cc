@@ -36,7 +36,15 @@
 #include "src/sem/struct.h"
 #include "src/sem/variable.h"
 #include "src/sem/vector_type.h"
-#include "src/transform/spirv.h"
+#include "src/transform/add_empty_entry_point.h"
+#include "src/transform/canonicalize_entry_point_io.h"
+#include "src/transform/external_texture_transform.h"
+#include "src/transform/fold_constants.h"
+#include "src/transform/for_loop_to_loop.h"
+#include "src/transform/inline_pointer_lets.h"
+#include "src/transform/manager.h"
+#include "src/transform/simplify.h"
+#include "src/transform/zero_init_workgroup_memory.h"
 #include "src/utils/get_or_create.h"
 #include "src/writer/append_vector.h"
 
@@ -260,6 +268,34 @@ const sem::Type* ElementTypeOf(const sem::Type* ty) {
 
 }  // namespace
 
+SanitizedResult Sanitize(const Program* in,
+                         bool emit_vertex_point_size,
+                         bool disable_workgroup_init) {
+  transform::Manager manager;
+  transform::DataMap data;
+
+  if (!disable_workgroup_init) {
+    manager.Add<transform::ZeroInitWorkgroupMemory>();
+  }
+  manager.Add<transform::InlinePointerLets>();  // Required for arrayLength()
+  manager.Add<transform::Simplify>();           // Required for arrayLength()
+  manager.Add<transform::FoldConstants>();
+  manager.Add<transform::ExternalTextureTransform>();
+  manager.Add<transform::ForLoopToLoop>();  // Must come after
+                                            // ZeroInitWorkgroupMemory
+  manager.Add<transform::CanonicalizeEntryPointIO>();
+  manager.Add<transform::AddEmptyEntryPoint>();
+
+  data.Add<transform::CanonicalizeEntryPointIO::Config>(
+      transform::CanonicalizeEntryPointIO::Config(
+          transform::CanonicalizeEntryPointIO::ShaderStyle::kSpirv, 0xFFFFFFFF,
+          emit_vertex_point_size));
+
+  SanitizedResult result;
+  result.program = std::move(manager.Run(in, data).program);
+  return result;
+}
+
 Builder::AccessorInfo::AccessorInfo() : source_id(0), source_type(nullptr) {}
 
 Builder::AccessorInfo::~AccessorInfo() {}
@@ -270,13 +306,6 @@ Builder::Builder(const Program* program)
 Builder::~Builder() = default;
 
 bool Builder::Build() {
-  if (!builder_.HasTransformApplied<transform::Spirv>()) {
-    error_ =
-        "SPIR-V writer requires the transform::Spirv sanitizer to have been "
-        "applied to the input program";
-    return false;
-  }
-
   push_capability(SpvCapabilityShader);
 
   push_memory_model(spv::Op::OpMemoryModel,
@@ -478,9 +507,9 @@ bool Builder::GenerateExecutionModes(ast::Function* func, uint32_t id) {
       }
       has_overridable_workgroup_size_ = true;
 
-      sem::U32 u32;
-      sem::Vector vec3_u32(&u32, 3);
-      uint32_t vec3_u32_type_id = GenerateTypeIfNeeded(&vec3_u32);
+      auto* vec3_u32 =
+          builder_.create<sem::Vector>(builder_.create<sem::U32>(), 3);
+      uint32_t vec3_u32_type_id = GenerateTypeIfNeeded(vec3_u32);
       if (vec3_u32_type_id == 0) {
         return 0;
       }
@@ -1675,23 +1704,19 @@ uint32_t Builder::GenerateConstantIfNeeded(const ScalarConstant& constant) {
 
   switch (constant.kind) {
     case ScalarConstant::Kind::kU32: {
-      sem::U32 u32;
-      type_id = GenerateTypeIfNeeded(&u32);
+      type_id = GenerateTypeIfNeeded(builder_.create<sem::U32>());
       break;
     }
     case ScalarConstant::Kind::kI32: {
-      sem::I32 i32;
-      type_id = GenerateTypeIfNeeded(&i32);
+      type_id = GenerateTypeIfNeeded(builder_.create<sem::I32>());
       break;
     }
     case ScalarConstant::Kind::kF32: {
-      sem::F32 f32;
-      type_id = GenerateTypeIfNeeded(&f32);
+      type_id = GenerateTypeIfNeeded(builder_.create<sem::F32>());
       break;
     }
     case ScalarConstant::Kind::kBool: {
-      sem::Bool bool_;
-      type_id = GenerateTypeIfNeeded(&bool_);
+      type_id = GenerateTypeIfNeeded(builder_.create<sem::Bool>());
       break;
     }
   }
@@ -2297,7 +2322,8 @@ uint32_t Builder::GenerateIntrinsic(ast::CallExpression* call,
 
   // Generates the SPIR-V ID for the expression for the indexed call parameter,
   // and loads it if necessary. Returns 0 on error.
-  auto get_param_as_value_id = [&](size_t i) -> uint32_t {
+  auto get_param_as_value_id = [&](size_t i,
+                                   bool generate_load = true) -> uint32_t {
     auto* arg = call->params()[i];
     auto* param = intrinsic->Parameters()[i];
     auto val_id = GenerateExpression(arg);
@@ -2305,7 +2331,7 @@ uint32_t Builder::GenerateIntrinsic(ast::CallExpression* call,
       return 0;
     }
 
-    if (!param->Type()->Is<sem::Pointer>()) {
+    if (generate_load && !param->Type()->Is<sem::Pointer>()) {
       val_id = GenerateLoadIfNeeded(TypeOf(arg), val_id);
     }
     return val_id;
@@ -2402,7 +2428,7 @@ uint32_t Builder::GenerateIntrinsic(ast::CallExpression* call,
       // Evaluate the single argument, return the non-zero result_id which isn't
       // associated with any op (ignore returns void, so this cannot be used in
       // an expression).
-      if (!get_param_as_value_id(0)) {
+      if (!get_param_as_value_id(0, false)) {
         return 0;
       }
       return result_id;
@@ -2457,8 +2483,9 @@ uint32_t Builder::GenerateIntrinsic(ast::CallExpression* call,
       const uint32_t kMaxNormalExponent = 0x7f00000;
 
       auto set_id = GetGLSLstd450Import();
-      sem::U32 u32;
-      auto unsigned_id = GenerateTypeIfNeeded(&u32);
+      auto* u32 = builder_.create<sem::U32>();
+
+      auto unsigned_id = GenerateTypeIfNeeded(u32);
       auto exponent_mask_id =
           GenerateConstantIfNeeded(ScalarConstant::U32(kExponentMask));
       auto min_exponent_id =
@@ -2470,8 +2497,8 @@ uint32_t Builder::GenerateIntrinsic(ast::CallExpression* call,
         // same size, and create vector constants by replicating the scalars.
         // I expect backend compilers to fold these into unique constants, so
         // there is no loss of efficiency.
-        sem::Vector uvec_ty(&u32, fvec_ty->Width());
-        unsigned_id = GenerateTypeIfNeeded(&uvec_ty);
+        auto* uvec_ty = builder_.create<sem::Vector>(u32, fvec_ty->Width());
+        unsigned_id = GenerateTypeIfNeeded(uvec_ty);
         auto splat = [&](uint32_t scalar_id) -> uint32_t {
           auto splat_result = result_op();
           OperandList splat_params{Operand::Int(unsigned_id), splat_result};
@@ -2562,12 +2589,12 @@ uint32_t Builder::GenerateIntrinsic(ast::CallExpression* call,
       auto* result_vector_type = intrinsic->ReturnType()->As<sem::Vector>();
       if (result_vector_type &&
           intrinsic->Parameters()[2]->Type()->is_scalar()) {
-        sem::Bool bool_type;
-        sem::Vector bool_vec_type(&bool_type, result_vector_type->Width());
-        if (!GenerateTypeIfNeeded(&bool_vec_type)) {
+        auto* bool_vec_ty = builder_.create<sem::Vector>(
+            builder_.create<sem::Bool>(), result_vector_type->Width());
+        if (!GenerateTypeIfNeeded(bool_vec_ty)) {
           return 0;
         }
-        cond_id = GenerateSplat(cond_id, &bool_vec_type);
+        cond_id = GenerateSplat(cond_id, bool_vec_ty);
         if (cond_id == 0) {
           return 0;
         }
@@ -3151,6 +3178,15 @@ bool Builder::GenerateAtomicIntrinsic(ast::CallExpression* call,
                                                            semantics,
                                                            value,
                                                        });
+    case sem::IntrinsicType::kAtomicSub:
+      return push_function_inst(spv::Op::OpAtomicISub, {
+                                                           result_type,
+                                                           result_id,
+                                                           pointer,
+                                                           memory,
+                                                           semantics,
+                                                           value,
+                                                       });
     case sem::IntrinsicType::kAtomicMax:
       return push_function_inst(
           is_value_signed() ? spv::Op::OpAtomicSMax : spv::Op::OpAtomicUMax,
@@ -3222,8 +3258,8 @@ bool Builder::GenerateAtomicIntrinsic(ast::CallExpression* call,
         return false;
       }
 
-      sem::Bool bool_sem_type;
-      auto bool_type = GenerateTypeIfNeeded(&bool_sem_type);
+      auto* bool_sem_ty = builder_.create<sem::Bool>();
+      auto bool_type = GenerateTypeIfNeeded(bool_sem_ty);
       if (bool_type == 0) {
         return false;
       }
@@ -3915,8 +3951,7 @@ bool Builder::GenerateTextureType(const sem::Texture* texture,
 
   uint32_t type_id = 0u;
   if (texture->IsAnyOf<sem::DepthTexture, sem::DepthMultisampledTexture>()) {
-    sem::F32 f32;
-    type_id = GenerateTypeIfNeeded(&f32);
+    type_id = GenerateTypeIfNeeded(builder_.create<sem::F32>());
   } else if (auto* s = texture->As<sem::SampledTexture>()) {
     type_id = GenerateTypeIfNeeded(s->type());
   } else if (auto* ms = texture->As<sem::MultisampledTexture>()) {
@@ -3969,8 +4004,8 @@ bool Builder::GenerateArrayType(const sem::Array* ary, const Operand& result) {
 
 bool Builder::GenerateMatrixType(const sem::Matrix* mat,
                                  const Operand& result) {
-  sem::Vector col_type(mat->type(), mat->rows());
-  auto col_type_id = GenerateTypeIfNeeded(&col_type);
+  auto* col_type = builder_.create<sem::Vector>(mat->type(), mat->rows());
+  auto col_type_id = GenerateTypeIfNeeded(col_type);
   if (has_error()) {
     return false;
   }

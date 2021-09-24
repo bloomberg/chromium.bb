@@ -60,6 +60,7 @@ GrGLCaps::GrGLCaps(const GrContextOptions& contextOptions,
     fMustSetAnyTexParameterToEnableMipmapping = false;
     fAllowBGRA8CopyTexSubImage = false;
     fDisallowDynamicMSAA = false;
+    fMustResetBlendFuncBetweenDualSourceAndDisable = false;
     fProgramBinarySupport = false;
     fProgramParameterSupport = false;
     fSamplerObjectSupport = false;
@@ -221,14 +222,6 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
         fClientCanDisableMultisample = ctxInfo.hasExtension("GL_EXT_multisample_compatibility");
     } // no WebGL support
 
-#if 0
-#ifdef SK_BUILD_FOR_MAC
-    fMultisampleDisableSupport = false;
-#else
-    fMultisampleDisableSupport = fClientCanDisableMultisample;
-#endif
-#endif
-
     if (GR_IS_GR_GL(standard)) {
         // 3.1 has draw_instanced but not instanced_arrays, for the time being we only care about
         // instanced arrays, but we could make this more granular if we wanted
@@ -372,53 +365,28 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
 
         shaderCaps->fShaderDerivativeSupport = true;
 
-        // we don't support GL_ARB_geometry_shader4, just GL 3.2+ GS
-        shaderCaps->fGeometryShaderSupport = version >= GR_GL_VER(3, 2) &&
-            ctxInfo.glslGeneration() >= k150_GrGLSLGeneration;
-        if (shaderCaps->fGeometryShaderSupport) {
-            if (ctxInfo.glslGeneration() >= k400_GrGLSLGeneration) {
-                shaderCaps->fGSInvocationsSupport = true;
-            } else if (ctxInfo.hasExtension("GL_ARB_gpu_shader5")) {
-                shaderCaps->fGSInvocationsSupport = true;
-                shaderCaps->fGSInvocationsExtensionString = "GL_ARB_gpu_shader5";
-            }
-        }
-
         shaderCaps->fIntegerSupport = version >= GR_GL_VER(3, 0) &&
             ctxInfo.glslGeneration() >= k130_GrGLSLGeneration;
 
         shaderCaps->fNonsquareMatrixSupport = ctxInfo.glslGeneration() >= k130_GrGLSLGeneration;
+        shaderCaps->fInverseHyperbolicSupport = ctxInfo.glslGeneration() >= k130_GrGLSLGeneration;
     } else if (GR_IS_GR_GL_ES(standard)) {
         shaderCaps->fDualSourceBlendingSupport = ctxInfo.hasExtension("GL_EXT_blend_func_extended");
 
         shaderCaps->fShaderDerivativeSupport = version >= GR_GL_VER(3, 0) ||
             ctxInfo.hasExtension("GL_OES_standard_derivatives");
 
-        // Mali and early Adreno both have support for geometry shaders, but they appear to be
-        // implemented in software. In practice with ccpr, they were slower than the backup impl
-        // that only uses vertex shaders.
-        if (ctxInfo.vendor()   != GrGLVendor::kARM         &&
-            ctxInfo.renderer() != GrGLRenderer::kAdreno3xx &&
-            ctxInfo.renderer() != GrGLRenderer::kAdreno4xx_other) {
-
-            if (version >= GR_GL_VER(3,2)) {
-                shaderCaps->fGeometryShaderSupport = true;
-            } else if (ctxInfo.hasExtension("GL_EXT_geometry_shader")) {
-                shaderCaps->fGeometryShaderSupport = true;
-                shaderCaps->fGeometryShaderExtensionString = "GL_EXT_geometry_shader";
-            }
-            shaderCaps->fGSInvocationsSupport = shaderCaps->fGeometryShaderSupport;
-        }
-
         shaderCaps->fIntegerSupport = version >= GR_GL_VER(3, 0) &&
             ctxInfo.glslGeneration() >= k330_GrGLSLGeneration; // We use this value for GLSL ES 3.0.
         shaderCaps->fNonsquareMatrixSupport = ctxInfo.glslGeneration() >= k330_GrGLSLGeneration;
+        shaderCaps->fInverseHyperbolicSupport = ctxInfo.glslGeneration() >= k330_GrGLSLGeneration;
     } else if (GR_IS_GR_WEBGL(standard)) {
         shaderCaps->fShaderDerivativeSupport = version >= GR_GL_VER(2, 0) ||
                                                ctxInfo.hasExtension("GL_OES_standard_derivatives") ||
                                                ctxInfo.hasExtension("OES_standard_derivatives");
         shaderCaps->fIntegerSupport = (version >= GR_GL_VER(2, 0));
         shaderCaps->fNonsquareMatrixSupport = ctxInfo.glslGeneration() >= k330_GrGLSLGeneration;
+        shaderCaps->fInverseHyperbolicSupport = ctxInfo.glslGeneration() >= k330_GrGLSLGeneration;
     }
 
     if (ctxInfo.hasExtension("GL_NV_conservative_raster")) {
@@ -3552,23 +3520,6 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         fClearTextureSupport = false;
     }
 
-#ifdef SK_BUILD_FOR_MAC
-    // Radeon MacBooks hit a crash in glReadPixels() when using geometry shaders.
-    // http://skbug.com/8097
-    if (ctxInfo.vendor() == GrGLVendor::kATI) {
-        shaderCaps->fGeometryShaderSupport = false;
-    }
-    // On at least some MacBooks, GLSL 4.0 geometry shaders break if we use invocations.
-    shaderCaps->fGSInvocationsSupport = false;
-#endif
-
-    // Qualcomm driver @103.0 has been observed to crash compiling ccpr geometry
-    // shaders. @127.0 is the earliest verified driver to not crash.
-    if (ctxInfo.driver() == GrGLDriver::kQualcomm &&
-        ctxInfo.driverVersion() < GR_GL_DRIVER_VER(127, 0, 0)) {
-        shaderCaps->fGeometryShaderSupport = false;
-    }
-
     // glBlitFramebuffer seems to produce incorrect results on QC, Mali400, and Tegra3 but
     // glCopyTexSubImage2D works (even though there is no extension that specifically allows it).
     if (ctxInfo.vendor()   == GrGLVendor::kQualcomm  ||
@@ -4028,6 +3979,16 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         }
     }
 
+    // On Adreno 5xx devices, there is a bug where we first draw using dual source blending. Thus
+    // the dst blend func references the dst. Then the next draw we disable blending. However, on
+    // the second draw the driver has a bug where it tries to access the second color output again.
+    // This is fixed by reseting the blend function to anything that does not reference src2 when we
+    // disable blending.
+    if (ctxInfo.renderer() == GrGLRenderer::kAdreno530 ||
+        ctxInfo.renderer() == GrGLRenderer::kAdreno5xx_other) {
+        fMustResetBlendFuncBetweenDualSourceAndDisable = true;
+    }
+
     // Many ES3 drivers only advertise the ES2 image_external extension, but support the _essl3
     // extension, and require that it be enabled to work with ESSL3. Other devices require the ES2
     // extension to be enabled, even when using ESSL3. Enabling both extensions fixes both cases.
@@ -4201,7 +4162,8 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
     // We disable MSAA for all Intel GPUs. Before Gen9, performance was very bad. Even with Gen9,
     // we've seen driver crashes in the wild. We don't have data on Gen11 yet.
     // (crbug.com/527565, crbug.com/983926)
-    if (ctxInfo.vendor() == GrGLVendor::kIntel) {
+    if (ctxInfo.vendor() == GrGLVendor::kIntel ||
+        ctxInfo.angleVendor() == GrGLVendor::kIntel) {
         fMSFBOType = kNone_MSFBOType;
     }
 
@@ -4450,8 +4412,8 @@ bool GrGLCaps::isFormatSRGB(const GrBackendFormat& format) const {
     return format.asGLFormat() == GrGLFormat::kSRGB8_ALPHA8;
 }
 
-bool GrGLCaps::isFormatTexturable(const GrBackendFormat& format) const {
-    if (format.textureType() == GrTextureType::kRectangle && !this->rectangleTextureSupport()) {
+bool GrGLCaps::isFormatTexturable(const GrBackendFormat& format, GrTextureType textureType) const {
+    if (textureType == GrTextureType::kRectangle && !this->rectangleTextureSupport()) {
         return false;
     }
     return this->isFormatTexturable(format.asGLFormat());

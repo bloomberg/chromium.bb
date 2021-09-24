@@ -47,7 +47,114 @@ void SetDevToolsAttachedOnCoreThread(
     version->SetDevToolsAttached(attached);
 }
 
+/*
+ In addition to watching for dedicated workers (as all auto-attachers dealing
+ with renderer targets do), the service worker auto-attacher below would also
+ watch for the new versions of the same service workers. While these may
+ already be covered by the parent page auto-attacher, this is essemtial for
+ supporting a client that is only attached to the service worker target.
+ Please note that this may result with multiple `AutoAttach()` calls to
+ the client, but that's ok, as the client only sends CDP notifications for
+ that tatgets it hasn't seen previously.
+ Here is an example scenario.
+
+      Client                                    Backend
+                                           (SW v1 created)
+ Target.getTargets()                   ->
+ Target.attachTarget(SW_v1)            ->
+ Target.autoAttachRelated(SW_v1)       ->
+                                           (SW v2 created)
+                                       <-  Target.attachedToTarget(SW_v2)
+ Target.autoAttachRelated(SW_v2)       ->
+ Runtime.runIfWaitingForDebugger       ->
+                                           (SW v1 stopped)
+                                           Target.detachedFromTarget(SW_v1)
+*/
+
+class ServiceWorkerAutoAttacher
+    : public protocol::RendererAutoAttacherBase,
+      public ServiceWorkerDevToolsManager::Observer {
+ public:
+  ServiceWorkerAutoAttacher(DevToolsRendererChannel* renderer_channel,
+                            ServiceWorkerDevToolsAgentHost* host)
+      : RendererAutoAttacherBase(renderer_channel), host_(host) {}
+  ~ServiceWorkerAutoAttacher() override {
+    if (have_observer_)
+      ServiceWorkerDevToolsManager::GetInstance()->RemoveObserver(this);
+  }
+
+ private:
+  // ServiceWorkerDevToolsManager::Observer implementation.
+  void WorkerCreated(ServiceWorkerDevToolsAgentHost* host,
+                     bool* should_pause_on_start) override {
+    if (!IsNewerVersion(host))
+      return;
+    *should_pause_on_start = wait_for_debugger_on_start();
+    DispatchAutoAttach(host, *should_pause_on_start);
+  }
+
+  void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override {
+    // Report an auto-detached service worker for any host with same
+    // registration, to provide for the case where its older version that could
+    // have had it auto-attached may have been shut down at this point.
+    if (MatchRegistration(host))
+      DispatchAutoDetach(host);
+  }
+
+  void UpdateAutoAttach(base::OnceClosure callback) override {
+    bool enabled = auto_attach();
+    if (have_observer_ != enabled) {
+      if (enabled) {
+        ServiceWorkerDevToolsManager::GetInstance()->AddObserver(this);
+        ServiceWorkerDevToolsAgentHost::List agent_hosts;
+        ServiceWorkerDevToolsManager::GetInstance()->AddAllAgentHosts(
+            &agent_hosts);
+        for (auto& host : agent_hosts) {
+          if (IsNewerVersion(host.get()))
+            DispatchAutoAttach(host.get(), false);
+        }
+      } else {
+        ServiceWorkerDevToolsManager::GetInstance()->RemoveObserver(this);
+      }
+      have_observer_ = enabled;
+    }
+    RendererAutoAttacherBase::UpdateAutoAttach(std::move(callback));
+  }
+
+  bool MatchRegistration(ServiceWorkerDevToolsAgentHost* their_host) const {
+    return host_->context_wrapper() == their_host->context_wrapper() &&
+           host_->scope() == their_host->scope() &&
+           host_->GetURL() == their_host->GetURL();
+  }
+
+  bool IsNewerVersion(ServiceWorkerDevToolsAgentHost* their_host) {
+    return MatchRegistration(their_host) &&
+           their_host->version_id() > host_->version_id();
+  }
+
+  bool have_observer_ = false;
+  ServiceWorkerDevToolsAgentHost* host_;
+};
+
 }  // namespace
+
+// static
+scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForServiceWorker(
+    ServiceWorkerContext* context,
+    int64_t version_id) {
+  auto* context_wrapper = static_cast<ServiceWorkerContextWrapper*>(context);
+  ServiceWorkerDevToolsAgentHost::List hosts;
+  ServiceWorkerDevToolsManager::GetInstance()
+      ->AddAllAgentHostsForBrowserContext(context_wrapper->browser_context(),
+                                          &hosts);
+  for (auto& host : hosts) {
+    if (host->context_wrapper() == context_wrapper &&
+        host->version_id() == version_id) {
+      return host;
+    }
+  }
+  return nullptr;
+}
 
 ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
     int worker_process_id,
@@ -63,8 +170,9 @@ ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
         coep_reporter,
     const base::UnguessableToken& devtools_worker_token)
     : DevToolsAgentHostImpl(devtools_worker_token.ToString()),
-      auto_attacher_(std::make_unique<protocol::RendererAutoAttacherBase>(
-          GetRendererChannel())),
+      auto_attacher_(
+          std::make_unique<ServiceWorkerAutoAttacher>(GetRendererChannel(),
+                                                      this)),
       state_(WORKER_NOT_READY),
       devtools_worker_token_(devtools_worker_token),
       worker_process_id_(worker_process_id),
@@ -140,9 +248,13 @@ bool ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
           &ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories,
           base::Unretained(this))));
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
-  session->AddHandler(std::make_unique<protocol::TargetHandler>(
+
+  auto target_handler = std::make_unique<protocol::TargetHandler>(
       protocol::TargetHandler::AccessMode::kAutoAttachOnly, GetId(),
-      auto_attacher_.get(), session->GetRootSession()));
+      auto_attacher_.get(), session->GetRootSession());
+  target_handler->DisableAutoAttachOfServiceWorkers();
+  session->AddHandler(std::move(target_handler));
+
   if (state_ == WORKER_READY && sessions().empty())
     UpdateIsAttached(true);
   return true;
@@ -152,6 +264,10 @@ void ServiceWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
   if (state_ == WORKER_READY && sessions().empty())
     UpdateIsAttached(false);
+}
+
+protocol::TargetAutoAttacher* ServiceWorkerDevToolsAgentHost::auto_attacher() {
+  return auto_attacher_.get();
 }
 
 void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(

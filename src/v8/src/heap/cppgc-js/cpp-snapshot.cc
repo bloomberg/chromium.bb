@@ -47,7 +47,13 @@ class EmbedderNode : public v8::EmbedderGraph::Node {
   void SetWrapperNode(v8::EmbedderGraph::Node* wrapper_node) {
     // An embedder node may only be merged with a single wrapper node, as
     // consumers of the graph may merge a node and its wrapper node.
-    DCHECK_NULL(wrapper_node_);
+    //
+    // TODO(chromium:1218404): Add a DCHECK() to avoid overriding an already
+    // set `wrapper_node_`. This can currently happen with global proxies that
+    // are rewired (and still kept alive) after reloading a page, see
+    // `AddEdge`. We accept overriding the wrapper node in such cases,
+    // leading to a random merged node and separated nodes for all other
+    // proxies.
     wrapper_node_ = wrapper_node;
   }
   Node* WrapperNode() final { return wrapper_node_; }
@@ -258,6 +264,10 @@ class State final : public StateBase {
     ephemeron_edges_.insert(&value);
   }
 
+  void AddEagerEphemeronEdge(const void* value, cppgc::TraceCallback callback) {
+    eager_ephemeron_edges_.insert({value, callback});
+  }
+
   template <typename Callback>
   void ForAllEphemeronEdges(Callback callback) {
     for (const HeapObjectHeader* value : ephemeron_edges_) {
@@ -265,10 +275,20 @@ class State final : public StateBase {
     }
   }
 
+  template <typename Callback>
+  void ForAllEagerEphemeronEdges(Callback callback) {
+    for (const auto& pair : eager_ephemeron_edges_) {
+      callback(pair.first, pair.second);
+    }
+  }
+
  private:
   bool is_weak_container_ = false;
   // Values that are held alive through ephemerons by this particular key.
   std::unordered_set<const HeapObjectHeader*> ephemeron_edges_;
+  // Values that are eagerly traced and held alive through ephemerons by this
+  // particular key.
+  std::unordered_map<const void*, cppgc::TraceCallback> eager_ephemeron_edges_;
 };
 
 // Root states are similar to regular states with the difference that they are
@@ -398,6 +418,9 @@ class CppGraphBuilderImpl final {
   void VisitForVisibility(State& parent, const TracedReferenceBase&);
   void VisitEphemeronForVisibility(const HeapObjectHeader& key,
                                    const HeapObjectHeader& value);
+  void VisitEphemeronWithNonGarbageCollectedValueForVisibility(
+      const HeapObjectHeader& key, const void* value,
+      cppgc::TraceDescriptor value_desc);
   void VisitWeakContainerForVisibility(const HeapObjectHeader&);
   void VisitRootForGraphBuilding(RootState&, const HeapObjectHeader&,
                                  const cppgc::SourceLocation&);
@@ -415,7 +438,7 @@ class CppGraphBuilderImpl final {
   }
 
   void AddEdge(State& parent, const HeapObjectHeader& header,
-               const std::string& edge_name = {}) {
+               const std::string& edge_name) {
     DCHECK(parent.IsVisibleNotDependent());
     auto& current = states_.GetExistingState(header);
     if (!current.IsVisibleNotDependent()) return;
@@ -427,12 +450,6 @@ class CppGraphBuilderImpl final {
     }
     if (!current.get_node()) {
       current.set_node(AddNode(header));
-
-      const auto& it = pending_back_states_.find(&current);
-      if (it != pending_back_states_.end()) {
-        CreateMergedNode(current, it->second);
-        pending_back_states_.erase(it);
-      }
     }
 
     if (!edge_name.empty()) {
@@ -443,7 +460,8 @@ class CppGraphBuilderImpl final {
     }
   }
 
-  void AddEdge(State& parent, const TracedReferenceBase& ref) {
+  void AddEdge(State& parent, const TracedReferenceBase& ref,
+               const std::string& edge_name) {
     DCHECK(parent.IsVisibleNotDependent());
     v8::Local<v8::Value> v8_value = ref.Get(cpp_heap_.isolate());
     if (!v8_value.IsEmpty()) {
@@ -451,27 +469,46 @@ class CppGraphBuilderImpl final {
         parent.set_node(AddNode(*parent.header()));
       }
       auto* v8_node = graph_.V8Node(v8_value);
-      graph_.AddEdge(parent.get_node(), v8_node);
+      if (!edge_name.empty()) {
+        graph_.AddEdge(parent.get_node(), v8_node,
+                       parent.get_node()->InternalizeEdgeName(edge_name));
+      } else {
+        graph_.AddEdge(parent.get_node(), v8_node);
+      }
 
       // References that have a class id set may have their internal fields
       // pointing back to the object. Set up a wrapper node for the graph so
       // that the snapshot generator  can merge the nodes appropriately.
-      if (!ref.WrapperClassId()) return;
+      // Even with a set class id, do not set up a wrapper node when the edge
+      // has a specific name.
+      if (!ref.WrapperClassId() || !edge_name.empty()) return;
 
       void* back_reference_object = ExtractEmbedderDataBackref(
           reinterpret_cast<v8::internal::Isolate*>(cpp_heap_.isolate()),
           v8_value);
       if (back_reference_object) {
-        auto& back_state = states_.GetExistingState(
-            HeapObjectHeader::FromObject(back_reference_object));
-        DCHECK_EQ(pending_back_states_.end(),
-                  pending_back_states_.find(&back_state));
-        const MergedNodeItem back_ref_item{v8_node, v8_value,
-                                           ref.WrapperClassId()};
+        auto& back_header = HeapObjectHeader::FromObject(back_reference_object);
+        auto& back_state = states_.GetExistingState(back_header);
+
+        // Generally the back reference will point to `parent.header()`. In the
+        // case of global proxy set up the backreference will point to a
+        // different object, which may not have a node at t his point. Merge the
+        // nodes nevertheless as Window objects need to be able to query their
+        // detachedness state.
+        //
+        // TODO(chromium:1218404): See bug description on how to fix this
+        // inconsistency and only merge states when the backref points back
+        // to the same object.
         if (!back_state.get_node()) {
-          pending_back_states_.emplace(&back_state, back_ref_item);
-        } else {
-          CreateMergedNode(back_state, back_ref_item);
+          back_state.set_node(AddNode(back_header));
+        }
+        back_state.get_node()->SetWrapperNode(v8_node);
+
+        auto* profiler =
+            reinterpret_cast<Isolate*>(cpp_heap_.isolate())->heap_profiler();
+        if (profiler->HasGetDetachednessCallback()) {
+          back_state.get_node()->SetDetachedness(
+              profiler->GetDetachedness(v8_value, ref.WrapperClassId()));
         }
       }
     }
@@ -506,30 +543,10 @@ class CppGraphBuilderImpl final {
     uint16_t wrapper_class_id_;
   };
 
-  void CreateMergedNode(State& back_state, const MergedNodeItem& item) {
-    // Generally the back reference will point to `parent.header()`. In the
-    // case of global proxy set up the backreference will point to a
-    // different object. Merge the nodes nevertheless as Window objects need
-    // to be able to query their detachedness state.
-    //
-    // TODO(chromium:1218404): See bug description on how to fix this
-    // inconsistency and only merge states when the backref points back
-    // to the same object.
-    back_state.get_node()->SetWrapperNode(item.node_);
-
-    auto* profiler =
-        reinterpret_cast<Isolate*>(cpp_heap_.isolate())->heap_profiler();
-    if (profiler->HasGetDetachednessCallback()) {
-      back_state.get_node()->SetDetachedness(
-          profiler->GetDetachedness(item.value_, item.wrapper_class_id_));
-    }
-  }
-
   CppHeap& cpp_heap_;
   v8::EmbedderGraph& graph_;
   StateStorage states_;
   std::vector<std::unique_ptr<WorkstackItemBase>> workstack_;
-  std::unordered_map<State*, const MergedNodeItem> pending_back_states_;
 };
 
 // Iterating live objects to mark them as visible if needed.
@@ -606,8 +623,18 @@ class WeakVisitor : public JSVisitor {
   void VisitEphemeron(const void* key, const void* value,
                       cppgc::TraceDescriptor value_desc) final {
     // For ephemerons, the key retains the value.
+    // Key always must be a GarbageCollected object.
+    auto& key_header = HeapObjectHeader::FromObject(key);
+    if (!value_desc.base_object_payload) {
+      // Value does not represent an actual GarbageCollected object but rather
+      // should be traced eagerly.
+      graph_builder_.VisitEphemeronWithNonGarbageCollectedValueForVisibility(
+          key_header, value, value_desc);
+      return;
+    }
+    // Regular path where both key and value are GarbageCollected objects.
     graph_builder_.VisitEphemeronForVisibility(
-        HeapObjectHeader::FromObject(key), HeapObjectHeader::FromObject(value));
+        key_header, HeapObjectHeader::FromObject(value));
   }
 
  protected:
@@ -653,7 +680,7 @@ class GraphBuildingVisitor final : public JSVisitor {
   void Visit(const void*, cppgc::TraceDescriptor desc) final {
     graph_builder_.AddEdge(
         parent_scope_.ParentAsRegularState(),
-        HeapObjectHeader::FromObject(desc.base_object_payload));
+        HeapObjectHeader::FromObject(desc.base_object_payload), edge_name_);
   }
   void VisitWeakContainer(const void* object,
                           cppgc::TraceDescriptor strong_desc,
@@ -663,7 +690,8 @@ class GraphBuildingVisitor final : public JSVisitor {
     // container itself.
     graph_builder_.AddEdge(
         parent_scope_.ParentAsRegularState(),
-        HeapObjectHeader::FromObject(strong_desc.base_object_payload));
+        HeapObjectHeader::FromObject(strong_desc.base_object_payload),
+        edge_name_);
   }
   void VisitRoot(const void*, cppgc::TraceDescriptor desc,
                  const cppgc::SourceLocation& loc) final {
@@ -675,12 +703,18 @@ class GraphBuildingVisitor final : public JSVisitor {
                      const void*, const cppgc::SourceLocation&) final {}
   // JS handling.
   void Visit(const TracedReferenceBase& ref) final {
-    graph_builder_.AddEdge(parent_scope_.ParentAsRegularState(), ref);
+    graph_builder_.AddEdge(parent_scope_.ParentAsRegularState(), ref,
+                           edge_name_);
+  }
+
+  void set_edge_name(std::string edge_name) {
+    edge_name_ = std::move(edge_name);
   }
 
  private:
   CppGraphBuilderImpl& graph_builder_;
   const ParentScope& parent_scope_;
+  std::string edge_name_;
 };
 
 // Base class for transforming recursion into iteration. Items are processed
@@ -773,6 +807,19 @@ void CppGraphBuilderImpl::VisitForVisibility(State* parent,
   }
 }
 
+void CppGraphBuilderImpl::
+    VisitEphemeronWithNonGarbageCollectedValueForVisibility(
+        const HeapObjectHeader& key, const void* value,
+        cppgc::TraceDescriptor value_desc) {
+  auto& key_state = states_.GetOrCreateState(key);
+  // Eagerly trace the value here, effectively marking key as visible and
+  // queuing processing for all reachable values.
+  ParentScope parent_scope(key_state);
+  VisiblityVisitor visitor(*this, parent_scope);
+  value_desc.callback(&visitor, value);
+  key_state.AddEagerEphemeronEdge(value, value_desc.callback);
+}
+
 void CppGraphBuilderImpl::VisitEphemeronForVisibility(
     const HeapObjectHeader& key, const HeapObjectHeader& value) {
   auto& key_state = states_.GetOrCreateState(key);
@@ -828,6 +875,12 @@ void CppGraphBuilderImpl::Run() {
     state.ForAllEphemeronEdges([this, &state](const HeapObjectHeader& value) {
       AddEdge(state, value, "part of key -> value pair in ephemeron table");
     });
+    object_visitor.set_edge_name(
+        "part of key -> value pair in ephemeron table");
+    state.ForAllEagerEphemeronEdges(
+        [&object_visitor](const void* value, cppgc::TraceCallback callback) {
+          callback(&object_visitor, value);
+        });
   });
   // Add roots.
   {
@@ -842,7 +895,6 @@ void CppGraphBuilderImpl::Run() {
     cppgc::internal::PersistentRegionLock guard;
     cpp_heap_.GetStrongCrossThreadPersistentRegion().Trace(&object_visitor);
   }
-  CHECK(pending_back_states_.empty());
 }
 
 // static

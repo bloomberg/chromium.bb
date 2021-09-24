@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -41,6 +42,10 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
     virtual void OnAppUpdate(const AppUpdate& update) = 0;
 
     // Called when the publisher for |app_type| has finished initiating apps.
+    // Note that this will not be called for app types initialized prior to this
+    // observer being registered. Observers should call
+    // AppRegistryCache::GetInitializedAppTypes() at the time of starting
+    // observation to get a set of the app types which have been initialized.
     virtual void OnAppTypeInitialized(apps::mojom::AppType app_type) {}
 
     // Called when the AppRegistryCache object (the thing that this observer
@@ -169,12 +174,17 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
     return false;
   }
 
-  bool IsAppTypeInitialized(apps::mojom::AppType app_type);
+  // Returns the set of app types that have so far been initialized.
+  const std::set<apps::mojom::AppType>& GetInitializedAppTypes() const;
+
+  bool IsAppTypeInitialized(apps::mojom::AppType app_type) const;
 
  private:
   void DoOnApps(std::vector<apps::mojom::AppPtr> deltas);
 
-  void OnAppTypeInitialized();
+  // NOINLINE should force this function to appear on the stack in crash dumps.
+  // https://crbug.com/1237267.
+  void NOINLINE OnAppTypeInitialized();
 
   base::ObserverList<Observer> observers_;
 
@@ -210,6 +220,10 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   AccountId account_id_;
 
   SEQUENCE_CHECKER(my_sequence_checker_);
+
+  // A sentinel value checking for a UAF in https://crbug.com/1237267. Should be
+  // removed after https://crbug.com/1237267 is fixed.
+  uint32_t uaf_sentinel_;
 
   DISALLOW_COPY_AND_ASSIGN(AppRegistryCache);
 };

@@ -1,3 +1,4 @@
+load("//tensorflow:tensorflow.bzl", "filegroup")
 load(
     "//tensorflow/core/platform:rules_cc.bzl",
     "cc_library",
@@ -9,8 +10,10 @@ package(
         "//tensorflow/core:__pkg__",
         # tensorflow/core/platform:monitoring depends on this package
         "//tensorflow/core/platform:__subpackages__",
+        # tensorflow/compiler/xla/pjrt:metrics depends on this package
+        "//tensorflow/compiler/xla/pjrt:__subpackages__",
     ],
-    licenses = ["notice"],  # Apache 2.0
+    licenses = ["notice"],
 )
 
 # Todo(bmzhao): Remaining targets to add are: all tests.
@@ -57,6 +60,7 @@ cc_library(
         ":metric_def",
         ":types",
         "//tensorflow/core/framework:summary_proto_cc",
+        "//tensorflow/core/platform",
         "//tensorflow/core/platform:env",
         "//tensorflow/core/platform:logging",
         "//tensorflow/core/platform:macros",
@@ -73,7 +77,6 @@ cc_library(
     deps = [
         ":collection_registry",
         ":metric_def",
-        ":mobile_counter",
         "//tensorflow/core/lib/core:status",
         "//tensorflow/core/platform",
         "//tensorflow/core/platform:logging",
@@ -89,7 +92,6 @@ cc_library(
     deps = [
         ":collection_registry",
         ":metric_def",
-        ":mobile_gauge",
         "//tensorflow/core/lib/core:status",
         "//tensorflow/core/platform",
         "//tensorflow/core/platform:macros",
@@ -111,45 +113,12 @@ cc_library(
 )
 
 cc_library(
-    name = "mobile_counter",
-    hdrs = ["mobile_counter.h"],
-    deps = [
-        "//tensorflow/core/lib/core:status",
-        "//tensorflow/core/platform:macros",
-        "//tensorflow/core/platform:types",
-    ],
-)
-
-cc_library(
-    name = "mobile_gauge",
-    hdrs = ["mobile_gauge.h"],
-    deps = [
-        "//tensorflow/core/lib/core:status",
-        "//tensorflow/core/platform:macros",
-        "//tensorflow/core/platform:types",
-    ],
-)
-
-cc_library(
-    name = "mobile_sampler",
-    hdrs = ["mobile_sampler.h"],
-    deps = [
-        ":metric_def",
-        "//tensorflow/core/framework:summary_proto_cc",
-        "//tensorflow/core/lib/core:status",
-        "//tensorflow/core/platform:macros",
-        "//tensorflow/core/platform:types",
-    ],
-)
-
-cc_library(
     name = "sampler",
     srcs = ["sampler.cc"],
     hdrs = ["sampler.h"],
     deps = [
         ":collection_registry",
         ":metric_def",
-        ":mobile_sampler",
         "//tensorflow/core/framework:summary_proto_cc",
         "//tensorflow/core/lib/core:status",
         "//tensorflow/core/lib/histogram",
@@ -161,26 +130,12 @@ cc_library(
 )
 
 cc_library(
-    name = "mobile_percentile_sampler",
-    hdrs = ["mobile_percentile_sampler.h"],
-    deps = [
-        ":collection_registry",
-        ":metric_def",
-        ":types",
-        "//tensorflow/core/lib/core:status",
-        "//tensorflow/core/platform:macros",
-        "//tensorflow/core/platform:types",
-    ],
-)
-
-cc_library(
     name = "percentile_sampler",
     srcs = ["percentile_sampler.cc"],
     hdrs = ["percentile_sampler.h"],
     deps = [
         ":collection_registry",
         ":metric_def",
-        ":mobile_percentile_sampler",
         ":types",
         "//tensorflow/core/lib/core:status",
         "//tensorflow/core/platform",
@@ -194,12 +149,11 @@ cc_library(
 filegroup(
     name = "mobile_srcs_only_runtime",
     srcs = [
+        "collection_registry.h",
         "counter.h",
         "gauge.h",
         "metric_def.h",
-        "mobile_counter.h",
-        "mobile_gauge.h",
-        "mobile_sampler.h",
+        "percentile_sampler.h",
         "sampler.h",
         "timed.h",
         "types.h",
@@ -224,17 +178,6 @@ filegroup(
 )
 
 filegroup(
-    name = "legacy_lib_monitoring_lib_internal_public_headers",
-    srcs = [
-        "mobile_counter.h",
-        "mobile_gauge.h",
-        "mobile_percentile_sampler.h",
-        "mobile_sampler.h",
-    ],
-    visibility = ["//tensorflow/core:__pkg__"],
-)
-
-filegroup(
     name = "legacy_lib_monitoring_all_headers",
     srcs = [
         "collected_metrics.h",
@@ -242,10 +185,6 @@ filegroup(
         "counter.h",
         "gauge.h",
         "metric_def.h",
-        "mobile_counter.h",
-        "mobile_gauge.h",
-        "mobile_percentile_sampler.h",
-        "mobile_sampler.h",
         "percentile_sampler.h",
         "sampler.h",
         "types.h",

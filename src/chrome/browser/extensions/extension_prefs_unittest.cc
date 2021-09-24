@@ -215,9 +215,9 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
         permission_info->CreateAPIPermission());
     {
       std::unique_ptr<base::ListValue> value(new base::ListValue());
-      value->AppendString("tcp-connect:*.example.com:80");
-      value->AppendString("udp-bind::8080");
-      value->AppendString("udp-send-to::8888");
+      value->Append("tcp-connect:*.example.com:80");
+      value->Append("udp-bind::8080");
+      value->Append("udp-send-to::8888");
       ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
     }
     api_perm_set1_.insert(std::move(permission));
@@ -621,7 +621,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
     manifest.SetString(manifest_keys::kVersion, "0.2");
     manifest.SetInteger(manifest_keys::kManifestVersion, 2);
     std::unique_ptr<base::ListValue> scripts(new base::ListValue);
-    scripts->AppendString("test.js");
+    scripts->Append("test.js");
     manifest.Set(manifest_keys::kBackgroundScripts, std::move(scripts));
     base::FilePath path =
         prefs_.extensions_dir().AppendASCII("test_0.2");
@@ -657,7 +657,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
     EXPECT_FALSE(manifest->GetString(manifest_keys::kBackgroundPage, &value));
     const base::ListValue* scripts;
     ASSERT_TRUE(manifest->GetList(manifest_keys::kBackgroundScripts, &scripts));
-    EXPECT_EQ(1u, scripts->GetSize());
+    EXPECT_EQ(1u, scripts->GetList().size());
   }
 
  protected:
@@ -1092,6 +1092,51 @@ class ExtensionPrefsMigratedPref : public ExtensionPrefsTest {
 
 TEST_F(ExtensionPrefsMigratedPref, ExtensionPrefsMigratedPref) {}
 
+// Tests the migration of old blocklist prefs from extension pref entries.
+class ExtensionPrefsMigrateOldBlocklistPrefs : public ExtensionPrefsTest {
+ public:
+  static constexpr char kLegacyBlocklistPref[] = "blacklist";
+
+  ExtensionPrefsMigrateOldBlocklistPrefs() = default;
+  ~ExtensionPrefsMigrateOldBlocklistPrefs() override = default;
+
+  void Initialize() override {
+    extension_ = prefs_.AddExtension("a");
+    prefs()->UpdateExtensionPref(extension_->id(), kLegacyBlocklistPref,
+                                 std::make_unique<base::Value>(true));
+    bool is_blocklisted_pref = false;
+    prefs()->ReadPrefAsBoolean(extension_->id(), kLegacyBlocklistPref,
+                               &is_blocklisted_pref);
+    EXPECT_TRUE(is_blocklisted_pref);
+    // The pref is not migrated to the new pref yet.
+    EXPECT_FALSE(
+        blocklist_prefs::IsExtensionBlocklisted(extension_->id(), prefs()));
+
+    prefs()->MigrateOldBlocklistPrefs();
+  }
+
+  void Verify() override {
+    bool is_blocklisted_pref = false;
+    prefs()->ReadPrefAsBoolean(extension_->id(), kLegacyBlocklistPref,
+                               &is_blocklisted_pref);
+    // The old pref should be cleared.
+    EXPECT_FALSE(is_blocklisted_pref);
+    EXPECT_TRUE(
+        blocklist_prefs::IsExtensionBlocklisted(extension_->id(), prefs()));
+  }
+
+ private:
+  scoped_refptr<const Extension> extension_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPrefsMigrateOldBlocklistPrefs);
+};
+
+// static
+constexpr char ExtensionPrefsMigrateOldBlocklistPrefs::kLegacyBlocklistPref[];
+
+TEST_F(ExtensionPrefsMigrateOldBlocklistPrefs,
+       ExtensionPrefsMigrateOldBlocklistPrefs) {}
+
 // Tests the removal of obsolete keys from extension pref entries.
 class ExtensionPrefsIsExternalExtensionUninstalled : public ExtensionPrefsTest {
  public:
@@ -1364,7 +1409,7 @@ TEST_F(ExtensionPrefsSimpleTest, ExtensionSpecificPrefsMapTest) {
   prefs.prefs()->SetDictionaryPref(extension_id, kTestDictPref,
                                    std::move(dict));
   auto list = base::ListValue();
-  list.AppendString("list_val");
+  list.Append("list_val");
   prefs.prefs()->SetListPref(extension_id, kTestListPref, std::move(list));
   base::Time time = base::Time::Now();
   prefs.prefs()->SetTimePref(extension_id, kTestTimePref, time);

@@ -1662,6 +1662,35 @@ TEST_F(AuthenticatorImplTest, IsUVPAA) {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// TestWebAuthenticationRequestProxy is a test fake implementation of the
+// WebAuthenticationRequestProxy embedder interface.
+class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
+ public:
+  struct Config {
+    bool is_active = true;
+    bool is_uvpaa = true;
+  };
+
+  struct CallCounts {
+    size_t signal_is_uvpaa_request;
+  };
+
+  Config& config() { return config_; }
+
+  const CallCounts& call_counts() { return call_counts_; }
+
+  bool IsActive() override { return config_.is_active; }
+
+  void SignalIsUvpaaRequest(IsUvpaaCallback callback) override {
+    call_counts_.signal_is_uvpaa_request++;
+    std::move(callback).Run(config_.is_uvpaa);
+  }
+
+ private:
+  Config config_;
+  CallCounts call_counts_;
+};
+
 // TestWebAuthenticationDelegate is a test fake implementation of the
 // WebAuthentuicationDelegate embedder interface.
 class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
@@ -1680,7 +1709,9 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
   bool ShouldPermitIndividualAttestation(
       content::BrowserContext* browser_context,
       const std::string& relying_party_id) override {
-    return permit_individual_attestation;
+    return permit_individual_attestation ||
+           (permit_individual_attestation_for_rp_id.has_value() &&
+            relying_party_id == *permit_individual_attestation_for_rp_id);
   }
 
   bool SupportsResidentKeys(RenderFrameHost*) override {
@@ -1696,6 +1727,11 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
   }
 #endif
 
+  WebAuthenticationRequestProxy* MaybeGetRequestProxy(
+      content::BrowserContext* browser_context) override {
+    return request_proxy.get();
+  }
+
   // If set, the return value of IsUVPAA() will be overridden with this value.
   // Platform-specific implementations will not be invoked.
   absl::optional<bool> is_uvpaa_override;
@@ -1708,6 +1744,9 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
   // delegate.
   bool permit_individual_attestation = false;
 
+  // A specific RP ID for which individual attestation will be permitted.
+  absl::optional<std::string> permit_individual_attestation_for_rp_id;
+
   // Indicates whether resident key operations should be permitted by the
   // delegate.
   bool supports_resident_keys = false;
@@ -1719,6 +1758,9 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
   // Configuration data for the macOS platform authenticator.
   absl::optional<TouchIdAuthenticatorConfig> touch_id_authenticator_config;
 #endif
+
+  // The WebAuthenticationRequestProxy returned by |MaybeGetRequestProxy|.
+  std::unique_ptr<TestWebAuthenticationRequestProxy> request_proxy = nullptr;
 };
 
 enum class EnterprisePolicy {
@@ -2027,7 +2069,6 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
  protected:
   TestAuthenticatorContentBrowserClient test_client_;
 
- private:
   static const char* AttestationConveyancePreferenceToString(
       AttestationConveyancePreference v) {
     switch (v) {
@@ -2505,6 +2546,46 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   };
 
   RunTestCases(kTests);
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest,
+       GoogleLegacyAppidSupportEnterpriseAttestation) {
+  // When the googleLegacyAppidSupport extension is used, individual attestation
+  // decisions should key off the AppId, not the RP ID.
+  constexpr char kGstaticAppId[] =
+      "https://www.gstatic.com/securitykey/origins.json";
+  test_client_.GetTestWebAuthenticationDelegate()
+      ->permit_individual_attestation_for_rp_id = kGstaticAppId;
+
+  const char kStandardCommonName[] = "U2F Attestation";
+  const char kIndividualCommonName[] = "Individual Cert";
+  virtual_device_factory_->mutable_state()->attestation_cert_common_name =
+      kStandardCommonName;
+  virtual_device_factory_->mutable_state()
+      ->individual_attestation_cert_common_name = kIndividualCommonName;
+
+  NavigateAndCommit(GURL("https://accounts.google.com"));
+
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->relying_party.id = "google.com";
+  options->google_legacy_app_id_support = true;
+  options->attestation = ::device::AttestationConveyancePreference::
+      kEnterpriseIfRPListedOnAuthenticator;
+
+  auto result = AuthenticatorMakeCredential(std::move(options));
+  ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+
+  const device::AuthenticatorData auth_data =
+      AuthDataFromMakeCredentialResponse(result.response);
+  absl::optional<Value> attestation_value =
+      Reader::Read(result.response->attestation_object);
+  ASSERT_TRUE(attestation_value);
+  ASSERT_TRUE(attestation_value->is_map());
+  const auto& attestation = attestation_value->GetMap();
+
+  ExpectMapHasKeyWithStringValue(attestation, "fmt", "fido-u2f");
+  ExpectCertificateContainingSubstring(attestation, kIndividualCommonName);
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest, BlockedAttestation) {
@@ -4591,7 +4672,7 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialDontSkipPINTouch) {
   device::test::MultipleVirtualFidoDeviceFactory::DeviceDetails device_1;
   device_1.config.pin_support = true;
   device_1.state->simulate_press_callback =
-      base::BindRepeating([](VirtualFidoDevice* _) { return false; });
+      base::BindRepeating([](VirtualFidoDevice* ignore) { return false; });
   discovery->AddDevice(std::move(device_1));
 
   int taps = 0;
@@ -4599,7 +4680,7 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialDontSkipPINTouch) {
   device_2.state->pin = kTestPIN;
   device_2.config.pin_support = true;
   device_2.state->simulate_press_callback =
-      base::BindLambdaForTesting([&](VirtualFidoDevice* _) {
+      base::BindLambdaForTesting([&](VirtualFidoDevice* ignore) {
         ++taps;
         return true;
       });
@@ -4977,7 +5058,7 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionDontSkipPINTouch) {
   device::test::MultipleVirtualFidoDeviceFactory::DeviceDetails device_1;
   device_1.config.pin_support = true;
   device_1.state->simulate_press_callback =
-      base::BindRepeating([](VirtualFidoDevice* _) { return false; });
+      base::BindRepeating([](VirtualFidoDevice* ignore) { return false; });
   discovery->AddDevice(std::move(device_1));
 
   int taps = 0;
@@ -4985,7 +5066,7 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionDontSkipPINTouch) {
   device_2.state->pin = kTestPIN;
   device_2.config.pin_support = true;
   device_2.state->simulate_press_callback =
-      base::BindLambdaForTesting([&](VirtualFidoDevice* _) {
+      base::BindLambdaForTesting([&](VirtualFidoDevice* ignore) {
         ++taps;
         return true;
       });
@@ -5247,9 +5328,9 @@ TEST_F(PINAuthenticatorImplTest, RemoveSecondAuthenticator) {
   };
 
   device_1.state->simulate_press_callback = base::BindLambdaForTesting(
-      [&](VirtualFidoDevice* _) -> bool { return touch_callback(1); });
+      [&](VirtualFidoDevice* ignore) -> bool { return touch_callback(1); });
   device_2.state->simulate_press_callback = base::BindLambdaForTesting(
-      [&](VirtualFidoDevice* _) -> bool { return touch_callback(2); });
+      [&](VirtualFidoDevice* ignore) -> bool { return touch_callback(2); });
 
   auto discovery =
       std::make_unique<device::test::MultipleVirtualFidoDeviceFactory>();
@@ -5921,7 +6002,7 @@ TEST_F(BlockingDelegateAuthenticatorImplTest, PostCancelMessage) {
   device::test::MultipleVirtualFidoDeviceFactory::DeviceDetails device_1;
   scoped_refptr<VirtualFidoDevice::State> state_1 = device_1.state;
   device_1.state->simulate_press_callback =
-      base::BindLambdaForTesting([&](VirtualFidoDevice* _) -> bool {
+      base::BindLambdaForTesting([&](VirtualFidoDevice* ignore) -> bool {
         // Drop all makeCredential requests. The reply will be sent when
         // the second authenticator is asked for a fingerprint.
         return false;
@@ -5937,7 +6018,7 @@ TEST_F(BlockingDelegateAuthenticatorImplTest, PostCancelMessage) {
   device_2.state->fingerprints_enrolled = true;
   device_2.state->uv_retries = 8;
   device_2.state->simulate_press_callback =
-      base::BindLambdaForTesting([&](VirtualFidoDevice* _) -> bool {
+      base::BindLambdaForTesting([&](VirtualFidoDevice* ignore) -> bool {
         // If asked for a fingerprint, fail the makeCredential request by
         // simulating a matched excluded credential by the other authenticator.
         base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -7690,6 +7771,58 @@ TEST_F(CableV2AuthenticatorImplTest, ContactIDDisabled) {
   // The pairing should be been erased because of the signal from the tunnel
   // server.
   ASSERT_EQ(pairings_.size(), 0u);
+}
+
+// AuthenticatorImplWithRequestProxyTest tests behavior with an installed
+// TestWebAuthenticationRequestProxy that takes over WebAuthn request handling.
+class AuthenticatorImplWithRequestProxyTest : public AuthenticatorImplTest {
+ public:
+  void SetUp() override {
+    AuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+    test_client_.GetTestWebAuthenticationDelegate()->request_proxy =
+        std::make_unique<TestWebAuthenticationRequestProxy>();
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
+
+  TestWebAuthenticationRequestProxy& request_proxy() {
+    return static_cast<TestWebAuthenticationRequestProxy&>(
+        *test_client_.GetTestWebAuthenticationDelegate()->request_proxy);
+  }
+
+  ContentBrowserClient* old_client_ = nullptr;
+  TestAuthenticatorContentBrowserClient test_client_;
+};
+
+TEST_F(AuthenticatorImplWithRequestProxyTest, IsUVPAA) {
+  size_t i = 0;
+  for (const bool is_uvpaa : {false, true}) {
+    SCOPED_TRACE(testing::Message() << "is_uvpaa=" << is_uvpaa);
+    request_proxy().config().is_uvpaa = is_uvpaa;
+    NavigateAndCommit(GURL(kTestOrigin1));
+    mojo::Remote<blink::mojom::Authenticator> authenticator =
+        ConnectToAuthenticator();
+    TestIsUvpaaCallback cb;
+    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+    cb.WaitForCallback();
+    EXPECT_EQ(cb.value(), is_uvpaa);
+    EXPECT_EQ(request_proxy().call_counts().signal_is_uvpaa_request, ++i);
+  }
+}
+
+TEST_F(AuthenticatorImplWithRequestProxyTest, Inactive) {
+  request_proxy().config().is_active = false;
+  NavigateAndCommit(GURL(kTestOrigin1));
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  TestIsUvpaaCallback cb;
+  authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+  cb.WaitForCallback();
+  EXPECT_EQ(request_proxy().call_counts().signal_is_uvpaa_request, 0u);
 }
 
 }  // namespace content

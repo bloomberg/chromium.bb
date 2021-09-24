@@ -11,7 +11,7 @@ import {BookmarksApiProxy} from 'chrome://read-later.top-chrome/side_panel/bookm
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {eventToPromise, flushTasks, waitAfterNextRender} from '../../test_util.m.js';
+import {eventToPromise, flushTasks, waitAfterNextRender} from '../../test_util.js';
 
 import {TestBookmarksApiProxy} from './test_bookmarks_api_proxy.js';
 
@@ -86,6 +86,24 @@ suite('SidePanelBookmarkFolderTest', () => {
     assertEquals(
         folder.children[2].title,
         childElements[2].querySelector('.title').textContent);
+  });
+
+  test('UpdatesChildCountVariable', () => {
+    assertEquals('3', bookmarkFolder.style.getPropertyValue('--child-count'));
+
+    bookmarkFolder.folder = Object.assign({}, folder, {
+      children: [
+        {
+          id: '1',
+          title: 'Shopping list',
+          children: [],
+        },
+      ]
+    });
+    assertEquals('1', bookmarkFolder.style.getPropertyValue('--child-count'));
+
+    bookmarkFolder.folder = Object.assign({}, folder, {children: undefined});
+    assertEquals('0', bookmarkFolder.style.getPropertyValue('--child-count'));
   });
 
   test('ShowsFaviconForBookmarks', () => {
@@ -252,13 +270,17 @@ suite('SidePanelBookmarkFolderTest', () => {
     bookmarksApi.resetResolver('openBookmark');
 
     // Middle mouse button click.
-    item.dispatchEvent(new MouseEvent('auxclick'));
+    item.dispatchEvent(new MouseEvent('auxclick', {button: 1}));
     const [, , auxClick] = await bookmarksApi.whenCalled('openBookmark');
     assertTrue(auxClick.middleButton);
     assertFalse(
         auxClick.altKey || auxClick.ctrlKey || auxClick.metaKey ||
         auxClick.shiftKey);
     bookmarksApi.resetResolver('openBookmark');
+
+    // Non-middle mouse aux clicks.
+    item.dispatchEvent(new MouseEvent('auxclick', {button: 2}));
+    assertEquals(0, bookmarksApi.getCallCount('openBookmark'));
 
     // Modifier keys.
     item.dispatchEvent(new MouseEvent('click', {

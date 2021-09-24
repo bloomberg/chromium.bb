@@ -1849,7 +1849,9 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         mAnimateNormalToolbar = showToolbar;
         if (mTabSwitcherModeAnimation != null) mTabSwitcherModeAnimation.start();
 
-        if (DeviceClassManager.enableAccessibilityLayout() || !animate) finishAnimations();
+        if (DeviceClassManager.enableAccessibilityLayout(getContext()) || !animate) {
+            finishAnimations();
+        }
 
         postInvalidateOnAnimation();
     }
@@ -1892,8 +1894,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         if (mStartSurfaceScrollFraction != startSurfaceScrollFraction) {
             mStartSurfaceScrollFraction = startSurfaceScrollFraction;
             updateUrlExpansionFraction();
-            updateVisualsForLocationBarState();
         }
+        updateVisualsForLocationBarState();
     }
 
     @Override

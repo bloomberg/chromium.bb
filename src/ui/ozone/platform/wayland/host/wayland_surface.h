@@ -41,7 +41,7 @@ class WaylandSurface {
   wl_surface* surface() const { return surface_.get(); }
   wp_viewport* viewport() const { return viewport_.get(); }
 
-  const std::vector<WaylandOutput*>& entered_outputs() const {
+  const std::vector<uint32_t>& entered_outputs() const {
     return entered_outputs_;
   }
 
@@ -93,9 +93,9 @@ class WaylandSurface {
 
   // Sets the region that is opaque on this surface in physical pixels. This is
   // expected to be called whenever the region that the surface span changes or
-  // the opacity changes. |region_px| is specified surface-local, in physical
-  // pixels.
-  void SetOpaqueRegion(const gfx::Rect& region_px);
+  // the opacity changes. Rects in |region_px| are specified surface-local, in
+  // physical pixels.
+  void SetOpaqueRegion(const std::vector<gfx::Rect>& region_px);
 
   // Sets the input region on this surface in physical pixels.
   // The input region indicates which parts of the surface accept pointer and
@@ -122,6 +122,10 @@ class WaylandSurface {
   // |parent|. Callers take ownership of the wl_subsurface.
   wl::Object<wl_subsurface> CreateSubsurface(WaylandSurface* parent);
 
+  // When display is removed, the WaylandOutput from `entered_outputs_` should
+  // be removed.
+  void RemoveEnteredOutput(uint32_t id);
+
  private:
   // Holds information about each explicit synchronization buffer release.
   struct ExplicitReleaseInfo {
@@ -141,7 +145,8 @@ class WaylandSurface {
     wl_buffer* buffer;
   };
 
-  wl::Object<wl_region> CreateAndAddRegion(const gfx::Rect& region_px);
+  wl::Object<wl_region> CreateAndAddRegion(
+      const std::vector<gfx::Rect>& region_px);
 
   // Creates (if not created) the synchronization surface and returns a pointer
   // to it.
@@ -165,7 +170,7 @@ class WaylandSurface {
   // events so their list of entered outputs becomes meaningless after they have
   // been hidden at least once.  To determine which output the popup belongs to,
   // we ask its parent.
-  std::vector<WaylandOutput*> entered_outputs_;
+  std::vector<uint32_t> entered_outputs_;
 
   // Transformation for how the compositor interprets the contents of the
   // buffer.

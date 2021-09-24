@@ -55,6 +55,14 @@ _OWNERS_FILENAME = 'OWNERS'
 _OWNERS_COMPONENT_REGEX = re.compile(r'^\s*#\s*COMPONENT:\s*(\S+)',
                                      re.MULTILINE)
 _OWNERS_FILE_PATH_REGEX = re.compile(r'^\s*file://(\S+)', re.MULTILINE)
+# Paths that are missing metadata, and where it's hard to add (e.g. code in
+# other repositories.
+_COMPONENT_DEFAULTS = {
+    os.path.join('third_party', 'webrtc'): 'Blink>WebRTC',
+    os.path.join('logging', 'rtc_event_log'): 'Blink>WebRTC',
+    os.path.join('modules', 'audio_codec'): 'Blink>WebRTC',
+    os.path.join('modules', 'audio_processing'): 'Blink>WebRTC',
+}
 
 _UNCOMPRESSED_COMPRESSION_RATIO_THRESHOLD = 0.9
 
@@ -76,7 +84,7 @@ _SECTION_SIZE_BLOCKLIST = ['.symtab', '.shstrtab', '.strtab']
 
 
 # Tunable constant "knobs" for CreateContainerAndSymbols().
-class SectionSizeKnobs(object):
+class SectionSizeKnobs:
   def __init__(self):
     # A limit on the number of symbols an address can have, before these symbols
     # are compacted into shared symbols. Increasing this value causes more data
@@ -647,7 +655,7 @@ def _PopulateComponents(raw_symbols, source_directory):
     raw_symbols: list of Symbol objects.
     source_directory: Directory to use as the root.
   """
-  seen_paths = {}
+  seen_paths = _COMPONENT_DEFAULTS.copy()
   for symbol in raw_symbols:
     if symbol.source_path:
       folder_path = os.path.dirname(symbol.source_path)
@@ -1128,7 +1136,7 @@ def _IsPakContentUncompressed(content):
   return compression_ratio < _UNCOMPRESSED_COMPRESSION_RATIO_THRESHOLD
 
 
-class _ResourceSourceMapper(object):
+class _ResourceSourceMapper:
   def __init__(self, size_info_prefix, knobs):
     self._knobs = knobs
     self._res_info = self._LoadResInfo(size_info_prefix)
@@ -1245,7 +1253,7 @@ def _ParseApkElfSectionRanges(section_ranges, metadata, apk_elf_result):
   return apk_section_ranges, elf_overhead_size
 
 
-class _ResourcePathDeobfuscator(object):
+class _ResourcePathDeobfuscator:
 
   def __init__(self, pathmap_path):
     self._pathmap = self._LoadResourcesPathmap(pathmap_path)
@@ -2155,7 +2163,7 @@ def _ProcessContainerArgs(top_args, sub_args, container_name, on_config_error):
   if not sub_args.elf_file and not sub_args.map_file:
     opts.analyze_native = False
 
-  container_args = {k: v for k, v in sub_args.__dict__.items()}
+  container_args = sub_args.__dict__.copy()
   container_args.update(opts.__dict__)
   logging.info('Container Params: %r', container_args)
   return (sub_args, opts, container_name, apk_so_path, resources_pathmap_path,

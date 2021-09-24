@@ -2811,13 +2811,16 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kListItem:
       return ATK_ROLE_LIST_ITEM;
     case ax::mojom::Role::kListMarker:
-      if (!GetChildCount()) {
-        // There's only a name attribute when using Legacy layout. With Legacy
-        // layout, list markers have no child and are considered as StaticText.
-        // We consider a list marker as a group in LayoutNG since it has
-        // a text child node.
+      // Regular list markers only expose their alternative text, but do not
+      // expose their descendants; and the descendants should be ignored. This
+      // is because the alternative text depends on the counter style and can
+      // be different from the actual (visual) marker text, and hence,
+      // inconsistent with the descendants. We treat a list marker as non-text
+      // only if it still has non-ignored descendants, which happens only when:
+      // - The list marker itself is ignored but the descendants are not
+      // - Or the list marker contains images
+      if (!GetChildCount())
         return kStaticRole;
-      }
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kLog:
       return ATK_ROLE_LOG;
@@ -2908,20 +2911,14 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_SPIN_BUTTON;
     case ax::mojom::Role::kSplitter:
       return ATK_ROLE_SEPARATOR;
-    case ax::mojom::Role::kStaticText: {
-      switch (static_cast<ax::mojom::TextPosition>(
-          GetIntAttribute(ax::mojom::IntAttribute::kTextPosition))) {
-        case ax::mojom::TextPosition::kSubscript:
-          return kSubscriptRole;
-        case ax::mojom::TextPosition::kSuperscript:
-          return kSuperscriptRole;
-        default:
-          break;
-      }
+    case ax::mojom::Role::kStaticText:
       return kStaticRole;
-    }
     case ax::mojom::Role::kStatus:
       return ATK_ROLE_STATUSBAR;
+    case ax::mojom::Role::kSubscript:
+      return kSubscriptRole;
+    case ax::mojom::Role::kSuperscript:
+      return kSuperscriptRole;
     case ax::mojom::Role::kSvgRoot:
       return ATK_ROLE_DOCUMENT_FRAME;
     case ax::mojom::Role::kTab:
@@ -3188,7 +3185,7 @@ void AXPlatformNodeAuraLinux::AddRelationToSet(AtkRelationSet* relation_set,
     max_relation_type = enum_class->maximum;
     g_type_class_unref(enum_class);
   }
-  if (relation > max_relation_type.value())
+  if (relation >= max_relation_type.value())
     return;
 
   atk_relation_set_add_relation_by_type(relation_set, relation,

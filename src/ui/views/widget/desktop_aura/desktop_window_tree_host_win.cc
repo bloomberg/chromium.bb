@@ -1095,7 +1095,7 @@ bool DesktopWindowTreeHostWin::HandleIMEMessage(UINT message,
     return true;
   }
 
-  MSG msg = {};
+  CHROME_MSG msg = {};
   msg.hwnd = GetHWND();
   msg.message = message;
   msg.wParam = w_param;

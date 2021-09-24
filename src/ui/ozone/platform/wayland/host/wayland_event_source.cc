@@ -12,6 +12,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -54,7 +55,7 @@ struct WaylandEventSource::TouchPoint {
   TouchPoint(gfx::PointF location, WaylandWindow* current_window);
   ~TouchPoint() = default;
 
-  WaylandWindow* const window;
+  WaylandWindow* window;
   gfx::PointF last_known_location;
 };
 
@@ -248,13 +249,17 @@ void WaylandEventSource::OnPointerFrameEvent() {
     DispatchEvent(&event);
     recent_pointer_frames_.clear();
   } else if (current_pointer_frame_.axis_source) {
-    if (*current_pointer_frame_.axis_source == WL_POINTER_AXIS_SOURCE_WHEEL) {
+    if (*current_pointer_frame_.axis_source == WL_POINTER_AXIS_SOURCE_WHEEL ||
+        *current_pointer_frame_.axis_source ==
+            WL_POINTER_AXIS_SOURCE_WHEEL_TILT) {
       MouseWheelEvent event(
           gfx::Vector2d(current_pointer_frame_.dx, current_pointer_frame_.dy),
           pointer_location_, pointer_location_, EventTimeForNow(), flags, 0);
       DispatchEvent(&event);
     } else if (*current_pointer_frame_.axis_source ==
-               WL_POINTER_AXIS_SOURCE_FINGER) {
+                   WL_POINTER_AXIS_SOURCE_FINGER ||
+               *current_pointer_frame_.axis_source ==
+                   WL_POINTER_AXIS_SOURCE_CONTINUOUS) {
       ScrollEvent event(ET_SCROLL, pointer_location_, pointer_location_,
                         EventTimeForNow(), flags, current_pointer_frame_.dx,
                         current_pointer_frame_.dy, current_pointer_frame_.dx,
@@ -362,6 +367,15 @@ void WaylandEventSource::OnTouchCancelEvent() {
   touch_points_.clear();
 }
 
+void WaylandEventSource::OnTouchFocusChanged(WaylandWindow* window,
+                                             bool focus) {
+  auto* prev_focused_window = window_manager_->GetCurrentTouchFocusedWindow();
+  if (focus && prev_focused_window)
+    HandleTouchFocusChange(prev_focused_window, false);
+
+  HandleTouchFocusChange(window, focus);
+}
+
 std::vector<PointerId> WaylandEventSource::GetActiveTouchPointIds() {
   std::vector<PointerId> pointer_ids;
   for (auto& touch_point : touch_points_)
@@ -418,6 +432,13 @@ void WaylandEventSource::OnDispatcherListChanged() {
 }
 
 void WaylandEventSource::OnWindowRemoved(WaylandWindow* window) {
+  if (connection_->IsDragInProgress()) {
+    auto* target_window = window_manager_->GetCurrentTouchFocusedWindow();
+    for (auto& touch_point : touch_points_)
+      touch_point.second->window = target_window;
+    return;
+  }
+
   // Clear touch-related data.
   base::EraseIf(touch_points_, [window](const auto& point) {
     return point.second->window == window;

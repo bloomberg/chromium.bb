@@ -4,8 +4,13 @@
 
 package org.chromium.content.browser.accessibility;
 
+import static android.content.Context.CLIPBOARD_SERVICE;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE;
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_COPY;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_CUT;
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_PASTE;
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_ACCESSIBILITY_FOCUS;
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLEAR_ACCESSIBILITY_FOCUS;
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_LONG_CLICK;
@@ -26,13 +31,19 @@ import static org.chromium.content.browser.accessibility.AccessibilityContentShe
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.sRangeInfoMatcher;
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.sTextMatcher;
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.sTextOrContentDescriptionMatcher;
+import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.sViewIdResourceNameMatcher;
+import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EVENTS_DROPPED_HISTOGRAM;
 import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_CHROME_ROLE;
 import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_OFFSCREEN;
 import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_UNCLIPPED_BOTTOM;
 import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_UNCLIPPED_TOP;
+import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.ONE_HUNDRED_PERCENT_HISTOGRAM;
+import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.PERCENTAGE_DROPPED_HISTOGRAM;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
@@ -56,7 +67,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -67,6 +77,7 @@ import org.chromium.ui.test.util.UiRestriction;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -116,6 +127,8 @@ public class WebContentsAccessibilityTest {
             "AccessibilityNodeInfo object has incorrect visibleToUser value";
     private static final String OFFSCREEN_BUNDLE_EXTRA_ERROR =
             "AccessibilityNodeInfo object has incorrect Bundle extras for offscreen boolean.";
+    private static final String PERFORM_ACTION_ERROR =
+            "performAction did not update node as expected.";
 
     // Constant values for unit tests
     private static final int UNSUPPRESSED_EXPECTED_COUNT = 15;
@@ -175,6 +188,11 @@ public class WebContentsAccessibilityTest {
     private boolean performActionOnUiThread(int viewId, int action, Bundle args)
             throws ExecutionException {
         return mActivityTestRule.performActionOnUiThread(viewId, action, args);
+    }
+
+    private void performActionOnUiThread(int viewId, int action, Bundle args,
+            Callable<Boolean> criteria) throws ExecutionException, Throwable {
+        mActivityTestRule.performActionOnUiThread(viewId, action, args, criteria);
     }
 
     private void executeJS(String method) {
@@ -1094,18 +1112,30 @@ public class WebContentsAccessibilityTest {
 
     @Test
     @SmallTest
-    @FlakyTest(message = "https://crbug.com/1225255")
-    public void testNodeInfo_extras_unclippedBounds() {
+    public void testNodeInfo_extras_unclippedBounds() throws Throwable {
         // Build a simple web page with a scrollable view.
         setupTestFromFile("content/test/data/android/scroll_element_offscreen.html");
 
         // Find the <div> that contains example paragraphs that can be scrolled.
-        int vvIdDiv = waitForNodeMatching(sClassNameMatcher, "android.view.View");
+        int vvIdDiv = waitForNodeMatching(sViewIdResourceNameMatcher, "scroll_view");
         mNodeInfo = createAccessibilityNodeInfo(vvIdDiv);
         Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo);
 
-        // Scroll window up so container goes slightly off-screen.
-        executeJS("scrollUp()");
+        // The page may take a moment to finish onload method, so poll for a child count.
+        CriteriaHelper.pollUiThread(() -> {
+            return createAccessibilityNodeInfo(vvIdDiv).getChildCount() == 100;
+        }, NODE_TIMEOUT_ERROR);
+
+        // Focus the scroll container.
+        focusNode(vvIdDiv);
+
+        // Send a scroll event so some elements will be offscreen and poll for results.
+        performActionOnUiThread(vvIdDiv, WebContentsAccessibilityImpl.ACTION_PAGE_UP, null, () -> {
+            return createAccessibilityNodeInfo(vvIdDiv).getExtras() != null
+                    && createAccessibilityNodeInfo(vvIdDiv).getExtras().getInt(
+                               EXTRAS_KEY_UNCLIPPED_TOP, 1)
+                    < 0;
+        });
 
         // Signal end of test.
         mActivityTestRule.sendEndOfTestSignal();
@@ -1321,7 +1351,7 @@ public class WebContentsAccessibilityTest {
         setupTestFromFile("content/test/data/android/leaf_node_updates.html");
 
         // Find the encompassing <div> node.
-        int vvIdDiv = waitForNodeMatching(sClassNameMatcher, "android.view.View");
+        int vvIdDiv = waitForNodeMatching(sViewIdResourceNameMatcher, "test");
         mNodeInfo = createAccessibilityNodeInfo(vvIdDiv);
         Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo);
         Assert.assertEquals(NODE_TIMEOUT_ERROR, "Example text 1", mNodeInfo.getText());
@@ -1458,11 +1488,56 @@ public class WebContentsAccessibilityTest {
 
         // Verify results were recorded in histograms.
         Assert.assertEquals(ONDEMAND_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "Accessibility.Android.OnDemand.PercentageDropped"));
+                RecordHistogram.getHistogramTotalCountForTesting(PERCENTAGE_DROPPED_HISTOGRAM));
         Assert.assertEquals(ONDEMAND_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "Accessibility.Android.OnDemand.EventsDropped"));
+                RecordHistogram.getHistogramTotalCountForTesting(EVENTS_DROPPED_HISTOGRAM));
+        Assert.assertEquals(ONDEMAND_HISTOGRAM_ERROR, 0,
+                RecordHistogram.getHistogramTotalCountForTesting(ONE_HUNDRED_PERCENT_HISTOGRAM));
+    }
+
+    /**
+     * Test that UMA histogram for 100% events dropped is recorded for the OnDemand AT feature.
+     */
+    @Test
+    @SmallTest
+    public void testOnDemandAccessibilityEventsUMARecorded_100Percent() throws Throwable {
+        // Build a simple web page with a few nodes to traverse.
+        setupTestWithHTML("<p>This is a test 1</p>\n"
+                + "<p>This is a test 2</p>\n"
+                + "<p>This is a test 3</p>");
+
+        // Set the relevant events type masks to be empty so no events are dispatched.
+        mActivityTestRule.mWcax.setEventTypeMaskEmptyForTesting();
+
+        // Find the three text nodes.
+        int vvId1 = waitForNodeMatching(sTextMatcher, "This is a test 1");
+        int vvId2 = waitForNodeMatching(sTextMatcher, "This is a test 2");
+        int vvId3 = waitForNodeMatching(sTextMatcher, "This is a test 3");
+        AccessibilityNodeInfo mNodeInfo1 = createAccessibilityNodeInfo(vvId1);
+        AccessibilityNodeInfo mNodeInfo2 = createAccessibilityNodeInfo(vvId2);
+        AccessibilityNodeInfo mNodeInfo3 = createAccessibilityNodeInfo(vvId3);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo1);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo2);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo3);
+
+        // Focus each node in turn to generate events.
+        focusNode(vvId1);
+        focusNode(vvId2);
+        focusNode(vvId3);
+
+        // Signal end of test.
+        mActivityTestRule.sendEndOfTestSignal();
+
+        // Force recording of UMA histograms.
+        mActivityTestRule.mWcax.forceRecordUMAHistogramsForTesting();
+
+        // Verify results were recorded in histograms.
+        Assert.assertEquals(ONDEMAND_HISTOGRAM_ERROR, 1,
+                RecordHistogram.getHistogramTotalCountForTesting(PERCENTAGE_DROPPED_HISTOGRAM));
+        Assert.assertEquals(ONDEMAND_HISTOGRAM_ERROR, 1,
+                RecordHistogram.getHistogramTotalCountForTesting(EVENTS_DROPPED_HISTOGRAM));
+        Assert.assertEquals(ONDEMAND_HISTOGRAM_ERROR, 1,
+                RecordHistogram.getHistogramTotalCountForTesting(ONE_HUNDRED_PERCENT_HISTOGRAM));
     }
 
     /**
@@ -1504,6 +1579,225 @@ public class WebContentsAccessibilityTest {
                 mNodeInfo3.getExtras().containsKey(EXTRAS_KEY_OFFSCREEN));
         Assert.assertTrue(OFFSCREEN_BUNDLE_EXTRA_ERROR,
                 mNodeInfo3.getExtras().getBoolean(EXTRAS_KEY_OFFSCREEN));
+    }
+
+    /**
+     * Test that the performAction for ACTION_SET_TEXT works properly with accessibility.
+     */
+    @Test
+    @SmallTest
+    public void testPerformAction_setText() throws Throwable {
+        // Build a simple web page with an input node to interact with.
+        setupTestWithHTML("<input type='text'><button>Button</button>");
+
+        // Find input node and button node.
+        int vvid = waitForNodeMatching(sInputTypeMatcher, InputType.TYPE_CLASS_TEXT);
+        mNodeInfo = createAccessibilityNodeInfo(vvid);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo);
+        int vvidButton = waitForNodeMatching(sTextMatcher, "Button");
+        AccessibilityNodeInfo buttonNodeInfo = createAccessibilityNodeInfo(vvidButton);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, buttonNodeInfo);
+
+        // Verify that bad requests have no effect.
+        Assert.assertFalse(
+                performActionOnUiThread(vvidButton, AccessibilityNodeInfo.ACTION_SET_TEXT, null));
+        Assert.assertFalse(
+                performActionOnUiThread(vvid, AccessibilityNodeInfo.ACTION_SET_TEXT, null));
+        Bundle bundle = new Bundle();
+        bundle.putString(ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, null);
+        Assert.assertFalse(
+                performActionOnUiThread(vvid, AccessibilityNodeInfo.ACTION_SET_TEXT, bundle));
+
+        // Send a proper action and poll for update.
+        bundle.putString(ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "new text");
+        performActionOnUiThread(vvid, AccessibilityNodeInfo.ACTION_SET_TEXT, bundle,
+                () -> !createAccessibilityNodeInfo(vvid).getText().toString().isEmpty());
+
+        // Send of test signal and update node.
+        mActivityTestRule.sendEndOfTestSignal();
+        mNodeInfo = createAccessibilityNodeInfo(vvid);
+
+        // Verify results.
+        Assert.assertEquals(PERFORM_ACTION_ERROR, "new text", mNodeInfo.getText().toString());
+    }
+
+    /**
+     * Test that the performAction for ACTION_SET_SELECTION works properly with accessibility.
+     */
+    @Test
+    @SmallTest
+    public void testPerformAction_setSelection() throws Throwable {
+        // Build a simple web page with an input node to interact with.
+        setupTestWithHTML("<input type='text' value='test text'><button>Button</button>");
+
+        // Find input node and button node.
+        int vvid = waitForNodeMatching(sInputTypeMatcher, InputType.TYPE_CLASS_TEXT);
+        mNodeInfo = createAccessibilityNodeInfo(vvid);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo);
+        int vvidButton = waitForNodeMatching(sTextMatcher, "Button");
+        AccessibilityNodeInfo buttonNodeInfo = createAccessibilityNodeInfo(vvidButton);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, buttonNodeInfo);
+
+        // Verify that a bad request has no effect.
+        Assert.assertFalse(performActionOnUiThread(
+                vvidButton, AccessibilityNodeInfo.ACTION_SET_SELECTION, null));
+
+        // Send a proper action and poll for update.
+        Bundle bundle = new Bundle();
+        bundle.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, 2);
+        bundle.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, 5);
+        performActionOnUiThread(vvid, AccessibilityNodeInfo.ACTION_SET_SELECTION, bundle, () -> {
+            return createAccessibilityNodeInfo(vvid).getTextSelectionStart() > 0
+                    && createAccessibilityNodeInfo(vvid).getTextSelectionEnd() > 0;
+        });
+
+        // Send of test signal and update node.
+        mActivityTestRule.sendEndOfTestSignal();
+        mNodeInfo = createAccessibilityNodeInfo(vvid);
+
+        // Verify results.
+        Assert.assertEquals(PERFORM_ACTION_ERROR, 2, mNodeInfo.getTextSelectionStart());
+        Assert.assertEquals(PERFORM_ACTION_ERROR, 5, mNodeInfo.getTextSelectionEnd());
+    }
+
+    /**
+     * Test that the performAction for ACTION_CUT works properly with accessibility.
+     */
+    @Test
+    @SmallTest
+    public void testPerformAction_cut() throws Throwable {
+        // Build a simple web page with an input field.
+        setupTestWithHTML("<input type='text' value='test text'>");
+
+        // Find the relevant node.
+        int vvid = waitForNodeMatching(sInputTypeMatcher, InputType.TYPE_CLASS_TEXT);
+        mNodeInfo = createAccessibilityNodeInfo(vvid);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo);
+
+        // Select a given portion of the text.
+        Bundle bundle = new Bundle();
+        bundle.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, 2);
+        bundle.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, 7);
+        performActionOnUiThread(vvid, AccessibilityNodeInfo.ACTION_SET_SELECTION, bundle, () -> {
+            return createAccessibilityNodeInfo(vvid).getTextSelectionStart() > 0
+                    && createAccessibilityNodeInfo(vvid).getTextSelectionEnd() > 0;
+        });
+
+        // Perform the "cut" action, and poll for clipboard to be non-null.
+        ClipboardManager clipboardManager = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return (ClipboardManager) mActivityTestRule.getActivity().getSystemService(
+                    CLIPBOARD_SERVICE);
+        });
+        performActionOnUiThread(
+                vvid, ACTION_CUT, null, () -> clipboardManager.getPrimaryClip() != null);
+
+        // Send end of test signal and refresh input node.
+        mActivityTestRule.sendEndOfTestSignal();
+        mNodeInfo = createAccessibilityNodeInfo(vvid);
+
+        // Verify text has been properly added to the clipboard.
+        Assert.assertNotNull(PERFORM_ACTION_ERROR, clipboardManager.getPrimaryClip());
+        Assert.assertEquals(
+                PERFORM_ACTION_ERROR, 1, clipboardManager.getPrimaryClip().getItemCount());
+        Assert.assertEquals(PERFORM_ACTION_ERROR, "st te",
+                clipboardManager.getPrimaryClip().getItemAt(0).getText().toString());
+
+        // Verify input node was changed by the cut action.
+        Assert.assertEquals(PERFORM_ACTION_ERROR, "text", mNodeInfo.getText().toString());
+    }
+
+    /**
+     * Test that the performAction for ACTION_COPY works properly with accessibility.
+     */
+    @Test
+    @SmallTest
+    public void testPerformAction_copy() throws Throwable {
+        // Build a simple web page with an input field.
+        setupTestWithHTML("<input type='text' value='test text'>");
+
+        // Find the relevant node.
+        int vvid = waitForNodeMatching(sInputTypeMatcher, InputType.TYPE_CLASS_TEXT);
+        mNodeInfo = createAccessibilityNodeInfo(vvid);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo);
+
+        // Select a given portion of the text.
+        Bundle bundle = new Bundle();
+        bundle.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, 2);
+        bundle.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, 7);
+        performActionOnUiThread(vvid, AccessibilityNodeInfo.ACTION_SET_SELECTION, bundle, () -> {
+            return createAccessibilityNodeInfo(vvid).getTextSelectionStart() > 0
+                    && createAccessibilityNodeInfo(vvid).getTextSelectionEnd() > 0;
+        });
+
+        // Perform the "copy" action, and poll for clipboard to be non-null.
+        ClipboardManager clipboardManager = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return (ClipboardManager) mActivityTestRule.getActivity().getSystemService(
+                    CLIPBOARD_SERVICE);
+        });
+        performActionOnUiThread(
+                vvid, ACTION_COPY, null, () -> clipboardManager.getPrimaryClip() != null);
+
+        // Send end of test signal and refresh input node.
+        mActivityTestRule.sendEndOfTestSignal();
+        mNodeInfo = createAccessibilityNodeInfo(vvid);
+
+        // Verify text has been properly added to the clipboard.
+        Assert.assertNotNull(PERFORM_ACTION_ERROR, clipboardManager.getPrimaryClip());
+        Assert.assertEquals(
+                PERFORM_ACTION_ERROR, 1, clipboardManager.getPrimaryClip().getItemCount());
+        Assert.assertEquals(PERFORM_ACTION_ERROR, "st te",
+                clipboardManager.getPrimaryClip().getItemAt(0).getText().toString());
+
+        // Verify input node was not changed by the copy action.
+        Assert.assertEquals(PERFORM_ACTION_ERROR, "test text", mNodeInfo.getText().toString());
+    }
+
+    /**
+     * Test that the performAction for ACTION_PASTE works properly with accessibility.
+     */
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    public void testPerformAction_paste() throws Throwable {
+        // Build a simple web page with an input field.
+        setupTestWithHTML("<input type='text'>");
+
+        // Find the relevant node.
+        int vvid = waitForNodeMatching(sInputTypeMatcher, InputType.TYPE_CLASS_TEXT);
+        mNodeInfo = createAccessibilityNodeInfo(vvid);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo);
+
+        // Add some ClipData to the ClipboardManager to paste.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ClipboardManager clipboardManager =
+                    (ClipboardManager) mActivityTestRule.getActivity().getSystemService(
+                            CLIPBOARD_SERVICE);
+            clipboardManager.setPrimaryClip(ClipData.newPlainText("test text", "test text"));
+        });
+
+        // Focus the input field node.
+        focusNode(vvid);
+
+        // Perform a paste action and poll for the text to change.
+        performActionOnUiThread(vvid, ACTION_PASTE, null,
+                () -> !createAccessibilityNodeInfo(vvid).getText().toString().isEmpty());
+
+        // Send end of test signal and update node info.
+        mActivityTestRule.sendEndOfTestSignal();
+        mNodeInfo = createAccessibilityNodeInfo(vvid);
+
+        // Verify text has not been removed from the clipboard.
+        ClipboardManager clipboardManager =
+                (ClipboardManager) mActivityTestRule.getActivity().getSystemService(
+                        CLIPBOARD_SERVICE);
+        Assert.assertNotNull(PERFORM_ACTION_ERROR, clipboardManager.getPrimaryClip());
+        Assert.assertEquals(
+                PERFORM_ACTION_ERROR, 1, clipboardManager.getPrimaryClip().getItemCount());
+        Assert.assertEquals(PERFORM_ACTION_ERROR, "test text",
+                clipboardManager.getPrimaryClip().getItemAt(0).getText().toString());
+
+        // Verify text has been properly pasted into the input field.
+        Assert.assertEquals(PERFORM_ACTION_ERROR, "test text", mNodeInfo.getText().toString());
     }
 
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)

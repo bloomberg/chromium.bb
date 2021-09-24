@@ -8,6 +8,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "components/metrics/structured/enums.h"
+#include "components/metrics/structured/event.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/structured_data.pb.h"
 
@@ -20,23 +23,6 @@ class EventBase {
  public:
   EventBase(const EventBase& other);
   virtual ~EventBase();
-
-  // Specifies the type of identifier attached to an event.
-  enum class IdType {
-    // Events are attached to a per-event (or per-project) id.
-    kProjectId = 0,
-    // Events are attached to the UMA client_id.
-    kUmaId = 1,
-    // Events are attached to no id.
-    kUnidentified = 2,
-  };
-
-  // Specifies whether an identifier is used different for each profile, or is
-  // shared for all profiles on a device.
-  enum class IdScope {
-    kPerProfile = 0,
-    kPerDevice = 1,
-  };
 
   // Specifies which value type a Metric object holds.
   enum class MetricType {
@@ -51,6 +37,8 @@ class EventBase {
     Metric(uint64_t name_hash, MetricType type);
     ~Metric();
 
+    bool operator==(const Metric& other) const;
+
     // First 8 bytes of the MD5 hash of the metric name, as defined in
     // structured.xml. This is calculated by
     // tools/metrics/structured/codegen.py.
@@ -64,7 +52,7 @@ class EventBase {
     // here. If |raw_string_value| is set (with |type| as MetricType::kString),
     // the unprocessed string will be reported.
     std::string hmac_value;
-    int64_t int_value;
+    int64_t int_value = 0;
     std::string string_value;
   };
 
@@ -86,14 +74,19 @@ class EventBase {
 
   IdScope id_scope() const { return id_scope_; }
 
-  StructuredEventProto_EventType event_type() const { return event_type_; }
+  EventType event_type() const { return event_type_; }
+
+  // Converts an unhashed,raw |event| into an EventBase. If |event| is
+  // malformatted (ie wrong metric name or metric vlaue type) or is not
+  // registered within structured.xml, then returns absl::nullopt.
+  static absl::optional<EventBase> FromEvent(const Event& event);
 
  protected:
   EventBase(uint64_t event_name_hash,
             uint64_t project_name_hash,
             IdType id_type,
             IdScope id_scope,
-            StructuredEventProto_EventType event_type);
+            EventType event_type);
 
   void AddHmacMetric(uint64_t name_hash, const std::string& value);
 
@@ -128,7 +121,7 @@ class EventBase {
   // Specifies the type of an event, which determines how it is treated after
   // upload. See /third_party/metrics_proto/structured_data.proto for more
   // information.
-  StructuredEventProto_EventType event_type_;
+  EventType event_type_;
 
   std::vector<Metric> metrics_;
 };

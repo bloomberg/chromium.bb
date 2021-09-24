@@ -8,7 +8,7 @@ import * as Diff from '../../third_party/diff/diff.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Workspace from '../workspace/workspace.js';
 
-export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper {
+export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
   private readonly uiSourceCodeDiffs: WeakMap<Workspace.UISourceCode.UISourceCode, UISourceCodeDiff>;
   private readonly loadingUISourceCodes:
       Map<Workspace.UISourceCode.UISourceCode, Promise<[string | null, string|null]>>;
@@ -62,23 +62,24 @@ export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper {
     return diff;
   }
 
-  private uiSourceCodeChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const uiSourceCode = (event.data.uiSourceCode as Workspace.UISourceCode.UISourceCode);
+  private uiSourceCodeChanged(
+      event: Common.EventTarget.EventTargetEvent<{uiSourceCode: Workspace.UISourceCode.UISourceCode}>): void {
+    const uiSourceCode = event.data.uiSourceCode;
     this.updateModifiedState(uiSourceCode);
   }
 
-  private uiSourceCodeAdded(event: Common.EventTarget.EventTargetEvent): void {
-    const uiSourceCode = (event.data as Workspace.UISourceCode.UISourceCode);
+  private uiSourceCodeAdded(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.UISourceCode>): void {
+    const uiSourceCode = event.data;
     this.updateModifiedState(uiSourceCode);
   }
 
-  private uiSourceCodeRemoved(event: Common.EventTarget.EventTargetEvent): void {
-    const uiSourceCode = (event.data as Workspace.UISourceCode.UISourceCode);
+  private uiSourceCodeRemoved(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.UISourceCode>): void {
+    const uiSourceCode = event.data;
     this.removeUISourceCode(uiSourceCode);
   }
 
-  private projectRemoved(event: Common.EventTarget.EventTargetEvent): void {
-    const project = (event.data as Workspace.Workspace.Project);
+  private projectRemoved(event: Common.EventTarget.EventTargetEvent<Workspace.Workspace.Project>): void {
+    const project = event.data;
     for (const uiSourceCode of project.uiSourceCodes()) {
       this.removeUISourceCode(uiSourceCode);
     }
@@ -262,6 +263,16 @@ export enum Events {
   DiffChanged = 'DiffChanged',
   ModifiedStatusChanged = 'ModifiedStatusChanged',
 }
+
+export interface ModifiedStatusChangedEvent {
+  uiSourceCode: Workspace.UISourceCode.UISourceCode;
+  isModified: boolean;
+}
+
+export type EventTypes = {
+  [Events.DiffChanged]: void,
+  [Events.ModifiedStatusChanged]: ModifiedStatusChangedEvent,
+};
 
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
 // eslint-disable-next-line @typescript-eslint/naming-convention

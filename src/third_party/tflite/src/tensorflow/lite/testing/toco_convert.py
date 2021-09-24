@@ -50,8 +50,6 @@ def toco_options(data_types,
 
   shape_str = ":".join([",".join(str(y) for y in x) for x in shapes if x])
   inference_type = "FLOAT"
-  # TODO(ahentz): if we get multi-input quantization to work we need this
-  # to change
   if data_types[0] == "QUANTIZED_UINT8":
     inference_type = "QUANTIZED_UINT8"
   s = (" --input_data_types=%s" % ",".join(data_types) +
@@ -114,6 +112,7 @@ def toco_convert(options, graph_def, input_tensors, output_tensors, **kwargs):
       converter = tf.compat.v1.lite.TFLiteConverter.from_frozen_graph(
           graphdef_file.name, input_arrays, output_tensors, input_shapes)
 
+      converter.experimental_new_quantizer = options.mlir_quantizer
       converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
       if fully_quantize:
@@ -134,9 +133,16 @@ def toco_convert(options, graph_def, input_tensors, output_tensors, **kwargs):
           for _ in range(100):
             yield representative_dataset(input_tensors)
 
-        converter.target_spec.supported_ops = [
-            tf.lite.OpsSet.TFLITE_BUILTINS_INT8
-        ]
+        if test_params.get("quant_16x8", False):
+          converter.target_spec.supported_ops = [
+              tf.lite.OpsSet.\
+              EXPERIMENTAL_TFLITE_BUILTINS_ACTIVATIONS_INT16_WEIGHTS_INT8
+          ]
+        else:
+          converter.target_spec.supported_ops = [
+              tf.lite.OpsSet.TFLITE_BUILTINS_INT8
+          ]
+
         converter.representative_dataset = representative_dataset_gen
         if extra_toco_options.inference_input_type:
           converter.inference_input_type = (
@@ -145,7 +151,10 @@ def toco_convert(options, graph_def, input_tensors, output_tensors, **kwargs):
           converter.inference_output_type = (
               extra_toco_options.inference_output_type)
         else:
-          converter.inference_output_type = tf.int8
+          if test_params.get("quant_16x8", False):
+            converter.inference_output_type = tf.int16
+          else:
+            converter.inference_output_type = tf.int8
 
       try:
         tflite_model = converter.convert()
@@ -168,7 +177,6 @@ def toco_convert(options, graph_def, input_tensors, output_tensors, **kwargs):
       graphdef_file.write(graph_def_str)
       graphdef_file.flush()
 
-      # TODO(aselle): Switch this to subprocess at some point.
       if options.run_with_flex:
         opts += " --enable_select_tf_ops --force_select_tf_ops"
       cmd = ("%s --input_file=%s --output_file=%s %s > %s 2>&1" %

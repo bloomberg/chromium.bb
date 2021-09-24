@@ -5,16 +5,22 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_SYSTEM_WEB_APPS_SYSTEM_WEB_APP_DELEGATE_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_SYSTEM_WEB_APPS_SYSTEM_WEB_APP_DELEGATE_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_background_task.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_application_info.h"
+#include "ui/base/models/simple_menu_model.h"
+#include "url/gurl.h"
 
 class Browser;
+class Profile;
 
 namespace web_app {
-class SystemWebAppDelegate;
 
 using OriginTrialsMap = std::map<url::Origin, std::vector<std::string>>;
 
@@ -124,6 +130,22 @@ class SystemWebAppDelegate {
 
   // If false, the application will not be installed.
   virtual bool IsAppEnabled() const;
+
+  // If true, GetTabMenuModel() is called to provide the tab menu model.
+  virtual bool HasCustomTabMenuModel() const;
+
+  // Optional custom tab menu model.
+  virtual std::unique_ptr<ui::SimpleMenuModel> GetTabMenuModel(
+      ui::SimpleMenuModel::Delegate* delegate) const;
+
+  // Returns whether the specified Tab Context Menu shortcut should be shown.
+  virtual bool ShouldShowTabContextMenuShortcut(Profile* profile,
+                                                int command_id) const;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Whether the browser should show the Terminal System App select new tab
+  // button in the toolbar.
+  virtual bool HasTitlebarTerminalSelectNewTabButton() const;
+#endif
 
  protected:
   SystemAppType type_;

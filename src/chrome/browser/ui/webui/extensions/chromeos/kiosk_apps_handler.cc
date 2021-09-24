@@ -125,30 +125,30 @@ void KioskAppsHandler::OnJavascriptDisallowed() {
 }
 
 void KioskAppsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "initializeKioskAppSettings",
       base::BindRepeating(&KioskAppsHandler::HandleInitializeKioskAppSettings,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getKioskAppSettings",
       base::BindRepeating(&KioskAppsHandler::HandleGetKioskAppSettings,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "addKioskApp", base::BindRepeating(&KioskAppsHandler::HandleAddKioskApp,
                                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "removeKioskApp",
       base::BindRepeating(&KioskAppsHandler::HandleRemoveKioskApp,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "enableKioskAutoLaunch",
       base::BindRepeating(&KioskAppsHandler::HandleEnableKioskAutoLaunch,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "disableKioskAutoLaunch",
       base::BindRepeating(&KioskAppsHandler::HandleDisableKioskAutoLaunch,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setDisableBailoutShortcut",
       base::BindRepeating(&KioskAppsHandler::HandleSetDisableBailoutShortcut,
                           base::Unretained(this)));
@@ -242,7 +242,7 @@ KioskAppsHandler::GetSettingsDictionary() {
 
 void KioskAppsHandler::HandleInitializeKioskAppSettings(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
@@ -253,7 +253,7 @@ void KioskAppsHandler::HandleInitializeKioskAppSettings(
 }
 
 void KioskAppsHandler::HandleGetKioskAppSettings(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 

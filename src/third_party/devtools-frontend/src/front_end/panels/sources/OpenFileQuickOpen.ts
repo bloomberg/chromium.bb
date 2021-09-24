@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import type * as Workspace from '../../models/workspace/workspace.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 
+import {imageNameForResourceType} from '../../panels/utils/utils.js';
 import {FilteredUISourceCodeListProvider} from './FilteredUISourceCodeListProvider.js';
 import {SourcesView} from './SourcesView.js';
 
@@ -46,6 +46,21 @@ export class OpenFileQuickOpen extends FilteredUISourceCodeListProvider {
 
   filterProject(project: Workspace.Workspace.Project): boolean {
     return !project.isServiceProject();
+  }
+
+  renderItem(itemIndex: number, query: string, titleElement: Element, subtitleElement: Element): void {
+    super.renderItem(itemIndex, query, titleElement, subtitleElement);
+
+    const iconElement = new IconButton.Icon.Icon();
+    const iconName = imageNameForResourceType(this.itemContentTypeAt(itemIndex));
+    iconElement.data = {
+      iconName: iconName,
+      color: 'var(--icon-color)',
+      width: '18px',
+      height: '18px',
+    };
+    iconElement.classList.add(iconName);
+    titleElement.parentElement?.parentElement?.insertBefore(iconElement, titleElement.parentElement);
   }
 
   renderAsTwoRows(): boolean {

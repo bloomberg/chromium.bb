@@ -1,9 +1,15 @@
-load("//third_party/mlir:tblgen.bzl", "gentbl")
+# buildifier: disable=same-origin-load
+load("//tensorflow:tensorflow.bzl", "filegroup")
+
+# buildifier: disable=same-origin-load
+load("//tensorflow:tensorflow.bzl", "get_compatible_with_cloud")
+load("//tensorflow/core/platform:rules_cc.bzl", "cc_library")
+load("@llvm-project//mlir:tblgen.bzl", "gentbl_cc_library")
 load("//tensorflow:tensorflow.bzl", "tf_cc_binary")
 
 package(
     default_visibility = ["//visibility:public"],
-    licenses = ["notice"],  # Apache 2.0
+    licenses = ["notice"],
 )
 
 filegroup(
@@ -14,33 +20,56 @@ filegroup(
     ],
 )
 
-gentbl(
+gentbl_cc_library(
     name = "tfjs_inc_gen",
+    compatible_with = get_compatible_with_cloud(),
     tbl_outs = [
         (
-            "-gen-op-decls",
+            ["-gen-op-decls"],
             "ir/tfjs_ops.h.inc",
         ),
         (
-            "-gen-op-defs",
+            ["-gen-op-defs"],
             "ir/tfjs_ops.cc.inc",
         ),
         (
-            "-gen-dialect-decls",
+            ["-gen-dialect-decls"],
             "ir/tfjs_dialect.h.inc",
         ),
         (
-            "-gen-dialect-doc",
+            ["-gen-dialect-defs"],
+            "ir/tfjs_dialect.cc.inc",
+        ),
+        (
+            ["-gen-dialect-doc"],
             "g3doc/tfjs_dialect.md",
         ),
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
     td_file = "ir/tfjs_ops.td",
-    td_srcs = [
-        "ir/tfjs_ops.td",
+    deps = [
+        "@llvm-project//mlir:LoopLikeInterfaceTdFiles",
         "@llvm-project//mlir:OpBaseTdFiles",
-        "@llvm-project//mlir:include/mlir/Interfaces/LoopLikeInterface.td",
-        "@llvm-project//mlir:include/mlir/Interfaces/SideEffectInterfaces.td",
+        "@llvm-project//mlir:SideEffectTdFiles",
+    ],
+)
+
+gentbl_cc_library(
+    name = "tfjs_pass_inc_gen",
+    compatible_with = get_compatible_with_cloud(),
+    tbl_outs = [
+        (
+            [
+                "-gen-pass-decls",
+                "-name=TFJS",
+            ],
+            "transforms/passes.h.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "transforms/passes.td",
+    deps = [
+        "@llvm-project//mlir:PassBaseTdFiles",
     ],
 )
 
@@ -68,31 +97,21 @@ cc_library(
     alwayslink = 1,
 )
 
-cc_library(
-    name = "tensorflow_js_dialect_registration",
-    srcs = [
-        "ir/dialect_registration.cc",
-    ],
-    deps = [
-        ":tensorflow_js",
-    ],
-    alwayslink = 1,
-)
-
-gentbl(
+gentbl_cc_library(
     name = "tfjs_optimize_inc_gen",
+    compatible_with = get_compatible_with_cloud(),
     tbl_outs = [
         (
-            "-gen-rewriters",
+            ["-gen-rewriters"],
             "transforms/generated_optimize.inc",
         ),
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
     td_file = "transforms/optimize_pattern.td",
-    td_srcs = [
+    deps = [
         ":tfjs_ops_td_files",
-        "@llvm-project//mlir:StdOpsTdFiles",
         "//tensorflow/compiler/mlir/tensorflow:tensorflow_ops_td_files",
+        "@llvm-project//mlir:StdOpsTdFiles",
     ],
 )
 
@@ -101,13 +120,14 @@ cc_library(
     srcs = [
         "transforms/generated_optimize.inc",
         "transforms/optimize.cc",
+        "transforms/passes.h.inc",
+        "transforms/passes_detail.h",
     ],
     hdrs = [
         "transforms/passes.h",
     ],
     deps = [
         ":tensorflow_js",
-        ":tensorflow_js_dialect_registration",
         "//tensorflow/compiler/mlir/tensorflow",
         "@llvm-project//llvm:Support",
         "@llvm-project//mlir:Analysis",
@@ -115,6 +135,7 @@ cc_library(
         "@llvm-project//mlir:Pass",
         "@llvm-project//mlir:StandardOps",
         "@llvm-project//mlir:Support",
+        "@llvm-project//mlir:TransformUtils",
     ],
     alwayslink = 1,
 )
@@ -128,10 +149,9 @@ cc_library(
     deps = [
         ":tfjs_optimize",
         "//tensorflow/compiler/mlir/tensorflow",
-        "//tensorflow/compiler/mlir/tensorflow:decode_constant_pass",
-        "//tensorflow/compiler/mlir/tensorflow:tensorflow_dialect_registration",
         "//tensorflow/compiler/mlir/tensorflow:tensorflow_passes",
         "//tensorflow/compiler/mlir/tensorflow:tf_graph_optimization_pass",
+        "//tensorflow/compiler/mlir/tensorflow:tf_saved_model_passes",
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:Pass",
         "@llvm-project//mlir:Transforms",
@@ -148,12 +168,10 @@ cc_library(
     ],
     deps = [
         ":tensorflow_js",
-        ":tensorflow_js_dialect_registration",
         "//tensorflow/compiler/mlir/tensorflow",
         "//tensorflow/compiler/mlir/tensorflow:convert_graphdef",
         "//tensorflow/compiler/mlir/tensorflow:export_utils",
         "//tensorflow/compiler/mlir/tensorflow:mlir_roundtrip_flags",
-        "//tensorflow/compiler/mlir/tensorflow:tensorflow_dialect_registration",
         "//tensorflow/compiler/xla:statusor",
         "//tensorflow/core:framework",
         "//tensorflow/core:graph",
@@ -178,7 +196,6 @@ cc_library(
         ":json_translate_lib",
         ":tfjs_optimize",
         "//tensorflow/compiler/mlir/tensorflow",
-        "//tensorflow/compiler/mlir/tensorflow:decode_constant_pass",
         "//tensorflow/compiler/mlir/tensorflow:error_util",
         "//tensorflow/compiler/mlir/tensorflow:tf_dialect_lib",
         "//tensorflow/compiler/mlir/tensorflow:tf_dialect_passes",
@@ -233,5 +250,23 @@ tf_cc_binary(
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:Pass",
         "@llvm-project//mlir:Support",
+    ],
+)
+
+tf_cc_binary(
+    name = "tfjs-opt",
+    srcs = [
+        "tfjs_opt.cc",
+    ],
+    deps = [
+        ":tensorflow_js",
+        ":tensorflow_js_passes",
+        ":tfjs_optimize",
+        "//tensorflow/compiler/mlir:init_mlir",
+        "//tensorflow/compiler/mlir/lite:tensorflow_lite_legalize_tf",
+        "//tensorflow/compiler/mlir/tensorflow",
+        "@llvm-project//mlir:AllPassesAndDialects",
+        "@llvm-project//mlir:MlirOptLib",
+        "@llvm-project//mlir:StandardOps",
     ],
 )

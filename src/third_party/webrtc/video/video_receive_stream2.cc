@@ -65,7 +65,9 @@ constexpr int kMaxBaseMinimumDelayMs = 10000;
 
 constexpr int kMaxWaitForFrameMs = 3000;
 
-constexpr int kDefaultMaximumPreStreamDecoders = 100;
+// Create a decoder for the preferred codec before the stream starts and any
+// other decoder lazily on demand.
+constexpr int kDefaultMaximumPreStreamDecoders = 1;
 
 // Concrete instance of RecordableEncodedFrame wrapping needed content
 // from EncodedFrame.
@@ -113,53 +115,26 @@ class WebRtcRecordableEncodedFrame : public RecordableEncodedFrame {
   absl::optional<webrtc::ColorSpace> color_space_;
 };
 
-VideoCodec CreateDecoderVideoCodec(const VideoReceiveStream::Decoder& decoder) {
-  VideoCodec codec;
-  codec.codecType = PayloadStringToCodecType(decoder.video_format.name);
-
-  if (codec.codecType == kVideoCodecVP8) {
-    *(codec.VP8()) = VideoEncoder::GetDefaultVp8Settings();
-  } else if (codec.codecType == kVideoCodecVP9) {
-    *(codec.VP9()) = VideoEncoder::GetDefaultVp9Settings();
-  } else if (codec.codecType == kVideoCodecH264) {
-    *(codec.H264()) = VideoEncoder::GetDefaultH264Settings();
-  } else if (codec.codecType == kVideoCodecMultiplex) {
-    VideoReceiveStream::Decoder associated_decoder = decoder;
-    associated_decoder.video_format =
-        SdpVideoFormat(CodecTypeToPayloadString(kVideoCodecVP9));
-    VideoCodec associated_codec = CreateDecoderVideoCodec(associated_decoder);
-    associated_codec.codecType = kVideoCodecMultiplex;
-    return associated_codec;
-  }
-
+RenderResolution InitialDecoderResolution() {
   FieldTrialOptional<int> width("w");
   FieldTrialOptional<int> height("h");
   ParseFieldTrial(
       {&width, &height},
       field_trial::FindFullName("WebRTC-Video-InitialDecoderResolution"));
   if (width && height) {
-    codec.width = width.Value();
-    codec.height = height.Value();
-  } else {
-    codec.width = 320;
-    codec.height = 180;
+    return RenderResolution(width.Value(), height.Value());
   }
 
-  const int kDefaultStartBitrate = 300;
-  codec.startBitrate = codec.minBitrate = codec.maxBitrate =
-      kDefaultStartBitrate;
-
-  return codec;
+  return RenderResolution(320, 180);
 }
 
 // Video decoder class to be used for unknown codecs. Doesn't support decoding
 // but logs messages to LS_ERROR.
 class NullVideoDecoder : public webrtc::VideoDecoder {
  public:
-  int32_t InitDecode(const webrtc::VideoCodec* codec_settings,
-                     int32_t number_of_cores) override {
+  bool Configure(const Settings& settings) override {
     RTC_LOG(LS_ERROR) << "Can't initialize NullVideoDecoder.";
-    return WEBRTC_VIDEO_CODEC_OK;
+    return true;
   }
 
   int32_t Decode(const webrtc::EncodedImage& input_image,
@@ -229,7 +204,7 @@ VideoReceiveStream2::VideoReceiveStream2(
       clock_(clock),
       call_stats_(call_stats),
       source_tracker_(clock_),
-      stats_proxy_(&config_, clock_, call->worker_thread()),
+      stats_proxy_(config_.rtp.remote_ssrc, clock_, call->worker_thread()),
       rtp_receive_statistics_(ReceiveStatistics::Create(clock_)),
       timing_(timing),
       video_receiver_(clock_, timing_.get()),
@@ -246,8 +221,8 @@ VideoReceiveStream2::VideoReceiveStream2(
                                  this,     // NackSender
                                  nullptr,  // Use default KeyFrameRequestSender
                                  this,     // OnCompleteFrameCallback
-                                 config_.frame_decryptor,
-                                 config_.frame_transformer),
+                                 std::move(config_.frame_decryptor),
+                                 std::move(config_.frame_transformer)),
       rtp_stream_sync_(call->worker_thread(), this),
       max_wait_for_keyframe_ms_(DetermineMaxWaitForFrame(config, true)),
       max_wait_for_frame_ms_(DetermineMaxWaitForFrame(config, false)),
@@ -330,6 +305,16 @@ void VideoReceiveStream2::UnregisterFromTransport() {
   rtx_receiver_.reset();
 }
 
+const VideoReceiveStream2::Config::Rtp& VideoReceiveStream2::rtp() const {
+  RTC_DCHECK_RUN_ON(&packet_sequence_checker_);
+  return config_.rtp;
+}
+
+const std::string& VideoReceiveStream2::sync_group() const {
+  RTC_DCHECK_RUN_ON(&packet_sequence_checker_);
+  return config_.sync_group;
+}
+
 void VideoReceiveStream2::SignalNetworkState(NetworkState state) {
   RTC_DCHECK_RUN_ON(&worker_sequence_checker_);
   rtp_video_stream_receiver_.SignalNetworkState(state);
@@ -380,7 +365,11 @@ void VideoReceiveStream2::Start() {
       ++decoders_count;
     }
 
-    VideoCodec codec = CreateDecoderVideoCodec(decoder);
+    VideoDecoder::Settings settings;
+    settings.set_codec_type(
+        PayloadStringToCodecType(decoder.video_format.name));
+    settings.set_max_render_resolution(InitialDecoderResolution());
+    settings.set_number_of_cores(num_cpu_cores_);
 
     const bool raw_payload =
         config_.rtp.raw_payload_types.count(decoder.payload_type) > 0;
@@ -388,11 +377,10 @@ void VideoReceiveStream2::Start() {
       // TODO(bugs.webrtc.org/11993): Make this call on the network thread.
       RTC_DCHECK_RUN_ON(&packet_sequence_checker_);
       rtp_video_stream_receiver_.AddReceiveCodec(
-          decoder.payload_type, codec.codecType,
+          decoder.payload_type, settings.codec_type(),
           decoder.video_format.parameters, raw_payload);
     }
-    RTC_CHECK_EQ(VCM_OK, video_receiver_.RegisterReceiveCodec(
-                             decoder.payload_type, &codec, num_cpu_cores_));
+    video_receiver_.RegisterReceiveCodec(decoder.payload_type, settings);
   }
 
   RTC_DCHECK(renderer != nullptr);
@@ -464,6 +452,25 @@ void VideoReceiveStream2::Stop() {
   transport_adapter_.Disable();
 }
 
+void VideoReceiveStream2::SetRtpExtensions(
+    std::vector<RtpExtension> extensions) {
+  RTC_DCHECK_RUN_ON(&packet_sequence_checker_);
+  rtp_video_stream_receiver_.SetRtpExtensions(extensions);
+  // TODO(tommi): We don't use the `c.rtp.extensions` member in the
+  // VideoReceiveStream2 class, so this const_cast<> is a temporary hack to keep
+  // things consistent between VideoReceiveStream2 and RtpVideoStreamReceiver2
+  // for debugging purposes. The `packet_sequence_checker_` gives us assurances
+  // that from a threading perspective, this is still safe. The accessors that
+  // give read access to this state, run behind the same check.
+  // The alternative to the const_cast<> would be to make `config_` non-const
+  // and guarded by `packet_sequence_checker_`. However the scope of that state
+  // is huge (the whole Config struct), and would require all methods that touch
+  // the struct to abide the needs of the `extensions` member.
+  VideoReceiveStream::Config& c =
+      const_cast<VideoReceiveStream::Config&>(config_);
+  c.rtp.extensions = std::move(extensions);
+}
+
 void VideoReceiveStream2::CreateAndRegisterExternalDecoder(
     const Decoder& decoder) {
   TRACE_EVENT0("webrtc",
@@ -491,7 +498,7 @@ void VideoReceiveStream2::CreateAndRegisterExternalDecoder(
     char filename_buffer[256];
     rtc::SimpleStringBuilder ssb(filename_buffer);
     ssb << decoded_output_file << "/webrtc_receive_stream_"
-        << this->config_.rtp.remote_ssrc << "-" << rtc::TimeMicros() << ".ivf";
+        << config_.rtp.remote_ssrc << "-" << rtc::TimeMicros() << ".ivf";
     video_decoder = CreateFrameDumpingDecoderWrapper(
         std::move(video_decoder), FileWrapper::OpenWriteOnly(ssb.str()));
   }

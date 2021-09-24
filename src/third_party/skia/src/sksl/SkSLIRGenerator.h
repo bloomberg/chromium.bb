@@ -15,7 +15,6 @@
 #include "include/private/SkSLStatement.h"
 #include "src/sksl/SkSLASTFile.h"
 #include "src/sksl/SkSLASTNode.h"
-#include "src/sksl/SkSLErrorReporter.h"
 #include "src/sksl/SkSLOperators.h"
 #include "src/sksl/ir/SkSLBlock.h"
 #include "src/sksl/ir/SkSLExpression.h"
@@ -124,7 +123,7 @@ public:
     const Program::Settings& settings() const { return fContext.fConfig->fSettings; }
     ProgramKind programKind() const { return fContext.fConfig->fKind; }
 
-    ErrorReporter& errorReporter() const { return fContext.errors(); }
+    ErrorReporter& errorReporter() const { return *fContext.fErrors; }
 
     std::shared_ptr<SymbolTable>& symbolTable() {
         return fSymbolTable;
@@ -144,6 +143,10 @@ public:
                                int permittedLayoutFlags);
 
     std::unique_ptr<Expression> convertIdentifier(int offset, skstd::string_view identifier);
+
+    bool haveRTAdjustInterfaceBlock() { return fRTAdjustInterfaceBlock != nullptr; }
+
+    int getRTAdjustFieldIndex() { return fRTAdjustFieldIndex; }
 
     const Context& fContext;
 
@@ -186,11 +189,13 @@ private:
                                      const FunctionDeclaration& function,
                                      ExpressionArray arguments);
     CoercionCost callCost(const FunctionDeclaration& function,
-                          const ExpressionArray& arguments);
+                          const ExpressionArray& arguments) const;
+    const FunctionDeclaration* findBestFunctionForCall(
+            const std::vector<const FunctionDeclaration*>& functions,
+            const ExpressionArray& arguments) const;
     std::unique_ptr<Expression> coerce(std::unique_ptr<Expression> expr, const Type& type);
     CoercionCost coercionCost(const Expression& expr, const Type& type);
     int convertArraySize(const Type& type, int offset, const ASTNode& s);
-    int convertArraySize(const Type& type, std::unique_ptr<Expression> s);
     bool containsConstantZero(Expression& expr);
     bool dividesByZero(Operator op, Expression& right);
     std::unique_ptr<Block> convertBlock(const ASTNode& block);
@@ -207,6 +212,7 @@ private:
     std::unique_ptr<Statement> convertFor(const ASTNode& f);
     std::unique_ptr<Expression> convertIdentifier(const ASTNode& identifier);
     std::unique_ptr<Statement> convertIf(const ASTNode& s);
+    void scanInterfaceBlock(SkSL::InterfaceBlock& intf);
     std::unique_ptr<InterfaceBlock> convertInterfaceBlock(const ASTNode& s);
     Modifiers convertModifiers(const Modifiers& m);
     std::unique_ptr<Expression> convertPrefixExpression(const ASTNode& expression);
@@ -223,20 +229,12 @@ private:
     std::unique_ptr<Statement> convertVarDeclarationStatement(const ASTNode& s);
     std::unique_ptr<Statement> convertWhile(const ASTNode& w);
     void convertGlobalVarDeclarations(const ASTNode& decl);
-    std::unique_ptr<Block> applyInvocationIDWorkaround(std::unique_ptr<Block> main);
-    // returns a statement which converts sk_Position from device to normalized coordinates
-    std::unique_ptr<Statement> getNormalizeSkPositionCode();
+    /** Appends sk_Position fixup to the bottom of main() if this is a vertex program. */
+    void appendRTAdjustFixupToVertexMain(const FunctionDeclaration& decl, Block* body);
 
-    void checkValid(const Expression& expr);
-    bool typeContainsPrivateFields(const Type& type);
     bool setRefKind(Expression& expr, VariableReference::RefKind kind);
     void copyIntrinsicIfNeeded(const FunctionDeclaration& function);
     void findAndDeclareBuiltinVariables();
-    bool detectVarDeclarationWithoutScope(const Statement& stmt);
-    // Coerces returns to correct type, detects invalid break / continue placement, and otherwise
-    // massages the function into its final form
-    std::unique_ptr<Block> finalizeFunction(const FunctionDeclaration& funcDecl,
-                                            std::unique_ptr<Block> body);
 
     // Runtime effects (and the interpreter, which uses the same CPU runtime) require adherence to
     // the strict rules from The OpenGL ES Shading Language Version 1.00. (Including Appendix A).
@@ -263,8 +261,6 @@ private:
     std::shared_ptr<SymbolTable> fSymbolTable = nullptr;
     // Symbols which have definitions in the include files.
     IRIntrinsicMap* fIntrinsics = nullptr;
-    std::unordered_set<const FunctionDeclaration*> fReferencedIntrinsics;
-    int fInvocations;
     std::unordered_set<const Type*> fDefinedStructs;
     std::vector<std::unique_ptr<ProgramElement>>* fProgramElements = nullptr;
     std::vector<const ProgramElement*>*           fSharedElements = nullptr;

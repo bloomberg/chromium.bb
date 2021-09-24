@@ -185,7 +185,7 @@ class TestRenderFrameObserver : public RenderFrameObserver {
     }
   }
 
-  void DidFinishDocumentLoad() override {
+  void DidDispatchDOMContentLoadedEvent() override {
     if (test_runner_->ShouldDumpFrameLoadCallbacks()) {
       std::string description = frame_proxy()->GetFrameDescriptionForWebTests();
       test_runner_->PrintMessage(description +
@@ -719,7 +719,7 @@ void WebFrameTestProxy::DidClearWindowObject() {
     test_runner()->Install(this, spell_check_.get());
     accessibility_controller_.Install(frame);
     text_input_controller_.Install(frame);
-    GetLocalRootFrameWidgetTestHelper()->GetEventSender()->Install(frame);
+    GetLocalRootFrameWidgetTestHelper()->GetEventSender()->Install(this);
     blink::WebTestingSupport::InjectInternalsObject(frame);
   }
   RenderFrameImpl::DidClearWindowObject();

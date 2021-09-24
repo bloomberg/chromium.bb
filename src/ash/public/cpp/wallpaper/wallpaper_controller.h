@@ -31,6 +31,9 @@ class WallpaperControllerClient;
 // Used by Chrome to set the wallpaper displayed by ash.
 class ASH_PUBLIC_EXPORT WallpaperController {
  public:
+  WallpaperController();
+  virtual ~WallpaperController();
+
   static WallpaperController* Get();
 
   // Sets the client interface, used to show the wallpaper picker, etc.
@@ -275,10 +278,12 @@ class ASH_PUBLIC_EXPORT WallpaperController {
   // Set and store the collection id used to update refreshable wallpapers.
   // Empty if daily refresh is not enabled.
   virtual void SetDailyRefreshCollectionId(
+      const AccountId& account_id,
       const std::string& collection_id) = 0;
 
   // Get the daily refresh collection id. Empty if daily refresh is not enabled;
-  virtual std::string GetDailyRefreshCollectionId() const = 0;
+  virtual std::string GetDailyRefreshCollectionId(
+      const AccountId& account_id) const = 0;
 
   // With daily refresh enabled, this updates the wallpaper by asking for a
   // wallpaper from within the user specified collection.
@@ -293,9 +298,6 @@ class ASH_PUBLIC_EXPORT WallpaperController {
   // Returns a suffix to be appended to the base url of Backdrop (online)
   // wallpapers.
   static std::string GetBackdropWallpaperSuffix();
-
- protected:
-  static WallpaperController* g_instance_;
 };
 
 }  // namespace ash

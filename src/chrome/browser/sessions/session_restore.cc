@@ -61,7 +61,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/url_constants.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -82,6 +81,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "components/full_restore/features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
@@ -187,7 +187,7 @@ class SessionRestoreImpl : public BrowserListObserver {
       // properly. If we don't wait, it's possible that apps are restored in
       // an incoherent state.
       web_app::WebAppProvider* provider =
-          web_app::WebAppProviderFactory::GetForProfile(profile_);
+          web_app::WebAppProvider::GetForLocalAppsUnchecked(profile_);
       DCHECK(provider);
 
       provider->on_registry_ready().Post(
@@ -533,6 +533,23 @@ class SessionRestoreImpl : public BrowserListObserver {
     }
 
     for (auto i = windows->begin(); i != windows->end(); ++i) {
+      // Check if a collapse tab group will be restored and if the feature flag
+      // |kTabGroupsCollapseFreezing| is enabled. UMA metrics for features are
+      // gathered based on the check of the feature flag. The goal of this code
+      // is to ensure the feature is initialized before the first UMA snapshot
+      // gets uploaded.
+      // TODO(1110108): Remove this check once the feature is fully launched.
+      for (auto& session_tab_group : (*i)->tab_groups) {
+        // Ensure that the user has a collapsed group before checking if the
+        // freezing experiment is enabled to ensure our metrics accurately track
+        // the impact of freezing for users with collapsed tab groups.
+        if (session_tab_group->visual_data.is_collapsed() &&
+            base::FeatureList::IsEnabled(
+                features::kTabGroupsCollapseFreezing)) {
+          break;
+        }
+      }
+
       ++(*window_count);
       // 1. Choose between restoring tabs in an existing browser or in a newly
       //    created browser.
@@ -997,7 +1014,7 @@ Browser* SessionRestore::RestoreSession(
 void SessionRestore::RestoreSessionAfterCrash(Browser* browser) {
   auto* profile = browser->profile();
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Desks restore a window to the right desk, so we should not reuse any
   // browser window. Otherwise, the conflict of the parent desk arises because
   // tabs created in this |browser| should remain in the current active desk,
@@ -1014,8 +1031,16 @@ void SessionRestore::RestoreSessionAfterCrash(Browser* browser) {
            : 0);
 
 #if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // In Chrome OS, apps are restored by full restore only. This function is
+  // called when the chrome browser is launched after crash, so only browser
+  // tabs are restored, apps are not restroed.
+  if (!full_restore::features::IsFullRestoreEnabled())
+    behavior |= SessionRestore::RESTORE_APPS;
+#else
   // Apps should always be restored on crash restore.
   behavior |= SessionRestore::RESTORE_APPS;
+#endif
 #endif
   SessionRestore::RestoreSession(profile, browser, behavior,
                                  std::vector<GURL>());

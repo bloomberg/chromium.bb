@@ -9,8 +9,9 @@
 #include "base/android/path_utils.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/download/android/download_controller.h"
+#include "chrome/browser/download/android/download_dialog_utils.h"
 #include "chrome/browser/ui/android/infobars/duplicate_download_infobar.h"
 #include "components/download/public/common/download_path_reservation_tracker.h"
 #include "components/infobars/content/content_infobar_manager.h"
@@ -20,27 +21,16 @@
 #include "content/public/browser/download_item_utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace {
-
-void CreateNewFileDone(
-    DownloadTargetDeterminerDelegate::ConfirmationCallback callback,
-    download::PathValidationResult result,
-    const base::FilePath& target_path) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (result == download::PathValidationResult::SUCCESS) {
-    std::move(callback).Run(DownloadConfirmationResult::CONFIRMED, target_path,
-                            absl::nullopt /*download_schedule*/);
-
-  } else {
-    std::move(callback).Run(DownloadConfirmationResult::FAILED,
-                            base::FilePath(),
-                            absl::nullopt /*download_schedule*/);
-  }
-}
-
-}  // namespace
-
 namespace android {
+namespace {
+void RecordDuplicateDownloadInfobarEvent(bool is_offline_page,
+                                         DuplicateDownloadInfobarEvent event) {
+  base::UmaHistogramEnumeration(
+      is_offline_page ? "Download.DuplicateInfobarEvent.OfflinePage"
+                      : "Download.DuplicateDownloadInfobarEvent.Download",
+      event, DuplicateDownloadInfobarEvent::kCount);
+}
+}  // namespace
 
 ChromeDuplicateDownloadInfoBarDelegate::
     ~ChromeDuplicateDownloadInfoBarDelegate() {
@@ -74,6 +64,8 @@ ChromeDuplicateDownloadInfoBarDelegate::ChromeDuplicateDownloadInfoBarDelegate(
       file_path_(file_path),
       file_selected_callback_(std::move(file_selected_callback)) {
   download_item_->AddObserver(this);
+  RecordDuplicateDownloadInfobarEvent(IsOfflinePage(),
+                                      DuplicateDownloadInfobarEvent::kShown);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -82,6 +74,8 @@ ChromeDuplicateDownloadInfoBarDelegate::GetIdentifier() const {
 }
 
 bool ChromeDuplicateDownloadInfoBarDelegate::Accept() {
+  RecordDuplicateDownloadInfobarEvent(IsOfflinePage(),
+                                      DuplicateDownloadInfobarEvent::kAccepted);
   if (!download_item_) {
     return true;
   }
@@ -95,11 +89,14 @@ bool ChromeDuplicateDownloadInfoBarDelegate::Accept() {
       download_item_, file_path_, download_dir,
       base::FilePath(), /* fallback_directory */
       true, download::DownloadPathReservationTracker::UNIQUIFY,
-      base::BindOnce(&CreateNewFileDone, std::move(file_selected_callback_)));
+      base::BindOnce(&DownloadDialogUtils::CreateNewFileDone,
+                     std::move(file_selected_callback_)));
   return true;
 }
 
 bool ChromeDuplicateDownloadInfoBarDelegate::Cancel() {
+  RecordDuplicateDownloadInfobarEvent(IsOfflinePage(),
+                                      DuplicateDownloadInfobarEvent::kCanceled);
   if (!download_item_)
     return true;
 
@@ -114,6 +111,8 @@ std::string ChromeDuplicateDownloadInfoBarDelegate::GetFilePath() const {
 }
 
 void ChromeDuplicateDownloadInfoBarDelegate::InfoBarDismissed() {
+  RecordDuplicateDownloadInfobarEvent(IsOfflinePage(),
+                                      DuplicateDownloadInfobarEvent::kCanceled);
   Cancel();
 }
 

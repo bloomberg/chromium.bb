@@ -46,8 +46,8 @@
     },
     "mac-arm64-rel-tests": {
         "master": "chromium.fyi",
-        "port_name": "mac-mac-arm11.0",
-        "specifiers": ["Mac-arm11.0", "Release"]
+        "port_name": "mac-mac11-arm64",
+        "specifiers": ["Mac11-arm64", "Release"]
     },
     "Win7 Tests (1)": {
         "master": "chromium.win",
@@ -119,6 +119,12 @@
         "specifiers": ["Mac11.0", "Release"],
         "is_try_builder": true
     },
+    "mac11.0.arm64-blink-rel": {
+        "master": "tryserver.blink",
+        "port_name": "mac-mac11-arm64",
+        "specifiers": ["Mac11-arm64", "Release"],
+        "is_try_builder": true
+    },
     "win7-blink-rel": {
         "master": "tryserver.blink",
         "port_name": "win-win7",
@@ -156,6 +162,24 @@
         "master": "tryserver.chromium.win",
         "port_name": "win-win10.1909",
         "specifiers": ["Win10.1909", "Release"],
+        "is_try_builder": true,
+        "is_cq_builder":true
+    },
+    "linux_layout_tests_layout_ng_disabled": {
+        "master": "tryserver.chromium.linux",
+        "port_name": "linux-trusty",
+        "specifiers": ["Trusty", "Release"],
+        "flag_specific": "disable-layout-ng",
+        "step_name": "blink_web_tests (with patch)",
+        "is_try_builder": true,
+        "is_cq_builder":true
+    },
+    "linux_layout_tests_composite_after_paint": {
+        "master": "tryserver.chromium.linux",
+        "port_name": "linux-trusty",
+        "specifiers": ["Trusty", "Release"],
+        "flag_specific": "composite-after-paint",
+        "step_name": "blink_web_tests (with patch)",
         "is_try_builder": true,
         "is_cq_builder":true
     },

@@ -128,34 +128,34 @@ PrintPreviewHandlerChromeOS::PrintPreviewHandlerChromeOS() {
 PrintPreviewHandlerChromeOS::~PrintPreviewHandlerChromeOS() = default;
 
 void PrintPreviewHandlerChromeOS::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setupPrinter",
       base::BindRepeating(&PrintPreviewHandlerChromeOS::HandlePrinterSetup,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getAccessToken",
       base::BindRepeating(&PrintPreviewHandlerChromeOS::HandleGetAccessToken,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "grantExtensionPrinterAccess",
       base::BindRepeating(
           &PrintPreviewHandlerChromeOS::HandleGrantExtensionPrinterAccess,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getEulaUrl",
       base::BindRepeating(&PrintPreviewHandlerChromeOS::HandleGetEulaUrl,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "requestPrinterStatus",
       base::BindRepeating(
           &PrintPreviewHandlerChromeOS::HandleRequestPrinterStatusUpdate,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "choosePrintServers",
       base::BindRepeating(
           &PrintPreviewHandlerChromeOS::HandleChoosePrintServers,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPrintServersConfig",
       base::BindRepeating(
           &PrintPreviewHandlerChromeOS::HandleGetPrintServersConfig,
@@ -233,7 +233,7 @@ void PrintPreviewHandlerChromeOS::HandleGetAccessToken(
 
 void PrintPreviewHandlerChromeOS::HandleGetEulaUrl(
     const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   MaybeAllowJavascript();
 
   const std::string& callback_id = args->GetList()[0].GetString();
@@ -322,7 +322,7 @@ void PrintPreviewHandlerChromeOS::OnGotExtensionPrinterInfo(
 
 void PrintPreviewHandlerChromeOS::HandleRequestPrinterStatusUpdate(
     const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
 
   const std::string& callback_id = args->GetList()[0].GetString();
   const std::string& printer_id = args->GetList()[1].GetString();
@@ -337,7 +337,7 @@ void PrintPreviewHandlerChromeOS::HandleRequestPrinterStatusUpdate(
 
 void PrintPreviewHandlerChromeOS::HandleChoosePrintServers(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
 
   const base::Value& val = args->GetList()[0];
   std::vector<std::string> print_server_ids;

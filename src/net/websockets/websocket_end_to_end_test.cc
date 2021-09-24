@@ -38,6 +38,7 @@
 #include "net/base/url_util.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config.h"
@@ -558,7 +559,8 @@ class WebSocketHstsTest : public TestWithTaskEnvironment {
     socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
 
     req_ = context_.CreateRequest(url, DEFAULT_PRIORITY, &delegate_,
-                                  TRAFFIC_ANNOTATION_FOR_TESTS);
+                                  TRAFFIC_ANNOTATION_FOR_TESTS,
+                                  /*is_for_websockets=*/false);
 
     MockWrite writes[] = {
         MockWrite("GET / HTTP/1.1\r\n"
@@ -591,7 +593,8 @@ class WebSocketHstsTest : public TestWithTaskEnvironment {
     socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
 
     req_ = context_.CreateRequest(url, DEFAULT_PRIORITY, &delegate_,
-                                  TRAFFIC_ANNOTATION_FOR_TESTS);
+                                  TRAFFIC_ANNOTATION_FOR_TESTS,
+                                  /*is_for_websockets=*/true);
 
     HttpRequestHeaders headers;
     headers.SetHeader("Connection", "Upgrade");

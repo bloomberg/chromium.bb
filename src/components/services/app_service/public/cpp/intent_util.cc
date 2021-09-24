@@ -36,27 +36,62 @@ const char kDataKey[] = "data";
 const char kUiBypassedKey[] = "ui_bypassed";
 const char kExtrasKey[] = "extras";
 
-// Get the intent condition value based on the condition type.
-absl::optional<std::string> GetIntentConditionValueByType(
+// Get the field/s from the |intent| that need to be checked/matched based on
+// |condition_type|. Most types return a single string but we return a vector
+// for compatibility with types that have multiple fields to be checked.
+std::vector<std::string> GetIntentConditionValuesByType(
     apps::mojom::ConditionType condition_type,
     const apps::mojom::IntentPtr& intent) {
   switch (condition_type) {
-    case apps::mojom::ConditionType::kAction:
-      return intent->action;
-    case apps::mojom::ConditionType::kScheme:
-      return intent->url.has_value()
-                 ? absl::optional<std::string>(intent->url->scheme())
-                 : absl::nullopt;
-    case apps::mojom::ConditionType::kHost:
-      return intent->url.has_value()
-                 ? absl::optional<std::string>(intent->url->host())
-                 : absl::nullopt;
-    case apps::mojom::ConditionType::kPattern:
-      return intent->url.has_value()
-                 ? absl::optional<std::string>(intent->url->path())
-                 : absl::nullopt;
-    case apps::mojom::ConditionType::kMimeType:
-      return intent->mime_type;
+    case apps::mojom::ConditionType::kAction: {
+      return {intent->action};
+    }
+    case apps::mojom::ConditionType::kScheme: {
+      if (intent->url.has_value())
+        return {intent->url->scheme()};
+      return {};
+    }
+    case apps::mojom::ConditionType::kHost: {
+      if (intent->url.has_value())
+        return {intent->url->host()};
+      return {};
+    }
+    case apps::mojom::ConditionType::kPattern: {
+      if (intent->url.has_value())
+        return {intent->url->path()};
+      return {};
+    }
+    case apps::mojom::ConditionType::kMimeType: {
+      if (intent->files.has_value()) {
+        std::vector<std::string> mime_types;
+        for (const auto& file : intent->files.value()) {
+          if (file->mime_type.has_value()) {
+            mime_types.push_back(file->mime_type.value());
+          }
+        }
+        if (!mime_types.empty()) {
+          // All files in the intent should have a MIME type, or none.
+          DCHECK_EQ(mime_types.size(), intent->files->size());
+          return mime_types;
+        }
+      }
+
+      if (intent->mime_type.has_value())
+        return {intent->mime_type.value()};
+      return {};
+    }
+    case apps::mojom::ConditionType::kFileExtension: {
+      if (!intent->files.has_value())
+        return {};
+
+      std::vector<std::string> paths;
+      std::transform(intent->files->begin(), intent->files->end(),
+                     std::back_inserter(paths),
+                     [](const apps::mojom::IntentFilePtr& file) {
+                       return file->url.path();
+                     });
+      return paths;
+    }
   }
 }
 
@@ -119,6 +154,7 @@ const char kIntentActionMain[] = "main";
 const char kIntentActionView[] = "view";
 const char kIntentActionSend[] = "send";
 const char kIntentActionSendMultiple[] = "send_multiple";
+const char kIntentActionCreateNote[] = "create_note";
 
 apps::mojom::IntentPtr CreateIntentFromUrl(const GURL& url) {
   auto intent = apps::mojom::Intent::New();
@@ -127,19 +163,46 @@ apps::mojom::IntentPtr CreateIntentFromUrl(const GURL& url) {
   return intent;
 }
 
+apps::mojom::IntentPtr CreateCreateNoteIntent() {
+  auto intent = apps::mojom::Intent::New();
+  intent->action = kIntentActionCreateNote;
+  return intent;
+}
+
+namespace {
+
+apps::mojom::IntentPtr CreateIntentFromFiles(
+    const std::vector<GURL>& filesystem_urls,
+    const std::vector<std::string>& mime_types) {
+  DCHECK_EQ(filesystem_urls.size(), mime_types.size());
+  auto intent = apps::mojom::Intent::New();
+  intent->mime_type = CalculateCommonMimeType(mime_types);
+  intent->files = std::vector<apps::mojom::IntentFilePtr>{};
+  for (size_t i = 0; i < filesystem_urls.size(); i++) {
+    auto file = apps::mojom::IntentFile::New();
+    file->url = filesystem_urls[i];
+    file->mime_type = mime_types.at(i);
+    intent->files->push_back(std::move(file));
+  }
+  return intent;
+}
+
+}  // namespace
+
+apps::mojom::IntentPtr CreateViewIntentFromFiles(
+    const std::vector<GURL>& filesystem_urls,
+    const std::vector<std::string>& mime_types) {
+  auto intent = CreateIntentFromFiles(filesystem_urls, mime_types);
+  intent->action = kIntentActionView;
+  return intent;
+}
+
 apps::mojom::IntentPtr CreateShareIntentFromFiles(
     const std::vector<GURL>& filesystem_urls,
     const std::vector<std::string>& mime_types) {
-  auto intent = apps::mojom::Intent::New();
+  auto intent = CreateIntentFromFiles(filesystem_urls, mime_types);
   intent->action = filesystem_urls.size() == 1 ? kIntentActionSend
                                                : kIntentActionSendMultiple;
-  intent->mime_type = CalculateCommonMimeType(mime_types);
-  intent->files = std::vector<apps::mojom::IntentFilePtr>{};
-  for (const GURL& url : filesystem_urls) {
-    auto file = apps::mojom::IntentFile::New();
-    file->url = url;
-    intent->files->push_back(std::move(file));
-  }
   return intent;
 }
 
@@ -214,22 +277,32 @@ bool ConditionValueMatches(
       return MatchGlob(value, condition_value->value);
     case apps::mojom::PatternMatchType::kMimeType:
       return MimeTypeMatched(value, condition_value->value);
+    case apps::mojom::PatternMatchType::kFileExtension:
+      return base::EndsWith(value, condition_value->value,
+                            base::CompareCase::INSENSITIVE_ASCII);
   }
 }
 
 bool IntentMatchesCondition(const apps::mojom::IntentPtr& intent,
                             const apps::mojom::ConditionPtr& condition) {
-  absl::optional<std::string> value_to_match =
-      GetIntentConditionValueByType(condition->condition_type, intent);
-  if (!value_to_match.has_value()) {
+  std::vector<std::string> values_to_match =
+      GetIntentConditionValuesByType(condition->condition_type, intent);
+  if (values_to_match.empty()) {
     return false;
   }
-  for (const auto& condition_value : condition->condition_values) {
-    if (ConditionValueMatches(value_to_match.value(), condition_value)) {
-      return true;
-    }
+
+  // If the intent has multiple values to match e.g. a MIME type for each file
+  // in the intent, then each value must match at least one condition_value.
+  for (const auto& value_to_match : values_to_match) {
+    bool matched_any = std::any_of(
+        condition->condition_values.begin(), condition->condition_values.end(),
+        [&value_to_match](const auto& condition_value) {
+          return ConditionValueMatches(value_to_match, condition_value);
+        });
+    if (!matched_any)
+      return false;
   }
-  return false;
+  return true;
 }
 
 bool IntentMatchesFilter(const apps::mojom::IntentPtr& intent,
@@ -239,6 +312,22 @@ bool IntentMatchesFilter(const apps::mojom::IntentPtr& intent,
   for (const auto& condition : filter->conditions) {
     if (!IntentMatchesCondition(intent, condition)) {
       return false;
+    }
+  }
+  return true;
+}
+
+bool FilterIsForFileExtensions(const apps::mojom::IntentFilterPtr& filter) {
+  for (const auto& condition : filter->conditions) {
+    if (condition->condition_type !=
+        apps::mojom::ConditionType::kFileExtension) {
+      return false;
+    }
+    for (const auto& condition_value : condition->condition_values) {
+      if (condition_value->match_type !=
+          apps::mojom::PatternMatchType::kFileExtension) {
+        return false;
+      }
     }
   }
   return true;
@@ -354,8 +443,7 @@ bool IsIntentValid(const apps::mojom::IntentPtr& intent) {
 
 base::Value ConvertIntentToValue(const apps::mojom::IntentPtr& intent) {
   base::Value intent_value(base::Value::Type::DICTIONARY);
-  if (intent->action.has_value() && !intent->action.value().empty())
-    intent_value.SetStringKey(kActionKey, intent->action.value());
+  intent_value.SetStringKey(kActionKey, intent->action);
 
   if (intent->url.has_value()) {
     DCHECK(intent->url.value().is_valid());
@@ -530,7 +618,10 @@ apps::mojom::IntentPtr ConvertValueToIntent(base::Value&& value) {
   if (!value.is_dict() || !value.GetAsDictionary(&dict))
     return intent;
 
-  intent->action = GetStringValueFromDict(*dict, kActionKey);
+  auto action = GetStringValueFromDict(*dict, kActionKey);
+  if (!action.has_value())
+    return intent;
+  intent->action = action.value();
   intent->url = GetGurlValueFromDict(*dict, kUrlKey);
   intent->mime_type = GetStringValueFromDict(*dict, kMimeTypeKey);
   intent->files = GetFilesFromDict(*dict, kFileUrlsKey);

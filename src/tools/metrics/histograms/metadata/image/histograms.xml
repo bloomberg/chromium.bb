@@ -65,6 +65,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       summary="Showing cache patterns only for NewTabPageAnimatedLogo."/>
   <variant name=".OfflinePages"
       summary="Showing cache patterns only for OfflinePages."/>
+  <variant name=".PriceDropNotification"
+      summary="Images fetched for the icon of price drop notification."/>
   <variant name=".QueryTiles" summary="Showing Query tiles images."/>
   <variant name=".VideoTutorialsIPH"
       summary="Showing thumbnails for video tutorials IPH."/>
@@ -95,7 +97,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ImageAnnotationService.AccessibilityV1.ClientResult"
-    enum="ImageAnnotationServiceClientResult" expires_after="2021-12-12">
+    enum="ImageAnnotationServiceClientResult" expires_after="2022-02-20">
   <owner>dmazzoni@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>martis@chromium.org</owner>

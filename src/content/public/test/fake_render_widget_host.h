@@ -60,6 +60,7 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
                                  base::i18n::TextDirection text_direction_hint,
                                  const gfx::Rect& bounds) override;
+  void ClearKeyboardTriggeredTooltip() override;
   void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override;
   void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                               base::i18n::TextDirection anchor_dir,
@@ -81,6 +82,7 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   // blink::mojom::PopupWidgetHost overrides.
   void RequestClosePopup() override;
   void ShowPopup(const gfx::Rect& initial_rect,
+                 const gfx::Rect& initial_anchor_rect,
                  ShowPopupCallback callback) override;
   void SetPopupBounds(const gfx::Rect& bounds,
                       SetPopupBoundsCallback callback) override;

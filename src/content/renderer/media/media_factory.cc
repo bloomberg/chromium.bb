@@ -112,6 +112,10 @@
 #include "media/cast/receiver/cast_streaming_renderer_factory.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(ENABLE_CAST_AUDIO_RENDERER)
+#include "content/renderer/media/cast_renderer_factory.h"
+#endif  // BUILDFLAG(ENABLE_CAST_AUDIO_RENDERER)
+
 #if BUILDFLAG(IS_CHROMECAST)
 // Enable remoting receiver
 #include "media/remoting/receiver_controller.h"        // nogncheck
@@ -290,7 +294,6 @@ std::unique_ptr<blink::WebVideoFrameSubmitter> CreateSubmitter(
         main_thread_compositor_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner>*
         video_frame_compositor_task_runner,
-    const viz::FrameSinkId& parent_frame_sink_id,
     const cc::LayerTreeSettings& settings,
     media::MediaLog* media_log,
     content::RenderFrame* render_frame,
@@ -331,7 +334,7 @@ std::unique_ptr<blink::WebVideoFrameSubmitter> CreateSubmitter(
       &PostContextProviderToCallback, main_thread_compositor_task_runner);
   return blink::WebVideoFrameSubmitter::Create(
       std::move(post_to_context_provider_cb), std::move(log_roughness_cb),
-      parent_frame_sink_id, settings, use_sync_primitives);
+      settings, use_sync_primitives);
 }
 
 }  // namespace
@@ -525,8 +528,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   const auto surface_layer_mode = GetSurfaceLayerMode(MediaPlayerType::kNormal);
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter = CreateSubmitter(
       main_thread_compositor_task_runner, &video_frame_compositor_task_runner,
-      parent_frame_sink_id, settings, media_log.get(), render_frame_,
-      surface_layer_mode);
+      settings, media_log.get(), render_frame_, surface_layer_mode);
 
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
       render_thread->GetMediaThreadTaskRunner();
@@ -686,6 +688,18 @@ MediaFactory::CreateRendererFactorySelector(
           render_frame_->GetBrowserInterfaceBroker()));
 #endif  // defined(OS_FUCHSIA)
 
+#if BUILDFLAG(ENABLE_CAST_AUDIO_RENDERER)
+  DCHECK(!use_media_player_renderer);
+  use_default_renderer_factory = false;
+  factory_selector->AddBaseFactory(
+      RendererType::kCast,
+      std::make_unique<CastRendererFactory>(
+          media_log, decoder_factory,
+          base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
+                              base::Unretained(render_thread)),
+          render_frame_->GetBrowserInterfaceBroker()));
+#endif  // BUILDFLAG(ENABLE_CAST_AUDIO_RENDERER)
+
   if (use_default_renderer_factory) {
     DCHECK(!use_media_player_renderer);
     auto default_factory = CreateDefaultRendererFactory(
@@ -730,7 +744,7 @@ MediaFactory::CreateRendererFactorySelector(
     factory_selector->AddFactory(
         RendererType::kMediaFoundation,
         std::make_unique<media::MediaFoundationRendererClientFactory>(
-            std::move(dcomp_texture_creation_cb),
+            media_log, std::move(dcomp_texture_creation_cb),
             CreateMojoRendererFactory()));
   }
 #endif  // BUILDFLAG(IS_WIN)
@@ -818,8 +832,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       GetSurfaceLayerMode(MediaPlayerType::kMediaStream);
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter = CreateSubmitter(
       main_thread_compositor_task_runner, &video_frame_compositor_task_runner,
-      parent_frame_sink_id, settings, media_log.get(), render_frame_,
-      surface_layer_mode);
+      settings, media_log.get(), render_frame_, surface_layer_mode);
 
   return new blink::WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(), std::move(media_log),

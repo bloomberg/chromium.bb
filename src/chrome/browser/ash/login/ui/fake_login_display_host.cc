@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/login/ui/fake_login_display_host.h"
 
+#include "base/notreached.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "components/session_manager/core/session_manager.h"
 
@@ -25,7 +26,8 @@ class FakeLoginDisplayHost::FakeBaseScreen : public BaseScreen {
 };
 
 FakeLoginDisplayHost::FakeLoginDisplayHost()
-    : session_manager_(std::make_unique<session_manager::SessionManager>()) {}
+    : session_manager_(std::make_unique<session_manager::SessionManager>()),
+      wizard_context_(std::make_unique<WizardContext>()) {}
 
 FakeLoginDisplayHost::~FakeLoginDisplayHost() = default;
 
@@ -62,7 +64,8 @@ void FakeLoginDisplayHost::FinalizeImmediately() {}
 void FakeLoginDisplayHost::SetStatusAreaVisible(bool visible) {}
 
 void FakeLoginDisplayHost::StartWizard(OobeScreenId first_screen) {
-  wizard_controller_ = std::make_unique<WizardController>();
+  wizard_controller_ =
+      std::make_unique<WizardController>(wizard_context_.get());
 
   fake_screen_ = std::make_unique<FakeBaseScreen>(first_screen);
   wizard_controller_->SetCurrentScreenForTesting(fake_screen_.get());
@@ -149,6 +152,26 @@ void FakeLoginDisplayHost::RemoveObserver(
 
 SigninUI* FakeLoginDisplayHost::GetSigninUI() {
   return nullptr;
+}
+
+void FakeLoginDisplayHost::AddWizardCreatedObserverForTests(
+    base::RepeatingClosure on_created) {
+  NOTREACHED();
+}
+
+bool FakeLoginDisplayHost::IsWizardControllerCreated() const {
+  return wizard_controller_.get();
+}
+
+WizardContext* FakeLoginDisplayHost::GetWizardContextForTesting() {
+  NOTREACHED();
+  return nullptr;
+}
+
+bool FakeLoginDisplayHost::GetKeyboardRemappedPrefValue(
+    const std::string& pref_name,
+    int* value) const {
+  return false;
 }
 
 }  // namespace ash

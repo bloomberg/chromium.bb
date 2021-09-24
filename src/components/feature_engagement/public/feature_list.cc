@@ -78,9 +78,11 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHFeedHeaderMenuFeature,
     &kIPHFeedSwipeRefresh,
     &kIPHShareScreenshotFeature,
+    &kIPHSharingHubLinkToggleFeature,
     &kIPHWebFeedFollowFeature,
     &kIPHWebFeedPostFollowDialogFeature,
     &kIPHSharedHighlightingBuilder,
+    &kIPHSharedHighlightingReceiverFeature,
     &kIPHStartSurfaceTabSwitcherHomeButton,
     &kIPHUpdatedConnectionSecurityIndicatorsFeature,
 #endif  // defined(OS_ANDROID)
@@ -95,14 +97,16 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDiscoverFeedHeaderFeature,
 #endif  // defined(OS_IOS)
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+    defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
     &kIPHDesktopTabGroupsNewGroupFeature,
     &kIPHFocusModeFeature,
     &kIPHGlobalMediaControlsFeature,
+    &kIPHGMCCastStartStopFeature,
     &kIPHLiveCaptionFeature,
     &kIPHPasswordsAccountStorageFeature,
     &kIPHReadingListDiscoveryFeature,
     &kIPHReadingListEntryPointFeature,
+    &kIPHReadingListInSidePanelFeature,
     &kIPHReopenTabFeature,
     &kIPHTabSearchFeature,
     &kIPHWebUITabStripFeature,
@@ -110,7 +114,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHProfileSwitchFeature,
     &kIPHUpdatedConnectionSecurityIndicatorsFeature,
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
+        // defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 };
 }  // namespace
 

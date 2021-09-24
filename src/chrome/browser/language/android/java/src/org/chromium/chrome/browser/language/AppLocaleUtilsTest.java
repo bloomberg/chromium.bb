@@ -71,6 +71,15 @@ public class AppLocaleUtilsTest {
 
     @Test
     @SmallTest
+    public void testIsDefaultSystemLanguage() {
+        Assert.assertTrue(AppLocaleUtils.isDefaultSystemLanguage(null));
+        Assert.assertTrue(
+                AppLocaleUtils.isDefaultSystemLanguage(AppLocaleUtils.SYSTEM_LANGUAGE_VALUE));
+        Assert.assertFalse(AppLocaleUtils.isDefaultSystemLanguage("en"));
+    }
+
+    @Test
+    @SmallTest
     public void testIsAvailableBaseUiLanguage() {
         // Base languages that there are no UI translations for.
         List<String> notAvailableBaseLanguages =
@@ -108,6 +117,23 @@ public class AppLocaleUtilsTest {
             Assert.assertTrue(String.format("Language %s", language),
                     AppLocaleUtils.isAvailableExactUiLanguage(language));
         }
+    }
+
+    @Test
+    @SmallTest
+    public void testHasMultipleUiLanguageVariants() {
+        Assert.assertTrue(AppLocaleUtils.hasMultipleUiLanguageVariants("en-US"));
+        Assert.assertTrue(AppLocaleUtils.hasMultipleUiLanguageVariants("en-AU"));
+        Assert.assertTrue(AppLocaleUtils.hasMultipleUiLanguageVariants("pt-BR"));
+        Assert.assertTrue(AppLocaleUtils.hasMultipleUiLanguageVariants("es"));
+
+        Assert.assertFalse(AppLocaleUtils.hasMultipleUiLanguageVariants("af"));
+        Assert.assertFalse(AppLocaleUtils.hasMultipleUiLanguageVariants("af-ZA"));
+        Assert.assertFalse(AppLocaleUtils.hasMultipleUiLanguageVariants("fil"));
+        Assert.assertFalse(AppLocaleUtils.hasMultipleUiLanguageVariants("zu"));
+
+        // Non existent UI language is false.
+        Assert.assertFalse(AppLocaleUtils.hasMultipleUiLanguageVariants("dne"));
     }
 
     // Helper function to manually get and check AppLanguagePref.

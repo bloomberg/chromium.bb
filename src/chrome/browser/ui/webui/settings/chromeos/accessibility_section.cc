@@ -333,10 +333,6 @@ bool IsLiveCaptionEnabled() {
   return media::IsLiveCaptionFeatureEnabled();
 }
 
-bool IsMagnifierPanningImprovementsEnabled() {
-  return ::features::IsMagnifierPanningImprovementsEnabled();
-}
-
 bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
   return ::features::IsMagnifierContinuousMouseFollowingModeSettingEnabled();
 }
@@ -499,8 +495,6 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_SETTINGS_AUTOCLICK_MOVEMENT_THRESHOLD_LARGE},
       {"autoclickMovementThresholdExtraLarge",
        IDS_SETTINGS_AUTOCLICK_MOVEMENT_THRESHOLD_EXTRA_LARGE},
-      {"dictationDescription",
-       IDS_SETTINGS_ACCESSIBILITY_DICTATION_DESCRIPTION},
       {"dictationLabel", IDS_SETTINGS_ACCESSIBILITY_DICTATION_LABEL},
       {"dictationLocaleMenuLabel",
        IDS_SETTINGS_ACCESSIBILITY_DICTATION_LOCALE_MENU_LABEL},
@@ -764,6 +758,12 @@ void AccessibilitySection::AddLoadTimeData(
                                       ? IDS_SETTINGS_KEYBOARD_KEY_LAUNCHER
                                       : IDS_SETTINGS_KEYBOARD_KEY_SEARCH);
 
+  html_source->AddLocalizedString(
+      "dictationDescription",
+      ::features::IsExperimentalAccessibilityDictationOfflineEnabled()
+          ? IDS_SETTINGS_ACCESSIBILITY_DICTATION_NEW_DESCRIPTION
+          : IDS_SETTINGS_ACCESSIBILITY_DICTATION_DESCRIPTION);
+
   html_source->AddString("a11yLearnMoreUrl",
                          chrome::kChromeAccessibilityHelpURL);
 
@@ -785,9 +785,6 @@ void AccessibilitySection::AddLoadTimeData(
 
   html_source->AddString("tabletModeShelfNavigationButtonsLearnMoreUrl",
                          chrome::kTabletModeGesturesLearnMoreURL);
-
-  html_source->AddBoolean("isMagnifierPanningImprovementsEnabled",
-                          IsMagnifierPanningImprovementsEnabled());
 
   html_source->AddBoolean(
       "isMagnifierContinuousMouseFollowingModeSettingEnabled",
@@ -988,8 +985,7 @@ void AccessibilitySection::UpdateSearchTags() {
     updater.RemoveSearchTags(GetA11yLiveCaptionSearchConcepts());
   }
 
-  if (IsMagnifierPanningImprovementsEnabled() &&
-      pref_service_->GetBoolean(
+  if (pref_service_->GetBoolean(
           ash::prefs::kAccessibilityScreenMagnifierEnabled)) {
     updater.AddSearchTags(
         GetA11yFullscreenMagnifierFocusFollowingSearchConcepts());

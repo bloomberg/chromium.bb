@@ -789,6 +789,72 @@ inline OpticalSizing CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
+inline CSSIdentifierValue::CSSIdentifierValue(
+    FontDescription::FontSynthesisWeight font_synthesis_weight)
+    : CSSValue(kIdentifierClass) {
+  switch (font_synthesis_weight) {
+    case FontDescription::kAutoFontSynthesisWeight:
+      value_id_ = CSSValueID::kAuto;
+      return;
+    case FontDescription::kNoneFontSynthesisWeight:
+      value_id_ = CSSValueID::kNone;
+      return;
+  }
+
+  NOTREACHED();
+  value_id_ = CSSValueID::kAuto;
+}
+
+template <>
+inline FontDescription::FontSynthesisWeight CSSIdentifierValue::ConvertTo()
+    const {
+  switch (value_id_) {
+    case CSSValueID::kAuto:
+      return FontDescription::kAutoFontSynthesisWeight;
+    case CSSValueID::kNone:
+      return FontDescription::kNoneFontSynthesisWeight;
+    default:
+      break;
+  }
+
+  NOTREACHED();
+  return FontDescription::kAutoFontSynthesisWeight;
+}
+
+template <>
+inline CSSIdentifierValue::CSSIdentifierValue(
+    FontDescription::FontSynthesisStyle font_synthesis_style)
+    : CSSValue(kIdentifierClass) {
+  switch (font_synthesis_style) {
+    case FontDescription::kAutoFontSynthesisStyle:
+      value_id_ = CSSValueID::kAuto;
+      return;
+    case FontDescription::kNoneFontSynthesisStyle:
+      value_id_ = CSSValueID::kNone;
+      return;
+  }
+
+  NOTREACHED();
+  value_id_ = CSSValueID::kAuto;
+}
+
+template <>
+inline FontDescription::FontSynthesisStyle CSSIdentifierValue::ConvertTo()
+    const {
+  switch (value_id_) {
+    case CSSValueID::kAuto:
+      return FontDescription::kAutoFontSynthesisStyle;
+    case CSSValueID::kNone:
+      return FontDescription::kNoneFontSynthesisStyle;
+    default:
+      break;
+  }
+
+  NOTREACHED();
+  return FontDescription::kAutoFontSynthesisStyle;
+}
+
+template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EFillSizeType fill_size)
     : CSSValue(kIdentifierClass) {
   switch (fill_size) {
@@ -1552,6 +1618,8 @@ inline EContainerType CSSIdentifierValue::ConvertTo() const {
       return kContainerTypeInlineSize;
     case CSSValueID::kBlockSize:
       return kContainerTypeBlockSize;
+    case CSSValueID::kSize:
+      return kContainerTypeSize;
     default:
       break;
   }

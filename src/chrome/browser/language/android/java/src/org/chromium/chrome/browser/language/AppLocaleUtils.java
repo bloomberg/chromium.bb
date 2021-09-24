@@ -16,7 +16,7 @@ import org.chromium.ui.base.ResourceBundle;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Objects;
+import java.util.HashSet;
 
 /**
  * Provides utility functions to assist with overriding the application language.
@@ -35,6 +35,16 @@ public class AppLocaleUtils {
      */
     public static boolean isAppLanguagePref(String languageName) {
         return TextUtils.equals(getAppLanguagePref(), languageName);
+    }
+
+    /**
+     * The |ApplocaleUtils.SYSTEM_LANGUAGE_VALUE| constant acts as a signal that no app override
+     * language is set and when this is the case the app UI language tracks the device language.
+     * @param overrideLanguage String to compare to the default system language value.
+     * @return Whether or not |overrideLanguage| is the default system language.
+     */
+    public static boolean isDefaultSystemLanguage(String overrideLanguage) {
+        return TextUtils.equals(overrideLanguage, SYSTEM_LANGUAGE_VALUE);
     }
 
     /**
@@ -90,7 +100,7 @@ public class AppLocaleUtils {
         // If this is not a bundle build or the default system language is being used the language
         // split should not be installed. Instead indicate that the listener completed successfully
         // since the language resources will already be present.
-        if (!BundleUtils.isBundle() || TextUtils.equals(languageName, SYSTEM_LANGUAGE_VALUE)) {
+        if (!BundleUtils.isBundle() || isDefaultSystemLanguage(languageName)) {
             wrappedListener.onComplete(true);
         } else {
             LanguageSplitInstaller.getInstance().installLanguage(languageName, wrappedListener);
@@ -98,12 +108,34 @@ public class AppLocaleUtils {
     }
 
     /**
+     * Return true if the base language of |languageCode| has multiple UI language variants (e.g.
+     * pt-BR and pt-PT).
+     * @param languageCode Language tag to look up.
+     * @return Whether or not |languageCode| has multiple UI language variants.
+     */
+    public static boolean hasMultipleUiLanguageVariants(String languageCode) {
+        if (isDefaultSystemLanguage(languageCode)) {
+            return false;
+        }
+        String baseLanguage = LocaleUtils.toLanguage(languageCode);
+        HashSet<String> baseLanguages = new HashSet<String>();
+        for (String code : ResourceBundle.getAvailableLocales()) {
+            String base = LocaleUtils.toLanguage(code);
+            if (baseLanguages.contains(base) && TextUtils.equals(base, baseLanguage)) {
+                return true;
+            }
+            baseLanguages.add(LocaleUtils.toLanguage(code));
+        }
+        return false;
+    }
+
+    /**
      * Return true if the locale is an exact match for an available UI language.
      * Note: "en" and "en-AU" will return false since the available locales are "en-GB" and "en-US".
-     * @param locale BCP-47 language tag representing a locale (e.g. "en-US")
+     * @param potentialUiLanguage BCP-47 language tag representing a locale (e.g. "en-US")
      */
-    public static boolean isAvailableExactUiLanguage(String locale) {
-        return isAvailableUiLanguage(locale, null);
+    public static boolean isAvailableExactUiLanguage(String potentialUiLanguage) {
+        return isAvailableUiLanguage(potentialUiLanguage, null);
     }
 
     /**
@@ -112,15 +144,19 @@ public class AppLocaleUtils {
      * reasonable alternatives "en-US" and "pt-BR". Similarly, we have no language pack for "es-MX"
      * or "es-AR" but will use "es-419" for both. However, for languages with no translations
      * (e.g. "yo", "cy", ect.) the fallback is "en-US" which is not reasonable.
-     * @param locale BCP-47 language tag representing a locale (e.g. "en-US")
+     * @param potentialUiLanguage BCP-47 language tag representing a locale (e.g. "en-US")
      */
-    public static boolean isSupportedUiLanguage(String locale) {
-        return isAvailableUiLanguage(locale, BASE_LANGUAGE_COMPARATOR);
+    public static boolean isSupportedUiLanguage(String potentialUiLanguage) {
+        return isAvailableUiLanguage(potentialUiLanguage, BASE_LANGUAGE_COMPARATOR);
     }
 
-    private static boolean isAvailableUiLanguage(String locale, Comparator<String> comparator) {
-        if (Objects.equals(locale, AppLocaleUtils.SYSTEM_LANGUAGE_VALUE)) return true;
-        return Arrays.binarySearch(ResourceBundle.getAvailableLocales(), locale, comparator) >= 0;
+    private static boolean isAvailableUiLanguage(
+            String potentialUiLanguage, Comparator<String> comparator) {
+        // The default system language is always an available UI language.
+        if (isDefaultSystemLanguage(potentialUiLanguage)) return true;
+        return Arrays.binarySearch(
+                       ResourceBundle.getAvailableLocales(), potentialUiLanguage, comparator)
+                >= 0;
     }
 
     /**

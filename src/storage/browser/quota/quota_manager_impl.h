@@ -306,6 +306,15 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
                       QuotaClientTypes quota_client_types,
                       StatusCallback callback);
 
+  // Queries QuotaDatabase for the bucket with `storage_key` and `bucket_name`
+  // for StorageType::kTemporary and deletes bucket data for all clients for the
+  // bucket. Used by the Storage Bucket API for bucket deletion. If no bucket is
+  // found, it will return QuotaStatusCode::kOk since it has no bucket data to
+  // delete.
+  void FindAndDeleteBucketData(const blink::StorageKey& storage_key,
+                               const std::string& bucket_name,
+                               StatusCallback callback);
+
   // Instructs each QuotaClient to remove possible traces of deleted
   // data on the disk.
   void PerformStorageCleanup(blink::mojom::StorageType type,
@@ -379,6 +388,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   void SetGetVolumeInfoFnForTesting(GetVolumeInfoFn fn) {
     get_volume_info_fn_ = fn;
+  }
+
+  void SetEvictionDisabledForTesting(bool disable) {
+    eviction_disabled_ = disable;
   }
 
  protected:
@@ -540,6 +553,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   void DidGetBucket(base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback,
                     QuotaErrorOr<BucketInfo> result);
+  void DidGetBucketForDeletion(StatusCallback callback,
+                               QuotaErrorOr<BucketInfo> result);
   void DidGetStorageKeys(GetStorageKeysCallback callback,
                          QuotaErrorOr<std::set<blink::StorageKey>> result);
   void DidGetModifiedBetween(GetBucketsCallback callback,
@@ -590,8 +605,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   // points to never changes), and the underlying object is thread-safe.
   const scoped_refptr<QuotaManagerProxy> proxy_;
 
-  bool db_disabled_;
-  bool eviction_disabled_;
+  bool db_disabled_ = false;
+  bool eviction_disabled_ = false;
   absl::optional<blink::StorageKey>
       storage_key_for_pending_storage_pressure_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;

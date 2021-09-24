@@ -6,8 +6,10 @@ package org.chromium.chrome.browser.multiwindow;
 
 import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuListItem;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ListView;
@@ -41,6 +43,11 @@ import java.util.List;
  * TODO: Resolve various inconsistencies that can be caused by Ui from multiple instances.
  */
 public class InstanceSwitcherCoordinator {
+    // Last switcher dialog instance. This is used to prevent the user from interacting with
+    // multiple instances of switcher UI.
+    @SuppressLint("StaticFieldLeak")
+    static InstanceSwitcherCoordinator sPrevInstance;
+
     /**
      * Type of the entries shown on the dialog.
      */
@@ -60,6 +67,7 @@ public class InstanceSwitcherCoordinator {
     private final ModelList mModelList = new ModelList();
     private final UiUtils mUiUtils;
     private final View mDialogView;
+    private final Drawable mArrowBackIcon;
 
     private PropertyModel mDialog;
     private PropertyModel mConfirmDialog;
@@ -97,6 +105,7 @@ public class InstanceSwitcherCoordinator {
         mCloseCallback = closeCallback;
         mUiUtils = new UiUtils(mContext, iconBridge);
         mNewWindowAction = newWindowAction;
+        mArrowBackIcon = mUiUtils.getTintedIcon(R.drawable.ic_arrow_back_24dp);
 
         ModelListAdapter adapter = new ModelListAdapter(mModelList);
         // TODO: Extend modern_list_item_view.xml to replace instance_switcher_item.xml
@@ -114,6 +123,8 @@ public class InstanceSwitcherCoordinator {
     }
 
     private void showDialog(List<InstanceInfo> items, boolean newWindowEnabled) {
+        UiUtils.closeOpenDialogs();
+        sPrevInstance = this;
         for (int i = 0; i < items.size(); ++i) {
             PropertyModel itemModel = generateListItem(items.get(i));
             mModelList.add(new ModelListAdapter.ListItem(EntryType.INSTANCE, itemModel));
@@ -130,7 +141,10 @@ public class InstanceSwitcherCoordinator {
             View dialogView, ModelList modelList, List<InstanceInfo> items) {
         ModalDialogProperties.Controller controller = new ModalDialogProperties.Controller() {
             @Override
-            public void onDismiss(PropertyModel model, @DialogDismissalCause int dismissalCause) {}
+            public void onDismiss(PropertyModel model, @DialogDismissalCause int dismissalCause) {
+                InstanceSwitcherItemViewBinder.sMoreMenu = null;
+                sPrevInstance = null;
+            }
 
             @Override
             public void onClick(PropertyModel model, int buttonType) {
@@ -156,6 +170,7 @@ public class InstanceSwitcherCoordinator {
         String title = resources.getString(R.string.instance_switcher_header);
         return new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                 .with(ModalDialogProperties.CONTROLLER, controller)
+                .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
                 .with(ModalDialogProperties.CUSTOM_VIEW, dialogView)
                 .with(ModalDialogProperties.TITLE, title)
                 .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources, R.string.cancel)
@@ -225,7 +240,7 @@ public class InstanceSwitcherCoordinator {
         mOpenCallback.onResult(item);
     }
 
-    private void dismissDialog(@DialogDismissalCause int cause) {
+    void dismissDialog(@DialogDismissalCause int cause) {
         mModalDialogManager.dismissDialog(mDialog, cause);
     }
 
@@ -252,6 +267,7 @@ public class InstanceSwitcherCoordinator {
         String header = res.getString(R.string.instance_switcher_close_confirm_header);
         String closeButton = res.getString(R.string.instance_switcher_close_confirm_button);
         mDialog.set(ModalDialogProperties.TITLE, header);
+        mDialog.set(ModalDialogProperties.TITLE_ICON, mArrowBackIcon);
         mDialog.set(ModalDialogProperties.POSITIVE_BUTTON_TEXT, closeButton);
         mDialog.set(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, res.getString(R.string.cancel));
         TextView messageView = (TextView) mDialogView.findViewById(R.id.message);
@@ -264,6 +280,7 @@ public class InstanceSwitcherCoordinator {
     private void hideConfirmationMessage() {
         Resources res = mContext.getResources();
         mDialog.set(ModalDialogProperties.TITLE, res.getString(R.string.instance_switcher_header));
+        mDialog.set(ModalDialogProperties.TITLE_ICON, null);
         mDialog.set(ModalDialogProperties.POSITIVE_BUTTON_TEXT, res.getString(R.string.cancel));
         mDialog.set(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, null);
         mDialogView.findViewById(R.id.list_view).setVisibility(View.VISIBLE);

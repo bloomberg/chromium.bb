@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
-#include "ui/base/resource/scale_factor.h"
+#include "ui/base/resource/resource_scale_factor.h"
 
 namespace blink {
 
@@ -42,6 +42,11 @@ LayoutImageResource::LayoutImageResource()
     : layout_object_(nullptr), cached_image_(nullptr) {}
 
 LayoutImageResource::~LayoutImageResource() = default;
+
+void LayoutImageResource::Trace(Visitor* visitor) const {
+  visitor->Trace(layout_object_);
+  visitor->Trace(cached_image_);
+}
 
 void LayoutImageResource::Initialize(LayoutObject* layout_object) {
   DCHECK(!layout_object_);
@@ -121,7 +126,7 @@ FloatSize LayoutImageResource::ImageSize(float multiplier) const {
   }
   if (layout_object_ && layout_object_->IsLayoutImage() && size.Width() &&
       size.Height())
-    size.Scale(To<LayoutImage>(layout_object_)->ImageDevicePixelRatio());
+    size.Scale(To<LayoutImage>(layout_object_.Get())->ImageDevicePixelRatio());
   return size;
 }
 
@@ -141,7 +146,7 @@ Image* LayoutImageResource::BrokenImage(float device_scale_factor) {
   if (device_scale_factor >= 2) {
     DEFINE_STATIC_REF(
         Image, broken_image_hi_res,
-        (Image::LoadPlatformResource(IDR_BROKENIMAGE, ui::SCALE_FACTOR_200P)));
+        (Image::LoadPlatformResource(IDR_BROKENIMAGE, ui::k200Percent)));
     return broken_image_hi_res;
   }
 

@@ -13,6 +13,7 @@
 
 #include "ash/components/audio/audio_devices_pref_handler_impl.h"
 #include "ash/components/audio/cras_audio_handler.h"
+#include "ash/components/drivefs/fake_drivefs_launcher_client.h"
 #include "ash/components/pcie_peripheral/pcie_peripheral_manager.h"
 #include "ash/components/power/dark_resume_controller.h"
 #include "ash/constants/ash_features.h"
@@ -112,6 +113,7 @@
 #include "chrome/browser/ash/power/process_data_collector.h"
 #include "chrome/browser/ash/power/renderer_freezer.h"
 #include "chrome/browser/ash/power/smart_charging/smart_charging_manager.h"
+#include "chrome/browser/ash/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/quick_pair/quick_pair_browser_delegate_impl.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
@@ -126,7 +128,7 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chrome/browser/chromeos/device_name_store.h"
+#include "chrome/browser/chromeos/device_name/device_name_store.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -140,7 +142,6 @@
 #include "chrome/browser/chromeos/network_change_manager_client.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager_impl.h"
-#include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/chromeos/startup_settings_cache.h"
 #include "chrome/browser/chromeos/system_token_cert_db_initializer.h"
@@ -167,7 +168,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"  // PLATFORM_CFM
-#include "chromeos/components/drivefs/fake_drivefs_launcher_client.h"
 #include "chromeos/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -182,7 +182,6 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/login/session/session_termination_manager.h"
-#include "chromeos/memory/memory_ablation_study.h"
 #include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
@@ -633,7 +632,6 @@ int ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   system_token_key_permissions_manager_ = platform_keys::
       KeyPermissionsManagerImpl::CreateSystemTokenKeyPermissionsManager();
-  memory_ablation_study_ = std::make_unique<MemoryAblationStudy>();
 
   mojo::PendingRemote<media_session::mojom::MediaControllerManager>
       media_controller_manager;

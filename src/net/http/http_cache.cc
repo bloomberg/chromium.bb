@@ -131,13 +131,6 @@ HttpCache::ActiveEntry::~ActiveEntry() {
   }
 }
 
-size_t HttpCache::ActiveEntry::EstimateMemoryUsage() const {
-  // Skip |disk_entry| which is tracked in simple_backend_impl; Skip |readers|
-  // and |add_to_entry_queue| because the Transactions are owned by their
-  // respective URLRequestHttpJobs.
-  return 0;
-}
-
 bool HttpCache::ActiveEntry::HasNoTransactions() {
   return (!writers || writers->IsEmpty()) && readers.empty() &&
          add_to_entry_queue.empty() && done_headers_queue.empty() &&
@@ -161,14 +154,6 @@ struct HttpCache::PendingOp {
   PendingOp()
       : entry(nullptr), entry_opened(false), callback_will_delete(false) {}
   ~PendingOp() = default;
-
-  // Returns the estimate of dynamically allocated memory in bytes.
-  size_t EstimateMemoryUsage() const {
-    // Note that backend isn't counted because it doesn't provide an EMU
-    // function.
-    return base::trace_event::EstimateMemoryUsage(writer) +
-           base::trace_event::EstimateMemoryUsage(pending_queue);
-  }
 
   disk_cache::Entry* entry;
   bool entry_opened;  // rather than created.
@@ -238,9 +223,6 @@ class HttpCache::WorkItem {
   bool IsValid() const {
     return transaction_ || entry_ || !callback_.is_null();
   }
-
-  // Returns the estimate of dynamically allocated memory in bytes.
-  size_t EstimateMemoryUsage() const { return 0; }
 
  private:
   WorkItemOperation operation_;
@@ -376,7 +358,8 @@ void HttpCache::OnExternalCacheHit(
     const GURL& url,
     const std::string& http_method,
     const NetworkIsolationKey& network_isolation_key,
-    bool is_subframe_document_resource) {
+    bool is_subframe_document_resource,
+    bool used_credentials) {
   if (!disk_cache_.get() || mode_ == DISABLE)
     return;
 
@@ -385,6 +368,12 @@ void HttpCache::OnExternalCacheHit(
   request_info.method = http_method;
   request_info.network_isolation_key = network_isolation_key;
   request_info.is_subframe_document_resource = is_subframe_document_resource;
+  if (base::FeatureList::IsEnabled(features::kSplitCacheByIncludeCredentials)) {
+    if (!used_credentials)
+      request_info.load_flags &= LOAD_DO_NOT_SAVE_COOKIES;
+    else
+      request_info.load_flags |= ~LOAD_DO_NOT_SAVE_COOKIES;
+  }
 
   std::string key = GenerateCacheKey(&request_info);
   disk_cache_->OnExternalCacheHit(key);
@@ -429,26 +418,29 @@ HttpCache::SetHttpNetworkTransactionFactoryForTesting(
   return old_network_layer;
 }
 
+// TODO(crbug.com/1239513): Remove this method.
 void HttpCache::DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                                 const std::string& parent_absolute_name) const {
-  // Skip tracking members like |clock_| and |backend_factory_| because they
-  // don't allocate.
-  std::string name = parent_absolute_name + "/http_cache";
-  base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(name);
-  size_t size = base::trace_event::EstimateMemoryUsage(active_entries_) +
-                base::trace_event::EstimateMemoryUsage(doomed_entries_) +
-                base::trace_event::EstimateMemoryUsage(pending_ops_);
-  if (disk_cache_)
-    size += disk_cache_->DumpMemoryStats(pmd, name);
-
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
 }
 
+// static
 std::string HttpCache::GetResourceURLFromHttpCacheKey(const std::string& key) {
+  // The key format is:
+  // credential_key/post_key/[isolation_key]url
+
+  std::string::size_type pos = 0;
+  pos = key.find('/', pos) + 1;  // Consume credential_key/
+  pos = key.find('/', pos) + 1;  // Consume post_key/
+
+  // It is a good idea to make this function tolerate invalid input. This can
+  // happen because of disk corruption.
+  if (pos == std::string::npos)
+    return "";
+
+  // Consume [isolation_key].
   // Search the key to see whether it begins with |kDoubleKeyPrefix|. If so,
   // then the entry was double-keyed.
-  if (base::StartsWith(key, kDoubleKeyPrefix, base::CompareCase::SENSITIVE)) {
+  if (pos == key.find(kDoubleKeyPrefix, pos)) {
     // Find the rightmost occurrence of |kDoubleKeySeparator|, as when both
     // the top-frame origin and the initiator are added to the key, there will
     // be two occurrences of |kDoubleKeySeparator|.  When the cache entry is
@@ -456,16 +448,12 @@ std::string HttpCache::GetResourceURLFromHttpCacheKey(const std::string& key) {
     // HttpUtil::SpecForRequest method, which has a DCHECK to ensure that
     // the original resource url is valid, and hence will not contain the
     // unescaped whitespace of |kDoubleKeySeparator|.
-    size_t separator_position = key.rfind(kDoubleKeySeparator);
-    DCHECK_NE(separator_position, std::string::npos);
-
-    size_t separator_size = strlen(kDoubleKeySeparator);
-    size_t start_position = separator_position + separator_size;
-    DCHECK_LE(start_position, key.size() - 1);
-
-    return key.substr(start_position);
+    pos = key.rfind(kDoubleKeySeparator);
+    DCHECK_NE(pos, std::string::npos);
+    pos += strlen(kDoubleKeySeparator);
+    DCHECK_LE(pos, key.size() - 1);
   }
-  return key;
+  return key.substr(pos);
 }
 
 // static
@@ -571,8 +559,16 @@ int HttpCache::GetBackendForTransaction(Transaction* transaction) {
 // static
 // Generate a key that can be used inside the cache.
 std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
-  std::string isolation_key;
+  const char credential_key = (base::FeatureList::IsEnabled(
+                                   features::kSplitCacheByIncludeCredentials) &&
+                               (request->load_flags & LOAD_DO_NOT_SAVE_COOKIES))
+                                  ? '0'
+                                  : '1';
 
+  const int64_t post_key = request->upload_data_stream
+                               ? request->upload_data_stream->identifier()
+                               : int64_t(0);
+  std::string isolation_key;
   if (IsSplitCacheEnabled()) {
     // Prepend the key with |kDoubleKeyPrefix| = "_dk_" to mark it as
     // double-keyed (and makes it an invalid url so that it doesn't get
@@ -587,20 +583,15 @@ std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
          request->network_isolation_key.ToString(), kDoubleKeySeparator});
   }
 
+  // The key format is:
+  // credential_key/post_key/[isolation_key]url
+
   // Strip out the reference, username, and password sections of the URL and
-  // concatenate with the network isolation key if we are splitting the cache.
-  std::string url = isolation_key + HttpUtil::SpecForRequest(request->url);
-
-  // No valid URL can begin with numerals, so we should not have to worry
-  // about collisions with normal URLs.
-  if (request->upload_data_stream &&
-      request->upload_data_stream->identifier()) {
-    url.insert(0,
-               base::StringPrintf("%" PRId64 "/",
-                                  request->upload_data_stream->identifier()));
-  }
-
-  return url;
+  // concatenate with the credential_key, the post_key, and the network
+  // isolation key if we are splitting the cache.
+  return base::StringPrintf("%c/%" PRId64 "/%s%s", credential_key, post_key,
+                            isolation_key.c_str(),
+                            HttpUtil::SpecForRequest(request->url).c_str());
 }
 
 void HttpCache::DoomActiveEntry(const std::string& key) {

@@ -124,7 +124,7 @@ void FakeLocalFrameHost::DocumentOnLoadCompleted() {}
 void FakeLocalFrameHost::ForwardResourceTimingToParent(
     mojom::blink::ResourceTimingInfoPtr timing) {}
 
-void FakeLocalFrameHost::DidFinishDocumentLoad() {}
+void FakeLocalFrameHost::DidDispatchDOMContentLoadedEvent() {}
 
 void FakeLocalFrameHost::RunModalAlertDialog(
     const WTF::String& alert_message,
@@ -193,7 +193,8 @@ void FakeLocalFrameHost::DidLoadResourceFromMemoryCache(
     const KURL& url,
     const WTF::String& http_method,
     const WTF::String& mime_type,
-    network::mojom::blink::RequestDestination request_destination) {}
+    network::mojom::blink::RequestDestination request_destination,
+    bool include_credentials) {}
 
 void FakeLocalFrameHost::DidChangeFrameOwnerProperties(
     const blink::FrameToken& child_frame_token,
@@ -226,7 +227,7 @@ void FakeLocalFrameHost::GetKeepAliveHandleFactory(
 void FakeLocalFrameHost::DidAddMessageToConsole(
     mojom::ConsoleMessageLevel log_level,
     const WTF::String& message,
-    int32_t line_no,
+    uint32_t line_no,
     const WTF::String& source_id,
     const WTF::String& untrusted_stack_trace) {}
 

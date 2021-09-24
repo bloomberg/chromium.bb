@@ -57,7 +57,7 @@ class BufferValueMap {
   // contiguous, while BufferNumbers may not be. BufferNumbers may not be
   // dense because buffers may be created and destroyed during the analysis
   // construction process.
-  using BufferNumber = int64;
+  using BufferNumber = int64_t;
 
   explicit BufferValueMap(const HloModule* module,
                           const HloDataflowAnalysis& dataflow)
@@ -97,7 +97,7 @@ class BufferValueMap {
         // If multiple buffers are aliased merge these buffers together into a
         // single buffer (arbitrarily chosen as the first buffer in the vector).
         if (aliased_buffers.size() > 1) {
-          for (int64 i = 1; i < aliased_buffers.size(); ++i) {
+          for (int64_t i = 1; i < aliased_buffers.size(); ++i) {
             MergeBuffers(/*from=*/aliased_buffers[i],
                          /*to=*/aliased_buffers[0]);
           }
@@ -308,6 +308,39 @@ class BufferValueMap {
     }
   }
 
+  void ComputeInPlaceOperationAliasedBuffers(
+      const HloValue& value, std::vector<BufferNumber>* aliased_buffers) {
+    VLOG(3) << "Compute aliases for in-place operations (e.g. "
+               "kDynamicUpdateSlice and kScatter)";
+    for (const HloPosition& position : value.positions()) {
+      HloInstruction* instruction = position.instruction;
+      for (const auto& operand_and_output_index :
+           HloDataflowAnalysis::GetInPlaceInputOutputPairs(instruction)) {
+        if (position.index == operand_and_output_index.second) {
+          const HloUse& operand = operand_and_output_index.first;
+          const HloValue& operand_value = dataflow_.GetUniqueValueAt(
+              instruction->operand(operand.operand_number),
+              operand.operand_index);
+          VLOG(3) << " operand value " << operand_value.ToShortString()
+                  << " aliases.";
+          aliased_buffers->push_back(GetBufferForValue(operand_value));
+        }
+      }
+    }
+
+    for (const HloUse& use : value.uses()) {
+      for (const auto& operand_and_output_index :
+           HloDataflowAnalysis::GetInPlaceInputOutputPairs(use.instruction)) {
+        if (use == operand_and_output_index.first) {
+          const HloValue& use_value = dataflow_.GetUniqueValueAt(
+              use.instruction, operand_and_output_index.second);
+          VLOG(3) << " use value " << use_value.ToShortString() << " aliases.";
+          aliased_buffers->push_back(GetBufferForValue(use_value));
+        }
+      }
+    }
+  }
+
   // Compute and return a vector of buffers that the given value must be
   // contained in due to HLO aliasing rules.
   std::vector<BufferNumber> ComputeAliasedBuffers(const HloValue& value) {
@@ -318,6 +351,7 @@ class BufferValueMap {
     ComputeInputOutputAliasedBuffers(value, &aliased_buffers);
     ComputeWhileAliasedBuffers(value, &aliased_buffers);
     ComputeConditionalAliasedBuffers(value, &aliased_buffers);
+    ComputeInPlaceOperationAliasedBuffers(value, &aliased_buffers);
     // Uniquify aliased buffers.
     absl::c_sort(aliased_buffers);
     aliased_buffers.erase(
@@ -568,7 +602,7 @@ void HloAliasAnalysis::MergeBuffers(const HloBuffer& to,
     live_out_buffers_.insert(&buffers_[to.id()]);
   }
 
-  int64 from_id = from.id();
+  int64_t from_id = from.id();
   if (from_id != buffers_.size() - 1) {
     // Now `from` is invalid, move the last element of buffers to replace `from`
     // and update references to the last element.

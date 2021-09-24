@@ -877,7 +877,7 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
     presentation_group_timing.OnDraw(draw_timer->Begin());
 
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
+      surface = surface_manager_->GetSurfaceForId(id_entry.first);
       if (surface) {
         std::unique_ptr<Surface::PresentationHelper> helper =
             surface->TakePresentationHelperForPresentNotification();
@@ -1111,6 +1111,11 @@ void Display::DidFinishFrame(const BeginFrameAck& ack) {
   }
 
   frame_sequence_number_ = ack.frame_id.sequence_number;
+}
+
+void Display::OnObservingBeginFrameSourceChanged(bool observing) {
+  if (skia_output_surface_)
+    skia_output_surface_->OnObservingBeginFrameSourceChanged(observing);
 }
 
 const SurfaceId& Display::CurrentSurfaceId() {

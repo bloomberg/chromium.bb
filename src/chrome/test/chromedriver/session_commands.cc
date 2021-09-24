@@ -118,10 +118,10 @@ bool GetW3CSetting(const base::DictionaryValue& params) {
 
   const base::Value* list = params.FindListPath("capabilities.firstMatch");
   if (list && list->GetList().size()) {
-    const base::Value& caps_dict = std::move(list->GetList()[0]);
-    if (caps_dict.is_dict() &&
-        GetChromeOptionsDictionary(base::Value::AsDictionaryValue(caps_dict),
-                                   &options_dict)) {
+    const base::Value& caps_dict_ref = std::move(list->GetList()[0]);
+    if (caps_dict_ref.is_dict() &&
+        GetChromeOptionsDictionary(
+            base::Value::AsDictionaryValue(caps_dict_ref), &options_dict)) {
       absl::optional<bool> w3c = options_dict->FindBoolKey("w3c");
       if (w3c.has_value())
         return *w3c;
@@ -551,16 +551,14 @@ Status ProcessCapabilities(const base::DictionaryValue& params,
   }
 
   // 3. Get the property "firstMatch" from capabilities request.
-  base::ListValue default_list;
-  const base::ListValue* all_first_match_capabilities;
-  const base::Value* all_first_match_capabilities_value =
+  base::Value default_list(base::Value::Type::LIST);
+  const base::Value* all_first_match_capabilities =
       capabilities_request->FindKey("firstMatch");
-  if (all_first_match_capabilities_value == nullptr) {
-    default_list.Append(std::make_unique<base::DictionaryValue>());
+  if (all_first_match_capabilities == nullptr) {
+    default_list.Append(base::Value(base::Value::Type::DICTIONARY));
     all_first_match_capabilities = &default_list;
-  } else if (all_first_match_capabilities_value->GetAsList(
-                 &all_first_match_capabilities)) {
-    if (all_first_match_capabilities->GetSize() < 1)
+  } else if (all_first_match_capabilities->is_list()) {
+    if (all_first_match_capabilities->GetList().size() < 1)
       return Status(kInvalidArgument,
                     "'firstMatch' must contain at least one entry");
   } else {
@@ -571,7 +569,7 @@ Status ProcessCapabilities(const base::DictionaryValue& params,
   std::vector<const base::DictionaryValue*> validated_first_match_capabilities;
 
   // 5. Validate all first match capabilities.
-  for (size_t i = 0; i < all_first_match_capabilities->GetSize(); ++i) {
+  for (size_t i = 0; i < all_first_match_capabilities->GetList().size(); ++i) {
     const base::Value& first_match = all_first_match_capabilities->GetList()[i];
     if (!first_match.is_dict()) {
       return Status(kInvalidArgument,
@@ -830,7 +828,7 @@ Status ExecuteSwitchToWindow(Session* session,
       session->chrome->IsMobileEmulationEnabled()) {
     // Connect to new window to apply session configuration
     WebView* web_view;
-    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
+    status = session->chrome->GetWebViewById(web_view_id, &web_view);
     if (status.IsError())
       return status;
     status = web_view->ConnectIfNecessary();
@@ -1200,7 +1198,7 @@ Status ExecuteGetAvailableLogTypes(Session* session,
   for (std::vector<WebDriverLog*>::const_iterator log = logs.begin();
        log != logs.end();
        ++log) {
-    types->AppendString((*log)->type());
+    types->Append((*log)->type());
   }
   *value = std::move(types);
   return Status(kOk);

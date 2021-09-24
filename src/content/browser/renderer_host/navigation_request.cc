@@ -11,6 +11,8 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
@@ -110,6 +112,7 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/redirect_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
@@ -122,6 +125,8 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
@@ -186,6 +191,20 @@ enum class NavigationURLScheme {
   HTTP = 9,
   HTTPS = 10,
   kMaxValue = HTTPS
+};
+
+// Denotes the type of user agent string value sent in the User-Agent request
+// header.
+//
+// Corresponds to the "UserAgentStringType" histogram enumeration type in
+// tools/metrics/histograms/enums.xml.
+//
+// PLEASE DO NOT REORDER, REMOVE, OR CHANGE THE MEANING OF THESE VALUES.
+enum class UserAgentStringType {
+  kFullVersion,
+  kReducedVersion,
+  kOverriden,
+  kMaxValue = kOverriden
 };
 
 NavigationURLScheme GetScheme(const GURL& url) {
@@ -285,6 +304,31 @@ bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
   return true;
 }
 
+// Computes the value that should be set for the User-Agent header, based on the
+// values of relevant headers like Sec-CH-UA-Reduced.  If `user_agent_override`
+// is non-empty, `user_agent_override` is returned as the header value.
+std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
+                                  const std::string& user_agent_override) {
+  if (!user_agent_override.empty()) {
+    base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
+                                  UserAgentStringType::kOverriden);
+    return user_agent_override;
+  }
+
+  // If Sec-CH-UA-Reduced is set on the headers, it means that the token for the
+  // UserAgentReduction Origin Trial has been validated and we should send a
+  // reduced UA string on the request.
+  std::string header = network::kClientHintsNameMapping[static_cast<int>(
+      network::mojom::WebClientHintsType::kUAReduced)];
+  std::string value;
+  const bool reduced = headers.GetHeader(header, &value) && value == "?1";
+  base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
+                                reduced ? UserAgentStringType::kReducedVersion
+                                        : UserAgentStringType::kFullVersion);
+  return reduced ? GetContentClient()->browser()->GetReducedUserAgent()
+                 : GetContentClient()->browser()->GetUserAgent();
+}
+
 // TODO(clamy): This should match what's happening in
 // blink::FrameFetchContext::addAdditionalRequestHeaders.
 void AddAdditionalRequestHeaders(
@@ -317,9 +361,7 @@ void AddAdditionalRequestHeaders(
 
   headers->SetHeaderIfMissing(
       net::HttpRequestHeaders::kUserAgent,
-      user_agent_override.empty()
-          ? GetContentClient()->browser()->GetUserAgent()
-          : user_agent_override);
+      ComputeUserAgentValue(*headers, user_agent_override));
 
   if (!render_prefs.enable_referrers) {
     *referrer =
@@ -345,6 +387,11 @@ void AddAdditionalRequestHeaders(
       headers->SetHeader("Sec-Required-Document-Policy", policy_header.value());
     }
   }
+
+  // Add the "Purpose: prefetch" header to prerender navigations including
+  // subframe navigations.
+  if (frame_tree_node->frame_tree()->is_prerendering())
+    headers->SetHeader("Purpose", "prefetch");
 }
 
 // Should match the definition of
@@ -848,6 +895,24 @@ URLValueForLoadDataWithBaseURL CategorizeURLValueForLoadDataWithBaseURL(
   return URLValueForLoadDataWithBaseURL::kOther;
 }
 
+bool IsDocumentToCommitAnonymous(FrameTreeNode* frame,
+                                 bool is_synchronous_about_blank_navigation) {
+  RenderFrameHostImpl* current_document = frame->current_frame_host();
+  RenderFrameHostImpl* parent_document = frame->parent();
+
+  // The synchronous about:blank navigation preserves the state of the initial
+  // empty document.
+  // TODO(https://github.com/whatwg/html/issues/6863): Remove the synchronous
+  // about:blank navigation.
+  if (is_synchronous_about_blank_navigation)
+    return current_document->anonymous();
+
+  // The document to commit will be anonymous if either the iframe element
+  // has the 'anonymous' attribute set or the parent document is anonymous.
+  bool parent_anonymous = parent_document && parent_document->anonymous();
+  return parent_anonymous || frame->anonymous();
+}
+
 }  // namespace
 
 NavigationRequest::PrerenderActivationNavigationState::
@@ -869,7 +934,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     NavigationEntryImpl* entry,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
-    const absl::optional<blink::Impression>& impression) {
+    const absl::optional<blink::Impression>& impression,
+    bool is_pdf) {
   TRACE_EVENT0("navigation", "NavigationRequest::CreateBrowserInitiated");
   // TODO(arthursonzogni): Form submission with the "GET" method is possible.
   // This is not currently handled here.
@@ -955,7 +1021,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       nullptr /* prefetched_signed_exchange_cache */,
       nullptr /* web_bundle_handle_tracker */,
       rfh_restored_from_back_forward_cache, initiator_process_id,
-      was_opener_suppressed));
+      was_opener_suppressed, is_pdf));
 
   return navigation_request;
 }
@@ -1065,7 +1131,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       std::move(web_bundle_handle_tracker),
       nullptr,  // rfh_restored_from_back_forward_cache
       initiator_process_id,
-      /*was_opener_suppressed=*/false));
+      /*was_opener_suppressed=*/false, /*is_pdf=*/false));
 
   return navigation_request;
 }
@@ -1180,7 +1246,7 @@ NavigationRequest::CreateForSynchronousRendererCommit(
       nullptr /* web_bundle_handle_tracker */,
       nullptr /* rfh_restored_from_back_forward_cache */,
       ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
-      false /* was_opener_suppressed */));
+      false /* was_opener_suppressed */, false /* is_pdf */));
 
   // TODO(https://crbug.com/1199077): Initialize the StorageKey also with the
   // top frame origin.
@@ -1232,7 +1298,8 @@ NavigationRequest::NavigationRequest(
     std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker,
     RenderFrameHostImpl* rfh_restored_from_back_forward_cache,
     int initiator_process_id,
-    bool was_opener_suppressed)
+    bool was_opener_suppressed,
+    bool is_pdf)
     : frame_tree_node_(frame_tree_node),
       is_synchronous_renderer_commit_(is_synchronous_renderer_commit),
       common_params_(std::move(common_params)),
@@ -1266,14 +1333,11 @@ NavigationRequest::NavigationRequest(
       initiator_frame_token_(begin_params_->initiator_frame_token),
       initiator_process_id_(initiator_process_id),
       was_opener_suppressed_(was_opener_suppressed),
-      // The document to commit will be anonymous if either the iframe element
-      // has the 'anonymous' attribute set or the parent document is anonymous.
-      anonymous_(frame_tree_node->anonymous() ||
-                 (frame_tree_node->parent()
-                      ? frame_tree_node->parent()->anonymous()
-                      : false)),
+      anonymous_(IsDocumentToCommitAnonymous(frame_tree_node,
+                                             is_synchronous_renderer_commit)),
       previous_page_ukm_source_id_(
-          frame_tree_node_->current_frame_host()->GetPageUkmSourceId()) {
+          frame_tree_node_->current_frame_host()->GetPageUkmSourceId()),
+      is_pdf_(is_pdf) {
   DCHECK(browser_initiated || common_params_->initiator_origin.has_value());
   DCHECK(!blink::IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
@@ -1691,14 +1755,21 @@ void NavigationRequest::OnPrerenderingActivationChecksComplete(
 void NavigationRequest::BeginNavigationImpl() {
   SetState(WILL_START_NAVIGATION);
 
-  // if this is a fenced frame with a urn:uuid then convert it to a url before
+  // If this is a fenced frame with a urn:uuid then convert it to a url before
   // starting the request.
-  if (frame_tree_node_->IsFencedFrame() && common_params_->url.is_valid() &&
+  if (frame_tree_node_->IsFencedFrameRoot() && common_params_->url.is_valid() &&
       common_params_->url.scheme() == url::kUrnScheme) {
-    // TODO(crbug.com/1123606): With MPArch, make sure that the mapping is
-    // retrieved from the primary root instead of this tree's root.
+    // `inner_frame_tree` is true for navigations inside the main frame of a
+    // nested fenced frame's `FrameTree`, and false otherwise. This is only the
+    // case for the MPArch implementation of fenced frames.
+    bool is_inner_frame_tree =
+        frame_tree_node_->frame_tree()->type() == FrameTree::Type::kFencedFrame;
+    FrameTreeNode* node_to_use =
+        is_inner_frame_tree
+            ? frame_tree_node_->render_manager()->GetOuterDelegateNode()
+            : frame_tree_node_;
     absl::optional<GURL> mapped_url =
-        frame_tree_node_->current_frame_host()
+        node_to_use->current_frame_host()
             ->GetPage()
             .fenced_frame_urls_map()
             .ConvertFencedFrameURNToURL(common_params_->url);
@@ -2480,10 +2551,8 @@ void NavigationRequest::OnRequestRedirected(
   RenderProcessHost* expected_process =
       site_instance->HasProcess() ? site_instance->GetProcess() : nullptr;
 
-  WebExposedIsolationInfo web_exposed_isolation_info =
-      frame_tree_node_->render_manager()->GetWebExposedIsolationInfo(this);
-  WillRedirectRequest(common_params_->referrer->url, web_exposed_isolation_info,
-                      expected_process);
+  WillRedirectRequest(common_params_->referrer->url,
+                      ComputeWebExposedIsolationInfo(), expected_process);
 }
 
 base::WeakPtr<NavigationRequest> NavigationRequest::GetWeakPtr() {
@@ -2727,16 +2796,23 @@ UrlInfo NavigationRequest::GetUrlInfo() {
   auto isolation_request =
       static_cast<UrlInfo::OriginIsolationRequest>(isolation_flags);
 
+  // Compute the WebExposedIsolationInfo that will be bundled into UrlInfo.
+  auto web_exposed_isolation_info = ComputeWebExposedIsolationInfo();
+
   // TODO(crbug.com/1172042): Remove WebBundle-specific code here.
   if (GetWebBundleURL().is_valid()) {
     return UrlInfo(UrlInfoInit(GetURL())
                        .WithOriginIsolationRequest(isolation_request)
                        .WithOrigin(url::Origin::Resolve(
-                           GetURL(), url::Origin::Create(GetWebBundleURL()))));
+                           GetURL(), url::Origin::Create(GetWebBundleURL())))
+                       .WithWebExposedIsolationInfo(web_exposed_isolation_info)
+                       .WithIsPdf(is_pdf_));
   }
 
-  return UrlInfo(
-      UrlInfoInit(GetURL()).WithOriginIsolationRequest(isolation_request));
+  return UrlInfo(UrlInfoInit(GetURL())
+                     .WithOriginIsolationRequest(isolation_request)
+                     .WithWebExposedIsolationInfo(web_exposed_isolation_info)
+                     .WithIsPdf(is_pdf_));
 }
 
 const GURL& NavigationRequest::GetOriginalRequestURL() {
@@ -3136,8 +3212,16 @@ void NavigationRequest::OnResponseStarted(
     // https://crbug.com/738634.
     SiteInstanceImpl* instance = render_frame_host_->GetSiteInstance();
     const IsolationContext& isolation_context = instance->GetIsolationContext();
-    auto site_info = SiteInfo::Create(isolation_context, GetUrlInfo(),
-                                      instance->GetWebExposedIsolationInfo());
+
+    // Explicitly use the web_exposed_isolation_info of `render_frame_host_`
+    // SiteInstance.
+    // TODO(https://crbug.com/1243449): It is unclear why we want to do that.
+    // Inspect call sites and write a proper comment describing why we need to
+    // use `render_frame_host_`'s information.
+    UrlInfo url_info = GetUrlInfo();
+    url_info.web_exposed_isolation_info =
+        instance->GetWebExposedIsolationInfo();
+    auto site_info = SiteInfo::Create(isolation_context, url_info);
     if (!instance->HasSite() &&
         site_info.RequiresDedicatedProcess(isolation_context)) {
       instance->ConvertToDefaultOrSetSite(GetUrlInfo());
@@ -3267,9 +3351,8 @@ void NavigationRequest::OnRequestFailed(
       status.should_collapse_initiator /* collapse_frame */);
 }
 
-absl::optional<url::Origin>
-NavigationRequest::CreateURLLoaderFactoryForEarlyHintsPreload(
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
+absl::optional<NavigationEarlyHintsManagerParams>
+NavigationRequest::CreateNavigationEarlyHintsManagerParams(
     const network::mojom::EarlyHints& early_hints) {
   // Early Hints preloads should happen only before the final response is
   // received, and limited only in the main frame for now.
@@ -3305,12 +3388,17 @@ NavigationRequest::CreateURLLoaderFactoryForEarlyHintsPreload(
           process, tentative_origin, *this, early_hints,
           std::move(cookie_observer));
 
+  net::IsolationInfo isolation_info = url_loader_factory_params->isolation_info;
+
   // TODO(crbug.com/1225556): Support DevTools instrumentation and extension's
   // WebRequest API in a way similar to
   // RenderFrameHostImpl::WillCreateURLLoaderFactory.
-  process->CreateURLLoaderFactory(std::move(factory_receiver),
+  mojo::Remote<network::mojom::URLLoaderFactory> loader_factory;
+  process->CreateURLLoaderFactory(loader_factory.BindNewPipeAndPassReceiver(),
                                   std::move(url_loader_factory_params));
-  return tentative_origin;
+
+  return NavigationEarlyHintsManagerParams(
+      tentative_origin, std::move(isolation_info), std::move(loader_factory));
 }
 
 void NavigationRequest::OnRequestFailedInternal(
@@ -3782,8 +3870,8 @@ void NavigationRequest::OnRedirectChecksComplete(
   std::vector<std::string> removed_headers = TakeRemovedRequestHeaders();
   // Removes all Client Hints from the request, that were passed on from the
   // previous one.
-  for (size_t i = 0; i < blink::kClientHintsMappingsCount; ++i)
-    removed_headers.push_back(blink::kClientHintsHeaderMapping[i]);
+  for (size_t i = 0; i < network::kClientHintsNameMappingCount; ++i)
+    removed_headers.push_back(network::kClientHintsNameMapping[i]);
 
   // Add any required Client Hints to the current request.
   BrowserContext* browser_context =
@@ -3802,6 +3890,11 @@ void NavigationRequest::OnRedirectChecksComplete(
         client_hints_delegate, is_overriding_user_agent(), frame_tree_node_,
         commit_params_->frame_policy.container_policy);
     modified_headers.MergeFrom(client_hints_extra_headers);
+    // On a redirect, if the Critical-CH header has Sec-CH-UA-Reduced, then we
+    // should send the reduced User-Agent string.
+    modified_headers.SetHeader(
+        net::HttpRequestHeaders::kUserAgent,
+        ComputeUserAgentValue(modified_headers, GetUserAgentOverride()));
   }
 
   net::HttpRequestHeaders cors_exempt_headers;
@@ -4124,7 +4217,7 @@ void NavigationRequest::CommitNavigation() {
   // instead of creating one from a URL which lacks opacity information.
   isolation_info_for_subresources_ =
       render_frame_host_->ComputeIsolationInfoForSubresourcesForPendingCommit(
-          origin);
+          origin, anonymous());
   DCHECK(!isolation_info_for_subresources_.IsEmpty());
 
   // TODO(https://crbug.com/1199077): Initialize the StorageKey also with the
@@ -4193,6 +4286,24 @@ void NavigationRequest::CommitNavigation() {
     }
     commit_params_->enabled_client_hints = LookupAcceptCHForCommit(
         common_params_->url, client_hints_delegate, frame_tree_node_);
+
+    if (frame_tree_node_->IsMainFrame() && response() &&
+        !response()->parsed_headers->accept_ch &&
+        base::Contains(commit_params_->enabled_client_hints,
+                       network::mojom::WebClientHintsType::kUAReduced)) {
+      // For Chrome to continue to send Sec-CH-UA-Reduced, the server must
+      // continue replying with:
+      //  - a valid Origin Trial token.
+      //  - Accept-CH header with Sec-CH-UA-Reduced as a value.
+      //
+      // Here, it did not. So it gets removed from the persisted client hints
+      // for the next request.
+      base::Erase(commit_params_->enabled_client_hints,
+                  network::mojom::WebClientHintsType::kUAReduced);
+      PersistAcceptCH(common_params_->url, client_hints_delegate,
+                      commit_params_->enabled_client_hints,
+                      /*persist_duration=*/nullptr);
+    }
 
     // We may need to add hints that were parsed this time in case they were
     // not permitted to persist in legacy accept-ch-lifetime mode.
@@ -5422,10 +5533,16 @@ void NavigationRequest::DidCommitNavigation(
 
 SiteInfo NavigationRequest::GetSiteInfoForCommonParamsURL(
     const WebExposedIsolationInfo& web_exposed_isolation_info) {
+  // We typically call this function when we don't yet have response headers, so
+  // the computed WebExposedIsolationInfo is not relevant. We override it with
+  // the value passed in.
+  UrlInfo url_info = GetUrlInfo();
+  url_info.web_exposed_isolation_info = web_exposed_isolation_info;
+
   // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
   // be correct for cross-BrowsingInstance redirects.
   return SiteInfo::Create(starting_site_instance_->GetIsolationContext(),
-                          GetUrlInfo(), web_exposed_isolation_info);
+                          url_info);
 }
 
 // TODO(zetamoo): Try to merge this function inside its callers.
@@ -6193,7 +6310,7 @@ net::IsolationInfo NavigationRequest::GetIsolationInfo() {
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
   return frame_tree_node_->current_frame_host()
-      ->ComputeIsolationInfoForNavigation(common_params_->url);
+      ->ComputeIsolationInfoForNavigation(common_params_->url, anonymous());
 }
 
 bool NavigationRequest::HasSubframeNavigationEntryCommitted() {
@@ -6329,11 +6446,6 @@ void NavigationRequest::SetIsOverridingUserAgent(bool override_ua) {
 
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params_->headers);
-  auto user_agent_override = GetUserAgentOverride();
-  headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
-                    user_agent_override.empty()
-                        ? GetContentClient()->browser()->GetUserAgent()
-                        : user_agent_override);
   BrowserContext* browser_context =
       frame_tree_node_->navigator().controller().GetBrowserContext();
   ClientHintsControllerDelegate* client_hints_delegate =
@@ -6343,6 +6455,8 @@ void NavigationRequest::SetIsOverridingUserAgent(bool override_ua) {
         common_params_->url, client_hints_delegate, is_overriding_user_agent(),
         frame_tree_node_, &headers);
   }
+  headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
+                    ComputeUserAgentValue(headers, GetUserAgentOverride()));
   begin_params_->headers = headers.ToString();
   // |request_headers_| comes from |begin_params_|. Clear |request_headers_| now
   // so that if |request_headers_| are needed, they will be updated.
@@ -6965,6 +7079,40 @@ void NavigationRequest::SendDeferredConsoleMessages() {
                                             std::move(message.message));
   }
   console_messages_.clear();
+}
+
+WebExposedIsolationInfo NavigationRequest::ComputeWebExposedIsolationInfo() {
+  // If we are in an iframe, we inherit the isolation state of the top level
+  // frame. This can be inferred from the main frame SiteInstance. Note that
+  // Iframes have to pass COEP tests in |OnResponseStarted| before being loaded
+  // and inheriting this cross-origin isolated state.
+  //
+  // TODO(crbug.com/1206150): This may change as we work out the model for
+  // isolation mechanisms beyond "cross-origin isolation".
+  if (!frame_tree_node_->IsMainFrame()) {
+    return frame_tree_node_->current_frame_host()
+        ->GetMainFrame()
+        ->GetSiteInstance()
+        ->GetWebExposedIsolationInfo();
+  }
+
+  // We consider navigations to be cross-origin isolated if the response
+  // asserts proper COOP and COEP headers.
+  if (coop_status().current_coop().value !=
+      network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep) {
+    return WebExposedIsolationInfo::CreateNonIsolated();
+  }
+
+  url::Origin origin = url::Origin::Create(common_params().url);
+
+  // For short-term testing, we'll treat COI as "good enough" to treat as
+  // an isolated application iff the kDirectSockets feature is also
+  // enabled.
+  //
+  // TODO(mkwst): Build a better distinction: https://crbug.com/1206150.
+  return base::FeatureList::IsEnabled(features::kDirectSockets)
+             ? WebExposedIsolationInfo::CreateIsolatedApplication(origin)
+             : WebExposedIsolationInfo::CreateIsolated(origin);
 }
 
 NavigationRequest::ScopedCrashKeys::ScopedCrashKeys(

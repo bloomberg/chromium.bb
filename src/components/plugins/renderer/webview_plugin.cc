@@ -171,6 +171,9 @@ void WebViewPlugin::Paint(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
 
   canvas->save();
   canvas->translate(SkIntToScalar(rect_.x()), SkIntToScalar(rect_.y()));
+  web_view()->MainFrameWidget()->UpdateLifecycle(
+      blink::WebLifecycleUpdate::kAll,
+      blink::DocumentUpdateReason::kBeginMainFrame);
   web_view()->PaintContent(canvas, paint_rect);
   canvas->restore();
 }
@@ -318,6 +321,13 @@ void WebViewPlugin::WebViewHelper::UpdateTooltipFromKeyboard(
     base::i18n::TextDirection hint,
     const gfx::Rect& bounds) {
   UpdateTooltip(tooltip_text);
+}
+
+void WebViewPlugin::WebViewHelper::ClearKeyboardTriggeredTooltip() {
+  // This is an exception to the "only clear it if its set from keyboard" since
+  // there are no way of knowing whether the tooltips were set from keyboard or
+  // cursor in this class. In any case, this will clear the tooltip.
+  UpdateTooltip(std::u16string());
 }
 
 void WebViewPlugin::WebViewHelper::UpdateTooltip(

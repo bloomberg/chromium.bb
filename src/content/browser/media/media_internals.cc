@@ -49,6 +49,8 @@
 #include "media/filters/decrypting_video_decoder.h"
 #endif
 
+namespace content {
+
 namespace {
 
 std::u16string SerializeUpdate(const std::string& function,
@@ -112,8 +114,6 @@ const char kAudioLogStatusKey[] = "status";
 const char kAudioLogUpdateFunction[] = "media.updateAudioComponent";
 
 }  // namespace
-
-namespace content {
 
 // This class works as a receiver of logs of events occurring in the
 // media pipeline. Media logs send by the renderer process to the
@@ -535,6 +535,10 @@ void MediaInternals::SendAudioFocusState() {
   audio_focus_helper_.SendAudioFocusState();
 }
 
+void MediaInternals::GetRegisteredCdms() {
+  cdm_helper_.GetRegisteredCdms();
+}
+
 void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
     const std::vector<std::tuple<media::VideoCaptureDeviceDescriptor,
                                  media::VideoCaptureFormats>>&
@@ -554,13 +558,13 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
     const media::VideoCaptureFormats& supported_formats =
         std::get<1>(device_format_pair);
     if (descriptor.control_support().pan)
-      control_support.AppendString("pan");
+      control_support.Append("pan");
     if (descriptor.control_support().tilt)
-      control_support.AppendString("tilt");
+      control_support.Append("tilt");
     if (descriptor.control_support().zoom)
-      control_support.AppendString("zoom");
+      control_support.Append("zoom");
     for (const auto& format : supported_formats)
-      format_list.AppendString(media::VideoCaptureFormat::ToString(format));
+      format_list.Append(media::VideoCaptureFormat::ToString(format));
 
     std::unique_ptr<base::DictionaryValue> device_dict(
         new base::DictionaryValue());

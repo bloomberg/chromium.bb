@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/url_constants.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
@@ -70,8 +69,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/apps/app_service/web_contents_app_id_utils.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "extensions/common/extension.h"
 #endif
 
@@ -443,7 +442,7 @@ std::unique_ptr<content::WebContents> CreateTargetContents(
         params.opener->GetProcess()->GetID();
   }
   if (params.source_contents) {
-    create_params.created_with_opener = params.created_with_opener;
+    create_params.opened_by_another_window = params.opened_by_another_window;
   }
   if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
     create_params.initially_hidden = true;

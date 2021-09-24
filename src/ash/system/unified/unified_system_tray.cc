@@ -15,6 +15,7 @@
 #include "ash/system/message_center/ash_message_popup_collection.h"
 #include "ash/system/message_center/message_center_ui_controller.h"
 #include "ash/system/message_center/message_center_ui_delegate.h"
+#include "ash/system/message_center/notification_grouping_controller.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
@@ -28,6 +29,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/camera_mic_tray_item_view.h"
 #include "ash/system/unified/current_locale_view.h"
+#include "ash/system/unified/hps_notify_view.h"
 #include "ash/system/unified/ime_mode_view.h"
 #include "ash/system/unified/managed_device_tray_item_view.h"
 #include "ash/system/unified/notification_counter_view.h"
@@ -43,6 +45,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notification_view_controller.h"
 
 namespace ash {
 
@@ -76,11 +79,17 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
         notification_id);
   }
 
+  AshMessagePopupCollection* message_popup_collection() {
+    return message_popup_collection_.get();
+  }
+
  private:
-  std::unique_ptr<MessageCenterUiController> ui_controller_;
-  std::unique_ptr<AshMessagePopupCollection> message_popup_collection_;
+  std::unique_ptr<MessageCenterUiController> const ui_controller_;
+  std::unique_ptr<AshMessagePopupCollection> const message_popup_collection_;
 
   UnifiedSystemTray* const owner_;
+
+  std::unique_ptr<NotificationGroupingController> grouping_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(UiDelegate);
 };
@@ -89,11 +98,17 @@ const base::TimeDelta UnifiedSystemTray::kNotificationCountUpdateDelay =
     base::TimeDelta::FromMilliseconds(100);
 
 UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
-    : owner_(owner) {
-  ui_controller_ = std::make_unique<MessageCenterUiController>(this);
+    : ui_controller_(std::make_unique<MessageCenterUiController>(this)),
+      message_popup_collection_(
+          std::make_unique<AshMessagePopupCollection>(owner->shelf())),
+      owner_(owner) {
+  if (features::IsNotificationsRefreshEnabled()) {
+    grouping_controller_ =
+        std::make_unique<NotificationGroupingController>(owner);
+  }
+
   ui_controller_->set_hide_on_last_notification(false);
-  message_popup_collection_ =
-      std::make_unique<AshMessagePopupCollection>(owner->shelf());
+
   display::Screen* screen = display::Screen::GetScreen();
   message_popup_collection_->StartObserving(
       screen, screen->GetDisplayNearestWindow(
@@ -136,6 +151,8 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
           std::make_unique<PrivacyScreenToastController>(this)),
       notification_icons_controller_(
           std::make_unique<NotificationIconsController>(this)),
+      hps_notify_view_(features::IsHpsNotifyEnabled() ? new HpsNotifyView(shelf)
+                                                      : nullptr),
       current_locale_view_(new CurrentLocaleView(shelf)),
       ime_mode_view_(new ImeModeView(shelf)),
       managed_device_view_(new ManagedDeviceTrayItemView(shelf)),
@@ -156,6 +173,10 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   tray_items_.push_back(
       notification_icons_controller_->notification_counter_view());
   tray_items_.push_back(notification_icons_controller_->quiet_mode_view());
+
+  if (features::IsHpsNotifyEnabled())
+    AddTrayItemToContainer(hps_notify_view_);
+
   AddTrayItemToContainer(current_locale_view_);
   AddTrayItemToContainer(ime_mode_view_);
   AddTrayItemToContainer(managed_device_view_);
@@ -508,6 +529,10 @@ message_center::MessagePopupView*
 UnifiedSystemTray::GetPopupViewForNotificationID(
     const std::string& notification_id) {
   return ui_delegate_->GetPopupViewForNotificationID(notification_id);
+}
+
+AshMessagePopupCollection* UnifiedSystemTray::GetMessagePopupCollection() {
+  return ui_delegate_->message_popup_collection();
 }
 
 void UnifiedSystemTray::AddTrayItemToContainer(TrayItemView* tray_item) {

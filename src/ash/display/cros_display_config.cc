@@ -870,7 +870,6 @@ void CrosDisplayConfig::OverscanCalibration(
       std::move(callback).Run(
           mojom::DisplayConfigResult::kInvalidOperationError);
       return;
-      return;
   }
   std::move(callback).Run(mojom::DisplayConfigResult::kSuccess);
 }
@@ -1005,8 +1004,6 @@ OverscanCalibrator* CrosDisplayConfig::GetOverscanCalibrator(
 }
 
 void CrosDisplayConfig::HighlightDisplay(int64_t display_id) {
-  DCHECK(base::FeatureList::IsEnabled(features::kDisplayIdentification));
-
   Shell::Get()->display_highlight_controller()->SetHighlightedDisplay(
       display_id);
 }

@@ -3,6 +3,7 @@
  * Copyright (c) 2015-2021 Valve Corporation
  * Copyright (c) 2015-2021 LunarG, Inc.
  * Copyright (c) 2015-2021 Google, Inc.
+ * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,6 +12,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Author: Camden Stocker <camden@lunarg.com>
+ * Author: Nadav Geva <nadav.geva@amd.com>
  */
 
 #include "cast_utils.h"
@@ -18,9 +20,14 @@
 #include "best_practices_error_enums.h"
 
 void VkBestPracticesLayerTest::InitBestPracticesFramework() {
-    // Enable all vendor-specific checks
+    // Enable all vendor-specific checks    
+    InitBestPracticesFramework("");    
+}
+
+void VkBestPracticesLayerTest::InitBestPracticesFramework(const char* vendor_checks_to_enable) {
+    // Enable the vendor-specific checks spcified by vendor_checks_to_enable
     VkLayerSettingValueDataEXT bp_setting_string_value{};
-    bp_setting_string_value.arrayString.pCharArray = "VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ALL";
+    bp_setting_string_value.arrayString.pCharArray = vendor_checks_to_enable;
     bp_setting_string_value.arrayString.count = sizeof(bp_setting_string_value.arrayString.pCharArray);
     VkLayerSettingValueEXT bp_vendor_all_setting_val = {"enables", VK_LAYER_SETTING_VALUE_TYPE_STRING_ARRAY_EXT,
                                                         bp_setting_string_value};
@@ -126,13 +133,13 @@ TEST_F(VkBestPracticesLayerTest, UseDeprecatedInstanceExtensions) {
     // Create a 1.0 vulkan instance and request an extension promoted to core in 1.1
     m_errorMonitor->ExpectSuccess(VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT);
     m_errorMonitor->SetUnexpectedError("UNASSIGNED-khronos-Validation-debug-build-warning-message");
-    VkApplicationInfo* new_info = new VkApplicationInfo;
-    new_info->apiVersion = VK_API_VERSION_1_0;
-    new_info->pApplicationName = ici.pApplicationInfo->pApplicationName;
-    new_info->applicationVersion = ici.pApplicationInfo->applicationVersion;
-    new_info->pEngineName = ici.pApplicationInfo->pEngineName;
-    new_info->engineVersion = ici.pApplicationInfo->engineVersion;
-    ici.pApplicationInfo = new_info;
+    VkApplicationInfo new_info{};
+    new_info.apiVersion = VK_API_VERSION_1_0;
+    new_info.pApplicationName = ici.pApplicationInfo->pApplicationName;
+    new_info.applicationVersion = ici.pApplicationInfo->applicationVersion;
+    new_info.pEngineName = ici.pApplicationInfo->pEngineName;
+    new_info.engineVersion = ici.pApplicationInfo->engineVersion;
+    ici.pApplicationInfo = &new_info;
     vk::CreateInstance(&ici, nullptr, &dummy);
     vk::DestroyInstance(dummy, nullptr);
     m_errorMonitor->VerifyNotFound();
@@ -298,6 +305,10 @@ TEST_F(VkBestPracticesLayerTest, CmdClearAttachmentTestSecondary) {
         m_errorMonitor->VerifyNotFound();
         // Call for full-sized FB Color attachment prior to issuing a Draw
         m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit, "UNASSIGNED-BestPractices-DrawState-ClearCmdBeforeDraw");
+        // This test may also trigger other warnings
+        m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-VkCommandBuffer-AvoidSecondaryCmdBuffers");
+        m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-VkCommandBuffer-AvoidSmallSecondaryCmdBuffers");
+
         vk::CmdClearAttachments(m_commandBuffer->handle(), 1, &color_attachment, 1, &clear_rect);
         m_errorMonitor->VerifyFound();
     }
@@ -317,10 +328,31 @@ TEST_F(VkBestPracticesLayerTest, CmdClearAttachmentTestSecondary) {
         m_errorMonitor->VerifyNotFound();
         // Call for full-sized FB Color attachment prior to issuing a Draw
         m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit, "UNASSIGNED-BestPractices-DrawState-ClearCmdBeforeDraw");
+        // This test may also trigger other warnings
+        m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-VkCommandBuffer-AvoidSecondaryCmdBuffers");
+        m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-VkCommandBuffer-AvoidSmallSecondaryCmdBuffers");
+        m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-CmdPool-DisparateSizedCmdBuffers");
+
         vk::CmdExecuteCommands(m_commandBuffer->handle(), 1, &secondary_full_clear.handle());
         m_errorMonitor->VerifyFound();
     }
     m_commandBuffer->EndRenderPass();
+}
+
+TEST_F(VkBestPracticesLayerTest, CmdBeginRenderPassZeroSizeRenderArea) {
+    TEST_DESCRIPTION("Test for getting warned when render area is 0 in VkRenderPassBeginInfo during vkCmdBeginRenderPass");
+
+    InitBestPracticesFramework();
+    InitState();
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, "UNASSIGNED-BestPractices-vkCmdBeginRenderPass-zero-size-render-area");
+
+    m_commandBuffer->begin();
+    m_renderPassBeginInfo.renderArea.extent.width = 0;
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+
+    m_errorMonitor->VerifyFound();
 }
 
 TEST_F(VkBestPracticesLayerTest, VtxBufferBadIndex) {
@@ -332,6 +364,7 @@ TEST_F(VkBestPracticesLayerTest, VtxBufferBadIndex) {
     // This test may also trigger other warnings
     m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-vkAllocateMemory-small-allocation");
     m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-vkBindMemory-small-dedicated-allocation");
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-VkCommandBuffer-AvoidTinyCmdBuffers");
 
     ASSERT_NO_FATAL_FAILURE(InitViewport());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
@@ -602,6 +635,8 @@ TEST_F(VkBestPracticesLayerTest, AttachmentShouldNotBeTransient) {
     m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-vkAllocateMemory-small-allocation");
     m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-vkBindMemory-small-dedicated-allocation");
     m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-vkBindImageMemory-non-lazy-transient-image");
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-VkCommandBuffer-AvoidTinyCmdBuffers");
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-vkImage-AvoidGeneral");
 
     VkAttachmentDescription attachment{};
     attachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -654,6 +689,9 @@ TEST_F(VkBestPracticesLayerTest, AttachmentShouldNotBeTransient) {
     vk::CreateFramebuffer(m_device->device(), &fb_info, nullptr, &fb);
 
     m_errorMonitor->VerifyFound();
+    vk::DestroyImageView(m_device->device(), image_view, nullptr);
+    vk::DestroyFramebuffer(m_device->device(), fb, nullptr);
+    vk::DestroyRenderPass(m_device->device(), rp, nullptr);
 }
 
 TEST_F(VkBestPracticesLayerTest, TooManyInstancedVertexBuffers) {
@@ -668,6 +706,7 @@ TEST_F(VkBestPracticesLayerTest, TooManyInstancedVertexBuffers) {
     // This test may also trigger the small allocation warnings
     m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-vkAllocateMemory-small-allocation");
     m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-vkBindMemory-small-dedicated-allocation");
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-VkCommandBuffer-AvoidTinyCmdBuffers");
 
     ASSERT_NO_FATAL_FAILURE(InitViewport());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());

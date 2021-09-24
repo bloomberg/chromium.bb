@@ -30,6 +30,8 @@ class MODULES_EXPORT AudioData final : public ScriptWrappable {
   // audio_data.idl implementation.
   explicit AudioData(AudioDataInit*, ExceptionState&);
 
+  ~AudioData() final;
+
   // Creates a clone of |this|, taking on a new reference on |data_|. The cloned
   // frame will not be closed when |this| is, and its lifetime should be
   // independently managed.
@@ -55,12 +57,12 @@ class MODULES_EXPORT AudioData final : public ScriptWrappable {
   void Trace(Visitor*) const override;
 
  private:
-  bool IsInterleaved();
-  uint32_t BytesPerSample();
-
   scoped_refptr<media::AudioBuffer> data_;
 
   absl::optional<V8AudioSampleFormat> format_;
+
+  // Temporary space for converting to float32.
+  std::unique_ptr<media::AudioBus> temp_bus_;
 
   int64_t timestamp_;
 };

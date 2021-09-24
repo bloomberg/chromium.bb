@@ -199,12 +199,20 @@ namespace dawn_native { namespace metal {
         // TODO(crbug.com/dawn/846): tighten this workaround when the driver bug is fixed.
         SetToggle(Toggle::AlwaysResolveIntoZeroLevelAndLayer, true);
 
+        const PCIInfo& pciInfo = GetAdapter()->GetPCIInfo();
+
         // TODO(crbug.com/dawn/847): Use MTLStorageModeShared instead of MTLStorageModePrivate when
         // creating MTLCounterSampleBuffer in QuerySet on Intel platforms, otherwise it fails to
         // create the buffer. Change to use MTLStorageModePrivate when the bug is fixed.
         if (@available(macOS 10.15, iOS 14.0, *)) {
-            bool useSharedMode = gpu_info::IsIntel(this->GetAdapter()->GetPCIInfo().vendorId);
+            bool useSharedMode = gpu_info::IsIntel(pciInfo.vendorId);
             SetToggle(Toggle::MetalUseSharedModeForCounterSampleBuffer, useSharedMode);
+        }
+
+        // TODO(crbug.com/dawn/1071): r8unorm and rg8unorm textures with multiple mip levels don't
+        // clear properly on Intel Macs.
+        if (gpu_info::IsIntel(pciInfo.vendorId)) {
+            SetToggle(Toggle::DisableR8RG8Mipmaps, true);
         }
     }
 
@@ -213,8 +221,9 @@ namespace dawn_native { namespace metal {
         return BindGroup::Create(this, descriptor);
     }
     ResultOrError<Ref<BindGroupLayoutBase>> Device::CreateBindGroupLayoutImpl(
-        const BindGroupLayoutDescriptor* descriptor) {
-        return BindGroupLayout::Create(this, descriptor);
+        const BindGroupLayoutDescriptor* descriptor,
+        PipelineCompatibilityToken pipelineCompatibilityToken) {
+        return BindGroupLayout::Create(this, descriptor, pipelineCompatibilityToken);
     }
     ResultOrError<Ref<BufferBase>> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return Buffer::Create(this, descriptor);
@@ -266,11 +275,13 @@ namespace dawn_native { namespace metal {
         const TextureViewDescriptor* descriptor) {
         return TextureView::Create(texture, descriptor);
     }
-    void Device::CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
-                                                size_t blueprintHash,
-                                                WGPUCreateComputePipelineAsyncCallback callback,
-                                                void* userdata) {
-        ComputePipeline::CreateAsync(this, descriptor, blueprintHash, callback, userdata);
+    void Device::CreateComputePipelineAsyncImpl(
+        std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
+        size_t blueprintHash,
+        WGPUCreateComputePipelineAsyncCallback callback,
+        void* userdata) {
+        ComputePipeline::CreateAsync(this, std::move(descriptor), blueprintHash, callback,
+                                     userdata);
     }
 
     ResultOrError<ExecutionSerial> Device::CheckAndUpdateCompletedSerials() {

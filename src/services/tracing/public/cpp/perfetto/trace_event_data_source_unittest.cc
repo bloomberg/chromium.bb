@@ -74,11 +74,17 @@ constexpr uint32_t kClockIdAbsolute = 64;
 constexpr uint32_t kClockIdIncremental = 65;
 #endif
 
-class TraceEventDataSourceTest : public TracingUnitTest {
+class TraceEventDataSourceTest
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+    : public testing::Test
+#else
+    : public TracingUnitTest
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+{
  public:
   void SetUp() override {
-    TracingUnitTest::SetUp();
 #if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+    TracingUnitTest::SetUp();
     TraceEventDataSource::GetInstance()->RegisterStartupHooks();
     // TODO(eseckler): Initialize the entire perfetto client library instead.
     perfetto::internal::TrackRegistry::InitializeInstance();
@@ -128,7 +134,9 @@ class TraceEventDataSourceTest : public TracingUnitTest {
     base::trace_event::TraceLog::GetInstance()->set_process_name(
         old_process_name_);
 
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     TracingUnitTest::TearDown();
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
     // Destroy after task environment shuts down so that no other threads try to
     // add trace events.
@@ -815,6 +823,7 @@ class TraceEventDataSourceTest : public TracingUnitTest {
 
  protected:
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  base::test::TaskEnvironment task_environment_;
   base::test::TracingEnvironment tracing_environment_;
   std::vector<std::unique_ptr<perfetto::protos::TracePacket>>
       finalized_packets_;
@@ -1128,17 +1137,26 @@ TEST_F(TraceEventDataSourceTest, EventWithCopiedStrings) {
   size_t packet_index = ExpectStandardPreamble();
 
   auto* e_packet = GetFinalizedPacket(packet_index++);
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 2);
+
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  // Perfetto uses interning even for copied strings.
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT,
+                   TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_COPY);
+  EXPECT_EQ(annotations[0].name_iid(), 1u);
+  EXPECT_EQ(annotations[1].name_iid(), 2u);
+#else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name=*/"bar",
                    TRACE_EVENT_PHASE_INSTANT,
                    TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_COPY);
-
   EXPECT_EQ(e_packet->track_event().name(), "bar");
-
-  const auto& annotations = e_packet->track_event().debug_annotations();
-  EXPECT_EQ(annotations.size(), 2);
   EXPECT_EQ(annotations[0].name(), "arg1_name");
-  EXPECT_EQ(annotations[0].string_value(), "arg1_val");
   EXPECT_EQ(annotations[1].name(), "arg2_name");
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+
+  EXPECT_EQ(annotations[0].string_value(), "arg1_val");
   EXPECT_EQ(annotations[1].string_value(), "arg2_val");
 
   ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
@@ -2066,7 +2084,9 @@ TEST_F(TraceEventDataSourceTest, MAYBE_StartupTracingTimeout) {
 
   // Make sure that the TraceWriter destruction task posted from the ThreadPool
   // task's flush is executed.
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   RunUntilIdle();
+#endif
 }
 
 TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOff) {

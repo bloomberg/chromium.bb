@@ -30,8 +30,8 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/web_apps/web_app_url_handler_hover_button.h"
-#include "chrome/browser/web_applications/components/url_handler_launch_params.h"
-#include "chrome/browser/web_applications/components/url_handler_prefs.h"
+#include "chrome/browser/web_applications/url_handler_launch_params.h"
+#include "chrome/browser/web_applications/url_handler_prefs.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/grit/generated_resources.h"
@@ -248,24 +248,26 @@ void WebAppUrlHandlerIntentPickerView::Initialize() {
   scrollable_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  web_app::WebAppProvider* provider;
   // size+1 for the browser entry.
   size_t total_buttons = launch_params_list_.size() + 1;
   hover_buttons_.reserve(total_buttons);
   // Create a WebAppUrlHandlerHoverButton to open the link in browser and
   // list it as the first choice.
-  auto app_button = std::make_unique<WebAppUrlHandlerHoverButton>(
-      total_buttons, base::BindRepeating(
-                         &WebAppUrlHandlerIntentPickerView::SetSelectedAppIndex,
-                         base::Unretained(this), 0));
+  auto app_button =
+      std::make_unique<WebAppUrlHandlerHoverButton>(base::BindRepeating(
+          &WebAppUrlHandlerIntentPickerView::SetSelectedAppIndex,
+          base::Unretained(this), 0));
   app_button->set_tag(0);
+  app_button->GetViewAccessibility().OverridePosInSet(1, total_buttons);
   hover_buttons_.push_back(app_button.get());
   scrollable_view->AddChildViewAt(std::move(app_button), 0);
 
   for (const auto& launch_params : launch_params_list_) {
     Profile* profile = g_browser_process->profile_manager()->GetProfileByPath(
         launch_params.profile_path);
-    provider = web_app::WebAppProvider::Get(profile);
+    web_app::WebAppProvider* const provider =
+        web_app::WebAppProvider::GetForWebApps(profile);
+    DCHECK(provider);
     web_app::WebAppRegistrar& registrar = provider->registrar();
 
     const std::u16string& profile_name =
@@ -284,13 +286,14 @@ void WebAppUrlHandlerIntentPickerView::Initialize() {
     // TODO(crbug.com/1072058): Make sure the UI is reasonable when
     // |app_title| is long.
     auto app_button = std::make_unique<WebAppUrlHandlerHoverButton>(
-        total_buttons,
         base::BindRepeating(
             &WebAppUrlHandlerIntentPickerView::SetSelectedAppIndex,
             base::Unretained(this), button_index),
         launch_params, provider, app_title,
         registrar.GetAppStartUrl(launch_params.app_id));
     app_button->set_tag(button_index);
+    app_button->GetViewAccessibility().OverridePosInSet(button_index + 1,
+                                                        total_buttons);
     hover_buttons_.push_back(app_button.get());
     scrollable_view->AddChildViewAt(std::move(app_button), button_index);
   }
@@ -304,7 +307,8 @@ void WebAppUrlHandlerIntentPickerView::Initialize() {
   // The added 0.5 on the else block allow us to let the user know there are
   // more than |kMaxAppResults| apps accessible by scrolling the list.
   scroll_view->ClipHeightTo(kRowHeight, (kMaxAppResults + 0.5) * kRowHeight);
-  scroll_view->GetViewAccessibility().OverrideRole(ax::mojom::Role::kListBox);
+  scroll_view->GetViewAccessibility().OverrideRole(
+      ax::mojom::Role::kRadioGroup);
 
   constexpr int kColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
@@ -453,7 +457,8 @@ void ShowWebAppUrlHandlerIntentPickerDialog(
       base::BarrierClosure(profiles.size(), std::move(show_dialog_callback));
 
   for (Profile* profile : profiles) {
-    auto* provider = web_app::WebAppProvider::Get(profile);
+    web_app::WebAppProvider* const provider =
+        web_app::WebAppProvider::GetForWebApps(profile);
     DCHECK(provider);
 
     provider->on_registry_ready().Post(FROM_HERE, on_registrar_ready_callback);

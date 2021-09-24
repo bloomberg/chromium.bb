@@ -80,6 +80,8 @@ constexpr char kArcGhostWindowLaunchHistogram[] = "Apps.ArcGhostWindowLaunch";
 
 constexpr char kRestoreArcAppStates[] = "Apps.RestoreArcAppStates";
 
+constexpr char kGhostWindowPopToArcHistogram[] = "Arc.LaunchedWithGhostWindow";
+
 constexpr char kNoGhostWindowReasonHistogram[] =
     "Apps.RestoreNoGhostWindowReason";
 
@@ -134,11 +136,11 @@ void ArcAppLaunchHandler::RestoreArcApps(
   DCHECK(app_launch_handler);
   handler_ = app_launch_handler;
 
-  if (!arc::IsArcPlayStoreEnabledForProfile(handler_->profile_))
+  if (!arc::IsArcPlayStoreEnabledForProfile(handler_->profile()))
     return;
 
   DCHECK(apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
-      handler_->profile_));
+      handler_->profile()));
 
   LoadRestoreData();
   if (app_ids_.empty()) {
@@ -146,11 +148,12 @@ void ArcAppLaunchHandler::RestoreArcApps(
     return;
   }
 
-  window_handler_ = FullRestoreArcTaskHandler::GetForProfile(handler_->profile_)
-                        ->window_handler();
+  window_handler_ =
+      FullRestoreArcTaskHandler::GetForProfile(handler_->profile())
+          ->window_handler();
 
   apps::AppRegistryCache& cache =
-      apps::AppServiceProxyFactory::GetForProfile(handler_->profile_)
+      apps::AppServiceProxyFactory::GetForProfile(handler_->profile())
           ->AppRegistryCache();
 
   // Observe AppRegistryCache to get the notification when the app is ready.
@@ -162,32 +165,6 @@ void ArcAppLaunchHandler::RestoreArcApps(
 
   if (is_app_connection_ready_)
     OnAppConnectionReady();
-}
-
-void ArcAppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
-  if (!update.ReadinessChanged() ||
-      update.AppType() != apps::mojom::AppType::kArc) {
-    return;
-  }
-
-  if (!apps_util::IsInstalled(update.Readiness())) {
-    RemoveWindowsForApp(update.AppId());
-    return;
-  }
-
-  // If the app is not ready, don't launch the app for the restoration.
-  if (update.Readiness() != apps::mojom::Readiness::kReady)
-    return;
-
-  if (is_shelf_ready_ && base::Contains(app_ids_, update.AppId())) {
-    AddWindows(update.AppId());
-    PrepareAppLaunching(update.AppId());
-  }
-}
-
-void ArcAppLaunchHandler::OnAppRegistryCacheWillBeDestroyed(
-    apps::AppRegistryCache* cache) {
-  apps::AppRegistryCache::Observer::Observe(nullptr);
 }
 
 void ArcAppLaunchHandler::OnAppConnectionReady() {
@@ -261,12 +238,13 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id) {
     return;
 
   DCHECK(handler_);
-  const auto it = handler_->restore_data_->app_id_to_launch_list().find(app_id);
-  if (it == handler_->restore_data_->app_id_to_launch_list().end())
+  const auto it =
+      handler_->restore_data()->app_id_to_launch_list().find(app_id);
+  if (it == handler_->restore_data()->app_id_to_launch_list().end())
     return;
 
   if (it->second.empty()) {
-    handler_->restore_data_->RemoveApp(app_id);
+    handler_->restore_data()->RemoveApp(app_id);
     return;
   }
 
@@ -276,8 +254,34 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id) {
   RemoveWindowsForApp(app_id);
 }
 
+void ArcAppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
+  if (!update.ReadinessChanged() ||
+      update.AppType() != apps::mojom::AppType::kArc) {
+    return;
+  }
+
+  if (!apps_util::IsInstalled(update.Readiness())) {
+    RemoveWindowsForApp(update.AppId());
+    return;
+  }
+
+  // If the app is not ready, don't launch the app for the restoration.
+  if (update.Readiness() != apps::mojom::Readiness::kReady)
+    return;
+
+  if (is_shelf_ready_ && base::Contains(app_ids_, update.AppId())) {
+    AddWindows(update.AppId());
+    PrepareAppLaunching(update.AppId());
+  }
+}
+
+void ArcAppLaunchHandler::OnAppRegistryCacheWillBeDestroyed(
+    apps::AppRegistryCache* cache) {
+  apps::AppRegistryCache::Observer::Observe(nullptr);
+}
+
 void ArcAppLaunchHandler::OnWindowActivated(
-    ::wm::ActivationChangeObserver::ActivationReason reason,
+    wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* new_active,
     aura::Window* old_active) {
   const auto session_id = arc::GetWindowSessionId(new_active);
@@ -349,13 +353,13 @@ void ArcAppLaunchHandler::OnConfigurationSet(bool success,
 
 void ArcAppLaunchHandler::LoadRestoreData() {
   DCHECK(handler_);
-  for (const auto& it : handler_->restore_data_->app_id_to_launch_list())
+  for (const auto& it : handler_->restore_data()->app_id_to_launch_list())
     app_ids_.insert(it.first);
 }
 
 void ArcAppLaunchHandler::AddWindows(const std::string& app_id) {
   DCHECK(handler_);
-  auto it = handler_->restore_data_->app_id_to_launch_list().find(app_id);
+  auto it = handler_->restore_data()->app_id_to_launch_list().find(app_id);
   for (const auto& data_it : it->second) {
     if (data_it.second->activation_index.has_value()) {
       windows_[data_it.second->activation_index.value()] = {app_id,
@@ -373,7 +377,7 @@ void ArcAppLaunchHandler::PrepareLaunchApps() {
     return;
 
   apps::AppRegistryCache& cache =
-      apps::AppServiceProxyFactory::GetForProfile(handler_->profile_)
+      apps::AppServiceProxyFactory::GetForProfile(handler_->profile())
           ->AppRegistryCache();
 
   // Add the app to `app_ids` if there is a launch list from the restore data
@@ -397,12 +401,13 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
   DCHECK(handler_);
   app_ids_.erase(app_id);
 
-  const auto it = handler_->restore_data_->app_id_to_launch_list().find(app_id);
-  if (it == handler_->restore_data_->app_id_to_launch_list().end())
+  const auto it =
+      handler_->restore_data()->app_id_to_launch_list().find(app_id);
+  if (it == handler_->restore_data()->app_id_to_launch_list().end())
     return;
 
   if (it->second.empty()) {
-    handler_->restore_data_->RemoveApp(app_id);
+    handler_->restore_data()->RemoveApp(app_id);
     return;
   }
 
@@ -437,7 +442,7 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
     }
 #endif
 
-    const auto& file_path = handler_->profile_->GetPath();
+    const auto& file_path = handler_->profile()->GetPath();
     int32_t event_flags = data_it.second->event_flag.value();
     int64_t display_id = data_it.second->display_id.has_value()
                              ? data_it.second->display_id.value()
@@ -486,14 +491,14 @@ bool ArcAppLaunchHandler::HasRestoreData() {
 bool ArcAppLaunchHandler::CanLaunchApp() {
   // Checks CPU usage limiting and memory pressure, make sure it can
   // be recorded for UMA statistic data.
-  bool isUnderCPUUsageLimiting = IsUnderCPUUsageLimiting();
-  if (isUnderCPUUsageLimiting)
+  bool is_under_cpu_usage_limiting = IsUnderCPUUsageLimiting();
+  if (is_under_cpu_usage_limiting)
     was_cpu_usage_limited_ = true;
-  bool isUnderMemoryPressure = IsUnderMemoryPressure();
-  if (isUnderMemoryPressure)
+  bool is_under_memory_pressure = IsUnderMemoryPressure();
+  if (is_under_memory_pressure)
     was_memory_pressured_ = true;
 
-  return !isUnderCPUUsageLimiting && !isUnderMemoryPressure;
+  return !is_under_cpu_usage_limiting && !is_under_memory_pressure;
 }
 
 bool ArcAppLaunchHandler::IsUnderMemoryPressure() {
@@ -529,7 +534,7 @@ bool ArcAppLaunchHandler::IsUnderCPUUsageLimiting() {
 }
 
 bool ArcAppLaunchHandler::IsAppReady(const std::string& app_id) {
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(handler_->profile_);
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(handler_->profile());
   if (!prefs)
     return false;
 
@@ -591,12 +596,13 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
                                     int32_t window_id) {
   DCHECK(handler_);
 
-  const auto it = handler_->restore_data_->app_id_to_launch_list().find(app_id);
-  if (it == handler_->restore_data_->app_id_to_launch_list().end())
+  const auto it =
+      handler_->restore_data()->app_id_to_launch_list().find(app_id);
+  if (it == handler_->restore_data()->app_id_to_launch_list().end())
     return;
 
   if (it->second.empty()) {
-    handler_->restore_data_->RemoveApp(app_id);
+    handler_->restore_data()->RemoveApp(app_id);
     return;
   }
 
@@ -606,7 +612,8 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
 
   first_run_ = false;
 
-  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(handler_->profile_);
+  auto* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(handler_->profile());
   DCHECK(proxy);
 
   DCHECK(data_it->second->event_flag.has_value());
@@ -822,7 +829,7 @@ void ArcAppLaunchHandler::RecordArcGhostWindowLaunch(bool is_arc_ghost_window) {
 void ArcAppLaunchHandler::RecordLaunchBoundsState(bool has_root_bounds,
                                                   bool has_screen_bounds) {
   bool is_from_crash =
-      handler_->profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED;
+      handler_->profile()->GetLastSessionExitType() == Profile::EXIT_CRASHED;
   if (!has_root_bounds) {
     base::UmaHistogramEnumeration(
         kNoGhostWindowReasonHistogram,
@@ -873,6 +880,13 @@ void ArcAppLaunchHandler::RecordRestoreResult() {
   }
 
   base::UmaHistogramEnumeration(kRestoreArcAppStates, restore_state);
+
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
+  if (window_handler_) {
+    base::UmaHistogramCounts100(kGhostWindowPopToArcHistogram,
+                                window_handler_->ghost_window_pop_count());
+  }
+#endif
 }
 
 chromeos::SchedulerConfigurationManager*

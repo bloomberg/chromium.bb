@@ -37,23 +37,23 @@ OSSyncHandler::~OSSyncHandler() {
 }
 
 void OSSyncHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "DidNavigateToOsSyncPage",
       base::BindRepeating(&OSSyncHandler::HandleDidNavigateToOsSyncPage,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "DidNavigateAwayFromOsSyncPage",
       base::BindRepeating(&OSSyncHandler::HandleDidNavigateAwayFromOsSyncPage,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "OsSyncPrefsDispatch",
       base::BindRepeating(&OSSyncHandler::HandleOsSyncPrefsDispatch,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SetOsSyncFeatureEnabled",
       base::BindRepeating(&OSSyncHandler::HandleSetOsSyncFeatureEnabled,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SetOsSyncDatatypes",
       base::BindRepeating(&OSSyncHandler::HandleSetOsSyncDatatypes,
                           base::Unretained(this)));
@@ -92,7 +92,7 @@ void OSSyncHandler::HandleDidNavigateAwayFromOsSyncPage(
 }
 
 void OSSyncHandler::HandleSetOsSyncFeatureEnabled(const base::ListValue* args) {
-  CHECK_EQ(1u, args->GetSize());
+  CHECK_EQ(1u, args->GetList().size());
   CHECK(args->GetBoolean(0, &feature_enabled_));
   should_commit_feature_enabled_ = true;
   // Changing the feature enabled state may change toggle state.
@@ -100,7 +100,7 @@ void OSSyncHandler::HandleSetOsSyncFeatureEnabled(const base::ListValue* args) {
 }
 
 void OSSyncHandler::HandleSetOsSyncDatatypes(const base::ListValue* args) {
-  CHECK_EQ(1u, args->GetSize());
+  CHECK_EQ(1u, args->GetList().size());
   const base::DictionaryValue* result;
   CHECK(args->GetDictionary(0, &result));
 

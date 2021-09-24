@@ -18,6 +18,7 @@
 // limitations under the License.
 
 #include "vktestframeworkandroid.h"
+#include "vkrenderframework.h"
 #include "shaderc/shaderc.hpp"
 #include <android/log.h>
 
@@ -84,7 +85,7 @@ shaderc_shader_kind MapShadercType(VkShaderStageFlagBits vkShader) {
 // Compile a given string containing GLSL into SPIR-V
 // Return value of false means an error was encountered
 bool VkTestFramework::GLSLtoSPV(VkPhysicalDeviceLimits const *const device_limits, const VkShaderStageFlagBits shader_type,
-                                const char *pshader, std::vector<unsigned int> &spirv, bool debug, uint32_t spirv_minor_version) {
+                                const char *pshader, std::vector<unsigned int> &spirv, bool debug, const spv_target_env spv_env) {
     // On Android, use shaderc instead.
     shaderc::Compiler compiler;
     shaderc::CompileOptions options;
@@ -93,22 +94,28 @@ bool VkTestFramework::GLSLtoSPV(VkPhysicalDeviceLimits const *const device_limit
         options.SetGenerateDebugInfo();
     }
 
-    switch (spirv_minor_version) {
+    switch (spv_env) {
         default:
-        case 0:
+        case SPV_ENV_VULKAN_1_0:
+        case SPV_ENV_UNIVERSAL_1_0:
             options.SetTargetSpirv(shaderc_spirv_version_1_0);
             break;
-        case 1:
+        case SPV_ENV_UNIVERSAL_1_1:
             options.SetTargetSpirv(shaderc_spirv_version_1_1);
             break;
-        case 2:
+        case SPV_ENV_UNIVERSAL_1_2:
             options.SetTargetSpirv(shaderc_spirv_version_1_2);
             break;
-        case 3:
+        case SPV_ENV_VULKAN_1_1:
+        case SPV_ENV_UNIVERSAL_1_3:
             options.SetTargetSpirv(shaderc_spirv_version_1_3);
             break;
-        case 4:
+        case SPV_ENV_UNIVERSAL_1_4:
             options.SetTargetSpirv(shaderc_spirv_version_1_4);
+            break;
+        case SPV_ENV_VULKAN_1_2:
+        case SPV_ENV_UNIVERSAL_1_5:
+            options.SetTargetSpirv(shaderc_spirv_version_1_5);
             break;
     }
 

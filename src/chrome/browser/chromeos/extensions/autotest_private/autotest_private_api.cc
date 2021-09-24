@@ -12,6 +12,7 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/accelerators.h"
@@ -21,7 +22,6 @@
 #include "ash/public/cpp/autotest_ambient_api.h"
 #include "ash/public/cpp/autotest_desks_api.h"
 #include "ash/public/cpp/autotest_private_api_utils.h"
-#include "ash/public/cpp/desks_helper.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/overview_test_api.h"
@@ -66,6 +66,9 @@
 #include "chrome/browser/ash/borealis/borealis_installer.h"
 #include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
+#include "chrome/browser/ash/crosapi/automation_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crostini/crostini_export_import.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_installer.h"
@@ -95,7 +98,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/default_pinned_apps.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
@@ -110,7 +115,7 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
-#include "chrome/browser/web_applications/components/app_registrar_observer.h"
+#include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -127,6 +132,7 @@
 #include "chromeos/ui/frame/default_frame_header.h"
 #include "chromeos/ui/frame/frame_header.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
+#include "chromeos/ui/wm/desks/desks_helper.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/full_restore/full_restore_utils.h"
@@ -134,6 +140,7 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -215,7 +222,7 @@ base::ListValue GetHostPermissions(const Extension* ext, bool effective_perm) {
 
   base::ListValue permissions;
   for (const auto& perm : *pattern_set)
-    permissions.AppendString(perm.GetAsString());
+    permissions.Append(perm.GetAsString());
 
   return permissions;
 }
@@ -226,7 +233,7 @@ base::ListValue GetAPIPermissions(const Extension* ext) {
       ext->permissions_data()->active_permissions().GetAPIsAsStrings();
   for (std::set<std::string>::const_iterator perm = perm_list.begin();
        perm != perm_list.end(); ++perm) {
-    permissions.AppendString(*perm);
+    permissions.Append(*perm);
   }
   return permissions;
 }
@@ -516,6 +523,22 @@ std::string SetWhitelistedPref(Profile* profile,
     DCHECK(value.is_bool());
   } else if (pref_name == plugin_vm::prefs::kPluginVmDataCollectionAllowed) {
     DCHECK(value.is_bool());
+  } else if (pref_name == prefs::kPrintingAPIExtensionsAllowlist) {
+    DCHECK(value.is_list());
+  } else if (pref_name == ash::quick_answers::prefs::kQuickAnswersEnabled) {
+    DCHECK(value.is_bool());
+  } else if (pref_name ==
+             ash::quick_answers::prefs::kQuickAnswersDefinitionEnabled) {
+    DCHECK(value.is_bool());
+  } else if (pref_name ==
+             ash::quick_answers::prefs::kQuickAnswersTranslationEnabled) {
+    DCHECK(value.is_bool());
+  } else if (pref_name ==
+             ash::quick_answers::prefs::kQuickAnswersUnitConverstionEnabled) {
+    DCHECK(value.is_bool());
+  } else if (pref_name ==
+             ash::quick_answers::prefs::kQuickAnswersConsentStatus) {
+    DCHECK(value.is_int());
   } else {
     return "The pref " + pref_name + " is not whitelisted.";
   }
@@ -1156,7 +1179,7 @@ AutotestPrivateShutdownFunction::~AutotestPrivateShutdownFunction() = default;
 
 ExtensionFunction::ResponseAction AutotestPrivateShutdownFunction::Run() {
   std::unique_ptr<api::autotest_private::Shutdown::Params> params(
-      api::autotest_private::Shutdown::Params::Create(*args_));
+      api::autotest_private::Shutdown::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateShutdownFunction " << params->force;
 
@@ -1215,6 +1238,12 @@ ExtensionFunction::ResponseAction AutotestPrivateLoginStatusFunction::Run() {
           break;
       }
       result->SetString("userImage", user_image);
+
+      if (user->HasGaiaAccount()) {
+        result->SetBoolean("hasValidOauth2Token",
+                           user->oauth_token_status() ==
+                               user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+      }
     }
   }
   return RespondNow(
@@ -1380,7 +1409,7 @@ AutotestPrivateSetTouchpadSensitivityFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetTouchpadSensitivityFunction::Run() {
   std::unique_ptr<api::autotest_private::SetTouchpadSensitivity::Params> params(
-      api::autotest_private::SetTouchpadSensitivity::Params::Create(*args_));
+      api::autotest_private::SetTouchpadSensitivity::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetTouchpadSensitivityFunction " << params->value;
 
@@ -1398,7 +1427,7 @@ AutotestPrivateSetTapToClickFunction::~AutotestPrivateSetTapToClickFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateSetTapToClickFunction::Run() {
   std::unique_ptr<api::autotest_private::SetTapToClick::Params> params(
-      api::autotest_private::SetTapToClick::Params::Create(*args_));
+      api::autotest_private::SetTapToClick::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetTapToClickFunction " << params->enabled;
 
@@ -1416,7 +1445,7 @@ AutotestPrivateSetThreeFingerClickFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetThreeFingerClickFunction::Run() {
   std::unique_ptr<api::autotest_private::SetThreeFingerClick::Params> params(
-      api::autotest_private::SetThreeFingerClick::Params::Create(*args_));
+      api::autotest_private::SetThreeFingerClick::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetThreeFingerClickFunction " << params->enabled;
 
@@ -1434,7 +1463,7 @@ AutotestPrivateSetTapDraggingFunction::
 
 ExtensionFunction::ResponseAction AutotestPrivateSetTapDraggingFunction::Run() {
   std::unique_ptr<api::autotest_private::SetTapDragging::Params> params(
-      api::autotest_private::SetTapDragging::Params::Create(*args_));
+      api::autotest_private::SetTapDragging::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetTapDraggingFunction " << params->enabled;
 
@@ -1452,7 +1481,7 @@ AutotestPrivateSetNaturalScrollFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetNaturalScrollFunction::Run() {
   std::unique_ptr<api::autotest_private::SetNaturalScroll::Params> params(
-      api::autotest_private::SetNaturalScroll::Params::Create(*args_));
+      api::autotest_private::SetNaturalScroll::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetNaturalScrollFunction " << params->enabled;
 
@@ -1471,7 +1500,7 @@ AutotestPrivateSetMouseSensitivityFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetMouseSensitivityFunction::Run() {
   std::unique_ptr<api::autotest_private::SetMouseSensitivity::Params> params(
-      api::autotest_private::SetMouseSensitivity::Params::Create(*args_));
+      api::autotest_private::SetMouseSensitivity::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetMouseSensitivityFunction " << params->value;
 
@@ -1490,7 +1519,7 @@ AutotestPrivateSetPrimaryButtonRightFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetPrimaryButtonRightFunction::Run() {
   std::unique_ptr<api::autotest_private::SetPrimaryButtonRight::Params> params(
-      api::autotest_private::SetPrimaryButtonRight::Params::Create(*args_));
+      api::autotest_private::SetPrimaryButtonRight::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetPrimaryButtonRightFunction " << params->right;
 
@@ -1509,7 +1538,7 @@ AutotestPrivateSetMouseReverseScrollFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetMouseReverseScrollFunction::Run() {
   std::unique_ptr<api::autotest_private::SetMouseReverseScroll::Params> params(
-      api::autotest_private::SetMouseReverseScroll::Params::Create(*args_));
+      api::autotest_private::SetMouseReverseScroll::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetMouseReverseScrollFunction "
            << params->enabled;
@@ -1654,7 +1683,7 @@ AutotestPrivateSetPlayStoreEnabledFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetPlayStoreEnabledFunction::Run() {
   std::unique_ptr<api::autotest_private::SetPlayStoreEnabled::Params> params(
-      api::autotest_private::SetPlayStoreEnabled::Params::Create(*args_));
+      api::autotest_private::SetPlayStoreEnabled::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateSetPlayStoreEnabledFunction " << params->enabled;
 
@@ -1687,7 +1716,7 @@ AutotestPrivateIsAppShownFunction::~AutotestPrivateIsAppShownFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateIsAppShownFunction::Run() {
   std::unique_ptr<api::autotest_private::IsAppShown::Params> params(
-      api::autotest_private::IsAppShown::Params::Create(*args_));
+      api::autotest_private::IsAppShown::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateIsAppShownFunction " << params->app_id;
 
@@ -1726,7 +1755,7 @@ AutotestPrivateGetArcAppFunction::~AutotestPrivateGetArcAppFunction() = default;
 
 ExtensionFunction::ResponseAction AutotestPrivateGetArcAppFunction::Run() {
   std::unique_ptr<api::autotest_private::GetArcApp::Params> params(
-      api::autotest_private::GetArcApp::Params::Create(*args_));
+      api::autotest_private::GetArcApp::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateGetArcAppFunction " << params->app_id;
 
@@ -1780,7 +1809,7 @@ AutotestPrivateGetArcPackageFunction::~AutotestPrivateGetArcPackageFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateGetArcPackageFunction::Run() {
   std::unique_ptr<api::autotest_private::GetArcPackage::Params> params(
-      api::autotest_private::GetArcPackage::Params::Create(*args_));
+      api::autotest_private::GetArcPackage::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateGetArcPackageFunction " << params->package_name;
 
@@ -1831,7 +1860,8 @@ AutotestPrivateWaitForSystemWebAppsInstallFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateWaitForSystemWebAppsInstallFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
+  web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForTest(profile);
 
   if (!provider)
     return RespondNow(Error("Web Apps are not available for profile."));
@@ -1857,7 +1887,8 @@ AutotestPrivateGetRegisteredSystemWebAppsFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateGetRegisteredSystemWebAppsFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
+  web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForTest(profile);
 
   if (!provider)
     return RespondNow(Error("Web Apps are not available for profile."));
@@ -1891,13 +1922,14 @@ AutotestPrivateIsSystemWebAppOpenFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateIsSystemWebAppOpenFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
+  web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForTest(profile);
 
   if (!provider)
     return RespondNow(Error("Web Apps are not available for profile."));
 
   std::unique_ptr<api::autotest_private::IsSystemWebAppOpen::Params> params(
-      api::autotest_private::IsSystemWebAppOpen::Params::Create(*args_));
+      api::autotest_private::IsSystemWebAppOpen::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateIsSystemWebAppOpenFunction " << params->app_id;
   absl::optional<web_app::SystemAppType> app_type =
@@ -1918,7 +1950,7 @@ AutotestPrivateLaunchArcAppFunction::~AutotestPrivateLaunchArcAppFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateLaunchArcAppFunction::Run() {
   std::unique_ptr<api::autotest_private::LaunchArcApp::Params> params(
-      api::autotest_private::LaunchArcApp::Params::Create(*args_));
+      api::autotest_private::LaunchArcApp::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateLaunchArcIntentFunction " << params->app_id << "/"
            << params->intent;
@@ -1942,7 +1974,7 @@ AutotestPrivateLaunchAppFunction::~AutotestPrivateLaunchAppFunction() = default;
 
 ExtensionFunction::ResponseAction AutotestPrivateLaunchAppFunction::Run() {
   std::unique_ptr<api::autotest_private::LaunchApp::Params> params(
-      api::autotest_private::LaunchApp::Params::Create(*args_));
+      api::autotest_private::LaunchApp::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateLaunchAppFunction " << params->app_id;
 
@@ -1966,13 +1998,13 @@ AutotestPrivateLaunchSystemWebAppFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateLaunchSystemWebAppFunction::Run() {
   std::unique_ptr<api::autotest_private::LaunchSystemWebApp::Params> params(
-      api::autotest_private::LaunchSystemWebApp::Params::Create(*args_));
+      api::autotest_private::LaunchSystemWebApp::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateLaunchSystemWebAppFunction name: "
            << params->app_name << " url: " << params->url;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  auto* provider = web_app::WebAppProvider::Get(profile);
+  auto* provider = web_app::WebAppProvider::GetForTest(profile);
   if (!provider)
     return RespondNow(Error("Web Apps not enabled for profile."));
 
@@ -2003,7 +2035,7 @@ AutotestPrivateCloseAppFunction::~AutotestPrivateCloseAppFunction() = default;
 
 ExtensionFunction::ResponseAction AutotestPrivateCloseAppFunction::Run() {
   std::unique_ptr<api::autotest_private::CloseApp::Params> params(
-      api::autotest_private::CloseApp::Params::Create(*args_));
+      api::autotest_private::CloseApp::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateCloseAppFunction " << params->app_id;
 
@@ -2048,7 +2080,7 @@ ExtensionFunction::ResponseAction
 AutotestPrivateSetClipboardTextDataFunction::Run() {
   observation_.Observe(ui::ClipboardMonitor::GetInstance());
   std::unique_ptr<api::autotest_private::SetClipboardTextData::Params> params(
-      api::autotest_private::SetClipboardTextData::Params::Create(*args_));
+      api::autotest_private::SetClipboardTextData::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const std::u16string data = base::UTF8ToUTF16(params->data);
@@ -2073,7 +2105,7 @@ AutotestPrivateSetCrostiniEnabledFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetCrostiniEnabledFunction::Run() {
   std::unique_ptr<api::autotest_private::SetCrostiniEnabled::Params> params(
-      api::autotest_private::SetCrostiniEnabled::Params::Create(*args_));
+      api::autotest_private::SetCrostiniEnabled::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateSetCrostiniEnabledFunction " << params->enabled;
 
@@ -2176,7 +2208,7 @@ AutotestPrivateExportCrostiniFunction::
 
 ExtensionFunction::ResponseAction AutotestPrivateExportCrostiniFunction::Run() {
   std::unique_ptr<api::autotest_private::ExportCrostini::Params> params(
-      api::autotest_private::ExportCrostini::Params::Create(*args_));
+      api::autotest_private::ExportCrostini::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateExportCrostiniFunction " << params->path;
 
@@ -2218,7 +2250,7 @@ AutotestPrivateImportCrostiniFunction::
 
 ExtensionFunction::ResponseAction AutotestPrivateImportCrostiniFunction::Run() {
   std::unique_ptr<api::autotest_private::ImportCrostini::Params> params(
-      api::autotest_private::ImportCrostini::Params::Create(*args_));
+      api::autotest_private::ImportCrostini::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateImportCrostiniFunction " << params->path;
 
@@ -2259,7 +2291,7 @@ AutotestPrivateSetPluginVMPolicyFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetPluginVMPolicyFunction::Run() {
   std::unique_ptr<api::autotest_private::SetPluginVMPolicy::Params> params(
-      api::autotest_private::SetPluginVMPolicy::Params::Create(*args_));
+      api::autotest_private::SetPluginVMPolicy::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateSetPluginVMPolicyFunction " << params->image_url
            << ", " << params->image_hash << ", " << params->license_key;
@@ -2363,7 +2395,7 @@ AutotestPrivateRegisterComponentFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateRegisterComponentFunction::Run() {
   std::unique_ptr<api::autotest_private::RegisterComponent::Params> params(
-      api::autotest_private::RegisterComponent::Params::Create(*args_));
+      api::autotest_private::RegisterComponent::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateRegisterComponentFunction " << params->name
            << ", " << params->path;
@@ -2420,7 +2452,7 @@ ExtensionFunction::ResponseAction
 AutotestPrivateTakeScreenshotForDisplayFunction::Run() {
   std::unique_ptr<api::autotest_private::TakeScreenshotForDisplay::Params>
       params(api::autotest_private::TakeScreenshotForDisplay::Params::Create(
-          *args_));
+          args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateTakeScreenshotForDisplayFunction "
            << params->display_id;
@@ -2562,7 +2594,7 @@ AutotestPrivateUpdatePrinterFunction::~AutotestPrivateUpdatePrinterFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateUpdatePrinterFunction::Run() {
   std::unique_ptr<api::autotest_private::UpdatePrinter::Params> params(
-      api::autotest_private::UpdatePrinter::Params::Create(*args_));
+      api::autotest_private::UpdatePrinter::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateUpdatePrinterFunction";
 
@@ -2608,7 +2640,7 @@ AutotestPrivateRemovePrinterFunction::~AutotestPrivateRemovePrinterFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateRemovePrinterFunction::Run() {
   std::unique_ptr<api::autotest_private::RemovePrinter::Params> params(
-      api::autotest_private::RemovePrinter::Params::Create(*args_));
+      api::autotest_private::RemovePrinter::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateRemovePrinterFunction " << params->printer_id;
 
@@ -2684,7 +2716,7 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
   DVLOG(1) << "AutotestPrivateSetAssistantEnabledFunction";
 
   std::unique_ptr<api::autotest_private::SetAssistantEnabled::Params> params(
-      api::autotest_private::SetAssistantEnabled::Params::Create(*args_));
+      api::autotest_private::SetAssistantEnabled::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -2945,7 +2977,7 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
   DVLOG(1) << "AutotestPrivateSendAssistantTextQueryFunction";
 
   std::unique_ptr<api::autotest_private::SendAssistantTextQuery::Params> params(
-      api::autotest_private::SendAssistantTextQuery::Params::Create(*args_));
+      api::autotest_private::SendAssistantTextQuery::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -3014,7 +3046,7 @@ AutotestPrivateWaitForAssistantQueryStatusFunction::Run() {
 
   std::unique_ptr<api::autotest_private::WaitForAssistantQueryStatus::Params>
       params(api::autotest_private::WaitForAssistantQueryStatus::Params::Create(
-          *args_));
+          args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -3094,7 +3126,7 @@ AutotestPrivateSetWhitelistedPrefFunction::Run() {
   DVLOG(1) << "AutotestPrivateSetWhitelistedPrefFunction";
 
   std::unique_ptr<api::autotest_private::SetWhitelistedPref::Params> params(
-      api::autotest_private::SetWhitelistedPref::Params::Create(*args_));
+      api::autotest_private::SetWhitelistedPref::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const std::string& pref_name = params->pref_name;
@@ -3119,7 +3151,7 @@ AutotestPrivateSetCrostiniAppScaledFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetCrostiniAppScaledFunction::Run() {
   std::unique_ptr<api::autotest_private::SetCrostiniAppScaled::Params> params(
-      api::autotest_private::SetCrostiniAppScaled::Params::Create(*args_));
+      api::autotest_private::SetCrostiniAppScaled::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateSetCrostiniAppScaledFunction " << params->app_id
            << " " << params->scaled;
@@ -3182,7 +3214,7 @@ AutotestPrivateSetTabletModeEnabledFunction::Run() {
   DVLOG(1) << "AutotestPrivateSetTabletModeEnabledFunction";
 
   std::unique_ptr<api::autotest_private::SetTabletModeEnabled::Params> params(
-      api::autotest_private::SetTabletModeEnabled::Params::Create(*args_));
+      api::autotest_private::SetTabletModeEnabled::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   auto* tablet_mode = ash::TabletMode::Get();
   if (tablet_mode->InTabletMode() == params->enabled) {
@@ -3290,7 +3322,7 @@ AutotestPrivateGetShelfAutoHideBehaviorFunction::Run() {
 
   std::unique_ptr<api::autotest_private::GetShelfAutoHideBehavior::Params>
       params(api::autotest_private::GetShelfAutoHideBehavior::Params::Create(
-          *args_));
+          args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   int64_t display_id;
@@ -3334,7 +3366,7 @@ AutotestPrivateSetShelfAutoHideBehaviorFunction::Run() {
 
   std::unique_ptr<api::autotest_private::SetShelfAutoHideBehavior::Params>
       params(api::autotest_private::SetShelfAutoHideBehavior::Params::Create(
-          *args_));
+          args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   ash::ShelfAutoHideBehavior behavior;
@@ -3374,7 +3406,7 @@ AutotestPrivateGetShelfAlignmentFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetShelfAlignmentFunction";
 
   std::unique_ptr<api::autotest_private::GetShelfAlignment::Params> params(
-      api::autotest_private::GetShelfAlignment::Params::Create(*args_));
+      api::autotest_private::GetShelfAlignment::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   int64_t display_id;
@@ -3425,7 +3457,7 @@ AutotestPrivateSetShelfAlignmentFunction::Run() {
   DVLOG(1) << "AutotestPrivateSetShelfAlignmentFunction";
 
   std::unique_ptr<api::autotest_private::SetShelfAlignment::Params> params(
-      api::autotest_private::SetShelfAlignment::Params::Create(*args_));
+      api::autotest_private::SetShelfAlignment::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   ash::ShelfAlignment alignment;
@@ -3468,7 +3500,7 @@ AutotestPrivateWaitForOverviewStateFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateWaitForOverviewStateFunction::Run() {
   std::unique_ptr<api::autotest_private::WaitForOverviewState::Params> params(
-      api::autotest_private::WaitForOverviewState::Params::Create(*args_));
+      api::autotest_private::WaitForOverviewState::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   const ash::OverviewAnimationState overview_state =
       ToOverviewAnimationState(params->overview_state);
@@ -3499,7 +3531,7 @@ AutotestPrivateSetOverviewModeStateFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetOverviewModeStateFunction::Run() {
   std::unique_ptr<api::autotest_private::SetOverviewModeState::Params> params(
-      api::autotest_private::SetOverviewModeState::Params::Create(*args_));
+      api::autotest_private::SetOverviewModeState::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   ash::OverviewTestApi().SetOverviewMode(
@@ -3525,6 +3557,27 @@ void AutotestPrivateSetOverviewModeStateFunction::OnOverviewModeChanged(
   } else {
     Respond(std::move(arg));
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetDefaultPinnedAppIdsFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetDefaultPinnedAppIdsFunction::
+    AutotestPrivateGetDefaultPinnedAppIdsFunction() = default;
+
+AutotestPrivateGetDefaultPinnedAppIdsFunction::
+    ~AutotestPrivateGetDefaultPinnedAppIdsFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetDefaultPinnedAppIdsFunction::Run() {
+  std::vector<std::string> default_pinned_app_ids;
+  for (const char* default_app_id : GetDefaultPinnedAppsForFormFactor())
+    default_pinned_app_ids.emplace_back(default_app_id);
+
+  return RespondNow(ArgumentList(
+      api::autotest_private::GetDefaultPinnedAppIds::Results::Create(
+          default_pinned_app_ids)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3624,7 +3677,7 @@ AutotestPrivateSetArcAppWindowFocusFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetArcAppWindowFocusFunction::Run() {
   std::unique_ptr<api::autotest_private::SetArcAppWindowFocus::Params> params(
-      api::autotest_private::SetArcAppWindowFocus::Params::Create(*args_));
+      api::autotest_private::SetArcAppWindowFocus::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateSetArcAppWindowFocusFunction "
            << params->package_name;
@@ -3675,7 +3728,7 @@ AutotestPrivateWaitForDisplayRotationFunction::Run() {
   DVLOG(1) << "AutotestPrivateWaitForDisplayRotationFunction";
 
   std::unique_ptr<api::autotest_private::WaitForDisplayRotation::Params> params(
-      api::autotest_private::WaitForDisplayRotation::Params::Create(*args_));
+      api::autotest_private::WaitForDisplayRotation::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   if (!base::StringToInt64(params->display_id, &display_id_)) {
     return RespondNow(Error(base::StrCat(
@@ -3811,7 +3864,7 @@ AutotestPrivateGetAppWindowListFunction::Run() {
     window_info.can_focus = window->CanFocus();
     window_info.has_focus = window->HasFocus();
     window_info.on_active_desk =
-        ash::DesksHelper::Get()->BelongsToActiveDesk(window);
+        chromeos::DesksHelper::Get(window)->BelongsToActiveDesk(window);
     window_info.is_active = wm::IsActiveWindow(window);
     window_info.has_capture = window->HasCapture();
     window_info.can_resize =
@@ -3926,7 +3979,7 @@ AutotestPrivateSetAppWindowStateFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetAppWindowStateFunction::Run() {
   std::unique_ptr<api::autotest_private::SetAppWindowState::Params> params(
-      api::autotest_private::SetAppWindowState::Params::Create(*args_));
+      api::autotest_private::SetAppWindowState::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateSetAppWindowStateFunction " << params->id;
 
@@ -3992,7 +4045,7 @@ AutotestPrivateActivateAppWindowFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateActivateAppWindowFunction::Run() {
   std::unique_ptr<api::autotest_private::ActivateAppWindow::Params> params(
-      api::autotest_private::ActivateAppWindow::Params::Create(*args_));
+      api::autotest_private::ActivateAppWindow::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateActivateAppWindowFunction " << params->id;
 
@@ -4015,7 +4068,7 @@ AutotestPrivateCloseAppWindowFunction::
 
 ExtensionFunction::ResponseAction AutotestPrivateCloseAppWindowFunction::Run() {
   std::unique_ptr<api::autotest_private::CloseAppWindow::Params> params(
-      api::autotest_private::CloseAppWindow::Params::Create(*args_));
+      api::autotest_private::CloseAppWindow::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateCloseAppWindowFunction " << params->id;
 
@@ -4095,7 +4148,8 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWARegistrarObserver
   PWARegistrarObserver(Profile* profile,
                        base::OnceCallback<void(const web_app::AppId&)> callback)
       : callback_(std::move(callback)) {
-    observation_.Observe(&web_app::WebAppProvider::Get(profile)->registrar());
+    observation_.Observe(
+        &web_app::WebAppProvider::GetForTest(profile)->registrar());
   }
   ~PWARegistrarObserver() override {}
 
@@ -4124,7 +4178,7 @@ AutotestPrivateInstallPWAForCurrentURLFunction::Run() {
 
   std::unique_ptr<api::autotest_private::InstallPWAForCurrentURL::Params>
       params(api::autotest_private::InstallPWAForCurrentURL::Params::Create(
-          *args_));
+          args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Browser* browser = GetFirstRegularBrowser();
@@ -4194,7 +4248,7 @@ AutotestPrivateActivateAcceleratorFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateActivateAcceleratorFunction::Run() {
   std::unique_ptr<api::autotest_private::ActivateAccelerator::Params> params(
-      api::autotest_private::ActivateAccelerator::Params::Create(*args_));
+      api::autotest_private::ActivateAccelerator::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   int modifiers = (params->accelerator.control ? ui::EF_CONTROL_DOWN : 0) |
@@ -4240,7 +4294,7 @@ AutotestPrivateWaitForLauncherStateFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateWaitForLauncherStateFunction::Run() {
   std::unique_ptr<api::autotest_private::WaitForLauncherState::Params> params(
-      api::autotest_private::WaitForLauncherState::Params::Create(*args_));
+      api::autotest_private::WaitForLauncherState::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   auto target_state = ToAppListViewState(params->launcher_state);
   if (WaitForLauncherState(
@@ -4282,7 +4336,7 @@ AutotestPrivateActivateDeskAtIndexFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateActivateDeskAtIndexFunction::Run() {
   std::unique_ptr<api::autotest_private::ActivateDeskAtIndex::Params> params(
-      api::autotest_private::ActivateDeskAtIndex::Params::Create(*args_));
+      api::autotest_private::ActivateDeskAtIndex::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (!ash::AutotestDesksApi().ActivateDeskAtIndex(
@@ -4338,7 +4392,7 @@ AutotestPrivateActivateAdjacentDesksToTargetIndexFunction::Run() {
   std::unique_ptr<
       api::autotest_private::ActivateAdjacentDesksToTargetIndex::Params>
       params(api::autotest_private::ActivateAdjacentDesksToTargetIndex::Params::
-                 Create(*args_));
+                 Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (!ash::AutotestDesksApi().ActivateAdjacentDesksToTargetIndex(
@@ -4370,7 +4424,7 @@ AutotestPrivateMouseClickFunction::~AutotestPrivateMouseClickFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateMouseClickFunction::Run() {
   std::unique_ptr<api::autotest_private::MouseClick::Params> params(
-      api::autotest_private::MouseClick::Params::Create(*args_));
+      api::autotest_private::MouseClick::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   auto* env = aura::Env::GetInstance();
@@ -4414,7 +4468,7 @@ AutotestPrivateMousePressFunction::~AutotestPrivateMousePressFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateMousePressFunction::Run() {
   std::unique_ptr<api::autotest_private::MousePress::Params> params(
-      api::autotest_private::MousePress::Params::Create(*args_));
+      api::autotest_private::MousePress::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   auto* env = aura::Env::GetInstance();
@@ -4454,7 +4508,7 @@ AutotestPrivateMouseReleaseFunction::~AutotestPrivateMouseReleaseFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateMouseReleaseFunction::Run() {
   std::unique_ptr<api::autotest_private::MouseRelease::Params> params(
-      api::autotest_private::MouseRelease::Params::Create(*args_));
+      api::autotest_private::MouseRelease::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   auto* env = aura::Env::GetInstance();
@@ -4492,7 +4546,7 @@ AutotestPrivateMouseMoveFunction::AutotestPrivateMouseMoveFunction() = default;
 AutotestPrivateMouseMoveFunction::~AutotestPrivateMouseMoveFunction() = default;
 ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
   std::unique_ptr<api::autotest_private::MouseMove::Params> params(
-      api::autotest_private::MouseMove::Params::Create(*args_));
+      api::autotest_private::MouseMove::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   int64_t display_id = ash::Shell::Get()->cursor_manager()->GetDisplay().id();
@@ -4542,7 +4596,7 @@ AutotestPrivateSetMetricsEnabledFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetMetricsEnabledFunction::Run() {
   std::unique_ptr<api::autotest_private::SetMetricsEnabled::Params> params(
-      api::autotest_private::SetMetricsEnabled::Params::Create(*args_));
+      api::autotest_private::SetMetricsEnabled::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   VLOG(1) << "AutotestPrivateSetMetricsEnabledFunction " << std::boolalpha
           << params->enabled;
@@ -4604,7 +4658,7 @@ AutotestPrivateStartTracingFunction::~AutotestPrivateStartTracingFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateStartTracingFunction::Run() {
   std::unique_ptr<api::autotest_private::StartTracing::Params> params(
-      api::autotest_private::StartTracing::Params::Create(*args_));
+      api::autotest_private::StartTracing::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   std::unique_ptr<base::Value> config_value = params->config.ToValue();
   base::trace_event::TraceConfig config(*config_value.get());
@@ -4657,7 +4711,7 @@ AutotestPrivateSetArcTouchModeFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetArcTouchModeFunction::Run() {
   std::unique_ptr<api::autotest_private::SetArcTouchMode::Params> params(
-      api::autotest_private::SetArcTouchMode::Params::Create(*args_));
+      api::autotest_private::SetArcTouchMode::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateSetArcTouchModeFunction " << params->enabled;
 
@@ -4677,7 +4731,7 @@ AutotestPrivatePinShelfIconFunction::~AutotestPrivatePinShelfIconFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivatePinShelfIconFunction::Run() {
   std::unique_ptr<api::autotest_private::PinShelfIcon::Params> params(
-      api::autotest_private::PinShelfIcon::Params::Create(*args_));
+      api::autotest_private::PinShelfIcon::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivatePinShelfIconFunction " << params->app_id;
 
@@ -4685,7 +4739,7 @@ ExtensionFunction::ResponseAction AutotestPrivatePinShelfIconFunction::Run() {
   if (!controller)
     return RespondNow(Error("Controller not available"));
 
-  controller->PinAppWithID(params->app_id);
+  PinAppWithIDToShelf(params->app_id);
   return RespondNow(NoArguments());
 }
 
@@ -4700,7 +4754,7 @@ AutotestPrivateSetShelfIconPinFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateSetShelfIconPinFunction::Run() {
   std::unique_ptr<api::autotest_private::SetShelfIconPin::Params> params(
-      api::autotest_private::SetShelfIconPin::Params::Create(*args_));
+      api::autotest_private::SetShelfIconPin::Params::Create(args()));
 
   ChromeShelfController* const controller = ChromeShelfController::instance();
   if (!controller)
@@ -4737,9 +4791,9 @@ AutotestPrivateSetShelfIconPinFunction::Run() {
       continue;
 
     if (update_param.pinned)
-      controller->PinAppWithID(app_id);
+      PinAppWithIDToShelf(app_id);
     else
-      controller->UnpinAppWithID(app_id);
+      UnpinAppWithIDFromShelf(app_id);
     updated_apps.push_back(app_id);
   }
 
@@ -4761,7 +4815,7 @@ AutotestPrivateGetScrollableShelfInfoForStateFunction::Run() {
   std::unique_ptr<api::autotest_private::GetScrollableShelfInfoForState::Params>
       params(
           api::autotest_private::GetScrollableShelfInfoForState::Params::Create(
-              *args_));
+              args()));
 
   ash::ShelfTestApi shelf_test_api;
 
@@ -4802,7 +4856,7 @@ ExtensionFunction::ResponseAction
 AutotestPrivateGetShelfUIInfoForStateFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetShelfUIInfoForStateFunction";
   std::unique_ptr<api::autotest_private::GetShelfUIInfoForState::Params> params(
-      api::autotest_private::GetShelfUIInfoForState::Params::Create(*args_));
+      api::autotest_private::GetShelfUIInfoForState::Params::Create(args()));
 
   ash::ShelfState state;
   if (params->state.scroll_distance)
@@ -4888,7 +4942,7 @@ std::unique_ptr<base::DictionaryValue> BuildSetWindowBoundsResult(
 ExtensionFunction::ResponseAction
 AutotestPrivateSetWindowBoundsFunction::Run() {
   std::unique_ptr<api::autotest_private::SetWindowBounds::Params> params(
-      api::autotest_private::SetWindowBounds::Params::Create(*args_));
+      api::autotest_private::SetWindowBounds::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   aura::Window* window = FindAppWindowById(params->id);
@@ -4964,7 +5018,7 @@ AutotestPrivateStartSmoothnessTrackingFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateStartSmoothnessTrackingFunction::Run() {
   auto params(
-      api::autotest_private::StartSmoothnessTracking::Params::Create(*args_));
+      api::autotest_private::StartSmoothnessTracking::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   int64_t display_id;
@@ -5004,7 +5058,7 @@ AutotestPrivateStopSmoothnessTrackingFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateStopSmoothnessTrackingFunction::Run() {
   auto params(
-      api::autotest_private::StopSmoothnessTracking::Params::Create(*args_));
+      api::autotest_private::StopSmoothnessTracking::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   int64_t display_id;
@@ -5062,7 +5116,7 @@ AutotestPrivateWaitForAmbientPhotoAnimationFunction::Run() {
   std::unique_ptr<api::autotest_private::WaitForAmbientPhotoAnimation::Params>
       params(
           api::autotest_private::WaitForAmbientPhotoAnimation::Params::Create(
-              *args_));
+              args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Wait for photo transition animation completed in ambient mode.
@@ -5124,7 +5178,19 @@ AutotestPrivateDisableAutomationFunction::
 
 ExtensionFunction::ResponseAction
 AutotestPrivateDisableAutomationFunction::Run() {
+  // This disables accessibility for Chrome Views.
   AutomationManagerAura::GetInstance()->Disable();
+
+  // This disables accessibility for all other accessibility trees including
+  // ARC++, Ash web contents.
+  AutomationEventRouter::GetInstance()->NotifyAllAutomationExtensionsGone();
+
+  // Finally, this disables accessibility in Lacros.
+  crosapi::CrosapiManager::Get()
+      ->crosapi_ash()
+      ->automation_ash()
+      ->AllAutomationExtensionsGone();
+
   return RespondNow(NoArguments());
 }
 

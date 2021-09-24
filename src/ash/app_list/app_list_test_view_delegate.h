@@ -84,6 +84,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                     ash::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
+  void SortAppList(AppListSortOrder order) override {}
   ui::ImplicitAnimationObserver* GetAnimationObserver(
       ash::AppListViewState target_state) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
@@ -103,7 +104,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   bool ShouldShowSuggestedContentInfo() const override;
   void MarkSuggestedContentInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(
-      ash::AppListViewState state) override;
+      AppListViewState state,
+      bool was_animation_interrupted) override;
   void OnViewStateChanged(AppListViewState state) override;
   void GetAppLaunchedMetricParams(
       AppLaunchedMetricParams* metric_params) override;

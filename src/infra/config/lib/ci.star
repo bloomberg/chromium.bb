@@ -80,11 +80,6 @@ def ci_builder(
         notifies = (notifies or []) + ["chromium-tree-closer", "chromium-tree-closer-email"]
 
     merged_resultdb_bigquery_exports = [
-        # TODO(crbug.com/1230801): Remove when all usages of this table have
-        # been migrated to `chrome-luci-data.chromium.ci_test_results`.
-        resultdb.export_test_results(
-            bq_table = "luci-resultdb.chromium.ci_test_results",
-        ),
         resultdb.export_test_results(
             bq_table = "chrome-luci-data.chromium.ci_test_results",
         ),
@@ -118,6 +113,9 @@ def ci_builder(
     )
 
     experiments = experiments or {}
+
+    # TODO(crbug.com/1135718): Promote out of experiment for all builders.
+    experiments.setdefault("chromium.chromium_tests.use_rdb_results", 10)
 
     goma_enable_ats = defaults.get_value_from_kwargs("goma_enable_ats", kwargs)
     if goma_enable_ats == args.COMPUTE:
@@ -295,13 +293,18 @@ def chromium_builder(*, name, tree_closing = True, **kwargs):
         **kwargs
     )
 
-def chromiumos_builder(*, name, tree_closing = True, **kwargs):
+def chromiumos_builder(
+        *,
+        name,
+        tree_closing = True,
+        sheriff_rotations = builders.sheriff_rotations.CHROMIUM,
+        **kwargs):
     kwargs.setdefault("os", os.LINUX_BIONIC_REMOVE)
     return ci_builder(
         name = name,
         builder_group = "chromium.chromiumos",
         goma_backend = builders.goma.backend.RBE_PROD,
-        sheriff_rotations = builders.sheriff_rotations.CHROMIUM,
+        sheriff_rotations = sheriff_rotations,
         tree_closing = tree_closing,
         **kwargs
     )
@@ -420,6 +423,10 @@ def fyi_builder(
         goma_backend = builders.goma.backend.RBE_PROD,
         **kwargs):
     kwargs.setdefault("os", os.LINUX_BIONIC_REMOVE)
+
+    # TODO(crbug.com/1135718): Promote out of experiment for all builders.
+    kwargs.setdefault("experiments", {})
+    kwargs["experiments"].setdefault("chromium.chromium_tests.use_rdb_results", 100)
     return ci.builder(
         name = name,
         builder_group = "chromium.fyi",
@@ -482,10 +489,11 @@ def fyi_mac_builder(
         cores = 4,
         os = builders.os.MAC_DEFAULT,
         **kwargs):
+    if not "goma_backend" in kwargs:
+        kwargs["goma_backend"] = builders.goma.backend.RBE_PROD
     return fyi_builder(
         name = name,
         cores = cores,
-        goma_backend = builders.goma.backend.RBE_PROD,
         os = os,
         **kwargs
     )

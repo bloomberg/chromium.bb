@@ -23,6 +23,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/back_forward_cache/disabled_reason_id.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
@@ -874,27 +875,6 @@ void PageHandler::CaptureScreenshot(
       true);
 }
 
-void PageHandler::PrintToPDF(Maybe<bool> landscape,
-                             Maybe<bool> display_header_footer,
-                             Maybe<bool> print_background,
-                             Maybe<double> scale,
-                             Maybe<double> paper_width,
-                             Maybe<double> paper_height,
-                             Maybe<double> margin_top,
-                             Maybe<double> margin_bottom,
-                             Maybe<double> margin_left,
-                             Maybe<double> margin_right,
-                             Maybe<String> page_ranges,
-                             Maybe<bool> ignore_invalid_page_ranges,
-                             Maybe<String> header_template,
-                             Maybe<String> footer_template,
-                             Maybe<bool> prefer_css_page_size,
-                             Maybe<String> transfer_mode,
-                             std::unique_ptr<PrintToPDFCallback> callback) {
-  callback->sendFailure(Response::ServerError("PrintToPDF is not implemented"));
-  return;
-}
-
 Response PageHandler::StartScreencast(Maybe<std::string> format,
                                       Maybe<int> quality,
                                       Maybe<int> max_width,
@@ -1283,6 +1263,12 @@ void PageHandler::GetManifestIcons(
   callback->sendSuccess(Maybe<Binary>());
 }
 
+void PageHandler::GetAppId(std::unique_ptr<GetAppIdCallback> callback) {
+  // TODO: Use InstallableManager once it moves into content/.
+  // Until then, this code is only used to return no image data in the tests.
+  callback->sendSuccess(protocol::Maybe<protocol::String>());
+}
+
 Response PageHandler::SetBypassCSP(bool enabled) {
   bypass_csp_ = enabled;
   return Response::FallThrough();
@@ -1398,6 +1384,9 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
     case Reason::kOptInUnloadHeaderNotPresent:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           OptInUnloadHeaderNotPresent;
+    case Reason::kUnloadHandlerExistsInMainFrame:
+      return Page::BackForwardCacheNotRestoredReasonEnum::
+          UnloadHandlerExistsInMainFrame;
     case Reason::kUnloadHandlerExistsInSubFrame:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           UnloadHandlerExistsInSubFrame;
@@ -1499,8 +1488,6 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
           RequestedStorageAccessGrant;
     case WebSchedulerTrackedFeature::kWebNfc:
       return Page::BackForwardCacheNotRestoredReasonEnum::WebNfc;
-    case WebSchedulerTrackedFeature::kWebFileSystem:
-      return Page::BackForwardCacheNotRestoredReasonEnum::WebFileSystem;
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequestFetch:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           OutstandingNetworkRequestFetch;
@@ -1532,50 +1519,114 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequestDirectSocket:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           OutstandingNetworkRequestDirectSocket;
-    case WebSchedulerTrackedFeature::kIsolatedWorldScript:
-      return Page::BackForwardCacheNotRestoredReasonEnum::IsolatedWorldScript;
+    case WebSchedulerTrackedFeature::kInjectedJavascript:
+      return Page::BackForwardCacheNotRestoredReasonEnum::InjectedJavascript;
     case WebSchedulerTrackedFeature::kInjectedStyleSheet:
       return Page::BackForwardCacheNotRestoredReasonEnum::InjectedStyleSheet;
-    case WebSchedulerTrackedFeature::kMediaSessionImplOnServiceCreated:
-      return Page::BackForwardCacheNotRestoredReasonEnum::
-          MediaSessionImplOnServiceCreated;
+    case WebSchedulerTrackedFeature::kDummy:
+      // This is a test only reason and should never be called.
+      NOTREACHED();
+      return Page::BackForwardCacheNotRestoredReasonEnum::Dummy;
   }
 }
 
 Page::BackForwardCacheNotRestoredReason
 DisableForRenderFrameHostReasonToProtocol(
     BackForwardCache::DisabledReason reason) {
-  BackForwardCacheDisable::DisabledReasonId reasonId =
-      static_cast<BackForwardCacheDisable::DisabledReasonId>(reason.id);
-  switch (reasonId) {
-    case BackForwardCacheDisable::DisabledReasonId::kUnknown:
-      return Page::BackForwardCacheNotRestoredReasonEnum::Unknown;
-    case BackForwardCacheDisable::DisabledReasonId::
-        kMediaSessionImplOnServiceCreated:
-      return Page::BackForwardCacheNotRestoredReasonEnum::
-          MediaSessionImplOnServiceCreated;
-    case BackForwardCacheDisable::DisabledReasonId::kSecurityHandler:
-      return Page::BackForwardCacheNotRestoredReasonEnum::SecurityHandler;
-    case BackForwardCacheDisable::DisabledReasonId::kWebAuthenticationAPI:
-      return Page::BackForwardCacheNotRestoredReasonEnum::WebAuthenticationAPI;
-    case BackForwardCacheDisable::DisabledReasonId::kFileChooser:
-      return Page::BackForwardCacheNotRestoredReasonEnum::FileChooser;
-    case BackForwardCacheDisable::DisabledReasonId::kSerial:
-      return Page::BackForwardCacheNotRestoredReasonEnum::Serial;
-    case BackForwardCacheDisable::DisabledReasonId::kFileSystemAccess:
-      return Page::BackForwardCacheNotRestoredReasonEnum::FileSystemAccess;
-    case BackForwardCacheDisable::DisabledReasonId::kMediaDevicesDispatcherHost:
-      return Page::BackForwardCacheNotRestoredReasonEnum::
-          MediaDevicesDispatcherHost;
-    case BackForwardCacheDisable::DisabledReasonId::kWebBluetooth:
-      return Page::BackForwardCacheNotRestoredReasonEnum::WebBluetooth;
-    case BackForwardCacheDisable::DisabledReasonId::kWebUSB:
-      return Page::BackForwardCacheNotRestoredReasonEnum::WebUSB;
-    case BackForwardCacheDisable::DisabledReasonId::kMediaSession:
-      return Page::BackForwardCacheNotRestoredReasonEnum::MediaSession;
-    default:
+  switch (reason.source) {
+    case BackForwardCache::DisabledSource::kLegacy:
       NOTREACHED();
       return Page::BackForwardCacheNotRestoredReasonEnum::Unknown;
+    case BackForwardCache::DisabledSource::kTesting:
+      NOTREACHED();
+      return Page::BackForwardCacheNotRestoredReasonEnum::Unknown;
+    case BackForwardCache::DisabledSource::kContent:
+      switch (
+          static_cast<BackForwardCacheDisable::DisabledReasonId>(reason.id)) {
+        case BackForwardCacheDisable::DisabledReasonId::kUnknown:
+          return Page::BackForwardCacheNotRestoredReasonEnum::Unknown;
+        case BackForwardCacheDisable::DisabledReasonId::kSecurityHandler:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              ContentSecurityHandler;
+        case BackForwardCacheDisable::DisabledReasonId::kWebAuthenticationAPI:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              ContentWebAuthenticationAPI;
+        case BackForwardCacheDisable::DisabledReasonId::kFileChooser:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              ContentFileChooser;
+        case BackForwardCacheDisable::DisabledReasonId::kSerial:
+          return Page::BackForwardCacheNotRestoredReasonEnum::ContentSerial;
+        case BackForwardCacheDisable::DisabledReasonId::kFileSystemAccess:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              ContentFileSystemAccess;
+        case BackForwardCacheDisable::DisabledReasonId::
+            kMediaDevicesDispatcherHost:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              ContentMediaDevicesDispatcherHost;
+        case BackForwardCacheDisable::DisabledReasonId::kWebBluetooth:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              ContentWebBluetooth;
+        case BackForwardCacheDisable::DisabledReasonId::kWebUSB:
+          return Page::BackForwardCacheNotRestoredReasonEnum::ContentWebUSB;
+        case BackForwardCacheDisable::DisabledReasonId::kMediaSession:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              ContentMediaSession;
+      }
+    case BackForwardCache::DisabledSource::kEmbedder:
+      switch (static_cast<back_forward_cache::DisabledReasonId>(reason.id)) {
+        case back_forward_cache::DisabledReasonId::kUnknown:
+          return Page::BackForwardCacheNotRestoredReasonEnum::Unknown;
+        case back_forward_cache::DisabledReasonId::kPopupBlockerTabHelper:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderPopupBlockerTabHelper;
+        case back_forward_cache::DisabledReasonId::
+            kSafeBrowsingTriggeredPopupBlocker:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderSafeBrowsingTriggeredPopupBlocker;
+        case back_forward_cache::DisabledReasonId::kSafeBrowsingThreatDetails:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderSafeBrowsingThreatDetails;
+        case back_forward_cache::DisabledReasonId::kAppBannerManager:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderAppBannerManager;
+        case back_forward_cache::DisabledReasonId::kDomDistillerViewerSource:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderDomDistillerViewerSource;
+        case back_forward_cache::DisabledReasonId::
+            kDomDistiller_SelfDeletingRequestDelegate:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderDomDistillerSelfDeletingRequestDelegate;
+        case back_forward_cache::DisabledReasonId::kOomInterventionTabHelper:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderOomInterventionTabHelper;
+        case back_forward_cache::DisabledReasonId::kOfflinePage:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderOfflinePage;
+        case back_forward_cache::DisabledReasonId::
+            kChromePasswordManagerClient_BindCredentialManager:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderChromePasswordManagerClientBindCredentialManager;
+        case back_forward_cache::DisabledReasonId::kPermissionRequestManager:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderPermissionRequestManager;
+        case back_forward_cache::DisabledReasonId::kModalDialog:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderModalDialog;
+        case back_forward_cache::DisabledReasonId::kExtensions:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderExtensions;
+        case back_forward_cache::DisabledReasonId::kExtensionMessaging:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderExtensionMessaging;
+        case back_forward_cache::DisabledReasonId::
+            kExtensionMessagingForOpenPort:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderExtensionMessagingForOpenPort;
+        case back_forward_cache::DisabledReasonId::
+            kExtensionSentMessageToCachedFrame:
+          return Page::BackForwardCacheNotRestoredReasonEnum::
+              EmbedderExtensionSentMessageToCachedFrame;
+      }
   }
 }
 
@@ -1630,6 +1681,7 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kNoResponseHead:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
     case Reason::kOptInUnloadHeaderNotPresent:
+    case Reason::kUnloadHandlerExistsInMainFrame:
     case Reason::kUnloadHandlerExistsInSubFrame:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::PageSupportNeeded;
     case Reason::kNetworkRequestDatapipeDrainedAsBytesConsumer:
@@ -1664,7 +1716,6 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kWebShare:
     case WebSchedulerTrackedFeature::kRequestedStorageAccessGrant:
     case WebSchedulerTrackedFeature::kWebNfc:
-    case WebSchedulerTrackedFeature::kWebFileSystem:
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequestFetch:
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequestXHR:
     case WebSchedulerTrackedFeature::kPrinting:
@@ -1679,7 +1730,6 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kWebOTPService:
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequestDirectSocket:
     case WebSchedulerTrackedFeature::kInjectedStyleSheet:
-    case WebSchedulerTrackedFeature::kMediaSessionImplOnServiceCreated:
     case WebSchedulerTrackedFeature::kWebTransport:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::PageSupportNeeded;
     case WebSchedulerTrackedFeature::kAppBanner:
@@ -1688,10 +1738,11 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::SupportPending;
     case WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore:
     case WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoCache:
-    case WebSchedulerTrackedFeature::kIsolatedWorldScript:
+    case WebSchedulerTrackedFeature::kInjectedJavascript:
     case WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoCache:
     case WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoStore:
     case WebSchedulerTrackedFeature::kDocumentLoaded:
+    case WebSchedulerTrackedFeature::kDummy:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
   }
 }

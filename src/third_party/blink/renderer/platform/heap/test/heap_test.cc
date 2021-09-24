@@ -1614,8 +1614,6 @@ void OrderedSetHelper(bool strong) {
 
 TEST_F(HeapTest, HeapWeakLinkedHashSet) {
   ClearOutOldGarbage();
-  OrderedSetHelper<HeapListHashSet<Member<IntWrapper>>>(true);
-  ClearOutOldGarbage();
   OrderedSetHelper<HeapLinkedHashSet<Member<IntWrapper>>>(true);
   ClearOutOldGarbage();
   OrderedSetHelper<HeapLinkedHashSet<WeakMember<IntWrapper>>>(false);
@@ -2719,10 +2717,12 @@ TEST_F(HeapTest, EphemeronsPointToEphemerons) {
   for (int i = 0; i < 100; i++) {
     EXPECT_EQ(1u, wrapper->GetMap().size());
 
+    EphemeronWrapper::Map::iterator it;
     if (i == 49)
-      wrapper = wrapper->GetMap().DeprecatedAtOrEmptyValue(key2);
+      it = wrapper->GetMap().find(key2);
     else
-      wrapper = wrapper->GetMap().DeprecatedAtOrEmptyValue(key);
+      it = wrapper->GetMap().find(key);
+    wrapper = it != wrapper->GetMap().end() ? it->value : nullptr;
   }
   EXPECT_EQ(nullptr, wrapper);
 
@@ -2732,7 +2732,8 @@ TEST_F(HeapTest, EphemeronsPointToEphemerons) {
   wrapper = chain;
   for (int i = 0; i < 50; i++) {
     EXPECT_EQ(i == 49 ? 0u : 1u, wrapper->GetMap().size());
-    wrapper = wrapper->GetMap().DeprecatedAtOrEmptyValue(key);
+    auto it = wrapper->GetMap().find(key);
+    wrapper = it != wrapper->GetMap().end() ? it->value : nullptr;
   }
   EXPECT_EQ(nullptr, wrapper);
 

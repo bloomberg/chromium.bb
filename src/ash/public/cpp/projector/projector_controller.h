@@ -36,6 +36,11 @@ class ASH_PUBLIC_EXPORT ProjectorController {
 
   static ProjectorController* Get();
 
+  // Starts a capture mode session for the projector workflow if no video
+  // recording is currently in progress. `storage_dir` is the container
+  // directory name for screencasts and will be used to create the storage path.
+  virtual void StartProjectorSession(const std::string& storage_dir) = 0;
+
   // Make sure the client is set before attempting to use to the
   // ProjectorController.
   virtual void SetClient(ProjectorClient* client) = 0;
@@ -50,12 +55,13 @@ class ASH_PUBLIC_EXPORT ProjectorController {
   // Called when there is an error in transcription.
   virtual void OnTranscriptionError() = 0;
 
-  // Sets Projector toolbar visibility.
-  virtual void SetProjectorToolsVisible(bool is_visible) = 0;
-
-  // Returns true if Projector is eligible to start a new session.
-  // TODO(yilkal): Rename to something more descriptive, like CanStart().
+  // Returns true if Projector screen recording feature is available on the
+  // device. If on device speech recognition is not available on device, then
+  // Projector is not eligible.
   virtual bool IsEligible() const = 0;
+
+  // Returns true if we can start a new Projector session.
+  virtual bool CanStartNewSession() const = 0;
 };
 
 }  // namespace ash

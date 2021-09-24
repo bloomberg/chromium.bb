@@ -4,9 +4,9 @@ using namespace metal;
 struct Uniforms {
   /* 0x0000 */ uint dstTextureFlipY;
   /* 0x0004 */ uint channelCount;
-  /* 0x0008 */ packed_uint2 srcCopyOrigin;
-  /* 0x0010 */ packed_uint2 dstCopyOrigin;
-  /* 0x0018 */ packed_uint2 copySize;
+  /* 0x0008 */ uint2 srcCopyOrigin;
+  /* 0x0010 */ uint2 dstCopyOrigin;
+  /* 0x0018 */ uint2 copySize;
 };
 struct OutputBuf {
   /* 0x0000 */ uint result[1];
@@ -45,7 +45,7 @@ void tint_symbol_inner(constant Uniforms& uniforms, device OutputBuf& output, ui
   }
 }
 
-kernel void tint_symbol(texture2d<float, access::sample> tint_symbol_3 [[texture(0)]], texture2d<float, access::sample> tint_symbol_4 [[texture(1)]], uint3 GlobalInvocationID [[thread_position_in_grid]], constant Uniforms& uniforms [[buffer(3)]], device OutputBuf& output [[buffer(2)]]) {
+kernel void tint_symbol(texture2d<float, access::sample> tint_symbol_3 [[texture(0)]], texture2d<float, access::sample> tint_symbol_4 [[texture(1)]], uint3 GlobalInvocationID [[thread_position_in_grid]], constant Uniforms& uniforms [[buffer(0)]], device OutputBuf& output [[buffer(1)]]) {
   tint_symbol_inner(uniforms, output, GlobalInvocationID, tint_symbol_3, tint_symbol_4);
   return;
 }

@@ -298,6 +298,12 @@ class TensorBase<Derived, ReadOnlyAccessors>
     }
 
     EIGEN_DEVICE_FUNC
+    EIGEN_STRONG_INLINE const TensorCwiseUnaryOp<internal::scalar_log2_op<Scalar>, const Derived>
+    log2() const {
+      return unaryExpr(internal::scalar_log2_op<Scalar>());
+    }
+
+    EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE const TensorCwiseUnaryOp<internal::scalar_abs_op<Scalar>, const Derived>
     abs() const {
       return unaryExpr(internal::scalar_abs_op<Scalar>());
@@ -966,6 +972,7 @@ class TensorBase<Derived, ReadOnlyAccessors>
 template<typename Derived, int AccessLevel = internal::accessors_level<Derived>::value>
 class TensorBase : public TensorBase<Derived, ReadOnlyAccessors> {
  public:
+    typedef TensorBase<Derived, ReadOnlyAccessors> Base;
     typedef internal::traits<Derived> DerivedTraits;
     typedef typename DerivedTraits::Scalar Scalar;
     typedef typename DerivedTraits::Index Index;
@@ -1146,6 +1153,18 @@ class TensorBase : public TensorBase<Derived, ReadOnlyAccessors> {
     }
 
  protected:
+    EIGEN_DEFAULT_EMPTY_CONSTRUCTOR_AND_DESTRUCTOR(TensorBase)
+    EIGEN_DEFAULT_COPY_CONSTRUCTOR(TensorBase)
+
+    template<typename OtherDerived> EIGEN_DEVICE_FUNC
+    EIGEN_STRONG_INLINE Derived& operator=(const OtherDerived& other)
+    {
+      typedef TensorAssignOp<Derived, const OtherDerived> Assign;
+      Assign assign(derived(), other.derived());
+      internal::TensorExecutor<const Assign, DefaultDevice>::run(assign, DefaultDevice());
+      return derived();
+    }
+
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Derived& derived() { return *static_cast<Derived*>(this); }
     EIGEN_DEVICE_FUNC

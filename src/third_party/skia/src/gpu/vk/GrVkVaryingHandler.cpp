@@ -90,10 +90,7 @@ static void finalize_helper(GrVkVaryingHandler::VarArray& vars) {
 
         int elementSize = grsltype_to_location_size(var.getType());
         SkASSERT(elementSize > 0);
-        int numElements = 1;
-        if (var.isArray() && !var.isUnsizedArray()) {
-            numElements = var.getArrayCount();
-        }
+        int numElements = var.isArray() ? var.getArrayCount() : 1;
         SkASSERT(numElements > 0);
         locationIndex += elementSize * numElements;
     }
@@ -106,8 +103,6 @@ static void finalize_helper(GrVkVaryingHandler::VarArray& vars) {
 void GrVkVaryingHandler::onFinalize() {
     finalize_helper(fVertexInputs);
     finalize_helper(fVertexOutputs);
-    finalize_helper(fGeomInputs);
-    finalize_helper(fGeomOutputs);
     finalize_helper(fFragInputs);
     finalize_helper(fFragOutputs);
 }

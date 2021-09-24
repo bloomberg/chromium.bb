@@ -14,8 +14,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/url_handler_launch_params.h"
-#include "chrome/browser/web_applications/components/url_handler_prefs.h"
+#include "chrome/browser/web_applications/url_handler_launch_params.h"
+#include "chrome/browser/web_applications/url_handler_prefs.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -175,6 +176,13 @@ UrlHandlersHandler::UrlHandlersHandler(
   DCHECK(web_app_registrar_);
 }
 
+UrlHandlersHandler::UrlHandlersHandler(PrefService* local_state,
+                                       Profile* profile)
+    : UrlHandlersHandler(
+          local_state,
+          profile,
+          &web_app::WebAppProvider::GetForWebApps(profile)->registrar()) {}
+
 UrlHandlersHandler::~UrlHandlersHandler() = default;
 
 void UrlHandlersHandler::OnJavascriptAllowed() {
@@ -200,12 +208,12 @@ void UrlHandlersHandler::OnJavascriptDisallowed() {
 }
 
 void UrlHandlersHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getUrlHandlers",
       base::BindRepeating(&UrlHandlersHandler::HandleGetUrlHandlers,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "resetUrlHandlerSavedChoice",
       base::BindRepeating(&UrlHandlersHandler::HandleResetUrlHandlerSavedChoice,
                           base::Unretained(this)));

@@ -67,11 +67,9 @@ class TestImage : public Image {
 
   void Draw(cc::PaintCanvas*,
             const cc::PaintFlags&,
-            const FloatRect&,
-            const FloatRect&,
-            const ImageDrawOptions& draw_options,
-            ImageClampingMode,
-            ImageDecodingMode) override {
+            const FloatRect& dest_rect,
+            const FloatRect& src_rect,
+            const ImageDrawOptions&) override {
     // Image pure virtual stub.
   }
 
@@ -136,7 +134,8 @@ TEST(DragImageTest, TrimWhitespace) {
   float device_scale_factor = 1.0f;
 
   FontDescription font_description;
-  font_description.FirstFamily().SetFamily("Arial");
+  font_description.FirstFamily().SetFamily("Arial",
+                                           FontFamily::Type::kFamilyName);
   font_description.SetSpecifiedSize(16);
   font_description.SetIsAbsoluteSize(true);
   font_description.SetGenericFamily(FontDescription::kNoFamily);

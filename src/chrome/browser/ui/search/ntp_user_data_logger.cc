@@ -11,8 +11,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/after_startup_task_utils.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search/background/ntp_custom_background_service.h"
+#include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/ntp_user_data_types.h"
 #include "chrome/common/pref_names.h"
@@ -405,26 +405,6 @@ void NTPUserDataLogger::LogMostVisitedLoaded(base::TimeDelta time,
   EmitNtpStatistics(time, using_most_visited, is_visible);
 }
 
-void NTPUserDataLogger::LogSuggestionEventWithValue(
-    NTPSuggestionsLoggingEventType event,
-    int data,
-    base::TimeDelta time) {
-  // Only logged on the Google NTP.
-  if (!DefaultSearchProviderIsGoogle()) {
-    return;
-  }
-
-  switch (event) {
-    case NTPSuggestionsLoggingEventType::kShownCount:
-      UMA_HISTOGRAM_COUNTS_100("NewTabPage.SearchSuggestions.ShownCount", data);
-      break;
-    case NTPSuggestionsLoggingEventType::kIndexClicked:
-      UMA_HISTOGRAM_COUNTS_100("NewTabPage.SearchSuggestions.IndexClicked",
-                               data);
-      break;
-  }
-}
-
 void NTPUserDataLogger::LogMostVisitedImpression(
     const ntp_tiles::NTPTileImpression& impression) {
   if ((impression.index >= ntp_tiles::kMaxNumTiles) ||
@@ -448,9 +428,8 @@ bool NTPUserDataLogger::DefaultSearchProviderIsGoogle() const {
 }
 
 bool NTPUserDataLogger::CustomBackgroundIsConfigured() const {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile_);
-  return instant_service->IsCustomBackgroundSet();
+  return NtpCustomBackgroundServiceFactory::GetForProfile(profile_)
+      ->IsCustomBackgroundSet();
 }
 
 void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time,

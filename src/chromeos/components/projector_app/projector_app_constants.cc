@@ -7,13 +7,16 @@
 namespace chromeos {
 
 const char kChromeUIProjectorAppHost[] = "projector";
+
+// content::WebUIDataSource::Create() requires trailing slash.
 const char kChromeUIUntrustedProjectorAppUrl[] =
     "chrome-untrusted://projector/";
+const char kChromeUIUntrustedProjectorPwaUrl[] =
+    "https://projector.apps.chrome";
+
 const char kChromeUITrustedProjectorAppUrl[] = "chrome://projector/";
 const char kChromeUITrustedProjectorSelfieCamUrl[] =
     "chrome://projector/selfie_cam/selfie_cam.html";
-// TODO(b/195127670): Rename after setting up the gallery view.
-const char kChromeUITrustedProjectorPlayerUrl[] =
-    "chrome://projector/player_app/player_app.html";
-
+const char kChromeUITrustedAnnotatorURL[] =
+    "chrome://projector/annotator/annotator_embedder.html";
 }  // namespace chromeos

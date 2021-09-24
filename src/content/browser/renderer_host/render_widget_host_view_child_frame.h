@@ -100,7 +100,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   uint32_t GetCaptureSequenceNumber() const override;
   gfx::Size GetCompositorViewportPixelSize() override;
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                   const gfx::Rect& bounds) override;
+                   const gfx::Rect& bounds,
+                   const gfx::Rect& anchor_rect) override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SendInitialPropertiesIfNeeded() override;
   void SetIsLoading(bool is_loading) override;
@@ -109,6 +110,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void UpdateTooltipUnderCursor(const std::u16string& tooltip_text) override;
   void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
                                  const gfx::Rect& bounds) override;
+  void ClearKeyboardTriggeredTooltip() override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        blink::mojom::InputEventResultState ack_result) override;
   // Since the URL of content rendered by this class is not displayed in

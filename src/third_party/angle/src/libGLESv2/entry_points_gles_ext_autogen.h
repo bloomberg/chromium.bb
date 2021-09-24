@@ -655,6 +655,14 @@ ANGLE_EXPORT void GL_APIENTRY GL_LoseContextCHROMIUM(GLenum current, GLenum othe
 
 // GL_EXT_EGL_image_array
 
+// GL_EXT_EGL_image_storage
+ANGLE_EXPORT void GL_APIENTRY GL_EGLImageTargetTexStorageEXT(GLenum target,
+                                                             GLeglImageOES image,
+                                                             const GLint *attrib_list);
+ANGLE_EXPORT void GL_APIENTRY GL_EGLImageTargetTextureStorageEXT(GLuint texture,
+                                                                 GLeglImageOES image,
+                                                                 const GLint *attrib_list);
+
 // GL_EXT_YUV_target
 
 // GL_EXT_blend_func_extended
@@ -894,6 +902,8 @@ ANGLE_EXPORT void GL_APIENTRY GL_PrimitiveBoundingBoxEXT(GLfloat minX,
                                                          GLfloat maxW);
 
 // GL_EXT_protected_textures
+
+// GL_EXT_pvrtc_sRGB
 
 // GL_EXT_read_format_bgra
 
@@ -1171,6 +1181,10 @@ ANGLE_EXPORT void GL_APIENTRY GL_TexStorage3DEXT(GLenum target,
                                                  GLsizei height,
                                                  GLsizei depth);
 
+// GL_IMG_texture_compression_pvrtc
+
+// GL_IMG_texture_compression_pvrtc2
+
 // GL_KHR_blend_equation_advanced
 ANGLE_EXPORT void GL_APIENTRY GL_BlendBarrierKHR();
 
@@ -1222,6 +1236,12 @@ ANGLE_EXPORT void GL_APIENTRY GL_PushDebugGroupKHR(GLenum source,
 
 // GL_KHR_parallel_shader_compile
 ANGLE_EXPORT void GL_APIENTRY GL_MaxShaderCompilerThreadsKHR(GLuint count);
+
+// GL_KHR_texture_compression_astc_hdr
+
+// GL_KHR_texture_compression_astc_ldr
+
+// GL_KHR_texture_compression_astc_sliced_3d
 
 // GL_NV_fence
 ANGLE_EXPORT void GL_APIENTRY GL_DeleteFencesNV(GLsizei n, const GLuint *fences);

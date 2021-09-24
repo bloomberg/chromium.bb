@@ -16,6 +16,9 @@ source_set("signin") {
     "authentication_service_delegate.h",
     "authentication_service_factory.h",
     "authentication_service_factory.mm",
+    "authentication_service_observer.h",
+    "authentication_service_observer_bridge.h",
+    "authentication_service_observer_bridge.mm",
     "chrome_account_manager_service.h",
     "chrome_account_manager_service.mm",
     "chrome_account_manager_service_factory.h",
@@ -114,7 +117,6 @@ source_set("test_support") {
     "//base",
     "//components/image_fetcher/core:test_support",
     "//components/keyed_service/core",
-    "//components/signin/public/base",
     "//components/signin/public/base:test_support",
     "//components/signin/public/identity_manager:test_support",
     "//ios/chrome/browser/browser_state",
@@ -131,6 +133,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "authentication_service_observer_bridge_unittest.mm",
     "authentication_service_unittest.mm",
     "chrome_account_manager_service_observer_bridge_unittest.mm",
     "chrome_account_manager_service_unittest.mm",
@@ -138,6 +141,7 @@ source_set("unit_tests") {
     "gaia_auth_fetcher_ios_ns_url_session_bridge_unittests.mm",
     "gaia_auth_fetcher_ios_unittest.mm",
     "pattern_account_restriction_unittest.mm",
+    "resized_avatar_cache_unittest.mm",
     "signin_browser_state_info_updater_unittest.mm",
     "user_approved_account_list_manager_unittest.mm",
   ]
@@ -148,7 +152,6 @@ source_set("unit_tests") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/prefs:test_support",
-    "//components/signin/ios/browser:features",
     "//components/signin/public/base:test_support",
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager:test_support",

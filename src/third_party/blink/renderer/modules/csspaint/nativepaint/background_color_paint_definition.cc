@@ -15,24 +15,25 @@
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_style_property_map.h"
 #include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d.h"
-#include "third_party/blink/renderer/modules/csspaint/paint_worklet_id_generator.h"
-#include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/platform_paint_worklet_layer_painter.h"
-#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
-#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
 namespace {
+
+bool AllColorsOpaque(const Vector<Color>& animated_colors) {
+  for (const auto& color : animated_colors) {
+    if (color.HasAlpha())
+      return false;
+  }
+  return true;
+}
 
 // This class includes information that is required by the compositor thread
 // when painting background color.
@@ -48,13 +49,15 @@ class BackgroundColorPaintWorkletInput : public PaintWorkletInput {
       : PaintWorkletInput(container_size, worklet_id, std::move(property_keys)),
         animated_colors_(animated_colors),
         offsets_(offsets),
-        progress_(progress) {}
+        progress_(progress),
+        is_opaque_(AllColorsOpaque(animated_colors)) {}
 
   ~BackgroundColorPaintWorkletInput() override = default;
 
   const Vector<Color>& AnimatedColors() const { return animated_colors_; }
   const Vector<double>& Offsets() const { return offsets_; }
   const absl::optional<double>& MainThreadProgress() const { return progress_; }
+  bool KnownToBeOpaque() const override { return is_opaque_; }
 
   PaintWorkletInputType GetType() const override {
     return PaintWorkletInputType::kBackgroundColor;
@@ -68,6 +71,7 @@ class BackgroundColorPaintWorkletInput : public PaintWorkletInput {
   Vector<Color> animated_colors_;
   Vector<double> offsets_;
   absl::optional<double> progress_;
+  const bool is_opaque_;
 };
 
 // TODO(crbug.com/1163949): Support animation keyframes without 0% or 100%.
@@ -212,38 +216,9 @@ BackgroundColorPaintDefinition* BackgroundColorPaintDefinition::Create(
 
 BackgroundColorPaintDefinition::BackgroundColorPaintDefinition(
     LocalFrame& local_root)
-    : worklet_id_(PaintWorkletIdGenerator::NextId()) {
-  DCHECK(local_root.IsLocalRoot());
-  DCHECK(IsMainThread());
-  ExecutionContext* context = local_root.DomWindow();
-  FrameOrWorkerScheduler* scheduler =
-      context ? context->GetScheduler() : nullptr;
-  // TODO(crbug.com/1143407): We don't need this thread if we can make the
-  // compositor thread support GC.
-  ThreadCreationParams params(ThreadType::kAnimationAndPaintWorkletThread);
-  worker_backing_thread_ = std::make_unique<WorkerBackingThread>(
-      params.SetFrameOrWorkerScheduler(scheduler));
-  auto startup_data = WorkerBackingThreadStartupData::CreateDefault();
-  PostCrossThreadTask(
-      *worker_backing_thread_->BackingThread().GetTaskRunner(), FROM_HERE,
-      CrossThreadBindOnce(&WorkerBackingThread::InitializeOnBackingThread,
-                          CrossThreadUnretained(worker_backing_thread_.get()),
-                          startup_data));
-  RegisterProxyClient(local_root);
-}
-
-void BackgroundColorPaintDefinition::RegisterProxyClient(
-    LocalFrame& local_root) {
-  proxy_client_ =
-      PaintWorkletProxyClient::Create(local_root.DomWindow(), worklet_id_);
-  proxy_client_->RegisterForNativePaintWorklet(
-      worker_backing_thread_.get(), this,
-      PaintWorkletInput::PaintWorkletInputType::kBackgroundColor);
-}
-
-void BackgroundColorPaintDefinition::UnregisterProxyClient() {
-  proxy_client_->UnregisterForNativePaintWorklet();
-}
+    : NativePaintDefinition(
+          &local_root,
+          PaintWorkletInput::PaintWorkletInputType::kBackgroundColor) {}
 
 sk_sp<PaintRecord> BackgroundColorPaintDefinition::Paint(
     const CompositorPaintWorkletInput* compositor_input,
@@ -366,7 +341,6 @@ sk_sp<PaintRecord> BackgroundColorPaintDefinition::PaintForTest(
 }
 
 void BackgroundColorPaintDefinition::Trace(Visitor* visitor) const {
-  visitor->Trace(proxy_client_);
   NativePaintDefinition::Trace(visitor);
 }
 

@@ -13,11 +13,11 @@
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrResourceCache.h"
-#include "src/gpu/GrSoftwarePathRenderer.h"
 #include "src/gpu/GrStyle.h"
 #include "src/gpu/effects/GrPorterDuffXferProcessor.h"
 #include "src/gpu/geometry/GrStyledShape.h"
-#include "src/gpu/ops/GrTriangulatingPathRenderer.h"
+#include "src/gpu/ops/SoftwarePathRenderer.h"
+#include "src/gpu/ops/TriangulatingPathRenderer.h"
 #include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 static SkPath create_concave_path() {
@@ -33,7 +33,7 @@ static SkPath create_concave_path() {
 static void draw_path(GrRecordingContext* rContext,
                       skgpu::v1::SurfaceDrawContext* sdc,
                       const SkPath& path,
-                      GrPathRenderer* pr,
+                      skgpu::v1::PathRenderer* pr,
                       GrAAType aaType,
                       const GrStyle& style,
                       float scaleX = 1.f) {
@@ -48,16 +48,16 @@ static void draw_path(GrRecordingContext* rContext,
     }
     SkMatrix matrix = SkMatrix::I();
     matrix.setScaleX(scaleX);
-    GrPathRenderer::DrawPathArgs args{rContext,
-                                      std::move(paint),
-                                      &GrUserStencilSettings::kUnused,
-                                      sdc,
-                                      nullptr,
-                                      &clipConservativeBounds,
-                                      &matrix,
-                                      &shape,
-                                      aaType,
-                                      false};
+    skgpu::v1::PathRenderer::DrawPathArgs args{rContext,
+                                               std::move(paint),
+                                               &GrUserStencilSettings::kUnused,
+                                               sdc,
+                                               nullptr,
+                                               &clipConservativeBounds,
+                                               &matrix,
+                                               &shape,
+                                               aaType,
+                                               false};
     pr->drawPath(args);
 }
 
@@ -73,7 +73,7 @@ static bool cache_non_scratch_resources_equals(GrResourceCache* cache, int expec
 
 static void test_path(skiatest::Reporter* reporter,
                       std::function<SkPath(void)> createPath,
-                      std::function<GrPathRenderer*(GrRecordingContext*)> createPathRenderer,
+                      std::function<skgpu::v1::PathRenderer*(GrRecordingContext*)> makePathRenderer,
                       int expected,
                       bool checkListeners,
                       GrAAType aaType = GrAAType::kNone,
@@ -90,7 +90,7 @@ static void test_path(skiatest::Reporter* reporter,
         return;
     }
 
-    sk_sp<GrPathRenderer> pathRenderer(createPathRenderer(dContext.get()));
+    sk_sp<skgpu::v1::PathRenderer> pathRenderer(makePathRenderer(dContext.get()));
     SkPath path = createPath();
 
     // Initially, cache only has the render target context
@@ -133,7 +133,7 @@ static void test_path(skiatest::Reporter* reporter,
 // Test that deleting the original path invalidates the VBs cached by the tessellating path renderer
 DEF_GPUTEST(TriangulatingPathRendererCacheTest, reporter, /* options */) {
     auto createPR = [](GrRecordingContext*) {
-        return new GrTriangulatingPathRenderer();
+        return new skgpu::v1::TriangulatingPathRenderer();
     };
 
     // Triangulating path renderer creates a single vertex buffer for non-AA paths. No other
@@ -155,11 +155,11 @@ DEF_GPUTEST(TriangulatingPathRendererCacheTest, reporter, /* options */) {
 // Test that deleting the original path invalidates the textures cached by the SW path renderer
 DEF_GPUTEST(SoftwarePathRendererCacheTest, reporter, /* options */) {
     auto createPR = [](GrRecordingContext* rContext) {
-        return new GrSoftwarePathRenderer(rContext->priv().proxyProvider(), true);
+        return new skgpu::v1::SoftwarePathRenderer(rContext->priv().proxyProvider(), true);
     };
 
     // Software path renderer creates a mask texture and renders with a non-AA rect, but the flush
-    // only contains a single quad so GrFillRectOp doesn't need to use the shared index buffer.
+    // only contains a single quad so FillRectOp doesn't need to use the shared index buffer.
     const int kExpectedResources = 1;
 
     test_path(reporter, create_concave_path, createPR, kExpectedResources, true,

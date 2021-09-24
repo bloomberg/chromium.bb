@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_span.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
@@ -91,22 +92,26 @@ struct SameSizeAsLayoutText : public LayoutObject {
   DOMNodeId node_id;
   float widths[4];
   String text;
-  void* pointers[2];
+  Member<void*> members[2];
   PhysicalOffset previous_starting_point;
+  wtf_size_t first_fragment_item_index_;
 };
 
 ASSERT_SIZE(LayoutText, SameSizeAsLayoutText);
 
 class SecureTextTimer;
-typedef HashMap<LayoutText*, SecureTextTimer*> SecureTextTimerMap;
+typedef HeapHashMap<WeakMember<LayoutText>, Member<SecureTextTimer>>
+    SecureTextTimerMap;
 static SecureTextTimerMap& GetSecureTextTimers() {
-  DEFINE_STATIC_LOCAL(SecureTextTimerMap, map, ());
-  return map;
+  DEFINE_STATIC_LOCAL(const Persistent<SecureTextTimerMap>, map,
+                      (MakeGarbageCollected<SecureTextTimerMap>()));
+  return *map;
 }
 
-class SecureTextTimer final : public TimerBase {
+class SecureTextTimer final : public GarbageCollected<SecureTextTimer>,
+                              public TimerBase {
  public:
-  SecureTextTimer(LayoutText* layout_text)
+  explicit SecureTextTimer(LayoutText* layout_text)
       : TimerBase(layout_text->GetDocument().GetTaskRunner(
             TaskType::kUserInteraction)),
         layout_text_(layout_text),
@@ -123,6 +128,8 @@ class SecureTextTimer final : public TimerBase {
   void Invalidate() { last_typed_character_offset_ = -1; }
   unsigned LastTypedCharacterOffset() { return last_typed_character_offset_; }
 
+  void Trace(Visitor* visitor) const { visitor->Trace(layout_text_); }
+
  private:
   void Fired() override {
     DCHECK(GetSecureTextTimers().Contains(layout_text_));
@@ -130,7 +137,7 @@ class SecureTextTimer final : public TimerBase {
     layout_text_->ForceSetText(layout_text_->GetText().Impl());
   }
 
-  LayoutText* layout_text_;
+  Member<LayoutText> layout_text_;
   int last_typed_character_offset_;
 };
 
@@ -139,10 +146,12 @@ class SelectionDisplayItemClient : public DisplayItemClient {
 };
 
 using SelectionDisplayItemClientMap =
-    HashMap<const LayoutText*, std::unique_ptr<SelectionDisplayItemClient>>;
+    HeapHashMap<WeakMember<const LayoutText>,
+                std::unique_ptr<SelectionDisplayItemClient>>;
 SelectionDisplayItemClientMap& GetSelectionDisplayItemClientMap() {
-  DEFINE_STATIC_LOCAL(SelectionDisplayItemClientMap, map, ());
-  return map;
+  DEFINE_STATIC_LOCAL(Persistent<SelectionDisplayItemClientMap>, map,
+                      (MakeGarbageCollected<SelectionDisplayItemClientMap>()));
+  return *map;
 }
 
 }  // anonymous namespace
@@ -172,15 +181,19 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
 
   if (node)
     GetFrameView()->IncrementVisuallyNonEmptyCharacterCount(text_.length());
+
+  // Call GetSecureTextTimers() and GetSelectionDisplayItemClientMap() to ensure
+  // map exists. They are called in pre-finalizer where allocation is not
+  // allowed.
+  // TODO(yukiy): Remove these if CanvasFormattedTextRun::Dispose() can be
+  // removed.
+  GetSecureTextTimers();
+  GetSelectionDisplayItemClientMap();
 }
 
-LayoutText::~LayoutText() {
-#if DCHECK_IS_ON()
-  if (IsInLayoutNGInlineFormattingContext())
-    DCHECK(!first_fragment_item_index_);
-  else
-    text_boxes_.AssertIsEmpty();
-#endif
+void LayoutText::Trace(Visitor* visitor) const {
+  visitor->Trace(text_boxes_);
+  LayoutObject::Trace(visitor);
 }
 
 LayoutText* LayoutText::CreateEmptyAnonymous(
@@ -278,8 +291,9 @@ void LayoutText::RemoveAndDestroyTextBoxes() {
 
 void LayoutText::WillBeDestroyed() {
   NOT_DESTROYED();
-  if (SecureTextTimer* secure_text_timer = GetSecureTextTimers().Take(this))
-    delete secure_text_timer;
+
+  if (SecureTextTimer* timer = GetSecureTextTimers().Take(this))
+    timer->Stop();
 
   GetSelectionDisplayItemClientMap().erase(this);
 
@@ -292,6 +306,13 @@ void LayoutText::WillBeDestroyed() {
   RemoveAndDestroyTextBoxes();
   LayoutObject::WillBeDestroyed();
   valid_ng_items_ = false;
+
+#if DCHECK_IS_ON()
+  if (IsInLayoutNGInlineFormattingContext())
+    DCHECK(!first_fragment_item_index_);
+  else
+    text_boxes_.AssertIsEmpty();
+#endif
 }
 
 void LayoutText::ExtractTextBox(InlineTextBox* box) {
@@ -651,6 +672,8 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
     if (!MapDOMOffsetToTextContentOffset(*mapping, &start, &end))
       return;
 
+    const auto* const text_combine = DynamicTo<LayoutNGTextCombine>(Parent());
+
     // We don't want to add collapsed (i.e., start == end) quads from text
     // fragments that intersect [start, end] only at the boundary, unless they
     // are the only quads found. For example, when we have
@@ -691,6 +714,8 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
           continue;
         rect = item.LocalRect();
       }
+      if (UNLIKELY(text_combine))
+        rect = text_combine->AdjustRectForBoundingBox(rect);
       rect.Move(cursor.CurrentOffsetInBlockFlow());
       const FloatQuad quad = LocalRectToAbsoluteQuad(rect);
       if (!is_collapsed) {
@@ -2239,7 +2264,8 @@ void LayoutText::DirtyLineBoxes() {
 
 InlineTextBox* LayoutText::CreateTextBox(int start, uint16_t length) {
   NOT_DESTROYED();
-  return new InlineTextBox(LineLayoutItem(this), start, length);
+  return MakeGarbageCollected<InlineTextBox>(LineLayoutItem(this), start,
+                                             length);
 }
 
 InlineTextBox* LayoutText::CreateInlineTextBox(int start, uint16_t length) {
@@ -2752,7 +2778,7 @@ void LayoutText::MomentarilyRevealLastTypedCharacter(
   SecureTextTimer* secure_text_timer =
       it != GetSecureTextTimers().end() ? it->value : nullptr;
   if (!secure_text_timer) {
-    secure_text_timer = new SecureTextTimer(this);
+    secure_text_timer = MakeGarbageCollected<SecureTextTimer>(this);
     GetSecureTextTimers().insert(this, secure_text_timer);
   }
   secure_text_timer->RestartWithNewText(last_typed_character_offset);
@@ -2848,29 +2874,30 @@ ContentCaptureManager* LayoutText::GetContentCaptureManager() {
   return nullptr;
 }
 
-void LayoutText::SetInlineItems(NGInlineItem* begin, NGInlineItem* end) {
+void LayoutText::SetInlineItems(NGInlineItemsData* data,
+                                size_t begin,
+                                size_t size) {
   NOT_DESTROYED();
 #if DCHECK_IS_ON()
-  for (NGInlineItem* item = begin; item != end; ++item) {
-    DCHECK_EQ(item->GetLayoutObject(), this);
-  }
+  for (size_t i = begin; i < begin + size; i++)
+    DCHECK_EQ(data->items[SafeCast<wtf_size_t>(i)].GetLayoutObject(), this);
 #endif
-  base::span<NGInlineItem>* items = GetNGInlineItems();
+  auto* items = GetNGInlineItems();
   if (!items)
     return;
   valid_ng_items_ = true;
-  *items = base::make_span(begin, end);
+  items->SetItems(data, begin, size);
 }
 
 void LayoutText::ClearInlineItems() {
   NOT_DESTROYED();
   has_bidi_control_items_ = false;
   valid_ng_items_ = false;
-  if (base::span<NGInlineItem>* items = GetNGInlineItems())
-    *items = base::span<NGInlineItem>();
+  if (auto* items = GetNGInlineItems())
+    items->Clear();
 }
 
-const base::span<NGInlineItem>& LayoutText::InlineItems() const {
+const NGInlineItemSpan& LayoutText::InlineItems() const {
   NOT_DESTROYED();
   DCHECK(valid_ng_items_);
   DCHECK(GetNGInlineItems());

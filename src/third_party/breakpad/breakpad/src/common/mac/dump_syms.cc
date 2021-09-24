@@ -351,15 +351,18 @@ class DumpSymbols::DumperLineToModule:
     compilation_dir_ = compilation_dir;
   }
 
-  void ReadProgram(const uint8_t* program, uint64_t length,
+  void ReadProgram(const uint8_t* program,
+                   uint64_t length,
                    const uint8_t* string_section,
                    uint64_t string_section_length,
                    const uint8_t* line_string_section,
                    uint64_t line_string_section_length,
-                   Module* module, vector<Module::Line>* lines) {
-    DwarfLineToModule handler(module, compilation_dir_, lines);
-    LineInfo parser(program, length, byte_reader_,
-                                  nullptr, 0, nullptr, 0, &handler);
+                   Module* module,
+                   vector<Module::Line>* lines,
+                   std::map<uint32_t, Module::File*>* files) {
+    DwarfLineToModule handler(module, compilation_dir_, lines, files);
+    LineInfo parser(program, length, byte_reader_, nullptr, 0,
+                                  nullptr, 0, &handler);
     parser.Start();
   }
  private:
@@ -584,7 +587,7 @@ bool DumpSymbols::LoadCommandDumper::SegmentCommand(const Segment& segment) {
 
   if (segment.name == "__TEXT") {
     module_->SetLoadAddress(segment.vmaddr);
-    if (symbol_data_ != NO_CFI) {
+    if (symbol_data_ & CFI) {
       mach_o::SectionMap::const_iterator eh_frame =
           section_map.find("__eh_frame");
       if (eh_frame != section_map.end()) {
@@ -596,10 +599,10 @@ bool DumpSymbols::LoadCommandDumper::SegmentCommand(const Segment& segment) {
   }
 
   if (segment.name == "__DWARF") {
-    if (symbol_data_ != ONLY_CFI) {
+    if ((symbol_data_ & SYMBOLS_AND_FILES) || (symbol_data_ & INLINES)) {
       dumper_.ReadDwarf(module_, reader_, section_map, handle_inter_cu_refs_);
     }
-    if (symbol_data_ != NO_CFI) {
+    if (symbol_data_ & CFI) {
       mach_o::SectionMap::const_iterator debug_frame
           = section_map.find("__debug_frame");
       if (debug_frame != section_map.end()) {

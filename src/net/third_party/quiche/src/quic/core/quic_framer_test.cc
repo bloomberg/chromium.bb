@@ -1286,6 +1286,28 @@ TEST_P(QuicFramerTest, LongPacketHeaderWithBothConnectionIds) {
   EXPECT_EQ(FramerTestConnectionIdPlusOne(), source_connection_id);
 }
 
+TEST_P(QuicFramerTest, AllZeroPacketParsingFails) {
+  SetQuicRestartFlag(quic_drop_invalid_flags, true);
+  unsigned char packet[1200] = {};
+  QuicEncryptedPacket encrypted(AsChars(packet), ABSL_ARRAYSIZE(packet), false);
+  PacketHeaderFormat format = GOOGLE_QUIC_PACKET;
+  QuicLongHeaderType long_packet_type = INVALID_PACKET_TYPE;
+  bool version_flag = false;
+  QuicConnectionId destination_connection_id, source_connection_id;
+  QuicVersionLabel version_label = 0;
+  std::string detailed_error = "";
+  bool retry_token_present, use_length_prefix;
+  absl::string_view retry_token;
+  ParsedQuicVersion parsed_version = UnsupportedQuicVersion();
+  const QuicErrorCode error_code = QuicFramer::ParsePublicHeaderDispatcher(
+      encrypted, kQuicDefaultConnectionIdLength, &format, &long_packet_type,
+      &version_flag, &use_length_prefix, &version_label, &parsed_version,
+      &destination_connection_id, &source_connection_id, &retry_token_present,
+      &retry_token, &detailed_error);
+  EXPECT_EQ(error_code, QUIC_INVALID_PACKET_HEADER);
+  EXPECT_EQ(detailed_error, "Invalid flags.");
+}
+
 TEST_P(QuicFramerTest, ParsePublicHeader) {
   // clang-format off
   unsigned char packet[] = {
@@ -9238,8 +9260,7 @@ TEST_P(QuicFramerTest, BuildPublicResetPacketWithEndpointId) {
 }
 
 TEST_P(QuicFramerTest, BuildIetfStatelessResetPacket) {
-  if (GetQuicRestartFlag(quic_fix_stateless_reset2)) {
-    // clang-format off
+  // clang-format off
     unsigned char packet[] = {
       // 1st byte 01XX XXXX
       0x40,
@@ -9249,76 +9270,45 @@ TEST_P(QuicFramerTest, BuildIetfStatelessResetPacket) {
       0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
       0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f
     };
-    // clang-format on
-
-    // Build the minimal stateless reset packet.
-    std::unique_ptr<QuicEncryptedPacket> data(
-        framer_.BuildIetfStatelessResetPacket(
-            FramerTestConnectionId(),
-            QuicFramer::GetMinStatelessResetPacketLength() + 1,
-            kTestStatelessResetToken));
-    ASSERT_TRUE(data);
-    EXPECT_EQ(QuicFramer::GetMinStatelessResetPacketLength(), data->length());
-    // Verify the first 2 bits are 01.
-    EXPECT_FALSE(data->data()[0] & FLAGS_LONG_HEADER);
-    EXPECT_TRUE(data->data()[0] & FLAGS_FIXED_BIT);
-    // Verify stateless reset token.
-    quiche::test::CompareCharArraysWithHexError(
-        "constructed packet",
-        data->data() + data->length() - kStatelessResetTokenLength,
-        kStatelessResetTokenLength,
-        AsChars(packet) + ABSL_ARRAYSIZE(packet) - kStatelessResetTokenLength,
-        kStatelessResetTokenLength);
-
-    // Packets with length <= minimal stateless reset does not trigger stateless
-    // reset.
-    std::unique_ptr<QuicEncryptedPacket> data2(
-        framer_.BuildIetfStatelessResetPacket(
-            FramerTestConnectionId(),
-            QuicFramer::GetMinStatelessResetPacketLength(),
-            kTestStatelessResetToken));
-    ASSERT_FALSE(data2);
-
-    // Do not send stateless reset >= minimal stateless reset + 1 + max
-    // connection ID length.
-    std::unique_ptr<QuicEncryptedPacket> data3(
-        framer_.BuildIetfStatelessResetPacket(FramerTestConnectionId(), 1000,
-                                              kTestStatelessResetToken));
-    ASSERT_TRUE(data3);
-    EXPECT_EQ(QuicFramer::GetMinStatelessResetPacketLength() + 1 +
-                  kQuicMaxConnectionIdWithLengthPrefixLength,
-              data3->length());
-    return;
-  }
-  // clang-format off
-  unsigned char packet[] = {
-    // type (short header, 1 byte packet number)
-    0x70,
-    // random packet number
-    0xFE,
-    // stateless reset token
-    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
-    0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
-  };
   // clang-format on
 
+  // Build the minimal stateless reset packet.
   std::unique_ptr<QuicEncryptedPacket> data(
-      framer_.BuildIetfStatelessResetPacket(FramerTestConnectionId(), 0,
-                                            kTestStatelessResetToken));
-  ASSERT_TRUE(data != nullptr);
-  // Skip packet number byte which is random in stateless reset packet.
-  quiche::test::CompareCharArraysWithHexError(
-      "constructed packet", data->data(), 1, AsChars(packet), 1);
-  const size_t random_bytes_length =
-      data->length() - kPacketHeaderTypeSize - kStatelessResetTokenLength;
-  EXPECT_EQ(kMinRandomBytesLengthInStatelessReset, random_bytes_length);
-  // Verify stateless reset token is correct.
+      framer_.BuildIetfStatelessResetPacket(
+          FramerTestConnectionId(),
+          QuicFramer::GetMinStatelessResetPacketLength() + 1,
+          kTestStatelessResetToken));
+  ASSERT_TRUE(data);
+  EXPECT_EQ(QuicFramer::GetMinStatelessResetPacketLength(), data->length());
+  // Verify the first 2 bits are 01.
+  EXPECT_FALSE(data->data()[0] & FLAGS_LONG_HEADER);
+  EXPECT_TRUE(data->data()[0] & FLAGS_FIXED_BIT);
+  // Verify stateless reset token.
   quiche::test::CompareCharArraysWithHexError(
       "constructed packet",
       data->data() + data->length() - kStatelessResetTokenLength,
       kStatelessResetTokenLength,
       AsChars(packet) + ABSL_ARRAYSIZE(packet) - kStatelessResetTokenLength,
       kStatelessResetTokenLength);
+
+  // Packets with length <= minimal stateless reset does not trigger stateless
+  // reset.
+  std::unique_ptr<QuicEncryptedPacket> data2(
+      framer_.BuildIetfStatelessResetPacket(
+          FramerTestConnectionId(),
+          QuicFramer::GetMinStatelessResetPacketLength(),
+          kTestStatelessResetToken));
+  ASSERT_FALSE(data2);
+
+  // Do not send stateless reset >= minimal stateless reset + 1 + max
+  // connection ID length.
+  std::unique_ptr<QuicEncryptedPacket> data3(
+      framer_.BuildIetfStatelessResetPacket(FramerTestConnectionId(), 1000,
+                                            kTestStatelessResetToken));
+  ASSERT_TRUE(data3);
+  EXPECT_EQ(QuicFramer::GetMinStatelessResetPacketLength() + 1 +
+                kQuicMaxConnectionIdWithLengthPrefixLength,
+            data3->length());
 }
 
 TEST_P(QuicFramerTest, EncryptPacket) {

@@ -45,20 +45,22 @@ bool FormatReinterpretationSupported(const std::vector<GLenum> &optionalSizedFor
         if (baseCaps.texturable && baseCaps.filterable)
         {
             const Format &vkFormat = rendererVk->getFormat(glFormat);
+            // For capability query, we use the renderable format since that is what we are capable
+            // of when we fallback.
+            angle::FormatID imageFormatID = vkFormat.getActualRenderableImageFormatID();
 
-            angle::FormatID reinterpretedFormatID =
-                checkLinearColorspace ? ConvertToLinear(vkFormat.actualImageFormatID)
-                                      : ConvertToSRGB(vkFormat.actualImageFormatID);
+            angle::FormatID reinterpretedFormatID = checkLinearColorspace
+                                                        ? ConvertToLinear(imageFormatID)
+                                                        : ConvertToSRGB(imageFormatID);
 
             const Format &reinterpretedVkFormat = rendererVk->getFormat(reinterpretedFormatID);
 
-            if (reinterpretedVkFormat.actualImageFormatID != reinterpretedFormatID)
+            if (reinterpretedVkFormat.getActualRenderableImageFormatID() != reinterpretedFormatID)
             {
                 return false;
             }
 
-            if (!rendererVk->haveSameFormatFeatureBits(vkFormat.actualImageFormatID,
-                                                       reinterpretedFormatID))
+            if (!rendererVk->haveSameFormatFeatureBits(imageFormatID, reinterpretedFormatID))
             {
                 return false;
             }
@@ -175,7 +177,7 @@ bool HasTexelBufferSupport(const RendererVk *rendererVk, GLenum formatGL)
     const Format &formatVk = rendererVk->getFormat(formatGL);
 
     return rendererVk->hasBufferFormatFeatureBits(
-        formatVk.actualBufferFormatID,
+        formatVk.getActualBufferFormat(false).id,
         VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT | VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT);
 }
 
@@ -273,12 +275,14 @@ bool CanSupportYuvInternalFormat(const RendererVk *rendererVk)
 
     const Format &twoPlane8bitYuvFormat = rendererVk->getFormat(GL_G8_B8R8_2PLANE_420_UNORM_ANGLE);
     bool twoPlane8bitYuvFormatSupported = rendererVk->hasImageFormatFeatureBits(
-        twoPlane8bitYuvFormat.actualImageFormatID, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+        twoPlane8bitYuvFormat.getActualImageFormatID(vk::ImageAccess::SampleOnly),
+        VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
 
     const Format &threePlane8bitYuvFormat =
         rendererVk->getFormat(GL_G8_B8_R8_3PLANE_420_UNORM_ANGLE);
     bool threePlane8bitYuvFormatSupported = rendererVk->hasImageFormatFeatureBits(
-        threePlane8bitYuvFormat.actualImageFormatID, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+        threePlane8bitYuvFormat.getActualImageFormatID(vk::ImageAccess::SampleOnly),
+        VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
 
     return twoPlane8bitYuvFormatSupported && threePlane8bitYuvFormatSupported;
 }
@@ -409,20 +413,27 @@ void RendererVk::ensureCapsInitialized() const
 
     mNativeExtensions.vertexAttribType1010102OES = true;
 
-    // We use secondary command buffers almost everywhere and they require a feature to be
-    // able to execute in the presence of queries.  As a result, we won't support queries
-    // unless that feature is available.
-    mNativeExtensions.occlusionQueryBoolean =
-        vk::CommandBuffer::SupportsQueries(mPhysicalDeviceFeatures);
+    // Occlusion queries are natively supported in Vulkan.  ANGLE only issues this query inside a
+    // render pass, so there is no dependency to `inheritedQueries`.
+    mNativeExtensions.occlusionQueryBoolean = true;
 
     // From the Vulkan specs:
     // > The number of valid bits in a timestamp value is determined by the
     // > VkQueueFamilyProperties::timestampValidBits property of the queue on which the timestamp is
     // > written. Timestamps are supported on any queue which reports a non-zero value for
     // > timestampValidBits via vkGetPhysicalDeviceQueueFamilyProperties.
-    mNativeExtensions.disjointTimerQuery          = queueFamilyProperties.timestampValidBits > 0;
-    mNativeExtensions.queryCounterBitsTimeElapsed = queueFamilyProperties.timestampValidBits;
-    mNativeExtensions.queryCounterBitsTimestamp   = queueFamilyProperties.timestampValidBits;
+    //
+    // This query is applicable to render passes, but the `inheritedQueries` feature may not be
+    // present.  The extension is not exposed in that case.
+    // We use secondary command buffers almost everywhere and they require a feature to be
+    // able to execute in the presence of queries.  As a result, we won't support queries
+    // unless that feature is available.
+    if (vk::CommandBuffer::SupportsQueries(mPhysicalDeviceFeatures))
+    {
+        mNativeExtensions.disjointTimerQuery = queueFamilyProperties.timestampValidBits > 0;
+        mNativeExtensions.queryCounterBitsTimeElapsed = queueFamilyProperties.timestampValidBits;
+        mNativeExtensions.queryCounterBitsTimestamp   = queueFamilyProperties.timestampValidBits;
+    }
 
     mNativeExtensions.textureFilterAnisotropic =
         mPhysicalDeviceFeatures.samplerAnisotropy && limitsVk.maxSamplerAnisotropy > 1.0f;

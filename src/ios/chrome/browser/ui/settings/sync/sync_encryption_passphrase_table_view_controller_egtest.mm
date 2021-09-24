@@ -29,7 +29,7 @@ using chrome_test_util::MatchInWindowWithNumber;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsLink;
 using chrome_test_util::SettingsMenuBackButton;
-using chrome_test_util::SyncSettingsConfirmButton;
+using chrome_test_util::AdvancedSyncSettingsDoneButtonMatcher;
 using chrome_test_util::PrimarySignInButton;
 
 namespace {
@@ -89,40 +89,6 @@ NSString* const kPassphrase = @"hello";
 
   [SigninEarlGrey signOut];
   [SigninEarlGrey verifySignedOut];
-}
-
-// Tests entering sync passphrase from the sign-in flow.
-- (void)testEnterSyncPassphraseInSignIn {
-  [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
-  // Access advanced settings sign-in.
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fakeIdentity];
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
-  [[EarlGrey selectElementWithMatcher:SettingsLink()] performAction:grey_tap()];
-
-  // Scroll to bottom of Manage Sync Settings, if necessary.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(grey_accessibilityID(
-                                kManageSyncTableViewAccessibilityIdentifier),
-                            grey_sufficientlyVisible(), nil)]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
-
-  // Select Encryption item.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(ButtonWithAccessibilityLabelId(
-                                              IDS_IOS_MANAGE_SYNC_ENCRYPTION),
-                                          grey_sufficientlyVisible(), nil)]
-      performAction:grey_tap()];
-
-  // Type and submit the sync passphrase.
-  [SigninEarlGreyUI submitSyncPassphrase:kPassphrase];
-
-  [[EarlGrey selectElementWithMatcher:SyncSettingsConfirmButton()]
-      performAction:grey_tap()];
-
-  // Test the user is signed in.
-  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 }
 
 // Tests Sync is on after opening settings from the Infobar and entering the

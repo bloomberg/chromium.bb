@@ -15,14 +15,13 @@
 #include "base/macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/account_manager_facade_factory.h"
 #include "chrome/browser/ash/child_accounts/secondary_account_consent_logger.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_features.h"
+#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/webui/chromeos/edu_coexistence/edu_coexistence_state_tracker.h"
 #include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
@@ -32,6 +31,7 @@
 #include "chromeos/dbus/util/version_loader.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_facade.h"
+#include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -264,16 +264,16 @@ void InlineLoginHandlerChromeOS::RegisterProfilePrefs(
 void InlineLoginHandlerChromeOS::RegisterMessages() {
   InlineLoginHandler::RegisterMessages();
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "showIncognito",
       base::BindRepeating(
           &InlineLoginHandlerChromeOS::ShowIncognitoAndCloseDialog,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getAccounts",
       base::BindRepeating(&InlineLoginHandlerChromeOS::GetAccountsInSession,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "skipWelcomePage",
       base::BindRepeating(&InlineLoginHandlerChromeOS::HandleSkipWelcomePage,
                           base::Unretained(this)));

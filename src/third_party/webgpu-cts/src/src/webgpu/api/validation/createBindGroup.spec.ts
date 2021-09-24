@@ -18,9 +18,10 @@ import {
   texBindingTypeInfo,
 } from '../../capability_info.js';
 import { GPUConst } from '../../constants.js';
+import { kResourceStates } from '../../gpu_test.js';
 import { getTextureDimensionFromView } from '../../util/texture/base.js';
 
-import { kResourceStates, ValidationTest } from './validation_test.js';
+import { ValidationTest } from './validation_test.js';
 
 function clone<T extends GPUTextureDescriptor>(descriptor: T): T {
   return JSON.parse(JSON.stringify(descriptor));
@@ -140,8 +141,8 @@ g.test('texture_binding_must_have_correct_usage')
       .combine('usage', kTextureUsages)
       .unless(({ entry, usage }) => {
         const info = texBindingTypeInfo(entry);
-        // Can't create the texture for this (usage=STORAGE and sampleCount=4), so skip.
-        return usage === GPUConst.TextureUsage.STORAGE && info.resource === 'sampledTexMS';
+        // Can't create the texture for this (usage=STORAGE_BINDING and sampleCount=4), so skip.
+        return usage === GPUConst.TextureUsage.STORAGE_BINDING && info.resource === 'sampledTexMS';
       })
   )
   .fn(async t => {
@@ -204,7 +205,7 @@ g.test('texture_must_have_correct_component_type')
     const goodDescriptor = {
       size: { width: 16, height: 16, depthOrArrayLayers: 1 },
       format,
-      usage: GPUTextureUsage.SAMPLED,
+      usage: GPUTextureUsage.TEXTURE_BINDING,
     };
 
     // Control case
@@ -278,7 +279,7 @@ g.test('texture_must_have_correct_dimension')
     const texture = t.device.createTexture({
       size: { width: 16, height, depthOrArrayLayers },
       format: 'rgba8unorm' as const,
-      usage: GPUTextureUsage.SAMPLED,
+      usage: GPUTextureUsage.TEXTURE_BINDING,
       dimension: getTextureDimensionFromView(dimension),
     });
 
@@ -498,7 +499,39 @@ g.test('bind_group_layout,device_mismatch')
     'Tests createBindGroup cannot be called with a bind group layout created from another device'
   )
   .paramsSubcasesOnly(u => u.combine('mismatched', [true, false]))
-  .unimplemented();
+  .fn(async t => {
+    const mismatched = t.params.mismatched;
+
+    if (mismatched) {
+      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
+    }
+
+    const descriptor = {
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUConst.ShaderStage.VERTEX,
+          buffer: {},
+        },
+      ],
+    };
+
+    const bgl = mismatched
+      ? t.mismatchedDevice.createBindGroupLayout(descriptor)
+      : t.device.createBindGroupLayout(descriptor);
+
+    t.expectValidationError(() => {
+      t.device.createBindGroup({
+        layout: bgl,
+        entries: [
+          {
+            binding: 0,
+            resource: { buffer: t.getUniformBuffer() },
+          },
+        ],
+      });
+    }, mismatched);
+  });
 
 g.test('binding_resources,device_mismatch')
   .desc(
@@ -507,21 +540,69 @@ g.test('binding_resources,device_mismatch')
     Test with two resources to make sure all resources can be validated:
     - resource0 and resource1 from same device
     - resource0 and resource1 from different device
+
+    TODO: test GPUExternalTexture as a resource
     `
   )
-  .paramsSubcasesOnly(u =>
+  .params(u =>
     u
-      .combine('bindingResource', [
-        'buffer',
-        'sampler',
-        'texture',
-        'storageTexture',
-        'externalTexture',
+      .combine('entry', [
+        { buffer: { type: 'storage' } },
+        { sampler: { type: 'filtering' } },
+        { texture: { multisampled: false } },
+        { storageTexture: { access: 'write-only', format: 'rgba8unorm' } },
       ] as const)
+      .beginSubcases()
       .combineWithParams([
         { resource0Mismatched: false, resource1Mismatched: false }, //control case
         { resource0Mismatched: true, resource1Mismatched: false },
         { resource0Mismatched: false, resource1Mismatched: true },
       ])
   )
-  .unimplemented();
+  .fn(async t => {
+    const { entry, resource0Mismatched, resource1Mismatched } = t.params;
+
+    if (resource0Mismatched || resource1Mismatched) {
+      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
+    }
+
+    const info = bindingTypeInfo(entry);
+
+    const resource0 = resource0Mismatched
+      ? t.getDeviceMismatchedBindingResource(info.resource)
+      : t.getBindingResource(info.resource);
+    const resource1 = resource1Mismatched
+      ? t.getDeviceMismatchedBindingResource(info.resource)
+      : t.getBindingResource(info.resource);
+
+    const bgl = t.device.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: info.validStages,
+          ...entry,
+        },
+        {
+          binding: 1,
+          visibility: info.validStages,
+          ...entry,
+        },
+      ],
+    });
+
+    t.expectValidationError(() => {
+      t.device.createBindGroup({
+        layout: bgl,
+        entries: [
+          {
+            binding: 0,
+            resource: resource0,
+          },
+          {
+            binding: 1,
+            resource: resource1,
+          },
+        ],
+      });
+    }, resource0Mismatched || resource1Mismatched);
+  });

@@ -13,9 +13,12 @@
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "ui/aura/window.h"
 
 class Profile;
+
+namespace aura {
+class Window;
+}
 
 namespace apps {
 
@@ -110,6 +113,12 @@ std::string GetAppTypeHistogramNameV2(apps::AppTypeNameV2 app_type_name);
 
 const std::set<apps::AppTypeName>& GetAppTypeNameSet();
 
+// Returns AppTypeName used for app launch metrics.
+apps::AppTypeName GetAppTypeName(Profile* profile,
+                                 apps::mojom::AppType app_type,
+                                 const std::string& app_id,
+                                 apps::mojom::LaunchContainer container);
+
 // Records metrics when launching apps.
 void RecordAppLaunchMetrics(Profile* profile,
                             apps::mojom::AppType app_type,
@@ -179,6 +188,22 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
     std::string app_id;
   };
 
+  struct UsageTime {
+    base::TimeDelta running_time;
+    ukm::SourceId source_id = ukm::kInvalidSourceId;
+    AppTypeName app_type_name = AppTypeName::kUnknown;
+    bool window_is_closed = false;
+  };
+
+  struct BrowserToTab {
+    BrowserToTab(const Instance::InstanceKey& browser_key,
+                 const Instance::InstanceKey& tab_key);
+    Instance::InstanceKey browser_key;
+    Instance::InstanceKey tab_key;
+  };
+
+  using BrowserToTabs = std::list<BrowserToTab>;
+
   // AppRegistryCache::Observer:
   void OnAppTypeInitialized(apps::mojom::AppType app_type) override;
   void OnAppRegistryCacheWillBeDestroyed(
@@ -189,6 +214,33 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   void OnInstanceUpdate(const apps::InstanceUpdate& update) override;
   void OnInstanceRegistryWillBeDestroyed(
       apps::InstanceRegistry* cache) override;
+
+  // Updates the browser window status when the web app tab of `tab_key` is
+  // inactivated.
+  void UpdateBrowserWindowStatus(const Instance::InstanceKey& tab_key);
+
+  // Returns true if the browser with `browser_key` has activated tabs.
+  // Otherwise, returns false.
+  bool HasActivatedTab(const Instance::InstanceKey& browser_key);
+
+  // Returns the browser window for `tab_key`.
+  aura::Window* GetBrowserWindow(const Instance::InstanceKey& tab_key) const;
+
+  // Adds an activated `browser_key` and `tab_key` to `active_browser_to_tabs_`.
+  void AddActivatedTab(const Instance::InstanceKey& browser_key,
+                       const Instance::InstanceKey& tab_key);
+
+  // Removes `tab_key` from `active_browser_to_tabs_`.
+  void RemoveActivatedTab(const Instance::InstanceKey& tab_key);
+
+  void SetWindowActivated(apps::mojom::AppType app_type,
+                          AppTypeName app_type_name,
+                          AppTypeNameV2 app_type_name_v2,
+                          const std::string& app_id,
+                          const apps::Instance::InstanceKey& instance_key);
+  void SetWindowInActivated(const std::string& app_id,
+                            const apps::Instance::InstanceKey& instance_key,
+                            apps::InstanceState state);
 
   void InitRunningDuration();
   void ClearRunningDuration();
@@ -217,6 +269,9 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   // Returns the SourceId of UKM for `app_id`.
   ukm::SourceId GetSourceId(const std::string& app_id);
 
+  // Records the previous app readiness status.
+  void RecordAppReadinessStatus(const apps::AppUpdate& update);
+
   Profile* const profile_ = nullptr;
 
   AppRegistryCache& app_registry_cache_;
@@ -228,26 +283,26 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
 
   int user_type_by_device_type_;
 
-  std::map<std::string, ukm::SourceId> app_id_to_source_id_;
+  // Records the map from browsers to activated web apps tabs.
+  BrowserToTabs active_browsers_to_tabs_;
 
   // |running_start_time_| and |running_duration_| are used for accumulating app
   // running duration per each day interval.
-  std::map<aura::Window*, RunningStartTime> running_start_time_;
+  std::map<apps::Instance::InstanceKey, RunningStartTime> running_start_time_;
   std::map<AppTypeName, base::TimeDelta> running_duration_;
   std::map<AppTypeName, int> activated_count_;
 
   // |start_time_per_five_minutes_|, |app_type_running_time_per_five_minutes_|,
   // |app_type_v2_running_time_per_five_minutes_|, and
-  // |app_id_running_time_per_five_minutes_| are used for accumulating app
+  // |usage_time_per_five_minutes_| are used for accumulating app
   // running duration per 5 minutes interval.
-  std::map<aura::Window*, RunningStartTime> start_time_per_five_minutes_;
+  std::map<apps::Instance::InstanceKey, RunningStartTime>
+      start_time_per_five_minutes_;
   std::map<AppTypeName, base::TimeDelta>
       app_type_running_time_per_five_minutes_;
   std::map<AppTypeNameV2, base::TimeDelta>
       app_type_v2_running_time_per_five_minutes_;
-  std::map<std::string, base::TimeDelta> app_id_running_time_per_five_minutes_;
-
-  std::set<apps::mojom::AppType> initialized_app_types;
+  std::map<apps::Instance::InstanceKey, UsageTime> usage_time_per_five_minutes_;
 };
 
 }  // namespace apps

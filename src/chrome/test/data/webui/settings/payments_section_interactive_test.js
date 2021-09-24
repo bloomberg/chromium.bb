@@ -9,7 +9,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PaymentsManagerImpl} from 'chrome://settings/lazy_load.js';
 import {createCreditCardEntry, createEmptyCreditCardEntry, TestPaymentsManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
-import {eventToPromise, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
+import {eventToPromise, isVisible, whenAttributeIs} from 'chrome://test/test_util.js';
 // clang-format on
 
 /**
@@ -36,7 +36,7 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     // Override the PaymentsManagerImpl for testing.
     const paymentsManager = new TestPaymentsManager();
     paymentsManager.data.creditCards = creditCards;
-    PaymentsManagerImpl.instance_ = paymentsManager;
+    PaymentsManagerImpl.setInstance(paymentsManager);
 
     const section = document.createElement('settings-payments-section');
     document.body.appendChild(section);

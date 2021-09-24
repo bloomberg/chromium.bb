@@ -28,8 +28,8 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -415,7 +415,7 @@ class WebAppFrameToolbarBrowserTest_WindowControlsOverlay
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"A minimal-ui app";
     web_app_info->display_mode = web_app::DisplayMode::kStandalone;
-    web_app_info->open_as_window = true;
+    web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
     web_app_info->display_override = display_overrides;
 
     return helper()->InstallAndLaunchCustomWebApp(

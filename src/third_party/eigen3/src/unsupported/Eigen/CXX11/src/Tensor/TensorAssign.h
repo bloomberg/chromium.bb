@@ -104,14 +104,14 @@ struct TensorEvaluator<const TensorAssignOp<LeftArgType, RightArgType>, Device>
   static const int NumDims = XprType::NumDims;
 
   enum {
-    IsAligned         = TensorEvaluator<LeftArgType, Device>::IsAligned &
-                        TensorEvaluator<RightArgType, Device>::IsAligned,
-    PacketAccess      = TensorEvaluator<LeftArgType, Device>::PacketAccess &
-                        TensorEvaluator<RightArgType, Device>::PacketAccess,
-    BlockAccess       = TensorEvaluator<LeftArgType, Device>::BlockAccess &
-                        TensorEvaluator<RightArgType, Device>::BlockAccess,
-    PreferBlockAccess = TensorEvaluator<LeftArgType, Device>::PreferBlockAccess |
-                        TensorEvaluator<RightArgType, Device>::PreferBlockAccess,
+    IsAligned         = int(TensorEvaluator<LeftArgType, Device>::IsAligned) &
+                        int(TensorEvaluator<RightArgType, Device>::IsAligned),
+    PacketAccess      = int(TensorEvaluator<LeftArgType, Device>::PacketAccess) &
+                        int(TensorEvaluator<RightArgType, Device>::PacketAccess),
+    BlockAccess       = int(TensorEvaluator<LeftArgType, Device>::BlockAccess) &
+                        int(TensorEvaluator<RightArgType, Device>::BlockAccess),
+    PreferBlockAccess = int(TensorEvaluator<LeftArgType, Device>::PreferBlockAccess) |
+                        int(TensorEvaluator<RightArgType, Device>::PreferBlockAccess),
     Layout            = TensorEvaluator<LeftArgType, Device>::Layout,
     RawAccess         = TensorEvaluator<LeftArgType, Device>::RawAccess
   };
@@ -124,7 +124,7 @@ struct TensorEvaluator<const TensorAssignOp<LeftArgType, RightArgType>, Device>
       RightTensorBlock;
   //===--------------------------------------------------------------------===//
 
-  EIGEN_DEVICE_FUNC TensorEvaluator(const XprType& op, const Device& device) :
+  TensorEvaluator(const XprType& op, const Device& device) :
       m_leftImpl(op.lhsExpression(), device),
       m_rightImpl(op.rhsExpression(), device)
   {
@@ -142,7 +142,7 @@ struct TensorEvaluator<const TensorAssignOp<LeftArgType, RightArgType>, Device>
     return m_rightImpl.dimensions();
   }
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(EvaluatorPointerType) {
+  EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(EvaluatorPointerType) {
     eigen_assert(dimensions_match(m_leftImpl.dimensions(), m_rightImpl.dimensions()));
     m_leftImpl.evalSubExprsIfNeeded(NULL);
     // If the lhs provides raw access to its storage area (i.e. if m_leftImpl.data() returns a non
@@ -154,7 +154,7 @@ struct TensorEvaluator<const TensorAssignOp<LeftArgType, RightArgType>, Device>
 
 #ifdef EIGEN_USE_THREADS
   template <typename EvalSubExprsCallback>
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void evalSubExprsIfNeededAsync(
+  EIGEN_STRONG_INLINE void evalSubExprsIfNeededAsync(
       EvaluatorPointerType, EvalSubExprsCallback done) {
     m_leftImpl.evalSubExprsIfNeededAsync(nullptr, [this, done](bool) {
       m_rightImpl.evalSubExprsIfNeededAsync(
@@ -163,7 +163,7 @@ struct TensorEvaluator<const TensorAssignOp<LeftArgType, RightArgType>, Device>
   }
 #endif  // EIGEN_USE_THREADS
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void cleanup() {
+  EIGEN_STRONG_INLINE void cleanup() {
     m_leftImpl.cleanup();
     m_rightImpl.cleanup();
   }

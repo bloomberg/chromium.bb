@@ -41,19 +41,29 @@ IrEmitterNested::IrEmitterNested(const HloModuleConfig& hlo_module_config,
     : IrEmitter(hlo_module_config, ir_emitter_context, /*is_nested=*/true),
       nested_computation_(nested_computation) {}
 
+StatusOr<std::unique_ptr<IrEmitterNested>> IrEmitterNested::Create(
+    const HloModuleConfig& hlo_module_config,
+    const HloComputation& nested_computation,
+    IrEmitterContext* ir_emitter_context) {
+  std::unique_ptr<IrEmitterNested> emitter(new IrEmitterNested(
+      hlo_module_config, nested_computation, ir_emitter_context));
+  TF_RETURN_IF_ERROR(emitter->EmitConstants(nested_computation));
+  return emitter;
+}
+
 // Nested function serves the same purpose on GPU as a thread-local function on
 // a CPU.
 Status IrEmitterNested::CodegenNestedComputation() {
   std::vector<const HloInstruction*> io_hlos;
   std::vector<llvm::Type*> argument_types;
-  std::vector<int64> argument_dereferenceable_bytes;
+  std::vector<int64_t> argument_dereferenceable_bytes;
   for (const HloInstruction* param :
        nested_computation_.parameter_instructions()) {
     io_hlos.push_back(param);
     const Shape& param_shape = param->shape();
     argument_types.push_back(
         llvm_ir::ShapeToIrType(param_shape, module_)->getPointerTo());
-    int64 param_size =
+    int64_t param_size =
         llvm_ir::ByteSizeOf(param_shape, module_->getDataLayout());
     argument_dereferenceable_bytes.push_back(param_size);
   }
@@ -63,12 +73,10 @@ Status IrEmitterNested::CodegenNestedComputation() {
     const Shape& root_shape = root->shape();
     argument_types.push_back(
         llvm_ir::ShapeToIrType(root_shape, module_)->getPointerTo());
-    int64 root_size = llvm_ir::ByteSizeOf(
+    int64_t root_size = llvm_ir::ByteSizeOf(
         root_shape, ir_emitter_context_->llvm_module()->getDataLayout());
     argument_dereferenceable_bytes.push_back(root_size);
   }
-  // The base pointer of the memory block for all pre-allocated temp buffers.
-  argument_types.push_back(b_.getInt8PtrTy());
 
   llvm::FunctionType* function_type =
       llvm::FunctionType::get(b_.getVoidTy(), argument_types, false);
@@ -81,9 +89,9 @@ Status IrEmitterNested::CodegenNestedComputation() {
       ir_emitter_context_->llvm_module());   // The parent LLVM module.
   for (size_t arg_no = 0; arg_no < argument_dereferenceable_bytes.size();
        ++arg_no) {
-    int64 arg_size = argument_dereferenceable_bytes[arg_no];
+    int64_t arg_size = argument_dereferenceable_bytes[arg_no];
     if (arg_size > 0) {
-      function->addDereferenceableAttr(arg_no + 1, arg_size);
+      function->addDereferenceableParamAttr(arg_no, arg_size);
     }
   }
 
@@ -119,8 +127,8 @@ Status IrEmitterNested::CodegenNestedComputation() {
     llvm::Value* root_value = bindings_.GetBasePointer(*root_instruction);
     const Shape& return_shape = root_instruction->shape();
 
-    // Second last argument is the out parameter.
-    llvm::Argument* out_parameter = std::prev(function->arg_end(), 2);
+    // Last argument is the out parameter.
+    llvm::Argument* out_parameter = std::prev(function->arg_end(), 1);
 
     if (ShapeUtil::IsScalar(return_shape)) {
       llvm::Value* ret_value = Load(root_value, "load_ret_value");

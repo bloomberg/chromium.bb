@@ -41,6 +41,9 @@ class FakeNearbyShareSettingsObserver
     : public nearby_share::mojom::NearbyShareSettingsObserver {
  public:
   void OnEnabledChanged(bool enabled) override { this->enabled = enabled; }
+  void OnFastInitiationNotificationEnabledChanged(bool enabled) override {
+    this->fast_initiation_notification_enabled = enabled;
+  }
   void OnDeviceNameChanged(const std::string& device_name) override {
     this->device_name = device_name;
   }
@@ -55,8 +58,13 @@ class FakeNearbyShareSettingsObserver
       const std::vector<std::string>& allowed_contacts) override {
     this->allowed_contacts = allowed_contacts;
   }
+  void OnIsOnboardingCompleteChanged(bool is_complete) override {
+    this->is_onboarding_complete = is_complete;
+  }
 
   bool enabled = false;
+  bool fast_initiation_notification_enabled = true;
+  bool is_onboarding_complete = false;
   std::string device_name = "uncalled";
   nearby_share::mojom::DataUsage data_usage =
       nearby_share::mojom::DataUsage::kUnknown;
@@ -90,6 +98,11 @@ class NearbyShareSettingsTest : public ::testing::Test {
 
   NearbyShareSettingsAsyncWaiter* settings_waiter() {
     return nearby_share_settings_waiter_.get();
+  }
+
+  void SetIsOnboardingComplete(bool is_complete) {
+    pref_service_.SetBoolean(prefs::kNearbySharingOnboardingCompletePrefName,
+                             is_complete);
   }
 
  protected:
@@ -129,6 +142,31 @@ TEST_F(NearbyShareSettingsTest, GetAndSetEnabled) {
   FlushMojoMessages();
   // the observers's value should not have been updated.
   EXPECT_EQ(true, observer_.enabled);
+}
+
+TEST_F(NearbyShareSettingsTest, GetAndSetFastInitiationNotificationEnabled) {
+  // Fast init notifications are enabled by default.
+  EXPECT_TRUE(observer_.fast_initiation_notification_enabled);
+  settings()->SetFastInitiationNotificationEnabled(false);
+  EXPECT_FALSE(settings()->GetFastInitiationNotificationEnabled());
+  FlushMojoMessages();
+  EXPECT_FALSE(observer_.fast_initiation_notification_enabled);
+
+  bool enabled = true;
+  settings_waiter()->GetFastInitiationNotificationEnabled(&enabled);
+  EXPECT_FALSE(enabled);
+}
+
+TEST_F(NearbyShareSettingsTest, GetAndSetIsOnboardingComplete) {
+  EXPECT_FALSE(observer_.is_onboarding_complete);
+  SetIsOnboardingComplete(true);
+  EXPECT_TRUE(settings()->IsOnboardingComplete());
+  FlushMojoMessages();
+  EXPECT_TRUE(observer_.is_onboarding_complete);
+
+  bool is_complete = false;
+  settings_waiter()->IsOnboardingComplete(&is_complete);
+  EXPECT_TRUE(is_complete);
 }
 
 TEST_F(NearbyShareSettingsTest, ValidateDeviceName) {

@@ -4,6 +4,7 @@
 
 #include "ash/quick_answers/quick_answers_ui_controller.h"
 
+#include "ash/components/quick_answers/quick_answers_model.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/public/cpp/new_window_delegate.h"
@@ -15,7 +16,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/escape.h"
@@ -24,12 +24,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 
-using chromeos::quick_answers::QuickAnswer;
-using chromeos::quick_answers::QuickAnswersExitPoint;
-
 namespace ash {
 
 namespace {
+
+using quick_answers::QuickAnswer;
+using quick_answers::QuickAnswersExitPoint;
 
 constexpr char kGoogleSearchUrlPrefix[] = "https://www.google.com/search?q=";
 
@@ -71,7 +71,7 @@ void QuickAnswersUiController::OnQuickAnswersViewPressed() {
   controller_->DismissQuickAnswers(QuickAnswersExitPoint::kQuickAnswersClick);
 
   if (chromeos::features::IsQuickAnswersV2Enabled()) {
-    NewWindowDelegate::GetInstance()->NewTabWithUrl(
+    NewWindowDelegate::GetInstance()->OpenUrl(
         GURL(kGoogleSearchUrlPrefix +
              net::EscapeUrlEncodedData(query_, /*use_plus=*/true)),
         /*from_user_interaction=*/true);

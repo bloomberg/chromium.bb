@@ -44,6 +44,12 @@ namespace rtc {
 
 namespace {
 
+IPAddress IPFromString(const std::string& str) {
+  IPAddress ip;
+  RTC_CHECK(IPFromString(str, &ip));
+  return ip;
+}
+
 class FakeNetworkMonitor : public NetworkMonitorInterface {
  public:
   void Start() override { started_ = true; }
@@ -367,7 +373,7 @@ TEST_F(NetworkTest, DISABLED_TestCreateNetworks) {
     IPAddress ip = (*it)->GetBestIP();
     SocketAddress bindaddress(ip, 0);
     bindaddress.SetScopeID((*it)->scope_id());
-    // TODO(thaloun): Use rtc::AsyncSocket once it supports IPv6.
+    // TODO(thaloun): Use rtc::Socket once it supports IPv6.
     int fd = static_cast<int>(socket(ip.family(), SOCK_STREAM, IPPROTO_TCP));
     if (fd > 0) {
       size_t ipsize = bindaddress.ToSockAddrStorage(&storage);
@@ -1349,5 +1355,83 @@ TEST_F(NetworkTest, WebRTC_BindUsingInterfaceName) {
             NetworkBindingResult::SUCCESS);
 }
 #endif
+
+TEST_F(NetworkTest, NetworkCostVpn_Default) {
+  IPAddress ip1;
+  EXPECT_TRUE(IPFromString("2400:4030:1:2c00:be30:0:0:1", &ip1));
+
+  Network* net1 = new Network("em1", "em1", TruncateIP(ip1, 64), 64);
+  net1->set_type(ADAPTER_TYPE_VPN);
+  net1->set_underlying_type_for_vpn(ADAPTER_TYPE_ETHERNET);
+
+  Network* net2 = new Network("em1", "em1", TruncateIP(ip1, 64), 64);
+  net2->set_type(ADAPTER_TYPE_ETHERNET);
+
+  EXPECT_EQ(net1->GetCost(), net2->GetCost());
+  delete net1;
+  delete net2;
+}
+
+TEST_F(NetworkTest, NetworkCostVpn_VpnMoreExpensive) {
+  webrtc::test::ScopedFieldTrials field_trials(
+      "WebRTC-AddNetworkCostToVpn/Enabled/");
+
+  IPAddress ip1;
+  EXPECT_TRUE(IPFromString("2400:4030:1:2c00:be30:0:0:1", &ip1));
+
+  Network* net1 = new Network("em1", "em1", TruncateIP(ip1, 64), 64);
+  net1->set_type(ADAPTER_TYPE_VPN);
+  net1->set_underlying_type_for_vpn(ADAPTER_TYPE_ETHERNET);
+
+  Network* net2 = new Network("em1", "em1", TruncateIP(ip1, 64), 64);
+  net2->set_type(ADAPTER_TYPE_ETHERNET);
+
+  EXPECT_GT(net1->GetCost(), net2->GetCost());
+  delete net1;
+  delete net2;
+}
+
+TEST_F(NetworkTest, VpnList) {
+  {
+    BasicNetworkManager manager;
+    manager.set_vpn_list({NetworkMask(IPFromString("192.168.0.0"), 16)});
+    manager.StartUpdating();
+    EXPECT_TRUE(manager.IsConfiguredVpn(IPFromString("192.168.1.1"), 32));
+    EXPECT_TRUE(manager.IsConfiguredVpn(IPFromString("192.168.12.1"), 24));
+    EXPECT_TRUE(manager.IsConfiguredVpn(IPFromString("192.168.0.0"), 16));
+    EXPECT_TRUE(manager.IsConfiguredVpn(IPFromString("192.168.0.0"), 24));
+    EXPECT_FALSE(manager.IsConfiguredVpn(IPFromString("192.133.1.1"), 32));
+    EXPECT_FALSE(manager.IsConfiguredVpn(IPFromString("192.133.0.0"), 16));
+    EXPECT_FALSE(manager.IsConfiguredVpn(IPFromString("192.168.0.0"), 15));
+  }
+  {
+    BasicNetworkManager manager;
+    manager.set_vpn_list({NetworkMask(IPFromString("192.168.0.0"), 24)});
+    manager.StartUpdating();
+    EXPECT_FALSE(manager.IsConfiguredVpn(IPFromString("192.168.1.1"), 32));
+    EXPECT_TRUE(manager.IsConfiguredVpn(IPFromString("192.168.0.1"), 32));
+  }
+}
+
+#if defined(WEBRTC_POSIX)
+// TODO(webrtc:13114): Implement the InstallIpv4Network for windows.
+TEST_F(NetworkTest, VpnListOverrideAdapterType) {
+  BasicNetworkManager manager;
+  manager.set_vpn_list({NetworkMask(IPFromString("192.168.0.0"), 16)});
+  manager.StartUpdating();
+
+  char if_name[20] = "eth0";
+  auto addr_list =
+      InstallIpv4Network(if_name, "192.168.1.23", "255.255.255.255", manager);
+
+  BasicNetworkManager::NetworkList list;
+  manager.GetNetworks(&list);
+  ASSERT_EQ(1u, list.size());
+  EXPECT_EQ(ADAPTER_TYPE_VPN, list[0]->type());
+  EXPECT_EQ(ADAPTER_TYPE_ETHERNET, list[0]->underlying_type_for_vpn());
+  ClearNetworks(manager);
+  ReleaseIfAddrs(addr_list);
+}
+#endif  // defined(WEBRTC_POSIX)
 
 }  // namespace rtc

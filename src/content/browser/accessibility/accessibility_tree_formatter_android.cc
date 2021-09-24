@@ -109,12 +109,6 @@ base::Value AccessibilityTreeFormatterAndroid::BuildTree(
   return std::move(dict);
 }
 
-base::Value AccessibilityTreeFormatterAndroid::BuildTreeForWindow(
-    gfx::AcceleratedWidget widget) const {
-  NOTREACHED();
-  return base::Value(base::Value::Type::DICTIONARY);
-}
-
 base::Value AccessibilityTreeFormatterAndroid::BuildTreeForSelector(
     const AXTreeSelector& selector) const {
   NOTREACHED();
@@ -265,8 +259,8 @@ std::string AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
 
   for (unsigned i = 0; i < base::size(BOOL_ATTRIBUTES); i++) {
     const char* attribute_name = BOOL_ATTRIBUTES[i];
-    bool value;
-    if (dict.GetBoolean(attribute_name, &value) && value)
+    absl::optional<bool> value = dict.FindBoolPath(attribute_name);
+    if (value && *value)
       WriteAttribute(true, attribute_name, &line);
   }
 
@@ -289,8 +283,8 @@ std::string AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
 
   for (unsigned i = 0; i < base::size(ACTION_ATTRIBUTES); i++) {
     const char* attribute_name = ACTION_ATTRIBUTES[i];
-    bool value;
-    if (dict.GetBoolean(attribute_name, &value) && value) {
+    absl::optional<bool> value = dict.FindBoolPath(attribute_name);
+    if (value && *value) {
       WriteAttribute(false /* Exclude actions by default */, attribute_name,
                      &line);
     }

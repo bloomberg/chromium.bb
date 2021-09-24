@@ -16,8 +16,8 @@
 #include "include/sksl/DSLCore.h"
 #include "src/sksl/SkSLASTFile.h"
 #include "src/sksl/SkSLASTNode.h"
-#include "src/sksl/SkSLErrorReporter.h"
 #include "src/sksl/SkSLLexer.h"
+#include "src/sksl/SkSLPosition.h"
 
 namespace SkSL {
 
@@ -40,15 +40,6 @@ public:
         ORIGIN_UPPER_LEFT,
         BLEND_SUPPORT_ALL_EQUATIONS,
         PUSH_CONSTANT,
-        POINTS,
-        LINES,
-        LINE_STRIP,
-        LINES_ADJACENCY,
-        TRIANGLES,
-        TRIANGLE_STRIP,
-        TRIANGLES_ADJACENCY,
-        MAX_VERTICES,
-        INVOCATIONS,
         SRGB_UNPREMUL,
     };
 
@@ -286,24 +277,20 @@ private:
     private:
         class ForwardingErrorReporter : public ErrorReporter {
         public:
-            void handleError(const char* msg, dsl::PositionInfo pos) override {
+            void handleError(skstd::string_view msg, PositionInfo pos) override {
                 fErrors.push_back({String(msg), pos});
-            }
-
-            int errorCount() override {
-                return fErrors.count();
             }
 
             void forwardErrors(ErrorReporter& target) {
                 for (Error& error : fErrors) {
-                    target.handleError(error.fMsg.c_str(), error.fPos);
+                    target.error(error.fMsg.c_str(), error.fPos);
                 }
             }
 
         private:
             struct Error {
                 String fMsg;
-                dsl::PositionInfo fPos;
+                PositionInfo fPos;
             };
 
             SkTArray<Error> fErrors;

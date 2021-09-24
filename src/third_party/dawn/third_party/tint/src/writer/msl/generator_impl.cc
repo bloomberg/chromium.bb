@@ -55,7 +55,17 @@
 #include "src/sem/variable.h"
 #include "src/sem/vector_type.h"
 #include "src/sem/void_type.h"
-#include "src/transform/msl.h"
+#include "src/transform/array_length_from_uniform.h"
+#include "src/transform/canonicalize_entry_point_io.h"
+#include "src/transform/external_texture_transform.h"
+#include "src/transform/inline_pointer_lets.h"
+#include "src/transform/manager.h"
+#include "src/transform/module_scope_var_to_entry_point_param.h"
+#include "src/transform/pad_array_elements.h"
+#include "src/transform/promote_initializers_to_const_var.h"
+#include "src/transform/simplify.h"
+#include "src/transform/wrap_arrays_in_structs.h"
+#include "src/transform/zero_init_workgroup_memory.h"
 #include "src/utils/defer.h"
 #include "src/utils/get_or_create.h"
 #include "src/utils/scoped_assignment.h"
@@ -103,19 +113,66 @@ class ScopedBitCast {
 };
 }  // namespace
 
+SanitizedResult Sanitize(const Program* in,
+                         uint32_t buffer_size_ubo_index,
+                         uint32_t fixed_sample_mask,
+                         bool emit_vertex_point_size,
+                         bool disable_workgroup_init) {
+  transform::Manager manager;
+  transform::DataMap internal_inputs;
+
+  // Build the configs for the internal transforms.
+  auto array_length_from_uniform_cfg =
+      transform::ArrayLengthFromUniform::Config(
+          sem::BindingPoint{0, buffer_size_ubo_index});
+  auto entry_point_io_cfg = transform::CanonicalizeEntryPointIO::Config(
+      transform::CanonicalizeEntryPointIO::ShaderStyle::kMsl, fixed_sample_mask,
+      emit_vertex_point_size);
+
+  // Use the SSBO binding numbers as the indices for the buffer size lookups.
+  for (auto* var : in->AST().GlobalVariables()) {
+    auto* global = in->Sem().Get<sem::GlobalVariable>(var);
+    if (global && global->StorageClass() == ast::StorageClass::kStorage) {
+      array_length_from_uniform_cfg.bindpoint_to_size_index.emplace(
+          global->BindingPoint(), global->BindingPoint().binding);
+    }
+  }
+
+  if (!disable_workgroup_init) {
+    // ZeroInitWorkgroupMemory must come before CanonicalizeEntryPointIO as
+    // ZeroInitWorkgroupMemory may inject new builtin parameters.
+    manager.Add<transform::ZeroInitWorkgroupMemory>();
+  }
+  manager.Add<transform::CanonicalizeEntryPointIO>();
+  manager.Add<transform::ExternalTextureTransform>();
+  manager.Add<transform::PromoteInitializersToConstVar>();
+  manager.Add<transform::WrapArraysInStructs>();
+  manager.Add<transform::PadArrayElements>();
+  manager.Add<transform::ModuleScopeVarToEntryPointParam>();
+  manager.Add<transform::InlinePointerLets>();
+  manager.Add<transform::Simplify>();
+  // ArrayLengthFromUniform must come after InlinePointerLets and Simplify, as
+  // it assumes that the form of the array length argument is &var.array.
+  manager.Add<transform::ArrayLengthFromUniform>();
+  internal_inputs.Add<transform::ArrayLengthFromUniform::Config>(
+      std::move(array_length_from_uniform_cfg));
+  internal_inputs.Add<transform::CanonicalizeEntryPointIO::Config>(
+      std::move(entry_point_io_cfg));
+  auto out = manager.Run(in, internal_inputs);
+  if (!out.program.IsValid()) {
+    return {std::move(out.program)};
+  }
+
+  return {std::move(out.program),
+          out.data.Get<transform::ArrayLengthFromUniform::Result>()
+              ->needs_buffer_sizes};
+}
+
 GeneratorImpl::GeneratorImpl(const Program* program) : TextGenerator(program) {}
 
 GeneratorImpl::~GeneratorImpl() = default;
 
 bool GeneratorImpl::Generate() {
-  if (!program_->HasTransformApplied<transform::Msl>()) {
-    diagnostics_.add_error(
-        diag::System::Writer,
-        "MSL writer requires the transform::Msl sanitizer to have been "
-        "applied to the input program");
-    return false;
-  }
-
   line() << "#include <metal_stdlib>";
   line();
   line() << "using namespace metal;";
@@ -633,6 +690,9 @@ bool GeneratorImpl::EmitAtomicCall(std::ostream& out,
 
     case sem::IntrinsicType::kAtomicAdd:
       return call("atomic_fetch_add_explicit", true);
+
+    case sem::IntrinsicType::kAtomicSub:
+      return call("atomic_fetch_sub_explicit", true);
 
     case sem::IntrinsicType::kAtomicMax:
       return call("atomic_fetch_max_explicit", true);
@@ -1599,17 +1659,22 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
       if (type->Is<sem::Struct>()) {
         out << " [[stage_in]]";
       } else if (var->type()->is_handle()) {
-        auto* binding =
-            ast::GetDecoration<ast::BindingDecoration>(var->decorations());
-        if (binding == nullptr) {
+        auto bp = var->binding_point();
+        if (bp.group == nullptr || bp.binding == nullptr) {
           TINT_ICE(Writer, diagnostics_)
-              << "missing binding attribute for entry point parameter";
+              << "missing binding attributes for entry point parameter";
+          return false;
+        }
+        if (bp.group->value() != 0) {
+          TINT_ICE(Writer, diagnostics_)
+              << "encountered non-zero resource group index (use "
+                 "BindingRemapper to fix)";
           return false;
         }
         if (var->type()->Is<ast::Sampler>()) {
-          out << " [[sampler(" << binding->value() << ")]]";
+          out << " [[sampler(" << bp.binding->value() << ")]]";
         } else if (var->type()->Is<ast::Texture>()) {
-          out << " [[texture(" << binding->value() << ")]]";
+          out << " [[texture(" << bp.binding->value() << ")]]";
         } else {
           TINT_ICE(Writer, diagnostics_)
               << "invalid handle type entry point parameter";
@@ -2299,12 +2364,32 @@ bool GeneratorImpl::EmitStorageClass(std::ostream& out, ast::StorageClass sc) {
 bool GeneratorImpl::EmitPackedType(std::ostream& out,
                                    const sem::Type* type,
                                    const std::string& name) {
-  if (auto* vec = type->As<sem::Vector>()) {
+  auto* vec = type->As<sem::Vector>();
+  if (vec && vec->Width() == 3) {
     out << "packed_";
-    if (!EmitType(out, vec->type(), "")) {
+    if (!EmitType(out, vec, "")) {
       return false;
     }
-    out << vec->Width();
+
+    if (vec->is_float_vector() && !matrix_packed_vector_overloads_) {
+      // Overload operators for matrix-vector arithmetic where the vector
+      // operand is packed, as these overloads to not exist in the metal
+      // namespace.
+      TextBuffer b;
+      TINT_DEFER(helpers_.Append(b));
+      line(&b) << R"(template<typename T, int N, int M>
+inline auto operator*(matrix<T, N, M> lhs, packed_vec<T, N> rhs) {
+  return lhs * vec<T, N>(rhs);
+}
+
+template<typename T, int N, int M>
+inline auto operator*(packed_vec<T, M> lhs, matrix<T, N, M> rhs) {
+  return vec<T, M>(lhs) * rhs;
+}
+)";
+      matrix_packed_vector_overloads_ = true;
+    }
+
     return true;
   }
 
@@ -2629,7 +2714,6 @@ bool GeneratorImpl::EmitProgramConstVariable(const ast::Variable* var) {
   return true;
 }
 
-// TODO(crbug.com/tint/898): We need CTS and / or Dawn e2e tests for this logic.
 GeneratorImpl::SizeAndAlign GeneratorImpl::MslPackedTypeSizeAndAlign(
     const sem::Type* ty) {
   if (ty->IsAnyOf<sem::U32, sem::I32, sem::F32>()) {
@@ -2639,12 +2723,19 @@ GeneratorImpl::SizeAndAlign GeneratorImpl::MslPackedTypeSizeAndAlign(
   }
 
   if (auto* vec = ty->As<sem::Vector>()) {
-    // https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
-    // 2.2.3 Packed Vector Types
     auto num_els = vec->Width();
     auto* el_ty = vec->type();
     if (el_ty->IsAnyOf<sem::U32, sem::I32, sem::F32>()) {
-      return SizeAndAlign{num_els * 4, 4};
+      // Use a packed_vec type for 3-element vectors only.
+      if (num_els == 3) {
+        // https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
+        // 2.2.3 Packed Vector Types
+        return SizeAndAlign{num_els * 4, 4};
+      } else {
+        // https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
+        // 2.2 Vector Data Types
+        return SizeAndAlign{num_els * 4, num_els * 4};
+      }
     }
   }
 

@@ -13,6 +13,7 @@
 #include "chrome/browser/android/feed/v2/feed_service_bridge.h"
 #include "chrome/browser/android/feed/v2/refresh_task_scheduler_impl.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,6 +35,22 @@
 
 namespace feed {
 const char kFeedv2Folder[] = "feedv2";
+namespace internal {
+const base::StringPiece GetFollowingFeedFollowCountGroupName(
+    size_t follow_count) {
+  if (follow_count == 0)
+    return "None";
+  if (follow_count <= 4)
+    return "1-4";
+  if (follow_count <= 8)
+    return "5-8";
+  if (follow_count <= 12)
+    return "9-12";
+  if (follow_count <= 20)
+    return "13-20";
+  return "21+";
+}
+}  // namespace internal
 
 class FeedServiceDelegateImpl : public FeedService::Delegate {
  public:
@@ -59,6 +76,12 @@ class FeedServiceDelegateImpl : public FeedService::Delegate {
       ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(exp.first,
                                                                 exp.second);
     }
+  }
+  void RegisterFollowingFeedFollowCountFieldTrial(
+      size_t follow_count) override {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        "FollowingFeedFollowCount",
+        internal::GetFollowingFeedFollowCountGroupName(follow_count));
   }
 };
 
@@ -120,6 +143,8 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
   feed::ChromeInfo chrome_info;
   chrome_info.version = base::Version({CHROME_VERSION});
   chrome_info.channel = chrome::GetChannel();
+  chrome_info.start_surface =
+      base::FeatureList::IsEnabled(chrome::android::kStartSurfaceAndroid);
 
   return new FeedService(
       std::make_unique<FeedServiceDelegateImpl>(),

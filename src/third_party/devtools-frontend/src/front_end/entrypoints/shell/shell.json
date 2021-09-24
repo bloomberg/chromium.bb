@@ -1,10 +1,7 @@
 {
   "modules": [
-    { "name": "ui/legacy/components/utils", "type": "autostart"},
     { "name": "panels/console_counters", "type": "autostart" },
-    { "name": "models/extensions", "type": "autostart" },
     { "name": "entrypoints/main", "type": "autostart" },
-    { "name": "models/persistence", "type": "autostart" },
     { "name": "ui/legacy", "type": "autostart" },
 
     { "name": "panels/changes" },
@@ -25,7 +22,6 @@
     { "name": "panels/snippets" },
     { "name": "ui/legacy/components/source_frame" },
     { "name": "panels/sources" },
-    { "name": "ui/legacy/components/text_editor" },
-    { "name": "models/workspace_diff" }
+    { "name": "ui/legacy/components/text_editor" }
   ]
 }

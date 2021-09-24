@@ -389,8 +389,13 @@ void ComponentLoader::AddVideoPlayerExtension() {
 }
 
 void ComponentLoader::AddAudioPlayerExtension() {
-  Add(IDR_AUDIO_PLAYER_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("audio_player")));
+  // TODO(b/189172062): Guard this with ShouldInstallObsoleteComponentExtension
+  // when the feature is on and stable.
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kMediaAppHandlesAudio)) {
+    Add(IDR_AUDIO_PLAYER_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("audio_player")));
+  }
 }
 
 void ComponentLoader::AddImageLoaderExtension() {
@@ -425,16 +430,6 @@ void ComponentLoader::AddChromeCameraApp() {
   }
 }
 
-void ComponentLoader::AddZipArchiverExtension() {
-  base::FilePath resources_path;
-  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
-    AddWithNameAndDescriptionFromDir(
-        resources_path.Append(extension_misc::kZipArchiverExtensionPath),
-        extension_misc::kZipArchiverExtensionId,
-        l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_NAME),
-        l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_DESCRIPTION));
-  }
-}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 scoped_refptr<const Extension> ComponentLoader::CreateExtension(
@@ -554,10 +549,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddAudioPlayerExtension();
     AddFileManagerExtension();
     AddImageLoaderExtension();
-
-#if BUILDFLAG(ENABLE_NACL)
-    AddZipArchiverExtension();
-#endif  // BUILDFLAG(ENABLE_NACL)
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     if (!base::FeatureList::IsEnabled(
@@ -684,20 +675,6 @@ void ComponentLoader::AddChromeOsSpeechSynthesisExtensions() {
             &ComponentLoader::FinishLoadSpeechSynthesisExtension,
             weak_factory_.GetWeakPtr(),
             extension_misc::kEspeakSpeechSynthesisExtensionId));
-  }
-
-  if (features::IsEnhancedNetworkVoicesEnabled() &&
-      !Exists(extension_misc::kEnhancedNetworkTtsExtensionId)) {
-    base::FilePath resources_path =
-        base::PathService::CheckedGet(chrome::DIR_RESOURCES);
-    AddComponentFromDirWithManifestFilename(
-        resources_path.Append(extension_misc::kEnhancedNetworkTtsExtensionPath),
-        extension_misc::kEnhancedNetworkTtsExtensionId,
-        extension_misc::kEnhancedNetworkTtsManifestFilename,
-        extension_misc::kEnhancedNetworkTtsGuestManifestFilename,
-        base::BindOnce(&ComponentLoader::FinishLoadSpeechSynthesisExtension,
-                       weak_factory_.GetWeakPtr(),
-                       extension_misc::kEnhancedNetworkTtsExtensionId));
   }
 }
 

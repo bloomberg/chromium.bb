@@ -21,7 +21,6 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/pagination/pagination_controller.h"
-#include "ash/public/cpp/pagination/pagination_model.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -69,6 +68,14 @@ constexpr char kPageDragScrollInTabletMaxLatencyHistogram[] =
 // Delay in milliseconds to do the page flip in fullscreen app list.
 constexpr base::TimeDelta kPageFlipDelay =
     base::TimeDelta::FromMilliseconds(500);
+
+// Duration for page transition.
+constexpr base::TimeDelta kPageTransitionDuration =
+    base::TimeDelta::FromMilliseconds(250);
+
+// Duration for overscroll page transition.
+constexpr base::TimeDelta kOverscrollPageTransitionDuration =
+    base::TimeDelta::FromMilliseconds(50);
 
 // Vertical padding between the apps grid pages in cardified state.
 constexpr int kCardifiedPaddingBetweenPages = 12;
@@ -175,16 +182,22 @@ class PagedAppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
 PagedAppsGridView::PagedAppsGridView(
     ContentsView* contents_view,
     AppListA11yAnnouncer* a11y_announcer,
-    AppsGridViewFolderDelegate* folder_delegate)
+    AppsGridViewFolderDelegate* folder_delegate,
+    AppListFolderController* folder_controller)
     : AppsGridView(contents_view,
                    a11y_announcer,
                    contents_view->GetAppListMainView()->view_delegate(),
-                   folder_delegate),
+                   folder_delegate,
+                   folder_controller),
       contents_view_(contents_view),
-      page_flip_delay_(kPageFlipDelay) {
+      page_flip_delay_(kPageFlipDelay),
+      is_app_list_bubble_enabled_(features::IsAppListBubbleEnabled()) {
   DCHECK(contents_view_);
-  view_structure_.Init(IsInFolder() ? PagedViewStructure::Mode::kFullPages
-                                    : PagedViewStructure::Mode::kPartialPages);
+
+  view_structure_.Init(
+      (IsInFolder() || features::IsLauncherRemoveEmptySpaceEnabled())
+          ? PagedViewStructure::Mode::kFullPages
+          : PagedViewStructure::Mode::kPartialPages);
 
   pagination_model_.AddObserver(this);
 
@@ -206,6 +219,8 @@ void PagedAppsGridView::Init() {
   const auto& config = GetAppListConfig();
   SetLayout(config.preferred_cols(), config.preferred_rows());
   AppsGridView::Init();
+  pagination_model_.SetTransitionDurations(kPageTransitionDuration,
+                                           kOverscrollPageTransitionDuration);
 }
 
 void PagedAppsGridView::OnTabletModeChanged(bool started) {
@@ -497,11 +512,6 @@ gfx::Size PagedAppsGridView::GetTileViewSize() const {
 }
 
 gfx::Insets PagedAppsGridView::GetTilePadding() const {
-  if (IsInFolder()) {
-    const int tile_padding_in_folder =
-        GetAppListConfig().grid_tile_spacing_in_folder() / 2;
-    return gfx::Insets(-tile_padding_in_folder, -tile_padding_in_folder);
-  }
   return gfx::Insets(-vertical_tile_padding_, -horizontal_tile_padding_);
 }
 
@@ -519,6 +529,14 @@ int PagedAppsGridView::GetPaddingBetweenPages() const {
   return cardified_state_
              ? kCardifiedPaddingBetweenPages + 2 * vertical_tile_padding_
              : GetAppListConfig().page_spacing();
+}
+
+int PagedAppsGridView::GetTotalPages() const {
+  return pagination_model_.total_pages();
+}
+
+int PagedAppsGridView::GetSelectedPage() const {
+  return pagination_model_.selected_page();
 }
 
 bool PagedAppsGridView::IsScrollAxisVertical() const {
@@ -575,30 +593,91 @@ void PagedAppsGridView::RecordAppMovingTypeMetrics(AppListAppMovingType type) {
                             kMaxAppListAppMovingType);
 }
 
-void PagedAppsGridView::OnAppListItemViewActivated(
-    AppListItemView* pressed_item_view,
-    const ui::Event& event) {
-  if (IsDragging())
-    return;
+int PagedAppsGridView::TilesPerPage(int page) const {
+  if (IsInFolder())
+    return GetAppListConfig().max_folder_items_per_page();
 
-  if (contents_view_->apps_container_view()
-          ->app_list_folder_view()
-          ->IsAnimationRunning()) {
+  if (is_app_list_bubble_enabled_)
+    return page == 0 ? 15 : 20;
+
+  return cols() * rows_per_page();
+}
+
+void PagedAppsGridView::UpdatePaging() {
+  if (!IsInFolder() && !features::IsLauncherRemoveEmptySpaceEnabled()) {
+    pagination_model_.SetTotalPages(view_structure_.total_pages());
     return;
   }
 
-  // Always set the previous `activated_folder_item_view_` to be visible. This
-  // prevents a case where the item would remain hidden due the
-  // `activated_folder_item_view_` changing during the animation. We only
-  // need to track `activated_folder_item_view_` in the root level grid view.
-  if (!folder_delegate()) {
-    if (activated_folder_item_view())
-      activated_folder_item_view()->SetVisible(true);
-    set_activated_folder_item_view(
-        IsFolderItem(pressed_item_view->item()) ? pressed_item_view : nullptr);
+  // Folders have the same number of tiles on every page, while the root
+  // level grid can have a different number of tiles per page.
+  int tiles = view_model()->view_size();
+  int total_pages = 1;
+  int tiles_on_page = TilesPerPage(0);
+  while (tiles > tiles_on_page) {
+    tiles -= tiles_on_page;
+    ++total_pages;
+    tiles_on_page = TilesPerPage(total_pages - 1);
   }
-  contents_view_->GetAppListMainView()->ActivateApp(pressed_item_view->item(),
-                                                    event.flags());
+  pagination_model_.SetTotalPages(total_pages);
+}
+
+void PagedAppsGridView::RecordPageMetrics() {
+  DCHECK(!IsInFolder());
+  UMA_HISTOGRAM_COUNTS_100("Apps.NumberOfPages", GetTotalPages());
+
+  if (features::IsLauncherRemoveEmptySpaceEnabled())
+    return;
+
+  // Calculate the number of pages that have empty slots.
+  int page_count = 0;
+  const auto& pages = view_structure_.pages();
+  for (size_t i = 0; i < pages.size(); ++i) {
+    if (static_cast<int>(pages[i].size()) < TilesPerPage(i))
+      ++page_count;
+  }
+  UMA_HISTOGRAM_COUNTS_100("Apps.NumberOfPagesNotFull", page_count);
+}
+
+const gfx::Vector2d PagedAppsGridView::CalculateTransitionOffset(
+    int page_of_view) const {
+  gfx::Size grid_size = GetTileGridSize();
+
+  // If there is a transition, calculates offset for current and target page.
+  const int current_page = GetSelectedPage();
+  const PaginationModel::Transition& transition =
+      pagination_model_.transition();
+  const bool is_valid = pagination_model_.is_valid_page(transition.target_page);
+
+  int multiplier = page_of_view;
+  if (is_valid && abs(transition.target_page - current_page) > 1) {
+    if (page_of_view == transition.target_page) {
+      if (transition.target_page > current_page)
+        multiplier = current_page + 1;
+      else
+        multiplier = current_page - 1;
+    } else if (page_of_view != current_page) {
+      multiplier = -1;
+    }
+  }
+
+  if (IsScrollAxisVertical()) {
+    const int page_height = grid_size.height() + GetPaddingBetweenPages();
+    return gfx::Vector2d(0, page_height * multiplier);
+  }
+
+  // Page size including padding pixels. A tile.x + page_width means the same
+  // tile slot in the next page.
+  const int page_width = grid_size.width() + GetPaddingBetweenPages();
+  return gfx::Vector2d(page_width * multiplier, 0);
+}
+
+void PagedAppsGridView::EnsureViewVisible(const GridIndex& index) {
+  if (pagination_model_.has_transition())
+    return;
+
+  if (IsValidIndex(index))
+    pagination_model_.SelectPage(index.page, false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -629,17 +708,6 @@ void PagedAppsGridView::SelectedPageChanged(int old_selected,
                                             int new_selected) {
   items_container()->layer()->SetTransform(gfx::Transform());
   if (IsDragging()) {
-    // Sets the transform to locate the scrolled content.
-    gfx::Size grid_size = GetTileGridSize();
-    gfx::Vector2d update;
-    if (pagination_controller_->scroll_axis() ==
-        PaginationController::SCROLL_AXIS_HORIZONTAL) {
-      const int page_width = grid_size.width() + GetPaddingBetweenPages();
-      update.set_x(page_width * (new_selected - old_selected));
-    } else {
-      const int page_height = grid_size.height() + GetPaddingBetweenPages();
-      update.set_y(page_height * (new_selected - old_selected));
-    }
     Layout();
     UpdateDropTargetRegion();
     MaybeStartPageFlipTimer(last_drag_point());
@@ -652,7 +720,7 @@ void PagedAppsGridView::SelectedPageChanged(int old_selected,
       GridIndex new_index(new_selected,
                           (old_selected < new_selected)
                               ? 0
-                              : (GetItemsNumOfPage(new_selected) - 1));
+                              : (GetNumberOfItemsOnPage(new_selected) - 1));
       GetViewAtIndex(new_index)->RequestFocus();
     } else {
       ClearSelectedView();
@@ -824,8 +892,8 @@ bool PagedAppsGridView::IsValidPageFlipTarget(int page) const {
   // If the user wants to drag an app to the next new page and has not done so
   // during the dragging session, then it is the right target because a new page
   // will be created in OnPageFlipTimer().
-  return !IsInFolder() && !extra_page_opened_ &&
-         pagination_model_.total_pages() == page;
+  return !features::IsLauncherRemoveEmptySpaceEnabled() && !IsInFolder() &&
+         !extra_page_opened_ && pagination_model_.total_pages() == page;
 }
 
 bool PagedAppsGridView::IsPointWithinPageFlipBuffer(
@@ -1156,6 +1224,9 @@ void PagedAppsGridView::SetHighlightedBackgroundCard(int new_highlighted_page) {
 }
 
 void PagedAppsGridView::UpdateTilePadding() {
+  if (has_fixed_tile_padding_)
+    return;
+
   gfx::Size content_size = GetContentsBounds().size();
   const gfx::Size tile_size = GetTileViewSize();
   if (cardified_state_)
@@ -1166,6 +1237,7 @@ void PagedAppsGridView::UpdateTilePadding() {
       cols() > 1 ? (content_size.width() - cols() * tile_size.width()) /
                        ((cols() - 1) * 2)
                  : 0;
+
   vertical_tile_padding_ =
       rows_per_page() > 1
           ? (content_size.height() - rows_per_page() * tile_size.height()) /

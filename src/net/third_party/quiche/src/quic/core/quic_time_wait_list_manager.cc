@@ -30,7 +30,7 @@ namespace quic {
 // A very simple alarm that just informs the QuicTimeWaitListManager to clean
 // up old connection_ids. This alarm should be cancelled and deleted before
 // the QuicTimeWaitListManager is deleted.
-class ConnectionIdCleanUpAlarm : public QuicAlarm::Delegate {
+class ConnectionIdCleanUpAlarm : public QuicAlarm::DelegateWithoutContext {
  public:
   explicit ConnectionIdCleanUpAlarm(
       QuicTimeWaitListManager* time_wait_list_manager)
@@ -324,8 +324,7 @@ void QuicTimeWaitListManager::SendPublicReset(
   if (ietf_quic) {
     std::unique_ptr<QuicEncryptedPacket> ietf_reset_packet =
         BuildIetfStatelessResetPacket(connection_id, received_packet_length);
-    if (GetQuicRestartFlag(quic_fix_stateless_reset2) &&
-        ietf_reset_packet == nullptr) {
+    if (ietf_reset_packet == nullptr) {
       // This could happen when trying to reject a short header packet of
       // a connection which is in the time wait list (and with no termination
       // packet).
@@ -390,6 +389,13 @@ bool QuicTimeWaitListManager::SendOrQueuePacket(
     const QuicPerPacketContext* /*packet_context*/) {
   if (packet == nullptr) {
     QUIC_LOG(ERROR) << "Tried to send or queue a null packet";
+    return true;
+  }
+  if (GetQuicReloadableFlag(quic_add_upperbound_for_queued_packets) &&
+      pending_packets_queue_.size() >=
+          GetQuicFlag(FLAGS_quic_time_wait_list_max_pending_packets)) {
+    // There are too many pending packets.
+    QUIC_CODE_COUNT(quic_too_many_pending_packets_in_time_wait);
     return true;
   }
   if (WriteToWire(packet.get())) {

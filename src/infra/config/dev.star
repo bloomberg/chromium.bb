@@ -9,7 +9,7 @@
 load("//lib/branches.star", "branches")
 
 lucicfg.check_version(
-    min = "1.27.0",
+    min = "1.28.0",
     message = "Update depot_tools",
 )
 
@@ -20,11 +20,11 @@ lucicfg.enable_experiment("crbug.com/1085650")
 lucicfg.config(
     config_dir = "generated",
     tracked_files = [
-        "cr-buildbucket-dev.cfg",
-        "luci-logdog-dev.cfg",
-        "luci-milo-dev.cfg",
-        "luci-scheduler-dev.cfg",
-        "realms-dev.cfg",
+        "luci/cr-buildbucket-dev.cfg",
+        "luci/luci-logdog-dev.cfg",
+        "luci/luci-milo-dev.cfg",
+        "luci/luci-scheduler-dev.cfg",
+        "luci/realms-dev.cfg",
     ],
     fail_on_warnings = True,
 )

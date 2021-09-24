@@ -5,6 +5,7 @@
 #include "ui/views/bubble/tooltip_icon.h"
 
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -27,6 +28,7 @@ TooltipIcon::TooltipIcon(const std::u16string& tooltip, int tooltip_icon_size)
       bubble_(nullptr),
       preferred_width_(0) {
   SetFocusBehavior(PlatformStyle::kDefaultFocusBehavior);
+  set_suppress_default_focus_handling();
   FocusRing::Install(this);
   SetBorder(CreateEmptyBorder(
       LayoutProvider::Get()->GetInsetsMetric(INSETS_VECTOR_IMAGE_BUTTON)));
@@ -56,6 +58,10 @@ bool TooltipIcon::OnMousePressed(const ui::MouseEvent& event) {
 
 void TooltipIcon::OnFocus() {
   ShowBubble();
+#if defined(OS_WIN)
+  // Tooltip text does not announce on Windows; crbug.com/1245470
+  NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+#endif
 }
 
 void TooltipIcon::OnBlur() {
@@ -70,7 +76,13 @@ void TooltipIcon::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void TooltipIcon::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kTooltip;
+  // The tooltip icon, despite visually being an icon with no text, actually
+  // opens a bubble whenever the user mouses over it or focuses it, so it's
+  // essentially a text control that hides itself when not in view without
+  // altering the bubble's layout when shown. As such, have it behave like
+  // static text for screenreader users, since that's the role it serves here
+  // anyway.
+  node_data->role = ax::mojom::Role::kStaticText;
   node_data->SetName(tooltip_);
 }
 

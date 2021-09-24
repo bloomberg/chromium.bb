@@ -557,6 +557,9 @@ TEST(AppServiceTypesTraitsTest, RoundTripIntentFilters) {
   apps_util::AddSingleValueCondition(apps::mojom::ConditionType::kMimeType, "5",
                                      apps::mojom::PatternMatchType::kMimeType,
                                      intent_filter);
+  apps_util::AddSingleValueCondition(
+      apps::mojom::ConditionType::kFileExtension, "6",
+      apps::mojom::PatternMatchType::kFileExtension, intent_filter);
   input->intent_filters.push_back(std::move(intent_filter));
 
   apps::mojom::AppPtr output;
@@ -565,7 +568,7 @@ TEST(AppServiceTypesTraitsTest, RoundTripIntentFilters) {
 
   ASSERT_EQ(output->intent_filters.size(), 1U);
   auto& filter = output->intent_filters[0];
-  ASSERT_EQ(filter->conditions.size(), 5U);
+  ASSERT_EQ(filter->conditions.size(), 6U);
   {
     auto& condition = filter->conditions[0];
     EXPECT_EQ(condition->condition_type, apps::mojom::ConditionType::kScheme);
@@ -605,6 +608,15 @@ TEST(AppServiceTypesTraitsTest, RoundTripIntentFilters) {
     EXPECT_EQ(condition->condition_values[0]->match_type,
               apps::mojom::PatternMatchType::kMimeType);
     EXPECT_EQ(condition->condition_values[0]->value, "5");
+  }
+  {
+    auto& condition = filter->conditions[5];
+    EXPECT_EQ(condition->condition_type,
+              apps::mojom::ConditionType::kFileExtension);
+    ASSERT_EQ(condition->condition_values.size(), 1U);
+    EXPECT_EQ(condition->condition_values[0]->match_type,
+              apps::mojom::PatternMatchType::kFileExtension);
+    EXPECT_EQ(condition->condition_values[0]->value, "6");
   }
 }
 
@@ -780,5 +792,212 @@ TEST(AppServiceTypesTraitsTest, RoundTripWindowMode) {
     ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::WindowMode>(
         input, output));
     EXPECT_EQ(output, apps::mojom::WindowMode::kTabbedWindow);
+  }
+}
+
+TEST(AppServiceTypesTraitsTest, RoundTripIntent) {
+  auto input = apps::mojom::Intent::New();
+  input->action = "action";
+  input->url = GURL("http://www.google.com");
+  input->mime_type = "mime_type";
+  input->share_text = "share_text";
+  input->share_title = "share_title";
+
+  apps::mojom::IntentPtr output;
+  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::Intent>(
+      input, output));
+  EXPECT_EQ(output->action, input->action);
+  EXPECT_EQ(output->url, input->url);
+  EXPECT_EQ(output->mime_type, input->mime_type);
+  EXPECT_EQ(output->share_text, input->share_text);
+  EXPECT_EQ(output->share_title, input->share_title);
+}
+
+// Test that serialization and deserialization works with launch source.
+TEST(AppServiceTypesTraitsTest, RoundTripLaunchSource) {
+  apps::mojom::LaunchSource input;
+  {
+    input = apps::mojom::LaunchSource::kUnknown;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromAppListGrid;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromAppListGridContextMenu;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromAppListQuery;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromAppListQueryContextMenu;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromAppListRecommendation;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromParentalControls;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromShelf;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromFileManager;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromLink;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromOmnibox;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromChromeInternal;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromKeyboard;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromOtherApp;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromMenu;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromInstalledNotification;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromTest;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromArc;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromSharesheet;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromReleaseNotesNotification;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromFullRestore;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromSmartTextContextMenu;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
+  }
+  {
+    input = apps::mojom::LaunchSource::kFromDiscoverTabNotification;
+    apps::mojom::LaunchSource output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
+            input, output));
+    EXPECT_EQ(output, input);
   }
 }

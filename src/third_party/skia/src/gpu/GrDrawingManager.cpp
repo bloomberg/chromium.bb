@@ -43,15 +43,15 @@
 #include "src/gpu/text/GrSDFTControl.h"
 #include "src/image/SkSurface_Gpu.h"
 
-#include "src/gpu/GrOpsTask.h"
 #if SK_GPU_V1
-#include "src/gpu/GrSoftwarePathRenderer.h"
+#include "src/gpu/ops/OpsTask.h"
+#include "src/gpu/ops/SoftwarePathRenderer.h"
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #if SK_GPU_V1
 GrDrawingManager::GrDrawingManager(GrRecordingContext* rContext,
-                                   const GrPathRendererChain::Options& optionsForPathRendererChain,
+                                   const PathRendererChain::Options& optionsForPathRendererChain,
                                    bool reduceOpsTaskSplitting)
         : fContext(rContext)
         , fOptionsForPathRendererChain(optionsForPathRendererChain)
@@ -370,13 +370,13 @@ void GrDrawingManager::sortTasks() {
         return;
     }
 
-#ifdef SK_DEBUG
+#if SK_GPU_V1 && defined(SK_DEBUG)
     // This block checks for any unnecessary splits in the opsTasks. If two sequential opsTasks
     // could have merged it means the opsTask was artificially split.
     if (!fDAG.empty()) {
-        GrOpsTask* prevOpsTask = fDAG[0]->asOpsTask();
+        auto prevOpsTask = fDAG[0]->asOpsTask();
         for (int i = 1; i < fDAG.count(); ++i) {
-            GrOpsTask* curOpsTask = fDAG[i]->asOpsTask();
+            auto curOpsTask = fDAG[i]->asOpsTask();
 
             if (prevOpsTask && curOpsTask) {
                 SkASSERT(!prevOpsTask->canMerge(curOpsTask));
@@ -427,6 +427,7 @@ bool GrDrawingManager::reorderTasks(GrResourceAllocator* resourceAllocator) {
     int newCount = 0;
     for (int i = 0; i < fDAG.count(); i++) {
         sk_sp<GrRenderTask>& task = fDAG[i];
+#if SK_GPU_V1
         if (auto opsTask = task->asOpsTask()) {
             size_t remaining = fDAG.size() - i - 1;
             SkSpan<sk_sp<GrRenderTask>> nextTasks{fDAG.end() - remaining, remaining};
@@ -436,6 +437,7 @@ bool GrDrawingManager::reorderTasks(GrResourceAllocator* resourceAllocator) {
             }
             i += removeCount;
         }
+#endif
         fDAG[newCount++] = std::move(task);
     }
     fDAG.resize_back(newCount);
@@ -573,7 +575,7 @@ GrRenderTask* GrDrawingManager::getLastRenderTask(const GrSurfaceProxy* proxy) c
     return entry ? *entry : nullptr;
 }
 
-GrOpsTask* GrDrawingManager::getLastOpsTask(const GrSurfaceProxy* proxy) const {
+skgpu::v1::OpsTask* GrDrawingManager::getLastOpsTask(const GrSurfaceProxy* proxy) const {
     GrRenderTask* task = this->getLastRenderTask(proxy);
     return task ? task->asOpsTask() : nullptr;
 }
@@ -608,6 +610,7 @@ void GrDrawingManager::createDDLTask(sk_sp<const SkDeferredDisplayList> ddl,
                                      SkIPoint offset) {
     SkDEBUGCODE(this->validate());
 
+#if SK_GPU_V1
     if (fActiveOpsTask) {
         // This is a temporary fix for the partial-MDB world. In that world we're not
         // reordering so ops that (in the single opsTask world) would've just glommed onto the
@@ -616,6 +619,7 @@ void GrDrawingManager::createDDLTask(sk_sp<const SkDeferredDisplayList> ddl,
         fActiveOpsTask->makeClosed(fContext);
         fActiveOpsTask = nullptr;
     }
+#endif
 
     // Propagate the DDL proxy's state information to the replay target.
     if (ddl->priv().targetProxy()->isMSAADirty()) {
@@ -646,6 +650,7 @@ void GrDrawingManager::createDDLTask(sk_sp<const SkDeferredDisplayList> ddl,
 
 #ifdef SK_DEBUG
 void GrDrawingManager::validate() const {
+#if SK_GPU_V1
     if (fActiveOpsTask) {
         SkASSERT(!fDAG.empty());
         SkASSERT(!fActiveOpsTask->isClosed());
@@ -676,10 +681,12 @@ void GrDrawingManager::validate() const {
     } else {
         SkASSERT(fActiveOpsTask == nullptr);
     }
+#endif // SK_GPU_V1
 }
-#endif
+#endif // SK_DEBUG
 
 void GrDrawingManager::closeActiveOpsTask() {
+#if SK_GPU_V1
     if (fActiveOpsTask) {
         // This is a temporary fix for the partial-MDB world. In that world we're not
         // reordering so ops that (in the single opsTask world) would've just glommed onto the
@@ -688,20 +695,22 @@ void GrDrawingManager::closeActiveOpsTask() {
         fActiveOpsTask->makeClosed(fContext);
         fActiveOpsTask = nullptr;
     }
+#endif
 }
 
-sk_sp<GrOpsTask> GrDrawingManager::newOpsTask(GrSurfaceProxyView surfaceView,
-                                              sk_sp<GrArenas> arenas,
-                                              bool flushTimeOpsTask) {
+#if SK_GPU_V1
+sk_sp<skgpu::v1::OpsTask> GrDrawingManager::newOpsTask(GrSurfaceProxyView surfaceView,
+                                                       sk_sp<GrArenas> arenas,
+                                                       bool flushTimeOpsTask) {
     SkDEBUGCODE(this->validate());
     SkASSERT(fContext);
 
     this->closeActiveOpsTask();
 
-    sk_sp<GrOpsTask> opsTask(new GrOpsTask(this,
-                                           std::move(surfaceView),
-                                           fContext->priv().auditTrail(),
-                                           std::move(arenas)));
+    sk_sp<skgpu::v1::OpsTask> opsTask(new skgpu::v1::OpsTask(this,
+                                                             std::move(surfaceView),
+                                                             fContext->priv().auditTrail(),
+                                                             std::move(arenas)));
 
     SkASSERT(this->getLastRenderTask(opsTask->target(0)) == opsTask.get());
 
@@ -742,6 +751,7 @@ void GrDrawingManager::addAtlasTask(sk_sp<GrRenderTask> atlasTask,
 
     SkDEBUGCODE(this->validate());
 }
+#endif // SK_GPU_V1
 
 GrTextureResolveRenderTask* GrDrawingManager::newTextureResolveRenderTask(const GrCaps& caps) {
     // Unlike in the "new opsTask" case, we do not want to close the active opsTask, nor (if we are
@@ -767,6 +777,7 @@ void GrDrawingManager::newWaitRenderTask(sk_sp<GrSurfaceProxy> proxy,
                                                                     std::move(semaphores),
                                                                     numSemaphores);
 
+#if SK_GPU_V1
     if (fActiveOpsTask && (fActiveOpsTask->target(0) == proxy.get())) {
         SkASSERT(this->getLastRenderTask(proxy.get()) == fActiveOpsTask);
         this->insertTaskBeforeLast(waitTask);
@@ -784,7 +795,9 @@ void GrDrawingManager::newWaitRenderTask(sk_sp<GrSurfaceProxy> proxy,
         // get a circular self dependency of waitTask on waitTask.
         waitTask->addDependenciesFromOtherTask(fActiveOpsTask);
         fActiveOpsTask->addDependency(waitTask.get());
-    } else {
+    } else
+#endif
+    {
         // In this case we just close the previous RenderTask and start and append the waitTask
         // to the DAG. Since it is the last task now we call setLastRenderTask on the proxy. If
         // there is a lastTask on the proxy we make waitTask depend on that task. This
@@ -923,20 +936,21 @@ bool GrDrawingManager::newWritePixelsTask(sk_sp<GrSurfaceProxy> dst,
  * Due to its expense, the software path renderer has split out so it can
  * can be individually allowed/disallowed via the "allowSW" boolean.
  */
-GrPathRenderer* GrDrawingManager::getPathRenderer(const GrPathRenderer::CanDrawPathArgs& args,
-                                                  bool allowSW,
-                                                  GrPathRendererChain::DrawType drawType,
-                                                  GrPathRenderer::StencilSupport* stencilSupport) {
+skgpu::v1::PathRenderer* GrDrawingManager::getPathRenderer(
+        const PathRenderer::CanDrawPathArgs& args,
+        bool allowSW,
+        PathRendererChain::DrawType drawType,
+        PathRenderer::StencilSupport* stencilSupport) {
 
     if (!fPathRendererChain) {
         fPathRendererChain =
-                std::make_unique<GrPathRendererChain>(fContext, fOptionsForPathRendererChain);
+                std::make_unique<PathRendererChain>(fContext, fOptionsForPathRendererChain);
     }
 
-    GrPathRenderer* pr = fPathRendererChain->getPathRenderer(args, drawType, stencilSupport);
+    auto pr = fPathRendererChain->getPathRenderer(args, drawType, stencilSupport);
     if (!pr && allowSW) {
         auto swPR = this->getSoftwarePathRenderer();
-        if (GrPathRenderer::CanDrawPath::kNo != swPR->canDrawPath(args)) {
+        if (PathRenderer::CanDrawPath::kNo != swPR->canDrawPath(args)) {
             pr = swPR;
         }
     }
@@ -950,27 +964,26 @@ GrPathRenderer* GrDrawingManager::getPathRenderer(const GrPathRenderer::CanDrawP
     return pr;
 }
 
-GrPathRenderer* GrDrawingManager::getSoftwarePathRenderer() {
+skgpu::v1::PathRenderer* GrDrawingManager::getSoftwarePathRenderer() {
     if (!fSoftwarePathRenderer) {
-        fSoftwarePathRenderer.reset(
-                new GrSoftwarePathRenderer(fContext->priv().proxyProvider(),
-                                           fOptionsForPathRendererChain.fAllowPathMaskCaching));
+        fSoftwarePathRenderer.reset(new skgpu::v1::SoftwarePathRenderer(
+            fContext->priv().proxyProvider(), fOptionsForPathRendererChain.fAllowPathMaskCaching));
     }
     return fSoftwarePathRenderer.get();
 }
 
-GrAtlasPathRenderer* GrDrawingManager::getAtlasPathRenderer() {
+skgpu::v1::AtlasPathRenderer* GrDrawingManager::getAtlasPathRenderer() {
     if (!fPathRendererChain) {
-        fPathRendererChain = std::make_unique<GrPathRendererChain>(fContext,
-                                                                   fOptionsForPathRendererChain);
+        fPathRendererChain = std::make_unique<PathRendererChain>(fContext,
+                                                                 fOptionsForPathRendererChain);
     }
     return fPathRendererChain->getAtlasPathRenderer();
 }
 
-GrTessellationPathRenderer* GrDrawingManager::getTessellationPathRenderer() {
+skgpu::v1::PathRenderer* GrDrawingManager::getTessellationPathRenderer() {
     if (!fPathRendererChain) {
-        fPathRendererChain = std::make_unique<GrPathRendererChain>(fContext,
-                                                                   fOptionsForPathRendererChain);
+        fPathRendererChain = std::make_unique<PathRendererChain>(fContext,
+                                                                 fOptionsForPathRendererChain);
     }
     return fPathRendererChain->getTessellationPathRenderer();
 }

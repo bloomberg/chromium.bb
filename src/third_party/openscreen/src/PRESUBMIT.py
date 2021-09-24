@@ -154,6 +154,14 @@ def _CheckChangeLintsClean(input_api, output_api):
     return []
 
 
+def _CheckLuciCfg(input_api, output_api):
+    """Check the main.star lucicfg generated files."""
+    return input_api.RunTests(
+        input_api.canned_checks.CheckLucicfgGenOutput(
+            input_api, output_api,
+            os.path.join('infra', 'config', 'global', 'main.star')))
+
+
 def _CommonChecks(input_api, output_api):
     # PanProjectChecks include:
     #   CheckLongLines (@ 80 cols)

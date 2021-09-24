@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_SHARESHEET_SHARESHEET_BUBBLE_VIEW_DELEGATE_H_
 #define CHROME_BROWSER_UI_ASH_SHARESHEET_SHARESHEET_BUBBLE_VIEW_DELEGATE_H_
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/sharesheet/sharesheet_ui_delegate.h"
 
 namespace sharesheet {
@@ -46,9 +47,12 @@ class SharesheetBubbleViewDelegate : public ::sharesheet::SharesheetUiDelegate {
   // ::sharesheet::SharesheetController:
   void SetBubbleSize(int width, int height) override;
   void CloseBubble(::sharesheet::SharesheetResult result) override;
+  bool IsBubbleVisible() const override;
 
- private:
-  bool IsBubbleVisible() const;
+ protected:
+  friend class SharesheetBubbleViewTest;
+
+  SharesheetBubbleView* GetBubbleViewForTesting();
 
   // Owned by views.
   SharesheetBubbleView* sharesheet_bubble_view_;

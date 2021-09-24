@@ -54,21 +54,23 @@
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 #include "chromecast/common/cast_extensions_client.h"
 #include "chromecast/renderer/cast_extensions_renderer_client.h"
+#include "components/guest_view/renderer/guest_view_container_dispatcher.h"
 #include "content/public/common/content_constants.h"
 #include "extensions/common/common_manifest_handlers.h"  // nogncheck
 #include "extensions/common/extension_urls.h"            // nogncheck
 #include "extensions/renderer/dispatcher.h"              // nogncheck
 #include "extensions/renderer/extension_frame_helper.h"  // nogncheck
-#include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"  // nogncheck
 #endif
 
 namespace chromecast {
 namespace shell {
 namespace {
 bool IsSupportedBitstreamAudioCodecHelper(::media::AudioCodec codec, int mask) {
-  return (codec == ::media::kCodecAC3 && (kBitstreamAudioCodecAc3 & mask)) ||
-         (codec == ::media::kCodecEAC3 && (kBitstreamAudioCodecEac3 & mask)) ||
-         (codec == ::media::kCodecMpegHAudio &&
+  return (codec == ::media::AudioCodec::kAC3 &&
+          (kBitstreamAudioCodecAc3 & mask)) ||
+         (codec == ::media::AudioCodec::kEAC3 &&
+          (kBitstreamAudioCodecEac3 & mask)) ||
+         (codec == ::media::AudioCodec::kMpegHAudio &&
           (kBitstreamAudioCodecMpegHAudio & mask));
 }
 }  // namespace
@@ -156,7 +158,7 @@ void CastContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(extensions_renderer_client_->GetDispatcher());
 
   guest_view_container_dispatcher_ =
-      std::make_unique<extensions::ExtensionsGuestViewContainerDispatcher>();
+      std::make_unique<guest_view::GuestViewContainerDispatcher>();
   thread->AddObserver(guest_view_container_dispatcher_.get());
 #endif
 }
@@ -256,15 +258,15 @@ bool CastContentRendererClient::IsSupportedAudioType(
 
   // No ATV device we know of has (E)AC3 decoder, so it relies on the audio sink
   // device.
-  if (type.codec == ::media::kCodecEAC3) {
+  if (type.codec == ::media::AudioCodec::kEAC3) {
     return kBitstreamAudioCodecEac3 &
            supported_bitstream_audio_codecs_info_.codecs;
   }
-  if (type.codec == ::media::kCodecAC3) {
+  if (type.codec == ::media::AudioCodec::kAC3) {
     return kBitstreamAudioCodecAc3 &
            supported_bitstream_audio_codecs_info_.codecs;
   }
-  if (type.codec == ::media::kCodecMpegHAudio) {
+  if (type.codec == ::media::AudioCodec::kMpegHAudio) {
     return kBitstreamAudioCodecMpegHAudio &
            supported_bitstream_audio_codecs_info_.codecs;
   }

@@ -538,6 +538,10 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
   RemovePendingBindingTexture(target, active_texture_unit_);
 
   if (service_id != 0) {
+    // Label the texture with additional context info
+    const char* label = ContextTypeToLabel(feature_info_->context_type());
+    api()->glObjectLabelFn(GL_TEXTURE, service_id, strlen(label), label);
+
     // Create a new texture object to track this texture
     if (!resources_->texture_object_map.GetServiceID(texture,
                                                      &texture_passthrough) ||
@@ -4858,7 +4862,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleOverlayPlaneCHROMIUM(
           plane_z_order, transform, image,
           gfx::Rect(bounds_x, bounds_y, bounds_width, bounds_height),
           gfx::RectF(uv_x, uv_y, uv_width, uv_height), enable_blend,
-          /*damage_rect=*/gfx::Rect(), std::move(gpu_fence))) {
+          /*damage_rect=*/gfx::Rect(), /*opacity=*/1.0f,
+          std::move(gpu_fence))) {
     InsertError(GL_INVALID_OPERATION, "failed to schedule overlay");
     return error::kNoError;
   }

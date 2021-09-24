@@ -25,6 +25,10 @@
 
 namespace content {
 
+namespace {
+
+using CreateReportStatus = ::content::ConversionStorage::CreateReportStatus;
+
 class ConversionStorageSqlTest : public testing::Test {
  public:
   ConversionStorageSqlTest() = default;
@@ -90,6 +94,8 @@ class ConversionStorageSqlTest : public testing::Test {
   ConfigurableStorageDelegate* delegate_ = nullptr;
   base::SimpleTestClock clock_;
 };
+
+}  // namespace
 
 TEST_F(ConversionStorageSqlTest,
        DatabaseInitialized_TablesAndIndexesLazilyInitialized) {
@@ -182,11 +188,13 @@ TEST_F(ConversionStorageSqlTest, ClearDataWithVestigialConversion) {
   storage()->StoreImpression(impression);
 
   clock()->Advance(base::TimeDelta::FromDays(1));
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
 
   clock()->Advance(base::TimeDelta::FromDays(1));
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
 
   // Use a time range that only intersects the last conversion.
@@ -218,11 +226,13 @@ TEST_F(ConversionStorageSqlTest, ClearAllDataWithVestigialConversion) {
   storage()->StoreImpression(impression);
 
   clock()->Advance(base::TimeDelta::FromDays(1));
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
 
   clock()->Advance(base::TimeDelta::FromDays(1));
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
 
   // Use a time range that only intersects the last conversion.
@@ -256,10 +266,12 @@ TEST_F(ConversionStorageSqlTest, DeleteEverything) {
     clock()->Advance(base::TimeDelta::FromDays(1));
   }
 
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
   clock()->Advance(base::TimeDelta::FromDays(1));
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
 
   auto null_filter = base::RepeatingCallback<bool(const url::Origin&)>();
@@ -283,7 +295,8 @@ TEST_F(ConversionStorageSqlTest, MaxImpressionsPerOrigin) {
   storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
   storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
   storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
 
   CloseDatabase();
@@ -301,11 +314,14 @@ TEST_F(ConversionStorageSqlTest, MaxConversionsPerOrigin) {
   OpenDatabase();
   delegate()->set_max_conversions_per_origin(2);
   storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
-  EXPECT_FALSE(
+  EXPECT_EQ(
+      CreateReportStatus::kNoCapacityForConversionDestination,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
 
   CloseDatabase();
@@ -325,7 +341,7 @@ TEST_F(ConversionStorageSqlTest,
   delegate()->set_max_conversions_per_impression(1);
   delegate()->set_rate_limits({
       .time_window = base::TimeDelta::FromDays(7),
-      .max_attributions_per_window = INT_MAX,
+      .max_contributions_per_window = INT_MAX,
   });
   const url::Origin impression_origin =
       url::Origin::Create(GURL("https://sub.impression.example/"));
@@ -341,25 +357,29 @@ TEST_F(ConversionStorageSqlTest,
                                  .Build());
 
   clock()->Advance(base::TimeDelta::FromDays(1));
-  EXPECT_TRUE(storage()->MaybeCreateAndStoreConversionReport(
-      ConversionBuilder()
-          .SetConversionDestination(net::SchemefulSite(conversion_origin))
-          .SetReportingOrigin(reporting_origin)
-          .Build()));
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
+      storage()->MaybeCreateAndStoreConversionReport(
+          ConversionBuilder()
+              .SetConversionDestination(net::SchemefulSite(conversion_origin))
+              .SetReportingOrigin(reporting_origin)
+              .Build()));
   EXPECT_EQ(1u, storage()->GetActiveImpressions().size());
 
   // Force the impression to be deactivated by ensuring that the next report is
   // in a different window.
   delegate()->set_report_time_ms(1);
-  EXPECT_FALSE(storage()->MaybeCreateAndStoreConversionReport(
-      ConversionBuilder()
-          .SetConversionDestination(net::SchemefulSite(conversion_origin))
-          .SetReportingOrigin(reporting_origin)
-          .Build()));
+  EXPECT_EQ(
+      CreateReportStatus::kPriorityTooLow,
+      storage()->MaybeCreateAndStoreConversionReport(
+          ConversionBuilder()
+              .SetConversionDestination(net::SchemefulSite(conversion_origin))
+              .SetReportingOrigin(reporting_origin)
+              .Build()));
   EXPECT_EQ(0u, storage()->GetActiveImpressions().size());
 
   clock()->Advance(base::TimeDelta::FromDays(1));
-  EXPECT_TRUE(storage()->DeleteConversion(1));
+  EXPECT_TRUE(storage()->DeleteConversion(ConversionReport::Id(1)));
   storage()->ClearData(
       base::Time::Min(), base::Time::Max(),
       base::BindRepeating(std::equal_to<url::Origin>(), impression_origin));
@@ -381,7 +401,7 @@ TEST_F(ConversionStorageSqlTest,
   delegate()->set_max_conversions_per_impression(1);
   delegate()->set_rate_limits({
       .time_window = base::TimeDelta::FromDays(7),
-      .max_attributions_per_window = INT_MAX,
+      .max_contributions_per_window = INT_MAX,
   });
   const url::Origin impression_origin =
       url::Origin::Create(GURL("https://b.example/"));
@@ -397,25 +417,29 @@ TEST_F(ConversionStorageSqlTest,
                                  .Build());
 
   clock()->Advance(base::TimeDelta::FromDays(1));
-  EXPECT_TRUE(storage()->MaybeCreateAndStoreConversionReport(
-      ConversionBuilder()
-          .SetConversionDestination(net::SchemefulSite(conversion_origin))
-          .SetReportingOrigin(reporting_origin)
-          .Build()));
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
+      storage()->MaybeCreateAndStoreConversionReport(
+          ConversionBuilder()
+              .SetConversionDestination(net::SchemefulSite(conversion_origin))
+              .SetReportingOrigin(reporting_origin)
+              .Build()));
   EXPECT_EQ(1u, storage()->GetActiveImpressions().size());
 
   // Force the impression to be deactivated by ensuring that the next report is
   // in a different window.
   delegate()->set_report_time_ms(1);
-  EXPECT_FALSE(storage()->MaybeCreateAndStoreConversionReport(
-      ConversionBuilder()
-          .SetConversionDestination(net::SchemefulSite(conversion_origin))
-          .SetReportingOrigin(reporting_origin)
-          .Build()));
+  EXPECT_EQ(
+      CreateReportStatus::kPriorityTooLow,
+      storage()->MaybeCreateAndStoreConversionReport(
+          ConversionBuilder()
+              .SetConversionDestination(net::SchemefulSite(conversion_origin))
+              .SetReportingOrigin(reporting_origin)
+              .Build()));
   EXPECT_EQ(0u, storage()->GetActiveImpressions().size());
 
   clock()->Advance(base::TimeDelta::FromDays(1));
-  EXPECT_TRUE(storage()->DeleteConversion(1));
+  EXPECT_TRUE(storage()->DeleteConversion(ConversionReport::Id(1)));
   storage()->ClearData(
       base::Time::Min(), base::Time::Max(),
       base::BindRepeating(std::equal_to<url::Origin>(), conversion_origin));
@@ -443,8 +467,8 @@ TEST_F(ConversionStorageSqlTest, CantOpenDb_FailsSilentlyInRelease) {
 
   // These calls should be no-ops.
   storage->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
-  EXPECT_FALSE(
-      storage->MaybeCreateAndStoreConversionReport(DefaultConversion()));
+  EXPECT_EQ(CreateReportStatus::kNoMatchingImpressions,
+            storage->MaybeCreateAndStoreConversionReport(DefaultConversion()));
 }
 
 TEST_F(ConversionStorageSqlTest, DatabaseDirDoesExist_CreateDirAndOpenDB) {
@@ -457,8 +481,8 @@ TEST_F(ConversionStorageSqlTest, DatabaseDirDoesExist_CreateDirAndOpenDB) {
 
   // The directory should be created, and the database opened.
   storage->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
-  EXPECT_TRUE(
-      storage->MaybeCreateAndStoreConversionReport(DefaultConversion()));
+  EXPECT_EQ(CreateReportStatus::kSuccess,
+            storage->MaybeCreateAndStoreConversionReport(DefaultConversion()));
 }
 
 TEST_F(ConversionStorageSqlTest, DBinitializationSucceeds_HistogramRecorded) {
@@ -489,10 +513,12 @@ TEST_F(ConversionStorageSqlTest, MaxUint64StorageSucceeds) {
   EXPECT_EQ(1u, impressions.size());
   EXPECT_EQ(kMaxUint64, impressions[0].impression_data());
 
-  EXPECT_TRUE(storage()->MaybeCreateAndStoreConversionReport(StorableConversion(
-      /*conversion_data=*/kMaxUint64, impression.ConversionDestination(),
-      impression.reporting_origin(), /*event_source_trigger_data=*/0,
-      /*priority=*/0, /*dedup_key=*/absl::nullopt)));
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
+      storage()->MaybeCreateAndStoreConversionReport(StorableConversion(
+          /*conversion_data=*/kMaxUint64, impression.ConversionDestination(),
+          impression.reporting_origin(), /*event_source_trigger_data=*/0,
+          /*priority=*/0, /*dedup_key=*/absl::nullopt)));
 
   std::vector<ConversionReport> reports =
       storage()->GetConversionsToReport(clock()->Now());
@@ -564,7 +590,8 @@ TEST_F(ConversionStorageSqlTest,
       ImpressionBuilder(clock()->Now())
           .SetExpiry(base::TimeDelta::FromMilliseconds(3))
           .Build());
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
 
   clock()->Advance(base::TimeDelta::FromMilliseconds(3));
@@ -611,7 +638,8 @@ TEST_F(ConversionStorageSqlTest, ExpiredImpressionWithSentConversion_Deleted) {
       ImpressionBuilder(clock()->Now())
           .SetExpiry(base::TimeDelta::FromMilliseconds(3))
           .Build());
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
       storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
 
   clock()->Advance(base::TimeDelta::FromMilliseconds(3));

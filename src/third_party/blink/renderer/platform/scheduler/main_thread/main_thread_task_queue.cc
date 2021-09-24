@@ -109,7 +109,6 @@ MainThreadTaskQueue::MainThreadTaskQueue(
     MainThreadSchedulerImpl* main_thread_scheduler)
     : queue_type_(params.queue_type),
       queue_traits_(params.queue_traits),
-      freeze_when_keep_active_(params.freeze_when_keep_active),
       web_scheduling_priority_(params.web_scheduling_priority),
       main_thread_scheduler_(main_thread_scheduler),
       agent_group_scheduler_(params.agent_group_scheduler),
@@ -256,6 +255,10 @@ void MainThreadTaskQueue::SetWebSchedulingPriority(
     return;
   web_scheduling_priority_ = priority;
   frame_scheduler_->OnWebSchedulingTaskQueuePriorityChanged(this);
+}
+
+void MainThreadTaskQueue::OnWebSchedulingTaskQueueDestroyed() {
+  frame_scheduler_->OnWebSchedulingTaskQueueDestroyed(this);
 }
 
 absl::optional<WebSchedulingPriority>

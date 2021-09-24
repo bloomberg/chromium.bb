@@ -155,14 +155,6 @@
                          block:block];
 }
 
-- (UIAction*)actionToOpenJavascriptWithBlock:(ProceduralBlock)block {
-  return
-      [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPEN)
-                      image:[UIImage imageNamed:@"open"]
-                       type:MenuActionType::OpenJavascript
-                      block:block];
-}
-
 - (UIAction*)actionToAddToReadingListWithBlock:(ProceduralBlock)block {
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST)
@@ -198,11 +190,14 @@
 }
 
 - (UIAction*)actionSaveImageWithBlock:(ProceduralBlock)block {
-  UIAction* action = [self
-      actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE)
-                image:[UIImage imageNamed:@"download"]
-                 type:MenuActionType::Save
-                block:block];
+  int title = IsContextMenuActionsRefreshEnabled()
+                  ? IDS_IOS_CONTENT_CONTEXT_ADDTOPHOTOS
+                  : IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE;
+
+  UIAction* action = [self actionWithTitle:l10n_util::GetNSString(title)
+                                     image:[UIImage imageNamed:@"download"]
+                                      type:MenuActionType::Save
+                                     block:block];
   return action;
 }
 

@@ -53,11 +53,14 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_2_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_3_FEATURE,
         FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE, FeatureConstants.PAGE_INFO_FEATURE,
-        FeatureConstants.IPH_SHARE_SCREENSHOT_FEATURE, FeatureConstants.IPH_WEB_FEED_FOLLOW_FEATURE,
+        FeatureConstants.IPH_SHARE_SCREENSHOT_FEATURE,
+        FeatureConstants.IPH_SHARING_HUB_LINK_TOGGLE_FEATURE,
+        FeatureConstants.IPH_WEB_FEED_FOLLOW_FEATURE,
         FeatureConstants.IPH_WEB_FEED_POST_FOLLOW_DIALOG_FEATURE,
         FeatureConstants.SHARED_HIGHLIGHTING_BUILDER_FEATURE,
         FeatureConstants.START_SURFACE_TAB_SWITCHER_HOME_BUTTON_FEATURE,
-        FeatureConstants.IPH_UPDATED_CONNECTION_SECURITY_INDICATORS_FEATURE})
+        FeatureConstants.IPH_UPDATED_CONNECTION_SECURITY_INDICATORS_FEATURE,
+        FeatureConstants.SHARED_HIGHLIGHTING_RECEIVER_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_NEW_TAB_FEATURE =
@@ -267,6 +270,11 @@ public @interface FeatureConstants {
     String IPH_SHARE_SCREENSHOT_FEATURE = "IPH_ShareScreenshot";
 
     /**
+     * An IPH feature to inform users about the Sharing Hub link toggle.
+     */
+    String IPH_SHARING_HUB_LINK_TOGGLE_FEATURE = "IPH_SharingHubLinkToggle";
+
+    /**
      * An IPH feature to inform users about the WebFeed follow feature.
      */
     String IPH_WEB_FEED_FOLLOW_FEATURE = "IPH_WebFeedFollow";
@@ -293,4 +301,9 @@ public @interface FeatureConstants {
      */
     String IPH_UPDATED_CONNECTION_SECURITY_INDICATORS_FEATURE =
             "IPH_UpdatedConnectionSecurityIndicators";
+
+    /**
+     * An IPH feature encouraging users to create highlights.
+     */
+    String SHARED_HIGHLIGHTING_RECEIVER_FEATURE = "IPH_SharedHighlightingReceiver";
 }

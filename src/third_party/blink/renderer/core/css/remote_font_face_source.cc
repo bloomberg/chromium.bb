@@ -164,11 +164,6 @@ Document* RemoteFontFaceSource::GetDocument() const {
   return window ? window->document() : nullptr;
 }
 
-void RemoteFontFaceSource::Dispose() {
-  ClearResource();
-  PruneTable();
-}
-
 bool RemoteFontFaceSource::IsLoading() const {
   return GetResource() && GetResource()->IsLoading();
 }
@@ -333,8 +328,10 @@ scoped_refptr<SimpleFontData> RemoteFontFaceSource::CreateFontData(
   return SimpleFontData::Create(
       custom_font_data_->GetFontPlatformData(
           font_description.EffectiveFontSize(),
-          font_description.IsSyntheticBold(),
-          font_description.IsSyntheticItalic(),
+          font_description.IsSyntheticBold() &&
+              font_description.SyntheticBoldAllowed(),
+          font_description.IsSyntheticItalic() &&
+              font_description.SyntheticItalicAllowed(),
           font_description.GetFontSelectionRequest(),
           font_selection_capabilities, font_description.FontOpticalSizing(),
           font_description.Orientation(), font_description.VariationSettings()),

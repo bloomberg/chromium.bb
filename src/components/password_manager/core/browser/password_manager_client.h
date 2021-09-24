@@ -368,6 +368,13 @@ class PasswordManagerClient {
   // Records a Chrome Sync event that GAIA password reuse was detected.
   virtual void LogPasswordReuseDetectedEvent() = 0;
 
+  // If the feature is enabled send an event to the enterprise reporting
+  // connector server indicating that the user signed in to a website.
+  virtual void MaybeReportEnterpriseLoginEvent(
+      const GURL& url,
+      bool is_federated,
+      const url::Origin& federated_origin) const {}
+
   // Gets a ukm::SourceId that is associated with the WebContents object
   // and its last committed main frame navigation.
   virtual ukm::SourceId GetUkmSourceId() = 0;
@@ -400,11 +407,6 @@ class PasswordManagerClient {
   // the current profile.
   virtual network::mojom::NetworkContext* GetNetworkContext() const;
 
-  // Whether the primary account of the current profile is under Advanced
-  // Protection - a type of Google Account that helps protect our most at-risk
-  // users.
-  virtual bool IsUnderAdvancedProtection() const;
-
   // Causes all live PasswordFormManager objects to query the password store
   // again. Results in updating the fill information on the page.
   virtual void UpdateFormManagers() {}
@@ -420,6 +422,9 @@ class PasswordManagerClient {
 
   // Returns a FieldInfoManager associated with the current profile.
   virtual FieldInfoManager* GetFieldInfoManager() const = 0;
+
+  // Returns true if integration between WebAuthn and Autofill is enabled.
+  virtual bool IsWebAuthnAutofillEnabled() const;
 
   // Returns if the Autofill Assistant UI is shown.
   virtual bool IsAutofillAssistantUIVisible() const = 0;

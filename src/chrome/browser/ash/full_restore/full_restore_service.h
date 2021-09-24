@@ -7,7 +7,9 @@
 
 #include <memory>
 
+#include "ash/public/cpp/accelerators.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
@@ -55,16 +57,16 @@ enum class RestoreAction {
 // interfaces to restore the app launchings and app windows.
 class FullRestoreService : public KeyedService,
                            public message_center::NotificationObserver,
-                           public content::NotificationObserver {
+                           public content::NotificationObserver,
+                           public ash::AcceleratorController::Observer {
  public:
   static FullRestoreService* GetForProfile(Profile* profile);
   static void MaybeCloseNotification(Profile* profile);
 
   explicit FullRestoreService(Profile* profile);
-  ~FullRestoreService() override;
-
   FullRestoreService(const FullRestoreService&) = delete;
   FullRestoreService& operator=(const FullRestoreService&) = delete;
+  ~FullRestoreService() override;
 
   void Init();
 
@@ -86,16 +88,27 @@ class FullRestoreService : public KeyedService,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // ash::AcceleratorController::Observer:
+  void OnActionPerformed(AcceleratorAction action) override;
+  void OnAcceleratorControllerWillBeDestroyed(
+      AcceleratorController* controller) override;
+
   FullRestoreAppLaunchHandler* app_launch_handler() {
     return app_launch_handler_.get();
   }
 
-  void SetAppLaunchHanlderForTesting(
+  void SetAppLaunchHandlerForTesting(
       std::unique_ptr<FullRestoreAppLaunchHandler> app_launch_handler);
 
  private:
+  friend class FullRestoreServiceMultipleUsersTest;
+
   // KeyedService overrides.
   void Shutdown() override;
+
+  // Returns true if `Init` can be called to show the notification or restore
+  // apps. Otherwise, returns false.
+  bool CanBeInited();
 
   // Show the restore notification on startup.
   void MaybeShowRestoreNotification(const std::string& id);
@@ -153,6 +166,10 @@ class FullRestoreService : public KeyedService,
   std::unique_ptr<message_center::Notification> notification_;
 
   content::NotificationRegistrar notification_registrar_;
+
+  base::ScopedObservation<ash::AcceleratorController,
+                          ash::AcceleratorController::Observer>
+      accelerator_controller_observer_{this};
 
   base::WeakPtrFactory<FullRestoreService> weak_ptr_factory_{this};
 };

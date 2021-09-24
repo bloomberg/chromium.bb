@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, LocalDestinationInfo, makeRecentDestination, NativeLayerImpl, PrintPreviewDestinationDialogCrosElement, RecentDestination} from 'chrome://print/print_preview.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, LocalDestinationInfo, makeRecentDestination, NativeLayerImpl, PrintPreviewDestinationDialogCrosElement, PrintPreviewSearchBoxElement, RecentDestination} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -10,7 +10,7 @@ import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {eventToPromise, waitAfterNextRender} from '../test_util.m.js';
+import {eventToPromise, waitAfterNextRender} from '../test_util.js';
 
 import {CloudPrintInterfaceStub} from './cloud_print_interface_stub.js';
 import {NativeLayerCrosStub, setNativeLayerCrosInstance} from './native_layer_cros_stub.js';
@@ -107,7 +107,8 @@ suite(destination_dialog_cros_test.suiteName, function() {
     const printerItems =
         list.shadowRoot.querySelectorAll('print-preview-destination-list-item');
 
-    const getDisplayedName = item => item.$$('.name').textContent;
+    const getDisplayedName = item =>
+        item.shadowRoot.querySelector('.name').textContent;
     // 5 printers + Save as PDF
     assertEquals(6, printerItems.length);
     // Save as PDF shows up first.
@@ -116,7 +117,9 @@ suite(destination_dialog_cros_test.suiteName, function() {
         getDisplayedName(printerItems[0]));
     assertEquals(
         'rgb(32, 33, 36)',
-        window.getComputedStyle(printerItems[0].$$('.name')).color);
+        window
+            .getComputedStyle(printerItems[0].shadowRoot.querySelector('.name'))
+            .color);
     Array.from(printerItems).slice(1, 5).forEach((item, index) => {
       assertEquals(destinations[index].displayName, getDisplayedName(item));
     });
@@ -145,7 +148,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
         flush();
         provisionalDialog = dialog.shadowRoot.querySelector(
             'print-preview-provisional-destination-resolver');
-        assertFalse(provisionalDialog.$$('#dialog').open);
+        assertFalse(provisionalDialog.shadowRoot.querySelector('#dialog').open);
         const list =
             dialog.shadowRoot.querySelector('print-preview-destination-list');
         const printerItems = list.shadowRoot.querySelectorAll(
@@ -161,7 +164,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
         // Click the provisional destination to select it.
         provisionalItem.click();
         flush();
-        assertTrue(provisionalDialog.$$('#dialog').open);
+        assertTrue(provisionalDialog.shadowRoot.querySelector('#dialog').open);
 
         // Send escape key on provisionalDialog. Destinations dialog should
         // not close.
@@ -170,7 +173,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
         flush();
         await whenClosed;
 
-        assertFalse(provisionalDialog.$$('#dialog').open);
+        assertFalse(provisionalDialog.shadowRoot.querySelector('#dialog').open);
         assertTrue(dialog.shadowRoot.querySelector('#dialog').open);
       });
 

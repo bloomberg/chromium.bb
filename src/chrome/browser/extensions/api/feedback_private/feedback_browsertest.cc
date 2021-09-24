@@ -110,7 +110,8 @@ class TestFeedbackUploaderDelegate
   base::RunLoop* quit_on_dispatch_;
 };
 
-IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedback) {
+// TODO(crbug.com/1241504): disable tests.
+IN_PROC_BROWSER_TEST_F(FeedbackTest, DISABLED_ShowFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -118,7 +119,8 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedback) {
   VerifyFeedbackAppLaunch();
 }
 
-IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
+// TODO(crbug.com/1241504): disable tests.
+IN_PROC_BROWSER_TEST_F(FeedbackTest, DISABLED_ShowLoginFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -141,7 +143,8 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
 }
 
 // Tests that there's an option in the email drop down box with a value ''.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
+// TODO(crbug.com/1241504): disable tests.
+IN_PROC_BROWSER_TEST_F(FeedbackTest, DISABLED_AnonymousUser) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -172,7 +175,8 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
 
 // Ensures that when extra diagnostics are provided with feedback, they are
 // injected properly in the system information.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, ExtraDiagnostics) {
+// TODO(crbug.com/1241504): disable tests.
+IN_PROC_BROWSER_TEST_F(FeedbackTest, DISABLED_ExtraDiagnostics) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -205,7 +209,8 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ExtraDiagnostics) {
 
 // Ensures that when triggered from Assistant with Google account, Assistant
 // checkbox are not hidden.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedbackFromAssistant) {
+// Disabled due to flake: https://crbug.com/1240591
+IN_PROC_BROWSER_TEST_F(FeedbackTest, DISABLED_ShowFeedbackFromAssistant) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -295,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, DISABLED_GetTargetTabUrl) {
   for (const auto& test_case : test_cases) {
     GURL expected_url = GURL(test_case.second);
 
-    ui_test_utils::NavigateToURL(browser(), GURL(test_case.first));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(test_case.first)));
 
     // Sanity check that we always have one tab in the browser.
     ASSERT_EQ(browser()->tab_strip_model()->count(), 1);

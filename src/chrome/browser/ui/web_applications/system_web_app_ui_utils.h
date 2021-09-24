@@ -10,8 +10,8 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -86,7 +86,7 @@ void FlushSystemWebAppLaunchesForTesting(Profile* profile);
 Browser* LaunchSystemWebAppImpl(Profile* profile,
                                 SystemAppType type,
                                 const GURL& url,
-                                apps::AppLaunchParams& params);
+                                const apps::AppLaunchParams& params);
 
 // Returns a browser that is hosting the given system app type and browser type,
 // or nullptr if not found.

@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "ash/public/cpp/desk_template.h"
-#include "ash/public/cpp/desks_helper.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "ash/public/cpp/session/session_observer.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_functions.h"
@@ -36,12 +36,11 @@ constexpr char kUserTemplateCountHistogramName[] =
 
 // Error strings
 constexpr char kMaximumDesksOpenedError[] =
-    "Maximum number of desks already open.";
+    "The maximum number of desks is already open.";
 constexpr char kMissingTemplateDataError[] =
-    "Template somehow missing template data!";
-constexpr char kStorageError[] =
-    "Storage error prevented operation from being successful";
-constexpr char kNoCurrentUserError[] = "No current active profile!";
+    "The desk template has invalid or missing data.";
+constexpr char kStorageError[] = "The operation failed due to a storage error.";
+constexpr char kNoCurrentUserError[] = "There is no active profile.";
 
 // Returns true if |profile| is a supported profile in desk template feature.
 bool IsSupportedProfile(Profile* profile) {
@@ -51,7 +50,7 @@ bool IsSupportedProfile(Profile* profile) {
 
 }  // namespace
 
-DesksClient::DesksClient() : desks_helper_(ash::DesksHelper::Get()) {
+DesksClient::DesksClient() : desks_controller_(ash::DesksController::Get()) {
   DCHECK(!g_desks_client_instance);
   g_desks_client_instance = this;
   ash::SessionController::Get()->AddObserver(this);
@@ -89,7 +88,7 @@ void DesksClient::CaptureActiveDeskAndSaveTemplate(
   }
 
   std::unique_ptr<ash::DeskTemplate> desk_template =
-      desks_helper_->CaptureActiveDeskAsTemplate();
+      desks_controller_->CaptureActiveDeskAsTemplate();
   RecordWindowAndTabCountHistogram(desk_template.get());
   auto desk_template_clone = desk_template->Clone();
   storage_manager_->AddOrUpdateEntry(
@@ -176,7 +175,8 @@ void DesksClient::MaybeCreateAppLaunchHandler() {
 
 void DesksClient::RecordWindowAndTabCountHistogram(
     ash::DeskTemplate* desk_template) {
-  full_restore::RestoreData* restore_data = desk_template->desk_restore_data();
+  const full_restore::RestoreData* restore_data =
+      desk_template->desk_restore_data();
   DCHECK(restore_data);
 
   int window_count = 0;
@@ -230,7 +230,7 @@ void DesksClient::OnGetTemplateForDeskLaunch(
 
   // Launch the windows as specified in the template to a new desk.
   const auto template_name = entry->template_name();
-  desks_helper_->CreateAndActivateNewDeskForTemplate(
+  desks_controller_->CreateAndActivateNewDeskForTemplate(
       template_name, base::BindOnce(&DesksClient::OnCreateAndActivateNewDesk,
                                     weak_ptr_factory_.GetWeakPtr(),
                                     std::move(entry), std::move(callback)));
@@ -247,7 +247,8 @@ void DesksClient::OnCreateAndActivateNewDesk(
   }
 
   DCHECK(desk_template);
-  full_restore::RestoreData* restore_data = desk_template->desk_restore_data();
+  const full_restore::RestoreData* restore_data =
+      desk_template->desk_restore_data();
   if (!restore_data) {
     std::move(callback).Run(std::string(kMissingTemplateDataError));
     return;

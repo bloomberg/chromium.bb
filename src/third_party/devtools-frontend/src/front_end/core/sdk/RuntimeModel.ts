@@ -197,8 +197,9 @@ export class RuntimeModel extends SDKModel<EventTypes> {
     this.agent.invoke_setCustomObjectFormatterEnabled({enabled});
   }
 
-  async compileScript(expression: string, sourceURL: string, persistScript: boolean, executionContextId: number):
-      Promise<CompileScriptResult|null> {
+  async compileScript(
+      expression: string, sourceURL: string, persistScript: boolean,
+      executionContextId: Protocol.Runtime.ExecutionContextId): Promise<CompileScriptResult|null> {
     const response = await this.agent.invoke_compileScript({
       expression: expression,
       sourceURL: sourceURL,
@@ -214,9 +215,9 @@ export class RuntimeModel extends SDKModel<EventTypes> {
   }
 
   async runScript(
-      scriptId: string, executionContextId: number, objectGroup?: string, silent?: boolean,
-      includeCommandLineAPI?: boolean, returnByValue?: boolean, generatePreview?: boolean,
-      awaitPromise?: boolean): Promise<EvaluationResult> {
+      scriptId: Protocol.Runtime.ScriptId, executionContextId: Protocol.Runtime.ExecutionContextId,
+      objectGroup?: string, silent?: boolean, includeCommandLineAPI?: boolean, returnByValue?: boolean,
+      generatePreview?: boolean, awaitPromise?: boolean): Promise<EvaluationResult> {
     const response = await this.agent.invoke_runScript({
       scriptId,
       executionContextId,
@@ -240,8 +241,8 @@ export class RuntimeModel extends SDKModel<EventTypes> {
     if (!prototype.objectId) {
       return {error: 'Prototype should be an Object.'};
     }
-    const response = await this.agent.invoke_queryObjects(
-        {prototypeObjectId: (prototype.objectId as string), objectGroup: 'console'});
+    const response =
+        await this.agent.invoke_queryObjects({prototypeObjectId: prototype.objectId, objectGroup: 'console'});
     const error = response.getError();
     if (error) {
       console.error(error);
@@ -537,7 +538,7 @@ class RuntimeDispatcher implements ProtocolProxyApi.RuntimeDispatcher {
 }
 
 export class ExecutionContext {
-  id: number;
+  id: Protocol.Runtime.ExecutionContextId;
   uniqueId: string;
   name: string;
   private labelInternal: string|null;
@@ -545,10 +546,10 @@ export class ExecutionContext {
   isDefault: boolean;
   runtimeModel: RuntimeModel;
   debuggerModel: DebuggerModel;
-  frameId: string|undefined;
+  frameId: Protocol.Page.FrameId|undefined;
   constructor(
-      runtimeModel: RuntimeModel, id: number, uniqueId: string, name: string, origin: string, isDefault: boolean,
-      frameId?: string) {
+      runtimeModel: RuntimeModel, id: Protocol.Runtime.ExecutionContextId, uniqueId: string, name: string,
+      origin: string, isDefault: boolean, frameId?: Protocol.Page.FrameId) {
     this.id = id;
     this.uniqueId = uniqueId;
     this.name = name;
@@ -576,7 +577,7 @@ export class ExecutionContext {
       if (target.type() === Type.ServiceWorker) {
         return 3;
       }
-      if (target.type() === Type.Worker) {
+      if (target.type() === Type.Worker || target.type() === Type.SharedWorker) {
         return 2;
       }
       return 1;

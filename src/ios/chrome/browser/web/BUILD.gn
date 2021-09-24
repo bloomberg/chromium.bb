@@ -239,9 +239,8 @@ source_set("web_internal") {
     "//ios/components/security_interstitials/lookalikes",
     "//ios/components/webui:url_constants",
     "//ios/net",
-    "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:font_size_java_script_feature",
-    "//ios/public/provider/chrome/browser/voice",
+    "//ios/public/provider/chrome/browser/url_rewriters:url_rewriters_api",
     "//ios/web",
     "//ios/web/common",
     "//ios/web/common:user_agent",
@@ -445,21 +444,6 @@ source_set("eg2_tests") {
   ]
 
   frameworks = [ "UIKit.framework" ]
-}
-
-source_set("perf_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [ "early_page_script_perftest.mm" ]
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//ios/chrome/browser/browser_state:test_support",
-    "//ios/chrome/test/base:perf_test_support",
-    "//ios/third_party/webkit",
-    "//ios/web/common:web_view_creation_util",
-    "//ios/web/public/test",
-  ]
 }
 
 source_set("feature_flags") {

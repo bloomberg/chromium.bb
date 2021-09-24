@@ -42,6 +42,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     oof_positioned_fragmentainer_descendants_.clear();
     oof_positioned_descendants_.clear();
     multicols_with_pending_oofs_.clear();
+    child_break_tokens_.clear();
   }
 
   struct ChildWithOffset {
@@ -57,8 +58,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   };
 
   using ChildrenVector = Vector<ChildWithOffset, 4>;
-  using MulticolCollection =
-      HashMap<LayoutBox*, NGMulticolWithPendingOOFs<LogicalOffset>>;
+  using MulticolCollection = HashMap<UntracedMember<LayoutBox>,
+                                     NGMulticolWithPendingOOFs<LogicalOffset>>;
 
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
   void SetBfcLineOffset(LayoutUnit bfc_line_offset) {
@@ -81,6 +82,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   void SetExclusionSpace(NGExclusionSpace&& exclusion_space) {
     exclusion_space_ = std::move(exclusion_space);
+  }
+
+  void SetLinesUntilClamp(const absl::optional<int>& value) {
+    lines_until_clamp_ = value;
   }
 
   const NGUnpositionedListMarker& UnpositionedListMarker() const {
@@ -230,6 +235,13 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   void SetIsPushedByFloats() { is_pushed_by_floats_ = true; }
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
 
+  // Set when this subtree has modified the incoming margin-strut, such that it
+  // may change our final position.
+  void SetSubtreeModifiedMarginStrut() {
+    DCHECK(!BfcBlockOffset());
+    subtree_modified_margin_strut_ = true;
+  }
+
   void ResetAdjoiningObjectTypes() {
     adjoining_object_types_ = kAdjoiningNone;
     has_adjoining_object_descendants_ = false;
@@ -244,6 +256,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   NGAdjoiningObjectTypes AdjoiningObjectTypes() const {
     return adjoining_object_types_;
   }
+
+  void SetIsBlockInInline() { is_block_in_inline_ = true; }
 
   void SetHasBlockFragmentation() { has_block_fragmentation_ = true; }
 
@@ -273,11 +287,17 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     DCHECK(has_column_spanner_ || !column_spanner_);
     return has_column_spanner_;
   }
+  void SetIsEmptySpannerParent(bool is_empty_spanner_parent) {
+    DCHECK(FoundColumnSpanner());
+    is_empty_spanner_parent_ = is_empty_spanner_parent;
+  }
+  bool IsEmptySpannerParent() const { return is_empty_spanner_parent_; }
 
   // See NGLayoutResult::AnnotationOverflow().
   void SetAnnotationOverflow(LayoutUnit overflow) {
     annotation_overflow_ = overflow;
   }
+  LayoutUnit AnnotationOverflow() const { return annotation_overflow_; }
 
   // See NGLayoutRsult::BlockEndAnnotatioSpace().
   void SetBlockEndAnnotationSpace(LayoutUnit space) {
@@ -328,6 +348,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   absl::optional<LayoutUnit> bfc_block_offset_;
   NGMarginStrut end_margin_strut_;
   NGExclusionSpace exclusion_space_;
+  absl::optional<int> lines_until_clamp_;
 
   Vector<NGLogicalOutOfFlowPositionedNode> oof_positioned_candidates_;
   Vector<NGLogicalOutOfFlowPositionedNode>
@@ -343,12 +364,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // Only used by the NGBoxFragmentBuilder subclass, but defined here to avoid
   // a virtual function call.
   NGBreakTokenVector child_break_tokens_;
-  scoped_refptr<const NGInlineBreakToken> last_inline_break_token_;
+  const NGInlineBreakToken* last_inline_break_token_ = nullptr;
 
   NGBlockNode column_spanner_ = nullptr;
 
-  scoped_refptr<const NGEarlyBreak> early_break_;
-  NGBreakAppeal break_appeal_ = kBreakAppealLastResort;
+  const NGEarlyBreak* early_break_ = nullptr;
 
   // See NGLayoutResult::AnnotationOverflow().
   LayoutUnit annotation_overflow_;
@@ -364,13 +384,16 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   bool is_self_collapsing_ = false;
   bool is_pushed_by_floats_ = false;
+  bool subtree_modified_margin_strut_ = false;
   bool is_legacy_layout_root_ = false;
+  bool is_block_in_inline_ = false;
 
   bool has_floating_descendants_for_paint_ = false;
   bool has_descendant_that_depends_on_percentage_block_size_ = false;
   bool has_block_fragmentation_ = false;
   bool is_fragmentation_context_root_ = false;
   bool has_column_spanner_ = false;
+  bool is_empty_spanner_parent_ = false;
 
   bool has_oof_candidate_that_needs_block_offset_adjustment_ = false;
 };

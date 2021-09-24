@@ -9,13 +9,9 @@
 #include "base/check.h"
 #import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/test_mailto_handler_provider.h"
-#include "ios/public/provider/chrome/browser/omaha/test_omaha_service_provider.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_trusted_vault_service.h"
-#include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/test_user_feedback_provider.h"
-#import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
-#import "ios/public/provider/chrome/browser/voice/voice_search_language.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,11 +20,7 @@
 namespace ios {
 
 TestChromeBrowserProvider::TestChromeBrowserProvider()
-    : omaha_service_provider_(std::make_unique<TestOmahaServiceProvider>()),
-      signin_resources_provider_(
-          std::make_unique<TestSigninResourcesProvider>()),
-      voice_search_provider_(std::make_unique<TestVoiceSearchProvider>()),
-      user_feedback_provider_(std::make_unique<TestUserFeedbackProvider>()),
+    : user_feedback_provider_(std::make_unique<TestUserFeedbackProvider>()),
       mailto_handler_provider_(std::make_unique<TestMailtoHandlerProvider>()),
       discover_feed_provider_(std::make_unique<DiscoverFeedProvider>()) {}
 
@@ -38,24 +30,6 @@ TestChromeBrowserProvider::~TestChromeBrowserProvider() {}
 TestChromeBrowserProvider& TestChromeBrowserProvider::GetTestProvider() {
   ChromeBrowserProvider& provider = GetChromeBrowserProvider();
   return static_cast<TestChromeBrowserProvider&>(provider);
-}
-
-SigninResourcesProvider*
-TestChromeBrowserProvider::GetSigninResourcesProvider() {
-  return signin_resources_provider_.get();
-}
-
-void TestChromeBrowserProvider::SetChromeIdentityServiceForTesting(
-    std::unique_ptr<ChromeIdentityService> service) {
-  chrome_identity_service_ = std::move(service);
-  FireChromeIdentityServiceDidChange(chrome_identity_service_.get());
-}
-
-ChromeIdentityService* TestChromeBrowserProvider::GetChromeIdentityService() {
-  if (!chrome_identity_service_) {
-    chrome_identity_service_.reset(new FakeChromeIdentityService());
-  }
-  return chrome_identity_service_.get();
 }
 
 ChromeTrustedVaultService*
@@ -68,15 +42,6 @@ TestChromeBrowserProvider::GetChromeTrustedVaultService() {
 
 UITextField* TestChromeBrowserProvider::CreateStyledTextField() const {
   return [[UITextField alloc] initWithFrame:CGRectZero];
-}
-
-VoiceSearchProvider* TestChromeBrowserProvider::GetVoiceSearchProvider() const {
-  return voice_search_provider_.get();
-}
-
-OmahaServiceProvider* TestChromeBrowserProvider::GetOmahaServiceProvider()
-    const {
-  return omaha_service_provider_.get();
 }
 
 UserFeedbackProvider* TestChromeBrowserProvider::GetUserFeedbackProvider()
@@ -92,6 +57,11 @@ MailtoHandlerProvider* TestChromeBrowserProvider::GetMailtoHandlerProvider()
 DiscoverFeedProvider* TestChromeBrowserProvider::GetDiscoverFeedProvider()
     const {
   return discover_feed_provider_.get();
+}
+
+std::unique_ptr<ChromeIdentityService>
+TestChromeBrowserProvider::CreateChromeIdentityService() {
+  return std::make_unique<FakeChromeIdentityService>();
 }
 
 }  // namespace ios

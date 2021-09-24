@@ -21,6 +21,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/base/big_buffer.h"
@@ -28,6 +29,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/base/network_isolation_key.h"
 #include "net/cert/cert_verifier.h"
@@ -58,12 +60,17 @@
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/socket_factory.h"
 #include "services/network/url_request_context_owner.h"
-#include "services/network/web_bundle_manager.h"
+#include "services/network/web_bundle/web_bundle_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "crypto/scoped_nss_types.h"
 #endif
+
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/reporting/reporting_cache_observer.h"
+#include "net/reporting/reporting_report.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace base {
 class UnguessableToken;
@@ -119,8 +126,15 @@ class CorsURLLoaderFactory;
 // NetworkService's mojo interface and are owned jointly by the NetworkService
 // and the mojo::Remote<NetworkContext> used to talk to them, and the
 // NetworkContext is destroyed when either one is torn down.
+#if BUILDFLAG(ENABLE_REPORTING)
+class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
+    : public mojom::NetworkContext,
+      public net::ReportingCacheObserver {
+#else
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     : public mojom::NetworkContext {
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+
  public:
   using OnConnectionCloseCallback =
       base::OnceCallback<void(NetworkContext* network_context)>;
@@ -229,7 +243,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void NotifyExternalCacheHit(const GURL& url,
                               const std::string& http_method,
                               const net::NetworkIsolationKey& key,
-                              bool is_subframe_document_resource) override;
+                              bool is_subframe_document_resource,
+                              bool include_credentials) override;
   void ClearHostCache(mojom::ClearDataFilterPtr filter,
                       ClearHostCacheCallback callback) override;
   void ClearHttpAuthCache(base::Time start_time,
@@ -394,15 +409,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void CreateMdnsResponder(
       mojo::PendingReceiver<mojom::MdnsResponder> responder_receiver) override;
   void SetDocumentReportingEndpoints(
+      const base::UnguessableToken& reporting_source,
       const url::Origin& origin,
       const net::NetworkIsolationKey& network_isolation_key,
       const base::flat_map<std::string, std::string>& endpoints) override;
-  void QueueReport(const std::string& type,
-                   const std::string& group,
-                   const GURL& url,
-                   const net::NetworkIsolationKey& network_isolation_key,
-                   const absl::optional<std::string>& user_agent,
-                   base::Value body) override;
+  void SendReportsAndRemoveSource(
+      const base::UnguessableToken& reporting_source) override;
+  void QueueReport(
+      const std::string& type,
+      const std::string& group,
+      const GURL& url,
+      const absl::optional<base::UnguessableToken>& reporting_source,
+      const net::NetworkIsolationKey& network_isolation_key,
+      const absl::optional<std::string>& user_agent,
+      base::Value body) override;
   void QueueSignedExchangeReport(
       mojom::SignedExchangeReportPtr report,
       const net::NetworkIsolationKey& network_isolation_key) override;
@@ -547,6 +567,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return require_network_isolation_key_;
   }
 
+#if BUILDFLAG(ENABLE_REPORTING)
+  void AddReportingApiObserver(
+      mojo::PendingRemote<network::mojom::ReportingApiObserver> observer)
+      override;
+  void OnReportAdded(const net::ReportingReport* service_report) override;
+  void OnReportUpdated(const net::ReportingReport* service_report) override;
+  void OnReportingObserverDisconnect(mojo::RemoteSetElementId mojo_id);
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+
  private:
   URLRequestContextOwner MakeURLRequestContext(
       mojo::PendingRemote<mojom::URLLoaderFactory>
@@ -613,6 +642,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   URLRequestContextOwner url_request_context_owner_;
 
   net::URLRequestContext* url_request_context_;
+
+#if BUILDFLAG(ENABLE_REPORTING)
+  bool is_observing_reporting_service_;
+  mojo::RemoteSet<network::mojom::ReportingApiObserver>
+      reporting_api_observers_;
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // Owned by URLRequestContext.
   NetworkServiceNetworkDelegate* network_delegate_ = nullptr;

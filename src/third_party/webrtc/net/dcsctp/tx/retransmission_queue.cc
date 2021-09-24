@@ -16,7 +16,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -25,7 +24,6 @@
 #include "absl/types/optional.h"
 #include "api/array_view.h"
 #include "net/dcsctp/common/math.h"
-#include "net/dcsctp/common/pair_hash.h"
 #include "net/dcsctp/common/sequence_numbers.h"
 #include "net/dcsctp/common/str_join.h"
 #include "net/dcsctp/packet/chunk/data_chunk.h"
@@ -49,6 +47,9 @@ namespace {
 // The number of times a packet must be NACKed before it's retransmitted.
 // See https://tools.ietf.org/html/rfc4960#section-7.2.4
 constexpr size_t kNumberOfNacksForRetransmission = 3;
+
+// Allow sending only slightly less than an MTU, to account for headers.
+constexpr float kMinBytesRequiredToSendFactor = 0.9;
 }  // namespace
 
 RetransmissionQueue::RetransmissionQueue(
@@ -63,6 +64,7 @@ RetransmissionQueue::RetransmissionQueue(
     bool supports_partial_reliability,
     bool use_message_interleaving)
     : options_(options),
+      min_bytes_required_to_send_(options.mtu * kMinBytesRequiredToSendFactor),
       partial_reliability_(supports_partial_reliability),
       log_prefix_(std::string(log_prefix) + "tx: "),
       data_chunk_header_size_(use_message_interleaving
@@ -113,15 +115,8 @@ void RetransmissionQueue::RemoveAcked(UnwrappedTSN cumulative_tsn_ack,
                                       AckInfo& ack_info) {
   auto first_unacked = outstanding_data_.upper_bound(cumulative_tsn_ack);
 
-  for (auto it = outstanding_data_.begin(); it != first_unacked; ++it) {
-    ack_info.bytes_acked_by_cumulative_tsn_ack += it->second.data().size();
-    ack_info.acked_tsns.push_back(it->first.Wrap());
-    if (it->second.is_outstanding()) {
-      outstanding_bytes_ -= GetSerializedChunkSize(it->second.data());
-      --outstanding_items_;
-    } else if (it->second.should_be_retransmitted()) {
-      to_be_retransmitted_.erase(it->first);
-    }
+  for (auto iter = outstanding_data_.begin(); iter != first_unacked; ++iter) {
+    AckChunk(ack_info, iter);
   }
 
   outstanding_data_.erase(outstanding_data_.begin(), first_unacked);
@@ -142,22 +137,28 @@ void RetransmissionQueue::AckGapBlocks(
     auto end = outstanding_data_.upper_bound(
         UnwrappedTSN::AddTo(cumulative_tsn_ack, block.end));
     for (auto iter = start; iter != end; ++iter) {
-      if (!iter->second.is_acked()) {
-        ack_info.bytes_acked_by_new_gap_ack_blocks +=
-            iter->second.data().size();
-        if (iter->second.is_outstanding()) {
-          outstanding_bytes_ -= GetSerializedChunkSize(iter->second.data());
-          --outstanding_items_;
-        }
-        if (iter->second.should_be_retransmitted()) {
-          to_be_retransmitted_.erase(iter->first);
-        }
-        iter->second.Ack();
-        ack_info.highest_tsn_acked =
-            std::max(ack_info.highest_tsn_acked, iter->first);
-        ack_info.acked_tsns.push_back(iter->first.Wrap());
-      }
+      AckChunk(ack_info, iter);
     }
+  }
+}
+
+void RetransmissionQueue::AckChunk(
+    AckInfo& ack_info,
+    std::map<UnwrappedTSN, TxData>::iterator iter) {
+  if (!iter->second.is_acked()) {
+    size_t serialized_size = GetSerializedChunkSize(iter->second.data());
+    ack_info.bytes_acked += serialized_size;
+    ack_info.acked_tsns.push_back(iter->first.Wrap());
+    if (iter->second.is_outstanding()) {
+      outstanding_bytes_ -= serialized_size;
+      --outstanding_items_;
+    }
+    if (iter->second.should_be_retransmitted()) {
+      to_be_retransmitted_.erase(iter->first);
+    }
+    iter->second.Ack();
+    ack_info.highest_tsn_acked =
+        std::max(ack_info.highest_tsn_acked, iter->first);
   }
 }
 
@@ -421,9 +422,8 @@ bool RetransmissionQueue::HandleSack(TimeMs now, const SackChunk& sack) {
     // Note: It may be started again in a bit further down.
     t3_rtx_.Stop();
 
-    HandleIncreasedCumulativeTsnAck(
-        old_outstanding_bytes, ack_info.bytes_acked_by_cumulative_tsn_ack +
-                                   ack_info.bytes_acked_by_new_gap_ack_blocks);
+    HandleIncreasedCumulativeTsnAck(old_outstanding_bytes,
+                                    ack_info.bytes_acked);
   }
 
   if (ack_info.has_packet_loss) {
@@ -434,8 +434,7 @@ bool RetransmissionQueue::HandleSack(TimeMs now, const SackChunk& sack) {
   // https://tools.ietf.org/html/rfc4960#section-8.2
   // "When an outstanding TSN is acknowledged [...] the endpoint shall clear
   // the error counter ..."
-  if (ack_info.bytes_acked_by_cumulative_tsn_ack > 0 ||
-      ack_info.bytes_acked_by_new_gap_ack_blocks > 0) {
+  if (ack_info.bytes_acked > 0) {
     on_clear_retransmission_counter_();
   }
 
@@ -605,10 +604,8 @@ std::vector<std::pair<TSN, Data>> RetransmissionQueue::GetChunksToSend(
     // allowed to be sent), and fill that up first with chunks that are
     // scheduled to be retransmitted. If there is still budget, send new chunks
     // (which will have their TSN assigned here.)
-    size_t remaining_cwnd_bytes =
-        outstanding_bytes_ >= cwnd_ ? 0 : cwnd_ - outstanding_bytes_;
-    size_t max_bytes = RoundDownTo4(std::min(
-        std::min(bytes_remaining_in_packet, rwnd()), remaining_cwnd_bytes));
+    size_t max_bytes =
+        RoundDownTo4(std::min(max_bytes_to_send(), bytes_remaining_in_packet));
 
     to_be_sent = GetChunksToBeRetransmitted(max_bytes);
     max_bytes -= absl::c_accumulate(
@@ -708,6 +705,11 @@ RetransmissionQueue::GetChunkStatesForTesting() const {
     states.emplace_back(elem.first.Wrap(), state);
   }
   return states;
+}
+
+bool RetransmissionQueue::can_send_data() const {
+  return cwnd_ < options_.avoid_fragmentation_cwnd_mtus * options_.mtu ||
+         max_bytes_to_send() >= min_bytes_required_to_send_;
 }
 
 bool RetransmissionQueue::ShouldSendForwardTsn(TimeMs now) {
@@ -836,9 +838,13 @@ void RetransmissionQueue::AbandonAllFor(
   }
 }
 
+size_t RetransmissionQueue::max_bytes_to_send() const {
+  size_t left = outstanding_bytes_ >= cwnd_ ? 0 : cwnd_ - outstanding_bytes_;
+  return std::min(rwnd(), left);
+}
+
 ForwardTsnChunk RetransmissionQueue::CreateForwardTsn() const {
-  std::unordered_map<StreamID, SSN, StreamID::Hasher>
-      skipped_per_ordered_stream;
+  std::map<StreamID, SSN> skipped_per_ordered_stream;
   UnwrappedTSN new_cumulative_ack = last_cumulative_tsn_ack_;
 
   for (const auto& elem : outstanding_data_) {
@@ -864,8 +870,7 @@ ForwardTsnChunk RetransmissionQueue::CreateForwardTsn() const {
 }
 
 IForwardTsnChunk RetransmissionQueue::CreateIForwardTsn() const {
-  std::unordered_map<std::pair<IsUnordered, StreamID>, MID, UnorderedStreamHash>
-      skipped_per_stream;
+  std::map<std::pair<IsUnordered, StreamID>, MID> skipped_per_stream;
   UnwrappedTSN new_cumulative_ack = last_cumulative_tsn_ack_;
 
   for (const auto& elem : outstanding_data_) {

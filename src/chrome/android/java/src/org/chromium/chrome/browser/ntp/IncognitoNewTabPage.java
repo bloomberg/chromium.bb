@@ -79,8 +79,6 @@ public class IncognitoNewTabPage
             public void initCookieControlsManager() {
                 mCookieControlsManager = new IncognitoCookieControlsManager();
                 mCookieControlsManager.initialize();
-                mIncognitoNewTabPageView.setIncognitoCookieControlsCardVisibility(
-                        mCookieControlsManager.shouldShowCookieControlsCard());
                 mCookieControlsObserver = new IncognitoCookieControlsManager.Observer() {
                     @Override
                     public void onUpdate(
@@ -122,10 +120,6 @@ public class IncognitoNewTabPage
         mIncognitoNewTabPageView =
                 (IncognitoNewTabPageView) inflater.inflate(R.layout.new_tab_page_incognito, null);
         mIncognitoNewTabPageView.initialize(mIncognitoNewTabPageManager);
-
-        String newTabPageHeader =
-                mIncognitoNewTabPageView.getContext().getString(R.string.new_tab_otr_title);
-        mIncognitoNewTabPageView.setIncognitoNewTabHeader(newTabPageHeader);
 
         // Work around https://crbug.com/943873 and https://crbug.com/963385 where default focus
         // highlight shows up after toggling dark mode.

@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 import * as i18n from '../../../core/i18n/i18n.js';
+import inspectorCommonStyles from '../../legacy/inspectorCommon.css.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
-import valueInterpreterDisplayStyles from './valueInterpreterDisplay.css.js';
 
+import valueInterpreterDisplayStyles from './valueInterpreterDisplay.css.js';
 import {Endianness, format, getDefaultValueTypeMapping, getPointerAddress, isNumber, isPointer, isValidMode, VALUE_TYPE_MODE_LIST, ValueType, ValueTypeMode} from './ValueInterpreterDisplayUtils.js';
 
 const UIStrings = {
@@ -37,7 +38,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const {render, html} = LitHtml;
-const getStyleSheets = ComponentHelpers.GetStylesheet.getStyleSheets;
 
 const SORTED_VALUE_TYPES = Array.from(getDefaultValueTypeMapping().keys());
 
@@ -50,10 +50,11 @@ export interface ValueDisplayData {
 }
 
 export class ValueTypeModeChangedEvent extends Event {
+  static readonly eventName = 'valuetypemodechanged';
   data: {type: ValueType, mode: ValueTypeMode};
 
   constructor(type: ValueType, mode: ValueTypeMode) {
-    super('valuetypemodechanged', {
+    super(ValueTypeModeChangedEvent.eventName, {
       composed: true,
     });
     this.data = {type, mode};
@@ -61,10 +62,11 @@ export class ValueTypeModeChangedEvent extends Event {
 }
 
 export class JumpToPointerAddressEvent extends Event {
+  static readonly eventName = 'jumptopointeraddress';
   data: number;
 
   constructor(address: number) {
-    super('jumptopointeraddress', {
+    super(JumpToPointerAddressEvent.eventName, {
       composed: true,
     });
     this.data = address;
@@ -84,7 +86,7 @@ export class ValueInterpreterDisplay extends HTMLElement {
   constructor() {
     super();
     this.shadow.adoptedStyleSheets = [
-      ...getStyleSheets('ui/legacy/inspectorCommon.css'),
+      inspectorCommonStyles,
     ];
   }
 

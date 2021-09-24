@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <iosfwd>
 #include <vector>
 
 #include "base/containers/circular_deque.h"
@@ -18,6 +19,7 @@
 #include "content/browser/conversions/conversion_policy.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_storage.h"
+#include "content/browser/conversions/rate_limit_table.h"
 #include "content/browser/conversions/sent_report_info.h"
 #include "content/browser/conversions/storable_impression.h"
 #include "content/test/test_content_browser_client.h"
@@ -86,7 +88,8 @@ class ConfigurableStorageDelegate : public ConversionStorage::Delegate {
       StorableImpression::SourceType source_type) const override;
   int GetMaxImpressionsPerOrigin() const override;
   int GetMaxConversionsPerOrigin() const override;
-  RateLimitConfig GetRateLimits() const override;
+  RateLimitConfig GetRateLimits(
+      ConversionStorage::AttributionType attribution_type) const override;
   StorableImpression::AttributionLogic SelectAttributionLogic(
       const StorableImpression& impression) const override;
   int GetMaxAttributionDestinationsPerEventSource() const override;
@@ -141,7 +144,7 @@ class ConfigurableStorageDelegate : public ConversionStorage::Delegate {
 
   RateLimitConfig rate_limits_ = {
       .time_window = base::TimeDelta::Max(),
-      .max_attributions_per_window = INT_MAX,
+      .max_contributions_per_window = INT_MAX,
   };
 
   StorableImpression::AttributionLogic attribution_logic_ =
@@ -218,7 +221,7 @@ class TestConversionManager : public ConversionManager {
     return last_impression_origin_;
   }
 
-  const absl::optional<int64_t> last_attribution_source_priority() {
+  const absl::optional<int64_t>& last_attribution_source_priority() {
     return last_attribution_source_priority_;
   }
 
@@ -248,22 +251,19 @@ class ImpressionBuilder {
 
   ImpressionBuilder& SetData(uint64_t data) WARN_UNUSED_RESULT;
 
-  ImpressionBuilder& SetImpressionOrigin(const url::Origin& origin)
-      WARN_UNUSED_RESULT;
+  ImpressionBuilder& SetImpressionOrigin(url::Origin origin) WARN_UNUSED_RESULT;
 
-  ImpressionBuilder& SetConversionOrigin(const url::Origin& domain)
-      WARN_UNUSED_RESULT;
+  ImpressionBuilder& SetConversionOrigin(url::Origin domain) WARN_UNUSED_RESULT;
 
-  ImpressionBuilder& SetReportingOrigin(const url::Origin& origin)
-      WARN_UNUSED_RESULT;
+  ImpressionBuilder& SetReportingOrigin(url::Origin origin) WARN_UNUSED_RESULT;
 
   ImpressionBuilder& SetSourceType(StorableImpression::SourceType source_type)
       WARN_UNUSED_RESULT;
 
   ImpressionBuilder& SetPriority(int64_t priority) WARN_UNUSED_RESULT;
 
-  ImpressionBuilder& SetImpressionId(absl::optional<int64_t> impression_id)
-      WARN_UNUSED_RESULT;
+  ImpressionBuilder& SetImpressionId(
+      absl::optional<StorableImpression::Id> impression_id) WARN_UNUSED_RESULT;
 
   ImpressionBuilder& SetDedupKeys(std::vector<int64_t> dedup_keys)
       WARN_UNUSED_RESULT;
@@ -279,7 +279,7 @@ class ImpressionBuilder {
   url::Origin reporting_origin_;
   StorableImpression::SourceType source_type_;
   int64_t priority_;
-  absl::optional<int64_t> impression_id_;
+  absl::optional<StorableImpression::Id> impression_id_;
   std::vector<int64_t> dedup_keys_;
 };
 
@@ -302,9 +302,9 @@ class ConversionBuilder {
       uint64_t event_source_trigger_data) WARN_UNUSED_RESULT;
 
   ConversionBuilder& SetConversionDestination(
-      const net::SchemefulSite& conversion_destination) WARN_UNUSED_RESULT;
+      net::SchemefulSite conversion_destination) WARN_UNUSED_RESULT;
 
-  ConversionBuilder& SetReportingOrigin(const url::Origin& reporting_origin)
+  ConversionBuilder& SetReportingOrigin(url::Origin reporting_origin)
       WARN_UNUSED_RESULT;
 
   ConversionBuilder& SetPriority(int64_t priority) WARN_UNUSED_RESULT;
@@ -329,11 +329,30 @@ bool operator==(const ConversionReport& a, const ConversionReport& b);
 
 bool operator==(const SentReportInfo& a, const SentReportInfo& b);
 
+std::ostream& operator<<(std::ostream& out,
+                         ConversionStorage::CreateReportStatus status);
+
+std::ostream& operator<<(std::ostream& out,
+                         RateLimitTable::AttributionAllowedStatus status);
+
+std::ostream& operator<<(std::ostream& out,
+                         StorableImpression::SourceType source_type);
+
+std::ostream& operator<<(std::ostream& out,
+                         const StorableConversion& conversion);
+
+std::ostream& operator<<(std::ostream& out,
+                         const StorableImpression& impression);
+
+std::ostream& operator<<(std::ostream& out, const ConversionReport& report);
+
+std::ostream& operator<<(std::ostream& out, SentReportInfo::Status status);
+
+std::ostream& operator<<(std::ostream& out, const SentReportInfo& info);
+
 std::vector<ConversionReport> GetConversionsToReportForTesting(
     ConversionManagerImpl* manager,
     base::Time max_report_time) WARN_UNUSED_RESULT;
-
-SentReportInfo GetBlankSentReportInfo();
 
 }  // namespace content
 

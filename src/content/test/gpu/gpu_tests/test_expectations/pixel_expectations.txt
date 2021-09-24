@@ -353,6 +353,21 @@ crbug.com/1021566 [ skia-renderer-dawn ] Pixel_WebGLGreenTriangle_NoAA_NoAlpha [
 crbug.com/1170369 [ linux skia-renderer-dawn ] Pixel_WebGLPreservedAfterTabSwitch [ Failure ]
 crbug.com/1170369 [ win skia-renderer-dawn ] Pixel_WebGLPreservedAfterTabSwitch [ Failure ]
 
+# Failure on dawn_pixel_skia_gold_test on Linux. However they are currently detecting
+# skia-renderer-disabled. We will need to update these expectations after fixing the detections.
+crbug.com/1240840 [ linux skia-renderer-disabled ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Failure ]
+crbug.com/1240840 [ linux skia-renderer-disabled ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Failure ]
+crbug.com/1240840 [ linux skia-renderer-disabled ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Failure ]
+crbug.com/1240840 [ linux skia-renderer-disabled ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Failure ]
+crbug.com/1240840 [ linux skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Failure ]
+crbug.com/1240840 [ linux skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Failure ]
+crbug.com/1240840 [ linux skia-renderer-dawn ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Failure ]
+crbug.com/1240840 [ linux skia-renderer-dawn ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Failure ]
+crbug.com/1240840 [ win skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Failure ]
+crbug.com/1240840 [ win skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Failure ]
+crbug.com/1240840 [ win skia-renderer-dawn ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Failure ]
+crbug.com/1240840 [ win skia-renderer-dawn ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Failure ]
+
 # Failure of dawn_pixel_skia_gold_test on win dawn
 crbug.com/1228694 [ win skia-renderer-dawn ] Pixel_CSS3DBlueBox [ Failure ]
 
@@ -395,7 +410,12 @@ crbug.com/1209344 [ linux display-server-wayland intel skia-renderer-gl ] Pixel_
 crbug.com/1209344 [ linux display-server-wayland intel skia-renderer-gl ] Pixel_Video_MP4 [ RetryOnFailure ]
 
 # WebGPU pixel tests hang on mac bots which mostly run older versions of mac os.
-crbug.com/1213170 [ mac ] Pixel_WebGPU* [ Skip ]
+crbug.com/1213170 [ mac ] Pixel_WebGPUImport* [ Skip ]
+crbug.com/1213170 [ mac ] Pixel_WebGPUCanvas* [ Skip ]
+crbug.com/1213170 [ mac ] Pixel_WebGPUWebGL* [ Skip ]
+
+# WebGPU pixel tests flakily hang in the metal shader compiler on Mac.
+crbug.com/1245704 [ mac ] Pixel_WebGPUToDataURL [ Failure ]
 
 # WebGPU pixel tests fail on Linux+SkiaRenderer+Vulkan
 crbug.com/1213657 [ linux skia-renderer-vulkan ] Pixel_WebGPU* [ Skip ]

@@ -18,10 +18,6 @@
   Attribution Reporting API Internals
 </div>
 <div id="info">
-  <p>Learn more:
-    <a href="https://web.dev/using-conversion-measurement/" target="_blank">
-      Attribution Reporting API
-    </a>
   <p>Attribution reporting is currently <span id="feature-status-content"></span>.
 </div>
 <hr>
@@ -70,7 +66,7 @@
       </table>
     </div>
   </div>
-  <h2> Pending Reports </h2>
+  <h2> Sent and Pending Reports </h2>
   <div class="content">
     <div>
       <span id="debug-mode-content"></span>
@@ -80,22 +76,22 @@
         <thead>
           <tr class="header-row">
             <th>
-              Source Event ID
-            </th>
-            <th>
-              Trigger Data
+              Report Body
             </th>
             <th>
               Destination
             </th>
             <th>
-              Report To
+              Report URL
             </th>
             <th>
               Report Time
             </th>
             <th>
-              Source Type
+              Report Priority
+            </th>
+            <th>
+              Status
             </th>
           </tr>
         </thead>
@@ -104,29 +100,7 @@
       </table>
     </div>
     <div>
-      <button id="send-reports">Send All Reports</button>
-    </div>
-  </div>
-  <h2> Sent Reports </h2>
-  <div class="content">
-    <div class="table-wrapper">
-      <table id="sent-report-table">
-        <thead>
-          <tr class="header-row">
-            <th>
-              Report URL
-            </th>
-            <th>
-              Report Body
-            </th>
-            <th>
-              HTTP Response Code
-            </th>
-          </tr>
-        </thead>
-        <tbody id="sent-report-table-body">
-        </tbody>
-      </table>
+      <button id="send-reports">Send All Pending Reports</button>
     </div>
   </div>
 </div>
@@ -145,22 +119,20 @@
   </tr>
 </template>
 
-<template id="report-row">
+<template id="no-reports-row">
   <tr>
-    <td class="source-event-id-cell"></td>
-    <td class="trigger-data-cell"></td>
-    <td class="destination-cell"></td>
-    <td class="report-to-cell"></td>
-    <td class="report-time-cell"></td>
-    <td class="source-type-cell"></td>
+    <td colspan="6">No sent or pending reports.</td>
   </tr>
 </template>
 
-<template id="sent-report-row">
+<template id="report-row">
   <tr>
+    <td class="report-body-cell"><pre><code></code></pre></td>
+    <td class="destination-cell"></td>
     <td class="report-url-cell"></td>
-    <td class="report-body-cell"></td>
-    <td class="http-response-code-cell"></td>
+    <td class="report-time-cell"></td>
+    <td class="report-priority-cell"></td>
+    <td class="status-cell"></td>
   </tr>
 </template>
 </body>

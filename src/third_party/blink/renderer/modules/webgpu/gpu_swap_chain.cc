@@ -141,9 +141,6 @@ bool GPUSwapChain::CopyToResourceProvider(
   if (!texture_)
     return false;
 
-  if (!(usage_ & WGPUTextureUsage_CopySrc))
-    return false;
-
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> shared_context_wrapper =
       SharedGpuContext::ContextProviderWrapper();
   if (!shared_context_wrapper || !shared_context_wrapper->ContextProvider())
@@ -195,8 +192,8 @@ bool GPUSwapChain::CopyToResourceProvider(
       .height = static_cast<uint32_t>(swap_buffers_->Size().height()),
       .depthOrArrayLayers = 1,
   };
-  GetProcs().commandEncoderCopyTextureToTexture(command_encoder, &source,
-                                                &destination, &copy_size);
+  GetProcs().commandEncoderCopyTextureToTextureInternal(
+      command_encoder, &source, &destination, &copy_size);
 
   WGPUCommandBuffer command_buffer =
       GetProcs().commandEncoderFinish(command_encoder, nullptr);
@@ -214,9 +211,11 @@ bool GPUSwapChain::CopyToResourceProvider(
 
 // gpu_swap_chain.idl
 GPUTexture* GPUSwapChain::getCurrentTexture() {
-  // As we are getting a new texture, we need to tell the canvas context that
-  // there will be a need to send a new frame to the offscreencanvas.
-  if (context_->IsOffscreenCanvas())
+  // As we are getting a new texture, if this is an offscreencanvas or if it is
+  // going to be presented to video, we have to notify the placeholder or
+  // listeners.
+  if (context_->IsOffscreenCanvas() ||
+      static_cast<HTMLCanvasElement*>(context_->Host())->HasCanvasCapture())
     context_->DidDraw(CanvasPerformanceMonitor::DrawType::kOther);
 
   // Calling getCurrentTexture returns a texture that is valid until the

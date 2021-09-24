@@ -52,6 +52,10 @@ class OmniboxAction : public base::RefCounted<OmniboxAction> {
   // Actions such as Pedals may require various capabilities from an embedding
   // client context and this interface can be used to invert the dependency.
   struct Client {
+    // Opens the Sharing Hub as if the "Share this page" airplane button
+    // were clicked.
+    virtual void OpenSharingHub() = 0;
+
     // Opens and shows a new incognito browser window.
     virtual void NewIncognitoWindow() = 0;
 
@@ -92,11 +96,11 @@ class OmniboxAction : public base::RefCounted<OmniboxAction> {
   // Provides read access to labels associated with this Action.
   const LabelStrings& GetLabelStrings() const;
 
-  // Records that the action was shown.
-  virtual void RecordActionShown() const {}
+  // Records that the action was shown at index `position` in the popup.
+  virtual void RecordActionShown(size_t position) const {}
 
-  // Records that the action was executed.
-  virtual void RecordActionExecuted() const {}
+  // Records that the action was executed at index `position` in the popup.
+  virtual void RecordActionExecuted(size_t position) const {}
 
   // Takes the action associated with this Action.  Non-navigation
   // Actions must override the default, but Navigation Actions don't need to.

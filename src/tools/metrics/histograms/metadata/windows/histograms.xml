@@ -22,8 +22,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <variants name="FileOperations">
-  <variant name=".DeleteFile.NonRecursive" summary=""/>
-  <variant name=".DeleteFile.Recursive" summary=""/>
+  <variant name=".DeleteFile.NonRecursive" summary="">
+    <obsolete>
+      Removed in M95.
+    </obsolete>
+  </variant>
+  <variant name=".DeleteFile.Recursive" summary="">
+    <obsolete>
+      Removed in M95.
+    </obsolete>
+  </variant>
 </variants>
 
 <histogram name="Windows.ApplockerRunning" enum="Boolean" expires_after="M83">
@@ -104,6 +112,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Windows.FilesystemError{FileOperations}"
     enum="WinGetLastError" expires_after="M81">
+  <obsolete>
+    Removed in M95.
+  </obsolete>
   <owner>grt@chromium.org</owner>
   <summary>
     The Windows error code relating to a failed attempt to operate on a file or
@@ -329,6 +340,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Windows.PostOperationState{FileOperations}"
     enum="PostOperationState" expires_after="M81">
+  <obsolete>
+    Removed in M95.
+  </obsolete>
   <owner>grt@chromium.org</owner>
   <summary>
     The state of an item in the filesystem following an operation on it.
@@ -428,6 +442,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     QueryContinueDrag for more than a second. This will be recorded as false.
     This stat will be used to determine how much of a real world problem this
     is.
+  </summary>
+</histogram>
+
+<histogram name="Windows.UnpinShortcut.ProcessError" enum="BooleanError"
+    expires_after="M99">
+  <owner>davidbienvenu@chromium.org</owner>
+  <owner>grt@chromium.org</owner>
+  <summary>
+    Indicates whether a connection error occured between the browser and the
+    shell handler process. This is usually caused by a crash in the utility
+    process. This is logged every time shortcuts are unpinned from the taskbar.
   </summary>
 </histogram>
 

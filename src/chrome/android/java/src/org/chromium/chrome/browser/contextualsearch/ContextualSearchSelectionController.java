@@ -79,8 +79,22 @@ public class ContextualSearchSelectionController {
 
     private ContextualSearchPolicy mPolicy;
 
+    /**
+     * The current selected text, either from tap or longpress, or {@code null} when the selection
+     * has been programatically cleared.
+     */
+    @Nullable
     private String mSelectedText;
+    /**
+     * Identifies what caused the selection (Tap or Longpress) whenever the selection is not null.
+     */
     private @SelectionType int mSelectionType;
+    /**
+     * A running tracker for the most recent valid selection type. This starts UNDETERMINED but
+     * remains valid from then on.
+     */
+    private @SelectionType int mLastValidSelectionType;
+
     private boolean mWasTapGestureDetected;
     // Reflects whether the last tap was valid and whether we still have a tap-based selection.
     private ContextualSearchTapState mLastTapState;
@@ -330,6 +344,7 @@ public class ContextualSearchSelectionController {
             boolean isValidSelection = validateSelectionSuppression(selection);
             mHandler.handleSelectionModification(selection, isValidSelection, mX, mY);
         }
+        mLastValidSelectionType = mSelectionType;
     }
 
     /**
@@ -367,13 +382,18 @@ public class ContextualSearchSelectionController {
                 // If we're in the middle of a drag operation then we can wait for the drag to end,
                 // otherwise we need to process this right away.
                 if (mAreSelectionHandlesBeingDragged) break;
+
                 // Smart text selection generates MOVED without STARTED and since that's not a user
                 // gesture we should not consider it an adjusted selection requiring an exact
-                // search.
-                shouldHandleSelection = true;
+                // search. MOVED events are also sent on simple scroll operations that hide and then
+                // show the selection handles so we need to differentiate based on whether the
+                // selection changed.
+                String previousSelection = mSelectedText;
                 if (getSelectionPopupController() != null) {
                     mSelectedText = getSelectionPopupController().getSelectedText();
                 }
+                shouldHandleSelection =
+                        (mSelectedText != null && !mSelectedText.equals(previousSelection));
                 break;
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
                 mAreSelectionHandlesBeingDragged = false;
@@ -449,7 +469,9 @@ public class ContextualSearchSelectionController {
     void handleShowUnhandledTapUIIfNeeded(int x, int y, int fontSizeDips, int textRunLength) {
         mWasTapGestureDetected = false;
         // TODO(donnd): refactor to avoid needing a new handler API method as suggested by Pedro.
-        if (mSelectionType != SelectionType.LONG_PRESS && !mAreSelectionHandlesShown) {
+        if (mSelectionType != SelectionType.LONG_PRESS && !mAreSelectionHandlesShown
+                && mLastValidSelectionType != SelectionType.LONG_PRESS
+                && mLastValidSelectionType != SelectionType.RESOLVING_LONG_PRESS) {
             if (mTapTimeNanoseconds != 0) {
                 mTapDurationMs = (int) ((System.nanoTime() - mTapTimeNanoseconds)
                         / TimeUtils.NANOSECONDS_PER_MILLISECOND);

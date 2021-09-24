@@ -10,8 +10,8 @@
 
 #include <memory>
 
+#include "include/sksl/SkSLErrorReporter.h"
 #include "src/sksl/SkSLBuiltinTypes.h"
-#include "src/sksl/SkSLErrorReporter.h"
 #include "src/sksl/SkSLPool.h"
 #include "src/sksl/SkSLUtil.h"
 #include "src/sksl/ir/SkSLExpression.h"
@@ -32,9 +32,6 @@ public:
         SkASSERT(!Pool::IsAttached());
     }
 
-    // Returns the current error handler
-    ErrorReporter& errors() const { return fErrors; }
-
     // The Context holds all of the built-in types.
     BuiltinTypes fTypes;
 
@@ -47,9 +44,8 @@ public:
     // The Context holds a pointer to the configuration of the program being compiled.
     ProgramConfig* fConfig = nullptr;
 
-private:
     // The Context holds a reference to our error reporter.
-    ErrorReporter& fErrors;
+    ErrorReporter* fErrors;
 };
 
 }  // namespace SkSL

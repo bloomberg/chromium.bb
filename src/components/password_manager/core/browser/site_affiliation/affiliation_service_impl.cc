@@ -4,14 +4,23 @@
 
 #include "components/password_manager/core/browser/site_affiliation/affiliation_service_impl.h"
 
+#include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_backend.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher_interface.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
-#include "components/sync/driver/sync_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
@@ -88,24 +97,61 @@ struct AffiliationServiceImpl::FetchInfo {
   base::OnceClosure callback;
 };
 
+// TODO(crbug.com/1246291): Create the backend task runner in Init and stop
+// passing it in the constructor.
 AffiliationServiceImpl::AffiliationServiceImpl(
-    syncer::SyncService* sync_service,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : sync_service_(sync_service),
-      url_loader_factory_(std::move(url_loader_factory)),
-      fetcher_factory_(std::make_unique<AffiliationFetcherFactoryImpl>()) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
+    : url_loader_factory_(std::move(url_loader_factory)),
+      fetcher_factory_(std::make_unique<AffiliationFetcherFactoryImpl>()),
+      backend_task_runner_(std::move(backend_task_runner)) {}
 
 AffiliationServiceImpl::~AffiliationServiceImpl() = default;
+
+void AffiliationServiceImpl::Init(
+    network::NetworkConnectionTracker* network_connection_tracker,
+    const base::FilePath& db_path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  backend_ = new AffiliationBackend(backend_task_runner_,
+                                    base::DefaultClock::GetInstance(),
+                                    base::DefaultTickClock::GetInstance());
+
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AffiliationBackend::Initialize,
+                     base::Unretained(backend_), url_loader_factory_->Clone(),
+                     base::Unretained(network_connection_tracker), db_path));
+}
+
+void AffiliationServiceImpl::Shutdown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (backend_) {
+    backend_task_runner_->DeleteSoon(FROM_HERE, backend_);
+    backend_ = nullptr;
+  }
+}
 
 void AffiliationServiceImpl::PrefetchChangePasswordURLs(
     const std::vector<GURL>& urls,
     base::OnceClosure callback) {
-  if (ShouldAffiliationBasedMatchingBeActive(sync_service_)) {
-    RequestFacetsAffiliations(urls, {.change_password_info = true},
-                              std::move(callback));
-  } else {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                     std::move(callback));
+  std::vector<FacetURI> facets;
+  std::vector<url::SchemeHostPort> tuple_origins;
+  for (const auto& url : urls) {
+    if (url.is_valid()) {
+      url::SchemeHostPort scheme_host_port(url);
+      if (!base::Contains(change_password_urls_, scheme_host_port)) {
+        facets.push_back(
+            FacetURI::FromCanonicalSpec(scheme_host_port.Serialize()));
+        tuple_origins.push_back(std::move(scheme_host_port));
+      }
+    }
+  }
+  if (!facets.empty()) {
+    auto fetcher = fetcher_factory_->CreateInstance(url_loader_factory_, this);
+    fetcher->StartRequest(facets,
+                          /*request_info=*/{.change_password_info = true});
+    pending_fetches_.emplace_back(std::move(fetcher), tuple_origins,
+                                  std::move(callback));
   }
 }
 
@@ -175,28 +221,46 @@ void AffiliationServiceImpl::OnMalformedResponse(
   });
 }
 
-void AffiliationServiceImpl::RequestFacetsAffiliations(
-    const std::vector<GURL>& urls,
-    const AffiliationFetcherInterface::RequestInfo request_info,
-    base::OnceClosure callback) {
-  std::vector<FacetURI> facets;
-  std::vector<url::SchemeHostPort> tuple_origins;
-  for (const auto& url : urls) {
-    if (url.is_valid()) {
-      url::SchemeHostPort scheme_host_port(url);
-      if (!base::Contains(change_password_urls_, scheme_host_port)) {
-        facets.push_back(
-            FacetURI::FromCanonicalSpec(scheme_host_port.Serialize()));
-        tuple_origins.push_back(std::move(scheme_host_port));
-      }
-    }
-  }
-  if (!facets.empty()) {
-    auto fetcher = fetcher_factory_->CreateInstance(url_loader_factory_, this);
-    fetcher->StartRequest(facets, request_info);
-    pending_fetches_.emplace_back(std::move(fetcher), tuple_origins,
-                                  std::move(callback));
-  }
+void AffiliationServiceImpl::GetAffiliationsAndBranding(
+    const FacetURI& facet_uri,
+    AffiliationService::StrategyOnCacheMiss cache_miss_strategy,
+    ResultCallback result_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(backend_);
+  backend_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&AffiliationBackend::GetAffiliationsAndBranding,
+                                base::Unretained(backend_), facet_uri,
+                                cache_miss_strategy, std::move(result_callback),
+                                base::SequencedTaskRunnerHandle::Get()));
+}
+
+void AffiliationServiceImpl::Prefetch(const FacetURI& facet_uri,
+                                      const base::Time& keep_fresh_until) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(backend_);
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AffiliationBackend::Prefetch, base::Unretained(backend_),
+                     facet_uri, keep_fresh_until));
+}
+
+void AffiliationServiceImpl::CancelPrefetch(
+    const FacetURI& facet_uri,
+    const base::Time& keep_fresh_until) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(backend_);
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AffiliationBackend::CancelPrefetch,
+                     base::Unretained(backend_), facet_uri, keep_fresh_until));
+}
+
+void AffiliationServiceImpl::TrimCacheForFacetURI(const FacetURI& facet_uri) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(backend_);
+  backend_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&AffiliationBackend::TrimCacheForFacetURI,
+                                base::Unretained(backend_), facet_uri));
 }
 
 }  // namespace password_manager

@@ -24,6 +24,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitrate.h"
 #include "media/base/bitstream_buffer.h"
@@ -1646,9 +1647,10 @@ bool RTCVideoEncoder::H264HwSupportForTemporalLayers() {
 bool RTCVideoEncoder::Vp9HwSupportForSpatialLayers() {
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
   return base::FeatureList::IsEnabled(media::kVaapiVp9kSVCHWEncoding);
-#endif
+#else
   // Spatial layers are not supported by hardware encoders.
   return false;
+#endif
 }
 
 }  // namespace blink

@@ -5,15 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_TELEMETRY_API_TELEMETRY_API_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_TELEMETRY_API_TELEMETRY_API_H_
 
-#include "chromeos/components/telemetry_extension_ui/mojom/probe_service.mojom.h"
-#include "chromeos/components/telemetry_extension_ui/services/probe_service.h"
+#include "ash/webui/telemetry_extension_ui/mojom/probe_service.mojom.h"
+#include "ash/webui/telemetry_extension_ui/services/probe_service.h"
+#include "chrome/browser/chromeos/extensions/telemetry/api/base_telemetry_extension_api_guard_function.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 
-class TelemetryApiFunctionBase : public ExtensionFunction {
+class TelemetryApiFunctionBase : public BaseTelemetryExtensionApiGuardFunction {
  public:
   TelemetryApiFunctionBase();
 
@@ -23,10 +24,10 @@ class TelemetryApiFunctionBase : public ExtensionFunction {
  protected:
   ~TelemetryApiFunctionBase() override;
 
-  mojo::Remote<health::mojom::ProbeService> remote_probe_service_;
+  mojo::Remote<ash::health::mojom::ProbeService> remote_probe_service_;
 
  private:
-  ProbeService probe_service_;
+  ash::ProbeService probe_service_;
 };
 
 class OsTelemetryGetVpdInfoFunction : public TelemetryApiFunctionBase {
@@ -41,10 +42,10 @@ class OsTelemetryGetVpdInfoFunction : public TelemetryApiFunctionBase {
  private:
   ~OsTelemetryGetVpdInfoFunction() override;
 
-  // ExtensionFunction:
-  ResponseAction Run() override;
+  // BaseTelemetryExtensionApiGuardFunction:
+  ResponseAction RunIfAllowed() override;
 
-  void OnResult(health::mojom::TelemetryInfoPtr ptr);
+  void OnResult(ash::health::mojom::TelemetryInfoPtr ptr);
 };
 
 class OsTelemetryGetOemDataFunction : public TelemetryApiFunctionBase {
@@ -59,10 +60,10 @@ class OsTelemetryGetOemDataFunction : public TelemetryApiFunctionBase {
  private:
   ~OsTelemetryGetOemDataFunction() override;
 
-  // ExtensionFunction:
-  ResponseAction Run() override;
+  // BaseTelemetryExtensionApiGuardFunction:
+  ResponseAction RunIfAllowed() override;
 
-  void OnResult(health::mojom::OemDataPtr ptr);
+  void OnResult(ash::health::mojom::OemDataPtr ptr);
 };
 
 }  // namespace chromeos

@@ -46,8 +46,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/session_util.h"
-#include "chrome/browser/ui/ash/test_wallpaper_controller.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -284,10 +282,6 @@ class MultiProfileSupportTest : public ChromeAshTestBase {
 
   user_manager::ScopedUserManager user_manager_enabler_;
 
-  std::unique_ptr<WallpaperControllerClientImpl> wallpaper_controller_client_;
-
-  TestWallpaperController test_wallpaper_controller_;
-
   // The maximized window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
 
@@ -320,9 +314,6 @@ void MultiProfileSupportTest::SetUpForThisManyWindows(int windows) {
       AccountId::FromUserEmail("a"));
   ash::MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
       ash::MultiUserWindowManagerImpl::ANIMATION_SPEED_DISABLED);
-  wallpaper_controller_client_ =
-      std::make_unique<WallpaperControllerClientImpl>();
-  wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
 }
 
 std::vector<std::unique_ptr<views::Widget>>
@@ -336,9 +327,9 @@ MultiProfileSupportTest::SetUpOneWindowEachDeskForUser(AccountId account_id) {
   // Set restore in progress to avoid activating desk activation during
   // `window->Show()` in `CreateTestWidget()`.
   test_shell_delegate->SetSessionRestoreInProgress(true);
-  auto* desks_helper = ash::DesksHelper::Get();
+  auto* desks_controller = ash::DesksController::Get();
   const int kActiveDeskIndex = 0;
-  for (int i = 0; i < desks_helper->GetNumberOfDesks(); i++) {
+  for (int i = 0; i < desks_controller->GetNumberOfDesks(); i++) {
     widgets.push_back(
         CreateTestWidget(nullptr, container_ids[i], gfx::Rect(700, 0, 50, 50)));
     aura::Window* win = widgets[i]->GetNativeWindow();
@@ -352,7 +343,7 @@ MultiProfileSupportTest::SetUpOneWindowEachDeskForUser(AccountId account_id) {
     EXPECT_TRUE(ash::AutotestDesksApi().IsWindowInDesk(win,
                                                        /*desk_index=*/i));
   }
-  EXPECT_EQ(kActiveDeskIndex, desks_helper->GetActiveDeskIndex());
+  EXPECT_EQ(kActiveDeskIndex, desks_controller->GetActiveDeskIndex());
   test_shell_delegate->SetSessionRestoreInProgress(false);
   return widgets;
 }
@@ -367,7 +358,6 @@ void MultiProfileSupportTest::TearDown() {
 
   ::MultiUserWindowManagerHelper::DeleteInstance();
   ChromeAshTestBase::TearDown();
-  wallpaper_controller_client_.reset();
   profile_manager_.reset();
   ash::CrosSettings::Shutdown();
   ash::DeviceSettingsService::Shutdown();

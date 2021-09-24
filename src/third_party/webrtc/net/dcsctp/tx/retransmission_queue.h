@@ -118,6 +118,9 @@ class RetransmissionQueue {
   // Returns the number of DATA chunks that are in-flight.
   size_t outstanding_items() const { return outstanding_items_; }
 
+  // Indicates if the congestion control algorithm allows data to be sent.
+  bool can_send_data() const;
+
   // Given the current time `now`, it will evaluate if there are chunks that
   // have expired and that need to be discarded. It returns true if a
   // FORWARD-TSN should be sent.
@@ -234,11 +237,8 @@ class RetransmissionQueue {
     // All TSNs that have been acked (for the first time) in this SACK.
     std::vector<TSN> acked_tsns;
 
-    // Bytes acked by increasing cumulative_tsn_ack in this SACK
-    size_t bytes_acked_by_cumulative_tsn_ack = 0;
-
-    // Bytes acked by gap blocks in this SACK.
-    size_t bytes_acked_by_new_gap_ack_blocks = 0;
+    // Bytes acked by increasing cumulative_tsn_ack and gap_ack_blocks.
+    size_t bytes_acked = 0;
 
     // Indicates if this SACK indicates that packet loss has occurred. Just
     // because a packet is missing in the SACK doesn't necessarily mean that
@@ -288,6 +288,11 @@ class RetransmissionQueue {
   void AckGapBlocks(UnwrappedTSN cumulative_tsn_ack,
                     rtc::ArrayView<const SackChunk::GapAckBlock> gap_ack_blocks,
                     AckInfo& ack_info);
+
+  // Acks the chunk referenced by `iter` and updates state in `ack_info` and the
+  // object's state.
+  void AckChunk(AckInfo& ack_info,
+                std::map<UnwrappedTSN, TxData>::iterator iter);
 
   // Mark chunks reported as "missing", as "nacked" or "to be retransmitted"
   // depending how many times this has happened. Only packets up until
@@ -341,7 +346,14 @@ class RetransmissionQueue {
                : CongestionAlgorithmPhase::kCongestionAvoidance;
   }
 
+  // Returns the number of bytes that may be sent in a single packet according
+  // to the congestion control algorithm.
+  size_t max_bytes_to_send() const;
+
   const DcSctpOptions options_;
+  // The minimum bytes required to be available in the congestion window to
+  // allow packets to be sent - to avoid sending too small packets.
+  const size_t min_bytes_required_to_send_;
   // If the peer supports RFC3758 - SCTP Partial Reliability Extension.
   const bool partial_reliability_;
   const std::string log_prefix_;

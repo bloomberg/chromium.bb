@@ -105,7 +105,7 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       const blink::ParsedPermissionsPolicy& permissions_policy_header,
       const blink::DocumentPolicyFeatureState& document_policy_header) override;
   void DispatchDidFailLoad(const ResourceError&, WebHistoryCommitType) override;
-  void DispatchDidFinishDocumentLoad() override;
+  void DispatchDidDispatchDOMContentLoadedEvent() override;
   void DispatchDidFinishLoad() override;
 
   void BeginNavigation(
@@ -183,7 +183,10 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       mojo::PendingAssociatedRemote<mojom::blink::PortalClient>) override;
   RemoteFrame* AdoptPortal(HTMLPortalElement*) override;
 
-  RemoteFrame* CreateFencedFrame(HTMLFencedFrameElement*) override;
+  RemoteFrame* CreateFencedFrame(
+      HTMLFencedFrameElement*,
+      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>)
+      override;
 
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,

@@ -1045,7 +1045,13 @@ static avifResult avifDecoderItemRead(avifDecoderItem * item,
     // preexisting buffer.
     avifBool singlePersistentBuffer = ((item->extents.count == 1) && (idatBuffer || io->persistent));
     if (!singlePersistentBuffer) {
-        avifRWDataRealloc(&item->mergedExtents, totalBytesToRead);
+        // Always allocate the item's full size here, as progressive image decodes will do partial
+        // reads into this buffer and begin feeding the buffer to the underlying AV1 decoder, but
+        // will then write more into this buffer without flushing the AV1 decoder (which is still
+        // holding the address of the previous allocation of this buffer). This strategy avoids
+        // use-after-free issues in the AV1 decoder and unnecessary reallocs as a typical
+        // progressive decode use case will eventually decode the final layer anyway.
+        avifRWDataRealloc(&item->mergedExtents, item->size);
         item->ownsMergedExtents = AVIF_TRUE;
     }
 
@@ -3095,7 +3101,7 @@ avifResult avifDecoderParse(avifDecoder * decoder)
                 avifDiagnosticsPrintf(data->diag, "Item ID [%u] size is too large [%ux%u]", item->id, item->width, item->height);
                 return AVIF_RESULT_BMFF_PARSE_FAILED;
             }
-        } else {
+        } else if (!item->auxForID) { // NON-STANDARD: Allow auxiliary images to not have an ispe property. See: https://crbug.com/1245673
             avifDiagnosticsPrintf(data->diag, "Item ID [%u] is missing a mandatory ispe property", item->id);
             return AVIF_RESULT_BMFF_PARSE_FAILED;
         }
@@ -3420,6 +3426,13 @@ avifResult avifDecoderReset(avifDecoder * decoder)
         }
 
         if (alphaItem) {
+            if (!alphaItem->width && !alphaItem->height) {
+                // NON-STANDARD: Alpha subimage does not have an ispe property; adopt width/height from color item
+                // See: https://crbug.com/1245673
+                alphaItem->width = colorItem->width;
+                alphaItem->height = colorItem->height;
+            }
+
             if ((data->alphaGrid.rows > 0) && (data->alphaGrid.columns > 0)) {
                 if (!avifDecoderGenerateImageGridTiles(decoder, &data->alphaGrid, alphaItem, AVIF_TRUE)) {
                     return AVIF_RESULT_INVALID_IMAGE_GRID;

@@ -11,8 +11,8 @@
 #include "base/sequence_checker.h"
 #include "base/threading/sequence_bound.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
+#include "content/browser/file_system_access/file_system_access_transfer_token_impl.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/file_system/isolated_context.h"
@@ -26,7 +26,7 @@ class FileSystemOperationRunner;
 
 namespace content {
 
-class WebContentsImpl;
+class WebContents;
 
 // Base class for File and Directory handle implementations. Holds data that is
 // common to both and (will) deal with functionality that is common as well,
@@ -37,7 +37,7 @@ class WebContentsImpl;
 // sequence. That sequence also has to be the same sequence on which the
 // FileSystemAccessPermissionContext expects to be interacted with, which
 // is the UI thread.
-class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
+class CONTENT_EXPORT FileSystemAccessHandleBase {
  public:
   using BindingContext = FileSystemAccessManagerImpl::BindingContext;
   using SharedHandleState = FileSystemAccessManagerImpl::SharedHandleState;
@@ -50,7 +50,7 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
   FileSystemAccessHandleBase(const FileSystemAccessHandleBase&) = delete;
   FileSystemAccessHandleBase& operator=(const FileSystemAccessHandleBase&) =
       delete;
-  ~FileSystemAccessHandleBase() override;
+  ~FileSystemAccessHandleBase();
 
   const storage::FileSystemURL& url() const { return url_; }
   const SharedHandleState& handle_state() const { return handle_state_; }
@@ -71,6 +71,20 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
       base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr,
                               PermissionStatus)> callback);
 
+  // TODO(crbug.com/1250534): Implement move and rename for directory handles.
+  // Implementation for the Move method in the
+  // blink::mojom::FileSystemAccessFileHandle and DirectoryHandle interfaces.
+  void DoMove(mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken>
+                  destination_directory,
+              const std::string& new_entry_name,
+              base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr)>
+                  callback);
+  // Implementation for the Rename method in the
+  // blink::mojom::FileSystemAccessFileHandle and DirectoryHandle interfaces.
+  void DoRename(const std::string& new_entry_name,
+                base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr)>
+                    callback);
+
   // Implementation for the Remove and RemoveEntry methods in the
   // blink::mojom::FileSystemAccessFileHandle and DirectoryHandle interfaces.
   void DoRemove(const storage::FileSystemURL& url,
@@ -78,8 +92,8 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
                 base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr)>
                     callback);
 
-  // Invokes |callback|, possibly after first requesting write permission. If
-  // permission isn't granted, |permission_denied| is invoked instead. The
+  // Invokes `callback`, possibly after first requesting write permission. If
+  // permission isn't granted, `no_permission_callback` is invoked instead. The
   // callbacks can be invoked synchronously.
   template <typename CallbackArgType>
   void RunWithWritePermission(
@@ -94,18 +108,16 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
     return manager()->context();
   }
 
-  WebContentsImpl* web_contents() const;
-
   virtual base::WeakPtr<FileSystemAccessHandleBase> AsWeakPtr() = 0;
 
-  // Invokes |method| on the correct sequence on this handle's
-  // FileSystemOperationRunner, passing |args| and a callback to the method. The
-  // passed in |callback| is wrapped to make sure it is called on the correct
-  // sequence before passing it off to the |method|.
+  // Invokes `method` on the correct sequence on this handle's
+  // FileSystemOperationRunner, passing `args` and a callback to the method. The
+  // passed in `callback` is wrapped to make sure it is called on the correct
+  // sequence before passing it off to the `method`.
   //
-  // Note that |callback| is passed to this method before other arguments, while
+  // Note that `callback` is passed to this method before other arguments, while
   // the wrapped callback will be passed as last argument to the underlying
-  // FileSystemOperation |method|.
+  // FileSystemOperation `method`.
   template <typename... MethodArgs,
             typename... ArgsMinusCallback,
             typename... CallbackArgs>
@@ -177,11 +189,23 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
+  storage::FileSystemURL GetParentURL();
+
   void DidRequestPermission(
       bool writable,
       base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr,
                               PermissionStatus)> callback,
       FileSystemAccessPermissionGrant::PermissionRequestOutcome outcome);
+
+  void DidResolveTokenToMove(
+      const std::string& new_entry_name,
+      base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr)> callback,
+      FileSystemAccessTransferTokenImpl* resolved_token);
+  void DidCreateDestinationDirectoryHandle(
+      const std::string& new_entry_name,
+      std::unique_ptr<FileSystemAccessDirectoryHandleImpl> dir_handle,
+      base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr)>
+          callback);
 
   bool ShouldTrackUsage() const {
     return url_.type() != storage::kFileSystemTypeTemporary &&
@@ -190,8 +214,9 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
 
   // The FileSystemAccessManagerImpl that owns this instance.
   FileSystemAccessManagerImpl* const manager_;
+  base::WeakPtr<WebContents> web_contents_;
   const BindingContext context_;
-  const storage::FileSystemURL url_;
+  storage::FileSystemURL url_;
   const SharedHandleState handle_state_;
 };
 

@@ -10,8 +10,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/hover_button.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
@@ -49,8 +49,8 @@ class WebAppHoverButton : public HoverButton {
   WebAppHoverButton& operator=(const WebAppHoverButton&) = delete;
   ~WebAppHoverButton() override;
 
-  void MarkAsUnselected(const ui::Event* event);
-  void MarkAsSelected(const ui::Event* event);
+  virtual void MarkAsUnselected(const ui::Event* event);
+  virtual void MarkAsSelected(const ui::Event* event);
 
   const web_app::AppId& app_id() const { return app_id_; }
 

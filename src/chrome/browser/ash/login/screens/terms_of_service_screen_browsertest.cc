@@ -11,6 +11,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/screen_manager.h"
+#include "chrome/browser/ash/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
@@ -87,6 +88,15 @@ class PublicSessionTosScreenTest : public OobeBaseTest {
  public:
   PublicSessionTosScreenTest() {}
   ~PublicSessionTosScreenTest() override = default;
+
+  void SetUpOnMainThread() override {
+    OobeBaseTest::SetUpOnMainThread();
+
+    // Prevent browser start in user session so that we do not need to wait
+    // for its initialization.
+    ash::test::UserSessionManagerTestApi(ash::UserSessionManager::GetInstance())
+        .SetShouldLaunchBrowserInTests(false);
+  }
 
   void RegisterAdditionalRequestHandlers() override {
     embedded_test_server()->RegisterRequestHandler(
@@ -433,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(ManagedUserTosScreenTest, TosSaved) {
   SetUpTermsOfServiceUrlPolicy();
   EXPECT_FALSE(TosFileExists());
   base::RunLoop run_loop;
-  GetTosScreen()->set_tos_saved_callback_for_testing(run_loop.QuitClosure());
+  TermsOfServiceScreen::SetTosSavedCallbackForTesting(run_loop.QuitClosure());
   StartManagedUserSession();
 
   WaitFosScreenShown();

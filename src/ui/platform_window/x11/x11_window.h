@@ -11,7 +11,9 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/x/x11_desktop_window_move_client.h"
 #include "ui/base/x/x11_drag_drop_client.h"
 #include "ui/base/x/x11_move_loop_delegate.h"
@@ -37,22 +39,20 @@ namespace ui {
 class PlatformWindowDelegate;
 class X11ExtensionDelegate;
 class X11MoveLoop;
-class LocatedEvent;
 class WorkspaceExtensionDelegate;
 
 // PlatformWindow implementation for X11.
-class X11_WINDOW_EXPORT X11Window
-    : public PlatformWindow,
-      public WmMoveResizeHandler,
-      public PlatformEventDispatcher,
-      public x11::EventObserver,
-      public WorkspaceExtension,
-      public X11Extension,
-      public WmDragHandler,
-      public XDragDropClient::Delegate,
-      public X11MoveLoopDelegate,
-      public WmMoveLoopHandler,
-      public X11DesktopWindowMoveClient::Delegate {
+class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
+                                    public WmMoveResizeHandler,
+                                    public PlatformEventDispatcher,
+                                    public x11::EventObserver,
+                                    public WorkspaceExtension,
+                                    public X11Extension,
+                                    public WmDragHandler,
+                                    public XDragDropClient::Delegate,
+                                    public X11MoveLoopDelegate,
+                                    public WmMoveLoopHandler,
+                                    public X11DesktopWindowMoveClient::Delegate {
  public:
   explicit X11Window(PlatformWindowDelegate* platform_window_delegate);
   ~X11Window() override;
@@ -176,7 +176,8 @@ class X11_WINDOW_EXPORT X11Window
 
   // WmDragHandler
   bool StartDrag(const OSExchangeData& data,
-                 int operation,
+                 int operations,
+                 mojom::DragEventSource source,
                  gfx::NativeCursor cursor,
                  bool can_grab_pointer,
                  WmDragHandler::Delegate* delegate) override;
@@ -213,13 +214,6 @@ class X11_WINDOW_EXPORT X11Window
   // the window size to the monitor size causes the WM to set the EWMH for
   // fullscreen.
   gfx::Size AdjustSizeForDisplay(const gfx::Size& requested_size_in_pixels);
-
-  // Converts the location of the |located_event| from the
-  // |current_window_bounds| to the |target_window_bounds|.
-  void ConvertEventLocationToTargetLocation(
-      const gfx::Rect& target_window_bounds,
-      const gfx::Rect& current_window_bounds,
-      ui::LocatedEvent* located_event);
 
   // Creates the X window with the given properties.
   // Depending on presence of the compositing manager and window type, may
@@ -282,6 +276,8 @@ class X11_WINDOW_EXPORT X11Window
 
   // Handle the state change since BeforeActivationStateChanged().
   void AfterActivationStateChanged();
+
+  void MaybeUpdateOcclusionState();
 
   void DelayedResize(const gfx::Rect& bounds_in_pixels);
 
@@ -387,6 +383,12 @@ class X11_WINDOW_EXPORT X11Window
   // True if the window should stay on top of most other windows.
   bool is_always_on_top_ = false;
 
+  // True if the window is fully obscured by another window.
+  bool is_occluded_ = false;
+
+  PlatformWindowOcclusionState occlusion_state_ =
+      PlatformWindowOcclusionState::kUnknown;
+
   // Does |xwindow_| have the pointer grab (XI2 or normal)?
   bool has_pointer_grab_ = false;
 
@@ -420,8 +422,6 @@ class X11_WINDOW_EXPORT X11Window
   bool had_pointer_grab_ = false;
   bool had_window_focus_ = false;
 
-  bool was_minimized_ = false;
-
   // Used for synchronizing between |xwindow_| and desktop compositor during
   // resizing.
   x11::Sync::Counter update_counter_{};
@@ -438,6 +438,9 @@ class X11_WINDOW_EXPORT X11Window
 
   // True if a Maximize() call should be done after mapping the window.
   bool should_maximize_after_map_ = false;
+
+  // True if GrabPointer() should be called after mapping the window.
+  bool should_grab_pointer_after_map_ = false;
 
   // Whether we currently are flashing our frame. This feature is implemented
   // by setting the urgency hint with the window manager, which can draw
@@ -470,6 +473,15 @@ class X11_WINDOW_EXPORT X11Window
   int64_t current_counter_value_ = 0;
   bool pending_counter_value_is_extended_ = false;
   bool configure_counter_value_is_extended_ = false;
+
+  // Used for ignoring bounds changes during the fullscreening process.  For
+  // cross-display fullscreening, there is a Restore() (called by BrowserView)
+  // that may cause configuration bounds updates that make this window appear to
+  // temporarily be on a different screen than its destination screen.  This
+  // restore only happens if the window is maximized.
+  bool ignore_next_configure_ = false;
+  // True between Restore() and the next OnXWindowStateChanged().
+  bool restore_in_flight_ = false;
 
   base::CancelableOnceClosure delayed_resize_task_;
 

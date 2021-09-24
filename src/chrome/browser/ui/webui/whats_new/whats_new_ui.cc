@@ -10,7 +10,7 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/webui/new_tab_page/promo_browser_command/promo_browser_command_handler.h"
+#include "chrome/browser/ui/webui/browser_command/browser_command_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/browser/ui/webui/whats_new/whats_new_handler.h"
 #include "chrome/browser/ui/webui/whats_new/whats_new_util.h"
@@ -78,7 +78,7 @@ base::RefCountedMemory* WhatsNewUI::GetFaviconResourceBytes(
 WEB_UI_CONTROLLER_TYPE_IMPL(WhatsNewUI)
 
 void WhatsNewUI::BindInterface(
-    mojo::PendingReceiver<promo_browser_command::mojom::CommandHandlerFactory>
+    mojo::PendingReceiver<browser_command::mojom::CommandHandlerFactory>
         pending_receiver) {
   if (browser_command_factory_receiver_.is_bound())
     browser_command_factory_receiver_.reset();
@@ -86,11 +86,11 @@ void WhatsNewUI::BindInterface(
 }
 
 void WhatsNewUI::CreateBrowserCommandHandler(
-    mojo::PendingReceiver<promo_browser_command::mojom::CommandHandler>
+    mojo::PendingReceiver<browser_command::mojom::CommandHandler>
         pending_handler) {
-  std::vector<promo_browser_command::mojom::Command> supported_commands = {
-      promo_browser_command::mojom::Command::kOpenFeedbackForm};
-  command_handler_ = std::make_unique<PromoBrowserCommandHandler>(
+  std::vector<browser_command::mojom::Command> supported_commands = {
+      browser_command::mojom::Command::kOpenFeedbackForm};
+  command_handler_ = std::make_unique<BrowserCommandHandler>(
       std::move(pending_handler), profile_, supported_commands);
   command_handler_->ConfigureFeedbackCommand(
       {GURL(chrome::kChromeUIWhatsNewURL), chrome::kFeedbackSourceWhatsNew,

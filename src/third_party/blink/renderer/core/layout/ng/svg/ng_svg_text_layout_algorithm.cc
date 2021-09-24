@@ -277,6 +277,9 @@ void NGSvgTextLayoutAlgorithm::ResolveTextLength(
 
   float shift;
   if (length_adjust == kSVGLengthAdjustSpacingAndGlyphs) {
+    // If the target range contains no glyphs, we do nothing.
+    if (min_position >= max_position)
+      return;
     float length_adjust_scale = text_length / (max_position - min_position);
     for (wtf_size_t k = i; k < j_plus_1; ++k) {
       SvgPerCharacterInfo& info = result_[k];
@@ -569,8 +572,9 @@ void NGSvgTextLayoutAlgorithm::PositionOnPath(
         index >= ranges[range_index].start_index &&
         index <= ranges[range_index].end_index) {
       if (!in_path) {
-        path_mapper = To<LayoutSVGTextPath>(ranges[range_index].layout_object)
-                          ->LayoutPath();
+        path_mapper =
+            To<LayoutSVGTextPath>(ranges[range_index].layout_object.Get())
+                ->LayoutPath();
       }
       // 5.1.1. Set "in path" flag to true.
       in_path = true;

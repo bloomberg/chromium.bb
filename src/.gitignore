@@ -73,6 +73,8 @@ vs-chromium-project.txt
 /_out
 /android_emulator_sdk
 /ash/ash_unittests_run.xml
+/ash/webui/help_app_ui/resources/prod
+/ash/webui/media_app_ui/resources/prod
 /base/base_unittests_run.xml
 # See build/.gitignore for entries covering src/build.
 
@@ -178,6 +180,7 @@ vs-chromium-project.txt
 /chromeos/components/media_app_ui/resources/prod
 /chromeos/components/media_app_ui/resources/app
 /chromeos/components/media_app_ui/resources/pkg
+/chromeos/components/projector_app/resources/prod
 /chromeos/profiles/chromeos.orderfile.txt
 /chromeos/profiles/*.local.txt
 /chromeos/profiles/*.afdo.prof
@@ -305,7 +308,6 @@ vs-chromium-project.txt
 /tools/page_cycler/acid3
 /tools/reclient
 /tools/skia_goldctl/
-/tools/swarming_client
 /tools/tryserver
 /tools/win/link_limiter/build
 /ui/file_manager/internal

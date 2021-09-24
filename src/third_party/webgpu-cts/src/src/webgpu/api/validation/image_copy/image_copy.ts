@@ -1,4 +1,9 @@
-import { kTextureFormatInfo, SizedTextureFormat } from '../../../capability_info.js';
+import {
+  kTextureFormatInfo,
+  SizedTextureFormat,
+  DepthStencilFormat,
+  depthStencilFormatCopyableAspects,
+} from '../../../capability_info.js';
 import { ImageCopyType } from '../../../util/texture/layout.js';
 import { ValidationTest } from '../validation_test.js';
 
@@ -121,11 +126,16 @@ interface WithFormatAndCoordinate extends WithFormat {
 }
 
 interface WithFormatAndMethod extends WithFormat {
-  method: string;
+  method: ImageCopyType;
 }
 
-// This is a helper function used for expanding test parameters for texel block alignment tests on offset
+// This is a helper function used for expanding test parameters for offset alignment, by spec
 export function texelBlockAlignmentTestExpanderForOffset({ format }: WithFormat) {
+  const info = kTextureFormatInfo[format];
+  if (info.depth || info.stencil) {
+    return valuesToTestDivisibilityBy(4);
+  }
+
   return valuesToTestDivisibilityBy(kTextureFormatInfo[format].bytesPerBlock);
 }
 
@@ -156,9 +166,33 @@ export function texelBlockAlignmentTestExpanderForValueToCoordinate({
 
 // This is a helper function used for filtering test parameters
 export function formatCopyableWithMethod({ format, method }: WithFormatAndMethod): boolean {
-  if (method === 'CopyTextureToBuffer') {
-    return kTextureFormatInfo[format].copySrc;
-  } else {
-    return kTextureFormatInfo[format].copyDst;
+  const info = kTextureFormatInfo[format];
+  if (info.depth || info.stencil) {
+    const supportedAspects: readonly GPUTextureAspect[] = depthStencilFormatCopyableAspects(
+      method,
+      format as DepthStencilFormat
+    );
+    return supportedAspects.length > 0;
   }
+  if (method === 'CopyT2B') {
+    return info.copySrc;
+  } else {
+    return info.copyDst;
+  }
+}
+
+// This is a helper function used for filtering test parameters
+export function getACopyableAspectWithMethod({
+  format,
+  method,
+}: WithFormatAndMethod): GPUTextureAspect {
+  const info = kTextureFormatInfo[format];
+  if (info.depth || info.stencil) {
+    const supportedAspects: readonly GPUTextureAspect[] = depthStencilFormatCopyableAspects(
+      method,
+      format as DepthStencilFormat
+    );
+    return supportedAspects[0];
+  }
+  return 'all' as GPUTextureAspect;
 }

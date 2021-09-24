@@ -70,12 +70,18 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
           this,
           GetProcs().deviceGetQueue(GetHandle()))),
       lost_property_(MakeGarbageCollected<LostProperty>(execution_context)),
-      error_callback_(BindRepeatingDawnCallback(&GPUDevice::OnUncapturedError,
+      error_callback_(BindDawnRepeatingCallback(&GPUDevice::OnUncapturedError,
                                                 WrapWeakPersistent(this))),
-      logging_callback_(BindRepeatingDawnCallback(&GPUDevice::OnLogging,
+      logging_callback_(BindDawnRepeatingCallback(&GPUDevice::OnLogging,
                                                   WrapWeakPersistent(this))),
-      lost_callback_(BindDawnCallback(&GPUDevice::OnDeviceLostError,
-                                      WrapWeakPersistent(this))) {
+      // Note: This is a *repeating* callback even though we expect it to only
+      // be called once. This is because it may be called *zero* times.
+      // Because it might never be called, the GPUDevice needs to own the
+      // allocation so it can be appropriately freed on destruction. Thus, the
+      // callback should not be a OnceCallback which self-deletes after it is
+      // called.
+      lost_callback_(BindDawnRepeatingCallback(&GPUDevice::OnDeviceLostError,
+                                               WrapWeakPersistent(this))) {
   // Check is necessary because we can't assign a default in the IDL.
   if (descriptor->hasRequiredLimits()) {
     limits_ =
@@ -86,17 +92,25 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
 
   DCHECK(dawn_device);
   GetProcs().deviceSetUncapturedErrorCallback(
-      GetHandle(), error_callback_->UnboundRepeatingCallback(),
+      GetHandle(), error_callback_->UnboundCallback(),
       error_callback_->AsUserdata());
-  GetProcs().deviceSetLoggingCallback(
-      GetHandle(), logging_callback_->UnboundRepeatingCallback(),
-      logging_callback_->AsUserdata());
+  GetProcs().deviceSetLoggingCallback(GetHandle(),
+                                      logging_callback_->UnboundCallback(),
+                                      logging_callback_->AsUserdata());
   GetProcs().deviceSetDeviceLostCallback(GetHandle(),
                                          lost_callback_->UnboundCallback(),
                                          lost_callback_->AsUserdata());
 
   if (descriptor->hasLabel())
     setLabel(descriptor->label());
+}
+
+GPUDevice::~GPUDevice() {
+  // Clear the callbacks since we can't handle callbacks after finalization.
+  // error_callback_, logging_callback_, and lost_callback_ will be deleted.
+  GetProcs().deviceSetUncapturedErrorCallback(GetHandle(), nullptr, nullptr);
+  GetProcs().deviceSetLoggingCallback(GetHandle(), nullptr, nullptr);
+  GetProcs().deviceSetDeviceLostCallback(GetHandle(), nullptr, nullptr);
 }
 
 void GPUDevice::InjectError(WGPUErrorType type, const char* message) {
@@ -180,12 +194,8 @@ void GPUDevice::OnLogging(WGPULoggingType loggingType, const char* message) {
 }
 
 void GPUDevice::OnDeviceLostError(const char* message) {
-  // This function is called by a callback created by BindDawnCallback.
-  // Release the unique_ptr holding it since BindDawnCallback is self-deleting.
-  // This is stored as a unique_ptr because the lost callback may never be
-  // called.
-  lost_callback_.release();
-
+  if (!GetExecutionContext())
+    return;
   AddConsoleWarning(message);
 
   if (lost_property_->GetState() == LostProperty::kPending) {
@@ -328,12 +338,6 @@ GPURenderPipeline* GPUDevice::createRenderPipeline(
 GPUComputePipeline* GPUDevice::createComputePipeline(
     const GPUComputePipelineDescriptor* descriptor,
     ExceptionState& exception_state) {
-  // Check for required members. Can't do this in the IDL because then the
-  // deprecated members would be required.
-  if (!descriptor->hasCompute() && !descriptor->hasComputeStage()) {
-    exception_state.ThrowTypeError("required member compute is undefined.");
-    return nullptr;
-  }
   return GPUComputePipeline::Create(this, descriptor);
 }
 
@@ -353,8 +357,8 @@ ScriptPromise GPUDevice::createRenderPipelineAsync(
     resolver->Reject(exception_state);
   } else {
     auto* callback =
-        BindDawnCallback(&GPUDevice::OnCreateRenderPipelineAsyncCallback,
-                         WrapPersistent(this), WrapPersistent(resolver));
+        BindDawnOnceCallback(&GPUDevice::OnCreateRenderPipelineAsyncCallback,
+                             WrapPersistent(this), WrapPersistent(resolver));
     GetProcs().deviceCreateRenderPipelineAsync(
         GetHandle(), &dawn_desc_info.dawn_desc, callback->UnboundCallback(),
         callback->AsUserdata());
@@ -372,23 +376,14 @@ ScriptPromise GPUDevice::createComputePipelineAsync(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // Check for required members. Can't do this in the IDL because then the
-  // deprecated members would be required.
-  if (!descriptor->hasCompute() && !descriptor->hasComputeStage()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kOperationError,
-        "required member compute is undefined."));
-    return promise;
-  }
-
   std::string label;
   OwnedProgrammableStageDescriptor computeStageDescriptor;
   WGPUComputePipelineDescriptor dawn_desc =
       AsDawnType(descriptor, &label, &computeStageDescriptor, this);
 
   auto* callback =
-      BindDawnCallback(&GPUDevice::OnCreateComputePipelineAsyncCallback,
-                       WrapPersistent(this), WrapPersistent(resolver));
+      BindDawnOnceCallback(&GPUDevice::OnCreateComputePipelineAsyncCallback,
+                           WrapPersistent(this), WrapPersistent(resolver));
   GetProcs().deviceCreateComputePipelineAsync(GetHandle(), &dawn_desc,
                                               callback->UnboundCallback(),
                                               callback->AsUserdata());
@@ -424,8 +419,8 @@ ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   auto* callback =
-      BindDawnCallback(&GPUDevice::OnPopErrorScopeCallback,
-                       WrapPersistent(this), WrapPersistent(resolver));
+      BindDawnOnceCallback(&GPUDevice::OnPopErrorScopeCallback,
+                           WrapPersistent(this), WrapPersistent(resolver));
 
   if (!GetProcs().devicePopErrorScope(GetHandle(), callback->UnboundCallback(),
                                       callback->AsUserdata())) {

@@ -147,23 +147,37 @@ psm_rlwe::RlwePlaintextId ConstructDeviceRlweId(
   return rlwe_id;
 }
 
-// Subclasses of this class provide an identifier and specify the identifier
-// set for the DeviceAutoEnrollmentRequest,
-class AutoEnrollmentClientImpl::DeviceIdentifierProvider {
+class AutoEnrollmentClientImpl::DeviceIdentifierProviderFRE {
  public:
-  virtual ~DeviceIdentifierProvider() {}
+  explicit DeviceIdentifierProviderFRE(
+      const std::string& server_backed_state_key) {
+    CHECK(!server_backed_state_key.empty());
+    server_backed_state_key_hash_ =
+        crypto::SHA256HashString(server_backed_state_key);
+  }
+
+  // Disallow copy constructor and assignment operator.
+  DeviceIdentifierProviderFRE(const DeviceIdentifierProviderFRE&) = delete;
+  DeviceIdentifierProviderFRE& operator=(const DeviceIdentifierProviderFRE&) =
+      delete;
+
+  ~DeviceIdentifierProviderFRE() = default;
 
   // Should return the EnrollmentCheckType to be used in the
   // DeviceAutoEnrollmentRequest. This specifies the identifier set used on
   // the server.
-  virtual enterprise_management::DeviceAutoEnrollmentRequest::
-      EnrollmentCheckType
-      GetEnrollmentCheckType() const = 0;
+  EnrollmentCheckType GetEnrollmentCheckType() const {
+    return em::DeviceAutoEnrollmentRequest::ENROLLMENT_CHECK_TYPE_FRE;
+  }
 
   // Should return the hash of this device's identifier. The
   // DeviceAutoEnrollmentRequest exchange will check if this hash is in the
   // server-side identifier set specified by |GetEnrollmentCheckType()|
-  virtual const std::string& GetIdHash() const = 0;
+  const std::string& GetIdHash() const { return server_backed_state_key_hash_; }
+
+ private:
+  // SHA-256 digest of the stable identifier.
+  std::string server_backed_state_key_hash_;
 };
 
 // Subclasses of this class generate the request to download the device state
@@ -329,7 +343,7 @@ class PsmHelper {
     base::UmaHistogramEnumeration(kUMAPsmResult + uma_suffix_, psm_result);
 
     // Records the PSM execution as an error in local_state, so that value will
-    // be used in the DeviceRegisterRequest while performing manual enrollment.
+    // be used in the DeviceRegisterRequest during the enrollment flow.
     local_state_->SetInteger(prefs::kEnrollmentPsmResult,
                              em::DeviceRegisterRequest::PSM_RESULT_ERROR);
     local_state_->CommitPendingWrite();
@@ -537,7 +551,7 @@ class PsmHelper {
         // the device reboots before completing OOBE.
         // Also, record the PSM determination timestamp and its execution
         // result in local state. Because both values will be used in the
-        // DeviceRegisterRequest while performing manual enrollment.
+        // DeviceRegisterRequest during the enrollment flow.
         local_state_->SetBoolean(prefs::kShouldRetrieveDeviceState,
                                  membership_result);
         local_state_->SetTime(prefs::kEnrollmentPsmDeterminationTime,
@@ -652,62 +666,6 @@ class PsmHelper {
 };
 
 namespace {
-
-// Provides device identifier for Forced Re-Enrollment (FRE), where the
-// server-backed state key is used.
-class DeviceIdentifierProviderFRE
-    : public AutoEnrollmentClientImpl::DeviceIdentifierProvider {
- public:
-  explicit DeviceIdentifierProviderFRE(
-      const std::string& server_backed_state_key) {
-    CHECK(!server_backed_state_key.empty());
-    server_backed_state_key_hash_ =
-        crypto::SHA256HashString(server_backed_state_key);
-  }
-
-  EnrollmentCheckType GetEnrollmentCheckType() const override {
-    return em::DeviceAutoEnrollmentRequest::ENROLLMENT_CHECK_TYPE_FRE;
-  }
-
-  const std::string& GetIdHash() const override {
-    return server_backed_state_key_hash_;
-  }
-
- private:
-  // SHA-256 digest of the stable identifier.
-  std::string server_backed_state_key_hash_;
-};
-
-// Provides device identifier for Forced Initial Enrollment, where the brand
-// code and serial number is used.
-class DeviceIdentifierProviderInitialEnrollment
-    : public AutoEnrollmentClientImpl::DeviceIdentifierProvider {
- public:
-  DeviceIdentifierProviderInitialEnrollment(
-      const std::string& device_serial_number,
-      const std::string& device_brand_code) {
-    CHECK(!device_serial_number.empty());
-    CHECK(!device_brand_code.empty());
-    // The hash for initial enrollment is the first 8 bytes of
-    // SHA256(<brnad_code>_<serial_number>).
-    id_hash_ =
-        crypto::SHA256HashString(device_brand_code + "_" + device_serial_number)
-            .substr(0, 8);
-  }
-
-  EnrollmentCheckType GetEnrollmentCheckType() const override {
-    return em::DeviceAutoEnrollmentRequest::
-        ENROLLMENT_CHECK_TYPE_FORCED_ENROLLMENT;
-  }
-
-  const std::string& GetIdHash() const override { return id_hash_; }
-
- private:
-  // 8-byte Hash built from serial number and brand code passed to the
-  // constructor.
-  std::string id_hash_;
-};
-
 // Handles DeviceInitialEnrollmentStateRequest /
 // DeviceInitialEnrollmentStateResponse for Forced Initial Enrollment.
 class StateDownloadMessageProcessorInitialEnrollment
@@ -882,8 +840,7 @@ AutoEnrollmentClientImpl::FactoryImpl::CreateForFRE(
       std::make_unique<DeviceIdentifierProviderFRE>(server_backed_state_key),
       std::make_unique<StateDownloadMessageProcessorFRE>(
           server_backed_state_key),
-      power_initial, power_limit,
-      /*power_outdated_server_detect=*/absl::nullopt, kUMASuffixFRE,
+      power_initial, power_limit, kUMASuffixFRE,
       /*private_set_membership_helper=*/nullptr));
 }
 
@@ -897,24 +854,19 @@ AutoEnrollmentClientImpl::FactoryImpl::CreateForInitialEnrollment(
     const std::string& device_brand_code,
     int power_initial,
     int power_limit,
-    int power_outdated_server_detect,
     PrivateMembershipRlweClient::Factory* psm_rlwe_client_factory) {
   return base::WrapUnique(new AutoEnrollmentClientImpl(
       progress_callback, device_management_service, local_state,
       url_loader_factory,
-      std::make_unique<DeviceIdentifierProviderInitialEnrollment>(
-          device_serial_number, device_brand_code),
+      /*device_identifier_provider_fre=*/nullptr,
       std::make_unique<StateDownloadMessageProcessorInitialEnrollment>(
           device_serial_number, device_brand_code),
       power_initial, power_limit,
-      absl::make_optional(power_outdated_server_detect),
       kUMASuffixInitialEnrollment,
-      ash::AutoEnrollmentController::IsPsmEnabled()
-          ? std::make_unique<PsmHelper>(
-                device_management_service, url_loader_factory, local_state,
-                ConstructDeviceRlweId(device_serial_number, device_brand_code),
-                psm_rlwe_client_factory)
-          : nullptr));
+      std::make_unique<PsmHelper>(
+          device_management_service, url_loader_factory, local_state,
+          ConstructDeviceRlweId(device_serial_number, device_brand_code),
+          psm_rlwe_client_factory)));
 }
 
 AutoEnrollmentClientImpl::~AutoEnrollmentClientImpl() {
@@ -952,10 +904,13 @@ void AutoEnrollmentClientImpl::Retry() {
 }
 
 void AutoEnrollmentClientImpl::CancelAndDeleteSoon() {
-  // Check if neither Hash dance request i.e. DeviceAutoEnrollmentRequest nor
-  // DeviceStateRetrievalRequest is in progress.
+  // Regardless of PSM execution, only check if neither Hash dance request (i.e.
+  // DeviceAutoEnrollmentRequest), nor device state request
+  // (i.e.DeviceInitialEnrollmentStateRequest or DeviceStateRetrievalRequest) is
+  // in progress.
   if (!request_job_) {
-    // The client isn't running, just delete it.
+    // Regardless of PsmHelper client execution, the AutoEnrollmentClientImpl
+    // isn't running, just delete it and it will delete PsmHelper immediately.
     delete this;
   } else {
     // Client still running, but our owner isn't interested in the result
@@ -987,12 +942,11 @@ AutoEnrollmentClientImpl::AutoEnrollmentClientImpl(
     DeviceManagementService* service,
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    std::unique_ptr<DeviceIdentifierProvider> device_identifier_provider,
+    std::unique_ptr<DeviceIdentifierProviderFRE> device_identifier_provider_fre,
     std::unique_ptr<StateDownloadMessageProcessor>
         state_download_message_processor,
     int power_initial,
     int power_limit,
-    absl::optional<int> power_outdated_server_detect,
     std::string uma_suffix,
     std::unique_ptr<PsmHelper> private_set_membership_helper)
     : progress_callback_(callback),
@@ -1002,12 +956,12 @@ AutoEnrollmentClientImpl::AutoEnrollmentClientImpl(
       device_id_(base::GenerateGUID()),
       current_power_(power_initial),
       power_limit_(power_limit),
-      power_outdated_server_detect_(power_outdated_server_detect),
       modulus_updates_received_(0),
       device_management_service_(service),
       local_state_(local_state),
       url_loader_factory_(url_loader_factory),
-      device_identifier_provider_(std::move(device_identifier_provider)),
+      device_identifier_provider_fre_(
+          std::move(device_identifier_provider_fre)),
       state_download_message_processor_(
           std::move(state_download_message_processor)),
       psm_helper_(std::move(private_set_membership_helper)),
@@ -1164,11 +1118,16 @@ void AutoEnrollmentClientImpl::NextStep() {
 }
 
 void AutoEnrollmentClientImpl::SendBucketDownloadRequest() {
+  // This method should only be called when the client has been created for FRE
+  // use case.
+  DCHECK(!IsClientForInitialEnrollment());
+  DCHECK(device_identifier_provider_fre_);
+
   // Start the Hash dance timer during the first attempt.
   if (hash_dance_time_start_.is_null())
     hash_dance_time_start_ = base::TimeTicks::Now();
 
-  std::string id_hash = device_identifier_provider_->GetIdHash();
+  std::string id_hash = device_identifier_provider_fre_->GetIdHash();
   // Currently AutoEnrollmentClientImpl supports working with hashes that are at
   // least 8 bytes long. If this is reduced, the computation of the remainder
   // must also be adapted to handle the case of a shorter hash gracefully.
@@ -1207,7 +1166,7 @@ void AutoEnrollmentClientImpl::SendBucketDownloadRequest() {
   request->set_remainder(remainder);
   request->set_modulus(INT64_C(1) << current_power_);
   request->set_enrollment_check_type(
-      device_identifier_provider_->GetEnrollmentCheckType());
+      device_identifier_provider_fre_->GetEnrollmentCheckType());
 
   request_job_ = device_management_service_->CreateJob(std::move(config));
 }
@@ -1269,6 +1228,10 @@ bool AutoEnrollmentClientImpl::OnBucketDownloadRequestCompletion(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
+  // This method should only be called when the client has been created for FRE
+  // use case.
+  DCHECK(!IsClientForInitialEnrollment());
+
   bool progress = false;
   const em::DeviceAutoEnrollmentResponse& enrollment_response =
       response.auto_enrollment_response();
@@ -1289,21 +1252,6 @@ bool AutoEnrollmentClientImpl::OnBucketDownloadRequestCompletion(
       LOG(ERROR) << "Auto enrollment error: already retried with an updated "
                  << "modulus but the server asked for a new one again: "
                  << power;
-    } else if (power_outdated_server_detect_.has_value() &&
-               power >= power_outdated_server_detect_.value()) {
-      LOG(ERROR) << "Skipping auto enrollment: The server was detected as "
-                 << "outdated (power=" << power
-                 << ", power_outdated_server_detect="
-                 << power_outdated_server_detect_.value() << ").";
-      has_server_state_ = false;
-      // Cache the decision in local_state, so that it is reused in case
-      // the device reboots before completing OOBE. Note that this does not
-      // disable Forced Re-Enrollment for this device, because local state will
-      // be empty after the device is wiped.
-      local_state_->SetBoolean(prefs::kShouldAutoEnroll, false);
-      local_state_->SetInteger(prefs::kAutoEnrollmentPowerLimit, power_limit_);
-      local_state_->CommitPendingWrite();
-      return true;
     } else if (power > power_limit_) {
       LOG(ERROR) << "Auto enrollment error: the server asked for a larger "
                  << "modulus than the client accepts (" << power << " vs "
@@ -1391,7 +1339,12 @@ bool AutoEnrollmentClientImpl::OnDeviceStateRequestCompletion(
 
 bool AutoEnrollmentClientImpl::IsIdHashInProtobuf(
     const google::protobuf::RepeatedPtrField<std::string>& hashes) {
-  std::string id_hash = device_identifier_provider_->GetIdHash();
+  // This method should only be called when the client has been created for FRE
+  // use case.
+  DCHECK(!IsClientForInitialEnrollment());
+  DCHECK(device_identifier_provider_fre_);
+
+  std::string id_hash = device_identifier_provider_fre_->GetIdHash();
   for (int i = 0; i < hashes.size(); ++i) {
     if (hashes.Get(i) == id_hash)
       return true;
@@ -1400,6 +1353,10 @@ bool AutoEnrollmentClientImpl::IsIdHashInProtobuf(
 }
 
 void AutoEnrollmentClientImpl::UpdateBucketDownloadTimingHistograms() {
+  // This method should only be called when the client has been created for FRE
+  // use case.
+  DCHECK(!IsClientForInitialEnrollment());
+
   // These values determine bucketing of the histogram, they should not be
   // changed.
   // The minimum time can't be 0, must be at least 1.
@@ -1431,6 +1388,10 @@ void AutoEnrollmentClientImpl::UpdateBucketDownloadTimingHistograms() {
 }
 
 void AutoEnrollmentClientImpl::RecordHashDanceSuccessTimeHistogram() {
+  // This method should only be called when the client has been created for FRE
+  // use case.
+  DCHECK(!IsClientForInitialEnrollment());
+
   // These values determine bucketing of the histogram, they should not be
   // changed.
   static const base::TimeDelta kMin = base::TimeDelta::FromMilliseconds(1);

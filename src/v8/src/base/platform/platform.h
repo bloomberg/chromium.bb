@@ -47,7 +47,7 @@
 // And, intrin.h is a very expensive header that we want to avoid here, and
 // the cheaper intrin0.h is not available for all build configurations. That is
 // why we declare this intrinsic.
-unsigned long __readfsdword(unsigned long);  // NOLINT(runtime/int)
+extern "C" unsigned long __readfsdword(unsigned long);  // NOLINT(runtime/int)
 #endif                                       // V8_CC_MSVC && V8_HOST_ARCH_IA32
 #endif                                       // V8_NO_FAST_TLS
 
@@ -310,6 +310,8 @@ class V8_BASE_EXPORT OS {
 
   V8_WARN_UNUSED_RESULT static bool DiscardSystemPages(void* address,
                                                        size_t size);
+
+  V8_WARN_UNUSED_RESULT static bool DecommitPages(void* address, size_t size);
 
   static const int msPerSecond = 1000;
 

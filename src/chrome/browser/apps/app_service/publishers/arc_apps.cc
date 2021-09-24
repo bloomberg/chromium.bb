@@ -317,16 +317,6 @@ void RequestDomainVerificationStatusUpdate(ArcAppListPrefs* prefs) {
   instance->RequestDomainVerificationStatusUpdate();
 }
 
-bool ShouldSkipFilter(const arc::IntentFilter& arc_intent_filter) {
-  return !base::FeatureList::IsEnabled(features::kIntentHandlingSharing) &&
-         std::any_of(arc_intent_filter.actions().begin(),
-                     arc_intent_filter.actions().end(),
-                     [](const std::string& action) {
-                       return action == arc::kIntentActionSend ||
-                              action == arc::kIntentActionSendMultiple;
-                     });
-}
-
 arc::mojom::ActionType GetArcActionType(const std::string& action) {
   if (action == apps_util::kIntentActionView) {
     return arc::mojom::ActionType::VIEW;
@@ -346,7 +336,7 @@ arc::mojom::OpenUrlsRequestPtr ConstructOpenUrlsRequest(
     const arc::mojom::ActivityNamePtr& activity,
     const std::vector<GURL>& content_urls) {
   arc::mojom::OpenUrlsRequestPtr request = arc::mojom::OpenUrlsRequest::New();
-  request->action_type = GetArcActionType(intent->action.value());
+  request->action_type = GetArcActionType(intent->action);
   request->activity_name = activity.Clone();
   for (const auto& content_url : content_urls) {
     arc::mojom::ContentUrlWithMimeTypePtr url_with_type =
@@ -1168,10 +1158,6 @@ void ArcApps::OnPreferredAppsChanged() {
       intent_helper_bridge->GetAddedPreferredApps();
 
   for (auto& added_preferred_app : added_preferred_apps) {
-    if (ShouldSkipFilter(added_preferred_app)) {
-      continue;
-    }
-
     constexpr bool kFromPublisher = true;
     // TODO(crbug.com/853604): Currently only handles one App ID per package.
     // If need to handle multiple activities per package, will need to
@@ -1200,9 +1186,6 @@ void ArcApps::OnPreferredAppsChanged() {
       intent_helper_bridge->GetDeletedPreferredApps();
 
   for (auto& deleted_preferred_app : deleted_preferred_apps) {
-    if (ShouldSkipFilter(deleted_preferred_app)) {
-      continue;
-    }
     // TODO(crbug.com/853604): Currently only handles one App ID per package.
     // If need to handle multiple activities per package, will need to
     // update ARC to send through the corresponding activity and ensure this
@@ -1324,22 +1307,23 @@ void ArcApps::LoadPlayStoreIcon(apps::mojom::IconType icon_type,
 
 apps::mojom::InstallSource GetInstallSource(
     const ArcAppListPrefs* prefs,
-    const ArcAppListPrefs::AppInfo* app_info) {
+    const std::string& app_id,
+    const ArcAppListPrefs::AppInfo& app_info) {
   // Sticky represents apps that cannot be uninstalled and are installed by the
   // system.
-  if (app_info->sticky) {
+  if (app_info.sticky) {
     return apps::mojom::InstallSource::kSystem;
   }
 
-  if (prefs->IsDefault(app_info->package_name)) {
-    return apps::mojom::InstallSource::kDefault;
-  }
-
-  if (prefs->IsOem(app_info->package_name)) {
+  if (prefs->IsOem(app_id)) {
     return apps::mojom::InstallSource::kOem;
   }
 
-  if (prefs->IsControlledByPolicy(app_info->package_name)) {
+  if (prefs->IsDefault(app_id)) {
+    return apps::mojom::InstallSource::kDefault;
+  }
+
+  if (prefs->IsControlledByPolicy(app_info.package_name)) {
     return apps::mojom::InstallSource::kPolicy;
   }
 
@@ -1354,7 +1338,7 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
       apps::mojom::AppType::kArc, app_id,
       app_info.suspended ? apps::mojom::Readiness::kDisabledByPolicy
                          : apps::mojom::Readiness::kReady,
-      app_info.name, GetInstallSource(prefs, &app_info));
+      app_info.name, GetInstallSource(prefs, app_id, app_info));
 
   app->publisher_id = app_info.package_name;
 
@@ -1482,9 +1466,6 @@ void ArcApps::UpdateAppIntentFilters(
   const std::vector<arc::IntentFilter>& arc_intent_filters =
       intent_helper_bridge->GetIntentFilterForPackage(package_name);
   for (auto& arc_intent_filter : arc_intent_filters) {
-    if (ShouldSkipFilter(arc_intent_filter)) {
-      continue;
-    }
     intent_filters->push_back(
         apps_util::ConvertArcToAppServiceIntentFilter(arc_intent_filter));
   }

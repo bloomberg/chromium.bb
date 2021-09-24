@@ -101,6 +101,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool GetIntersectsViewport() override;
   bool IsForGuestsOnly() override;
   bool IsJitDisabled() override;
+  bool IsPdf() override;
   void OnMediaStreamAdded() override;
   void OnMediaStreamRemoved() override;
   void OnForegroundServiceWorkerAdded() override;
@@ -152,10 +153,13 @@ class MockRenderProcessHost : public RenderProcessHost {
   const base::TimeTicks& GetLastInitTime() override;
   bool IsProcessBackgrounded() override;
   size_t GetKeepAliveRefCount() const;
+  size_t GetWorkerRefCount() const;
   void IncrementKeepAliveRefCount() override;
   void DecrementKeepAliveRefCount() override;
-  void DisableKeepAliveRefCount() override;
-  bool IsKeepAliveRefCountDisabled() override;
+  void DisableRefCounts() override;
+  void IncrementWorkerRefCount() override;
+  void DecrementWorkerRefCount() override;
+  bool AreRefCountsDisabled() override;
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
@@ -169,18 +173,18 @@ class MockRenderProcessHost : public RenderProcessHost {
   void SetProcessLock(const IsolationContext& isolation_context,
                       const ProcessLock& process_lock) override;
   bool IsProcessLockedToSiteForTesting() override;
-  void CancelAllProcessShutdownDelays() override {}
+  void StopTrackingProcessForShutdownDelay() override {}
   void BindCacheStorage(
       const network::CrossOriginEmbedderPolicy&,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>,
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
   void BindFileSystemManager(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver)
       override {}
   void BindFileSystemAccessManager(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::FileSystemAccessManager> receiver)
       override {}
   void BindIndexedDB(
@@ -226,13 +230,16 @@ class MockRenderProcessHost : public RenderProcessHost {
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
       override {}
   void CreateWebSocketConnector(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver)
       override {}
 
   void CleanupNetworkServicePluginExceptionsUponDestruction() override;
   std::string GetInfoForBrowserContextDestructionCrashReporting() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
+  void WriteIntoTrace(
+      perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto)
+      override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -285,6 +292,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_unused_;
   base::Process process;
   int keep_alive_ref_count_;
+  int worker_ref_count_;
   int foreground_service_worker_count_;
   std::unique_ptr<mojo::AssociatedRemote<mojom::Renderer>> renderer_interface_;
   std::map<std::string, InterfaceBinder> binder_overrides_;

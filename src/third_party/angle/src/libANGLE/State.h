@@ -852,9 +852,13 @@ class State : angle::NonCopyable
     }
     const SyncManager &getSyncManagerForCapture() const { return *mSyncManager; }
     const SamplerManager &getSamplerManagerForCapture() const { return *mSamplerManager; }
+    const ProgramPipelineManager *getProgramPipelineManagerForCapture() const
+    {
+        return mProgramPipelineManager;
+    }
     const SamplerBindingVector &getSamplerBindingsForCapture() const { return mSamplers; }
-
     const ActiveQueryMap &getActiveQueriesForCapture() const { return mActiveQueries; }
+    void initializeForCapture(const Context *context);
 
     bool hasConstantAlphaBlendFunc() const
     {
@@ -909,11 +913,6 @@ class State : angle::NonCopyable
     }
 
     const std::vector<ImageUnit> &getImageUnits() const { return mImageUnits; }
-
-    const ProgramPipelineManager *getProgramPipelineManagerForCapture() const
-    {
-        return mProgramPipelineManager;
-    }
 
   private:
     friend class Context;
@@ -1008,10 +1007,6 @@ class State : angle::NonCopyable
     MemoryObjectManager *mMemoryObjectManager;
     SemaphoreManager *mSemaphoreManager;
 
-    // Cached values from Context's caps
-    GLuint mMaxDrawBuffers;
-    GLuint mMaxCombinedTextureImageUnits;
-
     ColorF mColorClearValue;
     GLfloat mDepthClearValue;
     int mStencilClearValue;
@@ -1069,7 +1064,7 @@ class State : angle::NonCopyable
     ComponentTypeMask mCurrentValuesTypeMask;
 
     // Texture and sampler bindings
-    size_t mActiveSampler;  // Active texture unit selector - GL_TEXTURE0
+    GLint mActiveSampler;  // Active texture unit selector - GL_TEXTURE0
 
     TextureBindingMap mSamplerTextures;
 
@@ -1163,6 +1158,11 @@ class State : angle::NonCopyable
     DrawBufferMask mBlendFuncConstantAlphaDrawBuffers;
     DrawBufferMask mBlendFuncConstantColorDrawBuffers;
     bool mNoSimultaneousConstantColorAndAlphaBlendFunc;
+    // Whether the indexed variants of setBlend* have been called.  If so, the call to the
+    // non-indexed variants are not no-oped.
+    bool mSetBlendIndexedInvoked;
+    bool mSetBlendFactorsIndexedInvoked;
+    bool mSetBlendEquationsIndexedInvoked;
 
     // GL_EXT_primitive_bounding_box
     GLfloat mBoundingBoxMinX;

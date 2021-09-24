@@ -58,6 +58,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   MOCK_METHOD1(OnExitPictureInPicture, void(int player_id));
   MOCK_METHOD2(OnSetAudioSinkId,
                void(int player_id, const std::string& raw_device_id));
+  MOCK_METHOD2(OnSetMute, void(int player_id, bool mute));
 
   absl::optional<media_session::MediaPosition> GetPosition(
       int player_id) const override {
@@ -127,6 +128,8 @@ class MediaSessionImplServiceRoutingTest
 
     empty_metadata_.title = contents()->GetTitle();
     empty_metadata_.source_title = u"example.com";
+
+    GetMediaSession()->SetShouldThrottleDurationUpdateForTest(false);
   }
 
   void TearDown() override {
@@ -1164,6 +1167,47 @@ TEST_F(MediaSessionImplServiceRoutingTest, RouteAudioVideoState) {
       // We should fallback to the default state.
       observer.WaitForAudioVideoStates({});
     }
+  }
+}
+
+// Test duration duration update throttle behavior for routed service.
+// TODO (jazzhsu): Remove these tests once media session supports livestream.
+class MediaSessionImplServiceRoutingThrottleTest
+    : public MediaSessionImplServiceRoutingTest {
+ public:
+  void SetUp() override {
+    MediaSessionImplServiceRoutingTest::SetUp();
+    GetMediaSession()->SetShouldThrottleDurationUpdateForTest(true);
+  }
+
+  void FlushForTesting(MediaSessionImpl* session) {
+    session->FlushForTesting();
+  }
+
+  int GetDurationUpdateMaxAllowance() {
+    return MediaSessionImpl::kDurationUpdateMaxAllowance;
+  }
+};
+
+TEST_F(MediaSessionImplServiceRoutingThrottleTest,
+       ShouldNotThrottleRoutedService) {
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+
+  // Duration updates will not be throttled for routed service.
+  for (int duration = 0; duration <= GetDurationUpdateMaxAllowance();
+       ++duration) {
+    media_session::MediaPosition expected_position(
+        /*playback_rate=*/0.0,
+        /*duration=*/base::TimeDelta::FromSeconds(duration),
+        /*position=*/base::TimeDelta(), /*end_of_media=*/false);
+
+    services_[main_frame_]->SetPositionState(expected_position);
+    FlushForTesting(GetMediaSession());
+
+    observer.WaitForExpectedPosition(expected_position);
   }
 }
 

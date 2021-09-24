@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/history_clusters/history_clusters_metrics_logger.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,7 +48,7 @@ namespace {
 
 // Translate a `AnnotatedVisit` to `mojom::VisitPtr`.
 mojom::URLVisitPtr VisitToMojom(
-    const history::ScoredAnnotatedVisit& scored_annotated_visit) {
+    const history::ClusterVisit& scored_annotated_visit) {
   auto visit_mojom = mojom::URLVisit::New();
   auto& annotated_visit = scored_annotated_visit.annotated_visit;
   visit_mojom->normalized_url = annotated_visit.url_row.url();
@@ -114,7 +115,7 @@ void ServiceResultToMojom(
     auto cluster_mojom = mojom::Cluster::New();
     cluster_mojom->id = cluster.cluster_id;
     std::set<std::string> related_searches;  // Keeps track of unique searches.
-    for (const auto& visit : cluster.scored_annotated_visits) {
+    for (const auto& visit : cluster.visits) {
       if (cluster_mojom->visits.empty()) {
         // First visit is always the top visit.
         cluster_mojom->visits.push_back(VisitToMojom(visit));
@@ -208,6 +209,15 @@ void HistoryClustersHandler::QueryClusters(mojom::QueryParamsPtr query_params) {
         << "Page called handler with non-null but invalid end_time.";
     end_time = *(query_params->end_time);
   }
+
+  if (!query.empty()) {
+    // If the query string is not empty, we assume that this clusters query
+    // is user generated.
+    HistoryClustersMetricsLogger::GetOrCreateForPage(
+        web_contents_->GetPrimaryPage())
+        ->increment_query_count();
+  }
+
   auto result_callback =
       base::BindOnce(&HistoryClustersHandler::OnClustersQueryResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(query_params));

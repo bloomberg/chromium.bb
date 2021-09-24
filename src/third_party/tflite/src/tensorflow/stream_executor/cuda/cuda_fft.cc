@@ -29,6 +29,7 @@ limitations under the License.
 #include "tensorflow/stream_executor/platform/logging.h"
 #include "tensorflow/stream_executor/platform/port.h"
 #include "tensorflow/stream_executor/plugin_registry.h"
+#include "tensorflow/stream_executor/stream.h"
 #include "tensorflow/stream_executor/stream_executor_internal.h"
 
 namespace stream_executor {
@@ -74,14 +75,15 @@ bool SetStream(GpuExecutor *parent, cufftHandle plan, Stream *stream) {
 }  // namespace
 
 port::Status CUDAFftPlan::Initialize(
-    GpuExecutor *parent, Stream *stream, int rank, uint64 *elem_count,
-    uint64 *input_embed, uint64 input_stride, uint64 input_distance,
-    uint64 *output_embed, uint64 output_stride, uint64 output_distance,
+    GpuExecutor *parent, Stream *stream, int rank, uint64_t *elem_count,
+    uint64_t *input_embed, uint64 input_stride, uint64 input_distance,
+    uint64_t *output_embed, uint64 output_stride, uint64 output_distance,
     fft::Type type, int batch_count, ScratchAllocator *scratch_allocator) {
   if (IsInitialized()) {
     LOG(FATAL) << "Try to repeatedly initialize.";
   }
   is_initialized_ = true;
+  scratch_allocator_ = scratch_allocator;
   cuda::ScopedActivateExecutorContext sac(parent);
   int elem_count_[3], input_embed_[3], output_embed_[3];
   for (int i = 0; i < rank; ++i) {
@@ -231,7 +233,7 @@ port::Status CUDAFftPlan::Initialize(
 }
 
 port::Status CUDAFftPlan::Initialize(GpuExecutor *parent, Stream *stream,
-                                     int rank, uint64 *elem_count,
+                                     int rank, uint64_t *elem_count,
                                      fft::Type type,
                                      ScratchAllocator *scratch_allocator) {
   return Initialize(parent_, stream, rank, elem_count,
@@ -243,6 +245,8 @@ port::Status CUDAFftPlan::Initialize(GpuExecutor *parent, Stream *stream,
 
 port::Status CUDAFftPlan::UpdateScratchAllocator(
     Stream *stream, ScratchAllocator *scratch_allocator) {
+  scratch_allocator_ = scratch_allocator;
+
   if (scratch_size_bytes_ != 0) {
     auto allocated = scratch_allocator->AllocateBytes(scratch_size_bytes_);
     if (!allocated.ok() || (scratch_ = allocated.ValueOrDie()) == nullptr) {
@@ -287,11 +291,11 @@ int CUDAFftPlan::GetFftDirection() const {
   }
 }
 
-std::unique_ptr<fft::Plan> CUDAFft::Create1dPlan(Stream *stream, uint64 num_x,
+std::unique_ptr<fft::Plan> CUDAFft::Create1dPlan(Stream *stream, uint64_t num_x,
                                                  fft::Type type,
                                                  bool in_place_fft) {
   std::unique_ptr<CUDAFftPlan> fft_plan_ptr{new CUDAFftPlan()};
-  uint64 elem_count[1] = {num_x};
+  uint64_t elem_count[1] = {num_x};
   port::Status status = fft_plan_ptr->Initialize(
       parent_, stream, 1, elem_count, type, /*scratch_allocator=*/nullptr);
   // TODO(yangzihao): In the future, send error msg back to TensorFlow
@@ -305,10 +309,10 @@ std::unique_ptr<fft::Plan> CUDAFft::Create1dPlan(Stream *stream, uint64 num_x,
 }
 
 std::unique_ptr<fft::Plan> CUDAFft::Create1dPlanWithScratchAllocator(
-    Stream *stream, uint64 num_x, fft::Type type, bool in_place_fft,
+    Stream *stream, uint64_t num_x, fft::Type type, bool in_place_fft,
     ScratchAllocator *scratch_allocator) {
   std::unique_ptr<CUDAFftPlan> fft_plan_ptr{new CUDAFftPlan()};
-  uint64 elem_count[1] = {num_x};
+  uint64_t elem_count[1] = {num_x};
   port::Status status = fft_plan_ptr->Initialize(parent_, stream, 1, elem_count,
                                                  type, scratch_allocator);
   if (!status.ok()) {
@@ -320,11 +324,11 @@ std::unique_ptr<fft::Plan> CUDAFft::Create1dPlanWithScratchAllocator(
   return std::move(fft_plan_ptr);
 }
 
-std::unique_ptr<fft::Plan> CUDAFft::Create2dPlan(Stream *stream, uint64 num_x,
-                                                 uint64 num_y, fft::Type type,
+std::unique_ptr<fft::Plan> CUDAFft::Create2dPlan(Stream *stream, uint64_t num_x,
+                                                 uint64_t num_y, fft::Type type,
                                                  bool in_place_fft) {
   std::unique_ptr<CUDAFftPlan> fft_plan_ptr{new CUDAFftPlan()};
-  uint64 elem_count[2] = {num_x, num_y};
+  uint64_t elem_count[2] = {num_x, num_y};
   port::Status status = fft_plan_ptr->Initialize(
       parent_, stream, 1, elem_count, type, /*scratch_allocator=*/nullptr);
   if (!status.ok()) {
@@ -336,10 +340,10 @@ std::unique_ptr<fft::Plan> CUDAFft::Create2dPlan(Stream *stream, uint64 num_x,
 }
 
 std::unique_ptr<fft::Plan> CUDAFft::Create2dPlanWithScratchAllocator(
-    Stream *stream, uint64 num_x, uint64 num_y, fft::Type type,
+    Stream *stream, uint64_t num_x, uint64 num_y, fft::Type type,
     bool in_place_fft, ScratchAllocator *scratch_allocator) {
   std::unique_ptr<CUDAFftPlan> fft_plan_ptr{new CUDAFftPlan()};
-  uint64 elem_count[2] = {num_x, num_y};
+  uint64_t elem_count[2] = {num_x, num_y};
   port::Status status = fft_plan_ptr->Initialize(parent_, stream, 2, elem_count,
                                                  type, scratch_allocator);
   if (!status.ok()) {
@@ -351,12 +355,12 @@ std::unique_ptr<fft::Plan> CUDAFft::Create2dPlanWithScratchAllocator(
   return std::move(fft_plan_ptr);
 }
 
-std::unique_ptr<fft::Plan> CUDAFft::Create3dPlan(Stream *stream, uint64 num_x,
-                                                 uint64 num_y, uint64 num_z,
+std::unique_ptr<fft::Plan> CUDAFft::Create3dPlan(Stream *stream, uint64_t num_x,
+                                                 uint64_t num_y, uint64 num_z,
                                                  fft::Type type,
                                                  bool in_place_fft) {
   std::unique_ptr<CUDAFftPlan> fft_plan_ptr{new CUDAFftPlan()};
-  uint64 elem_count[3] = {num_x, num_y, num_z};
+  uint64_t elem_count[3] = {num_x, num_y, num_z};
   port::Status status = fft_plan_ptr->Initialize(
       parent_, stream, 3, elem_count, type, /*scratch_allocator=*/nullptr);
   if (!status.ok()) {
@@ -369,10 +373,10 @@ std::unique_ptr<fft::Plan> CUDAFft::Create3dPlan(Stream *stream, uint64 num_x,
 }
 
 std::unique_ptr<fft::Plan> CUDAFft::Create3dPlanWithScratchAllocator(
-    Stream *stream, uint64 num_x, uint64 num_y, uint64 num_z, fft::Type type,
+    Stream *stream, uint64_t num_x, uint64 num_y, uint64 num_z, fft::Type type,
     bool in_place_fft, ScratchAllocator *scratch_allocator) {
   std::unique_ptr<CUDAFftPlan> fft_plan_ptr{new CUDAFftPlan()};
-  uint64 elem_count[3] = {num_x, num_y, num_z};
+  uint64_t elem_count[3] = {num_x, num_y, num_z};
   port::Status status = fft_plan_ptr->Initialize(parent_, stream, 3, elem_count,
                                                  type, scratch_allocator);
   if (!status.ok()) {
@@ -386,9 +390,9 @@ std::unique_ptr<fft::Plan> CUDAFft::Create3dPlanWithScratchAllocator(
 }
 
 std::unique_ptr<fft::Plan> CUDAFft::CreateBatchedPlan(
-    Stream *stream, int rank, uint64 *elem_count, uint64 *input_embed,
-    uint64 input_stride, uint64 input_distance, uint64 *output_embed,
-    uint64 output_stride, uint64 output_distance, fft::Type type,
+    Stream *stream, int rank, uint64_t *elem_count, uint64 *input_embed,
+    uint64_t input_stride, uint64 input_distance, uint64 *output_embed,
+    uint64_t output_stride, uint64 output_distance, fft::Type type,
     bool in_place_fft, int batch_count) {
   std::unique_ptr<CUDAFftPlan> fft_plan_ptr{new CUDAFftPlan()};
   port::Status status = fft_plan_ptr->Initialize(
@@ -413,9 +417,9 @@ std::unique_ptr<fft::Plan> CUDAFft::CreateBatchedPlan(
 }
 
 std::unique_ptr<fft::Plan> CUDAFft::CreateBatchedPlanWithScratchAllocator(
-    Stream *stream, int rank, uint64 *elem_count, uint64 *input_embed,
-    uint64 input_stride, uint64 input_distance, uint64 *output_embed,
-    uint64 output_stride, uint64 output_distance, fft::Type type,
+    Stream *stream, int rank, uint64_t *elem_count, uint64 *input_embed,
+    uint64_t input_stride, uint64 input_distance, uint64 *output_embed,
+    uint64_t output_stride, uint64 output_distance, fft::Type type,
     bool in_place_fft, int batch_count, ScratchAllocator *scratch_allocator) {
   std::unique_ptr<CUDAFftPlan> fft_plan_ptr{new CUDAFftPlan()};
   port::Status status = fft_plan_ptr->Initialize(
@@ -455,6 +459,9 @@ bool CUDAFft::DoFftInternal(Stream *stream, fft::Plan *plan, FuncT cufftExec,
                             const DeviceMemory<InputT> &input,
                             DeviceMemory<OutputT> *output) {
   CUDAFftPlan *cuda_fft_plan = dynamic_cast<CUDAFftPlan *>(plan);
+
+  DeviceMemory<InputT> input_maybe_copy = input;
+
   if (cuda_fft_plan == nullptr) {
     LOG(ERROR) << "the passed-in plan is not a CUDAFftPlan object.";
     return false;
@@ -464,10 +471,33 @@ bool CUDAFft::DoFftInternal(Stream *stream, fft::Plan *plan, FuncT cufftExec,
     return false;
   }
 
+  // Workaround a cuFFT bug, which mutates the input buffer when it shouldn't.
+  // See b/155276727 and go/nvbugs/2959622.
+  // TODO(b/155276727): refine the bounding condition.
+  if (input.opaque() != output->opaque() && CUDA_VERSION >= 10010 &&
+      CUDA_VERSION <= 11000 &&
+      std::is_same<InputT, std::complex<float>>::value &&
+      std::is_same<OutputT, float>::value && input.size() > 0) {
+    auto *allocator = cuda_fft_plan->GetScratchAllocator();
+    if (allocator) {
+      auto allocated = allocator->AllocateBytes(input.size());
+      if (allocated.ok()) {
+        if (stream->ThenMemcpy(&allocated.ValueOrDie(), input, input.size())
+                .ok()) {
+          input_maybe_copy = DeviceMemory<InputT>(allocated.ValueOrDie());
+        }
+      }
+      // Keep going even the workaround fails, since we don't have a good
+      // bounding box. We don't want to give up on a potentially correct
+      // execution just because the allocation for the incorrect case fails.
+    }
+  }
+
   cuda::ScopedActivateExecutorContext sac(parent_);
-  auto ret = cufftExec(cuda_fft_plan->GetPlan(),
-                       GpuComplex(const_cast<InputT *>(GpuMemory(input))),
-                       GpuComplex(GpuMemoryMutable(output)));
+  auto ret =
+      cufftExec(cuda_fft_plan->GetPlan(),
+                GpuComplex(const_cast<InputT *>(GpuMemory(input_maybe_copy))),
+                GpuComplex(GpuMemoryMutable(output)));
 
   if (ret != CUFFT_SUCCESS) {
     LOG(ERROR) << "failed to run cuFFT routine: " << ret;

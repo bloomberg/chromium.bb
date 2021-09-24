@@ -47,6 +47,7 @@
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/ui/password_check_referrer.h"
@@ -73,7 +74,7 @@ namespace {
 
 password_manager::PasswordStoreInterface* GetProfilePasswordStore(
     content::WebContents* web_contents) {
-  return PasswordStoreFactory::GetForProfile(
+  return PasswordStoreFactory::GetInterfaceForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
              ServiceAccessType::EXPLICIT_ACCESS)
       .get();
@@ -81,7 +82,7 @@ password_manager::PasswordStoreInterface* GetProfilePasswordStore(
 
 password_manager::PasswordStoreInterface* GetAccountPasswordStore(
     content::WebContents* web_contents) {
-  return AccountPasswordStoreFactory::GetForProfile(
+  return AccountPasswordStoreFactory::GetInterfaceForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
              ServiceAccessType::EXPLICIT_ACCESS)
       .get();
@@ -128,11 +129,6 @@ ManagePasswordsUIController::~ManagePasswordsUIController() = default;
 
 void ManagePasswordsUIController::OnPasswordSubmitted(
     std::unique_ptr<PasswordFormManagerForUI> form_manager) {
-  // If the save bubble is already shown (possibly manual fallback for saving)
-  // then ignore the changes because the user may interact with it right now.
-  if (bubble_status_ == BubbleStatus::SHOWN &&
-      GetState() == password_manager::ui::PENDING_PASSWORD_STATE)
-    return;
   bool show_bubble = !form_manager->IsBlocklisted();
   DestroyAccountChooser();
   save_fallback_timer_.Stop();
@@ -207,12 +203,14 @@ bool ManagePasswordsUIController::OnChooseCredentials(
   if (!HasBrowserWindow())
     return false;
   // If |local_credentials| contains PSL matches they shouldn't be propagated to
-  // the state because PSL matches aren't saved for current page. This logic is
-  // implemented here because Android uses ManagePasswordsState as a data source
-  // for account chooser.
+  // the state (unless they are also web affiliations) because PSL matches
+  // aren't saved for current page. This logic is implemented here because
+  // Android uses ManagePasswordsState as a data source for account chooser.
   CredentialManagerDialogController::FormsVector locals;
-  if (!local_credentials[0]->is_public_suffix_match)
+  if (password_manager_util::GetMatchType(*local_credentials[0]) !=
+      password_manager_util::GetLoginMatchType::kPSL) {
     locals = CopyFormVector(local_credentials);
+  }
   passwords_data_.OnRequestCredentials(std::move(locals), origin);
   passwords_data_.set_credentials_callback(std::move(callback));
   auto* raw_controller = new CredentialManagerDialogControllerImpl(

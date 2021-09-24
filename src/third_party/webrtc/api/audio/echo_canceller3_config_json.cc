@@ -259,10 +259,13 @@ void Aec3ConfigFromJsonString(absl::string_view json_string,
   if (rtc::GetValueFromJsonObject(aec3_root, "ep_strength", &section)) {
     ReadParam(section, "default_gain", &cfg.ep_strength.default_gain);
     ReadParam(section, "default_len", &cfg.ep_strength.default_len);
+    ReadParam(section, "nearend_len", &cfg.ep_strength.nearend_len);
     ReadParam(section, "echo_can_saturate", &cfg.ep_strength.echo_can_saturate);
     ReadParam(section, "bounded_erl", &cfg.ep_strength.bounded_erl);
     ReadParam(section, "erle_onset_compensation_in_dominant_nearend",
               &cfg.ep_strength.erle_onset_compensation_in_dominant_nearend);
+    ReadParam(section, "use_conservative_tail_frequency_response",
+              &cfg.ep_strength.use_conservative_tail_frequency_response);
   }
 
   if (rtc::GetValueFromJsonObject(aec3_root, "echo_audibility", &section)) {
@@ -560,12 +563,17 @@ std::string Aec3ConfigToJsonString(const EchoCanceller3Config& config) {
   ost << "\"ep_strength\": {";
   ost << "\"default_gain\": " << config.ep_strength.default_gain << ",";
   ost << "\"default_len\": " << config.ep_strength.default_len << ",";
+  ost << "\"nearend_len\": " << config.ep_strength.nearend_len << ",";
   ost << "\"echo_can_saturate\": "
       << (config.ep_strength.echo_can_saturate ? "true" : "false") << ",";
   ost << "\"bounded_erl\": "
       << (config.ep_strength.bounded_erl ? "true" : "false") << ",";
   ost << "\"erle_onset_compensation_in_dominant_nearend\": "
       << (config.ep_strength.erle_onset_compensation_in_dominant_nearend
+              ? "true"
+              : "false") << ",";
+  ost << "\"use_conservative_tail_frequency_response\": "
+      << (config.ep_strength.use_conservative_tail_frequency_response
               ? "true"
               : "false");
   ost << "},";

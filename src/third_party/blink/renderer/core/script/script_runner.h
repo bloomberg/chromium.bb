@@ -51,10 +51,6 @@ class CORE_EXPORT ScriptRunner final
   ScriptRunner& operator=(const ScriptRunner&) = delete;
 
   void QueueScriptForExecution(PendingScript*);
-  bool HasPendingScripts() const {
-    return !pending_in_order_scripts_.IsEmpty() ||
-           !pending_async_scripts_.IsEmpty();
-  }
   void NotifyScriptReady(PendingScript*);
 
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
@@ -67,36 +63,20 @@ class CORE_EXPORT ScriptRunner final
   const char* NameInHeapSnapshot() const override { return "ScriptRunner"; }
 
  private:
-  class Task;
-
   void MovePendingScript(ScriptRunner*, PendingScript*);
   bool RemovePendingInOrderScript(PendingScript*);
-  void ScheduleReadyInOrderScripts();
 
-  void PostTask(const base::Location&);
-
-  // Execute the first task in in_order_scripts_to_execute_soon_.
-  // Returns true if task was run, and false otherwise.
-  bool ExecuteInOrderTask();
-
-  // Execute any task in async_scripts_to_execute_soon_.
-  // Returns true if task was run, and false otherwise.
-  bool ExecuteAsyncTask();
-
-  void ExecuteTask();
+  // Execute the given pending script.
+  void ExecutePendingScript(PendingScript*);
 
   Member<Document> document_;
 
+  // https://html.spec.whatwg.org/#list-of-scripts-that-will-execute-in-order-as-soon-as-possible
   HeapDeque<Member<PendingScript>> pending_in_order_scripts_;
+  // https://html.spec.whatwg.org/#set-of-scripts-that-will-execute-as-soon-as-possible
   HeapHashSet<Member<PendingScript>> pending_async_scripts_;
 
-  // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
-  HeapDeque<Member<PendingScript>> async_scripts_to_execute_soon_;
-  HeapDeque<Member<PendingScript>> in_order_scripts_to_execute_soon_;
-
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  int number_of_in_order_scripts_with_pending_notification_ = 0;
 };
 
 }  // namespace blink

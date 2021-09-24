@@ -58,10 +58,11 @@ bool GbmSurfacelessWayland::ScheduleOverlayPlane(
     const gfx::RectF& crop_rect,
     bool enable_blend,
     const gfx::Rect& damage_rect,
+    float opacity,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   unsubmitted_frames_.back()->overlays.emplace_back(
       z_order, transform, image, bounds_rect, crop_rect, enable_blend,
-      damage_rect, std::move(gpu_fence));
+      damage_rect, opacity, std::move(gpu_fence));
   return true;
 }
 
@@ -199,6 +200,14 @@ gfx::SurfaceOrigin GbmSurfacelessWayland::GetOrigin() const {
   return gfx::SurfaceOrigin::kTopLeft;
 }
 
+bool GbmSurfacelessWayland::Resize(const gfx::Size& size,
+                                   float scale_factor,
+                                   const gfx::ColorSpace& color_space,
+                                   bool has_alpha) {
+  surface_scale_factor_ = scale_factor;
+  return gl::SurfacelessEGL::Resize(size, scale_factor, color_space, has_alpha);
+}
+
 GbmSurfacelessWayland::~GbmSurfacelessWayland() {
   buffer_manager_->UnregisterSurface(widget_);
 }
@@ -245,14 +254,17 @@ void GbmSurfacelessWayland::MaybeSubmitFrames() {
       overlay_configs.push_back(
           ui::ozone::mojom::WaylandOverlayConfig::From(plane.second));
       overlay_configs.back()->buffer_id = plane.first;
-      // TODO(insert bug): For the primary plane, we receive damage via
+      // The current scale factor of the surface, which is used to determine
+      // the size in pixels of resources allocated by the GPU process.
+      overlay_configs.back()->surface_scale_factor = surface_scale_factor_;
+      // TODO(petermcneeley): For the primary plane, we receive damage via
       // PostSubBufferAsync. Damage sent via overlay information is currently
       // always a full damage. Take the intersection until we send correct
       // damage via overlay information.
       if (plane.second.z_order == 0 &&
-          !submitted_frame->damage_region_.IsEmpty()) {
+          submitted_frame->damage_region_.has_value()) {
         overlay_configs.back()->damage_region.Intersect(
-            submitted_frame->damage_region_);
+            submitted_frame->damage_region_.value());
       }
 #if DCHECK_IS_ON()
       if (plane.second.z_order == INT32_MIN)

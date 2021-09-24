@@ -96,7 +96,7 @@ class WizardController {
   // or deleted. Only additions possible.
   enum class ScreenShownStatus { kSkipped = 0, kShown = 1, kMaxValue = kShown };
 
-  WizardController();
+  explicit WizardController(WizardContext* wizard_context);
   ~WizardController();
 
   // Returns the default wizard controller if it has been created. This is a
@@ -169,14 +169,6 @@ class WizardController {
   void SimulateDemoModeSetupForTesting(
       absl::optional<DemoSession::DemoModeConfig> demo_config = absl::nullopt);
 
-  // Stores authorization data that will be used to configure extra auth factors
-  // during user onboarding.
-  void SetAuthSessionForOnboarding(const UserContext& auth_session);
-
-  // Clears authorization data that were stored to be used to configure extra
-  // auth factors during user onboarding.
-  void ClearOnboardingAuthSession();
-
   // Advances to login/update screen. Should be used in for testing only.
   void SkipToLoginForTesting();
 
@@ -209,11 +201,6 @@ class WizardController {
   TScreen* GetScreen() const {
     return static_cast<TScreen*>(
         screen_manager()->GetScreen(TScreen::TView::kScreenId));
-  }
-
-  // Returns the current WizardContext instance.
-  WizardContext* get_wizard_context_for_testing() const {
-    return wizard_context_.get();
   }
 
   // Volume percent at which spoken feedback is still audible.
@@ -360,6 +347,7 @@ class WizardController {
       EduCoexistenceLoginScreen::Result result);
   void OnParentalHandoffScreenExit(ParentalHandoffScreen::Result result);
   void OnOfflineLoginScreenExit(OfflineLoginScreen::Result result);
+  void OnOsInstallScreenExit();
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.
@@ -447,7 +435,7 @@ class WizardController {
 
   std::unique_ptr<AutoEnrollmentController> auto_enrollment_controller_;
   std::unique_ptr<ScreenManager> screen_manager_;
-  std::unique_ptr<WizardContext> wizard_context_;
+  WizardContext* wizard_context_;
 
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).

@@ -9,6 +9,7 @@ import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
 import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.m.js';
 import {List} from 'chrome://resources/js/cr/ui/list.m.js';
 
+import {DialogType} from '../../common/js/dialog_type.js';
 import {FileOperationProgressEvent} from '../../common/js/file_operation_common.js';
 import {FileType} from '../../common/js/file_type.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
@@ -17,6 +18,7 @@ import {ProgressCenterItem, ProgressItemState} from '../../common/js/progress_ce
 import {TrashEntry} from '../../common/js/trash.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {xfm} from '../../common/js/xfm.js';
 import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
@@ -24,7 +26,6 @@ import {VolumeManager} from '../../externs/volume_manager.js';
 
 import {ActionsModel} from './actions_model.js';
 import {constants} from './constants.js';
-import {DialogType} from './dialog_type.js';
 import {DirectoryModel} from './directory_model.js';
 import {FileSelection, FileSelectionHandler} from './file_selection.js';
 import {FileTasks} from './file_tasks.js';
@@ -2142,7 +2143,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = new class extends FilesCommand {
 };
 
 /**
- * Creates zip file for current selection.
+ * Creates ZIP file for current selection.
  */
 CommandHandler.COMMANDS_['zip-selection'] = new class extends FilesCommand {
   execute(event, fileManager) {
@@ -2154,30 +2155,9 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends FilesCommand {
       return;
     }
 
-    if (util.isZipPackEnabled()) {
-      const selectionEntries = fileManager.getSelection().entries;
-      fileManager.fileOperationManager.zipSelection(
-          selectionEntries, /** @type {!DirectoryEntry} */ (dirEntry));
-
-    } else {
-      fileManager.taskController.getFileTasks()
-          .then(tasks => {
-            if (fileManager.directoryModel.isOnDrive() ||
-                fileManager.directoryModel.isOnMTP()) {
-              tasks.execute(/** @type {chrome.fileManagerPrivate.FileTask} */ ({
-                descriptor: FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_DESCRIPTOR
-              }));
-            } else {
-              tasks.execute(/** @type {chrome.fileManagerPrivate.FileTask} */ (
-                  {descriptor: FileTasks.ZIP_ARCHIVER_ZIP_TASK_DESCRIPTOR}));
-            }
-          })
-          .catch(error => {
-            if (error) {
-              console.error(error.stack || error);
-            }
-          });
-    }
+    const selectionEntries = fileManager.getSelection().entries;
+    fileManager.fileOperationManager.zipSelection(
+        selectionEntries, /** @type {!DirectoryEntry} */ (dirEntry));
   }
 
   /** @override */
@@ -2198,8 +2178,7 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends FilesCommand {
     event.command.setHidden(noEntries);
 
     // TODO(crbug/1226915) Make it work with MTP.
-    const isOnEligibleLocation =
-        !util.isZipPackEnabled() || fileManager.directoryModel.isOnNative();
+    const isOnEligibleLocation = fileManager.directoryModel.isOnNative();
 
     event.canExecute = dirEntry && !fileManager.directoryModel.isReadOnly() &&
         isOnEligibleLocation && selection && selection.totalCount > 0;
@@ -2431,9 +2410,8 @@ CommandHandler.COMMANDS_['share-with-plugin-vm'] =
                   chrome.runtime.lastError.message);
             }
           });
-      // Register the share and show the 'Manage PluginVM sharing' toast
-      // immediately, since the container may take 10s or more to start.
-      fileManager.crostini.registerSharedPath(constants.PLUGIN_VM, dir);
+      // Show the 'Manage PluginVM sharing' toast immediately, since the
+      // container may take 10s or more to start.
       fileManager.ui.toast.show(str('FOLDER_SHARED_WITH_PLUGIN_VM'), {
         text: str('MANAGE_TOAST_BUTTON_LABEL'),
         callback: () => {
@@ -2842,7 +2820,7 @@ CommandHandler.COMMANDS_['browser-back'] = new class extends FilesCommand {
     // TODO(fukino): It should be better to minimize Files app only when there
     // is no back stack, and otherwise use BrowserBack for history navigation.
     // https://crbug.com/624100.
-    const currentWindow = chrome.app.window.current();
+    const currentWindow = xfm.getCurrentWindow();
     if (currentWindow) {
       currentWindow.minimize();
     }

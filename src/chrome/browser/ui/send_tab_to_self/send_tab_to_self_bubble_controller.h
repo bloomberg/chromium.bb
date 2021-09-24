@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -18,9 +19,15 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace ui {
+class Event;
+}  // namespace ui
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
+
+struct AccountInfo;
 
 namespace send_tab_to_self {
 
@@ -39,19 +46,24 @@ class SendTabToSelfBubbleController
   // Displays send tab to self bubble.
   void ShowBubble();
 
+  bool IsBubbleShown() { return bubble_shown_; }
+
   // Returns nullptr if no bubble is currently shown.
   SendTabToSelfBubbleView* send_tab_to_self_bubble_view() const;
-  // Returns the title of send tab to self bubble.
-  std::u16string GetWindowTitle() const;
   // Returns the valid devices info map.
   virtual std::vector<TargetDeviceInfo> GetValidDevices() const;
-  // Returns current profile.
-  Profile* GetProfile() const;
+
+  AccountInfo GetSharingAccountInfo() const;
 
   // Handles the action when the user click on one valid device. Sends tab to
-  // the target device; closes the button and hides the omnibox icon.
+  // the target device.
+  // Virtual for testing.
   virtual void OnDeviceSelected(const std::string& target_device_name,
                                 const std::string& target_device_guid);
+
+  // Handler for when user clicks the link to manage their available devices.
+  void OnManageDevicesClicked(const ui::Event& event);
+
   // Close the bubble when the user click on the close button.
   void OnBubbleClosed();
 
@@ -82,12 +94,16 @@ class SendTabToSelfBubbleController
 
   void UpdateIcon();
 
+  Profile* GetProfile() const;
+
   // The web_contents associated with this controller.
   content::WebContents* web_contents_;
   // Weak reference. Will be nullptr if no bubble is currently shown.
   SendTabToSelfBubbleView* send_tab_to_self_bubble_view_ = nullptr;
   // True if a confirmation message should be shown in the omnibox.
   bool show_message_ = false;
+  // True if the bubble is currently shown.
+  bool bubble_shown_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

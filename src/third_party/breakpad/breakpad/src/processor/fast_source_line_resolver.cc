@@ -51,6 +51,7 @@
 
 using std::map;
 using std::make_pair;
+using std::vector;
 
 namespace google_breakpad {
 
@@ -61,7 +62,9 @@ bool FastSourceLineResolver::ShouldDeleteMemoryBufferAfterLoadModule() {
   return false;
 }
 
-void FastSourceLineResolver::Module::LookupAddress(StackFrame* frame) const {
+void FastSourceLineResolver::Module::LookupAddress(
+    StackFrame* frame,
+    vector<std::unique_ptr<StackFrame>>* inlined_frames) const {
   MemAddr address = frame->instruction - frame->module->base_address();
 
   // First, look for a FUNC record that covers address. Use

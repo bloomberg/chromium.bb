@@ -21,7 +21,10 @@ group("updater") {
     deps = [ "//chrome/updater/mac" ]
   }
   if (is_win || is_mac) {
-    deps += [ "//chrome/updater/tools:tools" ]
+    deps += [
+      "//chrome/updater/test/qualification_app",
+      "//chrome/updater/tools:tools",
+    ]
   }
 }
 
@@ -33,7 +36,6 @@ group("all") {
       ":updater",
       ":updater_tests",
       ":updater_tests_system",
-      "//chrome/updater/test/test_app",
     ]
   }
 }
@@ -234,6 +236,7 @@ if (is_win || is_mac) {
         "prefs_win.cc",
         "service_factory_win.cc",
         "setup_win.cc",
+        "util_win.cc",
         "win/action_handler.cc",
         "win/install_progress_observer.cc",
         "win/install_progress_observer.h",
@@ -315,6 +318,7 @@ if (is_win || is_mac) {
     deps = [
       ":base",
       ":constants_header",
+      "//base",
     ]
   }
 
@@ -467,8 +471,6 @@ if (is_win || is_mac) {
       "//base/test:test_support",
       "//chrome/common:constants",
       "//chrome/updater/protos:omaha_proto",
-      "//chrome/updater/test/test_app:constants",
-      "//chrome/updater/test/test_app:version_header",
       "//chrome/updater/tools:unittest",
       "//components/policy/proto",
       "//components/prefs:test_support",
@@ -515,6 +517,7 @@ if (is_win || is_mac) {
         "test/data/tagged_encode_utf8.exe",
         "test/data/tagged_magic_utf16.exe",
         "test/data/updater.runtime_deps",
+        "//chrome/test/data/updater/updater_qualification_app_exe.crx",
       ]
     }
 
@@ -546,10 +549,7 @@ if (is_win || is_mac) {
         "//chrome/test/data/updater/updater_qualification_app_dmg.crx",
       ]
 
-      data_deps = [
-        "//chrome/updater/mac:updater_bundle_test",
-        "//chrome/updater/test/test_app",
-      ]
+      data_deps = [ "//chrome/updater/mac:updater_bundle_test" ]
     }
   }
 
@@ -557,6 +557,12 @@ if (is_win || is_mac) {
     copy("test_service_files") {
       testonly = true
       sources = [
+        "test/service/win/answer_uac.py",
+        "test/service/win/impersonate.py",
+        "test/service/win/proc_util.py",
+        "test/service/win/rpc_handler.py",
+        "test/service/win/uac.py",
+        "test/service/win/ui.py",
         "test/service/win/updater_test_service.py",
         "test/service/win/updater_test_service_control.py",
       ]
@@ -583,12 +589,11 @@ if (is_win || is_mac) {
       deps += [ ":base" ]
     }
 
-    data_deps = [ "//chrome/updater/test/test_app" ]
     if (is_mac) {
-      data_deps += [ "//chrome/updater/mac:updater_bundle_test" ]
+      data_deps = [ "//chrome/updater/mac:updater_bundle_test" ]
     }
     if (is_win) {
-      data_deps += [ ":test_service_files" ]
+      data_deps = [ ":test_service_files" ]
     }
   }
 
@@ -612,10 +617,13 @@ if (is_win || is_mac) {
 
     data_deps = [ ":updater_integration_tests_helper" ]
     if (is_mac) {
-      data_deps += [
-        "//chrome/updater/mac:updater_bundle_test",
-        "//chrome/updater/test/test_app",
-      ]
+      data_deps += [ "//chrome/updater/mac:updater_bundle_test" ]
+    }
+    if (is_win) {
+      data_deps += [ ":test_service_files" ]
+    }
+    if (is_win) {
+      data_deps += [ ":test_service_files" ]
     }
   }
 
@@ -632,6 +640,8 @@ if (is_win || is_mac) {
       ":updater_test_sources",
       "//base",
       "//base/test:test_support",
+      "//chrome/common:constants",
+      "//testing/gtest",
       "//url",
     ]
   }

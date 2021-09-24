@@ -21,7 +21,6 @@
 
 namespace SkSL {
 
-class BuiltinTypes;
 class Context;
 class SymbolTable;
 
@@ -107,7 +106,6 @@ public:
     Type(const Type& other) = delete;
 
     /** Creates an array type. */
-    static constexpr int kUnsizedArray = -1;
     static std::unique_ptr<Type> MakeArrayType(skstd::string_view name, const Type& componentType,
                                                int columns);
 
@@ -125,7 +123,7 @@ public:
                                                  int8_t priority);
 
     /** Create a matrix type. */
-    static std::unique_ptr<Type> MakeMatrixType(const char* name, const char* abbrev,
+    static std::unique_ptr<Type> MakeMatrixType(skstd::string_view name, const char* abbrev,
                                                 const Type& componentType, int columns,
                                                 int8_t rows);
 
@@ -133,7 +131,7 @@ public:
     static std::unique_ptr<Type> MakeSamplerType(const char* name, const Type& textureType);
 
     /** Create a scalar type. */
-    static std::unique_ptr<Type> MakeScalarType(const char* name, const char* abbrev,
+    static std::unique_ptr<Type> MakeScalarType(skstd::string_view name, const char* abbrev,
                                                 Type::NumberKind numberKind, int8_t priority,
                                                 int8_t bitWidth);
 
@@ -153,7 +151,7 @@ public:
                                                  bool isMultisampled, bool isSampled);
 
     /** Create a vector type. */
-    static std::unique_ptr<Type> MakeVectorType(const char* name, const char* abbrev,
+    static std::unique_ptr<Type> MakeVectorType(skstd::string_view name, const char* abbrev,
                                                 const Type& componentType, int columns);
 
     template <typename T>
@@ -196,6 +194,10 @@ public:
 
     bool isPrivate() const {
         return this->name().starts_with("$");
+    }
+
+    virtual bool allowedInES2() const {
+        return true;
     }
 
     bool operator==(const Type& other) const {
@@ -509,6 +511,17 @@ public:
     bool isOrContainsArray() const;
 
     /**
+     * Returns true if this type is either itself private or is a struct which contains private
+     * fields (recursively).
+     */
+    bool containsPrivateFields() const;
+
+    /**
+     * Returns true if this type is a struct that is too deeply nested.
+     */
+    bool isTooDeeplyNested() const;
+
+    /**
      * Returns the corresponding vector or matrix type with the specified number of columns and
      * rows.
      */
@@ -534,6 +547,12 @@ public:
     /** Detects any IntLiterals in the expression which can't fit in this type. */
     bool checkForOutOfRangeLiteral(const Context& context, const Expression& expr) const;
 
+    /**
+     * Verifies that the expression is a valid constant array size for this type. Returns the array
+     * size, or zero if the expression isn't a valid literal value.
+     */
+    SKSL_INT convertArraySize(const Context& context, std::unique_ptr<Expression> size) const;
+
 protected:
     Type(skstd::string_view name, const char* abbrev, TypeKind kind, int offset = -1)
         : INHERITED(offset, kSymbolKind, name)
@@ -543,7 +562,7 @@ protected:
     }
 
 private:
-    friend class BuiltinTypes;
+    bool isTooDeeplyNested(int limit) const;
 
     using INHERITED = Symbol;
 

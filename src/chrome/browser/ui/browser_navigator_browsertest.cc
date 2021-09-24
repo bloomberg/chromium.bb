@@ -28,8 +28,8 @@
 #include "chrome/browser/ui/search/ntp_test_utils.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -280,7 +280,7 @@ namespace {
 // Note that network URLs are not actually loaded in tests, so this also tests
 // that error pages leave the intended URL in the address bar.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_CurrentTab) {
-  ui_test_utils::NavigateToURL(browser(), GetGoogleURL());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetGoogleURL()));
   EXPECT_EQ(GetGoogleURL(),
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
   // We should have one window with one tab.
@@ -1800,8 +1800,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(base::UTF8ToUTF16(expected_url), omnibox_view->GetText());
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
-// Flaky on Win and Linux. See https://crbug.com/1044335.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    defined(OS_MAC)
+// Flaky on Win, Linux, Mac. See https://crbug.com/1044335.
 #define MAYBE_ReuseRVHWithWebUI DISABLED_ReuseRVHWithWebUI
 #else
 #define MAYBE_ReuseRVHWithWebUI ReuseRVHWithWebUI
@@ -1817,7 +1818,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_ReuseRVHWithWebUI) {
 
   // Visit a WebUI page with bindings.
   GURL webui_url(chrome::kChromeUIOmniboxURL);
-  ui_test_utils::NavigateToURL(browser(), webui_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), webui_url));
 
   // window.open a new tab.  This will keep the chrome://omnibox process alive
   // once we navigate away from it.
@@ -1842,7 +1843,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_ReuseRVHWithWebUI) {
 
   // Navigate to another page in the popup.
   GURL nonwebui_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  ui_test_utils::NavigateToURL(browser(), nonwebui_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), nonwebui_url));
   EXPECT_NE(webui_rvh, popup->GetMainFrame()->GetRenderViewHost());
 
   // Go back in the popup.  This should finish without crashing and should
@@ -1853,7 +1854,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_ReuseRVHWithWebUI) {
   EXPECT_EQ(webui_rvh, popup->GetMainFrame()->GetRenderViewHost());
   EXPECT_TRUE(webui_rvh->IsRenderViewLive());
   EXPECT_TRUE(content::BINDINGS_POLICY_MOJO_WEB_UI &
-              webui_rvh->GetMainFrame()->GetEnabledBindings());
+              popup->GetMainFrame()->GetEnabledBindings());
 }
 
 // Test that main frame navigations generate a NavigationUIData with the
@@ -1899,7 +1900,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SubFrameNavigationUIData) {
 
   // Load page with iframe.
   const GURL url1 = embedded_test_server()->GetURL("/iframe.html");
-  ui_test_utils::NavigateToURL(browser(), url1);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url1));
 
   // Retrieve the iframe.
   const auto all_frames = tab->GetAllFrames();

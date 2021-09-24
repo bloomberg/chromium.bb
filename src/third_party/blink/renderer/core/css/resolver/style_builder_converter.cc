@@ -202,17 +202,25 @@ static bool ConvertFontFamilyName(
     const Document* document_for_count) {
   if (auto* font_family_value = DynamicTo<CSSFontFamilyValue>(value)) {
     generic_family = FontDescription::kNoFamily;
-    family_name = AtomicString(font_family_value->Value());
-#if defined(OS_MAC)
-    if (family_name == FontCache::LegacySystemFontFamily()) {
-      document_for_count->CountUse(WebFeature::kBlinkMacSystemFont);
-      family_name = font_family_names::kSystemUi;
-    }
-#endif
+    family_name = font_family_value->Value();
   } else if (font_builder) {
-    generic_family =
-        ConvertGenericFamily(To<CSSIdentifierValue>(value).GetValueID());
-    family_name = font_builder->GenericFontFamilyName(generic_family);
+    // TODO(crbug.com/1065468): Get rid of GenericFamilyType.
+    auto cssValueID = To<CSSIdentifierValue>(value).GetValueID();
+    generic_family = ConvertGenericFamily(cssValueID);
+    if (generic_family != FontDescription::kNoFamily) {
+      family_name = font_builder->GenericFontFamilyName(generic_family);
+      if (cssValueID == CSSValueID::kWebkitBody && !family_name.IsEmpty()) {
+        // TODO(crbug.com/1065468): Remove this counter when it's no longer
+        // necessary.
+        document_for_count->CountUse(
+            WebFeature::kFontBuilderCSSFontFamilyWebKitPrefixBody);
+      }
+    } else if (cssValueID == CSSValueID::kSystemUi) {
+      family_name = font_family_names::kSystemUi;
+    } else if (RuntimeEnabledFeatures::CSSFontFamilyMathEnabled() &&
+               cssValueID == CSSValueID::kMath) {
+      family_name = font_family_names::kMath;
+    }
   }
 
   return !family_name.IsEmpty();
@@ -226,11 +234,16 @@ FontDescription::FamilyDescription StyleBuilderConverterBase::ConvertFontFamily(
 
   if (const auto* system_font =
           DynamicTo<cssvalue::CSSPendingSystemFontValue>(value)) {
-    desc.family.SetFamily(system_font->ResolveFontFamily());
+    desc.family.SetFamily(system_font->ResolveFontFamily(),
+                          FontFamily::Type::kFamilyName);
     return desc;
   }
 
   FontFamily* curr_family = nullptr;
+
+#if defined(OS_MAC)
+  bool has_seen_system_ui = false;
+#endif
 
   for (auto& family : To<CSSValueList>(value)) {
     FontDescription::GenericFamilyType generic_family =
@@ -249,9 +262,29 @@ FontDescription::FamilyDescription StyleBuilderConverterBase::ConvertFontFamily(
       curr_family = new_family.get();
     }
 
-    curr_family->SetFamily(family_name);
+    // TODO(crbug.com/1065468): Get rid of GenericFamilyType.
+    bool is_generic = generic_family != FontDescription::kNoFamily ||
+                      IsA<CSSIdentifierValue>(*family);
+#if defined(OS_MAC)
+    // TODO(https://crbug.com/554590): Remove this counter when it's no longer
+    // necessary.
+    if (!has_seen_system_ui) {
+      has_seen_system_ui =
+          is_generic && family_name == font_family_names::kSystemUi;
+    }
+    if (IsA<CSSFontFamilyValue>(*family) &&
+        family_name == FontCache::LegacySystemFontFamily()) {
+      family_name = font_family_names::kSystemUi;
+      if (!has_seen_system_ui)
+        document_for_count->CountUse(WebFeature::kBlinkMacSystemFont);
+    }
+#endif
 
-    if (generic_family != FontDescription::kNoFamily)
+    curr_family->SetFamily(family_name, is_generic
+                                            ? FontFamily::Type::kGenericFamily
+                                            : FontFamily::Type::kFamilyName);
+
+    if (is_generic)
       desc.generic_family = generic_family;
   }
 
@@ -1552,8 +1585,8 @@ void StyleBuilderConverter::CountSystemColorComputeToSelfUsage(
   // This is a superset of when the feature will change the resolved color
   // (inheriting the keyword is also required) but it should be a reasonable
   // approximation for use counting purposes.
-  if (state.Style()->ComputedColorScheme() !=
-      state.ParentStyle()->ComputedColorScheme()) {
+  if (state.Style()->UsedColorScheme() !=
+      state.ParentStyle()->UsedColorScheme()) {
     UseCounter::Count(state.GetDocument(),
                       WebFeature::kCSSSystemColorComputeToSelf);
   }
@@ -2042,18 +2075,6 @@ StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
       has_font_units, has_root_font_units, g_null_atom, WTF::TextEncoding());
 }
 
-LengthSize StyleBuilderConverter::ConvertIntrinsicSize(
-    StyleResolverState& state,
-    const CSSValue& value) {
-  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kAuto)
-    return LengthSize(Length::Auto(), Length::Auto());
-  const CSSValuePair& pair = To<CSSValuePair>(value);
-  Length width = ConvertLength(state, pair.First());
-  Length height = ConvertLength(state, pair.Second());
-  return LengthSize(width, height);
-}
-
 namespace {
 FloatSize GetRatioFromList(const CSSValueList& list) {
   auto* ratio_list = DynamicTo<CSSValueList>(list.Item(0));
@@ -2172,4 +2193,38 @@ AtomicString StyleBuilderConverter::ConvertContainerName(
   return AtomicString();
 }
 
+absl::optional<StyleIntrinsicLength>
+StyleBuilderConverter::ConvertIntrinsicDimension(
+    const StyleResolverState& state,
+    const CSSValue& value) {
+  // If we have a single identifier, it is "none" in either syntax.
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value) {
+    DCHECK((!RuntimeEnabledFeatures::ContainIntrinsicSizeAutoEnabled() &&
+            identifier_value->GetValueID() == CSSValueID::kAuto) ||
+           identifier_value->GetValueID() == CSSValueID::kNone);
+    return absl::nullopt;
+  }
+
+  bool has_auto = false;
+  auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+  if (!primitive_value) {
+    // Must be new syntax
+    const CSSValueList& list = To<CSSValueList>(value);
+
+    identifier_value = DynamicTo<CSSIdentifierValue>(list.Item(0));
+    DCHECK(!identifier_value ||
+           identifier_value->GetValueID() == CSSValueID::kAuto);
+    DCHECK(!identifier_value || list.length() == 2u);
+    has_auto = identifier_value != nullptr;
+    primitive_value = DynamicTo<CSSPrimitiveValue>(list.Item(0));
+    if (!primitive_value) {
+      DCHECK_EQ(list.length(), 2u);
+      primitive_value = DynamicTo<CSSPrimitiveValue>(list.Item(1));
+    }
+  }
+  DCHECK(primitive_value);
+
+  return StyleIntrinsicLength(has_auto, ConvertLength(state, *primitive_value));
+}
 }  // namespace blink

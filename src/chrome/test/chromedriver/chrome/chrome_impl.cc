@@ -296,6 +296,11 @@ Status ChromeImpl::SetWindowBounds(
     params.SetStringPath("bounds.windowState", normal);
     status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
                                                      params);
+    // Return success in case of `Browser.setWindowBounds` not implemented like
+    // on Android. crbug.com/1237183
+    if (status.code() == kUnknownCommand)
+      return Status(kOk);
+
     if (status.IsError())
       return status;
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
@@ -321,12 +326,12 @@ Status ChromeImpl::SetWindowBounds(
     if (status.IsError())
       return status;
 
-    base::DictionaryValue params;
-    params.SetStringKey("expression",
-                        "document.documentElement.requestFullscreen()");
-    params.SetBoolKey("userGesture", true);
-    params.SetBoolKey("awaitPromise", true);
-    status = web_view->SendCommand("Runtime.evaluate", params);
+    base::DictionaryValue fullscreen_params;
+    fullscreen_params.SetStringKey(
+        "expression", "document.documentElement.requestFullscreen()");
+    fullscreen_params.SetBoolKey("userGesture", true);
+    fullscreen_params.SetBoolKey("awaitPromise", true);
+    status = web_view->SendCommand("Runtime.evaluate", fullscreen_params);
     if (status.IsError())
       return status;
 
@@ -346,6 +351,12 @@ Status ChromeImpl::SetWindowBounds(
   params.SetKey("bounds", bounds->Clone());
   status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
                                                    params);
+
+  // Return success in case of `Browser.setWindowBounds` not implemented like
+  // on Android. crbug.com/1237183
+  if (status.code() == kUnknownCommand)
+    return Status(kOk);
+
   if (status.IsError())
     return status;
 
@@ -385,12 +396,12 @@ Status ChromeImpl::SetWindowBounds(
         result->FindKeyOfType("height", base::Value::Type::INTEGER);
     if (width == nullptr || height == nullptr)
       return Status(kUnknownError, "unexpected JavaScript result");
-    auto bounds = std::make_unique<base::DictionaryValue>();
-    bounds->SetIntKey("width", width->GetInt());
-    bounds->SetIntKey("height", height->GetInt());
-    bounds->SetIntKey("left", 0);
-    bounds->SetIntKey("top", 0);
-    params.SetKey("bounds", bounds->Clone());
+    auto window_bounds = std::make_unique<base::DictionaryValue>();
+    window_bounds->SetIntKey("width", width->GetInt());
+    window_bounds->SetIntKey("height", height->GetInt());
+    window_bounds->SetIntKey("left", 0);
+    window_bounds->SetIntKey("top", 0);
+    params.SetKey("bounds", window_bounds->Clone());
     return devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
                                                    params);
   }

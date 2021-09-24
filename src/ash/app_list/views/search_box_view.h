@@ -78,16 +78,10 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
   // Updates the search box's background corner radius and color based on the
   // state of AppListModel.
-  void UpdateBackground(double progress,
-                        AppListState current_state,
-                        AppListState target_state);
+  void UpdateBackground(AppListState target_state);
 
   // Updates the search box's layout based on the state of AppListModel.
-  void UpdateLayout(double progress,
-                    AppListState current_state,
-                    int current_state_height,
-                    AppListState target_state,
-                    int target_state_height);
+  void UpdateLayout(AppListState target_state, int target_state_height);
 
   // Returns background border corner radius in the given state.
   int GetSearchBoxBorderCornerRadiusForState(AppListState state) const;
@@ -125,6 +119,9 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   void set_highlight_range_for_test(const gfx::Range& range) {
     highlight_range_ = range;
   }
+
+  // Update search box view background when result container visibility changes.
+  void OnResultContainerVisibilityChanged(bool visible);
 
  private:
   // Updates the text field text color.
@@ -172,6 +169,12 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
   // Clear highlight range.
   void ResetHighlightRange();
+
+  // Tracks whether the search result page view is visible.
+  bool search_result_page_visible_ = false;
+
+  // Tracks the current app list state.
+  AppListState current_app_list_state_ = AppListState::kStateApps;
 
   std::u16string current_query_;
 

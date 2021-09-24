@@ -85,14 +85,14 @@ void DrawCenteredIcon(cc::PaintCanvas* canvas,
 
 FontDescription CreatePlaceholderFontDescription(float scale_factor) {
   FontDescription description;
-  description.FirstFamily().SetFamily("Roboto");
+  description.FirstFamily().SetFamily("Roboto", FontFamily::Type::kFamilyName);
 
   scoped_refptr<SharedFontFamily> helvetica_neue = SharedFontFamily::Create();
-  helvetica_neue->SetFamily("Helvetica Neue");
+  helvetica_neue->SetFamily("Helvetica Neue", FontFamily::Type::kFamilyName);
   scoped_refptr<SharedFontFamily> helvetica = SharedFontFamily::Create();
-  helvetica->SetFamily("Helvetica");
+  helvetica->SetFamily("Helvetica", FontFamily::Type::kFamilyName);
   scoped_refptr<SharedFontFamily> arial = SharedFontFamily::Create();
-  arial->SetFamily("Arial");
+  arial->SetFamily("Arial", FontFamily::Type::kFamilyName);
 
   helvetica->AppendFamily(std::move(arial));
   helvetica_neue->AppendFamily(std::move(helvetica));
@@ -249,11 +249,8 @@ PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
   }
 
   PaintRecorder paint_recorder;
-  ImageDrawOptions draw_options;
-  draw_options.sampling_options = SkSamplingOptions();
   Draw(paint_recorder.beginRecording(FloatRect(dest_rect)), PaintFlags(),
-       FloatRect(dest_rect), FloatRect(dest_rect), draw_options,
-       kClampImageToSourceRect, kSyncDecode);
+       FloatRect(dest_rect), FloatRect(dest_rect), ImageDrawOptions());
 
   paint_record_for_current_frame_ = paint_recorder.finishRecordingAsPicture();
   paint_record_content_id_ = PaintImage::GetNextContentId();
@@ -276,9 +273,7 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
                             const PaintFlags& base_flags,
                             const FloatRect& dest_rect,
                             const FloatRect& src_rect,
-                            const ImageDrawOptions& draw_options,
-                            ImageClampingMode image_clamping_mode,
-                            ImageDecodingMode decode_mode) {
+                            const ImageDrawOptions& draw_options) {
   if (!src_rect.Intersects(FloatRect(0.0f, 0.0f,
                                      static_cast<float>(size_.Width()),
                                      static_cast<float>(size_.Height())))) {
@@ -367,7 +362,7 @@ void PlaceholderImage::DrawPattern(GraphicsContext& context,
   // over the whole |dest_rect|. This is done in order to prevent repeated icons
   // from cluttering tiled background images.
   Draw(context.Canvas(), base_flags, dest_rect, tiling_info.image_rect,
-       draw_options, kClampImageToSourceRect, kUnspecifiedDecode);
+       draw_options);
 }
 
 void PlaceholderImage::DestroyDecodedData() {

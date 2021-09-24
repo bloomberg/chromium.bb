@@ -11,7 +11,7 @@
 #include "include/core/SkString.h"
 #include "include/core/SkTypes.h"
 #include "include/private/SkSLStatement.h"
-#include "include/sksl/DSLErrorHandling.h"
+#include "include/sksl/SkSLErrorReporter.h"
 
 #include <memory>
 
@@ -48,10 +48,10 @@ public:
 
     DSLStatement& operator=(DSLStatement&& other) = default;
 
-    bool valid() { return fStatement != nullptr; }
+    bool hasValue() { return fStatement != nullptr; }
 
     std::unique_ptr<SkSL::Statement> release() {
-        SkASSERT(this->valid());
+        SkASSERT(this->hasValue());
         return std::move(fStatement);
     }
 
@@ -60,7 +60,7 @@ private:
 
     DSLStatement(std::unique_ptr<SkSL::Expression> expr);
 
-    std::unique_ptr<SkSL::Statement> releaseIfValid() {
+    std::unique_ptr<SkSL::Statement> releaseIfPossible() {
         return std::move(fStatement);
     }
 
@@ -90,7 +90,7 @@ public:
 
     ~DSLPossibleStatement();
 
-    bool valid() { return fStatement != nullptr; }
+    bool hasValue() { return fStatement != nullptr; }
 
     std::unique_ptr<SkSL::Statement> release() {
         return DSLStatement(std::move(*this)).release();

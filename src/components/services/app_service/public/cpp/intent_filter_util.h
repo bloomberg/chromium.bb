@@ -61,9 +61,7 @@ void AddSingleValueCondition(apps::mojom::ConditionType condition_type,
 
 // TODO(crbug.com/1092784): Update/add all related unit tests to test with
 // action view.
-apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(
-    const GURL& url,
-    bool with_action_view = false);
+apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(const GURL& url);
 
 // Get the |intent_filter| match level. The higher the return value, the better
 // the match is. For example, an filter with scheme, host and path is better
@@ -91,8 +89,8 @@ bool IsBrowserFilter(const apps::mojom::IntentFilterPtr& filter);
 std::set<std::string> AppManagementGetSupportedLinks(
     const apps::mojom::IntentFilterPtr& intent_filter);
 
-// Given an intent filter, decide if the filter matches the required
-// parameters that determine whether the filter has a supported link.
+// Check if the filter is a supported link, i.e. it has a http or https scheme
+// and at least one host.
 bool IsSupportedLink(const apps::mojom::IntentFilterPtr& intent_filter);
 
 }  // namespace apps_util

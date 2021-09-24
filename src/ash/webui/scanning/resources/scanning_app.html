@@ -165,7 +165,9 @@
       <scan-preview id="scanPreview" app-state="[[appState_]]"
           object-urls="[[objectUrls_]]" page-number="[[pageNumber_]]"
           progress-percent="[[progressPercent_]]"
-          multi-page-scan-checked="[[multiPageScanChecked]]"></scan-preview>
+          multi-page-scan-checked="[[multiPageScanChecked]]"
+          on-remove-page="onRemovePage_"
+          on-rescan-page="onRescanPage_"></scan-preview>
     </div>
     <div id="rightPanel">
       <h1 id="appTitle">[[i18n('appTitle')]]</h1>
@@ -238,9 +240,10 @@
         </scan-done-section>
       </template>
       <template is="dom-if" if="[[showMultiPageScan_]]">
-        <multi-page-scan page-number="[[pageNumber_]]"
+        <multi-page-scan page-number="[[pageNumber_]]" app-state="[[appState_]]"
             on-scan-next-page="onScanNextPage_"
-            on-complete-multi-page-scan="onCompleteMultiPageScan_">
+            on-complete-multi-page-scan="onCompleteMultiPageScan_"
+            on-cancel-click="onCancelClick_">
         </multi-page-scan>
       </template>
     </div>

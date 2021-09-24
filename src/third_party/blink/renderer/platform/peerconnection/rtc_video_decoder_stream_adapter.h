@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/single_sample_metrics.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "media/base/decode_status.h"
@@ -95,8 +96,7 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
 
   // webrtc::VideoDecoder implementation.
   // Called on the DecodingThread.
-  int32_t InitDecode(const webrtc::VideoCodec* codec_settings,
-                     int32_t number_of_cores) override;
+  bool Configure(const Settings& settings) override;
   // Called on the DecodingThread.
   int32_t RegisterDecodeCompleteCallback(
       webrtc::DecodedImageCallback* callback) override;
@@ -162,6 +162,12 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
   // Called on the media thread when `decoder_stream_` changes the decoder.
   void OnDecoderChanged(media::VideoDecoder* decoder);
 
+  // Called on any thread with `lock_` held to record the max pending frames
+  // that we've observed so far.  If we've not queued any frames, then this does
+  // nothing.  If it does record some frames, then it resets the max to zero.
+  // Must be called on the media thread.
+  void RecordMaxInFlightDecodesLockedOnMedia();
+
   // Construction parameters.
   const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
   media::GpuVideoAcceleratorFactories* const gpu_factories_;
@@ -174,6 +180,11 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
   // |media_log_| must outlive |video_decoder_| because it is passed as a raw
   // pointer.
   std::unique_ptr<media::MediaLog> media_log_;
+  // Metric to record the max pending buffer count that we've observed.
+  std::unique_ptr<base::SingleSampleMetric> max_buffer_count_metric_;
+  // Size that we've reported to `max_buffer_count_metric_`, since each report
+  // sends IPC.  Only report things when they change.
+  size_t max_reported_buffer_count_ = 0;
 
   // Decoding thread members.
   bool key_frame_required_ = true;

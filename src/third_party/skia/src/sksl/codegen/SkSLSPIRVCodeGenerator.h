@@ -128,10 +128,8 @@ public:
 
     SPIRVCodeGenerator(const Context* context,
                        const Program* program,
-                       ErrorReporter* errors,
                        OutputStream* out)
-            : INHERITED(program, errors, out)
-            , fContext(*context)
+            : INHERITED(context, program, out)
             , fDefaultLayout(MemoryLayout::k140_Standard)
             , fCapabilities(0)
             , fIdCount(1)
@@ -139,7 +137,7 @@ public:
             , fBoolFalse(0)
             , fSetupFragPosition(false)
             , fCurrentBlock(0)
-            , fSynthetics(errors, /*builtin=*/true) {
+            , fSynthetics(fContext, /*builtin=*/true) {
         this->setupIntrinsics();
     }
 
@@ -172,6 +170,12 @@ private:
     enum class Precision {
         kDefault,
         kRelaxed,
+    };
+
+    struct TempVar {
+        SpvId spvId;
+        const Type* type;
+        std::unique_ptr<SPIRVCodeGenerator::LValue> lvalue;
     };
 
     void setupIntrinsics();
@@ -230,6 +234,13 @@ private:
     SpvId writeExpression(const Expression& expr, OutputStream& out);
 
     SpvId writeIntrinsicCall(const FunctionCall& c, OutputStream& out);
+
+    SpvId writeFunctionCallArgument(const Expression& arg,
+                                    const Modifiers& paramModifiers,
+                                    std::vector<TempVar>* tempVars,
+                                    OutputStream& out);
+
+    void copyBackTempVars(const std::vector<TempVar>& tempVars, OutputStream& out);
 
     SpvId writeFunctionCall(const FunctionCall& c, OutputStream& out);
 
@@ -442,8 +453,6 @@ private:
                           int32_t word5, int32_t word6, int32_t word7, int32_t word8,
                           OutputStream& out);
 
-    void writeGeometryShaderExecutionMode(SpvId entryPoint, OutputStream& out);
-
     bool isDead(const Variable& var) const;
 
     MemoryLayout memoryLayoutForVariable(const Variable&) const;
@@ -467,7 +476,6 @@ private:
 
     void addRTFlipUniform(int offset);
 
-    const Context& fContext;
     const MemoryLayout fDefaultLayout;
 
     uint64_t fCapabilities;

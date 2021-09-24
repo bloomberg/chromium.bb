@@ -183,15 +183,16 @@ CertificateProvisioningUiHandler::CertificateProvisioningUiHandler(
 CertificateProvisioningUiHandler::~CertificateProvisioningUiHandler() = default;
 
 void CertificateProvisioningUiHandler::RegisterMessages() {
-  // Passing base::Unretained(this) to web_ui()->RegisterMessageCallback is fine
-  // because in chrome Web UI, web_ui() has acquired ownership of |this| and
-  // maintains the life time of |this| accordingly.
-  web_ui()->RegisterMessageCallback(
+  // Passing base::Unretained(this) to
+  // web_ui()->RegisterDeprecatedMessageCallback is fine because in chrome Web
+  // UI, web_ui() has acquired ownership of |this| and maintains the life time
+  // of |this| accordingly.
+  web_ui()->RegisterDeprecatedMessageCallback(
       "refreshCertificateProvisioningProcessses",
       base::BindRepeating(&CertificateProvisioningUiHandler::
                               HandleRefreshCertificateProvisioningProcesses,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "triggerCertificateProvisioningProcessUpdate",
       base::BindRepeating(&CertificateProvisioningUiHandler::
                               HandleTriggerCertificateProvisioningProcessUpdate,
@@ -228,7 +229,7 @@ CertificateProvisioningUiHandler::ReadAndResetUiRefreshCountForTesting() {
 
 void CertificateProvisioningUiHandler::
     HandleRefreshCertificateProvisioningProcesses(const base::ListValue* args) {
-  CHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(0U, args->GetList().size());
   AllowJavascript();
   RefreshCertificateProvisioningProcesses();
 }
@@ -236,7 +237,7 @@ void CertificateProvisioningUiHandler::
 void CertificateProvisioningUiHandler::
     HandleTriggerCertificateProvisioningProcessUpdate(
         const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   if (!args->is_list())
     return;
   const base::Value& cert_profile_id = args->GetList()[0];

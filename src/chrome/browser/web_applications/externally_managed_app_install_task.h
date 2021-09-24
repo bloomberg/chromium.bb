@@ -8,15 +8,15 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_applications/components/external_install_options.h"
-#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_url_loader.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/external_install_options.h"
+#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_url_loader.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
@@ -45,10 +45,9 @@ class ExternallyManagedAppInstallTask {
   // Ensures the tab helpers necessary for installing an app are present.
   static void CreateTabHelpers(content::WebContents* web_contents);
 
-  // Constructs a task that will install a BookmarkApp-based Shortcut or Web App
-  // for |profile|. |install_options| will be used to decide some of the
-  // properties of the installed app e.g. open in a tab vs. window, installed by
-  // policy, etc.
+  // Constructs a task that will install a Web App for |profile|.
+  // |install_options| will be used to decide some of the properties of the
+  // installed app e.g. open in a tab vs. window, installed by policy, etc.
   explicit ExternallyManagedAppInstallTask(
       Profile* profile,
       WebAppUrlLoader* url_loader,
@@ -106,7 +105,7 @@ class ExternallyManagedAppInstallTask {
       ExternallyManagedAppManager::InstallResult result);
   void OnOsHooksCreated(const AppId& app_id,
                         base::ScopedClosureRunner scoped_closure,
-                        const OsHooksResults os_hooks_results);
+                        const OsHooksErrors os_hooks_errors);
 
   Profile* const profile_;
   WebAppUrlLoader* const url_loader_;

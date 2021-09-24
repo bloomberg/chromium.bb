@@ -3492,7 +3492,7 @@ TEST_F(VkPositiveLayerTest, ShaderDrawParametersWithoutFeature11) {
     VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
     // make sure using SPIR-V 1.3 as extension is core and not needed in Vulkan then
-    if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource, false, 3)) {
+    if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource, false, SPV_ENV_VULKAN_1_1)) {
         const auto set_info = [&](CreatePipelineHelper &helper) {
             helper.shader_stages_ = {vs.GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
         };
@@ -3546,7 +3546,7 @@ TEST_F(VkPositiveLayerTest, ShaderDrawParametersWithFeature) {
     VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
     // make sure using SPIR-V 1.3 as extension is core and not needed in Vulkan then
-    if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource, false, 3)) {
+    if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource, false, SPV_ENV_VULKAN_1_1)) {
         const auto set_info = [&](CreatePipelineHelper &helper) {
             helper.shader_stages_ = {vs.GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
         };
@@ -8055,7 +8055,7 @@ TEST_F(VkPositiveLayerTest, CreatePipelineWithCoreChecksDisabled) {
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this);
     VkPipelineInputAssemblyStateCreateInfo iasci{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO, nullptr, 0,
-                                                 VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, VK_FALSE};
+                                                 VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_FALSE};
 
     CreatePipelineHelper pipe(*this);
     pipe.InitInfo();
@@ -12616,6 +12616,135 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferExternalImage) {
     vk::FreeMemory(m_device->device(), memory, nullptr);
 }
 
+TEST_F(VkPositiveLayerTest, AndroidHardwareBufferExternalCameraFormat) {
+    TEST_DESCRIPTION("Verify AndroidHardwareBuffer can import AHB with external format");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (IsPlatform(kGalaxyS10)) {
+        printf("%s This test should not run on Galaxy S10\n", kSkipPrefix);
+        return;
+    }
+
+    if ((DeviceExtensionSupported(gpu(), nullptr, VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME)) &&
+        // Also skip on devices that advertise AHB, but not the pre-requisite foreign_queue extension
+        (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME))) {
+        m_device_extension_names.push_back(VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
+    } else {
+        printf("%s %s extension not supported, skipping tests\n", kSkipPrefix,
+               VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    PFN_vkGetAndroidHardwareBufferPropertiesANDROID pfn_GetAHBProps =
+        (PFN_vkGetAndroidHardwareBufferPropertiesANDROID)vk::GetDeviceProcAddr(m_device->device(),
+                                                                               "vkGetAndroidHardwareBufferPropertiesANDROID");
+    ASSERT_TRUE(pfn_GetAHBProps != nullptr);
+
+    m_errorMonitor->ExpectSuccess();
+
+    // Simulate camera usage of AHB
+    AHardwareBuffer *ahb;
+    AHardwareBuffer_Desc ahb_desc = {};
+    ahb_desc.format = AHARDWAREBUFFER_FORMAT_IMPLEMENTATION_DEFINED;
+    ahb_desc.usage =
+        AHARDWAREBUFFER_USAGE_CAMERA_WRITE | AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_CPU_WRITE_OFTEN;
+    ahb_desc.width = 64;
+    ahb_desc.height = 64;
+    ahb_desc.layers = 1;
+    ahb_desc.stride = 1;
+    int result = AHardwareBuffer_allocate(&ahb_desc, &ahb);
+    if (result != 0) {
+        printf("%s could not allocate AHARDWAREBUFFER_FORMAT_IMPLEMENTATION_DEFINED, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    VkAndroidHardwareBufferFormatPropertiesANDROID ahb_fmt_props = LvlInitStruct<VkAndroidHardwareBufferFormatPropertiesANDROID>();
+
+    VkAndroidHardwareBufferPropertiesANDROID ahb_props = LvlInitStruct<VkAndroidHardwareBufferPropertiesANDROID>(&ahb_fmt_props);
+    pfn_GetAHBProps(m_device->device(), ahb, &ahb_props);
+
+    // The spec says the driver must not return zero, even if a VkFormat is returned with it, some older drivers do as a driver bug
+    if (ahb_fmt_props.externalFormat == 0) {
+        printf("%s externalFormat was zero which is not valid, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    // Create an image w/ external format
+    VkExternalFormatANDROID ext_format = LvlInitStruct<VkExternalFormatANDROID>();
+    ext_format.externalFormat = ahb_fmt_props.externalFormat;
+
+    VkExternalMemoryImageCreateInfo ext_image_info = LvlInitStruct<VkExternalMemoryImageCreateInfo>(&ext_format);
+    ext_image_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
+
+    VkImage image = VK_NULL_HANDLE;
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>(&ext_image_info);
+    image_create_info.flags = 0;
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_UNDEFINED;
+    image_create_info.extent = {64, 64, 1};
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    vk::CreateImage(m_device->device(), &image_create_info, nullptr, &image);
+    if (image == VK_NULL_HANDLE) {
+        printf("%s could not create image with external format, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    VkMemoryDedicatedAllocateInfo memory_dedicated_info = LvlInitStruct<VkMemoryDedicatedAllocateInfo>();
+    memory_dedicated_info.image = image;
+    memory_dedicated_info.buffer = VK_NULL_HANDLE;
+
+    VkImportAndroidHardwareBufferInfoANDROID import_ahb_Info =
+        LvlInitStruct<VkImportAndroidHardwareBufferInfoANDROID>(&memory_dedicated_info);
+    import_ahb_Info.buffer = ahb;
+
+    VkMemoryAllocateInfo memory_allocate_info = LvlInitStruct<VkMemoryAllocateInfo>(&import_ahb_Info);
+    memory_allocate_info.allocationSize = ahb_props.allocationSize;
+
+    // Set index to match one of the bits in ahb_props that is also only Device Local
+    // Android implemenetations "should have" a DEVICE_LOCAL only index designed for AHB
+    VkMemoryPropertyFlagBits property = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    VkPhysicalDeviceMemoryProperties gpu_memory_props;
+    vk::GetPhysicalDeviceMemoryProperties(gpu(), &gpu_memory_props);
+    memory_allocate_info.memoryTypeIndex = gpu_memory_props.memoryTypeCount + 1;
+    for (uint32_t i = 0; i < gpu_memory_props.memoryTypeCount; i++) {
+        if ((ahb_props.memoryTypeBits & (1 << i)) && ((gpu_memory_props.memoryTypes[i].propertyFlags & property) == property)) {
+            memory_allocate_info.memoryTypeIndex = i;
+            break;
+        }
+    }
+
+    if (memory_allocate_info.memoryTypeIndex >= gpu_memory_props.memoryTypeCount) {
+        printf("%s No invalid memory type index could be found; skipped.\n", kSkipPrefix);
+        AHardwareBuffer_release(ahb);
+        vk::DestroyImage(m_device->device(), image, nullptr);
+        return;
+    }
+
+    VkDeviceMemory memory;
+    vk::AllocateMemory(m_device->device(), &memory_allocate_info, nullptr, &memory);
+    vk::BindImageMemory(m_device->device(), image, memory, 0);
+    m_errorMonitor->VerifyNotFound();
+
+    vk::DestroyImage(m_device->device(), image, nullptr);
+    vk::FreeMemory(m_device->device(), memory, nullptr);
+}
+
 #endif  // AHB_VALIDATION_SUPPORT
 
 TEST_F(VkPositiveLayerTest, PhysicalStorageBuffer) {
@@ -12766,7 +12895,7 @@ void main() {
 }
 
     )glsl";
-    const VkShaderObj fs(m_device, fragment_source, VK_SHADER_STAGE_FRAGMENT_BIT, this, "main", false, nullptr, 5);
+    const VkShaderObj fs(m_device, fragment_source, VK_SHADER_STAGE_FRAGMENT_BIT, this, "main", false, nullptr, SPV_ENV_VULKAN_1_2);
 
     CreatePipelineHelper pipe(*this);
     pipe.InitInfo();
@@ -13294,55 +13423,81 @@ TEST_F(VkPositiveLayerTest, CopyImageSubresource) {
     ASSERT_NO_FATAL_FAILURE(InitFramework());
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
-    VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    VkImageUsageFlags usage =
+        VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
     VkImageObj image(m_device);
-    auto image_ci = VkImageObj::ImageCreateInfo2D(128, 128, 1, 5, format, usage, VK_IMAGE_TILING_OPTIMAL);
-    image.Init(image_ci);
+    auto image_ci = VkImageObj::ImageCreateInfo2D(128, 128, 2, 5, format, usage, VK_IMAGE_TILING_OPTIMAL);
+    image.InitNoLayout(image_ci);
     ASSERT_TRUE(image.initialized());
 
-    VkImageSubresourceLayers src_layer{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
-    VkImageSubresourceLayers dst_layer{VK_IMAGE_ASPECT_COLOR_BIT, 0, 3, 1};
-    VkOffset3D zero_offset{0, 0, 0};
-    VkExtent3D full_extent{128, 128, 1};  // <-- image type is 2D
-    VkImageCopy region = {src_layer, zero_offset, dst_layer, zero_offset, full_extent};
-    auto init_layout = VK_IMAGE_LAYOUT_GENERAL;
-    auto src_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-    auto dst_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-
-    m_commandBuffer->begin();
     m_errorMonitor->ExpectSuccess();
 
-    image.SetLayout(m_commandBuffer, VK_IMAGE_ASPECT_COLOR_BIT, init_layout);
+    VkImageSubresourceLayers src_layer{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+    VkImageSubresourceLayers dst_layer{VK_IMAGE_ASPECT_COLOR_BIT, 1, 3, 1};
+    VkOffset3D zero_offset{0, 0, 0};
+    VkExtent3D full_extent{128 / 2, 128 / 2, 1};  // <-- image type is 2D
+    VkImageCopy region = {src_layer, zero_offset, dst_layer, zero_offset, full_extent};
+    auto init_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    auto src_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    auto dst_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    auto final_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    m_commandBuffer->begin();
 
     auto cb = m_commandBuffer->handle();
 
     VkImageSubresourceRange src_range{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    auto image_barrier = LvlInitStruct<VkImageMemoryBarrier>();
-    image_barrier.srcAccessMask = 0;
-    image_barrier.dstAccessMask = 0;
-    image_barrier.image = image.handle();
-    image_barrier.subresourceRange = src_range;
-    image_barrier.oldLayout = init_layout;
-    image_barrier.newLayout = src_layout;
-    vk::CmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1,
-                           &image_barrier);
+    VkImageMemoryBarrier image_barriers[2];
 
-    VkImageSubresourceRange dst_range{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 3, 1};
-    image_barrier.subresourceRange = dst_range;
-    image_barrier.newLayout = dst_layout;
-    vk::CmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1,
-                           &image_barrier);
+    image_barriers[0] = LvlInitStruct<VkImageMemoryBarrier>();
+    image_barriers[0].srcAccessMask = 0;
+    image_barriers[0].dstAccessMask = 0;
+    image_barriers[0].image = image.handle();
+    image_barriers[0].subresourceRange = src_range;
+    image_barriers[0].oldLayout = init_layout;
+    image_barriers[0].newLayout = dst_layout;
 
-    vk::CmdCopyImage(cb, image.handle(), src_layout, image.handle(), dst_layout, 1, &region);
-    m_errorMonitor->VerifyNotFound();
+    vk::CmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1,
+                           image_barriers);
+    VkClearColorValue clear_color{};
+    vk::CmdClearColorImage(cb, image.handle(), dst_layout, &clear_color, 1, &src_range);
     m_commandBuffer->end();
 
     auto submit_info = LvlInitStruct<VkSubmitInfo>();
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &m_commandBuffer->handle();
 
-    m_errorMonitor->ExpectSuccess();
+    vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
+    vk::QueueWaitIdle(m_device->m_queue);
+
+    m_commandBuffer->begin();
+
+    image_barriers[0].oldLayout = dst_layout;
+    image_barriers[0].newLayout = src_layout;
+
+    VkImageSubresourceRange dst_range{VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, 3, 1};
+    image_barriers[1] = LvlInitStruct<VkImageMemoryBarrier>();
+    image_barriers[1].srcAccessMask = 0;
+    image_barriers[1].dstAccessMask = 0;
+    image_barriers[1].image = image.handle();
+    image_barriers[1].subresourceRange = dst_range;
+    image_barriers[1].oldLayout = init_layout;
+    image_barriers[1].newLayout = dst_layout;
+
+    vk::CmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 2,
+                           image_barriers);
+
+    vk::CmdCopyImage(cb, image.handle(), src_layout, image.handle(), dst_layout, 1, &region);
+
+    image_barriers[0].oldLayout = src_layout;
+    image_barriers[0].newLayout = final_layout;
+    image_barriers[1].oldLayout = dst_layout;
+    image_barriers[1].newLayout = final_layout;
+    vk::CmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 2,
+                           image_barriers);
+    m_commandBuffer->end();
+
     vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
     vk::QueueWaitIdle(m_device->m_queue);
     m_errorMonitor->VerifyNotFound();
@@ -13866,6 +14021,44 @@ TEST_F(VkPositiveLayerTest, SpecializationUnused) {
     CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit | kWarningBit, "", true);
 }
 
+TEST_F(VkPositiveLayerTest, FillBufferCmdPoolTransferQueue) {
+    TEST_DESCRIPTION(
+        "Use a command buffer with vkCmdFillBuffer that was allocated from a command pool that does not support graphics or "
+        "compute opeartions");
+
+    uint32_t version = SetTargetApiVersion(VK_API_VERSION_1_1);
+    if (version < VK_API_VERSION_1_1) {
+        printf("%s At least Vulkan version 1.1 is required, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+    m_errorMonitor->ExpectSuccess();
+
+    uint32_t transfer = m_device->QueueFamilyWithoutCapabilities(VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
+    if (transfer == UINT32_MAX) {
+        printf("%s Required queue families not present (non-graphics non-compute capable required).\n", kSkipPrefix);
+        return;
+    }
+    VkQueueObj *queue = m_device->queue_family_queues(transfer)[0].get();
+
+    VkCommandPoolObj pool(m_device, transfer, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+    VkCommandBufferObj cb(m_device, &pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, queue);
+
+    VkMemoryPropertyFlags reqs = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+    VkBufferObj buffer;
+    buffer.init_as_dst(*m_device, (VkDeviceSize)20, reqs);
+
+    cb.begin();
+    cb.FillBuffer(buffer.handle(), 0, 12, 0x11111111);
+    cb.end();
+    m_errorMonitor->VerifyNotFound();
+}
+
 TEST_F(VkPositiveLayerTest, ShaderAtomicInt64) {
     TEST_DESCRIPTION("Test VK_KHR_shader_atomic_int64.");
     SetTargetApiVersion(VK_API_VERSION_1_1);
@@ -13923,7 +14116,6 @@ TEST_F(VkPositiveLayerTest, ShaderAtomicInt64) {
         #extension GL_KHR_memory_scope_semantics : enable
         shared uint64_t x;
         layout(set = 0, binding = 0) buffer ssbo { uint64_t y; };
-        layout(set = 0, binding = 1) uniform ubo { uint64_t z; };
         void main() {
     )glsl";
 
@@ -13937,15 +14129,7 @@ TEST_F(VkPositiveLayerTest, ShaderAtomicInt64) {
     // StorageBuffer storage class using AtomicStore
     // atomicStore is slightly different than other atomics, so good edge case
     std::string cs_store = cs_base + R"glsl(
-           atomicStore(y, z, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
-        }
-    )glsl";
-
-    // Uniform storage class
-    std::string cs_uniform = cs_base + R"glsl(
-           uint64_t a = atomicLoad(z, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
-           barrier();
-           y = a + 1;
+           atomicStore(y, 1ul, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
         }
     )glsl";
 
@@ -13961,19 +14145,15 @@ TEST_F(VkPositiveLayerTest, ShaderAtomicInt64) {
     const char *current_shader = nullptr;
     const auto set_info = [&](CreateComputePipelineHelper &helper) {
         // Requires SPIR-V 1.3 for SPV_KHR_storage_buffer_storage_class
-        helper.cs_.reset(
-            new VkShaderObj(m_device, current_shader, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr, /*SPIR-V 1.3*/ 3));
-        helper.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
-                                {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr}};
+        helper.cs_.reset(new VkShaderObj(m_device, current_shader, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr,
+                                         SPV_ENV_VULKAN_1_1));
+        helper.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr}};
     };
 
     current_shader = cs_storage_buffer.c_str();
     CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
 
     current_shader = cs_store.c_str();
-    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
-
-    current_shader = cs_uniform.c_str();
     CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
 
     if (atomic_int64_features.shaderSharedInt64Atomics == VK_TRUE) {
@@ -14083,8 +14263,8 @@ TEST_F(VkPositiveLayerTest, ShaderImageAtomicInt64) {
     const char *current_shader = nullptr;
     const auto set_info = [&](CreateComputePipelineHelper &helper) {
         // Requires SPIR-V 1.3 for SPV_KHR_storage_buffer_storage_class
-        helper.cs_.reset(
-            new VkShaderObj(m_device, current_shader, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr, /*SPIR-V 1.3*/ 3));
+        helper.cs_.reset(new VkShaderObj(m_device, current_shader, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr,
+                                         SPV_ENV_VULKAN_1_1));
         helper.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
                                 {1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_ALL, nullptr}};
     };
@@ -14101,6 +14281,569 @@ TEST_F(VkPositiveLayerTest, ShaderImageAtomicInt64) {
 
     current_shader = cs_image_add.c_str();
     CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+}
+
+TEST_F(VkPositiveLayerTest, ShaderAtomicFloat) {
+    TEST_DESCRIPTION("Test VK_EXT_shader_atomic_float.");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
+               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_SHADER_ATOMIC_FLOAT_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_SHADER_ATOMIC_FLOAT_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_SHADER_ATOMIC_FLOAT_EXTENSION_NAME);
+        return;
+    }
+
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR");
+    ASSERT_TRUE(vkGetPhysicalDeviceFeatures2KHR != nullptr);
+
+    auto atomic_float_features = lvl_init_struct<VkPhysicalDeviceShaderAtomicFloatFeaturesEXT>();
+    auto features2 = lvl_init_struct<VkPhysicalDeviceFeatures2KHR>(&atomic_float_features);
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    if (m_device->props.apiVersion < VK_API_VERSION_1_1) {
+        printf("%s At least Vulkan version 1.1 is required for SPIR-V 1.3, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    // clang-format off
+    std::string cs_32_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float : enable
+        #extension GL_KHR_memory_scope_semantics : enable
+        #extension GL_EXT_shader_explicit_arithmetic_types_float32 : enable
+        shared float32_t x;
+        layout(set = 0, binding = 0) buffer ssbo { float32_t y; };
+        void main() {
+    )glsl";
+
+    std::string cs_buffer_float_32_add = cs_32_base + R"glsl(
+           atomicAdd(y, 1);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_32_load = cs_32_base + R"glsl(
+           y = 1 + atomicLoad(y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_32_store = cs_32_base + R"glsl(
+           float32_t a = 1;
+           atomicStore(y, a, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_32_exchange = cs_32_base + R"glsl(
+           float32_t a = 1;
+           atomicExchange(y, a);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_add = cs_32_base + R"glsl(
+           y = atomicAdd(x, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_load = cs_32_base + R"glsl(
+           y = 1 + atomicLoad(x, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_store = cs_32_base + R"glsl(
+           atomicStore(x, y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_exchange = cs_32_base + R"glsl(
+           float32_t a = 1;
+           atomicExchange(x, y);
+        }
+    )glsl";
+
+    std::string cs_64_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float : enable
+        #extension GL_KHR_memory_scope_semantics : enable
+        #extension GL_EXT_shader_explicit_arithmetic_types_float64 : enable
+        shared float64_t x;
+        layout(set = 0, binding = 0) buffer ssbo { float64_t y; };
+        void main() {
+    )glsl";
+
+    std::string cs_buffer_float_64_add = cs_64_base + R"glsl(
+           atomicAdd(y, 1);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_64_load = cs_64_base + R"glsl(
+           y = 1 + atomicLoad(y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_64_store = cs_64_base + R"glsl(
+           float64_t a = 1;
+           atomicStore(y, a, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_64_exchange = cs_64_base + R"glsl(
+           float64_t a = 1;
+           atomicExchange(y, a);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_add = cs_64_base + R"glsl(
+           y = atomicAdd(x, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_load = cs_64_base + R"glsl(
+           y = 1 + atomicLoad(x, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_store = cs_64_base + R"glsl(
+           atomicStore(x, y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_exchange = cs_64_base + R"glsl(
+           float64_t a = 1;
+           atomicExchange(x, y);
+        }
+    )glsl";
+
+    std::string cs_image_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float : enable
+        #extension GL_KHR_memory_scope_semantics : enable
+        layout(set = 0, binding = 0) buffer ssbo { float y; };
+        layout(set = 0, binding = 1, r32f) uniform image2D z;
+        void main() {
+    )glsl";
+
+    std::string cs_image_load = cs_image_base + R"glsl(
+           y = imageAtomicLoad(z, ivec2(1, 1), gl_ScopeDevice, gl_StorageSemanticsImage, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_image_store = cs_image_base + R"glsl(
+           imageAtomicStore(z, ivec2(1, 1), y, gl_ScopeDevice, gl_StorageSemanticsImage, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_image_exchange = cs_image_base + R"glsl(
+           imageAtomicExchange(z, ivec2(1, 1), y, gl_ScopeDevice, gl_StorageSemanticsImage, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_image_add = cs_image_base + R"glsl(
+           y = imageAtomicAdd(z, ivec2(1, 1), y);
+        }
+    )glsl";
+    // clang-format on
+
+    const char *current_shader = nullptr;
+    // set binding for buffer tests
+    std::vector<VkDescriptorSetLayoutBinding> current_bindings = {
+        {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr}};
+
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        // Requires SPIR-V 1.3 for SPV_KHR_storage_buffer_storage_class
+        helper.cs_.reset(
+            new VkShaderObj(m_device, current_shader, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr, SPV_ENV_VULKAN_1_1));
+        helper.dsl_bindings_ = current_bindings;
+    };
+
+    if (atomic_float_features.shaderBufferFloat32Atomics == VK_TRUE) {
+        current_shader = cs_buffer_float_32_load.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+        current_shader = cs_buffer_float_32_store.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+        current_shader = cs_buffer_float_32_exchange.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+    }
+
+    if (atomic_float_features.shaderBufferFloat32AtomicAdd == VK_TRUE) {
+        current_shader = cs_buffer_float_32_add.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+    }
+
+    if (features2.features.shaderFloat64 == VK_TRUE) {
+        if (atomic_float_features.shaderBufferFloat64Atomics == VK_TRUE) {
+            current_shader = cs_buffer_float_64_load.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_buffer_float_64_store.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_buffer_float_64_exchange.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+
+        if (atomic_float_features.shaderBufferFloat64AtomicAdd == VK_TRUE) {
+            current_shader = cs_buffer_float_64_add.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+    }
+
+    if (atomic_float_features.shaderSharedFloat32Atomics == VK_TRUE) {
+        current_shader = cs_shared_float_32_load.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+        current_shader = cs_shared_float_32_store.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+        current_shader = cs_shared_float_32_exchange.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+    }
+
+    if (atomic_float_features.shaderSharedFloat32AtomicAdd == VK_TRUE) {
+        current_shader = cs_shared_float_32_add.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+    }
+
+    if (features2.features.shaderFloat64 == VK_TRUE) {
+        if (atomic_float_features.shaderSharedFloat64Atomics == VK_TRUE) {
+            current_shader = cs_shared_float_64_load.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_shared_float_64_store.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_shared_float_64_exchange.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+
+        if (atomic_float_features.shaderSharedFloat64AtomicAdd == VK_TRUE) {
+            current_shader = cs_shared_float_64_add.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+    }
+
+    // Add binding for images
+    current_bindings.push_back({1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_ALL, nullptr});
+
+    if (atomic_float_features.shaderImageFloat32Atomics == VK_TRUE) {
+        current_shader = cs_image_load.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+        current_shader = cs_image_store.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+        current_shader = cs_image_exchange.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+    }
+
+    if (atomic_float_features.shaderImageFloat32AtomicAdd == VK_TRUE) {
+        current_shader = cs_image_add.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+    }
+}
+
+TEST_F(VkPositiveLayerTest, ShaderAtomicFloat2) {
+    TEST_DESCRIPTION("Test VK_EXT_shader_atomic_float2.");
+    SetTargetApiVersion(VK_API_VERSION_1_2);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
+        printf("%s Test requires Vulkan >= 1.2.\n", kSkipPrefix);
+        return;
+    }
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_SHADER_ATOMIC_FLOAT_2_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_SHADER_ATOMIC_FLOAT_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_EXT_SHADER_ATOMIC_FLOAT_2_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_SHADER_ATOMIC_FLOAT_2_EXTENSION_NAME);
+        return;
+    }
+
+    auto atomic_float_features = lvl_init_struct<VkPhysicalDeviceShaderAtomicFloatFeaturesEXT>();
+    auto atomic_float2_features = lvl_init_struct<VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT>(&atomic_float_features);
+    auto float16int8_features = LvlInitStruct<VkPhysicalDeviceShaderFloat16Int8Features>(&atomic_float2_features);
+    auto storage_16_bit_features = LvlInitStruct<VkPhysicalDevice16BitStorageFeatures>(&float16int8_features);
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&storage_16_bit_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    // clang-format off
+    std::string cs_16_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float2 : enable
+        #extension GL_EXT_shader_explicit_arithmetic_types_float16 : enable
+        #extension GL_EXT_shader_16bit_storage: enable
+        #extension GL_KHR_memory_scope_semantics : enable
+        shared float16_t x;
+        layout(set = 0, binding = 0) buffer ssbo { float16_t y; };
+        void main() {
+    )glsl";
+
+     std::string cs_buffer_float_16_add = cs_16_base + R"glsl(
+           atomicAdd(y, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_buffer_float_16_load = cs_16_base + R"glsl(
+           y = float16_t(1.0) + atomicLoad(y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_16_store = cs_16_base + R"glsl(
+           float16_t a = float16_t(1.0);
+           atomicStore(y, a, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_16_exchange = cs_16_base + R"glsl(
+           float16_t a = float16_t(1.0);
+           atomicExchange(y, a);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_16_min = cs_16_base + R"glsl(
+           atomicMin(y, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_buffer_float_16_max = cs_16_base + R"glsl(
+           atomicMax(y, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_add = cs_16_base + R"glsl(
+           y = atomicAdd(x, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_load = cs_16_base + R"glsl(
+           y = float16_t(1.0) + atomicLoad(x, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_store = cs_16_base + R"glsl(
+           atomicStore(x, y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_exchange = cs_16_base + R"glsl(
+           float16_t a = float16_t(1.0);
+           atomicExchange(x, y);
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_min = cs_16_base + R"glsl(
+           y = atomicMin(x, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_max = cs_16_base + R"glsl(
+           y = atomicMax(x, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_32_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float2 : enable
+        #extension GL_EXT_shader_explicit_arithmetic_types_float32 : enable
+        shared float32_t x;
+        layout(set = 0, binding = 0) buffer ssbo { float32_t y; };
+        void main() {
+    )glsl";
+
+    std::string cs_buffer_float_32_min = cs_32_base + R"glsl(
+           atomicMin(y, 1);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_32_max = cs_32_base + R"glsl(
+           atomicMax(y, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_min = cs_32_base + R"glsl(
+           y = atomicMin(x, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_max = cs_32_base + R"glsl(
+           y = atomicMax(x, 1);
+        }
+    )glsl";
+
+    std::string cs_64_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float2 : enable
+        #extension GL_EXT_shader_explicit_arithmetic_types_float64 : enable
+        shared float64_t x;
+        layout(set = 0, binding = 0) buffer ssbo { float64_t y; };
+        void main() {
+    )glsl";
+
+    std::string cs_buffer_float_64_min = cs_64_base + R"glsl(
+           atomicMin(y, 1);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_64_max = cs_64_base + R"glsl(
+           atomicMax(y, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_min = cs_64_base + R"glsl(
+           y = atomicMin(x, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_max = cs_64_base + R"glsl(
+           y = atomicMax(x, 1);
+        }
+    )glsl";
+
+    std::string cs_image_32_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float2 : enable
+        layout(set = 0, binding = 0) buffer ssbo { float y; };
+        layout(set = 0, binding = 1, r32f) uniform image2D z;
+        void main() {
+    )glsl";
+
+    std::string cs_image_32_min = cs_image_32_base + R"glsl(
+           y = imageAtomicMin(z, ivec2(1, 1), y);
+        }
+    )glsl";
+
+    std::string cs_image_32_max = cs_image_32_base + R"glsl(
+           y = imageAtomicMax(z, ivec2(1, 1), y);
+        }
+    )glsl";
+    // clang-format on
+
+    const char *current_shader = nullptr;
+    // set binding for buffer tests
+    std::vector<VkDescriptorSetLayoutBinding> current_bindings = {
+        {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr}};
+
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        // This could get triggered in the event that the shader fails to compile
+        m_errorMonitor->SetUnexpectedError("VUID-VkShaderModuleCreateInfo-pCode-01091");
+        // Requires SPIR-V 1.3 for SPV_KHR_storage_buffer_storage_class
+        helper.cs_ = VkShaderObj::CreateFromGLSL(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, current_shader, "main", nullptr, SPV_ENV_VULKAN_1_1);
+        // Skip the test if shader failed to compile
+        helper.override_skip_ = !static_cast<bool>(helper.cs_);
+        helper.dsl_bindings_ = current_bindings;
+    };
+
+    if (float16int8_features.shaderFloat16 == VK_TRUE && storage_16_bit_features.storageBuffer16BitAccess == VK_TRUE) {
+        if (atomic_float2_features.shaderBufferFloat16Atomics == VK_TRUE) {
+            current_shader = cs_buffer_float_16_load.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_buffer_float_16_store.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_buffer_float_16_exchange.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+
+        if (atomic_float2_features.shaderBufferFloat16AtomicAdd == VK_TRUE) {
+            current_shader = cs_buffer_float_16_add.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+
+        if (atomic_float2_features.shaderBufferFloat16AtomicMinMax == VK_TRUE) {
+            current_shader = cs_buffer_float_16_min.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_buffer_float_16_max.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+
+        if (atomic_float2_features.shaderSharedFloat16Atomics == VK_TRUE) {
+            current_shader = cs_shared_float_16_load.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_shared_float_16_store.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_shared_float_16_exchange.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+
+        if (atomic_float2_features.shaderSharedFloat16AtomicAdd == VK_TRUE) {
+            current_shader = cs_shared_float_16_add.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+
+        if (atomic_float2_features.shaderSharedFloat16AtomicMinMax == VK_TRUE) {
+            current_shader = cs_shared_float_16_min.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_shared_float_16_max.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+    }
+
+    if (atomic_float2_features.shaderBufferFloat32AtomicMinMax == VK_TRUE) {
+        current_shader = cs_buffer_float_32_min.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+        current_shader = cs_buffer_float_32_max.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+    }
+
+    if (atomic_float2_features.shaderSharedFloat32AtomicMinMax == VK_TRUE) {
+        current_shader = cs_shared_float_32_min.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+        current_shader = cs_shared_float_32_max.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+    }
+
+    if (features2.features.shaderFloat64 == VK_TRUE) {
+        if (atomic_float2_features.shaderBufferFloat64AtomicMinMax == VK_TRUE) {
+            current_shader = cs_buffer_float_64_min.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_buffer_float_64_max.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+
+        if (atomic_float2_features.shaderSharedFloat64AtomicMinMax == VK_TRUE) {
+            current_shader = cs_shared_float_64_min.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+            current_shader = cs_shared_float_64_max.c_str();
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+        }
+    }
+
+    // Add binding for images
+    current_bindings.push_back({1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_ALL, nullptr});
+
+    if (atomic_float2_features.shaderSharedFloat32AtomicMinMax == VK_TRUE) {
+        current_shader = cs_image_32_min.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+        current_shader = cs_image_32_max.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+    }
 }
 
 TEST_F(VkPositiveLayerTest, ValidateComputeShaderSharedMemory) {
@@ -14132,5 +14875,435 @@ TEST_F(VkPositiveLayerTest, ValidateComputeShaderSharedMemory) {
     pipe.InitState();
     m_errorMonitor->ExpectSuccess();
     pipe.CreateComputePipeline();
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, TopologyAtRasterizer) {
+    TEST_DESCRIPTION("Test topology set when creating a pipeline with tessellation and geometry shader.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    if (!m_device->phy().features().tessellationShader) {
+        printf("%s Device does not support tessellation shaders; skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    m_errorMonitor->ExpectSuccess();
+
+    char const *tcsSource = R"glsl(
+        #version 450
+        layout(vertices = 3) out;
+        void main(){
+           gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = gl_TessLevelOuter[2] = 1;
+           gl_TessLevelInner[0] = 1;
+        }
+    )glsl";
+    char const *tesSource = R"glsl(
+        #version 450
+        layout(isolines, equal_spacing, cw) in;
+        void main(){
+           gl_Position.xyz = gl_TessCoord;
+           gl_Position.w = 1.0f;
+        }
+    )glsl";
+    static char const *gsSource = R"glsl(
+        #version 450
+        layout (triangles) in;
+        layout (triangle_strip) out;
+        layout (max_vertices = 1) out;
+        void main() {
+           gl_Position = vec4(1.0, 0.5, 0.5, 0.0);
+           EmitVertex();
+        }
+    )glsl";
+    VkShaderObj tcs(m_device, tcsSource, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, this);
+    VkShaderObj tes(m_device, tesSource, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, this);
+    VkShaderObj gs(m_device, gsSource, VK_SHADER_STAGE_GEOMETRY_BIT, this);
+
+    VkPipelineInputAssemblyStateCreateInfo iasci{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO, nullptr, 0,
+                                                 VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, VK_FALSE};
+
+    VkPipelineTessellationStateCreateInfo tsci{VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO, nullptr, 0, 3};
+
+    VkDynamicState dyn_state = VK_DYNAMIC_STATE_LINE_WIDTH;
+    VkPipelineDynamicStateCreateInfo dyn_state_ci = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
+    dyn_state_ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dyn_state_ci.dynamicStateCount = 1;
+    dyn_state_ci.pDynamicStates = &dyn_state;
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.gp_ci_.pTessellationState = &tsci;
+    pipe.gp_ci_.pInputAssemblyState = &iasci;
+    pipe.shader_stages_.emplace_back(gs.GetStageCreateInfo());
+    pipe.shader_stages_.emplace_back(tcs.GetStageCreateInfo());
+    pipe.shader_stages_.emplace_back(tes.GetStageCreateInfo());
+    pipe.InitState();
+    pipe.dyn_state_ci_ = dyn_state_ci;
+    pipe.CreateGraphicsPipeline();
+
+    VkRenderPassBeginInfo rpbi = LvlInitStruct<VkRenderPassBeginInfo>();
+    rpbi.renderPass = m_renderPass;
+    rpbi.framebuffer = m_framebuffer;
+    rpbi.renderArea.offset.x = 0;
+    rpbi.renderArea.offset.y = 0;
+    rpbi.renderArea.extent.width = 32;
+    rpbi.renderArea.extent.height = 32;
+    rpbi.clearValueCount = static_cast<uint32_t>(m_renderPassClearValues.size());
+    rpbi.pClearValues = m_renderPassClearValues.data();
+
+    m_commandBuffer->begin();
+    vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi, VK_SUBPASS_CONTENTS_INLINE);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    vk::CmdDraw(m_commandBuffer->handle(), 4, 1, 0, 0);
+    vk::CmdEndRenderPass(m_commandBuffer->handle());
+    m_commandBuffer->end();
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, MeshShaderPointSize) {
+    TEST_DESCRIPTION("Test writing point size in a mesh shader.");
+
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
+               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    std::array<const char *, 2> required_device_extensions = {
+        {VK_NV_MESH_SHADER_EXTENSION_NAME, VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME}};
+    for (auto device_extension : required_device_extensions) {
+        if (DeviceExtensionSupported(gpu(), nullptr, device_extension)) {
+            m_device_extension_names.push_back(device_extension);
+        } else {
+            printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, device_extension);
+            return;
+        }
+    }
+
+    if (IsPlatform(kMockICD) || DeviceSimulation()) {
+        printf("%sNot suppored by MockICD or devsim, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR");
+    ASSERT_TRUE(vkGetPhysicalDeviceFeatures2KHR != nullptr);
+
+    // Create a device that enables mesh_shader
+    auto mesh_shader_features = LvlInitStruct<VkPhysicalDeviceMeshShaderFeaturesNV>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&mesh_shader_features);
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    if (mesh_shader_features.meshShader != VK_TRUE) {
+        printf("%s Mesh shader feature not supported\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    static const char meshShaderText[] = R"glsl(
+        #version 460
+        #extension GL_NV_mesh_shader : enable
+        layout (local_size_x=1) in;
+        layout (points) out;
+        layout (max_vertices=1, max_primitives=1) out;
+        void main ()
+        {
+            gl_PrimitiveCountNV = 1u;
+            gl_PrimitiveIndicesNV[0] = 0;
+            gl_MeshVerticesNV[0].gl_Position = vec4(-0.5, -0.5, 0.0, 1.0);
+            gl_MeshVerticesNV[0].gl_PointSize = 4;
+        }
+    )glsl";
+
+    VkShaderObj ms(m_device, meshShaderText, VK_SHADER_STAGE_MESH_BIT_NV, this);
+    VkShaderObj fs(m_device, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+
+    CreatePipelineHelper helper(*this);
+    helper.InitInfo();
+    helper.shader_stages_ = {ms.GetStageCreateInfo(), fs.GetStageCreateInfo()};
+
+    // Ensure pVertexInputState and pInputAssembly state are null, as these should be ignored.
+    helper.gp_ci_.pVertexInputState = nullptr;
+    helper.gp_ci_.pInputAssemblyState = nullptr;
+
+    helper.InitState();
+
+    m_errorMonitor->ExpectSuccess();
+    helper.CreateGraphicsPipeline();
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, TestDynamicVertexInput) {
+    TEST_DESCRIPTION("Test using dynamic vertex input and not setting pVertexInputState in the graphics pipeline create info");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
+        return;
+    }
+
+    auto vertex_input_dynamic_state_features = LvlInitStruct<VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&vertex_input_dynamic_state_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+
+    if (!vertex_input_dynamic_state_features.vertexInputDynamicState) {
+        printf("%s Feature vertexInputDynamicState is not supported.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    const VkDynamicState dyn_states[] = {VK_DYNAMIC_STATE_VERTEX_INPUT_EXT};
+    auto dyn_state_ci = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
+    dyn_state_ci.dynamicStateCount = size(dyn_states);
+    dyn_state_ci.pDynamicStates = dyn_states;
+    pipe.dyn_state_ci_ = dyn_state_ci;
+    pipe.InitState();
+    pipe.gp_ci_.pVertexInputState = nullptr;
+    m_errorMonitor->ExpectSuccess();
+    pipe.CreateGraphicsPipeline();
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, TestCmdSetVertexInputEXT) {
+    TEST_DESCRIPTION("Test CmdSetVertexInputEXT");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
+        return;
+    }
+
+    auto vertex_input_dynamic_state_features = LvlInitStruct<VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&vertex_input_dynamic_state_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+
+    if (!vertex_input_dynamic_state_features.vertexInputDynamicState) {
+        printf("%s Feature vertexInputDynamicState is not supported.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    auto vkCmdSetVertexInputEXT =
+        reinterpret_cast<PFN_vkCmdSetVertexInputEXT>(vk::GetDeviceProcAddr(m_device->device(), "vkCmdSetVertexInputEXT"));
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    const VkDynamicState dyn_states[] = {VK_DYNAMIC_STATE_VERTEX_INPUT_EXT};
+    auto dyn_state_ci = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
+    dyn_state_ci.dynamicStateCount = size(dyn_states);
+    dyn_state_ci.pDynamicStates = dyn_states;
+    pipe.dyn_state_ci_ = dyn_state_ci;
+    pipe.InitState();
+    pipe.gp_ci_.pVertexInputState = nullptr;
+    pipe.CreateGraphicsPipeline();
+
+    VkVertexInputBindingDescription2EXT binding = LvlInitStruct<VkVertexInputBindingDescription2EXT>();
+    binding.binding = 0;
+    binding.stride = sizeof(float);
+    binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    binding.divisor = 1;
+    VkVertexInputAttributeDescription2EXT attribute = LvlInitStruct<VkVertexInputAttributeDescription2EXT>();
+    attribute.location = 0;
+    attribute.binding = 0;
+    attribute.format = VK_FORMAT_R32_SFLOAT;
+    attribute.offset = 0;
+
+    m_errorMonitor->ExpectSuccess();
+    m_commandBuffer->begin();
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    vkCmdSetVertexInputEXT(m_commandBuffer->handle(), 1, &binding, 1, &attribute);
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdDraw(m_commandBuffer->handle(), 1, 0, 0, 0);
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, TestCmdSetVertexInputEXTStride) {
+    TEST_DESCRIPTION("Test CmdSetVertexInputEXT");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
+        return;
+    }
+
+    auto vertex_input_dynamic_state_features = LvlInitStruct<VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&vertex_input_dynamic_state_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+
+    if (!vertex_input_dynamic_state_features.vertexInputDynamicState) {
+        printf("%s Feature vertexInputDynamicState is not supported.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    auto vkCmdSetVertexInputEXT =
+        reinterpret_cast<PFN_vkCmdSetVertexInputEXT>(vk::GetDeviceProcAddr(m_device->device(), "vkCmdSetVertexInputEXT"));
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    const VkDynamicState dyn_states[] = {VK_DYNAMIC_STATE_VERTEX_INPUT_EXT, VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE_EXT};
+    auto dyn_state_ci = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
+    dyn_state_ci.dynamicStateCount = size(dyn_states);
+    dyn_state_ci.pDynamicStates = dyn_states;
+    pipe.dyn_state_ci_ = dyn_state_ci;
+    pipe.InitState();
+    pipe.gp_ci_.pVertexInputState = nullptr;
+    pipe.CreateGraphicsPipeline();
+
+    VkVertexInputBindingDescription2EXT binding = LvlInitStruct<VkVertexInputBindingDescription2EXT>();
+    binding.binding = 0;
+    binding.stride = sizeof(float);
+    binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    binding.divisor = 1;
+    VkVertexInputAttributeDescription2EXT attribute = LvlInitStruct<VkVertexInputAttributeDescription2EXT>();
+    attribute.location = 0;
+    attribute.binding = 0;
+    attribute.format = VK_FORMAT_R32_SFLOAT;
+    attribute.offset = 0;
+
+    m_errorMonitor->ExpectSuccess();
+    m_commandBuffer->begin();
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    vkCmdSetVertexInputEXT(m_commandBuffer->handle(), 1, &binding, 1, &attribute);
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdDraw(m_commandBuffer->handle(), 1, 0, 0, 0);
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, TestFormatCompatibility) {
+    TEST_DESCRIPTION("Test format compatibility");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkFormat format = VK_FORMAT_R12X4G12X4_UNORM_2PACK16;
+
+    VkImageFormatListCreateInfo format_list = LvlInitStruct<VkImageFormatListCreateInfo>();
+    format_list.viewFormatCount = 1;
+    format_list.pViewFormats = &format;
+
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>(&format_list);
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.extent.width = 32;
+    image_create_info.extent.height = 32;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    image_create_info.flags = 0;
+
+    m_errorMonitor->ExpectSuccess();
+    VkImage image;
+    vk::CreateImage(m_device->device(), &image_create_info, nullptr, &image);
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, TestCreatingFramebufferFrom3DImage) {
+    TEST_DESCRIPTION("Validate creating a framebuffer from a 3D image.");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s not supported, skipping tests\n", kSkipPrefix, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    m_errorMonitor->ExpectSuccess();
+    VkImageCreateInfo image_ci = LvlInitStruct<VkImageCreateInfo>();
+    image_ci.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
+    image_ci.imageType = VK_IMAGE_TYPE_3D;
+    image_ci.format = VK_FORMAT_B8G8R8A8_UNORM;
+    image_ci.extent.width = 32;
+    image_ci.extent.height = 32;
+    image_ci.extent.depth = 4;
+    image_ci.mipLevels = 1;
+    image_ci.arrayLayers = 1;
+    image_ci.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_ci.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    image_ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+    VkImageObj image(m_device);
+    image.init(&image_ci);
+
+    VkImageViewCreateInfo dsvci = LvlInitStruct<VkImageViewCreateInfo>();
+    dsvci.image = image.handle();
+    dsvci.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+    dsvci.format = VK_FORMAT_B8G8R8A8_UNORM;
+    dsvci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    dsvci.subresourceRange.baseMipLevel = 0;
+    dsvci.subresourceRange.layerCount = 4;
+    dsvci.subresourceRange.baseArrayLayer = 0;
+    dsvci.subresourceRange.levelCount = 1;
+    VkImageView view;
+    vk::CreateImageView(m_device->device(), &dsvci, nullptr, &view);
+
+    VkFramebufferCreateInfo fci = LvlInitStruct<VkFramebufferCreateInfo>();
+    fci.renderPass = m_renderPass;
+    fci.attachmentCount = 1;
+    fci.pAttachments = &view;
+    fci.width = 32;
+    fci.height = 32;
+    fci.layers = 4;
+    VkFramebuffer framebuffer;
+    vk::CreateFramebuffer(m_device->device(), &fci, nullptr, &framebuffer);
     m_errorMonitor->VerifyNotFound();
 }

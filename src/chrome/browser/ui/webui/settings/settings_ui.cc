@@ -17,7 +17,6 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/account_manager_facade_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
@@ -60,8 +59,6 @@
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -120,6 +117,7 @@
 #include "chromeos/components/phonehub/phone_hub_manager.h"
 #include "chromeos/login/auth/password_visibility_utils.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
+#include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #include "components/arc/arc_util.h"
 #include "components/user_manager/user.h"
 #include "ui/base/ui_base_features.h"
@@ -141,7 +139,9 @@
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "chrome/browser/ui/webui/settings/url_handlers_handler.h"
-#include "chrome/browser/web_applications/components/url_handler_prefs.h"
+#include "chrome/browser/web_applications/url_handler_prefs.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #endif
 
 namespace settings {
@@ -154,10 +154,6 @@ void SettingsUI::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kImportDialogHistory, true);
   registry->RegisterBooleanPref(prefs::kImportDialogSavedPasswords, true);
   registry->RegisterBooleanPref(prefs::kImportDialogSearchEngine, true);
-}
-
-web_app::WebAppRegistrar& GetRegistrarForProfile(Profile* profile) {
-  return web_app::WebAppProvider::Get(profile)->registrar();
 }
 
 SettingsUI::SettingsUI(content::WebUI* web_ui)
@@ -223,14 +219,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<PeopleHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ProfileInfoHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ProtocolHandlersHandler>());
-  if (PrivacySandboxSettingsFactory::GetForProfile(profile)
-          ->PrivacySandboxSettingsFunctional()) {
-    AddSettingsPageUIHandler(std::make_unique<PrivacySandboxHandler>());
-  }
+  AddSettingsPageUIHandler(std::make_unique<PrivacySandboxHandler>());
   AddSettingsPageUIHandler(std::make_unique<SearchEnginesHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<SecureDnsHandler>());
-  AddSettingsPageUIHandler(std::make_unique<SiteSettingsHandler>(
-      profile, GetRegistrarForProfile(profile)));
+  AddSettingsPageUIHandler(std::make_unique<SiteSettingsHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<StartupPagesHandler>(web_ui));
   AddSettingsPageUIHandler(std::make_unique<SecurityKeysPINHandler>());
   AddSettingsPageUIHandler(std::make_unique<SecurityKeysResetHandler>());
@@ -255,8 +247,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
   AddSettingsPageUIHandler(std::make_unique<UrlHandlersHandler>(
-      g_browser_process->local_state(), profile,
-      &GetRegistrarForProfile(profile)));
+      g_browser_process->local_state(), profile));
 #endif
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -298,21 +289,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(
           password_manager::features::kEnableMovingMultiplePasswordsToAccount));
 
-  html_source->AddBoolean(
-      "enableContentSettingsRedesign",
-      base::FeatureList::IsEnabled(features::kContentSettingsRedesign));
-
-#if defined(OS_WIN)
-  html_source->AddBoolean(
-      "safetyCheckChromeCleanerChildEnabled",
-      base::FeatureList::IsEnabled(features::kSafetyCheckChromeCleanerChild));
-
-  html_source->AddBoolean(
-      "chromeCleanupScanCompletedNotificationEnabled",
-      base::FeatureList::IsEnabled(
-          features::kChromeCleanupScanCompletedNotification));
-#endif
-
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   html_source->AddBoolean("enableDesktopRestructuredLanguageSettings",
                           base::FeatureList::IsEnabled(
@@ -346,10 +322,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   // This is the browser settings page.
   html_source->AddBoolean("isOSSettings", false);
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
-  html_source->AddBoolean(
-      "safetyCheckWeakPasswordsEnabled",
-      base::FeatureList::IsEnabled(features::kSafetyCheckWeakPasswords));
 
   html_source->AddBoolean(
       "privacyReviewEnabled",
@@ -401,16 +373,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
   // Privacy Sandbox
-  bool sandbox_enabled = PrivacySandboxSettingsFactory::GetForProfile(profile)
-                             ->PrivacySandboxSettingsFunctional();
-  html_source->AddBoolean("privacySandboxSettingsEnabled", sandbox_enabled);
-  if (sandbox_enabled) {
-    html_source->AddResourcePath(
-        "privacySandbox", IDR_SETTINGS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_HTML);
-    html_source->AddBoolean(
-        "privacySandboxSettings2Enabled",
-        base::FeatureList::IsEnabled(features::kPrivacySandboxSettings2));
-  }
+  html_source->AddResourcePath(
+      "privacySandbox", IDR_SETTINGS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_HTML);
+  html_source->AddBoolean(
+      "privacySandboxSettings2Enabled",
+      base::FeatureList::IsEnabled(features::kPrivacySandboxSettings2));
 
   TryShowHatsSurveyWithTimeout();
 }

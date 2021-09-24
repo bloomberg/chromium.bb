@@ -19,6 +19,7 @@
 
 class ChromeMetricsServiceClient;
 class ChromePasswordManagerClient;
+class HttpsFirstModeService;
 class NavigationMetricsRecorder;
 class PrefService;
 class Profile;
@@ -77,6 +78,7 @@ class MetricsReportingHandler;
 namespace feed {
 class FeedServiceBridge;
 class FeedServiceDelegateImpl;
+class WebFeedSubscriptionCoordinator;
 }  // namespace feed
 
 namespace browser_sync {
@@ -134,10 +136,17 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class feed::FeedServiceDelegateImpl;
   friend class browser_sync::DeviceInfoSyncClientImpl;
   friend class feed::FeedServiceBridge;
+  friend class feed::WebFeedSubscriptionCoordinator;
+  friend class HttpsFirstModeService;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   friend class ChromeCameraAppUIDelegate;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // For RegisterSyntheticFieldTrial.
+  friend class FieldTrialObserver;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Testing related friends.
   friend class first_run::FirstRunMasterPrefsVariationsSeedTest;

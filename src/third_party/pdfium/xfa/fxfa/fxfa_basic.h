@@ -48,36 +48,13 @@ enum class XFA_PacketType : uint8_t {
 #undef PCKT____
 };
 
-enum XFA_XDPPACKET {
-  XFA_XDPPACKET_UNKNOWN = 0,
-  XFA_XDPPACKET_Config = 1 << static_cast<uint8_t>(XFA_PacketType::Config),
-  XFA_XDPPACKET_Template = 1 << static_cast<uint8_t>(XFA_PacketType::Template),
-  XFA_XDPPACKET_Datasets = 1 << static_cast<uint8_t>(XFA_PacketType::Datasets),
-  XFA_XDPPACKET_Form = 1 << static_cast<uint8_t>(XFA_PacketType::Form),
-  XFA_XDPPACKET_LocaleSet = 1
-                            << static_cast<uint8_t>(XFA_PacketType::LocaleSet),
-  XFA_XDPPACKET_ConnectionSet =
-      1 << static_cast<uint8_t>(XFA_PacketType::ConnectionSet),
-  XFA_XDPPACKET_SourceSet = 1
-                            << static_cast<uint8_t>(XFA_PacketType::SourceSet),
-  XFA_XDPPACKET_Xdc = 1 << static_cast<uint8_t>(XFA_PacketType::Xdc),
-  XFA_XDPPACKET_Pdf = 1 << static_cast<uint8_t>(XFA_PacketType::Pdf),
-  XFA_XDPPACKET_Xfdf = 1 << static_cast<uint8_t>(XFA_PacketType::Xfdf),
-  XFA_XDPPACKET_Xmpmeta = 1 << static_cast<uint8_t>(XFA_PacketType::Xmpmeta),
-  XFA_XDPPACKET_Signature = 1
-                            << static_cast<uint8_t>(XFA_PacketType::Signature),
-  XFA_XDPPACKET_Stylesheet =
-      1 << static_cast<uint8_t>(XFA_PacketType::Stylesheet),
-  XFA_XDPPACKET_USER = 1 << static_cast<uint8_t>(XFA_PacketType::User),
-  XFA_XDPPACKET_XDP = 1 << static_cast<uint8_t>(XFA_PacketType::Xdp)
-};
-
-enum XFA_XDPPACKET_FLAGS {
-  XFA_XDPPACKET_FLAGS_COMPLETEMATCH = 1,
-  XFA_XDPPACKET_FLAGS_PREFIXMATCH = 2,
-  XFA_XDPPACKET_FLAGS_NOMATCH = 4,
-  XFA_XDPPACKET_FLAGS_SUPPORTONE = 8,
-  XFA_XDPPACKET_FLAGS_SUPPORTMANY = 16,
+enum class XFA_XDPPACKET {
+  kUNKNOWN = 0,
+#undef PCKT____
+#define PCKT____(a, b, c, d, e, f) \
+  k##c = 1 << static_cast<uint8_t>(XFA_PacketType::c),
+#include "xfa/fxfa/parser/packets.inc"
+#undef PCKT____
 };
 
 enum class XFA_AttributeValue : uint16_t {

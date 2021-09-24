@@ -136,7 +136,7 @@ class Delivery {
                                          group_name_and_count.second, success);
     }
     if (success) {
-      cache->RemoveReports(reports_);
+      cache->RemoveReports(reports_, /* delivery_success */ true);
     } else {
       cache->IncrementReportsAttempts(reports_);
     }
@@ -185,6 +185,15 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     timer_ = std::move(timer);
   }
 
+  void SendReportsForSource(base::UnguessableToken reporting_source) override {
+    DCHECK(!reporting_source.is_empty());
+    ReportList reports =
+        cache()->GetReportsToDeliverForSource(reporting_source);
+    if (reports.empty())
+      return;
+    DoSendReports(std::move(reports));
+  }
+
   // ReportingCacheObserver implementation:
   void OnReportsUpdated() override {
     if (CacheHasReports() && !timer_->IsRunning()) {
@@ -217,7 +226,10 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     ReportList reports = cache()->GetReportsToDeliver();
     if (reports.empty())
       return;
+    DoSendReports(std::move(reports));
+  }
 
+  void DoSendReports(ReportList reports) {
     // First determine which origins we're allowed to upload reports about.
     std::set<url::Origin> report_origins;
     for (const ReportingReport* report : reports) {

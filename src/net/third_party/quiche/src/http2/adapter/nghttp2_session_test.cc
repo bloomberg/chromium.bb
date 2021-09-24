@@ -6,6 +6,7 @@
 #include "http2/adapter/test_frame_sequence.h"
 #include "http2/adapter/test_utils.h"
 #include "common/platform/api/quiche_test.h"
+#include "common/platform/api/quiche_test_helpers.h"
 
 namespace http2 {
 namespace adapter {
@@ -77,7 +78,7 @@ TEST_F(NgHttp2SessionTest, ClientHandlesFrames) {
   EXPECT_CALL(visitor_, OnFrameHeader(0, 4, WINDOW_UPDATE, 0));
   EXPECT_CALL(visitor_, OnWindowUpdate(0, 1000));
 
-  const ssize_t initial_result = session.ProcessBytes(initial_frames);
+  const int64_t initial_result = session.ProcessBytes(initial_frames);
   EXPECT_EQ(initial_frames.size(), initial_result);
 
   EXPECT_EQ(session.GetRemoteWindowSize(),
@@ -176,7 +177,7 @@ TEST_F(NgHttp2SessionTest, ClientHandlesFrames) {
   EXPECT_CALL(visitor_, OnFrameHeader(0, 19, GOAWAY, 0));
   EXPECT_CALL(visitor_,
               OnGoAway(5, Http2ErrorCode::ENHANCE_YOUR_CALM, "calm down!!"));
-  const ssize_t stream_result = session.ProcessBytes(stream_frames);
+  const int64_t stream_result = session.ProcessBytes(stream_frames);
   EXPECT_EQ(stream_frames.size(), stream_result);
 
   // Even though the client recieved a GOAWAY, streams 1 and 5 are still active.
@@ -275,7 +276,7 @@ TEST_F(NgHttp2SessionTest, ServerHandlesFrames) {
   EXPECT_CALL(visitor_, OnFrameHeader(0, 8, PING, 0));
   EXPECT_CALL(visitor_, OnPing(47, false));
 
-  const ssize_t result = session.ProcessBytes(frames);
+  const int64_t result = session.ProcessBytes(frames);
   EXPECT_EQ(frames.size(), result);
 
   EXPECT_EQ(session.GetRemoteWindowSize(),
@@ -296,6 +297,23 @@ TEST_F(NgHttp2SessionTest, ServerHandlesFrames) {
   EXPECT_THAT(serialized, EqualsFrames({spdy::SpdyFrameType::SETTINGS,
                                         spdy::SpdyFrameType::PING,
                                         spdy::SpdyFrameType::PING}));
+}
+
+// Verifies that a null payload is caught by the OnPackExtensionCallback
+// implementation.
+TEST_F(NgHttp2SessionTest, NullPayload) {
+  NgHttp2Session session(Perspective::kClient, CreateCallbacks(), options_,
+                         &visitor_);
+
+  void* payload = nullptr;
+  const int result = nghttp2_submit_extension(
+      session.raw_ptr(), kMetadataFrameType, 0, 1, payload);
+  ASSERT_EQ(0, result);
+  EXPECT_TRUE(session.want_write());
+  int send_result = -1;
+  EXPECT_QUICHE_BUG(send_result = nghttp2_session_send(session.raw_ptr()),
+                    "Extension frame payload for stream 1 is null!");
+  EXPECT_EQ(NGHTTP2_ERR_CALLBACK_FAILURE, send_result);
 }
 
 }  // namespace

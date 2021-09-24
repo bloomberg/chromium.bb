@@ -9,7 +9,7 @@ import 'chrome://print-management/print_management.js';
 import {setMetadataProviderForTesting} from 'chrome://print-management/mojo_interface_provider.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {flushTasks} from 'chrome://test/test_util.m.js';
+import {flushTasks} from 'chrome://test/test_util.js';
 
 const CompletionStatus = {
   FAILED: 0,
@@ -95,6 +95,7 @@ function createJobEntry(
     'id': id,
     'title': strToMojoString16(title),
     'creationTime': {internalValue: date},
+    'printerId': 'printerId',
     'printerName': strToMojoString16('printerName'),
     'printerUri': {url: '192.168.1.1'},
     'numberOfPages': 4,
@@ -148,6 +149,7 @@ function verifyPrintJobs(expected, actual) {
     assertEquals(
         Number(expected[i].creationTime.internalValue),
         Number(actualJobInfo.creationTime.internalValue));
+    assertEquals(expected[i].printerId, actualJobInfo.printerId);
     assertEquals(
         decodeString16(expected[i].printerName),
         decodeString16(actualJobInfo.printerName));

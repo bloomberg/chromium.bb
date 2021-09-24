@@ -153,13 +153,12 @@ WMEventType WMEventTypeFromWindowPinType(chromeos::WindowPinType type) {
 float GetCurrentSnapRatio(aura::Window* window) {
   gfx::Rect maximized_bounds =
       screen_util::GetMaximizedWindowBoundsInParent(window);
-  if (features::IsVerticalSplitScreenEnabled() &&
-      !SplitViewController::IsLayoutHorizontal()) {
-    return static_cast<float>(window->GetTargetBounds().height()) /
-           static_cast<float>(maximized_bounds.height());
+  if (SplitViewController::IsLayoutHorizontal(window)) {
+    return static_cast<float>(window->GetTargetBounds().width()) /
+           static_cast<float>(maximized_bounds.width());
   }
-  return static_cast<float>(window->GetTargetBounds().width()) /
-         static_cast<float>(maximized_bounds.width());
+  return static_cast<float>(window->GetTargetBounds().height()) /
+         static_cast<float>(maximized_bounds.height());
 }
 
 // Move all transient children to |dst_root|, including the ones in the child
@@ -417,19 +416,8 @@ void WindowState::OnWMEvent(const WMEvent* event) {
 
   PersistentDesksBarController* bar_controller =
       Shell::Get()->persistent_desks_bar_controller();
-  if (bar_controller &&
-      window_->GetRootWindow() == Shell::GetPrimaryRootWindow()) {
-    if (event->type() == WM_EVENT_TOGGLE_FULLSCREEN) {
-      if (IsFullscreen())
-        bar_controller->DestroyBarWidget();
-      else
-        bar_controller->MaybeInitBarWidget();
-    } else if (event->type() == WM_EVENT_MINIMIZE) {
-      bar_controller->MaybeInitBarWidget();
-    } else if (event->type() == WM_EVENT_FULLSCREEN) {
-      bar_controller->DestroyBarWidget();
-    }
-  }
+  if (bar_controller)
+    bar_controller->UpdateBarOnWindowStateChanges(window_);
 }
 
 void WindowState::SaveCurrentBoundsForRestore() {
@@ -710,7 +698,7 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
   // from snap type and size from |snap_ratio|.
   gfx::Rect snapped_bounds =
       snap_ratio_ ? GetSnappedWindowBounds(
-                        maximized_bounds, window_,
+                        maximized_bounds, display, window_,
                         GetStateType() == WindowStateType::kPrimarySnapped
                             ? ash::SnapViewType::kPrimary
                             : ash::SnapViewType::kSecondary,
@@ -723,7 +711,7 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
   // vertical screen.
   if (snap_ratio_)
     bounds->set_size(snapped_bounds.size());
-  else if (display.size().width() > display.size().height())
+  else if (SplitViewController::IsLayoutHorizontal(display))
     bounds->set_height(snapped_bounds.height());
   else
     bounds->set_width(snapped_bounds.width());
@@ -1070,6 +1058,11 @@ void WindowState::OnWindowAddedToRootWindow(aura::Window* window) {
 void WindowState::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(window_, window);
 
+  PersistentDesksBarController* bar_controller =
+      Shell::Get()->persistent_desks_bar_controller();
+  if (bar_controller)
+    bar_controller->UpdateBarOnWindowDestroying(window_);
+
   // If the window is destroyed during PIP, count that as exiting.
   if (IsPip())
     CollectPipEnterExitMetrics(/*enter=*/false);
@@ -1082,18 +1075,6 @@ void WindowState::OnWindowDestroying(aura::Window* window) {
   delegate_.reset();
 }
 
-void WindowState::OnWindowVisibilityChanged(aura::Window* window,
-                                            bool visible) {
-  PersistentDesksBarController* bar_controller =
-      Shell::Get()->persistent_desks_bar_controller();
-  if (bar_controller && IsFullscreen() &&
-      window->GetRootWindow() == Shell::GetPrimaryRootWindow()) {
-    if (visible)
-      bar_controller->DestroyBarWidget();
-    else
-      bar_controller->MaybeInitBarWidget();
-  }
-}
 
 void WindowState::OnWindowBoundsChanged(aura::Window* window,
                                         const gfx::Rect& old_bounds,

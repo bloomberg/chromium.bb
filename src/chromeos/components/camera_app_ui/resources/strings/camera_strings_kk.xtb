@@ -8,7 +8,6 @@
 <translation id="1430915738399379752">Басып шығару</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> ажыратылды.</translation>
 <translation id="1473110567575736769">3 секундтық таймер</translation>
-<translation id="1478594628797167447">Сканер</translation>
 <translation id="1545749641540134597">QR кодын сканерлеу</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1627744224761163218">4 x 4</translation>
@@ -24,12 +23,12 @@
 <translation id="2064538373111010176"><ph name="CAMERA" /> камерасы қосулы</translation>
 <translation id="2144806332417375165">Арнаулы бейне параметрлері</translation>
 <translation id="2175927920773552910">QR коды</translation>
-<translation id="2268107369530950373">Сканер режиміне ауысу</translation>
 <translation id="229579744168541441">Дискіге экспорттау</translation>
 <translation id="2320741269052147773">Солға жылжыту</translation>
 <translation id="2501278716633472235">Артқа қайту</translation>
 <translation id="2501853267655415902">Бейнеге түсіру тоқтатылды</translation>
 <translation id="2501953888035679275">Камерамен фотосуретке және бейнеге түсіруге болады.</translation>
+<translation id="2517472476991765520">Іздеу</translation>
 <translation id="2549985041256363841">Бейнеге түсіруді бастау</translation>
 <translation id="2599796128805996109">Артқы камера</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> жалғанды.</translation>
@@ -45,12 +44,13 @@
 <translation id="3259149966178251584">Камера ажыратымдылығы</translation>
 <translation id="3260401663013584785">Құжат анықталмады</translation>
 <translation id="3448774564454087943">Бейне сақталмады, себебі тым қысқа.</translation>
+<translation id="346539236881580388">Қайта түсіру</translation>
 <translation id="3517926952904427380">Портреттік суретке түсіру мүмкін болмады.</translation>
 <translation id="3569311554794739032"><ph name="FILE" /> файлын шынымен өшіргіңіз келе ме?</translation>
+<translation id="3573890771273113519">Сканерлеу режиміне ауысу</translation>
 <translation id="3810838688059735925">Бейне</translation>
 <translation id="3838931309141338733">Сканерлеу штрих коды</translation>
 <translation id="3892148308691398805">Мәтінді көшіру</translation>
-<translation id="4000398125663085899">Жаңа фотосуреттер мен бейнелер енді Files қолданбасының қалтасында сақталады: "Менің файлдарым &gt; Камера".</translation>
 <translation id="4118525110028899586">Жазуды кідірту</translation>
 <translation id="4121305183798804752">Құжат анықталды</translation>
 <translation id="4269820728363426813">Сілтеме мекенжайын көшіру</translation>
@@ -69,15 +69,14 @@
 <translation id="5152121255775685072">Галереяға өту</translation>
 <translation id="520537883758714667">Енді кұжатты сканерлеуге болады.</translation>
 <translation id="5268823927180092501">Барлық камерада құжат режимін қосу</translation>
-<translation id="5422455049771430511">Фотосуреттеріңіз бен бейнелеріңіз сақталатын жаңа орын пайда болды</translation>
 <translation id="5444515100983837161">Құжатты жақтаудың ішіне орналастырыңыз. Сканерлеудің сапасы жақсы болуы үшін, құжат пен фонның түсі әртүрлі болуы керек.</translation>
 <translation id="5671277269877808209">Шаршы</translation>
+<translation id="5746169159649715125">PDF ретінде сақтау</translation>
 <translation id="5753488212459587150">Сарапшы режимін қосу</translation>
 <translation id="5759254179196327752">Құжатты сканерлеу</translation>
 <translation id="5775960006311140197">Сарапшы режимі</translation>
 <translation id="5869546221129391014">Тор</translation>
 <translation id="5975083100439434680">Кішірейту</translation>
-<translation id="6040143037577758943">Жабу</translation>
 <translation id="6073451960410192870">Бейнеге түсіруді тоқтату</translation>
 <translation id="6197807149213783179">Метадеректі сақтау</translation>
 <translation id="6233780560267770709">3 x 3</translation>
@@ -109,6 +108,7 @@
 <translation id="8120146556401698679">Панорама, қисайту, масштабтау</translation>
 <translation id="8131740175452115882">Растау</translation>
 <translation id="8145038249676204903">Суретке түсіруге ауысу</translation>
+<translation id="8167081290930651932">Фотосурет ретінде сақтау</translation>
 <translation id="8239780215768881278">Бейненің снапшотын түсіру</translation>
 <translation id="8261506727792406068">Жою</translation>
 <translation id="8425673304802773841">Төмен қарай еңкейту</translation>
@@ -122,5 +122,6 @@
 <translation id="8903921497873541725">Үлкейту</translation>
 <translation id="9045010116236796332">Құжатты жақтаудың ішіне орналастырыңыз.</translation>
 <translation id="9045155556724273246">10 секунд</translation>
+<translation id="906331135292332864">Кескін өңделуде…</translation>
 <translation id="945522503751344254">Пікір жіберу</translation>
 </translationbundle>

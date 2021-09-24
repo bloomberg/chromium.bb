@@ -723,6 +723,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter newVersion
 [Worker]     getter oldVersion
 [Worker]     method constructor
+[Worker] interface IdleDetector : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter onchange
+[Worker]     getter screenState
+[Worker]     getter userState
+[Worker]     method constructor
+[Worker]     method start
+[Worker]     setter onchange
 [Worker] interface ImageBitmap
 [Worker]     attribute @@toStringTag
 [Worker]     getter height
@@ -1398,6 +1406,19 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter protocol
 [Worker]     setter search
 [Worker]     setter username
+[Worker] interface URLPattern
+[Worker]     attribute @@toStringTag
+[Worker]     getter hash
+[Worker]     getter hostname
+[Worker]     getter password
+[Worker]     getter pathname
+[Worker]     getter port
+[Worker]     getter protocol
+[Worker]     getter search
+[Worker]     getter username
+[Worker]     method constructor
+[Worker]     method exec
+[Worker]     method test
 [Worker] interface URLSearchParams
 [Worker]     attribute @@toStringTag
 [Worker]     method @@iterator
@@ -2908,6 +2929,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method fetch
 [Worker]     method importScripts
 [Worker]     method queueMicrotask
+[Worker]     method reportError
 [Worker]     method setInterval
 [Worker]     method setTimeout
 [Worker]     setter onerror

@@ -54,22 +54,14 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="2290014774651636340">Google API açarları çatışmır. Google Chrome'un bəzi funksionallığı deaktiv ediləcək.</translation>
 <translation id="2290095356545025170">Google Chrome'u silmək istəyirsiniz?</translation>
 <translation id="2309047409763057870">Bu Chromium'un ikinci quraşdırmasıdır və defolt brauzer kimi ayarlana bilmir.</translation>
+<translation id="2345992953227471816">Chrome bu artırmalarda zərərli proqram olduğunu aşkar edib:</translation>
 <translation id="2348335408836342058">Chrome bu sayt üçün kamera və mikrofona giriş tələb edir</translation>
 <translation id="234869673307233423">Chrome parollarınızı yoxlaya bilmir. Sonra yenidən cəhd edin.</translation>
 <translation id="235650106824528204">Bu profilin istifadəsi zamanı yaranan hər hansı bir Chrome datası (əlfəcinlər, tarixçələr, parolların yaradılması və digər ayarlar kimi) iş profili administratoru tərəfindən silinə bilər. <ph name="LEARN_MORE" /></translation>
-<translation id="2409866122341731384">Sərt Diski Silin və Chrome OS'i quraşdırın</translation>
-<translation id="2417565246123344595"><ph name="BEGIN_PARAGRAPH1" />Chrome OS'i quraşdırmağa hazırıq! Başladıqda:
-          <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Fayllar, data və cari əməliyyat sisteminiz silinəcək.
-          <ph name="LIST_ITEM" />Chrome OS quraşdırılacaq.
-          <ph name="LIST_ITEM" />Quraşdırma başa çatdıqdan sonra cihazınız sönəcək.
-          <ph name="END_LIST" />
-          <ph name="END_PARAGRAPH1" />
-          <ph name="BEGIN_PARAGRAPH2" />Son xatırlatma: quraşdırma nəticəsində sərt diskdəki bütün data silinəcək. Lazımlı bütün datanı yedəkləyin.<ph name="END_PARAGRAPH2" />
-          <ph name="BEGIN_PARAGRAPH3" />Quraşdırma başladıqdan sonra ləğv edilə bilməz.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="2429317896000329049">Google Chrome datanızı sinxronizasiya edə bilmədi, çünki sinxronizasiya domeniniz üçün əlçatan deyil.</translation>
 <translation id="2467438592969358367">Google Chrome parolları eksport etmək istəyir. Buna icazə vermək üçün Windows parolunuzu yazın.</translation>
 <translation id="2485422356828889247">Sistemdən silin</translation>
+<translation id="2518751521812750372">Chrome'u bağladığınızda, ziyarət etdiyiniz səhifələrdən kukiləri və sayt datasını avtomatik olaraq təmizləyir</translation>
 <translation id="2534507159460261402">Google Pay (Chrome'a kopyalandı)</translation>
 <translation id="2574930892358684005"><ph name="EXISTING_USER" /> artıq bu Chrome profilinə daxil olub. Baxışınızı ayrı saxlamaq üçün Chrome sizin üçün öz profilinizi yarada bilər.</translation>
 <translation id="2580411288591421699">Hazırda istifadə olunan Google Chrome versiyasını quraşdıra bilməzsiniz. Lütfən, Google Chrome'u qapadın və yenidən cəhd edin.</translation>
@@ -92,7 +84,10 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="2885378588091291677">Tapşırıq Meneceri</translation>
 <translation id="2888126860611144412">Chrome haqqında</translation>
 <translation id="2926676257163822632">Zəif parolları tapmaq asandır. Chrome'un <ph name="BEGIN_LINK" />sizin üçün güclü parollar yaratmasına və yadda saxlamasına<ph name="END_LINK" /> imkan verin.</translation>
+<translation id="2926952073016206995">Chrome bu sayt üçün kamera icazəsi tələb edir</translation>
 <translation id="2929907241665500097">Chrome güncəllənmədi, xəta baş verdi. <ph name="BEGIN_LINK" />Chrome'un güncəllənmə problemlərini və alınmayan güncəllənmələri həll edin.<ph name="END_LINK" /></translation>
+<translation id="2944515913673001130"><ph name="BEGIN_PARAGRAPH1" />Son xatırlatma: quraşdırma nəticəsində <ph name="BEGIN_BOLD" />sərt diskdəki bütün data silinəcək<ph name="END_BOLD" />. Lazımlı bütün datanı yedəkləyin.<ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />Quraşdırma başladıqdan sonra ləğv edilə bilməz.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Şəbəkəyə Giriş - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome arxa fon rejimindədir.</translation>
 <translation id="3059710691562604940">Təhlükəsiz Baxış deaktivdir. Chrome onu aktiv etməyi tövsiyə edir.</translation>
@@ -118,6 +113,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="3582972582564653026">Chrome'u cihazlarda sinxronizasiya edin və fərdiləşdirin</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administrator güncəlləməni tətbiq etmək üçün Chrome'u yenidən başlatmanızı tələb edir}=1{Administrator güncəlləməni tətbiq etmək üçün Chrome'u yenidən başlatmanızı tələb edir. Anonim pəncərəniz yenidən açılmayacaq.}other{Administrator güncəlləməni tətbiq etmək üçün Chrome'u yenidən başlatmanızı tələb edir. # Anonim pəncərəniz yenidən açılmayacaq.}}</translation>
 <translation id="3622797965165704966">İndi Chrome'u Google Hesabınızla və paylaşılan kompüterlərlə işlətmək daha asandır.</translation>
+<translation id="3673813398384385993">Chrome "<ph name="EXTENSION_NAME" />" artırmasında zərərli proqram olduğunu aşkar edib</translation>
 <translation id="3718181793972440140">1 element bu cihazdan silinəcək. Sonradan datanızı bərpa etmək üçün Chrome'a <ph name="USER_EMAIL" /> kimi daxil olun.</translation>
 <translation id="3735758079232443276">"<ph name="EXTENSION_NAME" />" artırması Chrome'u başlatdığınız zaman hansı səhifənin göstərildiyini dəyişdi.</translation>
 <translation id="3779473566290487688">Google Chrome güncəlləmələrini əldə etmək üçün OS X 10.11 və ya daha yeni versiya tələb olunur. Bu kompüter OS X 10.10 istifadə edir.</translation>
@@ -134,6 +130,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="4149882025268051530">Quraşdırıcı arxivi dekompres edə bilmədi. Google Chrome'u yenidən endirməyiniz xahiş olunur.</translation>
 <translation id="4191857738314598978">{0,plural, =1{Chrome'u gün ərzində yenidən başladın}other{Chrome'u # gün ərzində yenidən başladın}}</translation>
 <translation id="4205939740494406371">Chrome parollarınızı yoxlaya bilmir. 24 saatdan sonra yenidən cəhd edin və ya <ph name="BEGIN_LINK" />Google Hesabınızda parolları yoxlayın<ph name="END_LINK" />.</translation>
+<translation id="4242034826641750751">Chrome bu sayt üçün kamera və mikrofon icazəsi tələb edir</translation>
 <translation id="424864128008805179">Chrome'dan çıxılsın?</translation>
 <translation id="4251615635259297716">Chrome datanız bu hesab ilə birləşdirilsin?</translation>
 <translation id="4281844954008187215">Xidmət Şərtləri</translation>
@@ -178,6 +175,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="521447420733633466">Cihaz paylaşsanız, dostlarınız və ailəniz ayrıca baxış keçirə bilər və Chrome'u istədikləri kimi ayarlaya bilər.</translation>
 <translation id="5251420635869119124">Qonaqlar geridə heç nə buraxmadan Chrome istifadə edə bilər.</translation>
 <translation id="5251679006894510177">Güncəllənmək üzrədir! Güncəlləməni tamamlamaq üçün Chrome'u yenidən başladın. Anonim pəncərələr yenidən açılmayacaq.</translation>
+<translation id="5334487786912937552">Chrome faylları endirmək üçün yaddaşa giriş tələb edir</translation>
 <translation id="5386244825306882791">O, həmçinin Chrome'u başlatdığınız zaman və ya Omnibox'dan axtarış etdiyiniz zaman göstərilən səhifəyə nəzarət edir.</translation>
 <translation id="5394833366792865639">Chrome tabı paylaşın</translation>
 <translation id="5430073640787465221">Tərcih faylınız zədələnib və ya yanlışdır.  Google Chrome ayarlarınızı bərpa edə bilmir.</translation>
@@ -216,11 +214,12 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="6291549208091401781">Google Chrome kompüterinizdəki bütün istifadəçilər üçün artıq quraşdırılıb.</translation>
 <translation id="6368958679917195344">Chrome OS əlavə <ph name="BEGIN_LINK_CROS_OSS" />açıq mənbə proqram təminatı ilə<ph name="END_LINK_CROS_OSS" /> mümkün oldu.</translation>
 <translation id="6418662306461808273">Mövcud Chrome profilinə keçirilsin?</translation>
+<translation id="6506909944137591434">Chrome ətrafınızın 3D xəritəsini yaratmaq üçün kameranıza giriş icazəsi tələb edir</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">Chrome OS sistemi</translation>
-<translation id="664235759707825982">Chrome OS'i quraşdırmağa hazırıq</translation>
 <translation id="6676384891291319759">İnternet</translation>
 <translation id="6679975945624592337">Google Chrome'a Arxa Fonda İşləməyə İcazə Verin</translation>
+<translation id="6696915334902295848">Chrome bu sayt üçün mikrofon icazəsi tələb edir</translation>
 <translation id="6739177684496155661">Yeni Chrome profilində davam edilsin?</translation>
 <translation id="6750954913813541382">Orfoqrafik səhvləri düzəltmək üçün Chrome brauzerində yazdığınız mətni Google'a göndərir</translation>
 <translation id="677276454032249905">Chrome'dan istənilən hada çıxılsın?</translation>
@@ -260,6 +259,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="7761834446675418963">Chrome'u açmaq üçün adınızın üzərinə klikləyin və baxışa başlayın.</translation>
 <translation id="7777080907402804672">Şəklin təsviri faydalı deyilsə, Chrome Sizin üçün təsviri təmin etməyə çalışacaq. Təsvir yaratmaq üçün şəkillər Google'a göndərilir. Bunu istənilən vaxt ayarlardan deaktiv edə bilərsiniz.</translation>
 <translation id="7781002470561365167">Bu, Google Chrome'un yeni versiyasıdır.</translation>
+<translation id="778331955594035129">Chrome bu sayt üçün məkan icazəsi tələb edir</translation>
 <translation id="7787950393032327779">Bu profil digər Google Chrome prosesi (<ph name="PROCESS_ID" />) və ya digər kompüter tərəfindən (<ph name="HOST_NAME" />) istifadə olunana oxşayır.</translation>
 <translation id="7801699035218095297">Google Chrome parolları kopyalamağa çalışır. Buna icazə vermək üçün Windows parolunuzu yazın.</translation>
 <translation id="7808348361785373670">Chrome'dan silin...</translation>

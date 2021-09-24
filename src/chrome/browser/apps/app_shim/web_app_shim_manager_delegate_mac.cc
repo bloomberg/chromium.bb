@@ -13,13 +13,13 @@
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_shortcut_mac.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/filename_util.h"
@@ -75,7 +75,8 @@ bool WebAppShimManagerDelegate::AppIsInstalled(Profile* profile,
     return fallback_delegate_->AppIsInstalled(profile, app_id);
   }
   return profile &&
-         WebAppProvider::Get(profile)->registrar().IsInstalled(app_id);
+         WebAppProvider::GetForWebApps(profile)->registrar().IsInstalled(
+             app_id);
 }
 
 bool WebAppShimManagerDelegate::AppCanCreateHost(Profile* profile,
@@ -128,7 +129,8 @@ void WebAppShimManagerDelegate::LaunchApp(
     return;
   }
   DisplayMode display_mode =
-      WebAppProvider::Get(profile)->registrar().GetAppUserDisplayMode(app_id);
+      WebAppProvider::GetForWebApps(profile)->registrar().GetAppUserDisplayMode(
+          app_id);
   apps::mojom::LaunchContainer launch_container =
       web_app::ConvertDisplayModeToAppLaunchContainer(display_mode);
   apps::mojom::AppLaunchSource launch_source =
@@ -192,16 +194,17 @@ void WebAppShimManagerDelegate::LaunchApp(
     // Protocol handlers should prompt the user before launching the app,
     // unless the user has granted permission to this protocol scheme
     // previously.
-    if (!WebAppProvider::Get(profile)->registrar().IsApprovedLaunchProtocol(
-            app_id, protocol_url.scheme())) {
+    if (!WebAppProvider::GetForWebApps(profile)
+             ->registrar()
+             .IsApprovedLaunchProtocol(app_id, protocol_url.scheme())) {
       auto launch_callback = base::BindOnce(
-          [](apps::AppLaunchParams params, Profile* profile, bool accepted) {
-            if (accepted) {
-              web_app::WebAppProvider* provider =
-                  web_app::WebAppProvider::GetForWebApps(profile);
-              {
-                web_app::ScopedRegistryUpdate update(
-                    provider->registry_controller().AsWebAppSyncBridge());
+          [](apps::AppLaunchParams params, Profile* profile, bool allowed,
+             bool remember_user_choice) {
+            if (allowed) {
+              if (remember_user_choice) {
+                web_app::WebAppProvider* provider =
+                    web_app::WebAppProvider::GetForWebApps(profile);
+                web_app::ScopedRegistryUpdate update(&provider->sync_bridge());
                 web_app::WebApp* app_to_update =
                     update->UpdateApp(params.app_id);
                 std::vector<std::string> protocol_handlers(
@@ -247,13 +250,16 @@ void WebAppShimManagerDelegate::LaunchShim(
                                    std::move(terminated_callback));
     return;
   }
-  WebAppProvider::Get(profile)->os_integration_manager().GetShortcutInfoForApp(
-      app_id,
-      base::BindOnce(
-          &web_app::LaunchShim,
-          recreate_shims ? LaunchShimUpdateBehavior::RECREATE_UNCONDITIONALLY
-                         : LaunchShimUpdateBehavior::DO_NOT_RECREATE,
-          std::move(launched_callback), std::move(terminated_callback)));
+  WebAppProvider::GetForWebApps(profile)
+      ->os_integration_manager()
+      .GetShortcutInfoForApp(
+          app_id,
+          base::BindOnce(
+              &web_app::LaunchShim,
+              recreate_shims
+                  ? LaunchShimUpdateBehavior::RECREATE_UNCONDITIONALLY
+                  : LaunchShimUpdateBehavior::DO_NOT_RECREATE,
+              std::move(launched_callback), std::move(terminated_callback)));
 }
 
 bool WebAppShimManagerDelegate::HasNonBookmarkAppWindowsOpen() {
@@ -270,7 +276,7 @@ bool WebAppShimManagerDelegate::UseFallback(Profile* profile,
 
   // If |app_id| is installed via WebAppProvider, then use |this| as the
   // delegate.
-  auto* provider = WebAppProvider::Get(profile);
+  auto* provider = WebAppProvider::GetForWebApps(profile);
   if (provider->registrar().IsInstalled(app_id))
     return false;
 
@@ -294,9 +300,9 @@ WebAppShimManagerDelegate::GetAppShortcutsMenuItemInfos(Profile* profile,
 
   DCHECK(profile);
 
-  auto shortcuts_menu_item_infos =
-      WebAppProvider::Get(profile)->registrar().GetAppShortcutsMenuItemInfos(
-          app_id);
+  auto shortcuts_menu_item_infos = WebAppProvider::GetForWebApps(profile)
+                                       ->registrar()
+                                       .GetAppShortcutsMenuItemInfos(app_id);
 
   int num_entries = std::min(static_cast<int>(shortcuts_menu_item_infos.size()),
                              kMaxApplicationDockMenuItems);

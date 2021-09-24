@@ -1270,7 +1270,7 @@ struct TensorEvaluator<const TensorContractionOp<Indices, LeftArgType, RightArgT
   typedef typename LeftEvaluator::Dimensions LeftDimensions;
   typedef typename RightEvaluator::Dimensions RightDimensions;
 
-  EIGEN_DEVICE_FUNC TensorEvaluator(const XprType& op, const Device& device) :
+  TensorEvaluator(const XprType& op, const Device& device) :
       Base(op, device)
   {
     EIGEN_STATIC_ASSERT( (internal::is_same<OutputKernelType, const NoOpOutputKernel>::value),
@@ -1278,7 +1278,7 @@ struct TensorEvaluator<const TensorContractionOp<Indices, LeftArgType, RightArgT
   }
 
   // We need to redefine this method to make nvcc happy
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(Scalar* data) {
+  EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(Scalar* data) {
     this->m_leftImpl.evalSubExprsIfNeeded(NULL);
     this->m_rightImpl.evalSubExprsIfNeeded(NULL);
     if (data) {
@@ -1370,8 +1370,8 @@ struct TensorEvaluator<const TensorContractionOp<Indices, LeftArgType, RightArgT
     // columns in right side
     const Index n = this->m_j_size;
 
-    // zero out the result buffer (which must be of size at least m * n * sizeof(Scalar)
-    this->m_device.memset(buffer, 0, m * n * sizeof(Scalar));
+    // zero out the result buffer (which must be of size at least m * n * sizeof(Scalar))
+    this->m_device.fill(buffer, buffer + m * n, Scalar(0));
 
     typedef internal::TensorContractionInputMapper<LhsScalar, Index, internal::Lhs,
                                                    LeftEvaluator, left_nocontract_t,

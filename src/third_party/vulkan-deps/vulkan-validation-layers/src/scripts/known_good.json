@@ -6,10 +6,11 @@
       "sub_dir" : "glslang",
       "build_dir" : "glslang/build",
       "install_dir" : "glslang/build/install",
-      "commit" : "ae2a562936cc8504c9ef2757cceaff163147834f",
+      "commit": "2fb89a0072ae7316af1c856f22663fde4928128a",
       "cmake_options" : [
         "-DUSE_CCACHE=ON"
-      ]
+      ],
+      "optional": ["tests"]
     },
     {
       "name": "Vulkan-Headers",
@@ -17,7 +18,7 @@
       "sub_dir": "Vulkan-Headers",
       "build_dir": "Vulkan-Headers/build",
       "install_dir": "Vulkan-Headers/build/install",
-      "commit": "v1.2.188"
+      "commit": "v1.2.190"
     },
     {
       "name": "SPIRV-Headers",
@@ -25,7 +26,7 @@
       "sub_dir": "SPIRV-Headers",
       "build_dir": "SPIRV-Headers/build",
       "install_dir": "SPIRV-Headers/build/install",
-      "commit": "e7b49d7fb59808a650618e0a4008d4bae927e112"
+      "commit": "449bc986ba6f4c5e10e32828783f9daef2a77644"
     },
     {
       "name": "SPIRV-Tools",
@@ -36,7 +37,7 @@
       "cmake_options": [
         "-DSPIRV-Headers_SOURCE_DIR={repo_dir}/../SPIRV-Headers"
       ],
-      "commit": "7dadcf9c76a9109a5a493a416ae59c2b3c02070f"
+      "commit": "1fbed83c8aab8517d821fcb4164c08567951938f"
     },
     {
       "name": "robin-hood-hashing",
@@ -45,7 +46,17 @@
       "build_dir": "robin-hood-hashing",
       "install_dir": "robin-hood-hashing",
       "build_step": "skip",
-      "commit": "3.11.2"
+      "commit": "3.11.3"
+    },
+    {
+        "name": "googletest",
+        "url": "https://github.com/google/googletest.git",
+        "sub_dir": "googletest",
+        "build_dir": "googletest",
+        "install_dir": "googletest",
+        "build_step": "skip",
+        "commit": "release-1.8.1",
+        "optional": ["tests"]
     }
   ],
   "install_names" : {
@@ -53,6 +64,7 @@
       "Vulkan-Headers" : "VULKAN_HEADERS_INSTALL_DIR",
       "SPIRV-Headers" : "SPIRV_HEADERS_INSTALL_DIR",
       "SPIRV-Tools" : "SPIRV_TOOLS_INSTALL_DIR",
-      "robin-hood-hashing" : "ROBIN_HOOD_HASHING_INSTALL_DIR"
+      "robin-hood-hashing" : "ROBIN_HOOD_HASHING_INSTALL_DIR",
+      "googletest": "GOOGLETEST_INSTALL_DIR"
   }
 }

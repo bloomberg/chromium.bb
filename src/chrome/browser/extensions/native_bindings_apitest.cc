@@ -101,9 +101,9 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, DeclarativeEvents) {
   EXPECT_TRUE(action->GetDeclarativeIcon(tab_id).IsEmpty());
 
   // Navigating to example.com should show the page action.
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "example.com", "/native_bindings/simple.html"));
+                     "example.com", "/native_bindings/simple.html")));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(action->GetIsVisible(tab_id));
   EXPECT_FALSE(action->GetDeclarativeIcon(tab_id).IsEmpty());
@@ -157,9 +157,9 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, WebRequest) {
   ASSERT_TRUE(extension);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "example.com", "/native_bindings/simple.html"));
+                     "example.com", "/native_bindings/simple.html")));
 
   GURL expected_url = embedded_test_server()->GetURL(
       "example.com", "/native_bindings/simple2.html");
@@ -246,9 +246,9 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, ErrorsInCallbackTest) {
            });
          });)");
 
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "example.com", "/native_bindings/simple.html"));
+                     "example.com", "/native_bindings/simple.html")));
 
   ExtensionTestMessageListener listener("callback", false);
   ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
@@ -257,7 +257,8 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, ErrorsInCallbackTest) {
 
 // Tests that bindings are available in WebUI pages.
 IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, WebUIBindings) {
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://extensions"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("chrome://extensions")));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   auto api_exists = [web_contents](const std::string& api_name) {
@@ -302,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, PromiseBasedAPI) {
            "background": {
              "service_worker": "background.js"
            },
-           "permissions": ["tabs"]
+           "permissions": ["tabs", "storage"]
          })");
   constexpr char kBackgroundJs[] =
       R"(let tabIdExample;
@@ -337,6 +338,24 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, PromiseBasedAPI) {
                  chrome.test.succeed();
                });
              },
+             async function storageAreaCustomTypeWithPromises() {
+               await chrome.storage.local.set({foo: 'bar', alpha: 'beta'});
+               {
+                 const {foo} = await chrome.storage.local.get('foo');
+                 chrome.test.assertEq('bar', foo);
+               }
+               await chrome.storage.local.remove('foo');
+               {
+                 const {foo} = await chrome.storage.local.get('foo');
+                 chrome.test.assertEq(undefined, foo);
+               }
+               let allValues = await chrome.storage.local.get(null);
+               chrome.test.assertEq({alpha: 'beta'}, allValues);
+               await chrome.storage.local.clear();
+               allValues = await chrome.storage.local.get(null);
+               chrome.test.assertEq({}, allValues);
+               chrome.test.succeed();
+             },
 
              function createNewTabCallback() {
                chrome.tabs.create({url: googleUrl}, (tab) => {
@@ -355,7 +374,22 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, PromiseBasedAPI) {
                  chrome.test.assertNoLastError();
                  chrome.test.succeed();
                });
-             }
+             },
+             function storageAreaCustomTypeWithCallbacks() {
+               // Lots of stuff would probably fail if the callback version of
+               // storage failed, so this is mostly just a rough sanity check.
+               chrome.storage.local.set({gamma: 'delta'}, () => {
+                 chrome.storage.local.get('gamma', ({gamma}) => {
+                   chrome.test.assertEq('delta', gamma);
+                   chrome.storage.local.clear(() => {
+                     chrome.storage.local.get(null, (allValues) => {
+                       chrome.test.assertEq({}, allValues);
+                       chrome.test.succeed();
+                     });
+                   });
+                 });
+               });
+             },
            ]);
          });)";
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundJs);
@@ -379,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, MV2PromisesNotSupported) {
            "background": {
              "scripts": ["background.js"]
            },
-           "permissions": ["tabs"]
+           "permissions": ["tabs", "storage"]
          })");
   constexpr char kBackgroundJs[] =
       R"(let tabIdGooge;
@@ -401,6 +435,15 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, MV2PromisesNotSupported) {
                chrome.test.assertThrows(chrome.tabs.query,
                                         [{url: exampleUrl}],
                                         expectedError);
+               chrome.test.succeed();
+             },
+             function storageAreaPromise() {
+               let expectedError = 'Error in invocation of storage.get(' +
+                   'optional [string|array|object] keys, function callback): ' +
+                   'No matching signature.';
+               chrome.test.assertThrows(chrome.storage.local.get,
+                                        chrome.storage.local,
+                                        ['foo'], expectedError);
                chrome.test.succeed();
              },
 

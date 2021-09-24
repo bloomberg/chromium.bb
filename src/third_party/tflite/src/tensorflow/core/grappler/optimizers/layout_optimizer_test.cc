@@ -20,6 +20,7 @@ limitations under the License.
 #include "tensorflow/core/framework/kernel_shape_util.h"
 #include "tensorflow/core/framework/node_def.pb.h"
 #include "tensorflow/core/framework/tensor_testutil.h"
+#include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/grappler/clusters/single_machine.h"
 #include "tensorflow/core/grappler/clusters/virtual_cluster.h"
 #include "tensorflow/core/grappler/costs/virtual_placer.h"
@@ -56,11 +57,13 @@ class LayoutOptimizerTest : public GrapplerTest {
 
   void TearDown() override { TF_CHECK_OK(virtual_cluster_->Shutdown()); }
 
+  template <typename T = float>
   Output SimpleConv2D(tensorflow::Scope* s, int input_size, int filter_size,
                       const string& padding) {
-    return SimpleConv2D(s, input_size, filter_size, padding, "");
+    return SimpleConv2D<T>(s, input_size, filter_size, padding, "");
   }
 
+  template <typename T = float>
   Output SimpleConv2D(tensorflow::Scope* s, int input_size, int filter_size,
                       const string& padding, const string& device) {
     int batch_size = 8;
@@ -71,15 +74,15 @@ class LayoutOptimizerTest : public GrapplerTest {
     int stride = 1;
     TensorShape input_shape(
         {batch_size, input_height, input_width, input_depth});
-    Tensor input_data(DT_FLOAT, input_shape);
-    test::FillIota<float>(&input_data, 1.0f);
+    Tensor input_data(DataTypeToEnum<T>::value, input_shape);
+    test::FillIota<T>(&input_data, static_cast<T>(1));
     Output input =
         ops::Const(s->WithOpName("Input"), Input::Initializer(input_data));
 
     TensorShape filter_shape(
         {filter_size, filter_size, input_depth, filter_count});
-    Tensor filter_data(DT_FLOAT, filter_shape);
-    test::FillIota<float>(&filter_data, 1.0f);
+    Tensor filter_data(DataTypeToEnum<T>::value, filter_shape);
+    test::FillIota<T>(&filter_data, static_cast<T>(1));
     Output filter =
         ops::Const(s->WithOpName("Filter"), Input::Initializer(filter_data));
 
@@ -110,12 +113,12 @@ class LayoutOptimizerTest : public GrapplerTest {
     int filter_count = 2;
     int stride = 1;
     int dilation = dilated ? 2 : 1;
-    int64 padding_top = 1;
-    int64 padding_bottom = 2;
-    int64 padding_left = 3;
-    int64 padding_right = 4;
-    int64 output_height;
-    int64 output_width;
+    int64_t padding_top = 1;
+    int64_t padding_bottom = 2;
+    int64_t padding_left = 3;
+    int64_t padding_right = 4;
+    int64_t output_height;
+    int64_t output_width;
     Padding padding_enum;
     if (padding == "SAME") {
       padding_enum = SAME;
@@ -357,6 +360,20 @@ TEST_F(LayoutOptimizerTest, ExplicitPadding) {
   Status status = optimizer.Optimize(virtual_cluster_.get(), item, &output);
   NodeMap node_map(&output);
   EXPECT_TRUE(node_map.GetNode("Conv2D-0-TransposeNHWCToNCHW-LayoutOptimizer"));
+}
+
+TEST_F(LayoutOptimizerTest, DataTypeIsInt32) {
+  tensorflow::Scope s = tensorflow::Scope::NewRootScope();
+  auto conv = SimpleConv2D<int32>(&s, 4, 2, "EXPLICIT");
+  Output fetch = ops::Identity(s.WithOpName("Fetch"), {conv});
+  GrapplerItem item;
+  TF_CHECK_OK(s.ToGraphDef(&item.graph));
+  LayoutOptimizer optimizer;
+  GraphDef output;
+  Status status = optimizer.Optimize(virtual_cluster_.get(), item, &output);
+  NodeMap node_map(&output);
+  EXPECT_FALSE(
+      node_map.GetNode("Conv2D-0-TransposeNHWCToNCHW-LayoutOptimizer"));
 }
 
 TEST_F(LayoutOptimizerTest, Pad) {

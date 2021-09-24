@@ -65,11 +65,17 @@ const char kPurgeModelAndFeaturesStore[] = "purge-model-and-features-store";
 const char kDisableFetchingHintsAtNavigationStartForTesting[] =
     "disable-fetching-hints-at-navigation-start";
 
+// Disables fetching hints for active tabs on deferred startup.
+const char kDisableFetchHintsForActiveTabsOnDeferredStartup[] =
+    "optimization-guide-disable-hints-for-active-tabs-on-deferred-startup";
+
 const char kDisableCheckingUserPermissionsForTesting[] =
     "disable-checking-optimization-guide-user-permissions";
 
 const char kDisableModelDownloadVerificationForTesting[] =
     "disable-model-download-verification";
+
+const char kDebugLoggingEnabled[] = "enable-optimization-guide-debug-logs";
 
 // Disables the fetching of models and overrides the file path and metadata to
 // be used for the session to use what's passed via command-line instead of what
@@ -82,6 +88,9 @@ const char kDisableModelDownloadVerificationForTesting[] =
 // It is possible this only works on Desktop since file paths are less easily
 // accessible on Android, but may work.
 const char kModelOverride[] = "optimization-guide-model-override";
+
+// Triggers validation of the model. Used for manual testing.
+const char kModelValidate[] = "optimization-guide-model-validate";
 
 bool IsHintComponentProcessingDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kHintsProtoOverride);
@@ -96,6 +105,11 @@ bool ShouldPurgeOptimizationGuideStoreOnStartup() {
 bool ShouldPurgeModelAndFeaturesStoreOnStartup() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   return cmd_line->HasSwitch(kPurgeModelAndFeaturesStore);
+}
+
+bool IsDebugLogsEnabled() {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  return cmd_line->HasSwitch(kDebugLoggingEnabled);
 }
 
 // Parses a list of hosts to have hints fetched for. This overrides scheduling
@@ -128,6 +142,11 @@ bool ShouldOverrideFetchHintsTimer() {
 bool ShouldOverrideFetchModelsAndFeaturesTimer() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kFetchModelsAndHostModelFeaturesOverrideTimer);
+}
+
+bool DisableFetchHintsForActiveTabsOnDeferredStartup() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableFetchHintsForActiveTabsOnDeferredStartup);
 }
 
 std::unique_ptr<optimization_guide::proto::Configuration>
@@ -174,6 +193,11 @@ bool ShouldSkipModelDownloadVerificationForTesting() {
 bool IsModelOverridePresent() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(kModelOverride);
+}
+
+bool ShouldValidateModel() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(kModelValidate);
 }
 
 absl::optional<

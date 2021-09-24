@@ -74,25 +74,58 @@
 }
 
 - (void)cancelSignin {
-  if (self.isAuthenticationInProgress) {
-    [self cancelAndDismissAuthenticationFlowAnimated:NO];
-  } else {
+  // Cancelling the authentication flow has the side effect of setting
+  // |self.isAuthenticationInProgress| to false.
+  // Ensure these conditions are handled separately by using a BOOL which
+  // retains the initial authentication state. This way, the mediator does not
+  // call sign-in finished if sign-in was in progress.
+  BOOL shouldNotCallSigninFinishedOnDelegate = self.isAuthenticationInProgress;
+  [self cancelAndDismissAuthenticationFlowAnimated:NO];
+  if (!shouldNotCallSigninFinishedOnDelegate) {
     [self.delegate userSigninMediatorSigninFinishedWithResult:
                        SigninCoordinatorResultCanceledByUser];
   }
 }
 
 - (void)cancelAndDismissAuthenticationFlowAnimated:(BOOL)animated {
-  if (!self.isAuthenticationInProgress) {
-    return;
-  }
-
   [self.authenticationFlow cancelAndDismissAnimated:animated];
-  self.authenticationService->SignOut(signin_metrics::ABORT_SIGNIN,
-                                      /*force_clear_browsing_data=*/false, nil);
+  [self revertToSigninStateOnStart];
 }
 
 #pragma mark - Private
+
+// For users that cancel the sign-in flow, revert to the sign-in
+// state prior to starting sign-in coordinators.
+- (void)revertToSigninStateOnStart {
+  switch (self.delegate.signinStateOnStart) {
+    case IdentitySigninStateSignedOut: {
+      self.authenticationService->SignOut(signin_metrics::ABORT_SIGNIN,
+                                          /*force_clear_browsing_data=*/false,
+                                          nil);
+      break;
+    }
+    case IdentitySigninStateSignedInWithSyncDisabled: {
+      ChromeIdentity* syncingIdentity =
+          self.authenticationService->GetPrimaryIdentity(
+              signin::ConsentLevel::kSync);
+      // If the identity is Syncing, Chrome needs to manually sign the user out
+      // and back in again in order to properly end the sign-in flow in its
+      // original state.
+      if (syncingIdentity) {
+        self.authenticationService->SignOut(signin_metrics::ABORT_SIGNIN,
+                                            /*force_clear_browsing_data=*/false,
+                                            nil);
+        self.authenticationService->SignIn(syncingIdentity);
+      }
+      break;
+    }
+    case IdentitySigninStateSignedInWithSyncEnabled: {
+      // Switching accounts is not possible without sign-out.
+      NOTREACHED();
+      break;
+    }
+  }
+}
 
 - (BOOL)isAuthenticationInProgress {
   return self.authenticationFlow != nil;

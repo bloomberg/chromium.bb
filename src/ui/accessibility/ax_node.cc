@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/no_destructor.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -573,20 +572,24 @@ AXNode::UnignoredChildrenCrossingTreeBoundaryEnd() const {
 }
 
 bool AXNode::IsText() const {
-  // In Legacy Layout, a list marker has no children and is thus represented on
-  // all platforms as a leaf node that exposes the marker itself, i.e., it forms
-  // part of the AX tree's text representation. In contrast, in Layout NG, a
-  // list marker has a static text child.
+  // Regular list markers only expose their alternative text, but do not expose
+  // their descendants; and the descendants should be ignored. This is because
+  // the alternative text depends on the counter style and can be different from
+  // the actual (visual) marker text, and hence, inconsistent with the
+  // descendants. We treat a list marker as non-text only if it still has
+  // non-ignored descendants, which happens only when:
+  // - The list marker itself is ignored but the descendants are not
+  // - Or the list marker contains images
   if (data().role == ax::mojom::Role::kListMarker)
-    return !GetChildCount();
-  return ui::IsText(data().role);
+    return !GetUnignoredChildCount();
+  return ui::IsText(GetRole());
 }
 
 bool AXNode::IsLineBreak() const {
   // The last condition captures inline text nodes whose only content is an '\n'
   // character.
-  return data().role == ax::mojom::Role::kLineBreak ||
-         (data().role == ax::mojom::Role::kInlineTextBox &&
+  return GetRole() == ax::mojom::Role::kLineBreak ||
+         (GetRole() == ax::mojom::Role::kInlineTextBox &&
           GetBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject));
 }
 
@@ -640,14 +643,14 @@ bool AXNode::IsDescendantOf(const AXNode* ancestor) const {
 std::vector<int> AXNode::GetOrComputeLineStartOffsets() {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   std::vector<int> line_offsets;
-  if (GetIntListAttribute(ax::mojom::IntListAttribute::kCachedLineStarts,
+  if (GetIntListAttribute(ax::mojom::IntListAttribute::kLineStarts,
                           &line_offsets)) {
     return line_offsets;
   }
 
   int start_offset = 0;
   ComputeLineStartOffsets(&line_offsets, &start_offset);
-  data_.AddIntListAttribute(ax::mojom::IntListAttribute::kCachedLineStarts,
+  data_.AddIntListAttribute(ax::mojom::IntListAttribute::kLineStarts,
                             line_offsets);
   return line_offsets;
 }
@@ -896,9 +899,9 @@ std::string AXNode::GetValueForControl() const {
     return GetValueForTextField();
   if (data().IsRangeValueSupported())
     return GetTextForRangeValue();
-  if (data().role == ax::mojom::Role::kColorWell)
+  if (GetRole() == ax::mojom::Role::kColorWell)
     return GetValueForColorWell();
-  if (!IsControl(data().role))
+  if (!IsControl(GetRole()))
     return std::string();
   return GetStringAttribute(ax::mojom::StringAttribute::kValue);
 }
@@ -908,7 +911,7 @@ std::ostream& operator<<(std::ostream& stream, const AXNode& node) {
 }
 
 bool AXNode::IsTable() const {
-  return IsTableLike(data().role);
+  return IsTableLike(GetRole());
 }
 
 absl::optional<int> AXNode::GetTableColCount() const {
@@ -1070,7 +1073,7 @@ const std::vector<AXNode*>* AXNode::GetExtraMacNodes() const {
 //
 
 bool AXNode::IsTableRow() const {
-  return ui::IsTableRow(data().role);
+  return ui::IsTableRow(GetRole());
 }
 
 absl::optional<int> AXNode::GetTableRowRowIndex() const {
@@ -1106,7 +1109,7 @@ std::vector<AXNodeID> AXNode::GetTableRowNodeIds() const {
 //
 
 bool AXNode::IsTableColumn() const {
-  return ui::IsTableColumn(data().role);
+  return ui::IsTableColumn(GetRole());
 }
 
 absl::optional<int> AXNode::GetTableColColIndex() const {
@@ -1133,7 +1136,7 @@ absl::optional<int> AXNode::GetTableColColIndex() const {
 //
 
 bool AXNode::IsTableCellOrHeader() const {
-  return IsCellOrTableHeader(data().role);
+  return IsCellOrTableHeader(GetRole());
 }
 
 absl::optional<int> AXNode::GetTableCellIndex() const {
@@ -1280,7 +1283,7 @@ bool AXNode::IsCellOrHeaderOfARIATable() const {
   if (!node)
     return false;
 
-  return node->data().role == ax::mojom::Role::kTable;
+  return node->GetRole() == ax::mojom::Role::kTable;
 }
 
 bool AXNode::IsCellOrHeaderOfARIAGrid() const {
@@ -1293,8 +1296,8 @@ bool AXNode::IsCellOrHeaderOfARIAGrid() const {
   if (!node)
     return false;
 
-  return node->data().role == ax::mojom::Role::kGrid ||
-         node->data().role == ax::mojom::Role::kTreeGrid;
+  return node->GetRole() == ax::mojom::Role::kGrid ||
+         node->GetRole() == ax::mojom::Role::kTreeGrid;
 }
 
 AXTableInfo* AXNode::GetAncestorTableInfo() const {
@@ -1329,11 +1332,11 @@ absl::optional<int> AXNode::GetHierarchicalLevel() const {
 }
 
 bool AXNode::IsOrderedSetItem() const {
-  return ui::IsItemLike(data().role);
+  return ui::IsItemLike(GetRole());
 }
 
 bool AXNode::IsOrderedSet() const {
-  return ui::IsSetLike(data().role);
+  return ui::IsSetLike(GetRole());
 }
 
 // Uses AXTree's cache to calculate node's PosInSet.
@@ -1349,9 +1352,9 @@ absl::optional<int> AXNode::GetSetSize() {
 // Returns true if the role of ordered set matches the role of item.
 // Returns false otherwise.
 bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
-  ax::mojom::Role item_role = data().role;
+  ax::mojom::Role item_role = GetRole();
   // Switch on role of ordered set
-  switch (ordered_set->data().role) {
+  switch (ordered_set->GetRole()) {
     case ax::mojom::Role::kFeed:
       return item_role == ax::mojom::Role::kArticle;
     case ax::mojom::Role::kList:
@@ -1399,9 +1402,9 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
 
 bool AXNode::IsIgnoredContainerForOrderedSet() const {
   return IsIgnored() || IsEmbeddedGroup() ||
-         data().role == ax::mojom::Role::kListItem ||
-         data().role == ax::mojom::Role::kGenericContainer ||
-         data().role == ax::mojom::Role::kUnknown;
+         GetRole() == ax::mojom::Role::kListItem ||
+         GetRole() == ax::mojom::Role::kGenericContainer ||
+         GetRole() == ax::mojom::Role::kUnknown;
 }
 
 int AXNode::UpdateUnignoredCachedValuesRecursive(int startIndex) {
@@ -1470,13 +1473,16 @@ std::string AXNode::GetTextForRangeValue() const {
   if (range_value.empty() &&
       GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
                         &numeric_value)) {
-    range_value = base::NumberToString(numeric_value);
+    // This method of number to string conversion creates a localized string
+    // and avoids padding with extra zeros after the decimal point.
+    // For example, 3.5 is converted to "3.5" rather than "3.50000".
+    return base::StringPrintf("%g", numeric_value);
   }
   return range_value;
 }
 
 std::string AXNode::GetValueForColorWell() const {
-  DCHECK_EQ(data().role, ax::mojom::Role::kColorWell);
+  DCHECK_EQ(GetRole(), ax::mojom::Role::kColorWell);
   // static cast because SkColor is a 4-byte unsigned int
   unsigned int color = static_cast<unsigned int>(
       GetIntAttribute(ax::mojom::IntAttribute::kColorValue));
@@ -1504,14 +1510,14 @@ bool AXNode::IsIgnored() const {
 }
 
 bool AXNode::IsIgnoredForTextNavigation() const {
-  if (data().role == ax::mojom::Role::kSplitter)
+  if (GetRole() == ax::mojom::Role::kSplitter)
     return true;
 
   // A generic container without any unignored children that is not editable
   // should not be used for text-based navigation. Such nodes don't make sense
   // for screen readers to land on, since no text will be announced and no
   // action is possible.
-  if (data().role == ax::mojom::Role::kGenericContainer &&
+  if (GetRole() == ax::mojom::Role::kGenericContainer &&
       !GetUnignoredChildCount() &&
       !data().HasState(ax::mojom::State::kEditable)) {
     return true;
@@ -1591,7 +1597,7 @@ bool AXNode::IsLeaf() const {
 
   // Roles whose children are only presentational according to the ARIA and
   // HTML5 Specs should be hidden from screen readers.
-  switch (data().role) {
+  switch (GetRole()) {
     // According to the ARIA and Core-AAM specs:
     // https://w3c.github.io/aria/#button,
     // https://www.w3.org/TR/core-aam-1.1/#exclude_elements
@@ -1660,7 +1666,7 @@ bool AXNode::IsLeaf() const {
 }
 
 bool AXNode::IsInListMarker() const {
-  if (data().role == ax::mojom::Role::kListMarker)
+  if (GetRole() == ax::mojom::Role::kListMarker)
     return true;
 
   // The children of a list marker node can only be text nodes.
@@ -1673,16 +1679,19 @@ bool AXNode::IsInListMarker() const {
   // ++StaticText
   // ++++InlineTextBox
   AXNode* parent_node = GetUnignoredParent();
-  if (parent_node && parent_node->data().role == ax::mojom::Role::kListMarker)
+  if (!parent_node)
+    return false;
+
+  if (parent_node->GetRole() == ax::mojom::Role::kListMarker)
     return true;
 
   AXNode* grandparent_node = parent_node->GetUnignoredParent();
   return grandparent_node &&
-         grandparent_node->data().role == ax::mojom::Role::kListMarker;
+         grandparent_node->GetRole() == ax::mojom::Role::kListMarker;
 }
 
 bool AXNode::IsCollapsedMenuListPopUpButton() const {
-  if (data().role != ax::mojom::Role::kPopUpButton ||
+  if (GetRole() != ax::mojom::Role::kPopUpButton ||
       !data().HasState(ax::mojom::State::kCollapsed)) {
     return false;
   }
@@ -1693,7 +1702,7 @@ bool AXNode::IsCollapsedMenuListPopUpButton() const {
   if (!node)
     return false;
 
-  return node->data().role == ax::mojom::Role::kMenuListPopup;
+  return node->GetRole() == ax::mojom::Role::kMenuListPopup;
 }
 
 AXNode* AXNode::GetCollapsedMenuListPopUpButtonAncestor() const {
@@ -1705,7 +1714,7 @@ AXNode* AXNode::GetCollapsedMenuListPopUpButtonAncestor() const {
   // The ordered set returned is either the popup element child of the popup
   // button (e.g., the AXMenuListPopup) or the popup button itself. We need
   // |node| to point to the popup button itself.
-  if (node->data().role != ax::mojom::Role::kPopUpButton) {
+  if (node->GetRole() != ax::mojom::Role::kPopUpButton) {
     node = node->GetParent();
     if (!node)
       return nullptr;
@@ -1715,10 +1724,10 @@ AXNode* AXNode::GetCollapsedMenuListPopUpButtonAncestor() const {
 }
 
 bool AXNode::IsEmbeddedGroup() const {
-  if (data().role != ax::mojom::Role::kGroup || !GetParent())
+  if (GetRole() != ax::mojom::Role::kGroup || !GetParent())
     return false;
 
-  return ui::IsSetLike(GetParent()->data().role);
+  return ui::IsSetLike(GetParent()->GetRole());
 }
 
 AXNode* AXNode::GetLowestPlatformAncestor() const {
@@ -1752,10 +1761,9 @@ AXNode* AXNode::GetTextFieldAncestor() const {
   // State::kEditable. Same with inline text boxes and placeholder text.
   // TODO(nektar): Fix all such inconsistencies in Blink.
   for (AXNode* ancestor = const_cast<AXNode*>(this);
-       ancestor &&
-       (ancestor->data().HasState(ax::mojom::State::kEditable) ||
-        ancestor->data().role == ax::mojom::Role::kGenericContainer ||
-        ancestor->IsText());
+       ancestor && (ancestor->data().HasState(ax::mojom::State::kEditable) ||
+                    ancestor->GetRole() == ax::mojom::Role::kGenericContainer ||
+                    ancestor->IsText());
        ancestor = ancestor->GetUnignoredParent()) {
     if (ancestor->data().IsTextField())
       return ancestor;

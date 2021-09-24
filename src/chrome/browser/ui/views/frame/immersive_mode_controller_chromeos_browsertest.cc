@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_menu_button.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_toolbar_button_container.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
@@ -253,9 +253,9 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerChromeosWebAppBrowserTest,
 
 // Verify that the frame layout is as expected when using immersive mode in
 // tablet mode.
-// Fails on Linux Chromium OS ASan LSan Tests.
+// Fails on Linux Chromium OS.
 // TODO(crbug.com/1191327): reenable the test.
-#if defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)
+#if defined(OS_CHROMEOS)
 #define MAYBE_FrameLayoutToggleTabletMode DISABLED_FrameLayoutToggleTabletMode
 #else
 #define MAYBE_FrameLayoutToggleTabletMode FrameLayoutToggleTabletMode

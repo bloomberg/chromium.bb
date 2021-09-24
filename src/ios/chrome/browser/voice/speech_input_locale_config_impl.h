@@ -13,7 +13,7 @@
 
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 #include "ios/chrome/browser/voice/speech_input_locale_match.h"
-#include "ios/public/provider/chrome/browser/voice/voice_search_language.h"
+#include "ios/chrome/browser/voice/voice_search_language.h"
 
 namespace voice {
 
@@ -25,10 +25,6 @@ class SpeechInputLocaleConfigImpl : public SpeechInputLocaleConfig {
   SpeechInputLocaleConfigImpl(NSArray<VoiceSearchLanguage*>* languages,
                               NSArray<SpeechInputLocaleMatch*>* locale_matches);
   ~SpeechInputLocaleConfigImpl() override;
-
-  // Deprecated constructor to avoid breaking the downstream tests. Will be
-  // removed once downstream is changed to use the other constructor.
-  SpeechInputLocaleConfigImpl();
 
   // Returns the available locale that matches |locale_code|.  Defaults to en-US
   // if a matching locale is not found.
@@ -58,7 +54,7 @@ class SpeechInputLocaleConfigImpl : public SpeechInputLocaleConfig {
       NSArray<SpeechInputLocaleMatch*>* locale_matches);
 
   // Populates |text_to_speech_languages_| with the available locales.
-  void InitializeTextToSpeechLangauges();
+  void InitializeTextToSpeechLanguages();
 
   // The list of available speech input locales.
   std::vector<SpeechInputLocale> available_locales_;

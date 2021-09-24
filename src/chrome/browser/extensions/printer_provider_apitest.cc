@@ -46,7 +46,7 @@ void AppendPrintersAndRunCallbackIfDone(base::ListValue* printers_out,
                                         base::RepeatingClosure callback,
                                         const base::ListValue& printers,
                                         bool done) {
-  for (size_t i = 0; i < printers.GetSize(); ++i) {
+  for (size_t i = 0; i < printers.GetList().size(); ++i) {
     const base::DictionaryValue* printer = NULL;
     EXPECT_TRUE(printers.GetDictionary(i, &printer))
         << "Found invalid printer value at index " << i << ": " << printers;
@@ -101,7 +101,7 @@ class PrinterProviderApiTest : public ExtensionApiTest,
     PRINT_REQUEST_DATA_TYPE_BYTES
   };
 
-  PrinterProviderApiTest() = default;
+  PrinterProviderApiTest() : ExtensionApiTest(GetParam()) {}
   ~PrinterProviderApiTest() override = default;
   PrinterProviderApiTest(const PrinterProviderApiTest&) = delete;
   PrinterProviderApiTest& operator=(const PrinterProviderApiTest&) = delete;
@@ -167,9 +167,8 @@ class PrinterProviderApiTest : public ExtensionApiTest,
     ExtensionTestMessageListener loaded_listener("loaded", true);
     ExtensionTestMessageListener ready_listener("ready", false);
 
-    const Extension* extension = LoadExtension(
-        test_data_dir_.AppendASCII(extension_path),
-        {.load_as_service_worker = GetParam() == ContextType::kServiceWorker});
+    const Extension* extension =
+        LoadExtension(test_data_dir_.AppendASCII(extension_path));
     ASSERT_TRUE(extension);
     ASSERT_TRUE(loaded_listener.WaitUntilSatisfied());
 
@@ -266,7 +265,7 @@ class PrinterProviderApiTest : public ExtensionApiTest,
   void ValidatePrinterListValue(
       const base::ListValue& printers,
       const std::vector<std::unique_ptr<base::Value>>& expected_printers) {
-    ASSERT_EQ(expected_printers.size(), printers.GetSize());
+    ASSERT_EQ(expected_printers.size(), printers.GetList().size());
     for (const auto& printer_value : expected_printers) {
       EXPECT_TRUE(base::Contains(printers.GetList(), *printer_value))
           << "Unable to find " << *printer_value << " in " << printers;

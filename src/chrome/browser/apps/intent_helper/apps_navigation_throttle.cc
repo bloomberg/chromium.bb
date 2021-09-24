@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
@@ -257,7 +257,7 @@ AppsNavigationThrottle::CaptureWebAppScopeNavigations(
 
       apps::AppLaunchParams launch_params(
           *app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-          WindowOpenDisposition::CURRENT_TAB,
+          WindowOpenDisposition::NEW_FOREGROUND_TAB,
           apps::mojom::AppLaunchSource::kSourceUrlHandler);
       launch_params.override_url = handle->GetURL();
       apps::AppServiceProxyFactory::GetForProfile(profile)

@@ -9,13 +9,13 @@
 
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
-#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/site_instance.h"
@@ -32,7 +32,7 @@ void WebAppTabHelper::CreateForWebContents(content::WebContents* contents) {
 
 WebAppTabHelper::WebAppTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      provider_(WebAppProvider::GetForLocalApps(
+      provider_(WebAppProvider::GetForLocalAppsUnchecked(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
   DCHECK(provider_);
   observation_.Observe(&provider_->registrar());

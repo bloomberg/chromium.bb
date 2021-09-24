@@ -212,17 +212,6 @@ void SearchBox::LogEvent(NTPLoggingEventType event) {
   embedded_search_service_->LogEvent(page_seq_no_, event, delta);
 }
 
-void SearchBox::LogSuggestionEventWithValue(
-    NTPSuggestionsLoggingEventType event,
-    int data) {
-  base::Time navigation_start = base::Time::FromDoubleT(
-      render_frame()->GetWebFrame()->Performance().NavigationStart());
-  base::Time now = base::Time::Now();
-  base::TimeDelta delta = now - navigation_start;
-  embedded_search_service_->LogSuggestionEventWithValue(page_seq_no_, event,
-                                                        data, delta);
-}
-
 void SearchBox::LogMostVisitedImpression(
     const ntp_tiles::NTPTileImpression& impression) {
   embedded_search_service_->LogMostVisitedImpression(page_seq_no_, impression);
@@ -285,43 +274,6 @@ void SearchBox::UndoMostVisitedDeletion(
   if (!url.is_valid())
     return;
   embedded_search_service_->UndoMostVisitedDeletion(page_seq_no_, url);
-}
-
-void SearchBox::SetCustomBackgroundInfo(const GURL& background_url,
-                                        const std::string& attribution_line_1,
-                                        const std::string& attribution_line_2,
-                                        const GURL& action_url,
-                                        const std::string& collection_id) {
-  embedded_search_service_->SetCustomBackgroundInfo(
-      background_url, attribution_line_1, attribution_line_2, action_url,
-      collection_id);
-}
-
-void SearchBox::SelectLocalBackgroundImage() {
-  embedded_search_service_->SelectLocalBackgroundImage();
-}
-
-void SearchBox::BlocklistSearchSuggestion(int task_version, long task_id) {
-  embedded_search_service_->BlocklistSearchSuggestion(task_version, task_id);
-}
-
-void SearchBox::BlocklistSearchSuggestionWithHash(
-    int task_version,
-    long task_id,
-    const std::vector<uint8_t>& hash) {
-  embedded_search_service_->BlocklistSearchSuggestionWithHash(task_version,
-                                                              task_id, hash);
-}
-
-void SearchBox::SearchSuggestionSelected(int task_version,
-                                         long task_id,
-                                         const std::vector<uint8_t>& hash) {
-  embedded_search_service_->SearchSuggestionSelected(task_version, task_id,
-                                                     hash);
-}
-
-void SearchBox::OptOutOfSearchSuggestions() {
-  embedded_search_service_->OptOutOfSearchSuggestions();
 }
 
 void SearchBox::ApplyDefaultTheme() {
@@ -414,13 +366,6 @@ void SearchBox::ThemeChanged(const NtpTheme& theme) {
   theme_ = theme;
   if (can_run_js_in_renderframe_)
     SearchBoxExtension::DispatchThemeChange(render_frame()->GetWebFrame());
-}
-
-void SearchBox::LocalBackgroundSelected() {
-  if (can_run_js_in_renderframe_) {
-    SearchBoxExtension::DispatchLocalBackgroundSelected(
-        render_frame()->GetWebFrame());
-  }
 }
 
 GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {

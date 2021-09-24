@@ -7,6 +7,7 @@
 
 #include "ash/webui/shimless_rma/mojom/shimless_rma.mojom.h"
 #include "chromeos/dbus/rmad/rmad.pb.h"
+#include "chromeos/dbus/update_engine/update_engine.pb.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 
 namespace mojo {
@@ -52,14 +53,13 @@ struct EnumTraits<
 };
 
 template <>
-struct EnumTraits<ash::shimless_rma::mojom::CalibrationComponent,
-                  rmad::CheckCalibrationState::CalibrationStatus::Component> {
-  static ash::shimless_rma::mojom::CalibrationComponent ToMojom(
-      rmad::CheckCalibrationState::CalibrationStatus::Component key_status);
+struct EnumTraits<ash::shimless_rma::mojom::OsUpdateOperation,
+                  update_engine::Operation> {
+  static ash::shimless_rma::mojom::OsUpdateOperation ToMojom(
+      update_engine::Operation operation);
 
-  static bool FromMojom(
-      ash::shimless_rma::mojom::CalibrationComponent input,
-      rmad::CheckCalibrationState::CalibrationStatus::Component* out);
+  static bool FromMojom(ash::shimless_rma::mojom::OsUpdateOperation input,
+                        update_engine::Operation* out);
 };
 
 template <>

@@ -144,10 +144,9 @@ class ContentAutofillRouter {
 
   // Deletes all forms and fields related to |driver| (and this driver only).
   // Must be called whenever |driver| is destroyed.
+  // As a simple performance optimization, if |driver| is a main frame, the
+  // whole router is reset to the initial state.
   void UnregisterDriver(ContentAutofillDriver* driver);
-
-  // Resets the object to the initial state.
-  void Reset();
 
   // Returns the ContentAutofillDriver* for which AskForValuesToFill() was
   // called last.
@@ -258,6 +257,15 @@ class ContentAutofillRouter {
   // Update the last queried and source and do cleanup work.
   void SetLastQueriedSource(ContentAutofillDriver* source);
   void SetLastQueriedTarget(ContentAutofillDriver* target);
+
+  // The URL of a main frame managed by the ContentAutofillRouter.
+  // TODO(crbug.com/1240247): Remove.
+  GURL MainUrlForDebugging() const;
+
+  // The frame managed by the ContentAutofillRouter that was last passed to
+  // an event.
+  // TODO(crbug.com/1240247): Remove.
+  content::RenderFrameHost* some_rfh_for_debugging_ = nullptr;
 
   // The forest of forms. See its documentation for the usage protocol.
   internal::FormForest form_forest_;

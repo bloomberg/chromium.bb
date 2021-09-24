@@ -399,7 +399,7 @@ class ScopedAllocatorDevice : public DeviceBase {
   }
 
   Allocator* GetScopedAllocator(AllocatorAttributes attrs,
-                                int64 /*step_id*/) override {
+                                int64_t /*step_id*/) override {
     CHECK_GT(attrs.scope_id, 0);
     num_scoped_allocations_++;
     if (scope_allocated_) {
@@ -654,9 +654,6 @@ TEST_F(OpKernelBuilderTest, BuilderTypeListAttr) {
                                             {"T|list(type)|[DT_FLOAT]"}));
 
   ExpectFailure("BuildTypeListAttr", DEVICE_CPU, {}, error::INVALID_ARGUMENT);
-  EXPECT_TRUE(
-      absl::StrContains(GetKernelClassName("BuildTypeListAttr", DEVICE_CPU, {}),
-                        "Invalid argument: "));
 
   ExpectFailure("BuildTypeListAttr", DEVICE_CPU, {"T|int|7"},
                 error::INVALID_ARGUMENT);
@@ -796,8 +793,8 @@ class GetAttrKernel : public ::tensorflow::OpKernel {
 
   string s;
   std::vector<string> s_list;
-  int64 i;
-  std::vector<int64> i_list;
+  int64_t i;
+  std::vector<int64_t> i_list;
   int32 i32;
   std::vector<int32> i32_list;
   float f;
@@ -857,7 +854,7 @@ TEST_F(GetAttrTest, Int) {
       {"attr_name|string|'b'", "a|int|35", "b|list(int)|[-1, 2, -4]"});
   get_attr_kernel = static_cast<GetAttrKernel*>(op_kernel.get());
   get_attr_kernel->ExpectOk({"i_list", "i32_list"});
-  EXPECT_EQ(std::vector<int64>({-1, 2, -4}), get_attr_kernel->i_list);
+  EXPECT_EQ(std::vector<int64_t>({-1, 2, -4}), get_attr_kernel->i_list);
   EXPECT_EQ(std::vector<int32>({-1, 2, -4}), get_attr_kernel->i32_list);
 
   // 8589934592 == 2^33, too big to fit in an int32
@@ -880,7 +877,7 @@ TEST_F(GetAttrTest, Int) {
                              "b|list(int)|[-8589934592]"});
   get_attr_kernel = static_cast<GetAttrKernel*>(op_kernel.get());
   get_attr_kernel->ExpectOk({"i_list"});  // no i32_list
-  EXPECT_EQ(std::vector<int64>({-8589934592ll}), get_attr_kernel->i_list);
+  EXPECT_EQ(std::vector<int64_t>({-8589934592ll}), get_attr_kernel->i_list);
   for (const auto& key_status : get_attr_kernel->status) {
     if (key_status.first == "i32_list") {
       EXPECT_EQ(error::INVALID_ARGUMENT, key_status.second.code());
@@ -1002,9 +999,9 @@ TEST_F(LabelTest, Duplicate) {
                 error::INVALID_ARGUMENT);
 }
 
-void BM_InputRangeHelper(int iters, const NodeDef& node_def,
-                         const char* input_name, int expected_start,
-                         int expected_stop) {
+void BM_InputRangeHelper(::testing::benchmark::State& state,
+                         const NodeDef& node_def, const char* input_name,
+                         int expected_start, int expected_stop) {
   Status status;
   auto device = absl::make_unique<DummyDevice>(Env::Default());
 
@@ -1013,24 +1010,20 @@ void BM_InputRangeHelper(int iters, const NodeDef& node_def,
                                               TF_GRAPH_DEF_VERSION, &status));
   TF_CHECK_OK(status);
 
-  testing::StartTiming();
-  for (int i = 0; i < iters; ++i) {
+  for (auto s : state) {
     int start;
     int stop;
     TF_CHECK_OK(op->InputRange(input_name, &start, &stop));
     EXPECT_EQ(expected_start, start);
     EXPECT_EQ(expected_stop, stop);
   }
-  testing::StopTiming();
 }
 
 REGISTER_KERNEL_BUILDER(Name("ConcatV2").Device(DEVICE_CPU), DummyKernel);
 REGISTER_KERNEL_BUILDER(Name("Select").Device(DEVICE_CPU), DummyKernel);
 REGISTER_KERNEL_BUILDER(Name("MatMul").Device(DEVICE_CPU), DummyKernel);
 
-void BM_ConcatInputRange(int iters) {
-  testing::StopTiming();
-
+void BM_ConcatInputRange(::testing::benchmark::State& state) {
   // Create a ConcatV2 NodeDef with 4 inputs (plus the axis).
   NodeDef node_def;
   node_def.set_name("concat-op");
@@ -1048,12 +1041,10 @@ void BM_ConcatInputRange(int iters) {
     node_def.add_input(strings::StrCat("a:", i));
   }
 
-  BM_InputRangeHelper(iters, node_def, "values", 0, 4);
+  BM_InputRangeHelper(state, node_def, "values", 0, 4);
 }
 
-void BM_SelectInputRange(int iters) {
-  testing::StopTiming();
-
+void BM_SelectInputRange(::testing::benchmark::State& state) {
   // Create a Select NodeDef with 3 inputs.
   NodeDef node_def;
   node_def.set_name("select-op");
@@ -1065,11 +1056,11 @@ void BM_SelectInputRange(int iters) {
     node_def.add_input(strings::StrCat("a:", i));
   }
 
-  BM_InputRangeHelper(iters, node_def, "condition", 0, 1);
+  BM_InputRangeHelper(state, node_def, "condition", 0, 1);
 }
 
-void BM_TraceString(const int iters, const int verbose) {
-  testing::StopTiming();
+void BM_TraceString(::testing::benchmark::State& state) {
+  const int verbose = state.range(0);
 
   // Create a MatMul NodeDef with 2 inputs.
   NodeDef node_def;
@@ -1103,11 +1094,9 @@ void BM_TraceString(const int iters, const int verbose) {
   params.inputs = &inputs;
   auto ctx = absl::make_unique<OpKernelContext>(&params);
 
-  testing::StartTiming();
-  for (int i = 0; i < iters; ++i) {
-    auto trace = op->TraceString(ctx.get(), verbose);
+  for (auto s : state) {
+    auto trace = op->TraceString(*ctx, verbose);
   }
-  testing::StopTiming();
 }
 
 BENCHMARK(BM_ConcatInputRange);
@@ -1150,6 +1139,19 @@ TEST(RegisteredKernels, GetRegisteredKernelsForOp) {
   ASSERT_EQ(kernel_list.kernel_size(), 1);
   EXPECT_EQ(kernel_list.kernel(0).op(), "Test1");
   EXPECT_EQ(kernel_list.kernel(0).device_type(), "CPU");
+}
+
+// EXTRACT_KERNEL_NAME_TO_STRING wraps TF_EXTRACT_KERNEL_NAME for testing
+// (it involves quite a bit of macro-magic).
+#define EXTRACT_KERNEL_NAME_TO_STRING_IMPL(name, kernel_builder, ...) name
+#define EXTRACT_KERNEL_NAME_TO_STRING(kernel_builder) \
+  TF_EXTRACT_KERNEL_NAME(EXTRACT_KERNEL_NAME_TO_STRING_IMPL, kernel_builder)
+
+TEST(RegisterKernelMacro, ExtractName) {
+  static constexpr char const* kName = "Foo";
+  static constexpr char const* kExtractedName =
+      EXTRACT_KERNEL_NAME_TO_STRING(Name(kName).Label("Label"));
+  EXPECT_THAT(kExtractedName, ::testing::StrEq(kName));
 }
 
 }  // namespace

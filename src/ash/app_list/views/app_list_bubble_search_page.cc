@@ -35,8 +35,10 @@ AppListBubbleSearchPage::AppListBubbleSearchPage(
   DCHECK(search_box_view_);
   SetUseDefaultFillLayout(true);
 
-  // The entire page scrolls.
-  auto* scroll = AddChildView(std::make_unique<views::ScrollView>());
+  // The entire page scrolls. Use layer scrolling so that the contents will
+  // paint on top of the parent, which uses SetPaintToLayer().
+  auto* scroll = AddChildView(std::make_unique<views::ScrollView>(
+      views::ScrollView::ScrollWithLayers::kEnabled));
   scroll->ClipHeightTo(0, std::numeric_limits<int>::max());
   scroll->SetDrawOverflowIndicator(false);
   scroll->SetHorizontalScrollBarMode(
@@ -60,10 +62,6 @@ AppListBubbleSearchPage::AppListBubbleSearchPage(
   auto* result_container =
       scroll_contents->AddChildView(std::make_unique<SearchResultListView>(
           /*main_view=*/nullptr, view_delegate));
-  // SearchResultListView uses SearchResultView, which requires a light
-  // background for the text to be readable.
-  result_container->SetBackground(views::CreateSolidBackground(
-      AppListColorProvider::Get()->GetSearchBoxBackgroundColor()));
   result_container->SetResults(view_delegate->GetSearchModel()->results());
   result_container->set_delegate(this);
   result_container_views_.push_back(result_container);

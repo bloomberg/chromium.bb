@@ -992,7 +992,7 @@ class AllowlistedUrlDeepScanningBrowserTest
     DownloadDeepScanningBrowserTestBase::SetUpOnMainThread();
 
     base::ListValue domain_list;
-    domain_list.AppendString(embedded_test_server()->base_url().host_piece());
+    domain_list.Append(embedded_test_server()->base_url().host_piece());
     browser()->profile()->GetPrefs()->Set(prefs::kSafeBrowsingAllowlistDomains,
                                           domain_list);
   }
@@ -1354,7 +1354,8 @@ class WaitForFinishObserver : public DeepScanningRequest::Observer {
 
 IN_PROC_BROWSER_TEST_F(ConsumerDeepScanningBrowserTest,
                        RetriableErrorShowsModal) {
-  SetSafeBrowsingState(browser()->profile()->GetPrefs(), ENHANCED_PROTECTION);
+  SetSafeBrowsingState(browser()->profile()->GetPrefs(),
+                       SafeBrowsingState::ENHANCED_PROTECTION);
 
   ClientDownloadResponse metadata_response;
   metadata_response.set_request_deep_scan(true);
@@ -1417,7 +1418,8 @@ IN_PROC_BROWSER_TEST_F(ConsumerDeepScanningBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ConsumerDeepScanningBrowserTest,
                        NonretriableErrorDoesNotShowModal) {
-  SetSafeBrowsingState(browser()->profile()->GetPrefs(), ENHANCED_PROTECTION);
+  SetSafeBrowsingState(browser()->profile()->GetPrefs(),
+                       SafeBrowsingState::ENHANCED_PROTECTION);
 
   ClientDownloadResponse metadata_response;
   metadata_response.set_request_deep_scan(true);

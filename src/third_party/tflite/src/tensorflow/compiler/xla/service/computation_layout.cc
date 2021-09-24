@@ -32,6 +32,8 @@ ComputationLayout::ComputationLayout(const ProgramShape& program_shape,
   }
   if (ignore_layouts) {
     SetToDefaultLayout();
+  } else {
+    SetToDefaultLayoutIfEmpty();
   }
 }
 
@@ -40,6 +42,17 @@ void ComputationLayout::SetToDefaultLayout() {
     parameter_layout.SetToDefaultLayout();
   }
   result_layout_.SetToDefaultLayout();
+}
+
+void ComputationLayout::SetToDefaultLayoutIfEmpty() {
+  for (auto& parameter_layout : parameter_layouts_) {
+    if (!parameter_layout.LayoutIsSet()) {
+      parameter_layout.SetToDefaultLayout();
+    }
+  }
+  if (!result_layout_.LayoutIsSet()) {
+    result_layout_.SetToDefaultLayout();
+  }
 }
 
 bool ComputationLayout::LayoutIsSet() const {
@@ -59,7 +72,7 @@ string ComputationLayout::ToString() const {
 
 ProgramShape ComputationLayout::ComputeProgramShape() const {
   ProgramShape program_shape;
-  for (int64 i = 0; i < parameter_layouts_.size(); ++i) {
+  for (int64_t i = 0; i < parameter_layouts_.size(); ++i) {
     *program_shape.add_parameters() = parameter_layouts_[i].shape();
     *program_shape.add_parameter_names() = absl::StrCat("p", i);
   }

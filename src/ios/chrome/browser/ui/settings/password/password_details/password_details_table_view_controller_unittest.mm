@@ -9,7 +9,9 @@
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
@@ -74,6 +76,9 @@ constexpr char kPassword[] = "test";
   self.editingCalled = YES;
 }
 
+- (void)dismissPasswordDetailsTableViewController {
+}
+
 @end
 
 // Test class that conforms to PasswordDetailsViewControllerDelegate in order to
@@ -95,6 +100,13 @@ constexpr char kPassword[] = "test";
 
 - (BOOL)isUsernameReused:(NSString*)newUsername {
   return NO;
+}
+
+- (void)passwordDetailsViewController:
+            (PasswordDetailsTableViewController*)viewController
+        didAddPasswordDetailsWithSite:(NSString*)website
+                             username:(NSString*)username
+                             password:(NSString*)password {
 }
 
 @end
@@ -137,12 +149,13 @@ class PasswordDetailsTableViewControllerTest
     reauthentication_module_ = [[MockReauthenticationModule alloc] init];
     reauthentication_module_.expectedResult = ReauthenticationResult::kSuccess;
     snack_bar_ = [[FakeSnackbarImplementation alloc] init];
+    credential_type_ = CredentialTypeRegular;
   }
 
   ChromeTableViewController* InstantiateController() override {
     PasswordDetailsTableViewController* controller =
         [[PasswordDetailsTableViewController alloc]
-            initWithStyle:UITableViewStylePlain];
+            initWithCredentialType:credential_type_];
     controller.handler = handler_;
     controller.delegate = delegate_;
     controller.reauthModule = reauthentication_module_;
@@ -173,6 +186,7 @@ class PasswordDetailsTableViewControllerTest
   }
 
   void SetFederatedPassword() {
+    set_credential_type(CredentialTypeFederation);
     auto form = password_manager::PasswordForm();
     form.username_value = u"test@egmail.com";
     form.url = GURL(u"http://www.example.com/");
@@ -187,6 +201,7 @@ class PasswordDetailsTableViewControllerTest
   }
 
   void SetBlockedOrigin() {
+    set_credential_type(CredentialTypeBlocked);
     auto form = password_manager::PasswordForm();
     form.url = GURL("http://www.example.com/");
     form.blocked_by_user = true;
@@ -220,12 +235,16 @@ class PasswordDetailsTableViewControllerTest
   FakeSnackbarImplementation* snack_bar() {
     return (FakeSnackbarImplementation*)snack_bar_;
   }
+  void set_credential_type(CredentialType credentialType) {
+    credential_type_ = credentialType;
+  }
 
  private:
   id snack_bar_;
   FakePasswordDetailsHandler* handler_;
   FakePasswordDetailsDelegate* delegate_;
   MockReauthenticationModule* reauthentication_module_;
+  CredentialType credential_type_;
 };
 
 // Tests that password is displayed properly.
@@ -548,4 +567,17 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyPasswordFail) {
   EXPECT_NSEQ(
       l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_WAS_NOT_COPIED_MESSAGE),
       snack_bar().snackbarMessage);
+}
+
+// Tests that there is multiple sections in the edit view when
+// |kSupportForAddPasswordsInSettings| is enabled.
+TEST_F(PasswordDetailsTableViewControllerTest, TestSectionsInEdit) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kSupportForAddPasswordsInSettings);
+
+  SetPassword();
+  EXPECT_EQ(2, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(0));
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
 }

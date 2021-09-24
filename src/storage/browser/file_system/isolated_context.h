@@ -19,11 +19,15 @@
 #include "storage/browser/file_system/mount_points.h"
 #include "storage/common/file_system/file_system_types.h"
 
-namespace storage {
-class FileSystemURL;
-}
+class GURL;
+
+namespace blink {
+class StorageKey;
+}  // namespace blink
 
 namespace storage {
+
+class FileSystemURL;
 
 // Manages isolated filesystem mount points which have no well-known names
 // and are identified by a string 'filesystem ID', which usually just looks
@@ -173,9 +177,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) IsolatedContext : public MountPoints {
                         std::string* cracked_id,
                         base::FilePath* path,
                         FileSystemMountOption* mount_option) const override;
-  FileSystemURL CrackURL(const GURL& url) const override;
+  FileSystemURL CrackURL(const GURL& url,
+                         const blink::StorageKey& storage_key) const override;
   FileSystemURL CreateCrackedFileSystemURL(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       FileSystemType type,
       const base::FilePath& virtual_path) const override;
 

@@ -1480,22 +1480,6 @@ void ListValue::Append(std::unique_ptr<Value> in_value) {
   list().push_back(std::move(*in_value));
 }
 
-void ListValue::AppendBoolean(bool in_value) {
-  list().emplace_back(in_value);
-}
-
-void ListValue::AppendInteger(int in_value) {
-  list().emplace_back(in_value);
-}
-
-void ListValue::AppendString(StringPiece in_value) {
-  list().emplace_back(in_value);
-}
-
-void ListValue::AppendString(const std::u16string& in_value) {
-  list().emplace_back(in_value);
-}
-
 void ListValue::Swap(ListValue* other) {
   CHECK(other->is_list());
   list().swap(other->list());

@@ -16,6 +16,7 @@
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/ops/GrDrawOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
+#include "src/gpu/ops/TessellationPathRenderer.h"
 #include "src/gpu/tessellate/GrPathCurveTessellator.h"
 #include "src/gpu/tessellate/GrPathWedgeTessellator.h"
 #include "src/gpu/tessellate/shaders/GrPathTessellationShader.h"
@@ -108,6 +109,7 @@ private:
         }
         fTessellator->prepare(flushState, this->bounds(), {pathMatrix, fPath}, fPath.countVerbs());
         fProgram = GrTessellationShader::MakeProgram({alloc, flushState->writeView(),
+                                                     flushState->usesMSAASurface(),
                                                      &flushState->dstProxyView(),
                                                      flushState->renderPassBarriers(),
                                                      GrLoadOp::kClear, &flushState->caps()},
@@ -164,8 +166,7 @@ private:
     SkString name() override { return SkString("PathTessellators"); }
 
     SkPath fPath;
-    GrPipeline::InputFlags fPipelineFlags = GrPipeline::InputFlags::kHWAntialias |
-                                            GrPipeline::InputFlags::kWireframe;
+    GrPipeline::InputFlags fPipelineFlags = GrPipeline::InputFlags::kWireframe;
     Mode fMode = Mode::kWedgeMiddleOut;
 
     float fConicWeight = .5;
@@ -182,8 +183,8 @@ void SamplePathTessellators::onDrawContent(SkCanvas* canvas) {
     SkString error;
     if (!sdc || !ctx) {
         error = "GPU Only.";
-    } else if (!GrTessellationPathRenderer::IsSupported(*ctx->priv().caps())) {
-        error = "GrTessellationPathRenderer not supported.";
+    } else if (!skgpu::v1::TessellationPathRenderer::IsSupported(*ctx->priv().caps())) {
+        error = "TessellationPathRenderer not supported.";
     } else if (fMode >= Mode::kWedgeTessellate &&
                !ctx->priv().caps()->shaderCaps()->tessellationSupport()) {
         error.printf("%s requires hardware tessellation support.", ModeName(fMode));

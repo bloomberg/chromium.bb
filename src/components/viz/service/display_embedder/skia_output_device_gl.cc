@@ -11,6 +11,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/debug/alias.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
@@ -146,6 +147,13 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   capabilities_.supports_surfaceless = gl_surface_->IsSurfaceless();
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // If Chrome OS is run on Linux for development purposes, we need to
+  // advertise a hardware orientation mode since Ash manages a separate device
+  // rotation independent of the host's native windowing system.
+  capabilities_.orientation_mode = OutputSurface::OrientationMode::kHardware;
+#endif  // IS_CHROMEOS_ASH
+
   DCHECK(context_state_->gr_context());
   DCHECK(context_state_->context());
 
@@ -213,7 +221,9 @@ bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                  const gfx::ColorSpace& color_space,
                                  gfx::BufferFormat buffer_format,
                                  gfx::OverlayTransform transform) {
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   if (!gl_surface_->Resize(size, device_scale_factor, color_space,
                            gfx::AlphaBitsForBufferFormat(buffer_format))) {

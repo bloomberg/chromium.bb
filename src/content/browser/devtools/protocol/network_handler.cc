@@ -77,6 +77,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/data_element.h"
+#include "services/network/public/cpp/devtools_observer_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -435,18 +436,36 @@ std::vector<GURL> ComputeCookieURLs(RenderFrameHostImpl* frame_host,
     for (const std::string& url : *protocol_urls.fromJust())
       urls.emplace_back(url);
   } else {
-    base::queue<FrameTreeNode*> queue;
-    queue.push(frame_host->frame_tree_node());
+    base::queue<RenderFrameHostImpl*> queue;
+    queue.push(frame_host);
     while (!queue.empty()) {
-      FrameTreeNode* node = queue.front();
+      RenderFrameHostImpl* node = queue.front();
       queue.pop();
 
-      urls.push_back(node->current_url());
+      urls.push_back(node->GetLastCommittedURL());
       for (size_t i = 0; i < node->child_count(); ++i)
-        queue.push(node->child_at(i));
+        queue.push(node->child_at(i)->current_frame_host());
     }
   }
 
+  return urls;
+}
+
+std::vector<GURL> ComputeReportingURLs(RenderFrameHostImpl* frame_host) {
+  std::vector<GURL> urls;
+  base::queue<FrameTreeNode*> queue;
+  queue.push(frame_host->frame_tree_node());
+  while (!queue.empty()) {
+    FrameTreeNode* node = queue.front();
+    queue.pop();
+    if (node != frame_host->frame_tree_node() &&
+        node->current_frame_host()->is_local_root_subframe())
+      continue;
+
+    urls.push_back(node->current_url());
+    for (size_t i = 0; i < node->child_count(); ++i)
+      queue.push(node->child_at(i));
+  }
   return urls;
 }
 
@@ -571,6 +590,14 @@ std::unique_ptr<Network::ResourceTiming> GetTiming(
       .Build();
 }
 
+std::unique_ptr<Network::ConnectTiming> GetConnectTiming(
+    const base::TimeTicks timestamp) {
+  const base::TimeTicks kNullTicks;
+  return Network::ConnectTiming::Create()
+      .SetRequestTime((timestamp - kNullTicks).InSecondsF())
+      .Build();
+}
+
 std::unique_ptr<Object> GetRawHeaders(
     const std::vector<network::mojom::HttpRawHeaderPairPtr>& headers) {
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
@@ -592,7 +619,7 @@ std::unique_ptr<Object> GetRawHeaders(
 }
 
 String GetProtocol(const GURL& url,
-                   const network::mojom::URLResponseHead& info) {
+                   const network::mojom::URLResponseHeadDevToolsInfo& info) {
   std::string protocol = info.alpn_negotiated_protocol;
   if (protocol.empty() || protocol == "unknown") {
     if (info.was_fetched_via_spdy) {
@@ -902,10 +929,7 @@ class BackgroundSyncRestorer {
  public:
   BackgroundSyncRestorer(const std::string& host_id,
                          StoragePartition* storage_partition)
-      : host_id_(host_id),
-        storage_partition_(storage_partition),
-        offline_sw_registration_id_(
-            new int64_t(blink::mojom::kInvalidServiceWorkerRegistrationId)) {
+      : host_id_(host_id), storage_partition_(storage_partition) {
     SetServiceWorkerOfflineStatus(true);
   }
 
@@ -930,55 +954,25 @@ class BackgroundSyncRestorer {
         static_cast<StoragePartitionImpl*>(storage_partition_)
             ->GetBackgroundSyncContext();
     if (offline) {
-      RunOrPostTaskOnThread(
-          FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-          base::BindOnce(
-              &SetServiceWorkerOfflineOnServiceWorkerCoreThread, sync_context,
-              base::WrapRefCounted(static_cast<ServiceWorkerContextWrapper*>(
-                  storage_partition_->GetServiceWorkerContext())),
-              service_worker_host->version_id(),
-              offline_sw_registration_id_.get()));
-    } else {
-      RunOrPostTaskOnThread(
-          FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-          base::BindOnce(&SetServiceWorkerOnlineOnServiceWorkerCoreThread,
-                         sync_context, offline_sw_registration_id_.get()));
+      auto* swcontext = static_cast<ServiceWorkerContextWrapper*>(
+          storage_partition_->GetServiceWorkerContext());
+      ServiceWorkerVersion* version =
+          swcontext->GetLiveVersion(service_worker_host->version_id());
+      if (!version)
+        return;
+      offline_sw_registration_id_ = version->registration_id();
     }
-  }
-
-  static void SetServiceWorkerOfflineOnServiceWorkerCoreThread(
-      scoped_refptr<BackgroundSyncContextImpl> sync_context,
-      scoped_refptr<ServiceWorkerContextWrapper> swcontext,
-      int64_t version_id,
-      int64_t* offline_sw_registration_id) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-    ServiceWorkerVersion* version = swcontext.get()->GetLiveVersion(version_id);
-    if (!version)
-      return;
-    int64_t registration_id = version->registration_id();
-    *offline_sw_registration_id = registration_id;
-    if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId)
+    if (offline_sw_registration_id_ ==
+        blink::mojom::kInvalidServiceWorkerRegistrationId)
       return;
     sync_context->background_sync_manager()->EmulateServiceWorkerOffline(
-        registration_id, true);
-  }
-
-  static void SetServiceWorkerOnlineOnServiceWorkerCoreThread(
-      scoped_refptr<BackgroundSyncContextImpl> sync_context,
-      int64_t* offline_sw_registration_id) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-    if (*offline_sw_registration_id ==
-        blink::mojom::kInvalidServiceWorkerRegistrationId) {
-      return;
-    }
-    sync_context->background_sync_manager()->EmulateServiceWorkerOffline(
-        *offline_sw_registration_id, false);
+        offline_sw_registration_id_, offline);
   }
 
   std::string host_id_;
   StoragePartition* storage_partition_;
-  std::unique_ptr<int64_t, content::BrowserThread::DeleteOnIOThread>
-      offline_sw_registration_id_;
+  int64_t offline_sw_registration_id_ =
+      blink::mojom::kInvalidServiceWorkerRegistrationId;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRestorer);
 };
@@ -996,6 +990,9 @@ NetworkHandler::NetworkHandler(
       storage_partition_(nullptr),
       host_(nullptr),
       enabled_(false),
+#if BUILDFLAG(ENABLE_REPORTING)
+      reporting_receiver_(this),
+#endif  // BUILDFLAG(ENABLE_REPORTING)
       bypass_service_worker_(false),
       cache_disabled_(false),
       update_loader_factories_callback_(
@@ -1241,6 +1238,89 @@ Response NetworkHandler::Disable() {
   ClearAcceptedEncodingsOverride();
   return Response::FallThrough();
 }
+
+#if BUILDFLAG(ENABLE_REPORTING)
+
+namespace {
+
+String BuildReportStatus(const net::ReportingReport::Status status) {
+  switch (status) {
+    case net::ReportingReport::Status::QUEUED:
+      return protocol::Network::ReportStatusEnum::Queued;
+    case net::ReportingReport::Status::PENDING:
+      return protocol::Network::ReportStatusEnum::Pending;
+    case net::ReportingReport::Status::DOOMED:
+      return protocol::Network::ReportStatusEnum::MarkedForRemoval;
+    case net::ReportingReport::Status::SUCCESS:
+      return protocol::Network::ReportStatusEnum::Success;
+  }
+}
+
+}  // namespace
+
+std::unique_ptr<protocol::Network::ReportingApiReport>
+NetworkHandler::BuildProtocolReport(const net::ReportingReport& report) {
+  if (!host_) {
+    return nullptr;
+  }
+  std::vector<GURL> reporting_filter_urls = ComputeReportingURLs(host_);
+  auto iter = std::find(reporting_filter_urls.begin(),
+                        reporting_filter_urls.end(), report.url);
+  if (iter != reporting_filter_urls.end()) {
+    return protocol::Network::ReportingApiReport::Create()
+        .SetId(report.id.ToString())
+        .SetInitiatorUrl(report.url.spec())
+        .SetDestination(report.group)
+        .SetType(report.type)
+        .SetTimestamp(
+            (report.queued - base::TimeTicks::UnixEpoch()).InSecondsF())
+        .SetDepth(report.depth)
+        .SetCompletedAttempts(report.attempts)
+        .SetBody(protocol::DictionaryValue::cast(
+            protocol::toProtocolValue(report.body.get(), 1000)))
+        .SetStatus(BuildReportStatus(report.status))
+        .Build();
+  }
+  return nullptr;
+}
+
+void NetworkHandler::OnReportAdded(const net::ReportingReport& report) {
+  auto protocol_report = BuildProtocolReport(report);
+  if (protocol_report) {
+    frontend_->ReportingApiReportAdded(std::move(protocol_report));
+  }
+}
+
+void NetworkHandler::OnReportUpdated(const net::ReportingReport& report) {
+  auto protocol_report = BuildProtocolReport(report);
+  if (protocol_report) {
+    frontend_->ReportingApiReportUpdated(std::move(protocol_report));
+  }
+}
+
+Response NetworkHandler::EnableReportingApi(const bool enable) {
+  if (!storage_partition_) {
+    return Response::InternalError();
+  }
+
+  if (enable) {
+    if (!reporting_receiver_.is_bound()) {
+      mojo::PendingRemote<network::mojom::ReportingApiObserver> observer;
+      reporting_receiver_.Bind(observer.InitWithNewPipeAndPassReceiver());
+      storage_partition_->GetNetworkContext()->AddReportingApiObserver(
+          std::move(observer));
+    }
+  } else {
+    reporting_receiver_.reset();
+  }
+  return Response::Success();
+}
+
+#else
+Response NetworkHandler::EnableReportingApi(const bool enable) {
+  return Response::InternalError();
+}
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 Response NetworkHandler::SetCacheDisabled(bool cache_disabled) {
   cache_disabled_ = cache_disabled;
@@ -1657,7 +1737,7 @@ std::unique_ptr<protocol::Object> BuildResponseHeaders(
 }
 
 String BuildServiceWorkerResponseSource(
-    const network::mojom::URLResponseHead& info) {
+    const network::mojom::URLResponseHeadDevToolsInfo& info) {
   switch (info.service_worker_response_source) {
     case network::mojom::FetchResponseSource::kCacheStorage:
       return protocol::Network::ServiceWorkerResponseSourceEnum::CacheStorage;
@@ -1672,7 +1752,7 @@ String BuildServiceWorkerResponseSource(
 
 std::unique_ptr<Network::Response> BuildResponse(
     const GURL& url,
-    const network::mojom::URLResponseHead& info) {
+    const network::mojom::URLResponseHeadDevToolsInfo& info) {
   int status = 0;
   std::string status_text;
   if (info.headers) {
@@ -1868,8 +1948,12 @@ void NetworkHandler::NavigationRequestWillBeSent(
   const blink::mojom::CommitNavigationParams& commit_params =
       nav_request.commit_params();
   if (!commit_params.redirect_response.empty()) {
-    redirect_response = BuildResponse(commit_params.redirects.back(),
-                                      *commit_params.redirect_response.back());
+    const network::mojom::URLResponseHead& head =
+        *commit_params.redirect_response.back();
+    network::mojom::URLResponseHeadDevToolsInfoPtr head_info =
+        network::ExtractDevToolsInfo(head);
+    redirect_response =
+        BuildResponse(commit_params.redirects.back(), *head_info);
   }
   std::string url_fragment;
   std::string url_without_fragment =
@@ -2078,7 +2162,7 @@ void NetworkHandler::ResponseReceived(
     const std::string& loader_id,
     const GURL& url,
     const char* resource_type,
-    const network::mojom::URLResponseHead& head,
+    const network::mojom::URLResponseHeadDevToolsInfo& head,
     Maybe<std::string> frame_id) {
   if (!enabled_)
     return;
@@ -2127,9 +2211,11 @@ void NetworkHandler::OnSignedExchangeReceived(
     const std::vector<SignedExchangeError>& errors) {
   if (!enabled_)
     return;
+  network::mojom::URLResponseHeadDevToolsInfoPtr head_info =
+      network::ExtractDevToolsInfo(outer_response);
   std::unique_ptr<Network::SignedExchangeInfo> signed_exchange_info =
       Network::SignedExchangeInfo::Create()
-          .SetOuterResponse(BuildResponse(outer_request_url, outer_response))
+          .SetOuterResponse(BuildResponse(outer_request_url, *head_info))
           .Build();
 
   if (envelope) {
@@ -2613,13 +2699,14 @@ void NetworkHandler::OnRequestWillBeSentExtraInfo(
     const std::string& devtools_request_id,
     const net::CookieAccessResultList& request_cookie_list,
     const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers,
+    const base::TimeTicks timestamp,
     const network::mojom::ClientSecurityStatePtr& security_state) {
   if (!enabled_)
     return;
 
   frontend_->RequestWillBeSentExtraInfo(
       devtools_request_id, BuildProtocolAssociatedCookies(request_cookie_list),
-      GetRawHeaders(request_headers),
+      GetRawHeaders(request_headers), GetConnectTiming(timestamp),
       MaybeBuildClientSecurityState(security_state));
 }
 

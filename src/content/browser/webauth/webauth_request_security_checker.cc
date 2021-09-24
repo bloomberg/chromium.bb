@@ -137,28 +137,43 @@ WebAuthRequestSecurityChecker::ValidateAncestorOrigins(
     RequestType type,
     bool* is_cross_origin) {
   *is_cross_origin = !IsSameOriginWithAncestors(origin);
-  if ((type != RequestType::kGetAssertion ||
-       !render_frame_host_->IsFeatureEnabled(
-           blink::mojom::PermissionsPolicyFeature::kPublicKeyCredentialsGet)) &&
-      (type != RequestType::kMakePaymentCredential ||
-       !base::FeatureList::IsEnabled(features::kSecurePaymentConfirmation) ||
-       !render_frame_host_->IsFeatureEnabled(
-           blink::mojom::PermissionsPolicyFeature::kPayment)) &&
-      *is_cross_origin) {
-    return blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+  if (!*is_cross_origin)
+    return blink::mojom::AuthenticatorStatus::SUCCESS;
+
+  // Requests in cross-origin iframes are permitted if enabled via feature
+  // policy and for SPC requests.
+  if (type == RequestType::kGetAssertion &&
+      render_frame_host_->IsFeatureEnabled(
+          blink::mojom::PermissionsPolicyFeature::kPublicKeyCredentialsGet)) {
+    return blink::mojom::AuthenticatorStatus::SUCCESS;
   }
-  return blink::mojom::AuthenticatorStatus::SUCCESS;
+  if ((type == RequestType::kMakePaymentCredential ||
+       type == RequestType::kGetPaymentCredentialAssertion) &&
+      base::FeatureList::IsEnabled(features::kSecurePaymentConfirmation) &&
+      render_frame_host_->IsFeatureEnabled(
+          blink::mojom::PermissionsPolicyFeature::kPayment)) {
+    return blink::mojom::AuthenticatorStatus::SUCCESS;
+  }
+  return blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
 }
 
 blink::mojom::AuthenticatorStatus
 WebAuthRequestSecurityChecker::ValidateDomainAndRelyingPartyID(
     const url::Origin& caller_origin,
-    const std::string& relying_party_id) {
+    const std::string& relying_party_id,
+    RequestType request_type) {
   blink::mojom::AuthenticatorStatus domain_validation =
       ValidateEffectiveDomain(caller_origin);
   if (domain_validation != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return domain_validation;
   }
+
+  // SecurePaymentConfirmation allows third party payment service provider to
+  // get assertions on behalf of the Relying Parties. Hence it is not required
+  // for the RP ID to be a registrable suffix of the caller origin, as it would
+  // be for WebAuthn requests.
+  if (request_type == RequestType::kGetPaymentCredentialAssertion)
+    return blink::mojom::AuthenticatorStatus::SUCCESS;
 
   absl::optional<std::string> valid_rp_id =
       GetRelyingPartyId(relying_party_id, caller_origin);

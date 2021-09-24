@@ -112,23 +112,6 @@ OrientationLockType ResolveOrientationLock(OrientationLockType app_requested,
 
 }  // namespace
 
-bool IsPrimaryOrientation(OrientationLockType type) {
-  return type == OrientationLockType::kLandscapePrimary ||
-         type == OrientationLockType::kPortraitPrimary;
-}
-
-bool IsLandscapeOrientation(OrientationLockType type) {
-  return type == OrientationLockType::kLandscape ||
-         type == OrientationLockType::kLandscapePrimary ||
-         type == OrientationLockType::kLandscapeSecondary;
-}
-
-bool IsPortraitOrientation(OrientationLockType type) {
-  return type == OrientationLockType::kPortrait ||
-         type == OrientationLockType::kPortraitPrimary ||
-         type == OrientationLockType::kPortraitSecondary;
-}
-
 OrientationLockType GetCurrentScreenOrientation() {
   // ScreenOrientationController might be nullptr during shutdown.
   // TODO(xdai|sammiequon): See if we can reorder so that users of the function
@@ -751,11 +734,9 @@ bool ScreenOrientationController::IsRotationAllowedInLockedState(
   if (natural_orientation_ == rotation_locked_orientation_) {
     return rotation == display::Display::ROTATE_0 ||
            rotation == display::Display::ROTATE_180;
-  } else {
-    return rotation == display::Display::ROTATE_90 ||
-           rotation == display::Display::ROTATE_270;
   }
-  return false;
+  return rotation == display::Display::ROTATE_90 ||
+         rotation == display::Display::ROTATE_270;
 }
 
 bool ScreenOrientationController::CanRotateInLockedState() {

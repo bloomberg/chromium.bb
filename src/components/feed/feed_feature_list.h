@@ -59,6 +59,17 @@ extern const base::Feature kReliabilityLogging;
 // Feature that enables refreshing feeds triggered by the users.
 extern const base::Feature kFeedInteractiveRefresh;
 
+// Feature that allows tuning the size of the image memory cache. Value is a
+// percentage of the maximum size calculated for the device.
+extern const base::Feature kFeedImageMemoryCacheSizePercentage;
+
+// Feature that enables showing a callout to help users return to the top of the
+// feeds quickly.
+extern const base::Feature kFeedBackToTop;
+
+// Feature that enables StAMP cards in the feed.
+extern const base::Feature kFeedStamp;
+
 std::string GetFeedReferrerUrl();
 
 }  // namespace feed

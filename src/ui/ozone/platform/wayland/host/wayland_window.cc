@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
+#include <bits/stdint-intn.h>
 #include <wayland-cursor.h>
 #include <algorithm>
 #include <memory>
@@ -162,13 +163,16 @@ uint32_t WaylandWindow::GetPreferredEnteredOutputId() {
   // output that has the biggest scale factor. Otherwise, use the very first one
   // that was entered. This way, we can be sure that the contents of the Window
   // are rendered at correct dpi when a user moves the window between displays.
-  auto* preferred_output = *root_surface_->entered_outputs().begin();
-  for (WaylandOutput* output : root_surface_->entered_outputs()) {
+  uint32_t preferred_output_id = *root_surface_->entered_outputs().begin();
+  for (uint32_t output_id : root_surface_->entered_outputs()) {
+    auto* output_manager = connection_->wayland_output_manager();
+    auto* output = output_manager->GetOutput(output_id);
+    auto* preferred_output = output_manager->GetOutput(preferred_output_id);
     if (output->scale_factor() > preferred_output->scale_factor())
-      preferred_output = output;
+      preferred_output_id = output_id;
   }
 
-  return preferred_output->output_id();
+  return preferred_output_id;
 }
 
 void WaylandWindow::SetPointerFocus(bool focus) {
@@ -181,13 +185,20 @@ void WaylandWindow::SetPointerFocus(bool focus) {
     UpdateCursorShape(cursor_);
 }
 
+void WaylandWindow::RemoveEnteredOutput(uint32_t output_id) {
+  root_surface_->RemoveEnteredOutput(output_id);
+}
+
 bool WaylandWindow::StartDrag(const ui::OSExchangeData& data,
-                              int operation,
+                              int operations,
+                              mojom::DragEventSource source,
                               gfx::NativeCursor cursor,
                               bool can_grab_pointer,
                               WmDragHandler::Delegate* delegate) {
-  if (!connection_->data_drag_controller()->StartSession(data, operation))
+  if (!connection_->data_drag_controller()->StartSession(data, operations,
+                                                         source)) {
     return false;
+  }
 
   DCHECK(!drag_handler_delegate_);
   drag_handler_delegate_ = delegate;
@@ -256,9 +267,6 @@ void WaylandWindow::SetBounds(const gfx::Rect& bounds_px) {
   if (bounds_px_ == adjusted_bounds_px)
     return;
   bounds_px_ = adjusted_bounds_px;
-
-  pending_buffer_scale_.emplace_back(
-      std::make_pair(bounds_px_.size(), window_scale()));
 
   if (update_visual_size_immediately_)
     UpdateVisualSize(bounds_px.size());
@@ -354,12 +362,25 @@ gfx::Rect WaylandWindow::GetRestoredBoundsInPixels() const {
 }
 
 bool WaylandWindow::ShouldWindowContentsBeTransparent() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  // Wayland compositors always support translucency.
+  return true;
 }
 
 void WaylandWindow::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
   NOTIMPLEMENTED_LOG_ONCE();
+}
+
+bool WaylandWindow::IsTranslucentWindowOpacitySupported() const {
+  // Wayland compositors always support translucency.
+  return true;
+}
+
+void WaylandWindow::SetDecorationInsets(gfx::Insets insets_px) {
+  if (frame_insets_px_ == insets_px)
+    return;
+  frame_insets_px_ = insets_px;
+  SetWindowGeometry(gfx::ScaleToRoundedRect(GetBounds(), 1.f / window_scale()));
+  connection()->ScheduleFlush();
 }
 
 void WaylandWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
@@ -368,11 +389,6 @@ void WaylandWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
 }
 
 void WaylandWindow::SizeConstraintsChanged() {}
-
-bool WaylandWindow::IsTranslucentWindowOpacitySupported() const {
-  // Wayland compositors always support translucency.
-  return true;
-}
 
 bool WaylandWindow::ShouldUpdateWindowShape() const {
   return false;
@@ -465,7 +481,7 @@ absl::optional<std::vector<gfx::Rect>> WaylandWindow::GetWindowShape() const {
 
 void WaylandWindow::UpdateWindowMask() {
   UpdateWindowShape();
-  root_surface_->SetOpaqueRegion(gfx::Rect(visual_size_px()));
+  root_surface_->SetOpaqueRegion({gfx::Rect(visual_size_px())});
 }
 
 void WaylandWindow::UpdateWindowShape() {}
@@ -566,10 +582,12 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 
-  root_surface_->SetOpaqueRegion(gfx::Rect(bounds_px_.size()));
+  root_surface_->SetOpaqueRegion({gfx::Rect(bounds_px_.size())});
 
   return true;
 }
+
+void WaylandWindow::SetWindowGeometry(gfx::Rect bounds) {}
 
 WaylandWindow* WaylandWindow::GetRootParentWindow() {
   return parent_window_ ? parent_window_->GetRootParentWindow() : this;
@@ -750,20 +768,8 @@ bool WaylandWindow::CommitOverlays(
     auto main_overlay = split;
     if (split == overlays.end() && overlays.front()->z_order == INT32_MIN)
       main_overlay = overlays.begin();
-
-    // Either use current scale of the window or pending scale whenever visual
-    // size updates. window_scale() won't be used if we are in process of
-    // changing bounds.
-    int32_t buffer_scale = window_scale();
-    auto result =
-        std::find_if(pending_buffer_scale_.begin(), pending_buffer_scale_.end(),
-                     [&visual_size = (*main_overlay)->bounds_rect.size()](
-                         auto& item) { return visual_size == item.first; });
-    if (result != pending_buffer_scale_.end()) {
-      buffer_scale = result->second;
-      pending_buffer_scale_.erase(pending_buffer_scale_.begin(), ++result);
-    }
-    root_surface()->SetSurfaceBufferScale(buffer_scale);
+    root_surface()->SetSurfaceBufferScale(
+        (*main_overlay)->surface_scale_factor);
   }
 
   {

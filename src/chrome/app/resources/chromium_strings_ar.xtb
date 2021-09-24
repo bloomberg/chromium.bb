@@ -14,6 +14,7 @@
 <translation id="1524282610922162960">‏مشاركة علامة تبويب Chromium</translation>
 <translation id="1553461853655228091">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا من أجل إنشاء خريطة ثلاثية الأبعاد للبيئة المحيطة بك.</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث.}=1{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث. لن تتم إعادة فتح نافذة التصفح المتخفي.}two{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث. لن تتم إعادة فتح نافذتَي التصفح المتخفي.}few{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}many{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}other{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}}</translation>
+<translation id="1667812772085710766">‏يمحو Chromium تلقائيًا بعد إغلاقه ملفات تعريف الارتباط وبيانات المواقع الإلكترونية من الصفحات التي تمت زيارتها.</translation>
 <translation id="1708666629004767631">‏يتوفر إصدار جديد وأكثر أمانًا Chromium.</translation>
 <translation id="1774152462503052664">‏دع Chromium يعمل في الخلفية</translation>
 <translation id="1779356040007214683">‏لجعل Chromium أكثر أمانًا، تم إيقاف بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> والتي ربما تمت إضافتها بدون علمك.</translation>
@@ -33,6 +34,7 @@
 <translation id="2343156876103232566">‏لإرسال رقم من هذا الجهاز إلى جهازك الذي يعمل بنظام التشغيل Android، يُرجى تسجيل الدخول إلى Chromium على الجهازَين.</translation>
 <translation id="2347108572062610441">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء Chromium.</translation>
 <translation id="2396765026452590966">‏غيّرت الإضافة "<ph name="EXTENSION_NAME" />" الصفحة التي تظهر عند بدء Chromium.</translation>
+<translation id="2401032172288869980">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا والميكروفون من أجل هذا الموقع الإلكتروني.</translation>
 <translation id="2483889755041906834">‏في Chromium</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2535480412977113886">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
@@ -52,6 +54,8 @@
 <translation id="2847479871509788944">‏إزالة من Chromium</translation>
 <translation id="2885378588091291677">إدارة المهام</translation>
 <translation id="2910007522516064972">‏حو&amp;ل Chromium</translation>
+<translation id="2944515913673001130"><ph name="BEGIN_PARAGRAPH1" />تذكير أخير: ستؤدي عملية التثبيت إلى <ph name="BEGIN_BOLD" />محو بيانات محرك الأقراص الثابتة بالكامل<ph name="END_BOLD" />. يُرجى التأكّد من احتفاظك بنسخة احتياطية من أي بيانات مُهمّة.<ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />عند بدء عملية التثبيت، لا يمكن إلغاؤها.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="2977470724722393594">‏Chromium محدّث</translation>
 <translation id="2983934633046890458">‏يحاول Chromium تعديل كلمات المرور.</translation>
 <translation id="3032706164202344641">‏يتعذّر على Chromium التحقّق من كلمات المرور. يُرجى إعادة المحاولة.</translation>
@@ -81,7 +85,6 @@
 <translation id="3497319089134299931">‏يعمل الاختصار <ph name="SHORTCUT" /> على التبديل بين الملفات الشخصية على Chromium.</translation>
 <translation id="3509308970982693815">‏يُرجى إغلاق جميع نوافذ Chromium وإعادة المحاولة.</translation>
 <translation id="3575459661164320785">‏هناك برنامج ضار على جهاز الكمبيوتر. ويمكن لمتصفِّح Chrome إزالته واستعادة إعداداتك وإيقاف الإضافات لكي يعمل متصفِّحك بشكلٍ طبيعي من جديد.</translation>
-<translation id="3610776674893128619">‏مَحو بيانات محرك الأقراص الثابتة وتثبيت نظام التشغيل Chromium</translation>
 <translation id="3639635944603682591">‏ستُحذَف بيانات تصفُّح هذا المستخدم من هذا الجهاز. ولاسترداد البيانات، سجّل الدخول إلى Chromium بصفتك <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{‏يتوفر تحديث جديد لبرنامج Chromium وسيتم تطبيقه عند إعادة التشغيل.}=1{‏يتوفر تحديث جديد لبرنامج Chromium وسيتم تطبيقه عند إعادة التشغيل. لن تتم إعادة فتح نافذة التصفح المتخفي.}two{‏يتوفر تحديث جديد لبرنامج Chromium وسيتم تطبيقه عند إعادة التشغيل. لن تتم إعادة فتح نافذتَي التصفح المتخفي.}few{‏يتوفر تحديث جديد لبرنامج Chromium وسيتم تطبيقه عند إعادة التشغيل. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}many{‏يتوفر تحديث جديد لبرنامج Chromium وسيتم تطبيقه عند إعادة التشغيل. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}other{‏يتوفر تحديث جديد لبرنامج Chromium وسيتم تطبيقه عند إعادة التشغيل. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}}</translation>
 <translation id="3651803019964686660">‏لإرسال رقم من <ph name="ORIGIN" /> إلى هاتفك الذي يعمل بنظام التشغيل Android، يُرجى تسجيل الدخول إلى Chromium على الجهازَين.</translation>
@@ -149,6 +152,7 @@
 <translation id="5820394555380036790">‏نظام التشغيل Chromium</translation>
 <translation id="5854740544000584380">‏أصبح نظام التشغيل Chromium متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS" />برنامج إضافي مفتوح المصدر<ph name="END_LINK_CROS_OSS" />، كما هو الحال في <ph name="BEGIN_LINK_LINUX_OSS" />بيئة تطوير أدوات Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="5862307444128926510">‏مرحبًا بك في Chromium</translation>
+<translation id="5883558403894052917">‏رصد Chromium أنّ هذه العناصر تحتوي على برامج ضارة:</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - تسجيل الدخول إلى الشبكة</translation>
 <translation id="5987687638152509985">‏تحديث Chromium لبدء المزامنة</translation>
@@ -163,18 +167,10 @@
 <translation id="6129621093834146363">‏ملف <ph name="FILE_NAME" /> ضار، لذلك فقد حظره Chromium.</translation>
 <translation id="6134968993075716475">‏تم إيقاف "التصفّح الآمن" ويقترح متصفّح Chrome تفعيله.</translation>
 <translation id="6145820983052037069">‏يمكنك من هنا التبديل بين الملفات الشخصية على Chromium.</translation>
-<translation id="61577490437262925">‏<ph name="BEGIN_PARAGRAPH1" />نحن جاهزون لتثبيت نظام التشغيل Chromium. عند الاستمرار في عملية التثبيت:
-          <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />سيتم محو الملفات والبيانات ونظام التشغيل الحالي.
-          <ph name="LIST_ITEM" />سيتم تثبيت نظام التشغيل Chromium.
-          <ph name="LIST_ITEM" />سيتم إيقاف تشغيل الجهاز عند اكتمال التثبيت.
-          <ph name="END_LIST" />
-          <ph name="END_PARAGRAPH1" />
-          <ph name="BEGIN_PARAGRAPH2" />تذكير أخير: ستؤدي عملية التثبيت إلى محو بيانات محرك الأقراص الثابتة بالكامل. يُرجى التأكّد من احتفاظك بنسخة احتياطية من أي بيانات ضرورية.<ph name="END_PARAGRAPH2" />
-          <ph name="BEGIN_PARAGRAPH3" />عند بدء عملية التثبيت، لا يمكن إلغاؤها.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="6183079672144801177">‏يُرجى التأكُّد من تسجيل الدخول إلى متصفِّح Chromium على جهازك <ph name="TARGET_DEVICE_NAME" /> ثم محاولة الإرسال مرة أخرى.</translation>
 <translation id="6212496753309875659">‏يحتوي هذا الكمبيوتر فعلاً على إصدار أحدث من Chromium. إذا كان البرنامج لا يعمل، يُرجى إزالة Chromium وإعادة المحاولة.</translation>
 <translation id="6219195342503754812">{0,plural, =0{‏ستتم إعادة تشغيل Chromium الآن}=1{‏ستتم إعادة تشغيل Chromium في غضون ثانية واحدة}two{‏ستتم إعادة تشغيل Chromium في غضون ثانيتين}few{‏ستتم إعادة تشغيل Chromium في غضون # ثوان}many{‏ستتم إعادة تشغيل Chromium في غضون # ثانيةً}other{‏ستتم إعادة تشغيل Chromium في غضون # ثانية}}</translation>
+<translation id="6241367896540709610">‏يحتاج Chromium إلى إذن للوصول إلى مساحة التخزين من أجل تنزيل الملفات.</translation>
 <translation id="6248213926982192922">‏جعل Chromium المتصفح التلقائي</translation>
 <translation id="6266342355635466082">‏يتعذّر على Chromium البحث عن تحديثات. يُرجى التحقّق من اتصال الإنترنت.</translation>
 <translation id="6268381023930128611">‏هل تريد الخروج من Chromium؟</translation>
@@ -189,14 +185,15 @@
 <translation id="6434250628340475518">‏نظام التشغيل Chromium</translation>
 <translation id="6455857529632101747">‏مرحبًا بك في الملفات الشخصية على Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{‏ستتم إعادة تشغيل Chromium خلال ثانية واحدة}zero{‏ستتم إعادة تشغيل Chromium خلال # ثانية}two{‏ستتم إعادة تشغيل Chromium خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل Chromium خلال # ثوانٍ}many{‏ستتم إعادة تشغيل Chromium خلال # ثانيةً}other{‏ستتم إعادة تشغيل Chromium خلال # ثانية}}</translation>
-<translation id="646620589868199210">‏نحن مستعدون لتثبيت نظام التشغيل Chromium</translation>
 <translation id="6475912303565314141">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium.</translation>
 <translation id="6510925080656968729">‏إزالة Chromium</translation>
 <translation id="6542839706527980775">‏يحتفظ كل ملف شخصي بالمعلومات الخاصة به على Chromium، مثل الإشارات المرجعية والسجلّ وكلمات المرور وغير ذلك.</translation>
 <translation id="6570579332384693436">‏لإصلاح الأخطاء الإملائية، يُرسِل Chromium ما تكتبه في حقول النص إلى Google</translation>
 <translation id="6598877126913850652">‏الانتقال إلى إعدادات الإشعارات في Chromium</translation>
 <translation id="6613594504749178791">‏ستسري التغييرات في المرة التالية التي تعيد فيها تشغيل Chromium.</translation>
+<translation id="665732753414869868">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا من أجل إنشاء خريطة ثلاثية الأبعاد للمكان حولك.</translation>
 <translation id="6676384891291319759">الدخول إلى الإنترنت</translation>
+<translation id="6709350901466051922">‏يحتاج Chromium إلى إذن للوصول إلى الميكروفون من أجل هذا الموقع الإلكتروني.</translation>
 <translation id="6717134281241384636">‏لا يمكن استخدام ملفك الشخصي نظرًا لأنه من إصدار أحدث من Chromium.
 
 قد تكون بعض الميزات غير متاحة. يُرجى تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chromium.</translation>
@@ -208,6 +205,7 @@
 <translation id="6847869444787758381">‏يتم إعلامك من خلال Chromium في حال تم اختراق كلمات المرور في أي وقت.</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (تم النسخ إلى Chromium)</translation>
+<translation id="6873893289264747459">‏رصد Chromium أنّ الإضافة "<ph name="EXTENSION_NAME" />" تحتوي على برامج ضارة.</translation>
 <translation id="6893813176749746474">‏تم تحديث متصفح Chromium، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
 <translation id="691026815377248078">‏يجب منح Chromium الإذن بالوصول إلى البلوتوث لمواصلة عملية 
 الإقران. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
@@ -216,6 +214,7 @@
 <translation id="6990124437352146030">‏يحتاج Chromium إلى إذن للوصول إلى الميكروفون من أجل الموقع الإلكتروني هذا.</translation>
 <translation id="705851970750939768">‏تحديث Chromium</translation>
 <translation id="7067091210845072982">‏في حال لم تتضمن صورة ما وصفًا مفيدًا، سيحاول Chromium توفير وصف لك. لإنشاء الأوصاف، سيتم إرسال الصور إلى Google.</translation>
+<translation id="718435575166326686">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا من أجل هذا الموقع الإلكتروني.</translation>
 <translation id="7196312274710523067">‏تعذَّر إطلاق Chromium. يُرجى إعادة المحاولة.</translation>
 <translation id="7197677400338048821">‏يتعذّر على Chromium التحقُّق من كلمات المرور. يُرجى إعادة المحاولة بعد 24 ساعة.</translation>
 <translation id="7223968959479464213">‏إدارة المهام - Chromium</translation>
@@ -257,6 +256,7 @@
 <translation id="7975919845073681630">‏هذا تثبيت ثانوي من Chromium، ولا يمكن جعله متصفحك التلقائي.</translation>
 <translation id="8013436988911883588">‏بعد حصول Chromium على إمكانية الوصول، ستتمكن المواقع الإلكترونية من مطالبتك بإمكانية الوصول.</translation>
 <translation id="8045118833343856403">‏لم تسجّل الحسابات التالية الدخول إلى أي ملفات شخصية على Chromium. إذا كنت تريد استخدام حساب في ملف شخصي آخر، عليك إزالة هذا الملف الشخصي أولاً.</translation>
+<translation id="8105840573057009683">‏يحتاج Chromium إلى إذن تحديد الموقع الجغرافي من أجل هذا الموقع الإلكتروني.</translation>
 <translation id="81770708095080097">‏هذا الملف ضار، لذلك فقد حظره Chromium.</translation>
 <translation id="8248265253516264921">‏في حال لم تتضمن صورة ما وصفًا مفيدًا، سيحاول Chromium توفير وصف لك. لإنشاء الأوصاف، سيتم إرسال الصور إلى Google. ويمكنك إيقاف هذه الميزة في الإعدادات في أي وقت.</translation>
 <translation id="8266560134891435528">‏يتعذّر على Chromium التحقّق من كلمات المرور لأنك لم تسجّل الدخول.</translation>

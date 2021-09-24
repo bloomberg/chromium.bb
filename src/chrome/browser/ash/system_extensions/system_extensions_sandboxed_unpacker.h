@@ -7,9 +7,10 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/ash/system_extensions/system_extension.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/sequence_bound.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_status_or.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
 
 class SystemExtensionsSandboxedUnpacker {
  public:
@@ -22,6 +23,10 @@ class SystemExtensionsSandboxedUnpacker {
 
   enum class Status {
     kOk,
+    // This is used for the default constructor of `StatusOrSystemExtension`.
+    kUnknown,
+    kFailedDirectoryMissing,
+    kFailedManifestReadError,
     kFailedJsonErrorParsingManifest,
     kFailedIdMissing,
     kFailedIdInvalid,
@@ -34,17 +39,42 @@ class SystemExtensionsSandboxedUnpacker {
     kFailedNameEmpty,
   };
 
+  using GetSystemExtensionFromCallback =
+      base::OnceCallback<void(StatusOrSystemExtension<Status>)>;
+
+  // Attempts to create a SystemExtension object from the manifest in
+  // `system_extension_dir`.
+  void GetSystemExtensionFromDir(base::FilePath system_extension_dir,
+                                 GetSystemExtensionFromCallback callback);
+
   // Attempts to create a SystemExtension object from a manifest string.
-  using GetSystemExtensionFromStringCallback =
-      base::OnceCallback<void(Status, std::unique_ptr<SystemExtension>)>;
   void GetSystemExtensionFromString(
       base::StringPiece system_extension_manifest_string,
-      GetSystemExtensionFromStringCallback callback);
+      GetSystemExtensionFromCallback callback);
 
  private:
+  // Helper class to run blocking IO operations on a separate thread.
+  class IOHelper {
+   public:
+    ~IOHelper();
+
+    SystemExtensionsStatusOr<std::string,
+                             SystemExtensionsSandboxedUnpacker::Status>
+    ReadManifestInDirectory(const base::FilePath& system_extension_dir);
+  };
+
+  void OnSystemExtensionManifestRead(
+      GetSystemExtensionFromCallback callback,
+      SystemExtensionsStatusOr<std::string, Status> result);
+
   void OnSystemExtensionManifestParsed(
-      GetSystemExtensionFromStringCallback callback,
+      GetSystemExtensionFromCallback callback,
       data_decoder::DataDecoder::ValueOrError value_or_error);
+
+  base::SequenceBound<IOHelper> io_helper_{
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+           base::TaskPriority::USER_VISIBLE})};
 
   base::WeakPtrFactory<SystemExtensionsSandboxedUnpacker> weak_ptr_factory_{
       this};

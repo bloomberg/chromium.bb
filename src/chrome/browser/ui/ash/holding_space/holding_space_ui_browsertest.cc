@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/capture_mode_test_api.h"
+#include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
@@ -125,7 +125,7 @@ void GestureDrag(const views::View* from,
 
   // Generate multiple interpolated touch move events.
   // NOTE: The `ash::DragDropController` applies a vertical offset when
-  // determining the target view for touch initiated dragging so that needs to
+  // determining the target view for touch-initiated dragging, so that needs to
   // be compensated for here.
   constexpr int kNumberOfTouchMoveEvents = 25;
   constexpr gfx::Vector2d offset(0, 25);

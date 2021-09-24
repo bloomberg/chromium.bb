@@ -281,6 +281,13 @@ if (!is_android && !is_mac) {
 
       ldflags = []
 
+      # On Chrome OS builds (for both ash-chrome and lacros-chrome), put
+      # priority to the library in the installed directory.
+      # This will avoid conflicting of exposed symbols.
+      if (is_chromeos_device) {
+        ldflags += [ "-L" + rebase_path(root_out_dir) ]
+      }
+
       # Chrome OS debug builds for arm need to pass --long-plt to the linker.
       # See https://bugs.chromium.org/p/chromium/issues/detail?id=583532
       if (is_chromeos_ash && is_debug && target_cpu == "arm") {
@@ -322,6 +329,19 @@ if (!is_android && !is_mac) {
     # library usage.
     if (is_chromeos_ash && !is_component_build) {
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+    }
+
+    # Lacros is built with "{arch}-generic" configuration. However, in Chrome
+    # OS, it is just "one board variation", so the libraries on the *-generic
+    # boards may not be compatible with the ones on the actual DUTs.
+    # One of the common pattern recently we hit is symbols exposed by libgcc.
+    # The symbols start to be exposed recently because of libunwind transition
+    # and along with it they are or are not re-exposed by other libraries, too,
+    # depending on per-board implementation.
+    # To mitigate the situation, marking -shared-libgcc to look up the system
+    # libgcc always.
+    if (is_chromeos_lacros && is_chromeos_device) {
+      ldflags += [ "-shared-libgcc" ]
     }
 
     data_deps += [

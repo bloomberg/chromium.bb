@@ -232,7 +232,7 @@ const int kBurstDownloadLimit = 10;
 
 // Maximum number of bytes that can be buffered in total (per-process) by all
 // network requests in one renderer process while in back-forward cache.
-constexpr size_t kDefaultMaxBufferedBodyBytesPerProcess = 512 * 1000;
+constexpr size_t kDefaultMaxBufferedBodyBytesPerProcess = 1024 * 1000;
 
 // Singleton utility class for process-wide back-forward cache buffer limit
 // tracking.
@@ -1512,7 +1512,7 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
       !IsMainFrame() && ad_tracker_ &&
       ad_tracker_->IsAdScriptInStack(AdTracker::StackType::kBottomAndTop);
   if (IsMainFrame()) {
-    text_fragment_handler_ = MakeGarbageCollected<TextFragmentHandler>(this);
+    CreateTextFragmentHandler();
   }
 
   Initialize();
@@ -3007,8 +3007,12 @@ void LocalFrame::PostMessageEvent(
         message.user_activation->was_active);
   }
 
-  if (RuntimeEnabledFeatures::CapabilityDelegationPaymentRequestEnabled() &&
+  if (GetDocument() &&
+      RuntimeEnabledFeatures::CapabilityDelegationPaymentRequestEnabled(
+          GetDocument()->GetExecutionContext()) &&
       message.delegate_payment_request) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kCapabilityDelegationOfPaymentRequest);
     payment_request_token_.Activate();
   }
 
@@ -3116,14 +3120,14 @@ void LocalFrame::ExtractSmartClipDataInternal(const gfx::Rect& rect_in_viewport,
                                  View()->ViewportToFrame(end_point));
 }
 
+void LocalFrame::CreateTextFragmentHandler() {
+  text_fragment_handler_ = MakeGarbageCollected<TextFragmentHandler>(this);
+}
+
 void LocalFrame::BindTextFragmentReceiver(
     mojo::PendingReceiver<mojom::blink::TextFragmentReceiver> receiver) {
-  if (IsDetached())
+  if (IsDetached() || !text_fragment_handler_)
     return;
-
-  if (!text_fragment_handler_) {
-    text_fragment_handler_ = MakeGarbageCollected<TextFragmentHandler>(this);
-  }
 
   text_fragment_handler_->BindTextFragmentReceiver(std::move(receiver));
 }

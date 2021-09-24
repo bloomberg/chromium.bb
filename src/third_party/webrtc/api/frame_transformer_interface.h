@@ -33,8 +33,9 @@ class TransformableFrameInterface {
   // Copies `data` into the owned frame payload data.
   virtual void SetData(rtc::ArrayView<const uint8_t> data) = 0;
 
-  virtual uint32_t GetTimestamp() const = 0;
+  virtual uint8_t GetPayloadType() const = 0;
   virtual uint32_t GetSsrc() const = 0;
+  virtual uint32_t GetTimestamp() const = 0;
 };
 
 class TransformableVideoFrameInterface : public TransformableFrameInterface {

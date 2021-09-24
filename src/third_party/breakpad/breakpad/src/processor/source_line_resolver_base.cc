@@ -295,11 +295,13 @@ bool SourceLineResolverBase::IsModuleCorrupt(const CodeModule* module) {
   return corrupt_modules_->find(module->code_file()) != corrupt_modules_->end();
 }
 
-void SourceLineResolverBase::FillSourceLineInfo(StackFrame* frame) {
+void SourceLineResolverBase::FillSourceLineInfo(
+    StackFrame* frame,
+    std::vector<std::unique_ptr<StackFrame>>* inlined_frames) {
   if (frame->module) {
     ModuleMap::const_iterator it = modules_->find(frame->module->code_file());
     if (it != modules_->end()) {
-      it->second->LookupAddress(frame);
+      it->second->LookupAddress(frame, inlined_frames);
     }
   }
 }

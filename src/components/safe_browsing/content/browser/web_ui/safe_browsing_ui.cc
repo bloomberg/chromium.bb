@@ -839,6 +839,35 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
   if (!cdr.access_token().empty())
     dict.SetString("access_token", cdr.access_token());
 
+  if (cdr.has_document_summary()) {
+    base::Value dict_document_summary(base::Value::Type::DICTIONARY);
+    auto document_summary = cdr.document_summary();
+    if (document_summary.has_metadata()) {
+      base::Value dict_document_metadata(base::Value::Type::DICTIONARY);
+      dict_document_metadata.SetBoolKey(
+          "contains_macros", document_summary.metadata().contains_macros());
+      dict_document_summary.SetKey("metadata",
+                                   std::move(dict_document_metadata));
+    }
+
+    if (document_summary.has_processing_info()) {
+      base::Value dict_document_processing_info(base::Value::Type::DICTIONARY);
+      auto processing_info = document_summary.processing_info();
+      if (processing_info.has_maldoca_error_type()) {
+        dict_document_processing_info.SetIntKey(
+            "maldoca_error_type", processing_info.maldoca_error_type());
+      }
+      if (!processing_info.maldoca_error_message().empty()) {
+        dict_document_processing_info.SetStringKey(
+            "maldoca_error_message", processing_info.maldoca_error_message());
+      }
+      dict_document_summary.SetKey("processing_info",
+                                   std::move(dict_document_processing_info));
+    }
+
+    dict.SetKey("document_summary", std::move(dict_document_summary));
+  }
+
   base::Value* request_tree = &dict;
   std::string request_serialized;
   JSONStringValueSerializer serializer(&request_serialized);
@@ -2015,8 +2044,8 @@ void SafeBrowsingUIHandler::GetSavedPasswords(const base::ListValue* args) {
   base::ListValue saved_passwords;
   for (const password_manager::PasswordHashData& hash_data :
        hash_manager.RetrieveAllPasswordHashes()) {
-    saved_passwords.AppendString(hash_data.username);
-    saved_passwords.AppendBoolean(hash_data.is_gaia_password);
+    saved_passwords.Append(hash_data.username);
+    saved_passwords.Append(hash_data.is_gaia_password);
   }
 
   AllowJavascript();
@@ -2471,88 +2500,88 @@ void SafeBrowsingUIHandler::NotifyDeepScanJsListener(
 #endif
 
 void SafeBrowsingUIHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getExperiments",
       base::BindRepeating(&SafeBrowsingUIHandler::GetExperiments,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPolicies", base::BindRepeating(&SafeBrowsingUIHandler::GetPolicies,
                                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPrefs", base::BindRepeating(&SafeBrowsingUIHandler::GetPrefs,
                                       base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getCookie", base::BindRepeating(&SafeBrowsingUIHandler::GetCookie,
                                        base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getSavedPasswords",
       base::BindRepeating(&SafeBrowsingUIHandler::GetSavedPasswords,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getDatabaseManagerInfo",
       base::BindRepeating(&SafeBrowsingUIHandler::GetDatabaseManagerInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getSentClientDownloadRequests",
       base::BindRepeating(&SafeBrowsingUIHandler::GetSentClientDownloadRequests,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getReceivedClientDownloadResponses",
       base::BindRepeating(
           &SafeBrowsingUIHandler::GetReceivedClientDownloadResponses,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getSentClientPhishingRequests",
       base::BindRepeating(&SafeBrowsingUIHandler::GetSentClientPhishingRequests,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getReceivedClientPhishingResponses",
       base::BindRepeating(
           &SafeBrowsingUIHandler::GetReceivedClientPhishingResponses,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getSentCSBRRs",
       base::BindRepeating(&SafeBrowsingUIHandler::GetSentCSBRRs,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPGEvents", base::BindRepeating(&SafeBrowsingUIHandler::GetPGEvents,
                                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getSecurityEvents",
       base::BindRepeating(&SafeBrowsingUIHandler::GetSecurityEvents,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPGPings", base::BindRepeating(&SafeBrowsingUIHandler::GetPGPings,
                                         base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPGResponses",
       base::BindRepeating(&SafeBrowsingUIHandler::GetPGResponses,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getRTLookupPings",
       base::BindRepeating(&SafeBrowsingUIHandler::GetRTLookupPings,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getRTLookupResponses",
       base::BindRepeating(&SafeBrowsingUIHandler::GetRTLookupResponses,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getLogMessages",
       base::BindRepeating(&SafeBrowsingUIHandler::GetLogMessages,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getReferrerChain",
       base::BindRepeating(&SafeBrowsingUIHandler::GetReferrerChain,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getReferringAppInfo",
       base::BindRepeating(&SafeBrowsingUIHandler::GetReferringAppInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getReportingEvents",
       base::BindRepeating(&SafeBrowsingUIHandler::GetReportingEvents,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getDeepScans", base::BindRepeating(&SafeBrowsingUIHandler::GetDeepScans,
                                           base::Unretained(this)));
 }

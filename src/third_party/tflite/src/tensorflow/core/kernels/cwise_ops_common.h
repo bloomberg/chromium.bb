@@ -22,11 +22,8 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
-#include "tensorflow/core/lib/bfloat16/bfloat16.h"
+#include "tensorflow/core/platform/bfloat16.h"
 
-#ifdef TENSORFLOW_USE_SYCL
-#include "tensorflow/core/kernels/cwise_ops_sycl_common.h"
-#endif
 
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
@@ -42,9 +39,6 @@ namespace tensorflow {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
-#ifdef TENSORFLOW_USE_SYCL
-typedef Eigen::SyclDevice SYCLDevice;
-#endif
 
 class BinaryOpShared : public OpKernel {
  public:
@@ -65,10 +59,10 @@ class BinaryOpShared : public OpKernel {
 
     BCast bcast;
     Tensor* out = nullptr;
-    int64 out_num_elements;
+    int64_t out_num_elements;
 
-    int64 in0_num_elements;
-    int64 in1_num_elements;
+    int64_t in0_num_elements;
+    int64_t in1_num_elements;
 
     int ndims;
     bool result;
@@ -271,6 +265,11 @@ class SimpleBinaryOp : public OpKernel {
   void Compute(OpKernelContext* ctx) override {
     const Tensor& in0 = ctx->input(0);
     const Tensor& in1 = ctx->input(1);
+    OP_REQUIRES(
+        ctx, in0.NumElements() == in1.NumElements(),
+        errors::InvalidArgument("The two arguments to a cwise op must have "
+                                "same number of elements, got ",
+                                in0.NumElements(), " and ", in1.NumElements()));
     auto in0_flat = in0.flat<Tin>();
     auto in1_flat = in1.flat<Tin>();
     const Device& eigen_device = ctx->eigen_device<Device>();

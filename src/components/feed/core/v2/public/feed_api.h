@@ -77,7 +77,11 @@ class FeedApi {
   virtual void SetContentOrder(const StreamType& stream_type,
                                ContentOrder content_order) = 0;
 
-  // Gets the "raw" content order value stored in prefs.
+  // Returns the current `ContentOrder` for `stream_type`.
+  virtual ContentOrder GetContentOrder(const StreamType& stream_type) = 0;
+
+  // Gets the "raw" content order value stored in prefs. Returns `kUnspecified`
+  // if the user has not selected one yet.
   virtual ContentOrder GetContentOrderFromPrefs(
       const StreamType& stream_type) = 0;
 
@@ -185,7 +189,7 @@ class FeedApi {
 
   virtual DebugStreamData GetDebugStreamData() = 0;
   // Forces a Feed refresh from the server.
-  virtual void ForceRefreshForDebugging() = 0;
+  virtual void ForceRefreshForDebugging(const StreamType& stream_type) = 0;
   // Dumps some state information for debugging.
   virtual std::string DumpStateForDebugging() = 0;
   // Forces to render a StreamUpdate on all subsequent surface attaches.

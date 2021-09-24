@@ -10,10 +10,13 @@
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_capacity_allocation_host.mojom-blink.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_file_handle.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/file_system_access/file_system_access_capacity_tracker.h"
 #include "third_party/blink/renderer/modules/file_system_access/file_system_access_file_delegate.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 
 #if defined(OS_MAC)
 #include "third_party/blink/public/mojom/file/file_utilities.mojom-blink.h"
@@ -32,6 +35,9 @@ class FileSystemAccessRegularFileDelegate final
   explicit FileSystemAccessRegularFileDelegate(
       ExecutionContext* context,
       base::File backing_file,
+      int64_t backing_file_size,
+      mojo::PendingRemote<mojom::blink::FileSystemAccessCapacityAllocationHost>
+          capacity_allocation_host_remote,
       base::PassKey<FileSystemAccessFileDelegate>);
 
   FileSystemAccessRegularFileDelegate(
@@ -41,6 +47,7 @@ class FileSystemAccessRegularFileDelegate final
 
   void Trace(Visitor* visitor) const override {
     FileSystemAccessFileDelegate::Trace(visitor);
+    visitor->Trace(capacity_tracker_);
 #if defined(OS_MAC)
     visitor->Trace(context_);
     visitor->Trace(file_utilities_host_);
@@ -54,7 +61,7 @@ class FileSystemAccessRegularFileDelegate final
 
   void GetLength(
       base::OnceCallback<void(base::FileErrorOr<int64_t>)> callback) override;
-  void SetLength(int64_t length,
+  void SetLength(int64_t new_length,
                  base::OnceCallback<void(bool)> callback) override;
 
   void Flush(base::OnceCallback<void(bool)> callback) override;
@@ -82,8 +89,21 @@ class FileSystemAccessRegularFileDelegate final
       CrossThreadOnceClosure wrapped_callback,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
+  // Called after preconditions for SetLength, including the requesting
+  // additional capacity (if needed), have been performed.
+  // If `request_capacity_result` is false, requesting capacity for the
+  // operation failed.
+  void DidCheckSetLengthCapacity(base::OnceCallback<void(bool)> callback,
+                                 int64_t new_length,
+                                 bool request_capacity_result);
+
+  // Called after SetLength was successfully performed.
+  void DidSuccessfulSetLength(int64_t new_length,
+                              CrossThreadOnceFunction<void(bool)> callback);
+
 #if defined(OS_MAC)
-  void DidSetLengthMac(base::OnceCallback<void(bool)> callback,
+  void DidSetLengthIPC(base::OnceCallback<void(bool)> callback,
+                       int64_t new_length,
                        base::File file,
                        bool result);
 
@@ -96,6 +116,9 @@ class FileSystemAccessRegularFileDelegate final
 
   // The file on disk backing the parent FileSystemFileHandle.
   base::File backing_file_;
+
+  // Tracks the capacity for this file.
+  Member<FileSystemAccessCapacityTracker> capacity_tracker_;
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };

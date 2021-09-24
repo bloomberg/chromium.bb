@@ -13,6 +13,7 @@ Refer to README.md for content description and update process.
  <item id="adb_client_socket" added_in_milestone="65" hash_code="87775794" type="0" content_hash_code="56654828" os_list="linux,windows" file_path="chrome/browser/devtools/device/adb/adb_client_socket.cc"/>
  <item id="affiliation_lookup" added_in_milestone="62" hash_code="111904019" type="0" deprecated="2021-07-27" content_hash_code="81061452" file_path=""/>
  <item id="affiliation_lookup_by_hash" added_in_milestone="87" hash_code="57748571" type="0" content_hash_code="40566404" os_list="linux,windows" file_path="components/password_manager/core/browser/site_affiliation/hash_affiliation_fetcher.cc"/>
+ <item id="aggregation_service_report" added_in_milestone="95" hash_code="95942194" type="0" content_hash_code="44673922" os_list="linux,windows" file_path="content/browser/aggregation_service/aggregatable_report_sender.cc"/>
  <item id="android_device_manager_socket" added_in_milestone="65" hash_code="37249086" type="0" content_hash_code="6436865" os_list="linux,windows" file_path="chrome/browser/devtools/device/android_device_manager.cc"/>
  <item id="android_web_socket" added_in_milestone="65" hash_code="39356976" type="0" content_hash_code="12310113" os_list="linux,windows" file_path="chrome/browser/devtools/device/android_web_socket.cc"/>
  <item id="appcache_update_job" added_in_milestone="62" hash_code="25790702" type="0" content_hash_code="27424887" os_list="linux,windows" file_path="content/browser/appcache/appcache_update_url_loader_request.cc"/>
@@ -63,7 +64,7 @@ Refer to README.md for content description and update process.
  <item id="content_hash_verification_job" added_in_milestone="62" hash_code="64733114" type="0" content_hash_code="127912411" os_list="linux,windows" file_path="extensions/browser/content_hash_fetcher.cc"/>
  <item id="content_resource_fetcher" added_in_milestone="63" hash_code="70796791" type="0" deprecated="2017-09-16" content_hash_code="135648626" file_path=""/>
  <item id="content_suggestion_get_favicon" added_in_milestone="62" hash_code="16653985" type="0" content_hash_code="134280933" os_list="linux,windows" file_path="components/ntp_snippets/content_suggestions_service.cc"/>
- <item id="conversion_measurement_report" added_in_milestone="84" hash_code="113422320" type="0" content_hash_code="60688877" os_list="linux,windows" file_path="content/browser/conversions/conversion_network_sender_impl.cc"/>
+ <item id="conversion_measurement_report" added_in_milestone="84" hash_code="113422320" type="0" content_hash_code="102111798" os_list="linux,windows" file_path="content/browser/conversions/conversion_network_sender_impl.cc"/>
  <item id="credenential_avatar" added_in_milestone="62" hash_code="53695122" type="0" content_hash_code="113035371" os_list="linux,windows" file_path="chrome/browser/ui/passwords/account_avatar_fetcher.cc"/>
  <item id="cros_recovery_image_download" added_in_milestone="62" hash_code="101725581" type="0" content_hash_code="10999698" os_list="linux,windows" file_path="chrome/browser/extensions/api/image_writer_private/write_from_url_operation.cc"/>
  <item id="cryptauth_device_sync_tickle" added_in_milestone="62" hash_code="96565489" type="1" second_id="29188932" deprecated="2018-03-15" content_hash_code="115714668" file_path=""/>
@@ -178,7 +179,7 @@ Refer to README.md for content description and update process.
  <item id="kids_chrome_management_client_classify_url" added_in_milestone="77" hash_code="109987793" type="0" deprecated="2019-07-30" content_hash_code="112740597" file_path=""/>
  <item id="lib_address_input" added_in_milestone="62" hash_code="50816767" type="0" content_hash_code="57977576" os_list="linux,windows" file_path="third_party/libaddressinput/chromium/chrome_metadata_source.cc"/>
  <item id="litepages_robots_rules" added_in_milestone="89" hash_code="50910588" type="0" content_hash_code="72567080" os_list="linux,windows" file_path="chrome/browser/subresource_redirect/origin_robots_rules.cc"/>
- <item id="load_autofill_gstatic_data" added_in_milestone="78" hash_code="119416099" type="0" content_hash_code="8433621" os_list="linux,windows" file_path="chrome/browser/autofill/autofill_gstatic_reader.cc"/>
+ <item id="load_autofill_gstatic_data" added_in_milestone="78" hash_code="119416099" type="0" content_hash_code="128051538" os_list="linux,windows" file_path="chrome/browser/autofill/autofill_gstatic_reader.cc"/>
  <item id="logo_service" added_in_milestone="73" hash_code="35473769" type="0" content_hash_code="20271299" os_list="linux,windows" file_path="components/search_provider_logos/logo_service_impl.cc"/>
  <item id="logo_tracker" added_in_milestone="62" hash_code="36859107" type="0" deprecated="2018-12-07" content_hash_code="67588075" file_path=""/>
  <item id="lookup_single_password_leak" added_in_milestone="78" hash_code="16927377" type="0" content_hash_code="12158296" os_list="linux,windows" file_path="components/password_manager/core/browser/leak_detection/leak_detection_request.cc"/>
@@ -315,13 +316,14 @@ Refer to README.md for content description and update process.
  <item id="sct_auditing" added_in_milestone="87" hash_code="48603483" type="0" content_hash_code="43567503" os_list="linux,windows" file_path="chrome/browser/ssl/sct_reporting_service.cc"/>
  <item id="sdch_dictionary_fetch" added_in_milestone="62" hash_code="47152935" type="0" deprecated="2017-09-16" content_hash_code="16764294" file_path=""/>
  <item id="search_prefetch_service" added_in_milestone="88" hash_code="108986091" type="0" content_hash_code="125257414" os_list="windows,linux" file_path="chrome/browser/prefetch/search_prefetch/base_search_prefetch_request.cc"/>
- <item id="search_suggest_service" added_in_milestone="73" hash_code="57785193" type="0" content_hash_code="132247652" os_list="linux,windows" file_path="chrome/browser/search/search_suggest/search_suggest_loader_impl.cc"/>
+ <item id="search_suggest_service" added_in_milestone="73" hash_code="57785193" type="0" deprecated="2021-09-02" content_hash_code="132247652" file_path=""/>
  <item id="security_key_socket" added_in_milestone="66" hash_code="31074955" type="0" content_hash_code="13741232" os_list="linux,windows" file_path="remoting/host/security_key/security_key_socket.cc"/>
  <item id="send_message_express" added_in_milestone="85" hash_code="23527666" type="0" deprecated="2020-09-21" content_hash_code="96850228" file_path=""/>
  <item id="service_worker_navigation_preload" added_in_milestone="63" hash_code="129872904" type="0" content_hash_code="79473248" os_list="linux,windows" file_path="content/browser/service_worker/service_worker_fetch_dispatcher.cc"/>
  <item id="service_worker_script_load" added_in_milestone="90" hash_code="21498113" type="0" content_hash_code="56275791" os_list="linux,windows" file_path="content/browser/service_worker/service_worker_new_script_fetcher.cc"/>
  <item id="service_worker_update_checker" added_in_milestone="71" hash_code="130931413" type="0" content_hash_code="32441998" os_list="linux,windows" file_path="content/browser/service_worker/service_worker_single_script_update_checker.cc"/>
  <item id="services_http_server_error_response" added_in_milestone="68" hash_code="59302801" type="0" content_hash_code="127774041" os_list="linux,windows" file_path="services/network/public/cpp/server/http_server.cc"/>
+ <item id="shared_storage_worklet_module_script_downloader" added_in_milestone="95" hash_code="79084529" type="0" content_hash_code="57126817" os_list="linux,windows" file_path="content/services/shared_storage_worklet/module_script_downloader.cc"/>
  <item id="sigined_exchange_cert_fetcher" added_in_milestone="66" hash_code="79442849" type="0" content_hash_code="8138156" os_list="linux,windows" file_path="content/browser/web_package/signed_exchange_cert_fetcher.cc"/>
  <item id="sigined_exchange_validity_pinger" added_in_milestone="75" hash_code="57114284" type="0" content_hash_code="119482488" os_list="linux,windows" file_path="content/browser/web_package/signed_exchange_validity_pinger.cc"/>
  <item id="signed_in_profile_avatar" added_in_milestone="62" hash_code="108903331" type="0" content_hash_code="72850619" os_list="linux,windows" file_path="chrome/browser/profiles/profile_downloader.cc"/>

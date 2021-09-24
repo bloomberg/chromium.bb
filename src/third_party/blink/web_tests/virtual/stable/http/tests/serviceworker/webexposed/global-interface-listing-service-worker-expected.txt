@@ -1408,6 +1408,19 @@ interface URL
     setter protocol
     setter search
     setter username
+interface URLPattern
+    attribute @@toStringTag
+    getter hash
+    getter hostname
+    getter password
+    getter pathname
+    getter port
+    getter protocol
+    getter search
+    getter username
+    method constructor
+    method exec
+    method test
 interface URLSearchParams
     attribute @@toStringTag
     method @@iterator
@@ -2765,6 +2778,7 @@ interface WorkerGlobalScope : EventTarget
     method fetch
     method importScripts
     method queueMicrotask
+    method reportError
     method setInterval
     method setTimeout
     setter onerror

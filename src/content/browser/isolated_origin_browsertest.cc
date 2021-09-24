@@ -107,7 +107,7 @@ class IsolatedOriginTestBase : public ContentBrowserTest {
         StoragePartitionConfig::CreateDefault(browser_context),
         WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
         false /* does_site_request_dedicated_process_for_coop */,
-        false /* is_jit_disabled */));
+        false /* is_jit_disabled */, false /* is_pdf */));
   }
 
   WebContentsImpl* web_contents() const {
@@ -129,7 +129,7 @@ class IsolatedOriginTestBase : public ContentBrowserTest {
         StoragePartitionConfig::CreateDefault(browser_context),
         WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
         false /* does_site_request_dedicated_process_for_coop */,
-        false /* is_jit_disabled */));
+        false /* is_jit_disabled */, false /* is_pdf */));
   }
 
  protected:
@@ -332,6 +332,29 @@ class SameProcessOriginIsolationOptInHeaderTest
     OriginIsolationOptInHeaderTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
     command_line->RemoveSwitch(switches::kSitePerProcess);
+  }
+};
+
+// As in SameProcessOriginIsolationOptInHeaderTest, but command-line isolate
+// foo.com.
+class SameProcessOriginIsolationOptInHeaderWithIsolatedOriginTest
+    : public SameProcessOriginIsolationOptInHeaderTest {
+ public:
+  SameProcessOriginIsolationOptInHeaderWithIsolatedOriginTest() = default;
+  ~SameProcessOriginIsolationOptInHeaderWithIsolatedOriginTest() override =
+      default;
+
+  SameProcessOriginIsolationOptInHeaderWithIsolatedOriginTest(
+      const SameProcessOriginIsolationOptInHeaderWithIsolatedOriginTest&) =
+      delete;
+  SameProcessOriginIsolationOptInHeaderWithIsolatedOriginTest& operator=(
+      const SameProcessOriginIsolationOptInHeaderWithIsolatedOriginTest&) =
+      delete;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SameProcessOriginIsolationOptInHeaderTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kIsolateOrigins,
+                                    "https://foo.com/");
   }
 };
 
@@ -711,7 +734,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
       StoragePartitionConfig::CreateDefault(browser_context),
       WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
       false /* does_site_request_dedicated_process_for_coop */,
-      false /* is_jit_disabled */));
+      false /* is_jit_disabled */, false /* is_pdf */));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
 
@@ -781,6 +804,68 @@ IN_PROC_BROWSER_TEST_F(SameProcessOriginIsolationOptInHeaderTest,
   EXPECT_FALSE(child_frame_node->current_frame_host()
                    ->GetSiteInstance()
                    ->RequiresDedicatedProcess());
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_TRUE(policy->ShouldOriginGetOptInIsolation(
+      root->current_frame_host()->GetSiteInstance()->GetIsolationContext(),
+      url::Origin::Create(isolated_suborigin_url),
+      false /* origin_requests_isolation */));
+  EXPECT_TRUE(policy->HasOriginEverRequestedOptInIsolation(
+      web_contents()->GetBrowserContext(),
+      url::Origin::Create(isolated_suborigin_url)));
+
+  EXPECT_THAT(
+      histograms.GetAllSamples("Navigation.OriginAgentCluster.Result"),
+      testing::ElementsAre(
+          base::Bucket(
+              static_cast<int>(NavigationRequest::OriginAgentClusterEndResult::
+                                   kNotRequestedAndNotOriginKeyed),
+              2),
+          base::Bucket(
+              static_cast<int>(NavigationRequest::OriginAgentClusterEndResult::
+                                   kRequestedAndOriginKeyed),
+              1)));
+}
+
+// This test is *nearly* the same as SameProcessOriginIsolationOptInHeaderTest.
+// SimpleSubOriginIsolationTest, but here we have command-line isolated foo.com
+// so it will be in a site instance with a non-empty ProcessLock. But the
+// same-process OAC isolated.foo.com will still be in the same SiteInstance,
+// and checks on the expected ProcessLock for isolated.foo.com should pass,
+// i.e. it should be the same as for the foo.com process.
+IN_PROC_BROWSER_TEST_F(
+    SameProcessOriginIsolationOptInHeaderWithIsolatedOriginTest,
+    SimpleSubOriginIsolationTest) {
+  base::HistogramTester histograms;
+  SetHeaderValue("?1");
+  // Start off with a foo(foo) page, then navigate the subframe to an isolated
+  // sub origin. foo.com is isolated from the command line.
+  GURL test_url(https_server()->GetURL("foo.com",
+                                       "/cross_site_iframe_factory.html?"
+                                       "foo.com(foo.com)"));
+  GURL isolated_suborigin_url(
+      https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
+  GURL origin_url = url::Origin::Create(isolated_suborigin_url).GetURL();
+  EXPECT_FALSE(
+      SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled());
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child_frame_node = root->child_at(0);
+  EXPECT_TRUE(
+      NavigateToURLFromRenderer(child_frame_node, isolated_suborigin_url));
+  EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
+            child_frame_node->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(root->current_frame_host()
+                  ->GetSiteInstance()
+                  ->RequiresDedicatedProcess());
+  EXPECT_TRUE(child_frame_node->current_frame_host()
+                  ->GetSiteInstance()
+                  ->RequiresDedicatedProcess());
+  ProcessLock root_process_lock =
+      root->current_frame_host()->GetSiteInstance()->GetProcessLock();
+  EXPECT_TRUE(root_process_lock.is_locked_to_site());
+  EXPECT_EQ(root_process_lock.lock_url(), GURL("https://foo.com/"));
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   EXPECT_TRUE(policy->ShouldOriginGetOptInIsolation(
       root->current_frame_host()->GetSiteInstance()->GetIsolationContext(),
@@ -3127,7 +3212,6 @@ IN_PROC_BROWSER_TEST_F(
           UrlInfo::CreateForTesting(
               hung_isolated_url,
               StoragePartitionConfig::CreateDefault(browser_context)),
-          WebExposedIsolationInfo::CreateNonIsolated(),
           /* can_reuse_process= */ true);
   RenderProcessHost* sw_host = sw_site_instance->GetProcess();
   EXPECT_NE(new_shell->web_contents()->GetMainFrame()->GetProcess(), sw_host);

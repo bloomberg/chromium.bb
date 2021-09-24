@@ -217,7 +217,7 @@ TEST_F(TestFastSourceLineResolver, TestLoadAndResolve) {
   scoped_ptr<CFIFrameInfo> cfi_frame_info;
   frame.instruction = 0x1000;
   frame.module = NULL;
-  fast_resolver.FillSourceLineInfo(&frame);
+  fast_resolver.FillSourceLineInfo(&frame, nullptr);
   ASSERT_FALSE(frame.module);
   ASSERT_TRUE(frame.function_name.empty());
   ASSERT_EQ(frame.function_base, 0U);
@@ -226,7 +226,7 @@ TEST_F(TestFastSourceLineResolver, TestLoadAndResolve) {
   ASSERT_EQ(frame.source_line_base, 0U);
 
   frame.module = &module1;
-  fast_resolver.FillSourceLineInfo(&frame);
+  fast_resolver.FillSourceLineInfo(&frame, nullptr);
   ASSERT_EQ(frame.function_name, "Function1_1");
   ASSERT_TRUE(frame.module);
   ASSERT_EQ(frame.module->code_file(), "module1");
@@ -243,13 +243,13 @@ TEST_F(TestFastSourceLineResolver, TestLoadAndResolve) {
   ClearSourceLineInfo(&frame);
   frame.instruction = 0x800;
   frame.module = &module1;
-  fast_resolver.FillSourceLineInfo(&frame);
+  fast_resolver.FillSourceLineInfo(&frame, nullptr);
   ASSERT_TRUE(VerifyEmpty(frame));
   windows_frame_info.reset(fast_resolver.FindWindowsFrameInfo(&frame));
   ASSERT_FALSE(windows_frame_info.get());
 
   frame.instruction = 0x1280;
-  fast_resolver.FillSourceLineInfo(&frame);
+  fast_resolver.FillSourceLineInfo(&frame, nullptr);
   ASSERT_EQ(frame.function_name, "Function1_3");
   ASSERT_TRUE(frame.source_file_name.empty());
   ASSERT_EQ(frame.source_line, 0);
@@ -260,7 +260,7 @@ TEST_F(TestFastSourceLineResolver, TestLoadAndResolve) {
   ASSERT_TRUE(windows_frame_info->program_string.empty());
 
   frame.instruction = 0x1380;
-  fast_resolver.FillSourceLineInfo(&frame);
+  fast_resolver.FillSourceLineInfo(&frame, nullptr);
   ASSERT_EQ(frame.function_name, "Function1_4");
   ASSERT_TRUE(frame.source_file_name.empty());
   ASSERT_EQ(frame.source_line, 0);
@@ -369,17 +369,17 @@ TEST_F(TestFastSourceLineResolver, TestLoadAndResolve) {
 
   frame.instruction = 0x2900;
   frame.module = &module1;
-  fast_resolver.FillSourceLineInfo(&frame);
+  fast_resolver.FillSourceLineInfo(&frame, nullptr);
   ASSERT_EQ(frame.function_name, string("PublicSymbol"));
 
   frame.instruction = 0x4000;
   frame.module = &module1;
-  fast_resolver.FillSourceLineInfo(&frame);
+  fast_resolver.FillSourceLineInfo(&frame, nullptr);
   ASSERT_EQ(frame.function_name, string("LargeFunction"));
 
   frame.instruction = 0x2181;
   frame.module = &module2;
-  fast_resolver.FillSourceLineInfo(&frame);
+  fast_resolver.FillSourceLineInfo(&frame, nullptr);
   ASSERT_EQ(frame.function_name, "Function2_2");
   ASSERT_EQ(frame.function_base, 0x2170U);
   ASSERT_TRUE(frame.module);
@@ -393,18 +393,18 @@ TEST_F(TestFastSourceLineResolver, TestLoadAndResolve) {
   ASSERT_EQ(windows_frame_info->prolog_size, 1U);
 
   frame.instruction = 0x216f;
-  fast_resolver.FillSourceLineInfo(&frame);
+  fast_resolver.FillSourceLineInfo(&frame, nullptr);
   ASSERT_EQ(frame.function_name, "Public2_1");
 
   ClearSourceLineInfo(&frame);
   frame.instruction = 0x219f;
   frame.module = &module2;
-  fast_resolver.FillSourceLineInfo(&frame);
+  fast_resolver.FillSourceLineInfo(&frame, nullptr);
   ASSERT_TRUE(frame.function_name.empty());
 
   frame.instruction = 0x21a0;
   frame.module = &module2;
-  fast_resolver.FillSourceLineInfo(&frame);
+  fast_resolver.FillSourceLineInfo(&frame, nullptr);
   ASSERT_EQ(frame.function_name, "Public2_2");
 }
 

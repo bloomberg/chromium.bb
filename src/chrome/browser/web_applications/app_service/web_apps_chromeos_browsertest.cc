@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/app_service/web_apps_chromeos.h"
+#include "chrome/browser/web_applications/app_service/web_apps.h"
 
 #include <memory>
 
@@ -14,9 +14,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -59,20 +60,19 @@ void CheckSeparator(const ui::SimpleMenuModel& model, int index) {
 
 }  // namespace
 
-class WebAppsWebAppsChromeOsBrowserTest
-    : public web_app::WebAppControllerBrowserTest {
+class WebAppsChromeOsBrowserTest : public web_app::WebAppControllerBrowserTest {
  public:
-  WebAppsWebAppsChromeOsBrowserTest() {
+  WebAppsChromeOsBrowserTest() {
     feature_list_.InitWithFeatures(
         {features::kDesktopPWAsAppIconShortcutsMenuUI}, {});
   }
-  ~WebAppsWebAppsChromeOsBrowserTest() override = default;
+  ~WebAppsChromeOsBrowserTest() override = default;
 
  private:
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppsWebAppsChromeOsBrowserTest, ShortcutIcons) {
+IN_PROC_BROWSER_TEST_F(WebAppsChromeOsBrowserTest, ShortcutIcons) {
   const GURL app_url =
       https_server()->GetURL("/web_app_shortcuts/shortcuts.html");
   const web_app::AppId app_id =
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(WebAppsWebAppsChromeOsBrowserTest, ShortcutIcons) {
   std::unique_ptr<ui::SimpleMenuModel> menu_model;
   {
     ash::ShelfModel* const shelf_model = ash::ShelfModel::Get();
-    shelf_model->PinAppWithID(app_id);
+    PinAppWithIDToShelf(app_id);
     ash::ShelfItemDelegate* const delegate =
         shelf_model->GetShelfItemDelegate(ash::ShelfID(app_id));
     base::RunLoop run_loop;

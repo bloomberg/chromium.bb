@@ -10,9 +10,11 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/platform_window/extensions/workspace_extension_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
@@ -128,6 +130,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   absl::optional<gfx::Size> GetMaximumSizeForWindow() override;
   SkPath GetWindowMaskForWindowShapeInPixels() override;
   absl::optional<ui::MenuType> GetMenuType() override;
+  absl::optional<ui::OwnedWindowAnchor> GetOwnedWindowAnchorAndRectInPx()
+      override;
 
   // ui::WorkspaceExtensionDelegate:
   void OnWorkspaceChanged() override;
@@ -148,6 +152,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostPlatformTest,
+                           UpdateWindowShapeFromWindowMask);
+  FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostPlatformTest,
+                           MakesParentChildRelationship);
+
   void ScheduleRelayout();
 
   Widget* GetWidget();

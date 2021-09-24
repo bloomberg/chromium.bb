@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <vector>
 
 #include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/accessibility/magnifier/magnifier_glass.h"
@@ -23,16 +24,21 @@
 #include "ash/capture_mode/stop_recording_button_tray.h"
 #include "ash/capture_mode/test_capture_mode_delegate.h"
 #include "ash/capture_mode/video_recording_watcher.h"
+#include "ash/constants/ash_features.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/output_protection_delegate.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/capture_mode_test_api.h"
+#include "ash/projector/test/mock_projector_client.h"
+#include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
+#include "ash/public/cpp/projector/projector_controller.h"
+#include "ash/public/cpp/projector/projector_session.h"
 #include "ash/root_window_controller.h"
 #include "ash/services/recording/recording_service_test_api.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
@@ -49,6 +55,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/account_id/account_id.h"
@@ -56,8 +63,10 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/capture_client_observer.h"
+#include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -84,6 +93,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -157,6 +167,23 @@ bool IsLayerStackedRightBelow(ui::Layer* layer, ui::Layer* sibling) {
   const int sibling_index =
       std::find(children.begin(), children.end(), sibling) - children.begin();
   return sibling_index > 0 && children[sibling_index - 1] == layer;
+}
+
+std::unique_ptr<aura::Window> CreateTransientModalChildWindow(
+    aura::Window* transient_parent,
+    const gfx::Rect& bounds) {
+  auto child =
+      std::make_unique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_POPUP);
+  child->Init(ui::LAYER_NOT_DRAWN);
+  child->SetBounds(bounds);
+  wm::AddTransientChild(transient_parent, child.get());
+  aura::client::ParentWindowWithContext(
+      child.get(), transient_parent->GetRootWindow(), bounds);
+  child->Show();
+
+  child->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  wm::SetModalParent(child.get(), transient_parent);
+  return child;
 }
 
 // Defines a capture client observer, that sets the input capture to the window
@@ -3001,7 +3028,8 @@ TEST_F(CaptureModeTest, NumberOfCaptureRegionAdjustmentsHistogram) {
   histogram_tester.ExpectBucketCount(kTabletHistogram, 0, 1);
 }
 
-TEST_F(CaptureModeTest, FullscreenCapture) {
+// Disabled due to excessive flakiness. https://crbug.com/1245273
+TEST_F(CaptureModeTest, DISABLED_FullscreenCapture) {
   ui::ScopedAnimationDurationScaleMode animation_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   CaptureModeController* controller = StartCaptureSession(
@@ -3218,6 +3246,115 @@ TEST_F(CaptureModeTest, KeyboardNavigationBasic) {
 
   // Tests that pressing esc when there is no focus will exit capture mode.
   SendKey(ui::VKEY_ESCAPE, event_generator);
+  EXPECT_FALSE(controller->IsActive());
+}
+
+// Tests tabbing through windows on multiple displays when in capture window
+// mode.
+TEST_F(CaptureModeTest, KeyboardNavigationTabThroughWindowsOnMultipleDisplays) {
+  UpdateDisplay("800x700,801+0-800x700");
+  std::vector<aura::Window*> root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+
+  // Create three windows, one of them is a modal transient child.
+  std::unique_ptr<aura::Window> window1(
+      CreateTestWindow(gfx::Rect(0, 0, 200, 200)));
+  auto window1_transient = CreateTransientModalChildWindow(
+      window1.get(), gfx::Rect(20, 30, 200, 150));
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindow(gfx::Rect(900, 0, 200, 200)));
+
+  auto* controller =
+      StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kImage);
+  CaptureModeSession* capture_mode_session = controller->capture_mode_session();
+
+  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
+  CaptureModeSessionTestApi test_api(capture_mode_session);
+
+  // Initially nothing is focused.
+  EXPECT_EQ(FocusGroup::kNone, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+
+  // Tab five times, we are now focusing the window mode button on the
+  // capture bar.
+  auto* event_generator = GetEventGenerator();
+  SendKey(ui::VKEY_TAB, event_generator, false, 5);
+  EXPECT_EQ(FocusGroup::kTypeSource, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(4u, test_api.GetCurrentFocusIndex());
+
+  // Enter space to select window mode.
+  SendKey(ui::VKEY_SPACE, event_generator);
+  EXPECT_EQ(FocusGroup::kTypeSource, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(CaptureModeSource::kWindow, controller->source());
+
+  // Tab once, we are now focusing |window2| and capture mode bar is on
+  // display2.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(window2.get(), capture_mode_session->GetSelectedWindow());
+  EXPECT_EQ(root_windows[1], capture_mode_session->current_root());
+
+  // Tab once, we are now focusing |window1_transient|. Since
+  // |window1_transient| is on display1, capture mode bar will be moved to
+  // display1 as well.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(window1_transient.get(), capture_mode_session->GetSelectedWindow());
+  EXPECT_EQ(root_windows[0], capture_mode_session->current_root());
+
+  // Tab once, we are now focusing |window1|. Capture mode bar still stays on
+  // display1.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(2u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(window1.get(), capture_mode_session->GetSelectedWindow());
+  EXPECT_EQ(root_windows[0], capture_mode_session->current_root());
+
+  // Press space, make sure nothing is changed and no crash.
+  SendKey(ui::VKEY_SPACE, event_generator);
+  EXPECT_TRUE(controller->IsActive());
+  EXPECT_EQ(window1.get(), capture_mode_session->GetSelectedWindow());
+  EXPECT_EQ(root_windows[0], capture_mode_session->current_root());
+
+  // Tab once to focus the settings and close buttons group on the capture bar.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+
+  // Shift tab to focus |window1| again.
+  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/true);
+  EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(2u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(window1.get(), capture_mode_session->GetSelectedWindow());
+
+  // Shift tab to focus |window1_transient|.
+  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/true);
+  EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(window1_transient.get(), capture_mode_session->GetSelectedWindow());
+  EXPECT_EQ(root_windows[0], capture_mode_session->current_root());
+
+  // Shift tab to focus |window2|. Capture mode bar will be moved to display2 as
+  // well.
+  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/true);
+  EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(window2.get(), capture_mode_session->GetSelectedWindow());
+  EXPECT_EQ(root_windows[1], capture_mode_session->current_root());
+
+  // Press esc to clear focus, but remain in capture mode with |window2|
+  // selected.
+  SendKey(ui::VKEY_ESCAPE, event_generator);
+  EXPECT_EQ(FocusGroup::kNone, test_api.GetCurrentFocusGroup());
+  EXPECT_TRUE(controller->IsActive());
+  EXPECT_EQ(window2.get(), capture_mode_session->GetSelectedWindow());
+  EXPECT_EQ(root_windows[1], capture_mode_session->current_root());
+
+  // Press return. Since there's a selected window, capture mode will
+  // be ended after capturing the selected window.
+  SendKey(ui::VKEY_RETURN, event_generator);
   EXPECT_FALSE(controller->IsActive());
 }
 
@@ -4221,5 +4358,89 @@ TEST_F(CaptureModeCursorOverlayTest, OverlayBoundsAccountForCursorScaleFactor) {
 }
 
 // TODO(afakhry): Add more cursor overlay tests.
+
+// Test fixture to verify capture mode + projector integration.
+class ProjectorCaptureModeIntegrationTests : public CaptureModeTest {
+ public:
+  ProjectorCaptureModeIntegrationTests() = default;
+  ~ProjectorCaptureModeIntegrationTests() override = default;
+
+  // CaptureModeTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kProjector);
+    CaptureModeTest::SetUp();
+    auto* projector_controller = ProjectorController::Get();
+    projector_controller->SetClient(&projector_client_);
+    // Simulate the availability of speech recognition.
+    projector_controller->OnSpeechRecognitionAvailable(true);
+  }
+
+  void StartProjectorModeSession() {
+    auto* projector_session = ProjectorSession::Get();
+    EXPECT_FALSE(projector_session->is_active());
+    auto* projector_controller = ProjectorController::Get();
+    projector_controller->StartProjectorSession("projector_data");
+    EXPECT_TRUE(projector_session->is_active());
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  MockProjectorClient projector_client_;
+};
+
+TEST_F(ProjectorCaptureModeIntegrationTests, EntryPoint) {
+  // With the most recent source type set to kImage, starting capture mode for
+  // the projector workflow will still force it to kVideo.
+  auto* controller = CaptureModeController::Get();
+  controller->SetType(CaptureModeType::kImage);
+  // Also, audio recording is initially disabled. However, the projector flow
+  // forces it enabled.
+  EXPECT_FALSE(controller->enable_audio_recording());
+
+  base::HistogramTester histogram_tester;
+  StartProjectorModeSession();
+  EXPECT_TRUE(controller->IsActive());
+  auto* session = controller->capture_mode_session();
+  EXPECT_TRUE(session->is_in_projector_mode());
+  EXPECT_TRUE(controller->enable_audio_recording());
+
+  constexpr char kEntryPointHistogram[] =
+      "Ash.CaptureModeController.EntryPoint.ClamshellMode";
+  histogram_tester.ExpectBucketCount(kEntryPointHistogram,
+                                     CaptureModeEntryType::kProjector, 1);
+}
+
+TEST_F(ProjectorCaptureModeIntegrationTests, BarButtonsState) {
+  auto* controller = CaptureModeController::Get();
+  StartProjectorModeSession();
+  EXPECT_TRUE(controller->IsActive());
+
+  // The image toggle button should be disabled, whereas the video toggle button
+  // should be enabled and active.
+  EXPECT_FALSE(GetImageToggleButton()->GetEnabled());
+  EXPECT_FALSE(GetImageToggleButton()->GetToggled());
+  EXPECT_TRUE(GetVideoToggleButton()->GetEnabled());
+  EXPECT_TRUE(GetVideoToggleButton()->GetToggled());
+}
+
+TEST_F(ProjectorCaptureModeIntegrationTests, StartEndRecording) {
+  auto* controller = CaptureModeController::Get();
+  controller->SetSource(CaptureModeSource::kFullscreen);
+  StartProjectorModeSession();
+  EXPECT_TRUE(controller->IsActive());
+
+  // Hit Enter to begin recording. The recording session should be marked for
+  // projector.
+  SendKey(ui::VKEY_RETURN, GetEventGenerator());
+  EXPECT_CALL(projector_client_, StartSpeechRecognition());
+  WaitForCountDownToFinish();
+  EXPECT_FALSE(controller->IsActive());
+  EXPECT_TRUE(controller->is_recording_in_progress());
+  EXPECT_TRUE(controller->video_recording_watcher_for_testing()
+                  ->is_in_projector_mode());
+
+  EXPECT_CALL(projector_client_, StopSpeechRecognition());
+  controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+}
 
 }  // namespace ash

@@ -2075,8 +2075,9 @@ RenderWidgetHostImpl::GetWidgetInputHandler() {
 void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
   // The resize message (which may not happen immediately) will carry with it
   // the screen info as well as the new size (if the screen has changed scale
-  // factor).
-  SynchronizeVisualProperties();
+  // factor). Force sending the new visual properties even if there is one in
+  // flight to ensure proper IPC ordering for features like the Fullscreen API.
+  SynchronizeVisualPropertiesIgnoringPendingAck();
 
   // The device scale factor will be same for all the views contained by the
   // MainFrame, so just set it once.
@@ -2542,9 +2543,10 @@ void RenderWidgetHostImpl::SetPopupBounds(const gfx::Rect& bounds,
 }
 
 void RenderWidgetHostImpl::ShowPopup(const gfx::Rect& initial_rect,
+                                     const gfx::Rect& anchor_rect,
                                      ShowPopupCallback callback) {
   delegate_->ShowCreatedWidget(GetProcess()->GetID(), GetRoutingID(),
-                               initial_rect);
+                               initial_rect, anchor_rect);
   std::move(callback).Run();
 }
 
@@ -2567,6 +2569,13 @@ void RenderWidgetHostImpl::UpdateTooltipFromKeyboard(
 
   view_->UpdateTooltipFromKeyboard(
       GetWrappedTooltipText(tooltip_text, text_direction_hint), bounds);
+}
+
+void RenderWidgetHostImpl::ClearKeyboardTriggeredTooltip() {
+  if (!GetView())
+    return;
+
+  view_->ClearKeyboardTriggeredTooltip();
 }
 
 void RenderWidgetHostImpl::OnUpdateScreenRectsAck() {

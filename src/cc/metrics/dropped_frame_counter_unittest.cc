@@ -274,13 +274,25 @@ class DroppedFrameCounterTest : public testing::Test {
     }
   }
 
-  void SimulatePendingFrame(int repeat) {
+  // Make a sequence of frame states where the first |dropped_frames| out of
+  // |total_frames| are dropped.
+  std::vector<bool> MakeFrameSequence(int dropped_frames, int total_frames) {
+    std::vector<bool> frame_states(total_frames, false);
+    for (int i = 0; i < dropped_frames; i++) {
+      frame_states[i] = true;
+    }
+    return frame_states;
+  }
+
+  std::vector<viz::BeginFrameArgs> SimulatePendingFrame(int repeat) {
+    std::vector<viz::BeginFrameArgs> args(repeat);
     for (int i = 0; i < repeat; i++) {
-      viz::BeginFrameArgs args_ = SimulateBeginFrameArgs();
-      dropped_frame_counter_.OnBeginFrame(args_, /*is_scroll_active=*/false);
+      args[i] = SimulateBeginFrameArgs();
+      dropped_frame_counter_.OnBeginFrame(args[i], /*is_scroll_active=*/false);
       sequence_number_++;
       frame_time_ += interval_;
     }
+    return args;
   }
 
   void AdvancetimeByIntervals(int interval_count) {
@@ -302,6 +314,32 @@ class DroppedFrameCounterTest : public testing::Test {
   void SetInterval(base::TimeDelta interval) { interval_ = interval; }
 
   base::TimeTicks GetNextFrameTime() const { return frame_time_ + interval_; }
+
+  // Wrap calls with EXPECT_TRUE. Logs the buckets and returns false if they
+  // don't match (within a given epsilon).
+  bool CheckSmoothnessBuckets(std::vector<double> expected_buckets) {
+    constexpr double epsilon = 0.001;
+    bool buckets_match = true;
+    std::vector<double> buckets =
+        dropped_frame_counter_.GetSlidingWindowHistogram()
+            ->GetPercentDroppedFrameBuckets();
+    if (buckets.size() != expected_buckets.size()) {
+      buckets_match = false;
+    } else {
+      for (size_t i = 0; i < buckets.size(); i++) {
+        if (std::abs(buckets[i] - expected_buckets[i]) > epsilon) {
+          buckets_match = false;
+          break;
+        }
+      }
+    }
+    if (!buckets_match) {
+      LOG(ERROR) << "Smoothness buckets do not match!";
+      LOG(ERROR) << "Expected: " << testing::PrintToString(expected_buckets);
+      LOG(ERROR) << "  Actual: " << testing::PrintToString(buckets);
+    }
+    return buckets_match;
+  }
 
  public:
   DroppedFrameCounter dropped_frame_counter_;
@@ -598,6 +636,112 @@ TEST_F(DroppedFrameCounterTest, Reset) {
   // After reset the max percent dropped frame would be 0 and frames in queue
   // behind the pending frame would not affect it.
   EXPECT_EQ(MaxPercentDroppedFrame(), 0u);
+}
+
+TEST_F(DroppedFrameCounterTest, ConsistentSmoothnessRatings) {
+  // Set an interval that rounds up nicely with 1 second.
+  constexpr auto kInterval = base::TimeDelta::FromMilliseconds(10);
+  constexpr size_t kFps = base::TimeDelta::FromSeconds(1) / kInterval;
+  static_assert(kFps == 100,
+                "kFps must be 100 because this test depends on it.");
+  SetInterval(kInterval);
+
+  // Add 5 seconds with 2% dropped frames. This should be in the first bucket.
+  SimulateFrameSequence(MakeFrameSequence(1, 50), (kFps / 50) * 5);
+  EXPECT_TRUE(CheckSmoothnessBuckets({100, 0, 0, 0, 0, 0, 0}));
+
+  // Add 5 seconds with 5% dropped frames. This should be in the second bucket.
+  dropped_frame_counter_.Reset();
+  dropped_frame_counter_.OnFcpReceived();
+  SimulateFrameSequence(MakeFrameSequence(1, 20), (kFps / 20) * 5);
+  EXPECT_TRUE(CheckSmoothnessBuckets({0, 100, 0, 0, 0, 0, 0}));
+
+  // Add 5 seconds with 10% dropped frames. This should be in the third bucket.
+  dropped_frame_counter_.Reset();
+  dropped_frame_counter_.OnFcpReceived();
+  SimulateFrameSequence(MakeFrameSequence(1, 10), (kFps / 10) * 5);
+  EXPECT_TRUE(CheckSmoothnessBuckets({0, 0, 100, 0, 0, 0, 0}));
+
+  // Add 5 seconds with 20% dropped frames. This should be in the fourth bucket.
+  dropped_frame_counter_.Reset();
+  dropped_frame_counter_.OnFcpReceived();
+  SimulateFrameSequence({false, false, false, false, true}, (kFps / 5) * 5);
+  EXPECT_TRUE(CheckSmoothnessBuckets({0, 0, 0, 100, 0, 0, 0}));
+
+  // Add 5 seconds with 40% dropped frames. This should be in the fifth bucket.
+  dropped_frame_counter_.Reset();
+  dropped_frame_counter_.OnFcpReceived();
+  SimulateFrameSequence({false, false, false, true, true}, (kFps / 5) * 5);
+  EXPECT_TRUE(CheckSmoothnessBuckets({0, 0, 0, 0, 100, 0, 0}));
+
+  // Add 5 seconds with 60% dropped frames. This should be in the sixth bucket.
+  dropped_frame_counter_.Reset();
+  dropped_frame_counter_.OnFcpReceived();
+  SimulateFrameSequence({false, false, true, true, true}, (kFps / 5) * 5);
+  EXPECT_TRUE(CheckSmoothnessBuckets({0, 0, 0, 0, 0, 100, 0}));
+
+  // Add 5 seconds with 80% dropped frames. This should be in the last bucket.
+  dropped_frame_counter_.Reset();
+  dropped_frame_counter_.OnFcpReceived();
+  SimulateFrameSequence({false, true, true, true, true}, (kFps / 5) * 5);
+  EXPECT_TRUE(CheckSmoothnessBuckets({0, 0, 0, 0, 0, 0, 100}));
+}
+
+TEST_F(DroppedFrameCounterTest, MovingSmoothnessRatings) {
+  // Set an interval that rounds up nicely with 1 second.
+  constexpr auto kInterval = base::TimeDelta::FromMilliseconds(10);
+  constexpr size_t kFps = base::TimeDelta::FromSeconds(1) / kInterval;
+  static_assert(kFps == 100,
+                "kFps must be 100 because this test depends on it.");
+  SetInterval(kInterval);
+
+  // Add a second with 40% dropped frames. Nothing should be added to the
+  // histogram yet.
+  SimulateFrameSequence({false, false, false, true, true}, kFps / 5);
+  EXPECT_TRUE(CheckSmoothnessBuckets({0, 0, 0, 0, 0, 0, 0}));
+
+  // Add a second with 80% dropped frames. All very bad buckets should have some
+  // entries.
+  SimulateFrameSequence({false, true, true, true, true}, kFps / 5);
+  EXPECT_TRUE(CheckSmoothnessBuckets({0, 0, 0, 0, 22, 64, 14}));
+
+  // Add a second with 10% dropped frames. Should be mostly very bad, with a few
+  // bad and okay windows.
+  SimulateFrameSequence(MakeFrameSequence(1, 10), kFps / 10);
+  EXPECT_TRUE(CheckSmoothnessBuckets({0, 0, 1, 9, 29, 50, 11}));
+
+  // Add a second with 5% dropped frames, and a second with no dropped frames.
+  // The sliding window should shift from ok to very good over time.
+  SimulateFrameSequence(MakeFrameSequence(1, 20), kFps / 20);
+  SimulateFrameSequence({false}, kFps);
+  EXPECT_TRUE(CheckSmoothnessBuckets({15, 12.5, 23, 4.5, 14.5, 25, 5.5}));
+
+  // Clear the counter, then add a second with 100% dropped frames and a second
+  // with 0% dropped frames. As the sliding window shifts each integer percent
+  // (other than 100%) should be reported once, exactly matching the size of
+  // each bucket.
+  dropped_frame_counter_.Reset();
+  dropped_frame_counter_.OnFcpReceived();
+  SimulateFrameSequence({true}, kFps);
+  SimulateFrameSequence({false}, kFps);
+  EXPECT_TRUE(CheckSmoothnessBuckets({3, 3, 6, 13, 25, 25, 25}));
+}
+
+TEST_F(DroppedFrameCounterTest, FramesInFlightWhenFcpReceived) {
+  // Start five frames in flight.
+  std::vector<viz::BeginFrameArgs> pending_frames = SimulatePendingFrame(5);
+
+  // Set that FCP was received after the third frame starts, but before it ends.
+  base::TimeTicks time_fcp_sent =
+      pending_frames[2].frame_time + pending_frames[2].interval / 2;
+  dropped_frame_counter_.SetTimeFcpReceivedForTesting(time_fcp_sent);
+
+  // End each of the frames as dropped. The first three should not count for
+  // smoothness, only the last two.
+  for (const auto& frame : pending_frames) {
+    dropped_frame_counter_.OnEndFrame(frame, true);
+  }
+  EXPECT_EQ(dropped_frame_counter_.total_smoothness_dropped(), 2u);
 }
 
 }  // namespace

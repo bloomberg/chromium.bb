@@ -141,6 +141,7 @@ TextureState::TextureState(TextureType type)
       mMaxLevel(kInitialMaxLevel),
       mDepthStencilTextureMode(GL_DEPTH_COMPONENT),
       mHasBeenBoundAsImage(false),
+      mHasBeenBoundAsAttachment(false),
       mImmutableFormat(false),
       mImmutableLevels(0),
       mUsage(GL_NONE),
@@ -785,7 +786,11 @@ Texture::~Texture()
 void Texture::setLabel(const Context *context, const std::string &label)
 {
     mState.mLabel = label;
-    signalDirtyState(DIRTY_BIT_LABEL);
+
+    if (mTexture)
+    {
+        mTexture->onLabelUpdate();
+    }
 }
 
 const std::string &Texture::getLabel() const
@@ -1697,8 +1702,6 @@ angle::Result Texture::generateMipmap(Context *context)
         return angle::Result::Continue;
     }
 
-    ANGLE_TRY(syncState(context, Command::GenerateMipmap));
-
     // Clear the base image(s) immediately if needed
     if (context->isRobustResourceInitEnabled())
     {
@@ -1717,6 +1720,7 @@ angle::Result Texture::generateMipmap(Context *context)
         }
     }
 
+    ANGLE_TRY(syncState(context, Command::GenerateMipmap));
     ANGLE_TRY(mTexture->generateMipmap(context));
 
     // Propagate the format and size of the base mip to the smaller ones. Cube maps are guaranteed
@@ -2036,6 +2040,12 @@ void Texture::onAttach(const Context *context, rx::Serial framebufferSerial)
 
     // Duplicates allowed for multiple attachment points. See the comment in the header.
     mBoundFramebufferSerials.push_back(framebufferSerial);
+
+    if (!mState.mHasBeenBoundAsAttachment)
+    {
+        mDirtyBits.set(DIRTY_BIT_BOUND_AS_ATTACHMENT);
+        mState.mHasBeenBoundAsAttachment = true;
+    }
 }
 
 void Texture::onDetach(const Context *context, rx::Serial framebufferSerial)
@@ -2062,6 +2072,7 @@ angle::Result Texture::syncState(const Context *context, Command source)
     ASSERT(hasAnyDirtyBit() || source == Command::GenerateMipmap);
     ANGLE_TRY(mTexture->syncState(context, mDirtyBits, source));
     mDirtyBits.reset();
+    mState.mInitState = InitState::Initialized;
     return angle::Result::Continue;
 }
 
@@ -2175,7 +2186,7 @@ void Texture::setInitState(InitState initState)
 {
     for (ImageDesc &imageDesc : mState.mImageDescs)
     {
-        // Only modifiy defined images, undefined images will remain in the initialized state
+        // Only modify defined images, undefined images will remain in the initialized state
         if (!imageDesc.size.empty())
         {
             imageDesc.initState = initState;
@@ -2297,6 +2308,12 @@ void Texture::onSubjectStateChange(angle::SubjectIndex index, angle::SubjectMess
         case angle::SubjectMessage::BindingChanged:
             ASSERT(index == kBufferSubjectIndex);
             break;
+
+        case angle::SubjectMessage::InitializationComplete:
+            ASSERT(index == rx::kTextureImageImplObserverMessageIndex);
+            setInitState(InitState::Initialized);
+            break;
+
         default:
             UNREACHABLE();
             break;
@@ -2322,9 +2339,10 @@ angle::Result Texture::getTexImage(const Context *context,
                                    GLenum type,
                                    void *pixels)
 {
-    if (hasAnyDirtyBit())
+    // No-op if the image level is empty.
+    if (getExtents(target, level).empty())
     {
-        ANGLE_TRY(syncState(context, Command::Other));
+        return angle::Result::Continue;
     }
 
     return mTexture->getTexImage(context, packState, packBuffer, target, level, format, type,

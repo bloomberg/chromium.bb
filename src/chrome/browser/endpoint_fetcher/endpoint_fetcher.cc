@@ -130,6 +130,7 @@ EndpointFetcher::EndpointFetcher(
     const std::string& content_type,
     int64_t timeout_ms,
     const std::string& post_data,
+    const std::vector<std::string>& headers,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
     const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
     const bool is_oauth_fetch)
@@ -139,6 +140,7 @@ EndpointFetcher::EndpointFetcher(
       content_type_(content_type),
       timeout_ms_(timeout_ms),
       post_data_(post_data),
+      headers_(headers),
       annotation_tag_(annotation_tag),
       url_loader_factory_(url_loader_factory),
       identity_manager_(nullptr),
@@ -280,6 +282,10 @@ void EndpointFetcher::OnSanitizationResult(
   std::move(endpoint_fetcher_callback).Run(std::move(response));
 }
 
+std::string EndpointFetcher::GetUrlForTesting() {
+  return url_.spec();
+}
+
 #if defined(OS_ANDROID)
 namespace {
 static void OnEndpointFetcherComplete(
@@ -311,6 +317,7 @@ static void JNI_EndpointFetcher_NativeFetchOAuth(
     const base::android::JavaParamRef<jobjectArray>& jscopes,
     const base::android::JavaParamRef<jstring>& jpost_data,
     jlong jtimeout,
+    jint jannotation_hash_code,
     const base::android::JavaParamRef<jobject>& jcallback) {
   std::vector<std::string> scopes;
   base::android::AppendJavaStringArrayToStringVector(env, jscopes, &scopes);
@@ -321,9 +328,8 @@ static void JNI_EndpointFetcher_NativeFetchOAuth(
       base::android::ConvertJavaStringToUTF8(env, jhttps_method),
       base::android::ConvertJavaStringToUTF8(env, jcontent_type), scopes,
       jtimeout, base::android::ConvertJavaStringToUTF8(env, jpost_data),
-      // TODO(crbug.com/995852) Create a traffic annotation tag and configure it
-      // as part of the EndpointFetcher call over JNI.
-      NO_TRAFFIC_ANNOTATION_YET);
+      net::NetworkTrafficAnnotationTag::FromJavaAnnotation(
+          jannotation_hash_code));
   auto* const endpoint_fetcher_ptr = endpoint_fetcher.get();
   endpoint_fetcher_ptr->Fetch(
       base::BindOnce(&OnEndpointFetcherComplete,
@@ -342,6 +348,7 @@ static void JNI_EndpointFetcher_NativeFetchChromeAPIKey(
     const base::android::JavaParamRef<jstring>& jpost_data,
     jlong jtimeout,
     const base::android::JavaParamRef<jobjectArray>& jheaders,
+    jint jannotation_hash_code,
     const base::android::JavaParamRef<jobject>& jcallback) {
   std::vector<std::string> headers;
   base::android::AppendJavaStringArrayToStringVector(env, jheaders, &headers);
@@ -351,7 +358,8 @@ static void JNI_EndpointFetcher_NativeFetchChromeAPIKey(
       base::android::ConvertJavaStringToUTF8(env, jhttps_method),
       base::android::ConvertJavaStringToUTF8(env, jcontent_type), jtimeout,
       base::android::ConvertJavaStringToUTF8(env, jpost_data), headers,
-      NO_TRAFFIC_ANNOTATION_YET);
+      net::NetworkTrafficAnnotationTag::FromJavaAnnotation(
+          jannotation_hash_code));
   auto* const endpoint_fetcher_ptr = endpoint_fetcher.get();
   endpoint_fetcher_ptr->PerformRequest(
       base::BindOnce(&OnEndpointFetcherComplete,
@@ -366,11 +374,13 @@ static void JNI_EndpointFetcher_NativeFetchWithNoAuth(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jprofile,
     const base::android::JavaParamRef<jstring>& jurl,
+    jint jannotation_hash_code,
     const base::android::JavaParamRef<jobject>& jcallback) {
   auto endpoint_fetcher = std::make_unique<EndpointFetcher>(
       ProfileAndroid::FromProfileAndroid(jprofile),
       GURL(base::android::ConvertJavaStringToUTF8(env, jurl)),
-      NO_TRAFFIC_ANNOTATION_YET);
+      net::NetworkTrafficAnnotationTag::FromJavaAnnotation(
+          jannotation_hash_code));
   auto* const endpoint_fetcher_ptr = endpoint_fetcher.get();
   endpoint_fetcher_ptr->PerformRequest(
       base::BindOnce(&OnEndpointFetcherComplete,

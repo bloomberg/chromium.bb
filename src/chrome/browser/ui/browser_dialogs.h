@@ -14,8 +14,8 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
-#include "chrome/browser/web_applications/components/web_app_callback_app_identity.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_callback_app_identity.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/common/buildflags.h"
 #include "content/public/browser/login_delegate.h"
 #include "extensions/buildflags/buildflags.h"
@@ -25,7 +25,7 @@
 
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #endif
 
 class Browser;
@@ -160,9 +160,10 @@ void SetAutoAcceptAppIdentityUpdateForTesting(bool auto_accept);
 
 #if !defined(OS_ANDROID)
 // Callback used to indicate whether a user has accepted the launch of a
-// web app. The boolean parameter is true when the user accepts the dialog.
+// web app. The |allowed| is true when the user allows the app to launch.
+// |remember_user_choice| is true if the user wants to persist the decision.
 using WebAppProtocolHandlerAcceptanceCallback =
-    base::OnceCallback<void(bool accepted)>;
+    base::OnceCallback<void(bool allowed, bool remember_user_choice)>;
 
 // Shows the Web App Protocol Handler Intent Picker view.
 // |profile| is kept alive throughout the processing and running of

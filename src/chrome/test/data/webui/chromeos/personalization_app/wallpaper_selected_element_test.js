@@ -9,7 +9,7 @@ import {emptyState} from 'chrome://personalization/trusted/personalization_reduc
 import {Paths} from 'chrome://personalization/trusted/personalization_router_element.js';
 import {WallpaperSelected} from 'chrome://personalization/trusted/wallpaper_selected_element.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
-import {flushTasks, waitAfterNextRender} from '../../test_util.m.js';
+import {flushTasks, waitAfterNextRender} from '../../test_util.js';
 import {baseSetup, initElement} from './personalization_app_test_utils.js';
 import {TestWallpaperProvider} from './test_mojo_interface_provider.js';
 import {TestPersonalizationStore} from './test_personalization_store.js';
@@ -92,7 +92,7 @@ export function WallpaperSelectedTest() {
     wallpaperSelectedElement = initElement(WallpaperSelected.is);
     const action =
         await personalizationStore.waitForAction(ActionName.SET_SELECTED_IMAGE);
-    assertEquals(wallpaperProvider.currentWallpaper, action.image);
+    assertDeepEquals(wallpaperProvider.currentWallpaper, action.image);
   });
 
   test('shows wallpaper image and attribution when loaded', async () => {
@@ -210,26 +210,22 @@ export function WallpaperSelectedTest() {
         null, wallpaperSelectedElement.shadowRoot.querySelector('img'));
   });
 
-  test('sets selected wallpaper data in store', async () => {
+  test('sets selected wallpaper data in store on changed', async () => {
     // Make sure state starts as expected.
     assertDeepEquals(emptyState(), personalizationStore.data);
-    // Run the actual reducers.
-    personalizationStore.setReducersEnabled(true);
 
     wallpaperSelectedElement = initElement(WallpaperSelected.is);
 
-    // In-flight request to get current wallpaper.
-    assertEquals(1, personalizationStore.data.loading.selected);
+    await wallpaperProvider.whenCalled('setWallpaperObserver');
 
-    // Wait for api call to complete.
-    await wallpaperProvider.whenCalled('getCurrentWallpaper');
+    personalizationStore.expectAction(ActionName.SET_SELECTED_IMAGE);
+    wallpaperProvider.wallpaperObserverRemote.onWallpaperChanged(
+        wallpaperProvider.currentWallpaper);
 
-    // Should be done loading now.
-    assertEquals(0, personalizationStore.data.loading.selected);
-    // Shallow equals - they should be the same object.
-    assertEquals(
-        wallpaperProvider.currentWallpaper,
-        personalizationStore.data.currentSelected);
+    const {image} =
+        await personalizationStore.waitForAction(ActionName.SET_SELECTED_IMAGE);
+
+    assertDeepEquals(wallpaperProvider.currentWallpaper, image);
   });
 
   test('shows image url with data scheme', async () => {

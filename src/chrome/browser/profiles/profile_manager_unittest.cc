@@ -457,7 +457,7 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
 }
 
 TEST_F(ProfileManagerTest, LoadNonExistingProfile) {
-  const std::string profile_name = "NonExistingProfile";
+  base::FilePath profile_name(FILE_PATH_LITERAL("NonExistingProfile"));
   base::RunLoop run_loop_1;
   base::RunLoop run_loop_2;
 
@@ -474,10 +474,9 @@ TEST_F(ProfileManagerTest, LoadNonExistingProfile) {
 }
 
 TEST_F(ProfileManagerTest, LoadExistingProfile) {
-  const std::string profile_basename = "MyProfile";
-  base::FilePath profile_path =
-      temp_dir_.GetPath().AppendASCII(profile_basename);
-  const std::string other_basename = "SomeOtherProfile";
+  base::FilePath profile_basename(FILE_PATH_LITERAL("MyProfile"));
+  base::FilePath profile_path = temp_dir_.GetPath().Append(profile_basename);
+  const base::FilePath other_basename(FILE_PATH_LITERAL("SomeOtherProfile"));
   MockObserver mock_observer1;
   EXPECT_CALL(mock_observer1, OnProfileCreated(SameNotNull(), NotFail()))
       .Times(testing::AtLeast(1));
@@ -492,16 +491,16 @@ TEST_F(ProfileManagerTest, LoadExistingProfile) {
   bool incognito = false;
   profile_manager->LoadProfile(
       profile_basename, incognito,
-      base::BindOnce(&ExpectProfileWithName, profile_basename, incognito,
-                     load_profile.QuitClosure()));
+      base::BindOnce(&ExpectProfileWithName, profile_basename.AsUTF8Unsafe(),
+                     incognito, load_profile.QuitClosure()));
   load_profile.Run();
 
   base::RunLoop load_profile_incognito;
   incognito = true;
   profile_manager->LoadProfile(
       profile_basename, incognito,
-      base::BindOnce(&ExpectProfileWithName, profile_basename, incognito,
-                     load_profile_incognito.QuitClosure()));
+      base::BindOnce(&ExpectProfileWithName, profile_basename.AsUTF8Unsafe(),
+                     incognito, load_profile_incognito.QuitClosure()));
   load_profile_incognito.Run();
 
   // Loading some other non existing profile should still return null.
@@ -1430,7 +1429,7 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   EXPECT_TRUE(base::DirectoryExists(path2));
   EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
   ASSERT_EQ(1u, storage.GetNumberOfProfiles());
-  ASSERT_EQ(1u, final_last_active_profile_list->GetSize());
+  ASSERT_EQ(1u, final_last_active_profile_list->GetList().size());
   ASSERT_EQ(path2.BaseName().MaybeAsASCII(),
             (final_last_active_profile_list->GetList())[0].GetString());
 
@@ -1443,7 +1442,7 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   EXPECT_FALSE(base::DirectoryExists(path2));
   EXPECT_EQ(0u, storage.GetNumberOfProfiles());
   EXPECT_EQ("Profile 1", local_state->GetString(prefs::kProfileLastUsed));
-  ASSERT_EQ(0u, final_last_active_profile_list->GetSize());
+  ASSERT_EQ(0u, final_last_active_profile_list->GetList().size());
 }
 
 #if defined(OS_WIN)
@@ -1506,7 +1505,7 @@ TEST_F(ProfileManagerGuestTest, CleanUpGuestEphemeralProfile) {
   EXPECT_EQ(guest_profile_name,
             local_state->GetString(prefs::kProfileLastUsed));
   ASSERT_EQ(1u, storage.GetNumberOfProfiles());
-  ASSERT_EQ(2u, final_last_active_profile_list->GetSize());
+  ASSERT_EQ(2u, final_last_active_profile_list->GetList().size());
   ASSERT_EQ(guest_path.BaseName().MaybeAsASCII(),
             (final_last_active_profile_list->GetList())[0].GetString());
 }

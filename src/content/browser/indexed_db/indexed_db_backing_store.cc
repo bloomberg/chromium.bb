@@ -1134,8 +1134,8 @@ bool IndexedDBBackingStore::RecordCorruptionInfo(
   if (IsPathTooLong(filesystem.get(), info_path))
     return false;
 
-  base::DictionaryValue root_dict;
-  root_dict.SetString("message", message);
+  base::Value root_dict(base::Value::Type::DICTIONARY);
+  root_dict.SetStringKey("message", message);
   std::string output_js;
 
   base::JSONWriter::Write(root_dict, &output_js);
@@ -3727,7 +3727,7 @@ void IndexedDBBackingStore::Transaction::PutExternalObjects(
     database_id_ = database_id;
   DCHECK_EQ(database_id_, database_id);
 
-  const auto& it = external_object_change_map_.find(object_store_data_key);
+  auto it = external_object_change_map_.find(object_store_data_key);
   IndexedDBExternalObjectChangeRecord* record = nullptr;
   if (it == external_object_change_map_.end()) {
     std::unique_ptr<IndexedDBExternalObjectChangeRecord> new_record =

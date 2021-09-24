@@ -4,10 +4,12 @@
 
 #include <limits>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_switches.h"
@@ -46,7 +48,7 @@ constexpr const char* usage_msg =
     "           [--validator_type=(none|md5|ssim)]\n"
     "           [--output_frames=(all|corrupt)] [--output_format=(png|yuv)]\n"
     "           [--output_limit=<number>] [--output_folder=<folder>]\n"
-    "           ([--use-legacy][--use_vd]|[--use_vd_vda]) [--gtest_help]\n"
+    "           ([--use-legacy]|[--use_vd]|[--use_vd_vda]) [--gtest_help]\n"
     "           [--help] [<video path>] [<video metadata path>]\n";
 
 // Video decoder tests help message.
@@ -67,9 +69,8 @@ constexpr const char* help_msg =
     "                       frames, currently allowed for AV1 streams only)\n"
     "                       and none (disable frame validation).\n"
     "  --use-legacy         use the legacy VDA-based video decoders.\n"
+    "  --use_vd             use the new VD-based video decoders.\n"
     "                       (enabled by default)\n"
-    "  --use_vd             use the new VD-based video decoders, instead of\n"
-    "                       the default VDA-based video decoders.\n"
     "  --use_vd_vda         use the new VD-based video decoders with a\n"
     "                       wrapper that translates to the VDA interface,\n"
     "                       used to test interaction with older components\n"
@@ -173,7 +174,7 @@ class VideoDecoderTest : public ::testing::Test {
   // TODO(hiroh): Move this to Video class or video_frame_helpers.h.
   // TODO(hiroh): Create model frames once during the test.
   bool CreateModelFrames(const Video* video) {
-    if (video->Codec() != VideoCodec::kCodecAV1) {
+    if (video->Codec() != VideoCodec::kAV1) {
       LOG(ERROR) << "Frame validation by SSIM is allowed for AV1 streams only";
       return false;
     }
@@ -357,8 +358,8 @@ TEST_F(VideoDecoderTest, ResetBeforeFlushDone) {
 // H.264/HEVC video stream. After resetting the video is played until the end.
 TEST_F(VideoDecoderTest, ResetAfterFirstConfigInfo) {
   // This test is only relevant for H.264/HEVC video streams.
-  if (g_env->Video()->Codec() != media::kCodecH264 &&
-      g_env->Video()->Codec() != media::kCodecHEVC)
+  if (g_env->Video()->Codec() != media::VideoCodec::kH264 &&
+      g_env->Video()->Codec() != media::VideoCodec::kHEVC)
     GTEST_SKIP();
 
   auto tvp = CreateVideoPlayer(g_env->Video());
@@ -496,7 +497,7 @@ int main(int argc, char** argv) {
   bool use_vd = false;
   bool use_vd_vda = false;
   media::test::DecoderImplementation implementation =
-      media::test::DecoderImplementation::kVDA;
+      media::test::DecoderImplementation::kVD;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
@@ -588,6 +589,13 @@ int main(int argc, char** argv) {
   // Add the command line flag for HEVC testing which will be checked by the
   // video decoder to allow clear HEVC decoding.
   cmd_line->AppendSwitch("enable-clear-hevc-for-testing");
+
+#if defined(ARCH_CPU_ARM_FAMILY)
+  // On some platforms bandwidth compression is fully opaque and can not be
+  // read by the cpu.  This prevents MD5 computation as that is done by the
+  // cpu.
+  cmd_line->AppendSwitch("disable-buffer-bw-compression");
+#endif
 
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =

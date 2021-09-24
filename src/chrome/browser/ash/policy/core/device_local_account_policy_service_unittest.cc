@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -70,6 +71,11 @@ const char kExtensionVersion[] = "1.0.0.0";
 const char kExtensionCRXPath[] = "extensions/hosted_app.crx";
 const char kUpdateURL[] = "https://clients2.google.com/service/update2/crx";
 
+const char kRestrictedExtensionSettings[] = R"({
+  "*" : {
+    "installation_mode": "blocked"
+  }
+})";
 }  // namespace
 
 class MockDeviceLocalAccountPolicyServiceObserver
@@ -1057,7 +1063,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
 }
 
 TEST_F(DeviceLocalAccountPolicyProviderTest,
-       RestrictedManagedGuestSessionEnabled) {
+       DeviceRestrictedManagedGuestSessionEnabled) {
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(provider_.get()))
       .Times(AtLeast(1));
   InstallDeviceLocalAccountPolicy(kAccount1);
@@ -1068,12 +1074,12 @@ TEST_F(DeviceLocalAccountPolicyProviderTest,
       service_->GetBrokerForUser(account_1_user_id_);
   ASSERT_TRUE(broker);
 
-  // Disabled RestrictedManagedGuestSessionEnabled policy does not
+  // Disabled DeviceRestrictedManagedGuestSessionEnabled policy does not
   // change other policy values.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(provider_.get()))
       .Times(AtLeast(1));
   cros_settings_helper_->SetBoolean(
-      chromeos::kRestrictedManagedGuestSessionEnabled, false);
+      chromeos::kDeviceRestrictedManagedGuestSessionEnabled, false);
   InstallDeviceLocalAccountPolicy(kAccount1);
   broker->core()->store()->Load();
   FlushDeviceSettings();
@@ -1084,12 +1090,12 @@ TEST_F(DeviceLocalAccountPolicyProviderTest,
       POLICY_DOMAIN_CHROME, std::string())) = expected_policy_map_.Clone();
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_->policies()));
 
-  // Enabled RestrictedManagedGuestSessionEnabled policy overrides
+  // Enabled DeviceRestrictedManagedGuestSessionEnabled policy overrides
   // certain policies.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(provider_.get()))
       .Times(AtLeast(1));
   cros_settings_helper_->SetBoolean(
-      chromeos::kRestrictedManagedGuestSessionEnabled, true);
+      chromeos::kDeviceRestrictedManagedGuestSessionEnabled, true);
   device_local_account_policy_.payload()
       .mutable_passwordmanagerenabled()
       ->set_value(true);
@@ -1160,10 +1166,6 @@ TEST_F(DeviceLocalAccountPolicyProviderTest,
       POLICY_SOURCE_RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE,
       base::Value(true), nullptr);
   expected_policy_map_restricted.Set(
-      key::kLacrosAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE,
-      base::Value(false), nullptr);
-  expected_policy_map_restricted.Set(
       key::kLacrosSecondaryProfilesAllowed, POLICY_LEVEL_MANDATORY,
       POLICY_SCOPE_USER,
       POLICY_SOURCE_RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE,
@@ -1172,6 +1174,10 @@ TEST_F(DeviceLocalAccountPolicyProviderTest,
       key::kLacrosAvailability, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
       POLICY_SOURCE_RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE,
       base::Value("lacros_disallowed"), nullptr);
+  expected_policy_map_restricted.Set(
+      key::kExtensionSettings, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+      POLICY_SOURCE_RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE,
+      *base::JSONReader::Read(kRestrictedExtensionSettings), nullptr);
 
   expected_policy_bundle.Get(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())) =

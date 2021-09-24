@@ -65,7 +65,7 @@ bool IsCompositeTensor(PyObject* o);
 //   True if the sequence is a TypeSpec, but is not a TensorSpec.
 bool IsTypeSpec(PyObject* o);
 
-// Implements the same interface as tensorflow.util.nest._is_namedtuple
+// Implements the same interface as tensorflow.util.nest.is_namedtuple
 // Returns Py_True iff `instance` should be considered a `namedtuple`.
 //
 // Args:
@@ -115,6 +115,15 @@ bool IsTuple(PyObject* o);
 //   True if the sequence subclasses mapping.
 bool IsMappingView(PyObject* o);
 
+// Returns a true if its input has a `__tf_dispatch__` attribute.
+//
+// Args:
+//   o: the input to be checked.
+//
+// Returns:
+//   True if `o` has a `__tf_dispatch__` attribute.
+bool IsDispatchable(PyObject* o);
+
 // A version of PyMapping_Keys that works in C++11
 //
 // Args:
@@ -142,6 +151,15 @@ bool IsAttrs(PyObject* o);
 //   True if the object is a tensor.
 bool IsTensor(PyObject* o);
 
+// Returns true if its input is a tf.TensorSpec.
+//
+// Args:
+//   o: the input to be checked.
+//
+// Returns:
+//   True if the object is a TensorSpec.
+bool IsTensorSpec(PyObject* o);
+
 // Returns a true if its input is an eager.EagerTensor.
 //
 // Args:
@@ -159,6 +177,15 @@ bool IsEagerTensorSlow(PyObject* o);
 // Returns:
 //   True if the object is a ResourceVariable.
 bool IsResourceVariable(PyObject* o);
+
+// Returns a true if its input is an OwnedIterator.
+//
+// Args:
+//   o: the input to be checked.
+//
+// Returns:
+//   True if the object is an OwnedIterator.
+bool IsOwnedIterator(PyObject* o);
 
 // Returns a true if its input is a Variable.
 //
@@ -178,7 +205,7 @@ bool IsVariable(PyObject* o);
 //   True if the object is an ops.IndexedSlices.
 bool IsIndexedSlices(PyObject* o);
 
-// Implements the same interface as tensorflow.util.nest._same_namedtuples
+// Implements the same interface as tensorflow.util.nest.same_namedtuples
 // Returns Py_True iff the two namedtuples have the same name and fields.
 // Raises RuntimeError if `o1` or `o2` don't look like namedtuples (don't have
 // '_fields' attribute).
@@ -280,12 +307,11 @@ PyObject* RegisterPyObject(PyObject* name, PyObject* value);
 // Variant of RegisterPyObject that requires the object's value to be a type.
 PyObject* RegisterType(PyObject* type_name, PyObject* type);
 
-}  // namespace swig
-
 // Returns a borrowed reference to an object that was registered with
-// RegisterPyObject.  (Do not call PY_DECREF on the result).
+// RegisterPyObject.  (Do not call Py_DECREF on the result).
 PyObject* GetRegisteredPyObject(const std::string& name);
 
+}  // namespace swig
 }  // namespace tensorflow
 
 #endif  // TENSORFLOW_PYTHON_UTIL_UTIL_H_

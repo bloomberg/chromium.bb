@@ -16,7 +16,7 @@
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom-forward.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/ui/base/window_state_type.h"
@@ -912,6 +912,18 @@ class AutotestPrivateWaitForOverviewStateFunction : public ExtensionFunction {
   // Invoked when the animation has completed. |animation_succeeded| is whether
   // overview is in the target state.
   void Done(bool success);
+};
+
+// Gets the default pinned app IDs for the shelf.
+class AutotestPrivateGetDefaultPinnedAppIdsFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateGetDefaultPinnedAppIdsFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getDefaultPinnedAppIds",
+                             AUTOTESTPRIVATE_GETDEFAULTPINNEDAPPIDS)
+
+ private:
+  ~AutotestPrivateGetDefaultPinnedAppIdsFunction() override;
+  ResponseAction Run() override;
 };
 
 // Returns the overview mode state.

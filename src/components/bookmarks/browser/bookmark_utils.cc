@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
@@ -24,6 +25,7 @@
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/features.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -153,24 +155,6 @@ GURL GetUrlFromClipboard(bool notify_if_restricted) {
   return GURL(url_text);
 }
 
-class VectorIterator {
- public:
-  explicit VectorIterator(std::vector<const BookmarkNode*>* nodes)
-      : nodes_(nodes), current_(nodes->begin()) {}
-  bool has_next() { return (current_ != nodes_->end()); }
-  const BookmarkNode* Next() {
-    const BookmarkNode* result = *current_;
-    ++current_;
-    return result;
-  }
-
- private:
-  std::vector<const BookmarkNode*>* nodes_;
-  std::vector<const BookmarkNode*>::iterator current_;
-
-  DISALLOW_COPY_AND_ASSIGN(VectorIterator);
-};
-
 template <class type>
 void GetBookmarksMatchingPropertiesImpl(
     type& iterator,
@@ -212,6 +196,19 @@ bool HasUserCreatedBookmarks(BookmarkModel* model) {
 
 QueryFields::QueryFields() {}
 QueryFields::~QueryFields() {}
+
+VectorIterator::VectorIterator(std::vector<const BookmarkNode*>* nodes)
+    : nodes_(nodes), current_(nodes->begin()) {}
+
+bool VectorIterator::has_next() {
+  return (current_ != nodes_->end());
+}
+
+const BookmarkNode* VectorIterator::Next() {
+  const BookmarkNode* result = *current_;
+  ++current_;
+  return result;
+}
 
 void CloneBookmarkNode(BookmarkModel* model,
                        const std::vector<BookmarkNodeData::Element>& elements,
@@ -445,7 +442,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kEditBookmarksEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kShowAppsShortcutInBookmarkBar,
-      true,
+      base::FeatureList::IsEnabled(features::kAppsShortcutDefaultOff) ? false
+                                                                      : true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kShowReadingListInBookmarkBar, true,

@@ -428,6 +428,24 @@ std::array<Vector3, 4> ANGLETestBase::GetIndexedQuadVertices()
     return kIndexedQuadVertices;
 }
 
+testing::AssertionResult AssertEGLEnumsEqual(const char *lhsExpr,
+                                             const char *rhsExpr,
+                                             EGLenum lhs,
+                                             EGLenum rhs)
+{
+    if (lhs == rhs)
+    {
+        return testing::AssertionSuccess();
+    }
+    else
+    {
+        std::stringstream strstr;
+        strstr << std::hex << lhsExpr << " (0x" << int(lhs) << ") != " << rhsExpr << " (0x"
+               << int(rhs) << ")";
+        return testing::AssertionFailure() << strstr.str();
+    }
+}
+
 ANGLETestBase::ANGLETestBase(const PlatformParameters &params)
     : mWidth(16),
       mHeight(16),
@@ -604,8 +622,9 @@ void ANGLETestBase::ANGLETestSetUp()
     fullTestNameStr << testInfo->test_case_name() << "." << testInfo->name();
     std::string fullTestName = fullTestNameStr.str();
 
-    TestSuite *testSuite    = TestSuite::GetInstance();
-    int32_t testExpectation = testSuite->getTestExpectationWithConfig(testConfig, fullTestName);
+    TestSuite *testSuite = TestSuite::GetInstance();
+    int32_t testExpectation =
+        testSuite->getTestExpectationWithConfigAndUpdateTimeout(testConfig, fullTestName);
 
     if (testExpectation == GPUTestExpectationsParser::kGpuTestSkip)
     {

@@ -782,7 +782,7 @@ bool HTMLMediaElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
 
 LayoutObject* HTMLMediaElement::CreateLayoutObject(const ComputedStyle&,
                                                    LegacyLayout) {
-  return new LayoutMedia(this);
+  return MakeGarbageCollected<LayoutMedia>(this);
 }
 
 Node::InsertionNotificationRequest HTMLMediaElement::InsertedInto(
@@ -3584,12 +3584,6 @@ void HTMLMediaElement::DurationChanged(double duration, bool request_seek) {
     Seek(duration);
 }
 
-bool HTMLMediaElement::HasRemoteRoutes() const {
-  // TODO(mlamouri): used by MediaControlsPainter; should be refactored out.
-  return RemotePlaybackClient() &&
-         RemotePlaybackClient()->RemotePlaybackAvailable();
-}
-
 void HTMLMediaElement::RemotePlaybackCompatibilityChanged(const WebURL& url,
                                                           bool is_compatible) {
   if (RemotePlaybackClient())
@@ -4642,6 +4636,10 @@ void HTMLMediaElement::RequestSeekBackward(base::TimeDelta seek_time) {
 
 void HTMLMediaElement::RequestSeekTo(base::TimeDelta seek_time) {
   setCurrentTime(seek_time.InSecondsF());
+}
+
+void HTMLMediaElement::RequestMute(bool mute) {
+  setMuted(mute);
 }
 
 void HTMLMediaElement::SetVolumeMultiplier(double multiplier) {

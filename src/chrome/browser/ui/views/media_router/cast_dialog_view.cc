@@ -27,6 +27,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/media_router/browser/media_router_metrics.h"
 #include "components/media_router/common/media_sink.h"
+#include "components/media_router/common/mojom/media_route_provider_id.mojom-shared.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -366,7 +367,9 @@ void CastDialogView::SinkPressed(size_t index) {
     return;
 
   selected_sink_index_ = index;
-  const UIMediaSink& sink = sink_buttons_.at(index)->sink();
+  // sink() may get invalidated during CastDialogController::StartCasting()
+  // due to a model update, so make a copy here.
+  const UIMediaSink sink = sink_buttons_.at(index)->sink();
   if (sink.route) {
     metrics_.OnStopCasting(sink.route->is_local());
     // StopCasting() may trigger a model update and invalidate |sink|.
@@ -374,9 +377,6 @@ void CastDialogView::SinkPressed(size_t index) {
   } else if (sink.issue) {
     controller_->ClearIssue(sink.issue->id());
   } else {
-    // |sink| may get invalidated during CastDialogController::StartCasting()
-    // due to a model update, so we must use a copy of its |id| field.
-    const std::string sink_id = sink.id;
     absl::optional<MediaCastMode> cast_mode = GetCastModeToUse(sink);
     if (cast_mode) {
       // Starting local file casting may open a new tab synchronously on the UI
@@ -384,12 +384,13 @@ void CastDialogView::SinkPressed(size_t index) {
       // closing and getting destroyed.
       if (cast_mode.value() == LOCAL_FILE)
         set_close_on_deactivate(false);
-      controller_->StartCasting(sink_id, cast_mode.value());
+      controller_->StartCasting(sink.id, cast_mode.value());
       // Re-enable close on deactivate so the user can click elsewhere to close
       // the dialog.
       if (cast_mode.value() == LOCAL_FILE)
         set_close_on_deactivate(!keep_shown_for_testing_);
-      metrics_.OnStartCasting(base::Time::Now(), index, cast_mode.value());
+      metrics_.OnStartCasting(base::Time::Now(), index, cast_mode.value(),
+                              sink.icon_type, HasCastAndDialSinks());
     }
   }
 }
@@ -445,11 +446,7 @@ void CastDialogView::RecordSinkCountWithDelay() {
 }
 
 void CastDialogView::RecordSinkCount() {
-  std::vector<const UIMediaSink*> sinks;
-  for (CastDialogSinkButton* sink_button : sink_buttons_) {
-    sinks.push_back(&sink_button->sink());
-  }
-  metrics_.OnRecordSinkCount(sinks);
+  metrics_.OnRecordSinkCount(sink_buttons_);
 }
 
 void CastDialogView::OnFilePickerClosed(const ui::SelectedFileInfo* file_info) {
@@ -463,6 +460,29 @@ void CastDialogView::OnFilePickerClosed(const ui::SelectedFileInfo* file_info) {
 #endif  // defined(OS_WIN)
     SelectSource(SourceType::kLocalFile);
   }
+}
+
+bool CastDialogView::HasCastAndDialSinks() const {
+  bool has_cast = false;
+  bool has_dial = false;
+  for (const auto* sink_button : sink_buttons_) {
+    // A sink gets disabled while we're trying to connect to it, but we consider
+    // those sinks available.
+    if (!sink_button->GetEnabled() &&
+        sink_button->sink().state != UIMediaSinkState::CONNECTING) {
+      continue;
+    }
+    if (sink_button->sink().provider == mojom::MediaRouteProviderId::CAST) {
+      has_cast = true;
+    } else if (sink_button->sink().provider ==
+               mojom::MediaRouteProviderId::DIAL) {
+      has_dial = true;
+    }
+    if (has_cast && has_dial) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // static

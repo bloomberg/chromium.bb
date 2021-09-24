@@ -3923,10 +3923,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, LastCommittedOrigin) {
   // verify the subframe's origin.
   GURL url_c(embedded_test_server()->GetURL("c.com", "/title3.html"));
   {
-    TestFrameNavigationObserver commit_observer(root->child_at(0));
+    TestFrameNavigationObserver child_commit_observer(root->child_at(0));
     EXPECT_TRUE(
         ExecuteScript(child, "location.href = '" + url_c.spec() + "';"));
-    commit_observer.WaitForCommit();
+    child_commit_observer.WaitForCommit();
   }
   EXPECT_EQ(url::Origin::Create(url_c),
             child->current_frame_host()->GetLastCommittedOrigin());
@@ -4360,12 +4360,14 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
     observer.Wait();
 
     // This should swap BrowsingInstances.
-    scoped_refptr<SiteInstance> curr_instance(
+    scoped_refptr<SiteInstance> updated_curr_instance(
         popup->web_contents()->GetSiteInstance());
-    EXPECT_NE(a_site_instance, curr_instance);
-    EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(curr_instance.get()));
-    EXPECT_NE(prev_instance, curr_instance);
-    EXPECT_FALSE(prev_instance->IsRelatedSiteInstance(curr_instance.get()));
+    EXPECT_NE(a_site_instance, updated_curr_instance);
+    EXPECT_FALSE(
+        a_site_instance->IsRelatedSiteInstance(updated_curr_instance.get()));
+    EXPECT_NE(prev_instance, updated_curr_instance);
+    EXPECT_FALSE(
+        prev_instance->IsRelatedSiteInstance(updated_curr_instance.get()));
   }
 }
 
@@ -5631,15 +5633,6 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
         success_site_instance->IsRelatedSiteInstance(initial_instance.get()));
   }
 
-  // Install a client forcing every navigation to swap BrowsingInstances.
-  // TODO(https://crbug.com/1045524): Ensure for now that we are not swapping
-  // pages on reloads for now even when content client tells us to.
-  // Move client initialisation to a later point in the time after the
-  // problem is fixed.
-  BrowsingInstanceSwapContentBrowserClient content_browser_client;
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&content_browser_client);
-
   // Reload of the error page that still results in an error should stay in
   // the same SiteInstance. Ensure this works for both browser-initiated
   // reloads and renderer-initiated ones.
@@ -5665,6 +5658,11 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
     EXPECT_TRUE(
         IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
   }
+
+  // Install a client forcing every navigation to swap BrowsingInstances.
+  BrowsingInstanceSwapContentBrowserClient content_browser_client;
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
 
   // Allow the navigation to succeed and ensure it swapped to a non-related
   // SiteInstance.
@@ -6649,12 +6647,8 @@ class ProactivelySwapBrowsingInstancesSameSiteCoopTest
   ProactivelySwapBrowsingInstancesSameSiteCoopTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     std::vector<base::Feature> features;
-    feature_list_.InitWithFeatures(
-        {
-            network::features::kCrossOriginOpenerPolicy,
-            network::features::kCrossOriginOpenerPolicyReporting,
-        },
-        {});
+    feature_list_.InitAndEnableFeature(
+        network::features::kCrossOriginOpenerPolicy);
   }
 
   ~ProactivelySwapBrowsingInstancesSameSiteCoopTest() override = default;
@@ -8624,7 +8618,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
           StoragePartitionConfig::CreateDefault(browser_context),
           WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
           false /* does_site_request_dedicated_process_for_coop */,
-          false /* is_jit_disabled */)),
+          false /* is_jit_disabled */, false /* is_pdf */)),
       policy->GetProcessLock(process2->GetID()));
 
   // Ensure also that the foo.com process didn't change midway through the

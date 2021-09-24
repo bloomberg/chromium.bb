@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 import org.chromium.chrome.browser.offlinepages.measurements.OfflineMeasurementsBackgroundTask;
 import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
+import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeFactory;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.photo_picker.DecoderService;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -74,8 +75,9 @@ import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardShareActivity;
 import org.chromium.chrome.browser.signin.SigninCheckerProvider;
+import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
+import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager;
 import org.chromium.chrome.browser.util.AfterStartupTaskUtils;
-import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.browser_ui.contacts_picker.ContactsPickerDialog;
@@ -88,10 +90,9 @@ import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.content_capture.PlatformContentCaptureController;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.minidump_uploader.CrashFileManager;
+import org.chromium.components.optimization_guide.proto.HintsProto;
 import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
-import org.chromium.components.version_info.Channel;
-import org.chromium.components.version_info.VersionConstants;
 import org.chromium.components.viz.common.VizSwitches;
 import org.chromium.components.viz.common.display.DeJellyUtils;
 import org.chromium.components.webapps.AppBannerManager;
@@ -246,15 +247,9 @@ public class ProcessInitializationHandler {
                     return dialog;
                 });
 
+        SearchActivityPreferencesManager.onNativeLibraryReady();
         SearchWidgetProvider.initialize();
-
-        if (VersionConstants.CHANNEL == Channel.CANARY
-                || VersionConstants.CHANNEL == Channel.DEFAULT) {
-            // Changing the widget enabled state, which is only required during the experimentation
-            // phase, can trigger disk access. This can be removed when the QuickActionSearchWidget
-            // launches.
-            PostTask.postTask(TaskTraits.BEST_EFFORT, QuickActionSearchWidgetProvider::initialize);
-        }
+        QuickActionSearchWidgetProvider.initialize();
 
         HistoryDeletionBridge.getInstance().addObserver(new ContentCaptureHistoryDeletionObserver(
                 () -> PlatformContentCaptureController.getInstance()));
@@ -426,6 +421,16 @@ public class ProcessInitializationHandler {
                                 ContextUtils.getApplicationContext()));
         deferredStartupHandler.addDeferredTask(
                 () -> GlobalAppLocaleController.getInstance().recordOverrideLanguageMetrics());
+        deferredStartupHandler.addDeferredTask(() -> {
+            // OptimizationTypes which we give a guarantee will be registered when we pass the
+            // onDeferredStartup() signal to OptimizationGuide.
+            List<HintsProto.OptimizationType> registeredTypesAllowList = new ArrayList<>();
+            registeredTypesAllowList.addAll(
+                    ShoppingPersistedTabData.getShoppingHintsToRegisterOnDeferredStartup());
+            new OptimizationGuideBridgeFactory(registeredTypesAllowList)
+                    .create()
+                    .onDeferredStartup();
+        });
     }
 
     private void initChannelsAsync() {
@@ -468,8 +473,6 @@ public class ProcessInitializationHandler {
                     // This is needed to ensure the right behavior when the process is suddenly
                     // killed.
                     BookmarkWidgetProvider.refreshAllWidgets();
-
-                    WebApkVersionManager.updateWebApksIfNeeded();
 
                     removeSnapshotDatabase();
 

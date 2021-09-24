@@ -55,7 +55,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 export class Script implements TextUtils.ContentProvider.ContentProvider, FrameAssociated {
   debuggerModel: DebuggerModel;
-  scriptId: string;
+  scriptId: Protocol.Runtime.ScriptId;
   sourceURL: string;
   lineOffset: number;
   columnOffset: number;
@@ -77,11 +77,12 @@ export class Script implements TextUtils.ContentProvider.ContentProvider, FrameA
   private readonly embedderNameInternal: string|null;
   readonly isModule: boolean|null;
   constructor(
-      debuggerModel: DebuggerModel, scriptId: string, sourceURL: string, startLine: number, startColumn: number,
-      endLine: number, endColumn: number, executionContextId: number, hash: string, isContentScript: boolean,
-      isLiveEdit: boolean, sourceMapURL: string|undefined, hasSourceURL: boolean, length: number,
-      isModule: boolean|null, originStackTrace: Protocol.Runtime.StackTrace|null, codeOffset: number|null,
-      scriptLanguage: string|null, debugSymbols: Protocol.Debugger.DebugSymbols|null, embedderName: string|null) {
+      debuggerModel: DebuggerModel, scriptId: Protocol.Runtime.ScriptId, sourceURL: string, startLine: number,
+      startColumn: number, endLine: number, endColumn: number, executionContextId: number, hash: string,
+      isContentScript: boolean, isLiveEdit: boolean, sourceMapURL: string|undefined, hasSourceURL: boolean,
+      length: number, isModule: boolean|null, originStackTrace: Protocol.Runtime.StackTrace|null,
+      codeOffset: number|null, scriptLanguage: string|null, debugSymbols: Protocol.Debugger.DebugSymbols|null,
+      embedderName: string|null) {
     this.debuggerModel = debuggerModel;
     this.scriptId = scriptId;
     this.sourceURL = sourceURL;
@@ -327,7 +328,7 @@ export class Script implements TextUtils.ContentProvider.ContentProvider, FrameA
     return afterStart && beforeEnd;
   }
 
-  get frameId(): string {
+  get frameId(): Protocol.Page.FrameId {
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // @ts-expect-error
     if (typeof this[frameIdSymbol] !== 'string') {
@@ -337,7 +338,7 @@ export class Script implements TextUtils.ContentProvider.ContentProvider, FrameA
     }
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // @ts-expect-error
-    return this[frameIdSymbol] || '';
+    return this[frameIdSymbol];
   }
 
   createPageResourceLoadInitiator(): PageResourceLoadInitiator {
@@ -347,15 +348,15 @@ export class Script implements TextUtils.ContentProvider.ContentProvider, FrameA
 
 const frameIdSymbol = Symbol('frameid');
 
-function frameIdForScript(script: Script): string {
+function frameIdForScript(script: Script): Protocol.Page.FrameId|null {
   const executionContext = script.executionContext();
   if (executionContext) {
-    return executionContext.frameId || '';
+    return executionContext.frameId || null;
   }
   // This is to overcome compilation cache which doesn't get reset.
   const resourceTreeModel = script.debuggerModel.target().model(ResourceTreeModel);
   if (!resourceTreeModel || !resourceTreeModel.mainFrame) {
-    return '';
+    return null;
   }
   return resourceTreeModel.mainFrame.id;
 }

@@ -92,6 +92,7 @@ if is_asm_enabled
 
         libdav1d_sources += files(
             'arm/cpu.c',
+            'arm/refmvs_init.c',
         )
         libdav1d_tmpl_sources += files(
             'arm/cdef_init_tmpl.c',
@@ -109,6 +110,7 @@ if is_asm_enabled
                 'arm/64/itx.S',
                 'arm/64/looprestoration_common.S',
                 'arm/64/msac.S',
+                'arm/64/refmvs.S',
             )
 
             if dav1d_bitdepths.contains('8')
@@ -139,6 +141,7 @@ if is_asm_enabled
                 'arm/32/itx.S',
                 'arm/32/looprestoration_common.S',
                 'arm/32/msac.S',
+                'arm/32/refmvs.S',
             )
 
             if dav1d_bitdepths.contains('8')
@@ -175,6 +178,7 @@ if is_asm_enabled
         libdav1d_sources += files(
             'x86/cpu.c',
             'x86/msac_init.c',
+            'x86/refmvs_init.c',
         )
 
         libdav1d_tmpl_sources += files(
@@ -191,6 +195,7 @@ if is_asm_enabled
         libdav1d_sources_asm = files(
             'x86/cpuid.asm',
             'x86/msac.asm',
+            'x86/refmvs.asm',
             'x86/cdef_avx2.asm',
             'x86/itx_avx2.asm',
             'x86/looprestoration_avx2.asm',
@@ -286,7 +291,7 @@ libdav1d_entrypoints_objs = static_library('dav1d_entrypoint',
     c_args : [stackalign_flag, stackrealign_flag, api_export_flags],
     install : false,
     build_by_default : false,
-).extract_all_objects()
+).extract_all_objects(recursive: true)
 
 # Helper library for each bitdepth
 libdav1d_bitdepth_objs = []
@@ -299,7 +304,7 @@ foreach bitdepth : dav1d_bitdepths
         c_args : ['-DBITDEPTH=@0@'.format(bitdepth)] + stackalign_flag,
         install : false,
         build_by_default : false,
-    ).extract_all_objects()
+    ).extract_all_objects(recursive: true)
 endforeach
 
 # Helper library for each bitdepth and architecture-specific flags
@@ -312,7 +317,7 @@ foreach bitdepth : dav1d_bitdepths
         c_args : ['-DBITDEPTH=@0@'.format(bitdepth)] + stackalign_flag + arch_flags,
         install : false,
         build_by_default : false,
-    ).extract_all_objects()
+    ).extract_all_objects(recursive: true)
 endforeach
 
 # The final dav1d library

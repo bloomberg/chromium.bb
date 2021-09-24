@@ -150,7 +150,7 @@ NaClDomHandler::NaClDomHandler()
 NaClDomHandler::~NaClDomHandler() = default;
 
 void NaClDomHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "requestNaClInfo",
       base::BindRepeating(&NaClDomHandler::HandleRequestNaClInfo,
                           base::Unretained(this)));
@@ -295,7 +295,7 @@ void NaClDomHandler::AddNaClInfo(base::ListValue* list) {
 
 void NaClDomHandler::HandleRequestNaClInfo(const base::ListValue* args) {
   CHECK(callback_id_.empty());
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   callback_id_ = args->GetList()[0].GetString();
 
   if (!has_plugin_info_) {

@@ -511,9 +511,7 @@ void SVGImage::Draw(cc::PaintCanvas* canvas,
                     const PaintFlags& flags,
                     const FloatRect& dst_rect,
                     const FloatRect& src_rect,
-                    const ImageDrawOptions& draw_options,
-                    ImageClampingMode,
-                    ImageDecodingMode) {
+                    const ImageDrawOptions& draw_options) {
   const DrawInfo draw_info(FloatSize(intrinsic_size_), 1, NullURL(),
                            draw_options.apply_dark_mode);
   DrawInternal(draw_info, canvas, flags, dst_rect, src_rect);
@@ -557,7 +555,8 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
     return nullptr;
 
   view->UpdateAllLifecyclePhasesExceptPaint(DocumentUpdateReason::kSVGImage);
-  PaintController::CycleScope cycle_scope(*paint_controller_);
+  PaintController::CycleScope cycle_scope(*paint_controller_,
+                                          view->PaintDebugInfoEnabled());
   PaintRecordBuilder builder(*paint_controller_);
   builder.Context().SetDarkModeEnabled(draw_info.IsDarkModeEnabled());
   view->PaintOutsideOfLifecycle(builder.Context(), kGlobalPaintNormalPhase);

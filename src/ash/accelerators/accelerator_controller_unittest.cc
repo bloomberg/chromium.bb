@@ -28,7 +28,7 @@
 #include "ash/ime/mode_indicator_observer.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/media/media_controller_impl.h"
-#include "ash/public/cpp/capture_mode_test_api.h"
+#include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/ime_info.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -47,6 +47,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_test_util.h"
+#include "ash/wm/splitview/split_view_metrics_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/test_session_state_animator.h"
@@ -247,8 +248,19 @@ class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
   MOCK_METHOD(void, OpenCalculator, (), (override));
   MOCK_METHOD(void, ShowKeyboardShortcutViewer, (), (override));
   MOCK_METHOD(void,
-              NewTabWithUrl,
+              OpenUrl,
               (const GURL& url, bool from_user_interaction),
+              (override));
+};
+
+class MockAcceleratorObserver
+    : public testing::NiceMock<AcceleratorController::Observer> {
+ public:
+  // AcceleratorController::Observer:
+  MOCK_METHOD(void, OnActionPerformed, (AcceleratorAction action), (override));
+  MOCK_METHOD(void,
+              OnAcceleratorControllerWillBeDestroyed,
+              (AcceleratorController * controller),
               (override));
 };
 
@@ -805,6 +817,51 @@ TEST_F(AcceleratorControllerTestWithClamshellSplitView, WindowSnapUma) {
   right_tablet = 4;
   test("Unsnap right, tablet, overview", WINDOW_CYCLE_SNAP_RIGHT,
        WindowStateType::kMaximized);
+}
+
+TEST_F(AcceleratorControllerTestWithClamshellSplitView,
+       WindowSnapOrientationUma) {
+  UpdateDisplay("800x600");
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+  WindowState* window_state = WindowState::Get(window.get());
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+  WindowState* window_state2 = WindowState::Get(window2.get());
+  base::HistogramTester histogram_tester;
+  constexpr char kSnapWindowDeviceOrientationHistogram[] =
+      "Ash.Window.Snap.DeviceOrientation";
+  histogram_tester.ExpectBucketCount(
+      kSnapWindowDeviceOrientationHistogram,
+      SplitViewMetricsController::DeviceOrientation::kLandscape, 0);
+
+  window_state->Activate();
+  controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
+  gfx::Rect expected_bounds = GetDefaultSnappedWindowBoundsInParent(
+      window.get(), SnapViewType::kPrimary);
+  EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
+  histogram_tester.ExpectBucketCount(
+      kSnapWindowDeviceOrientationHistogram,
+      SplitViewMetricsController::DeviceOrientation::kLandscape, 1);
+  histogram_tester.ExpectBucketCount(
+      kSnapWindowDeviceOrientationHistogram,
+      SplitViewMetricsController::DeviceOrientation::kPortrait, 0);
+
+  controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
+  histogram_tester.ExpectBucketCount(
+      kSnapWindowDeviceOrientationHistogram,
+      SplitViewMetricsController::DeviceOrientation::kLandscape, 2);
+
+  histogram_tester.ExpectBucketCount(
+      kSnapWindowDeviceOrientationHistogram,
+      SplitViewMetricsController::DeviceOrientation::kPortrait, 0);
+
+  window_state2->Activate();
+  UpdateDisplay("800x600/l");
+  controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
+  histogram_tester.ExpectBucketCount(
+      kSnapWindowDeviceOrientationHistogram,
+      SplitViewMetricsController::DeviceOrientation::kPortrait, 1);
 }
 
 TEST_F(AcceleratorControllerTest, RotateScreen) {
@@ -2105,6 +2162,10 @@ TEST_F(AcceleratorControllerTest, TestToggleHighContrast) {
 }
 
 TEST_F(AcceleratorControllerTest, CalculatorKey) {
+  auto observer = std::make_unique<MockAcceleratorObserver>();
+  auto* accelerator_controller = ash::AcceleratorController::Get();
+  accelerator_controller->AddObserver(observer.get());
+
   // Verify that the launch calculator key (VKEY_MEDIA_LAUNCH_APP2) is
   // registered.
   ui::Accelerator accelerator(ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE);
@@ -2113,7 +2174,11 @@ TEST_F(AcceleratorControllerTest, CalculatorKey) {
   // Verify that the delegate to open the app is called.
   EXPECT_CALL(*new_window_delegate_, OpenCalculator)
       .WillOnce(testing::Return());
+  EXPECT_CALL(*observer, OnActionPerformed)
+      .WillOnce(
+          [](AcceleratorAction action) { EXPECT_EQ(OPEN_CALCULATOR, action); });
   EXPECT_TRUE(ProcessInController(accelerator));
+  accelerator_controller->RemoveObserver(observer.get());
 }
 
 // Tests the IME mode change key.
@@ -2368,7 +2433,7 @@ TEST_F(AcceleratorControllerStartupNotificationTest,
 
   // Setup the expectation that the learn more button opens this shortcut
   // help link.
-  EXPECT_CALL(*new_window_delegate_, NewTabWithUrl)
+  EXPECT_CALL(*new_window_delegate_, OpenUrl)
       .WillOnce([](const GURL& url, bool from_user_interaction) {
         EXPECT_EQ(GURL(kKeyboardShortcutHelpPageUrl), url);
         EXPECT_TRUE(from_user_interaction);

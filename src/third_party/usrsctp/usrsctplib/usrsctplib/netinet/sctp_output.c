@@ -10435,7 +10435,7 @@ sctp_chunk_retransmission(struct sctp_inpcb *inp,
 					 * also double the output queue size, since this
 					 * get shrunk when we free by this amount.
 					 */
-					atomic_add_int(&((asoc)->total_output_queue_size),data_list[i]->book_size);
+					atomic_add_int(&((asoc)->total_output_queue_size), data_list[i]->book_size);
 					data_list[i]->book_size *= 2;
 				} else {
 					if (SCTP_BASE_SYSCTL(sctp_logging_level) & SCTP_LOG_RWND_ENABLE) {
@@ -12084,7 +12084,7 @@ sctp_send_hb(struct sctp_tcb *stcb, struct sctp_nets *net,int so_locked)
 	/* Fill out hb parameter */
 	hb->heartbeat.hb_info.ph.param_type = htons(SCTP_HEARTBEAT_INFO);
 	hb->heartbeat.hb_info.ph.param_length = htons(sizeof(struct sctp_heartbeat_info_param));
-	hb->heartbeat.hb_info.time_value_1 = now.tv_sec;
+	hb->heartbeat.hb_info.time_value_1 = (uint32_t)now.tv_sec;
 	hb->heartbeat.hb_info.time_value_2 = now.tv_usec;
 	/* Did our user request this one, put it in */
 	hb->heartbeat.hb_info.addr_family = (uint8_t)net->ro._l_addr.sa.sa_family;
@@ -13713,8 +13713,8 @@ sctp_lower_sosend(struct socket *so,
 			if ((sinfo_flags & SCTP_ABORT) ||
 			    ((sinfo_flags & SCTP_EOF) && (sndlen == 0))) {
 				/*-
-				 * User asks to abort a non-existant assoc,
-				 * or EOF a non-existant assoc with no data
+				 * User asks to abort a non-existent assoc,
+				 * or EOF a non-existent assoc with no data
 				 */
 				SCTP_LTRACE_ERR_RET(inp, stcb, net, SCTP_FROM_SCTP_OUTPUT, ENOENT);
 				error = ENOENT;
@@ -13859,7 +13859,7 @@ sctp_lower_sosend(struct socket *so,
 		SCTP_TCB_UNLOCK(stcb);
 		hold_tcblock = 0;
 	} else {
-		atomic_add_int(&stcb->asoc.sb_send_resv, sndlen);
+		atomic_add_int(&stcb->asoc.sb_send_resv, (int)sndlen);
 	}
 	local_soresv = sndlen;
 	if (stcb->asoc.state & SCTP_STATE_ABOUT_TO_BE_FREED) {
@@ -14797,7 +14797,7 @@ out:
 out_unlocked:
 
 	if (local_soresv && stcb) {
-		atomic_subtract_int(&stcb->asoc.sb_send_resv, sndlen);
+		atomic_subtract_int(&stcb->asoc.sb_send_resv, (int)sndlen);
 	}
 	if (create_lock_applied) {
 		SCTP_ASOC_CREATE_UNLOCK(inp);

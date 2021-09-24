@@ -75,6 +75,7 @@ class Node;
 class RuleFeatureSet;
 class ShadowTreeStyleSheetCollection;
 class DocumentStyleEnvironmentVariables;
+class CascadeLayerMap;
 class StyleRuleFontFace;
 class StyleRuleUsageTracker;
 class StyleSheetContents;
@@ -238,7 +239,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   }
   bool UsesContainerQueries() const {
     return GetRuleFeatureSet().UsesContainerQueries() ||
-           uses_container_relative_units_;
+           uses_container_relative_units_ || skipped_container_recalc_;
   }
 
   void SetUsesContainerRelativeUnits() {
@@ -284,6 +285,19 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                 .ViewportDependentMediaQueryResults()
                 .IsEmpty();
   }
+
+  class InApplyAnimationUpdateScope {
+    STACK_ALLOCATED();
+
+   public:
+    explicit InApplyAnimationUpdateScope(StyleEngine& engine)
+        : auto_reset_(&engine.in_apply_animation_update_, true) {}
+
+   private:
+    base::AutoReset<bool> auto_reset_;
+  };
+
+  bool InApplyAnimationUpdate() const { return in_apply_animation_update_; }
 
   void UpdateStyleInvalidationRoot(ContainerNode* ancestor, Node* dirty_node);
   void UpdateStyleRecalcRoot(ContainerNode* ancestor, Node* dirty_node);
@@ -389,17 +403,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // elements *referenced* by @scroll-timeline rules change.
   void ScrollTimelinesChanged();
 
-  bool NeedsWhitespaceReattachment() const {
-    return !whitespace_reattach_set_.IsEmpty();
-  }
-  bool NeedsWhitespaceReattachment(Element* element) const {
-    return whitespace_reattach_set_.Contains(element);
-  }
-  void ClearNeedsWhitespaceReattachmentFor(Element* element) {
-    whitespace_reattach_set_.erase(element);
-  }
-  void ClearWhitespaceReattachSet() { whitespace_reattach_set_.clear(); }
-  void MarkForWhitespaceReattachment();
   void MarkAllElementsForStyleRecalc(const StyleChangeReasonForTracing& reason);
   void MarkViewportStyleDirty();
   bool IsViewportStyleDirty() const { return viewport_style_dirty_; }
@@ -428,6 +431,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   CounterStyleMap* GetUserCounterStyleMap() { return user_counter_style_map_; }
   const CounterStyle& FindCounterStyleAcrossScopes(const AtomicString&,
                                                    const TreeScope*) const;
+
+  const CascadeLayerMap* GetUserCascadeLayerMap() const {
+    return user_cascade_layer_map_;
+  }
 
   DocumentStyleEnvironmentVariables& EnsureEnvironmentVariables();
 
@@ -458,6 +465,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool InContainerQueryStyleRecalc() const {
     return in_container_query_style_recalc_;
   }
+  void SkipStyleRecalcForContainer() { skipped_container_recalc_ = true; }
   void ChangeRenderingForHTMLSelect(HTMLSelectElement& select);
 
   void SetColorSchemeFromMeta(const CSSValue* color_scheme);
@@ -575,6 +583,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
   void AddPropertyRules(const RuleSet&);
   void AddScrollTimelineRules(const RuleSet&);
+  bool UserKeyframeStyleShouldOverride(
+      const StyleRuleKeyframes* new_rule,
+      const StyleRuleKeyframes* existing_rule) const;
 
   CounterStyleMap& EnsureUserCounterStyleMap();
 
@@ -634,9 +645,17 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   bool uses_rem_units_{false};
   bool uses_container_relative_units_{false};
+  // True if the previous UpdateStyleAndLayoutTree skipped style recalc for a
+  // subtree for a container to have the follow layout update the size of the
+  // container before continuing with interleaved style and layout with the
+  // correct container size for container queries. This being true is a signal
+  // to EnsureComputedStyle that we need to update layout to have up-to-date
+  // ComputedStyles.
+  bool skipped_container_recalc_{false};
   bool in_layout_tree_rebuild_{false};
   bool in_container_query_style_recalc_{false};
   bool in_dom_removal_{false};
+  bool in_apply_animation_update_{false};
   bool viewport_style_dirty_{false};
   bool fonts_need_update_{false};
   bool counter_styles_need_update_{false};
@@ -665,12 +684,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   StyleRecalcRoot style_recalc_root_;
   LayoutTreeRebuildRoot layout_tree_rebuild_root_;
 
-  // This is a set of rendered elements which had one or more of its rendered
-  // children removed since the last lifecycle update. For such elements we need
-  // to re-attach whitespace children. Also see reattach_all_whitespace_nodes_
-  // in the WhitespaceAttacher class.
-  HeapHashSet<Member<Element>> whitespace_reattach_set_;
-
   Member<CSSFontSelector> font_selector_;
 
   HeapHashMap<AtomicString, WeakMember<StyleSheetContents>>
@@ -698,6 +711,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   HeapHashMap<AtomicString, Member<StyleRuleScrollTimeline>>
       scroll_timeline_rule_map_;
   HeapHashMap<AtomicString, Member<CSSScrollTimeline>> scroll_timeline_map_;
+
+  Member<CascadeLayerMap> user_cascade_layer_map_;
 
   scoped_refptr<DocumentStyleEnvironmentVariables> environment_variables_;
 

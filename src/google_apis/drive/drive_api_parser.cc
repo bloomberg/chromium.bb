@@ -55,8 +55,8 @@ bool GetParentsFromValue(const base::Value* value,
     return false;
 
   base::JSONValueConverter<ParentReference> converter;
-  result->resize(list_value->GetSize());
-  for (size_t i = 0; i < list_value->GetSize(); ++i) {
+  result->resize(list_value->GetList().size());
+  for (size_t i = 0; i < list_value->GetList().size(); ++i) {
     const base::Value* parent_value = nullptr;
     if (!list_value->Get(i, &parent_value) ||
         !converter.Convert(*parent_value, &(*result)[i]))
@@ -81,13 +81,13 @@ bool GetOpenWithLinksFromDictionaryValue(
   result->reserve(dictionary_value->DictSize());
   for (base::DictionaryValue::Iterator iter(*dictionary_value); !iter.IsAtEnd();
        iter.Advance()) {
-    std::string string_value;
-    if (!iter.value().GetAsString(&string_value))
+    const std::string* string_value = iter.value().GetIfString();
+    if (!string_value)
       return false;
 
     FileResource::OpenWithLink open_with_link;
     open_with_link.app_id = iter.key();
-    open_with_link.open_url = GURL(string_value);
+    open_with_link.open_url = GURL(*string_value);
     result->push_back(open_with_link);
   }
 

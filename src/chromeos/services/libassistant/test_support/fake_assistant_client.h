@@ -29,6 +29,9 @@ class FakeAssistantClient : public AssistantClient {
         AssistantClient::assistant_manager_internal());
   }
 
+  void StartServices() override;
+  void SetChromeOSApiDelegate(
+      assistant_client::ChromeOSApiDelegate* delegate) override;
   bool StartGrpcServices() override;
   void AddExperimentIds(const std::vector<std::string>& exp_ids) override;
   void SendVoicelessInteraction(
@@ -36,15 +39,28 @@ class FakeAssistantClient : public AssistantClient {
       const std::string& description,
       const ::assistant::api::VoicelessOptions& options,
       base::OnceCallback<void(bool)> on_done) override;
-  void StartSpeakerIdEnrollment(
-      const StartSpeakerIdEnrollmentRequest& request,
-      base::RepeatingCallback<void(const SpeakerIdEnrollmentEvent&)> on_done)
+  void AddSpeakerIdEnrollmentEventObserver(
+      GrpcServicesObserver<OnSpeakerIdEnrollmentEventRequest>* observer)
       override;
+  void RemoveSpeakerIdEnrollmentEventObserver(
+      GrpcServicesObserver<OnSpeakerIdEnrollmentEventRequest>* observer)
+      override;
+  void StartSpeakerIdEnrollment(
+      const StartSpeakerIdEnrollmentRequest& request) override;
   void CancelSpeakerIdEnrollment(
       const CancelSpeakerIdEnrollmentRequest& request) override;
   void GetSpeakerIdEnrollmentInfo(
       const GetSpeakerIdEnrollmentInfoRequest& request,
       base::OnceCallback<void(bool user_model_exists)> on_done) override;
+  void ResetAllDataAndShutdown() override;
+  void OnDisplayRequest(const OnDisplayRequestRequest& request) override;
+  void AddDisplayEventObserver(
+      GrpcServicesObserver<OnAssistantDisplayEventRequest>* observer) override;
+  void ResumeCurrentStream() override;
+  void PauseCurrentStream() override;
+  void SetExternalPlaybackState(const MediaStatus& status_proto) override;
+  void AddDeviceStateEventObserver(
+      GrpcServicesObserver<OnDeviceStateEventRequest>* observer) override;
 };
 
 }  // namespace libassistant

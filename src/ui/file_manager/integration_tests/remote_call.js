@@ -122,7 +122,8 @@ export class RemoteCall {
   /**
    * Waits until a window having the given ID prefix appears.
    * @param {string} windowIdPrefix ID prefix of the requested window.
-   * @return {Promise} promise Promise to be fulfilled with a found window's ID.
+   * @return {!Promise<string>} promise Promise to be fulfilled with a found
+   *     window's ID.
    */
   waitForWindow(windowIdPrefix) {
     const caller = getCaller();
@@ -435,7 +436,8 @@ export class RemoteCall {
     const y =
         Math.floor(element['renderedTop'] + (element['renderedHeight'] / 2));
 
-    return sendTestMessage({name: 'simulateClick', 'clickX': x, 'clickY': y});
+    return sendTestMessage(
+        {appId, name: 'simulateClick', 'clickX': x, 'clickY': y});
   }
 }
 
@@ -472,10 +474,49 @@ export class RemoteCallFilesApp extends RemoteCall {
         if (response === '"@undefined@"') {
           fulfill(undefined);
         } else {
-          fulfill(JSON.parse(response));
+          try {
+            fulfill(response == '' ? true : JSON.parse(response));
+          } catch (e) {
+            console.error(`Failed to parse "${response}" due to ${e}`);
+            fulfill(false);
+          }
         }
       });
     });
+  }
+
+  /** @override */
+  async waitForWindow(windowIdPrefix) {
+    if (!this.isSwaMode()) {
+      return super.waitForWindow(windowIdPrefix);
+    }
+
+    return this.waitForSwaWindow();
+  }
+
+  async getWindows() {
+    if (!this.isSwaMode()) {
+      return this.callRemoteTestUtil('getWindows', null, []);
+    }
+
+    return await sendTestMessage({name: 'getWindowsSWA', isSWA: true});
+  }
+
+  /**
+   * Wait for a SWA window to be open.
+   * @return {!Promise<string>}
+   */
+  async waitForSwaWindow() {
+    const caller = getCaller();
+    const appId = await repeatUntil(async () => {
+      const ret = await sendTestMessage({name: 'findSwaWindow'});
+      if (ret === 'none') {
+        return pending(caller, 'Wait for SWA window');
+      }
+      return ret;
+    });
+
+    return appId;
   }
 
   /**

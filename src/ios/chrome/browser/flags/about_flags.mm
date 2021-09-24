@@ -17,6 +17,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
+#import "base/mac/foundation_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -40,18 +41,20 @@
 #include "components/ntp_tiles/switches.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "components/policy/policy_constants.h"
 #include "components/security_state/core/features.h"
+#import "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/ios/browser/features.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -60,6 +63,7 @@
 #include "ios/chrome/browser/crash_report/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/policy/policy_features.h"
+#include "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -71,7 +75,6 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
-#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/web/features.h"
@@ -459,10 +462,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPruneSuggestionsName,
      flag_descriptions::kAutofillPruneSuggestionsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
-    {"collections-card-presentation-style",
-     flag_descriptions::kCollectionsCardPresentationStyleName,
-     flag_descriptions::kCollectionsCardPresentationStyleDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCollectionsCardPresentationStyle)},
     {"metrickit-crash-reports", flag_descriptions::kMetrickitCrashReportName,
      flag_descriptions::kMetrickitCrashReportDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kMetrickitCrashReport)},
@@ -487,9 +486,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSaveCardDismissOnNavigation)},
-    {"force-unstacked-tabstrip", flag_descriptions::kForceUnstackedTabstripName,
-     flag_descriptions::kForceUnstackedTabstripDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kForceUnstackedTabstrip)},
     {"desktop-version-default", flag_descriptions::kDefaultToDesktopOnIPadName,
      flag_descriptions::kDefaultToDesktopOnIPadDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kUseDefaultUserAgentInWebClient)},
@@ -534,14 +530,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFullPageScreenshotName,
      flag_descriptions::kEnableFullPageScreenshotDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableFullPageScreenshot)},
+    {"enable-optimization-guide",
+     flag_descriptions::kEnableOptimizationGuideName,
+     flag_descriptions::kEnableOptimizationGuideDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(optimization_guide::features::kOptimizationHints)},
     {"legacy-tls-interstitial",
      flag_descriptions::kIOSLegacyTLSInterstitialsName,
      flag_descriptions::kIOSLegacyTLSInterstitialsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kIOSLegacyTLSInterstitial)},
-    {"enable-close-all-tabs-confirmation",
-     flag_descriptions::kEnableCloseAllTabsConfirmationName,
-     flag_descriptions::kEnableCloseAllTabsConfirmationDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableCloseAllTabsConfirmation)},
 #if BUILDFLAG(IOS_SCREEN_TIME_ENABLED)
     {"screen-time-integration-ios",
      flag_descriptions::kScreenTimeIntegrationName,
@@ -551,13 +547,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"mice-web-signin", flag_descriptions::kMICEWebSignInName,
      flag_descriptions::kMICEWebSignInDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(signin::kMICEWebSignIn)},
-    {"mobile-identity-consistency",
-     flag_descriptions::kMobileIdentityConsistencyName,
-     flag_descriptions::kMobileIdentityConsistencyDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(signin::kMobileIdentityConsistency)},
-    {"simplify-sign-out-ios", flag_descriptions::kSimplifySignOutIOSName,
-     flag_descriptions::kSimplifySignOutIOSDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(signin::kSimplifySignOutIOS)},
     {"modern-tab-strip", flag_descriptions::kModernTabStripName,
      flag_descriptions::kModernTabStripDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kModernTabStrip)},
@@ -581,6 +570,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieDescription,
      flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kDelayThresholdMinutesToUpdateGaiaCookieChoices)},
+    {"add-passwords-in-settings",
+     flag_descriptions::kAddPasswordsInSettingsName,
+     flag_descriptions::kAddPasswordsInSettingsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kSupportForAddPasswordsInSettings)},
     {"edit-passwords-in-settings",
      flag_descriptions::kEditPasswordsInSettingsName,
      flag_descriptions::kEditPasswordsInSettingsDescription, flags_ui::kOsIos,
@@ -640,10 +634,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kDetectFormSubmissionOnFormClear)},
-    {"password-reuse-detection", flag_descriptions::kPasswordReuseDetectionName,
-     flag_descriptions::kPasswordReuseDetectionDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kPasswordReuseDetectionEnabled)},
     {"enable-manual-password-generation",
      flag_descriptions::kEnableManualPasswordGenerationName,
      flag_descriptions::kEnableManualPasswordGenerationDescription,
@@ -705,13 +695,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"tabs-bulkactions-ios", flag_descriptions::kTabsBulkActionsName,
      flag_descriptions::kTabsBulkActionsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabsBulkActions)},
-    {"tabgrid-context-menu-ios", flag_descriptions::kTabGridContextMenuName,
-     flag_descriptions::kTabGridContextMenuDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kTabGridContextMenu)},
     {"incognito-brand-consistency-for-ios",
      flag_descriptions::kIncognitoBrandConsistencyForIOSName,
      flag_descriptions::kIncognitoBrandConsistencyForIOSDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kIncognitoBrandConsistencyForIOS)},
+    {"incognito-ntp-revamp", flag_descriptions::kIncognitoNtpRevampName,
+     flag_descriptions::kIncognitoNtpRevampDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIncognitoNtpRevamp)},
     {"update-history-entry-points-in-incognito",
      flag_descriptions::kUpdateHistoryEntryPointsInIncognitoName,
      flag_descriptions::kUpdateHistoryEntryPointsInIncognitoDescription,
@@ -731,10 +721,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceDisableExtendedSyncPromosDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kForceDisableExtendedSyncPromos)},
-    {"enable-extended-sync-promos-capability",
-     flag_descriptions::kEnableExtendedSyncPromosCapabilityName,
-     flag_descriptions::kEnableExtendedSyncPromosCapabilityDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(switches::kMinorModeSupport)},
     {"download-mobileconfig-file",
      flag_descriptions::kDownloadMobileConfigFileName,
      flag_descriptions::kDownloadMobileConfigFileDescription, flags_ui::kOsIos,
@@ -778,6 +764,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillFillMerchantPromoCodeFields)},
+    {"context-menu-actions-refresh",
+     flag_descriptions::kContextMenuActionsRefreshName,
+     flag_descriptions::kContextMenuActionsRefreshDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kContextMenuActionsRefresh)},
     {"context-menu-phase2",
      flag_descriptions::kWebViewNativeContextMenuPhase2Name,
      flag_descriptions::kWebViewNativeContextMenuPhase2Description,
@@ -792,6 +782,15 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultWebViewContextMenuName,
      flag_descriptions::kDefaultWebViewContextMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kDefaultWebViewContextMenu)},
+    {"send-tab-to-self-when-signed-in",
+     flag_descriptions::kSendTabToSelfWhenSignedInName,
+     flag_descriptions::kSendTabToSelfWhenSignedInDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfWhenSignedIn)},
+    {"send-tab-to-self-manage-devices-link",
+     flag_descriptions::kSendTabToSelfManageDevicesLinkName,
+     flag_descriptions::kSendTabToSelfManageDevicesLinkDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfManageDevicesLink)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -803,25 +802,11 @@ flags_ui::FlagsState& GetGlobalFlagsState() {
                                                               nullptr);
   return *flags_state;
 }
-}  // namespace
-
-// Add all switches from experimental flags to |command_line|.
-void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
+// Creates the experimental test policies map, used by AsyncPolicyLoader and
+// PolicyLoaderIOS to locally enable policies.
+NSMutableDictionary* CreateExperimentalTestingPolicies(
+    base::CommandLine* command_line) {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-
-  // Set the UA flag if UseMobileSafariUA is enabled.
-  if ([defaults boolForKey:@"UseMobileSafariUA"]) {
-    // Safari uses "Vesion/", followed by the OS version excluding bugfix, where
-    // Chrome puts its product token.
-    int32_t major = 0;
-    int32_t minor = 0;
-    int32_t bugfix = 0;
-    base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-    std::string product = base::StringPrintf("Version/%d.%d", major, minor);
-
-    command_line->AppendSwitchASCII(switches::kUserAgent,
-                                    web::BuildMobileUserAgent(product));
-  }
 
   // Shared variables for all enterprise experimental flags.
   NSMutableDictionary* testing_policies = [[NSMutableDictionary alloc] init];
@@ -868,19 +853,47 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
       base::SysUTF8ToNSString(policy::key::kSafeBrowsingProtectionLevel) : @2,
 
       base::SysUTF8ToNSString(policy::key::kSearchSuggestEnabled) : @YES,
-
-      // 0 = browser sign-in disabled
-      base::SysUTF8ToNSString(policy::key::kBrowserSignin) : @0,
     }];
   }
 
   if ([defaults boolForKey:@"EnableSyncDisabledPolicy"]) {
-    [testing_policies addEntriesFromDictionary:@{
-      base::SysUTF8ToNSString(policy::key::kSyncDisabled) : @YES
-    }];
     NSString* sync_policy_key =
         base::SysUTF8ToNSString(policy::key::kSyncDisabled);
+    [testing_policies addEntriesFromDictionary:@{sync_policy_key : @YES}];
     [allowed_experimental_policies addObject:sync_policy_key];
+  }
+
+  // SyncTypesListDisabled policy.
+  NSString* Sync_types_list_disabled_key =
+      base::SysUTF8ToNSString(policy::key::kSyncTypesListDisabled);
+  NSMutableArray* Sync_types_list_disabled_values =
+      [[NSMutableArray alloc] init];
+  if ([defaults boolForKey:@"SyncTypesListBookmarks"]) {
+    [Sync_types_list_disabled_values addObject:@"bookmarks"];
+  }
+  if ([defaults boolForKey:@"SyncTypesListReadingList"]) {
+    [Sync_types_list_disabled_values addObject:@"readingList"];
+  }
+  if ([defaults boolForKey:@"SyncTypesListPreferences"]) {
+    [Sync_types_list_disabled_values addObject:@"preferences"];
+  }
+  if ([defaults boolForKey:@"SyncTypesListPasswords"]) {
+    [Sync_types_list_disabled_values addObject:@"passwords"];
+  }
+  if ([defaults boolForKey:@"SyncTypesListAutofill"]) {
+    [Sync_types_list_disabled_values addObject:@"autofill"];
+  }
+  if ([defaults boolForKey:@"SyncTypesListTypedUrls"]) {
+    [Sync_types_list_disabled_values addObject:@"typedUrls"];
+  }
+  if ([defaults boolForKey:@"SyncTypesListTabs"]) {
+    [Sync_types_list_disabled_values addObject:@"tabs"];
+  }
+  if ([Sync_types_list_disabled_values count]) {
+    [testing_policies addEntriesFromDictionary:@{
+      Sync_types_list_disabled_key : Sync_types_list_disabled_values
+    }];
+    [allowed_experimental_policies addObject:Sync_types_list_disabled_key];
   }
 
   // If an incognito mode availability is set, add the policy key to the list of
@@ -896,23 +909,36 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     }];
   }
 
-  // If a CBCM enrollment token is provided, force Chrome Browser Cloud
-  // Management to enabled and add the token to the list of policies.
-  NSString* token_key =
-      base::SysUTF8ToNSString(policy::key::kCloudManagementEnrollmentToken);
-  NSString* token = [defaults stringForKey:token_key];
-
-  if ([token length] > 0) {
-    command_line->AppendSwitch(switches::kEnableChromeBrowserCloudManagement);
-    [testing_policies setValue:token forKey:token_key];
-  }
-
   NSString* restriction_pattern =
       [defaults stringForKey:@"RestrictAccountsToPatterns"];
   if ([restriction_pattern length] > 0) {
+    NSString* restrict_key =
+        base::SysUTF8ToNSString(policy::key::kRestrictAccountsToPatterns);
     [testing_policies addEntriesFromDictionary:@{
-      base::SysUTF8ToNSString(policy::key::kRestrictAccountsToPatterns) :
-          @[ restriction_pattern ]
+      restrict_key : @[ restriction_pattern ]
+    }];
+    [allowed_experimental_policies addObject:restrict_key];
+  }
+
+  // If the sign-in policy is set (not "None"), add the policy key to the list
+  // of enabled experimental policies, and set the value.
+  NSString* const kSigninPolicyKey = @"BrowserSignin";
+  NSInteger signin_policy_mode = [defaults integerForKey:kSigninPolicyKey];
+  if (signin_policy_mode) {
+    // Remove the mode offset that was used to represent the unset policy.
+    --signin_policy_mode;
+    DCHECK(signin_policy_mode >= 0);
+
+    if (signin_policy_mode ==
+        static_cast<NSInteger>(BrowserSigninMode::kForced)) {
+      // Allow the forced sign-in policy feature when the corresponding policy
+      // mode is specified.
+      command_line->AppendSwitch(switches::kEnableForcedSignInPolicy);
+    }
+
+    [allowed_experimental_policies addObject:kSigninPolicyKey];
+    [testing_policies addEntriesFromDictionary:@{
+      kSigninPolicyKey : @(signin_policy_mode),
     }];
   }
 
@@ -922,6 +948,65 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     [testing_policies setValue:allowed_experimental_policies
                         forKey:base::SysUTF8ToNSString(
                                    policy::key::kEnableExperimentalPolicies)];
+  }
+
+  // Warning: Add new flags to TestingPoliciesHash() below.
+
+  return testing_policies;
+}
+
+// Generates a unique NSString based on currently monitored policies from
+// NSUserDefaults standardUserDefaults.
+NSString* TestingPoliciesHash() {
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  return [NSString
+      stringWithFormat:@"%d|%d|%d|%@|%d|%d|%d|%d|%d|%d|%d",
+                       [defaults boolForKey:@"EnableSyncDisabledPolicy"],
+                       [defaults boolForKey:@"EnableSamplePolicies"],
+                       (int)[defaults
+                           integerForKey:@"IncognitoModeAvailability"],
+                       [defaults stringForKey:@"RestrictAccountsToPatterns"],
+                       [defaults boolForKey:@"SyncTypesListBookmarks"],
+                       [defaults boolForKey:@"SyncTypesListReadingList"],
+                       [defaults boolForKey:@"SyncTypesListPreferences"],
+                       [defaults boolForKey:@"SyncTypesListPasswords"],
+                       [defaults boolForKey:@"SyncTypesListAutofill"],
+                       [defaults boolForKey:@"SyncTypesListTypedUrls"],
+                       [defaults boolForKey:@"SyncTypesListTabs"]];
+}
+}  // namespace
+
+// Add all switches from experimental flags to |command_line|.
+void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+
+  // Set the UA flag if UseMobileSafariUA is enabled.
+  if ([defaults boolForKey:@"UseMobileSafariUA"]) {
+    // Safari uses "Vesion/", followed by the OS version excluding bugfix, where
+    // Chrome puts its product token.
+    int32_t major = 0;
+    int32_t minor = 0;
+    int32_t bugfix = 0;
+    base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+    std::string product = base::StringPrintf("Version/%d.%d", major, minor);
+
+    command_line->AppendSwitchASCII(switches::kUserAgent,
+                                    web::BuildMobileUserAgent(product));
+  }
+
+  // Shared variables for all enterprise experimental flags.
+  NSMutableDictionary* testing_policies =
+      CreateExperimentalTestingPolicies(command_line);
+
+  // If a CBCM enrollment token is provided, force Chrome Browser Cloud
+  // Management to enabled and add the token to the list of policies.
+  NSString* token_key =
+      base::SysUTF8ToNSString(policy::key::kCloudManagementEnrollmentToken);
+  NSString* token = [defaults stringForKey:token_key];
+
+  if ([token length] > 0) {
+    command_line->AppendSwitch(switches::kEnableChromeBrowserCloudManagement);
+    [testing_policies setValue:token forKey:token_key];
   }
 
   // If some policies were set, commit them to the app's registration defaults.
@@ -978,6 +1063,47 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
       defaults, command_line);
 }
 
+void MonitorExperimentalSettingsChanges() {
+  // Startup values for settings to be observed.
+  __block NSString* hash = TestingPoliciesHash();
+  static std::atomic_bool pending_check(false);
+
+  auto monitor = ^(NSNotification* notification) {
+    bool has_pending_check = pending_check.exchange(true);
+    if (has_pending_check)
+      return;
+
+    // Can be called from any thread from where the notification was sent,
+    // but since it may change standardUserDefaults, and that has to be on main
+    // thread, dispatch to main thread.
+    dispatch_async(dispatch_get_main_queue(), ^{
+      // Check if observed settings have changed. Since source and destination
+      // are both user defaults, this is required to avoid cycling back here.
+      NSString* newHash = TestingPoliciesHash();
+      if (![newHash isEqualToString:hash]) {
+        hash = newHash;
+
+        // Publish update.
+        NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+        NSMutableDictionary* testing_policies =
+            CreateExperimentalTestingPolicies(
+                base::CommandLine::ForCurrentProcess());
+        NSDictionary* registration_defaults =
+            @{kPolicyLoaderIOSConfigurationKey : testing_policies};
+        [defaults registerDefaults:registration_defaults];
+      }
+
+      pending_check.store(false);
+    });
+  };
+
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center addObserverForName:NSUserDefaultsDidChangeNotification
+                      object:nil
+                       queue:nil
+                  usingBlock:monitor];
+}
+
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line) {
   GetGlobalFlagsState().ConvertFlagsToSwitches(
@@ -1027,9 +1153,9 @@ void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
 
 namespace testing {
 
-const flags_ui::FeatureEntry* GetFeatureEntries(size_t* count) {
-  *count = base::size(kFeatureEntries);
-  return kFeatureEntries;
+base::span<const flags_ui::FeatureEntry> GetFeatureEntries() {
+  return base::span<const flags_ui::FeatureEntry>(kFeatureEntries,
+                                                  base::size(kFeatureEntries));
 }
 
 }  // namespace testing

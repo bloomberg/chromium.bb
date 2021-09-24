@@ -1,6 +1,7 @@
 #ifndef QUICHE_HTTP2_ADAPTER_TEST_UTILS_H_
 #define QUICHE_HTTP2_ADAPTER_TEST_UTILS_H_
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -21,7 +22,7 @@ namespace test {
 class QUICHE_NO_EXPORT DataSavingVisitor
     : public testing::StrictMock<MockHttp2Visitor> {
  public:
-  ssize_t OnReadyToSend(absl::string_view data) override {
+  int64_t OnReadyToSend(absl::string_view data) override {
     if (is_write_blocked_) {
       return kSendBlocked;
     }
@@ -33,13 +34,16 @@ class QUICHE_NO_EXPORT DataSavingVisitor
     return to_accept;
   }
 
-  void OnMetadataForStream(Http2StreamId stream_id,
+  bool OnMetadataForStream(Http2StreamId stream_id,
                            absl::string_view metadata) override {
-    testing::StrictMock<MockHttp2Visitor>::OnMetadataForStream(stream_id,
-                                                               metadata);
-    auto result =
-        metadata_map_.try_emplace(stream_id, std::vector<std::string>());
-    result.first->second.push_back(std::string(metadata));
+    const bool ret = testing::StrictMock<MockHttp2Visitor>::OnMetadataForStream(
+        stream_id, metadata);
+    if (ret) {
+      auto result =
+          metadata_map_.try_emplace(stream_id, std::vector<std::string>());
+      result.first->second.push_back(std::string(metadata));
+    }
+    return ret;
   }
 
   const std::vector<std::string> GetMetadata(Http2StreamId stream_id) {
@@ -74,7 +78,7 @@ class QUICHE_NO_EXPORT TestDataFrameSource : public DataFrameSource {
   void AppendPayload(absl::string_view payload);
   void EndData();
 
-  std::pair<ssize_t, bool> SelectPayloadLength(size_t max_length) override;
+  std::pair<int64_t, bool> SelectPayloadLength(size_t max_length) override;
   bool Send(absl::string_view frame_header, size_t payload_length) override;
   bool send_fin() const override { return has_fin_; }
 
@@ -92,7 +96,11 @@ class QUICHE_NO_EXPORT TestMetadataSource : public MetadataSource {
  public:
   explicit TestMetadataSource(const spdy::SpdyHeaderBlock& entries);
 
-  std::pair<ssize_t, bool> Pack(uint8_t* dest, size_t dest_len) override;
+  size_t NumFrames(size_t max_frame_size) const override {
+    // Round up to the next frame.
+    return (encoded_entries_.size() + max_frame_size - 1) / max_frame_size;
+  }
+  std::pair<int64_t, bool> Pack(uint8_t* dest, size_t dest_len) override;
 
  private:
   const std::string encoded_entries_;

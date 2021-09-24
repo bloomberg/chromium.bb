@@ -8,7 +8,6 @@
 
 #include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
@@ -91,7 +90,6 @@ bool SyncSetupService::UserActionIsRequiredToHaveTabSyncWork() {
     case SyncSetupService::kSyncServiceSignInNeedsUpdate:
     case SyncSetupService::kSyncServiceNeedsPassphrase:
     case SyncSetupService::kSyncServiceUnrecoverableError:
-    case SyncSetupService::kSyncSettingsNotConfirmed:
       return true;
     case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
       return IsEncryptEverythingEnabled();
@@ -114,7 +112,6 @@ void SyncSetupService::SetSyncingAllDataTypes(bool sync_all) {
 }
 
 bool SyncSetupService::IsSyncRequested() const {
-  DCHECK(base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency));
   return sync_service_->GetUserSettings()->IsSyncRequested();
 }
 
@@ -164,8 +161,6 @@ SyncSetupService::SyncServiceState SyncSetupService::GetSyncServiceState() {
           ->IsPassphraseRequiredForPreferredDataTypes()) {
     return kSyncServiceNeedsPassphrase;
   }
-  if (!IsFirstSetupComplete() && CanSyncFeatureStart())
-    return kSyncSettingsNotConfirmed;
   if (sync_service_->GetUserSettings()
           ->IsTrustedVaultKeyRequiredForPreferredDataTypes()) {
     return kSyncServiceNeedsTrustedVaultKey;

@@ -42,7 +42,6 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -374,6 +373,10 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
   NSIndexPath* indexPath =
       [self.tableViewModel indexPathForItemType:ItemTypeFolder
                               sectionIdentifier:SectionIdentifierInfo];
+  if (!indexPath) {
+    return;
+  }
+
   NSString* folderName = @"";
   if (self.bookmark) {
     folderName = bookmark_utils_ios::TitleForBookmarkNode(self.folder);

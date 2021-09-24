@@ -14,6 +14,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -202,6 +203,7 @@ import org.chromium.components.browser_ui.notifications.NotificationManagerProxy
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
+import org.chromium.components.browser_ui.widget.gesture.SwipeGestureListener.SwipeHandler;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -352,6 +354,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * Control the tab-reparenting tasks.
      */
     private TabReparentingController mTabReparentingController;
+
+    /**
+     * Track whether {@link #mTabReparentingController} has prepared tab reparenting.
+     */
+    private boolean mIsTabReparentingPrepared;
 
     /**
      * Listen to display change and start tab-reparenting if necessary.
@@ -668,10 +675,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     /**
      * This function triggers the layout inflation. If subclasses override {@link
-     * #doLayoutInflation}, no calls to {@link #getCompositorViewHolder()} can be done until
-     * inflation is complete and {@link #onInitialLayoutInflationComplete()} is called. If the
+     * #doLayoutInflation}, no calls to {@link #getCompositorViewHolderSupplier().get()} can be done
+     * until inflation is complete and {@link #onInitialLayoutInflationComplete()} is called. If the
      * subclass does not override {@link #doLayoutInflation}, then {@link
-     * #getCompositorViewHolder()} is safe to be called after calling super.
+     * #getCompositorViewHolderSupplier().get()} is safe to be called after calling super.
      */
     @Override
     protected final void triggerLayoutInflation() {
@@ -1613,6 +1620,17 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 ApiCompatibilityUtils.getColor(getResources(), R.color.light_background_color));
     }
 
+    /**
+     * Change the Window background color that will be used as the resizing background color on
+     * Android N+ multi-window mode. Note that subclasses can override this behavior accordingly in
+     * case there is already a Window background Drawable and don't want it to be replaced with the
+     * ColorDrawable.
+     */
+    protected void changeBackgroundColorForResizing() {
+        getWindow().setBackgroundDrawable(new ColorDrawable(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.resizing_background_color)));
+    }
+
     private void maybeRemoveWindowBackground() {
         // Only need to do this logic once.
         if (mRemoveWindowBackgroundDone) return;
@@ -1625,8 +1643,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // The window background color is used as the resizing background color in Android N+
         // multi-window mode. See crbug.com/602366.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            getWindow().setBackgroundDrawable(new ColorDrawable(ApiCompatibilityUtils.getColor(
-                    getResources(), R.color.resizing_background_color)));
+            changeBackgroundColorForResizing();
         } else {
             // Post the removeWindowBackground() call as a separate task, as doing it synchronously
             // here can cause redrawing glitches. See crbug.com/686662 for an example problem.
@@ -2020,15 +2037,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @deprecated Use {@link #getCompositorViewHolderSupplier()} instead.
-     * @return A {@link CompositorViewHolder} instance.
-     */
-    @Deprecated
-    public CompositorViewHolder getCompositorViewHolder() {
-        return mCompositorViewHolderSupplier.get();
-    }
-
-    /**
      * Gets the browser controls manager, creates it unless already created.
      * @deprecated Instead, inject this directly to your constructor. If that's not possible, then
      *         use {@link BrowserControlsManagerSupplier}.
@@ -2113,10 +2121,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 mRootUiCoordinator.getTopUiThemeColorProvider());
         compositorViewHolder.onFinishNativeInitialization(getTabModelSelector(), this);
 
+        SwipeHandler swipeHandler = layoutManager.getToolbarSwipeHandler();
         if (controlContainer != null && DeviceClassManager.enableToolbarSwipe()
-                && getCompositorViewHolder().getLayoutManager().getToolbarSwipeHandler() != null) {
-            controlContainer.setSwipeHandler(
-                    getCompositorViewHolder().getLayoutManager().getToolbarSwipeHandler());
+                && swipeHandler != null) {
+            controlContainer.setSwipeHandler(swipeHandler);
         }
 
         mActivityTabProvider.setLayoutStateProvider(layoutManager);
@@ -2174,6 +2182,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public void performOnConfigurationChanged(Configuration newConfig) {
         super.performOnConfigurationChanged(newConfig);
         if (mConfig != null) {
+            if (mTabReparentingController != null && didChangeTabletMode()) {
+                onScreenLayoutSizeChange();
+            }
             // We only handle VR UI mode and UI mode night changes. Any other changes should follow
             // the default behavior of recreating the activity. Note that if UI mode night changes,
             // with or without other changes, we will still recreate() until we get a callback from
@@ -2794,8 +2805,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         assert mConfig
                 != null : "Can not determine the tablet mode when mConfig is not initialized";
         DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(this);
-        boolean isTablet = DisplayUtil.pxToDp(display, DisplayUtil.getSmallestWidth(display))
-                >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;
+        int smallestWidth;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Rect bounds = getWindowManager().getMaximumWindowMetrics().getBounds();
+            smallestWidth = DisplayUtil.pxToDp(
+                    display, Math.min(bounds.right - bounds.left, bounds.bottom - bounds.top));
+        } else {
+            smallestWidth = DisplayUtil.pxToDp(display, DisplayUtil.getSmallestWidth(display));
+        }
+        boolean isTablet = smallestWidth >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;
         boolean wasTablet =
                 mConfig.smallestScreenWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;
         return wasTablet != isTablet;
@@ -2805,8 +2823,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * Switch between phone and tablet mode and do the tab re-parenting in the meantime.
      */
     private void onScreenLayoutSizeChange() {
-        if (mTabReparentingController != null) {
+        if (mTabReparentingController != null && !mIsTabReparentingPrepared) {
             mTabReparentingController.prepareTabsForReparenting();
+            mIsTabReparentingPrepared = true;
             if (!isFinishing()) recreate();
         }
     }
@@ -2844,5 +2863,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         printingController.startPrint(
                 new TabPrinter(currentTabSupplier.get()), new PrintManagerDelegateImpl(activity));
         return true;
+    }
+
+    /**
+     * Returns a {@link CompositorViewHolder} instance for testing.
+     */
+    public CompositorViewHolder getCompositorViewHolderForTesting() {
+        return mCompositorViewHolderSupplier.get();
     }
 }

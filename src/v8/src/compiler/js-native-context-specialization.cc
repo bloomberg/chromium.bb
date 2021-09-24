@@ -230,8 +230,9 @@ Reduction JSNativeContextSpecialization::ReduceJSAsyncFunctionEnter(
       broker(),
       FrameStateInfoOf(frame_state->op()).shared_info().ToHandleChecked());
   DCHECK(shared.is_compiled());
-  int register_count = shared.internal_formal_parameter_count() +
-                       shared.GetBytecodeArray().register_count();
+  int register_count =
+      shared.internal_formal_parameter_count_without_receiver() +
+      shared.GetBytecodeArray().register_count();
   MapRef fixed_array_map = MakeRef(broker(), factory()->fixed_array_map());
   AllocationBuilder ab(jsgraph(), effect, control);
   if (!ab.CanAllocateArray(register_count, fixed_array_map)) {
@@ -617,15 +618,11 @@ Reduction JSNativeContextSpecialization::ReduceJSOrdinaryHasInstance(
     // OrdinaryHasInstance on bound functions turns into a recursive invocation
     // of the instanceof operator again.
     JSBoundFunctionRef function = m.Ref(broker()).AsJSBoundFunction();
-    base::Optional<JSReceiverRef> bound_target_function =
-        function.bound_target_function();
-    if (bound_target_function.has_value()) return NoChange();
-
     Node* feedback = jsgraph()->UndefinedConstant();
     NodeProperties::ReplaceValueInput(node, object,
                                       JSInstanceOfNode::LeftIndex());
     NodeProperties::ReplaceValueInput(
-        node, jsgraph()->Constant(*bound_target_function),
+        node, jsgraph()->Constant(function.bound_target_function()),
         JSInstanceOfNode::RightIndex());
     node->InsertInput(zone(), JSInstanceOfNode::FeedbackVectorIndex(),
                       feedback);
@@ -807,6 +804,12 @@ Reduction JSNativeContextSpecialization::ReduceGlobalAccess(
       return NoChange();
     } else if (property_cell_type == PropertyCellType::kUndefined) {
       return NoChange();
+    } else if (property_cell_type == PropertyCellType::kConstantType) {
+      // We rely on stability further below.
+      if (property_cell_value.IsHeapObject() &&
+          !property_cell_value.AsHeapObject().map().is_stable()) {
+        return NoChange();
+      }
     }
   } else if (access_mode == AccessMode::kHas) {
     DCHECK_EQ(receiver, lookup_start_object);
@@ -925,17 +928,7 @@ Reduction JSNativeContextSpecialization::ReduceGlobalAccess(
         if (property_cell_value.IsHeapObject()) {
           MapRef property_cell_value_map =
               property_cell_value.AsHeapObject().map();
-          if (property_cell_value_map.is_stable()) {
-            dependencies()->DependOnStableMap(property_cell_value_map);
-          } else {
-            // The value's map is already unstable. If this store were to go
-            // through the C++ runtime, it would transition the PropertyCell to
-            // kMutable. We don't want to change the cell type from generated
-            // code (to simplify concurrent heap access), however, so we keep
-            // it as kConstantType and do the store anyways (if the new value's
-            // map matches). This is safe because it merely prolongs the limbo
-            // state that we are in already.
-          }
+          dependencies()->DependOnStableMap(property_cell_value_map);
 
           // Check that the {value} is a HeapObject.
           value = effect = graph()->NewNode(simplified()->CheckHeapObject(),
@@ -1639,8 +1632,7 @@ void JSNativeContextSpecialization::RemoveImpossibleMaps(
     maps->erase(std::remove_if(maps->begin(), maps->end(),
                                [root_map](const MapRef& map) {
                                  return map.is_abandoned_prototype_map() ||
-                                        (map.FindRootMap().has_value() &&
-                                         !map.FindRootMap()->equals(*root_map));
+                                        !map.FindRootMap().equals(*root_map);
                                }),
                 maps->end());
   }
@@ -1751,14 +1743,8 @@ Reduction JSNativeContextSpecialization::ReduceElementAccess(
     }
   }
 
-  // Check if we have the necessary data for building element accesses.
   for (ElementAccessInfo const& access_info : access_infos) {
     if (!IsTypedArrayElementsKind(access_info.elements_kind())) continue;
-    base::Optional<JSTypedArrayRef> typed_array =
-        GetTypedArrayConstant(broker(), receiver);
-    if (typed_array.has_value() && !typed_array->serialized()) {
-      return NoChange();
-    }
   }
 
   // Check for the monomorphic case.
@@ -2260,10 +2246,6 @@ void JSNativeContextSpecialization::InlinePropertySetterCall(
 Node* JSNativeContextSpecialization::InlineApiCall(
     Node* receiver, Node* holder, Node* frame_state, Node* value, Node** effect,
     Node** control, FunctionTemplateInfoRef const& function_template_info) {
-  if (!function_template_info.has_call_code()) {
-    return nullptr;
-  }
-
   if (!function_template_info.call_code().has_value()) {
     TRACE_BROKER_MISSING(broker(), "call code for function template info "
                                        << function_template_info);
@@ -2453,7 +2435,6 @@ JSNativeContextSpecialization::BuildPropertyStore(
         field_type,
         MachineType::TypeForRepresentation(field_representation),
         kFullWriteBarrier,
-        LoadSensitivity::kUnsafe,
         access_info.GetConstFieldInfo(),
         access_mode == AccessMode::kStoreInLiteral};
 
@@ -2487,7 +2468,6 @@ JSNativeContextSpecialization::BuildPropertyStore(
               Type::OtherInternal(),
               MachineType::TaggedPointer(),
               kPointerWriteBarrier,
-              LoadSensitivity::kUnsafe,
               access_info.GetConstFieldInfo(),
               access_mode == AccessMode::kStoreInLiteral};
           storage = effect =
@@ -2793,10 +2773,8 @@ JSNativeContextSpecialization::BuildElementAccess(
         if (situation == kHandleOOB_SmiCheckDone) {
           Node* check =
               graph()->NewNode(simplified()->NumberLessThan(), index, length);
-          Node* branch = graph()->NewNode(
-              common()->Branch(BranchHint::kTrue,
-                               IsSafetyCheck::kCriticalSafetyCheck),
-              check, control);
+          Node* branch = graph()->NewNode(common()->Branch(BranchHint::kTrue),
+                                          check, control);
 
           Node* if_true = graph()->NewNode(common()->IfTrue(), branch);
           Node* etrue = effect;
@@ -2984,10 +2962,9 @@ JSNativeContextSpecialization::BuildElementAccess(
       element_type = Type::SignedSmall();
       element_machine_type = MachineType::TaggedSigned();
     }
-    ElementAccess element_access = {
-        kTaggedBase,       FixedArray::kHeaderSize,
-        element_type,      element_machine_type,
-        kFullWriteBarrier, LoadSensitivity::kCritical};
+    ElementAccess element_access = {kTaggedBase, FixedArray::kHeaderSize,
+                                    element_type, element_machine_type,
+                                    kFullWriteBarrier};
 
     // Access the actual element.
     if (keyed_mode.access_mode() == AccessMode::kLoad) {
@@ -3007,10 +2984,8 @@ JSNativeContextSpecialization::BuildElementAccess(
           CanTreatHoleAsUndefined(receiver_maps)) {
         Node* check =
             graph()->NewNode(simplified()->NumberLessThan(), index, length);
-        Node* branch = graph()->NewNode(
-            common()->Branch(BranchHint::kTrue,
-                             IsSafetyCheck::kCriticalSafetyCheck),
-            check, control);
+        Node* branch = graph()->NewNode(common()->Branch(BranchHint::kTrue),
+                                        check, control);
 
         Node* if_true = graph()->NewNode(common()->IfTrue(), branch);
         Node* etrue = effect;
@@ -3293,9 +3268,7 @@ Node* JSNativeContextSpecialization::BuildIndexedStringLoad(
     Node* check =
         graph()->NewNode(simplified()->NumberLessThan(), index, length);
     Node* branch =
-        graph()->NewNode(common()->Branch(BranchHint::kTrue,
-                                          IsSafetyCheck::kCriticalSafetyCheck),
-                         check, *control);
+        graph()->NewNode(common()->Branch(BranchHint::kTrue), check, *control);
 
     Node* if_true = graph()->NewNode(common()->IfTrue(), branch);
     // Do a real bounds check against {length}. This is in order to protect
@@ -3306,10 +3279,8 @@ Node* JSNativeContextSpecialization::BuildIndexedStringLoad(
                                   CheckBoundsFlag::kConvertStringAndMinusZero |
                                       CheckBoundsFlag::kAbortOnOutOfBounds),
         index, length, *effect, if_true);
-    Node* masked_index = graph()->NewNode(simplified()->PoisonIndex(), index);
-    Node* vtrue = etrue =
-        graph()->NewNode(simplified()->StringCharCodeAt(), receiver,
-                         masked_index, etrue, if_true);
+    Node* vtrue = etrue = graph()->NewNode(simplified()->StringCharCodeAt(),
+                                           receiver, index, etrue, if_true);
     vtrue = graph()->NewNode(simplified()->StringFromSingleCharCode(), vtrue);
 
     Node* if_false = graph()->NewNode(common()->IfFalse(), branch);
@@ -3327,12 +3298,9 @@ Node* JSNativeContextSpecialization::BuildIndexedStringLoad(
                                   CheckBoundsFlag::kConvertStringAndMinusZero),
         index, length, *effect, *control);
 
-    Node* masked_index = graph()->NewNode(simplified()->PoisonIndex(), index);
-
     // Return the character from the {receiver} as single character string.
-    Node* value = *effect =
-        graph()->NewNode(simplified()->StringCharCodeAt(), receiver,
-                         masked_index, *effect, *control);
+    Node* value = *effect = graph()->NewNode(
+        simplified()->StringCharCodeAt(), receiver, index, *effect, *control);
     value = graph()->NewNode(simplified()->StringFromSingleCharCode(), value);
     return value;
   }
@@ -3469,10 +3437,7 @@ base::Optional<MapRef> JSNativeContextSpecialization::InferRootMap(
     base::Optional<MapRef> initial_map =
         NodeProperties::GetJSCreateMap(broker(), object);
     if (initial_map.has_value()) {
-      if (!initial_map->FindRootMap().has_value()) {
-        return base::nullopt;
-      }
-      DCHECK(initial_map->equals(*initial_map->FindRootMap()));
+      DCHECK(initial_map->equals(initial_map->FindRootMap()));
       return *initial_map;
     }
   }

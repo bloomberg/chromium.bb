@@ -224,7 +224,7 @@
         return;
       }
 
-      test.addSniffer(throttler, '_processCompletedForTests', checkState);
+      test.addSniffer(throttler, 'processCompletedForTests', checkState);
     }
 
     function onSchedule() {
@@ -383,7 +383,7 @@
     function testScriptPause() {
       // The script should be in infinite loop. Click "Pause" button to
       // pause it and wait for the result.
-      UI.panels.sources._togglePause();
+      UI.panels.sources.togglePause();
 
       this._waitForScriptPause(this.releaseControl.bind(this));
     }
@@ -772,7 +772,7 @@
   TestSuite.prototype.testForwardedKeysChanged = function() {
     this.takeControl();
 
-    this.addSniffer(self.UI.shortcutRegistry, '_registerBindings', () => {
+    this.addSniffer(self.UI.shortcutRegistry, 'registerBindings', () => {
       self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
           {type: 'rawKeyDown', key: 'F1', windowsVirtualKeyCode: 112, nativeVirtualKeyCode: 112});
     });
@@ -1091,9 +1091,9 @@
 
     function onExecutionContexts() {
       const consoleView = Console.ConsoleView.instance();
-      const selector = consoleView._consoleContextSelector;
+      const selector = consoleView.consoleContextSelector;
       const values = [];
-      for (const item of selector._items) {
+      for (const item of selector.items) {
         values.push(selector.titleFor(item));
       }
       test.assertEquals('top', values[0]);
@@ -1217,7 +1217,7 @@
     const test = this;
     this.showPanel('timeline').then(function() {
       const timeline = UI.panels.timeline;
-      test._overrideMethod(timeline, '_recordingStarted', callback);
+      test._overrideMethod(timeline, 'recordingStarted', callback);
       timeline._toggleRecording();
     });
   };
@@ -1292,10 +1292,10 @@
   TestSuite.prototype.testInspectedElementIs = async function(nodeName) {
     this.takeControl();
     await self.runtime.loadModulePromise('elements');
-    if (!Elements.ElementsPanel._firstInspectElementNodeNameForTest) {
-      await new Promise(f => this.addSniffer(Elements.ElementsPanel, '_firstInspectElementCompletedForTest', f));
+    if (!Elements.ElementsPanel.firstInspectElementNodeNameForTest) {
+      await new Promise(f => this.addSniffer(Elements.ElementsPanel, 'firstInspectElementCompletedForTest', f));
     }
-    this.assertEquals(nodeName, Elements.ElementsPanel._firstInspectElementNodeNameForTest);
+    this.assertEquals(nodeName, Elements.ElementsPanel.firstInspectElementNodeNameForTest);
     this.releaseControl();
   };
 
@@ -1560,9 +1560,9 @@
     function innerEvaluate() {
       self.UI.context.removeFlavorChangeListener(SDK.ExecutionContext, showConsoleAndEvaluate, this);
       const consoleView = Console.ConsoleView.instance();
-      consoleView._prompt._appendCommand(code);
+      consoleView.prompt.appendCommand(code);
 
-      this.addSniffer(Console.ConsoleView.prototype, '_consoleMessageAddedForTest', function(viewMessage) {
+      this.addSniffer(Console.ConsoleView.prototype, 'consoleMessageAddedForTest', function(viewMessage) {
         callback(viewMessage.toMessageElement().deepTextContent());
       }.bind(this));
     }
@@ -1619,7 +1619,7 @@
       if (test._scriptsAreParsed(expectedScripts)) {
         callback();
       } else {
-        test.addSniffer(UI.panels.sources.sourcesView(), '_addUISourceCode', waitForAllScripts);
+        test.addSniffer(UI.panels.sources.sourcesView(), 'addUISourceCode', waitForAllScripts);
       }
     }
 
@@ -1646,7 +1646,7 @@
       if (runtimeModel.executionContexts().length >= n) {
         callback.call(null);
       } else {
-        this.addSniffer(SDK.RuntimeModel.prototype, '_executionContextCreated', checkForExecutionContexts.bind(this));
+        this.addSniffer(SDK.RuntimeModel.prototype, 'executionContextCreated', checkForExecutionContexts.bind(this));
       }
     }
   };

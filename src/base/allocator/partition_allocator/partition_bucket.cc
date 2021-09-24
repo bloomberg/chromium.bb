@@ -18,7 +18,7 @@
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
-#include "base/allocator/partition_allocator/starscan/object_bitmap.h"
+#include "base/allocator/partition_allocator/starscan/state_bitmap.h"
 #include "base/bits.h"
 #include "base/check.h"
 #include "base/debug/alias.h"
@@ -235,7 +235,7 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
 
     // Allocate from GigaCage. Route to the appropriate GigaCage pool based on
     // BackupRefPtr support.
-    pool_handle pool = root->ChooseGigaCagePool(/* is_direct_map= */ true);
+    pool_handle pool = root->ChooseGigaCagePool();
     char* reservation_start =
         ReserveMemoryFromGigaCage(pool, nullptr, reservation_size);
     if (UNLIKELY(!reservation_start)) {
@@ -273,7 +273,7 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
     auto* offset_ptr = ReservationOffsetPointer(ptr_start);
     int offset = 0;
     while (ptr_start < ptr_end) {
-      PA_DCHECK(offset_ptr < GetReservationOffsetTableEnd());
+      PA_DCHECK(offset_ptr < GetReservationOffsetTableEnd(ptr_start));
       PA_DCHECK(offset < kOffsetTagNormalBuckets);
       *offset_ptr++ = offset++;
       ptr_start += kSuperPageSize;
@@ -489,7 +489,7 @@ PartitionBucket<thread_safe>::AllocNewSlotSpan(PartitionRoot<thread_safe>* root,
                root->next_partition_page_end)) {
     // In this case, we can no longer hand out pages from the current super page
     // allocation. Get a new super page.
-    if (!AllocNewSuperPage(root)) {
+    if (!AllocNewSuperPage(root, flags)) {
       return nullptr;
     }
     // AllocNewSuperPage() updates root->next_partition_page, re-query.
@@ -534,7 +534,8 @@ PartitionBucket<thread_safe>::AllocNewSlotSpan(PartitionRoot<thread_safe>* root,
 
 template <bool thread_safe>
 ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSuperPage(
-    PartitionRoot<thread_safe>* root) {
+    PartitionRoot<thread_safe>* root,
+    int flags) {
   // Need a new super page. We want to allocate super pages in a contiguous
   // address region as much as possible. This is important for not causing
   // page table bloat and not fragmenting address spaces in 32 bit
@@ -542,11 +543,17 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSuperPage(
   char* requested_address = root->next_super_page;
   // Allocate from GigaCage. Route to the appropriate GigaCage pool based on
   // BackupRefPtr support.
-  pool_handle pool = root->ChooseGigaCagePool(/* is_direct_map= */ false);
+  pool_handle pool = root->ChooseGigaCagePool();
   char* super_page =
       ReserveMemoryFromGigaCage(pool, requested_address, kSuperPageSize);
-  if (UNLIKELY(!super_page))
-    return nullptr;
+  if (UNLIKELY(!super_page)) {
+    if (flags & PartitionAllocReturnNull)
+      return nullptr;
+
+    // Didn't manage to get a new uncommitted super page -> address space issue.
+    ScopedUnlockGuard<thread_safe> unlock{root->lock_};
+    PartitionOutOfMemoryMappingFailure(root, kSuperPageSize);
+  }
 
   *ReservationOffsetPointer(reinterpret_cast<uintptr_t>(super_page)) =
       kOffsetTagNormalBuckets;
@@ -555,16 +562,17 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSuperPage(
                                             std::memory_order_relaxed);
 
   root->next_super_page = super_page + kSuperPageSize;
-  char* quarantine_bitmaps = super_page + PartitionPageSize();
-  const size_t quarantine_bitmaps_reservation_size =
-      root->IsQuarantineAllowed() ? ReservedQuarantineBitmapsSize() : 0;
-  const size_t quarantine_bitmaps_size_to_commit =
-      root->IsQuarantineAllowed() ? CommittedQuarantineBitmapsSize() : 0;
-  PA_DCHECK(quarantine_bitmaps_reservation_size % PartitionPageSize() == 0);
-  PA_DCHECK(quarantine_bitmaps_size_to_commit % SystemPageSize() == 0);
-  PA_DCHECK(quarantine_bitmaps_size_to_commit <=
-            quarantine_bitmaps_reservation_size);
-  char* ret = quarantine_bitmaps + quarantine_bitmaps_reservation_size;
+  char* state_bitmap = super_page + PartitionPageSize();
+  PA_DCHECK(reinterpret_cast<char*>(SuperPageStateBitmap(super_page)) ==
+            state_bitmap);
+  const size_t state_bitmap_reservation_size =
+      root->IsQuarantineAllowed() ? ReservedStateBitmapSize() : 0;
+  const size_t state_bitmap_size_to_commit =
+      root->IsQuarantineAllowed() ? CommittedStateBitmapSize() : 0;
+  PA_DCHECK(state_bitmap_reservation_size % PartitionPageSize() == 0);
+  PA_DCHECK(state_bitmap_size_to_commit % SystemPageSize() == 0);
+  PA_DCHECK(state_bitmap_size_to_commit <= state_bitmap_reservation_size);
+  char* ret = state_bitmap + state_bitmap_reservation_size;
   root->next_partition_page = ret;
   root->next_partition_page_end = root->next_super_page - PartitionPageSize();
   PA_DCHECK(ret ==
@@ -589,7 +597,7 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSuperPage(
   // If PCScan is used, commit the quarantine bitmap. Otherwise, leave it
   // uncommitted and let PartitionRoot::EnablePCScan commit it when needed.
   if (root->IsQuarantineEnabled()) {
-    RecommitSystemPages(quarantine_bitmaps, quarantine_bitmaps_size_to_commit,
+    RecommitSystemPages(state_bitmap, state_bitmap_size_to_commit,
                         PageReadWrite, PageUpdatePermissions);
     PCScan::RegisterNewSuperPage(root, reinterpret_cast<uintptr_t>(super_page));
   }

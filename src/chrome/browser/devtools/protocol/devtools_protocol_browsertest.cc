@@ -6,8 +6,11 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/test/values_test_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -26,16 +29,24 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "printing/buildflags/buildflags.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 using DevToolsProtocolTest = DevToolsProtocolTestBase;
+using testing::Eq;
+
+namespace {
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
                        VisibleSecurityStateChangedNeutralState) {
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   Attach();
@@ -95,6 +106,51 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   EXPECT_EQ(chrome::kChromeUINewTabURL, wc->GetLastCommittedURL().spec());
 
   // Should not crash by this point.
+}
+
+class DevToolsProtocolTest_AppId : public DevToolsProtocolTest {
+ public:
+  DevToolsProtocolTest_AppId() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kWebAppEnableManifestId);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest_AppId, ReturnsManifestAppId) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url(embedded_test_server()->GetURL("/web_apps/basic.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  Attach();
+
+  SendCommandSync("Page.getAppId");
+  EXPECT_EQ(*result_.FindStringPath("appId"),
+            embedded_test_server()->GetURL("/some_id"));
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest_AppId,
+                       ReturnsStartUrlAsManifestAppIdIfNotSet) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url(
+      embedded_test_server()->GetURL("/web_apps/no_service_worker.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  Attach();
+
+  SendCommandSync("Page.getAppId");
+  EXPECT_EQ(*result_.FindStringPath("appId"),
+            embedded_test_server()->GetURL("/web_apps/no_service_worker.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest_AppId, ReturnsNoAppIdIfNoManifest) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url(embedded_test_server()->GetURL("/empty.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  Attach();
+
+  SendCommandSync("Page.getAppId");
+  ASSERT_TRUE(result_.FindPath("appId") == nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VisibleSecurityStateSecureState) {
@@ -298,8 +354,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VisibleSecurityStateSecureState) {
   ASSERT_FALSE(params.FindPath("visibleSecurityState.safetyTipInfo"));
 }
 
-namespace {
-
 class ExtensionProtocolTest : public DevToolsProtocolTest {
  protected:
   void SetUpOnMainThread() override {
@@ -316,10 +370,10 @@ class ExtensionProtocolTest : public DevToolsProtocolTest {
 
   const extensions::Extension* LoadExtension(base::FilePath extension_path) {
     extensions::TestExtensionRegistryObserver observer(extension_registry_);
+    ExtensionTestMessageListener activated_listener("WORKER_ACTIVATED", false);
     extensions::UnpackedInstaller::Create(extension_service_)
         ->Load(extension_path);
     observer.WaitForExtensionLoaded();
-
     const extensions::Extension* extension = nullptr;
     for (const auto& enabled_extension :
          extension_registry_->enabled_extensions()) {
@@ -331,9 +385,17 @@ class ExtensionProtocolTest : public DevToolsProtocolTest {
     CHECK(extension) << "Failed to find loaded extension " << extension_path;
     auto* process_manager =
         extensions::ProcessManager::Get(browser()->profile());
-    extensions::ExtensionHost* host =
-        process_manager->GetBackgroundHostForExtension(extension->id());
-    background_web_contents_ = host->host_contents();
+    if (extensions::BackgroundInfo::IsServiceWorkerBased(extension)) {
+      EXPECT_TRUE(activated_listener.WaitUntilSatisfied());
+      auto worker_ids =
+          process_manager->GetServiceWorkersForExtension(extension->id());
+      CHECK_EQ(1lu, worker_ids.size());
+    } else {
+      extensions::ExtensionHost* host =
+          process_manager->GetBackgroundHostForExtension(extension->id());
+      background_web_contents_ = host->host_contents();
+    }
+
     return extension;
   }
 
@@ -348,8 +410,6 @@ class ExtensionProtocolTest : public DevToolsProtocolTest {
   extensions::ExtensionRegistry* extension_registry_;
   content::WebContents* background_web_contents_;
 };
-
-}  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionProtocolTest, ReloadTracedExtension) {
   base::FilePath extension_path =
@@ -367,3 +427,58 @@ IN_PROC_BROWSER_TEST_F(ExtensionProtocolTest, ReloadTracedExtension) {
   SendCommand("Tracing.end");
   base::Value tracing_complete = WaitForNotification("Tracing.tracingComplete");
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionProtocolTest, ReloadServiceWorkerExtension) {
+  base::FilePath extension_path =
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII("devtools")
+          .AppendASCII("extensions")
+          .AppendASCII("service_worker");
+  std::string extension_id;
+  {
+    // `extension` is stale after reload.
+    auto* extension = LoadExtension(extension_path);
+    ASSERT_THAT(extension, testing::NotNull());
+    extension_id = extension->id();
+  }
+  AttachToBrowser();
+  SendCommandSync("Target.getTargets");
+
+  std::string target_id;
+  base::Value ext_target;
+  for (auto& target : result_.FindListKey("targetInfos")->GetList()) {
+    if (*target.FindStringKey("type") == "service_worker") {
+      ext_target = target.Clone();
+      break;
+    }
+  }
+  {
+    base::Value params(base::Value::Type::DICTIONARY);
+    params.SetStringKey("targetId", *ext_target.FindStringKey("targetId"));
+    params.SetBoolKey("waitForDebuggerOnStart", false);
+    SendCommandSync("Target.autoAttachRelated", std::move(params));
+  }
+  ReloadExtension(extension_id);
+  auto attached = WaitForNotification("Target.attachedToTarget");
+  base::Value* targetInfo = attached.FindDictKey("targetInfo");
+  ASSERT_THAT(targetInfo, testing::NotNull());
+  EXPECT_THAT(*targetInfo, base::test::DictionaryHasValue(
+                               "type", base::Value("service_worker")));
+  EXPECT_THAT(*targetInfo, base::test::DictionaryHasValue(
+                               "url", *ext_target.FindKey("url")));
+  EXPECT_THAT(attached, base::test::DictionaryHasValue("waitingForDebugger",
+                                                       base::Value(false)));
+
+  {
+    base::Value params(base::Value::Type::DICTIONARY);
+    params.SetStringKey("targetId", *targetInfo->FindStringKey("targetId"));
+    params.SetBoolKey("waitForDebuggerOnStart", false);
+    SendCommandSync("Target.autoAttachRelated", std::move(params));
+  }
+  auto detached = WaitForNotification("Target.detachedFromTarget");
+  EXPECT_THAT(detached, base::test::DictionaryHasValue(
+                            "sessionId",
+                            base::Value(*attached.FindStringKey("sessionId"))));
+}
+
+}  // namespace

@@ -10,14 +10,25 @@
 #error "This file requires ARC support."
 #endif
 
+const CGFloat kUITableViewInsetGroupedTopSpace = 35;
+
+NSString* HostForServiceIdentifier(
+    ASCredentialServiceIdentifier* serviceIdentifier) {
+  NSString* identifier = serviceIdentifier.identifier;
+  NSURL* promptURL = identifier ? [NSURL URLWithString:identifier] : nil;
+  return promptURL.host ?: identifier;
+}
+
 NSString* PromptForServiceIdentifiers(
     NSArray<ASCredentialServiceIdentifier*>* serviceIdentifiers) {
-  NSString* identifier = serviceIdentifiers.firstObject.identifier;
-  NSURL* promptURL = identifier ? [NSURL URLWithString:identifier] : nil;
+  NSString* IDForPrompt =
+      HostForServiceIdentifier(serviceIdentifiers.firstObject);
+  if (!IDForPrompt) {
+    return nil;
+  }
   NSString* baseLocalizedString = NSLocalizedString(
       @"IDS_IOS_CREDENTIAL_PROVIDER_TITLE_PROMPT",
       @"Extra prompt telling the user what site they are looking at");
-  return
-      [baseLocalizedString stringByReplacingOccurrencesOfString:@"$1"
-                                                     withString:promptURL.host];
+  return [baseLocalizedString stringByReplacingOccurrencesOfString:@"$1"
+                                                        withString:IDForPrompt];
 }

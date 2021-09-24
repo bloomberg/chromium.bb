@@ -83,7 +83,7 @@ public:
         kFor_Command,
         // Type type, uint16 function, uint8 argCount, Expression[] arguments
         kFunctionCall_Command,
-        // uint16 declaration, Statement body, uint8 refCount, uint16[] referencedIntrinsics
+        // uint16 declaration, Statement body, uint8 refCount
         kFunctionDefinition_Command,
         // uint16 id, Modifiers modifiers, String name, uint8 parameterCount, uint16[] parameterIds,
         // Type returnType
@@ -99,8 +99,7 @@ public:
         // int32 value
         kIntLiteral_Command,
         // int32 flags, int8 location, int8 offset, int8 binding, int8 index, int8 set,
-        // int16 builtin, int8 inputAttachmentIndex, int8 format, int8 primitive, int8 maxVertices,
-        // int8 invocations, String marker, String when, int8 key, int8 ctype
+        // int16 builtin, int8 inputAttachmentIndex
         kLayout_Command,
         // Layout layout, uint8 flags
         kModifiers8Bit_Command,
@@ -224,7 +223,7 @@ private:
 
     const Type* type();
 
-    ErrorReporter* errorReporter() { return &fContext.errors(); }
+    ErrorReporter* errorReporter() { return fContext.fErrors; }
 
     ModifiersPool& modifiersPool() const { return *fContext.fModifiersPool; }
 

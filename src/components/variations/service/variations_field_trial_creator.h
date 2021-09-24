@@ -28,6 +28,25 @@ class MetricsStateManager;
 
 namespace variations {
 
+// Denotes whether Chrome used a variations seed. Also captures (a) the kind of
+// seed and (b) the conditions under which the seed was used or failed to be
+// used. Exposed for testing.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SeedUsage {
+  kRegularSeedUsed = 0,
+  kExpiredRegularSeedNotUsed = 1,
+  kCorruptedSeedNotUsed = 2,
+  kSafeSeedUsed = 3,
+  kExpiredSafeSeedNotUsed = 4,
+  kCorruptedSafeSeedNotUsed = 5,
+  kRegularSeedUsedAfterEmptySafeSeedLoaded = 6,
+  kExpiredRegularSeedNotUsedAfterEmptySafeSeedLoaded = 7,
+  kCorruptedRegularSeedNotUsedAfterEmptySafeSeedLoaded = 8,
+  kMaxValue = kCorruptedRegularSeedNotUsedAfterEmptySafeSeedLoaded,
+};
+
 // Denotes a variations seed's expiry state. Exposed for testing.
 //
 // These values are persisted to logs. Entries should not be renumbered and
@@ -99,6 +118,7 @@ class VariationsFieldTrialCreator {
   // participate in the extended variations safe mode field trial. This should
   // be the case for all platforms that use a VariationsSeed with the exception
   // of Android WebView, which has its own safe mode mechanism: crbug/1220131.
+  // TODO(crbug/1245646): Remove |extend_variations_safe_mode| param.
   //
   // NOTE: The ordering of the FeatureList method calls is such that the
   // explicit --disable-features and --enable-features from the command line

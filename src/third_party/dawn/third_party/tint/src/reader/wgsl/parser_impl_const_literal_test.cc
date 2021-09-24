@@ -220,6 +220,7 @@ FloatLiteralTestCase hexfloat_literal_test_cases[] = {
     {"0x1.1p+128", PosInf},
     {"-0x1p+129", NegInf},
     {"-0x1.1p+128", NegInf},
+    {"0x1.0p2147483520", PosInf},  // INT_MAX - 127 (largest valid exponent)
 
     // Underflow -> Zero
     {"0x1p-500", 0.f},  // Exponent underflows
@@ -227,7 +228,8 @@ FloatLiteralTestCase hexfloat_literal_test_cases[] = {
     {"0x0.00000000001p-126", 0.f},  // Fraction causes underflow
     {"-0x0.0000000001p-127", -0.f},
     {"0x0.01p-142", 0.f},
-    {"-0x0.01p-142", -0.f},  // Fraction causes additional underflow
+    {"-0x0.01p-142", -0.f},    // Fraction causes additional underflow
+    {"0x1.0p-2147483520", 0},  // -(INT_MAX - 127) (smallest valid exponent)
 
     // Zero with non-zero exponent -> Zero
     {"0x0p+0", 0.f},
@@ -235,6 +237,24 @@ FloatLiteralTestCase hexfloat_literal_test_cases[] = {
     {"0x0p-1", 0.f},
     {"0x0p+9999999999", 0.f},
     {"0x0p-9999999999", 0.f},
+    // Same, but with very large positive exponents that would cause overflow
+    // if the mantissa were non-zero.
+    {"0x0p+4000000000", 0.f},    // 4 billion:
+    {"0x0p+40000000000", 0.f},   // 40 billion
+    {"-0x0p+40000000000", 0.f},  // As above 2, but negative mantissa
+    {"-0x0p+400000000000", 0.f},
+    {"0x0.00p+4000000000", 0.f},  // As above 4, but with fractional part
+    {"0x0.00p+40000000000", 0.f},
+    {"-0x0.00p+40000000000", 0.f},
+    {"-0x0.00p+400000000000", 0.f},
+    {"0x0p-4000000000", 0.f},  // As above 8, but with negative exponents
+    {"0x0p-40000000000", 0.f},
+    {"-0x0p-40000000000", 0.f},
+    {"-0x0p-400000000000", 0.f},
+    {"0x0.00p-4000000000", 0.f},
+    {"0x0.00p-40000000000", 0.f},
+    {"-0x0.00p-40000000000", 0.f},
+    {"-0x0.00p-400000000000", 0.f},
 
     // Test parsing
     {"0x0p0", 0.f},
@@ -295,8 +315,10 @@ INSTANTIATE_TEST_SUITE_P(
     testing::ValuesIn(invalid_hexfloat_mantissa_too_large_cases));
 
 InvalidLiteralTestCase invalid_hexfloat_exponent_too_large_cases[] = {
-    {"0x0p+4294967296", "1:1: exponent is too large for hex float"},
-    {"0x0p-4294967296", "1:1: exponent is too large for hex float"},
+    {"0x1p+2147483521", "1:1: exponent is too large for hex float"},
+    {"0x1p-2147483521", "1:1: exponent is too large for hex float"},
+    {"0x1p+4294967296", "1:1: exponent is too large for hex float"},
+    {"0x1p-4294967296", "1:1: exponent is too large for hex float"},
 };
 INSTANTIATE_TEST_SUITE_P(
     ParserImplInvalidLiteralTest_HexFloatExponentTooLarge,

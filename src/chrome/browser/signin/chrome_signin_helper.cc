@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/account_manager_facade_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -59,9 +58,10 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/profiles/profile_manager.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -71,11 +71,6 @@
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #endif
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/lacros/lacros_service.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace signin {
 
@@ -267,9 +262,6 @@ void ProcessMirrorHeader(
       return;
     }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-    base::UmaHistogramBoolean("AccountManager.MirrorReauthenticationRequest",
-                              true);
-
     // Child users shouldn't get the re-authentication dialog for primary
     // account. Log out all accounts to re-mint the cookies.
     // (See the reason below.)
@@ -311,12 +303,6 @@ void ProcessMirrorHeader(
                                   manage_accounts_params.email);
     return;
   }
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  const crosapi::mojom::BrowserInitParams* init_params =
-      chromeos::LacrosService::Get()->init_params();
-  DCHECK(init_params->use_new_account_manager);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // 3. Displaying an account addition window.
   if (service_type == GAIA_SERVICE_TYPE_ADDSESSION) {

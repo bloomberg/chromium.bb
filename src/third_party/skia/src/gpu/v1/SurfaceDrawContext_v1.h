@@ -15,12 +15,12 @@
 #include "include/core/SkSurfaceProps.h"
 #include "include/private/GrTypesPriv.h"
 #include "src/core/SkGlyphRunPainter.h"
-#include "src/gpu/GrOpsTask.h"
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrRenderTargetProxy.h"
 #include "src/gpu/GrSurfaceProxyView.h"
 #include "src/gpu/GrXferProcessor.h"
 #include "src/gpu/geometry/GrQuad.h"
+#include "src/gpu/ops/OpsTask.h"
 #include "src/gpu/v1/SurfaceFillContext_v1.h"
 
 class GrBackendSemaphore;
@@ -530,7 +530,7 @@ public:
         this->internalStencilClear(&scissor, insideStencilMask);
     }
 
-    // While this can take a general clip, since GrClipStack relies on this function, it must take
+    // While this can take a general clip, since ClipStack relies on this function, it must take
     // care to only provide hard clips or we could get stuck in a loop. The general clip is needed
     // so that path renderers can use this function.
     void stencilRect(const GrClip* clip,
@@ -615,6 +615,16 @@ public:
         return GrAA(paint.isAntiAlias() || this->alwaysAntialias());
     }
 
+    GrAAType chooseAAType(GrAA aa) {
+        if (this->numSamples() > 1 || fCanUseDynamicMSAA) {
+            // Always trigger DMSAA when it's available. The coverage ops that know how to handle
+            // both single and multisample targets without popping will do so without calling
+            // chooseAAType.
+            return GrAAType::kMSAA;
+        }
+        return (aa == GrAA::kYes) ? GrAAType::kCoverage : GrAAType::kNone;
+    }
+
     // This entry point should only be called if the backing GPU object is known to be
     // instantiated.
     GrRenderTarget* accessRenderTarget() { return this->asSurfaceProxy()->peekRenderTarget(); }
@@ -626,11 +636,9 @@ public:
 private:
     enum class QuadOptimization;
 
-    void willReplaceOpsTask(GrOpsTask* prevTask, GrOpsTask* nextTask) override;
+    void willReplaceOpsTask(OpsTask* prevTask, OpsTask* nextTask) override;
 
-    GrAAType chooseAAType(GrAA);
-
-    GrOpsTask::CanDiscardPreviousOps canDiscardPreviousOpsOnFullClear() const override;
+    OpsTask::CanDiscardPreviousOps canDiscardPreviousOpsOnFullClear() const override;
     void setNeedsStencil();
 
     void internalStencilClear(const SkIRect* scissor, bool insideStencilMask);
@@ -694,7 +702,7 @@ private:
                                                  bool opRequiresMSAA,
                                                  GrDstProxyView* result);
 
-    GrOpsTask* replaceOpsTaskIfModifiesColor();
+    OpsTask* replaceOpsTaskIfModifiesColor();
 
     SkGlyphRunListPainter* glyphPainter() { return &fGlyphPainter; }
 

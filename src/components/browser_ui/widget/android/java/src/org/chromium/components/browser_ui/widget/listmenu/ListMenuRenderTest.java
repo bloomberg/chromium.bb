@@ -23,10 +23,10 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.components.browser_ui.test.DummyUiComponentsActivityTestCase;
 import org.chromium.components.browser_ui.widget.test.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.RenderTestRule;
 
@@ -38,7 +38,7 @@ import java.util.List;
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(BaseJUnit4RunnerDelegate.class)
-public class ListMenuRenderTest extends DummyUiActivityTestCase {
+public class ListMenuRenderTest extends DummyUiComponentsActivityTestCase {
     @ParameterAnnotations.ClassParameter
     private static List<ParameterSet> sClassParams =
             new NightModeTestUtils.NightModeParams().getParameters();
@@ -74,7 +74,7 @@ public class ListMenuRenderTest extends DummyUiActivityTestCase {
             BasicListMenu listMenu = new BasicListMenu(activity, data, null);
             mView = listMenu.getContentView();
             mView.setBackground(ApiCompatibilityUtils.getDrawable(
-                    activity.getResources(), R.drawable.popup_bg_tinted));
+                    activity.getResources(), R.drawable.menu_bg_tinted));
             int width = activity.getResources().getDimensionPixelSize(R.dimen.list_menu_width);
             activity.setContentView(mView, new LayoutParams(width, WRAP_CONTENT));
         });

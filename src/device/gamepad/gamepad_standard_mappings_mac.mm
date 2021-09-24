@@ -331,6 +331,28 @@ void MapperDragonRiseGeneric(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void Mapper2Axes8Keys(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[2];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[1]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[1]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[0]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[0]);
+
+  // Missing buttons
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = NullButton();
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = NullButton();
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = NullButton();
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = NullButton();
+
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1;
+  mapped->axes_length = 0;
+}
+
 void MapperOnLiveWireless(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
@@ -604,6 +626,40 @@ void MapperXboxOneBluetooth(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperXboxElite2Bluetooth(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  // Firmware updates have changed the mappings in this controller. The newer
+  // firmware has an axes length of 10 and some new mappings. Since this seems
+  // to be the only way to tell which firmware version we have we are splitting
+  // the mapping based on the axes_length.
+  if (mapped->axes_length > 10) {
+    mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[10]);
+    mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[11]);
+    mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[31];
+    mapped->buttons[BUTTON_INDEX_META] = input.buttons[30];
+  } else {
+    mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[3]);
+    mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[4]);
+    mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[16];
+    mapped->buttons[BUTTON_INDEX_META] = input.buttons[12];
+  }
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
+  DpadFromAxis(mapped, input.axes[9]);
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
+
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
 void MapperSnakebyteIDroidCon(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
@@ -664,6 +720,8 @@ constexpr struct MappingData {
     {GamepadId::kBroadcomProduct8502, MapperSnakebyteIDroidCon},
     // DragonRise Generic USB
     {GamepadId::kDragonRiseProduct0006, MapperDragonRiseGeneric},
+    // 2Axes 8Keys Game Pad
+    {GamepadId::kDragonRiseProduct0011, Mapper2Axes8Keys},
     // HORIPAD for Nintendo Switch
     {GamepadId::kHoriProduct00c1, MapperHoripadSwitch},
     // Xbox 360 Wired
@@ -689,7 +747,7 @@ constexpr struct MappingData {
     // Xbox One Elite 2 (USB)
     {GamepadId::kMicrosoftProduct0b00, MapperXbox360Gamepad},
     // Xbox One Elite 2 (Bluetooth)
-    {GamepadId::kMicrosoftProduct0b05, MapperXboxOneBluetooth},
+    {GamepadId::kMicrosoftProduct0b05, MapperXboxElite2Bluetooth},
     // Xbox Adaptive Controller (USB)
     {GamepadId::kMicrosoftProduct0b0a, MapperXbox360Gamepad},
     // Xbox Adaptive Controller (Bluetooth)

@@ -30,6 +30,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/shell.h"
 #include "ash/wm/work_area_insets.h"
@@ -95,9 +96,6 @@ constexpr int kAppInfoDialogHeight = 384;
 // The duration of app list animations when |short_animations_for_testing| are
 // enabled.
 constexpr int kAppListAnimationDurationImmediateMs = 0;
-
-// Quality of the shield background blur.
-constexpr float kAppListBlurQuality = 0.33f;
 
 // Set animation durations to 0 for testing.
 // TODO(oshima): Use ui::ScopedAnimationDurationScaleMode instead.
@@ -249,6 +247,20 @@ float ComputeSubpixelOffset(const display::Display& display, float value) {
 }
 
 }  // namespace
+
+// AppListView::ScopedContentsResetDisabler ------------------------------------
+
+AppListView::ScopedContentsResetDisabler::ScopedContentsResetDisabler(
+    AppListView* view)
+    : view_(view) {
+  DCHECK(!view_->disable_contents_reset_when_showing_);
+  view_->disable_contents_reset_when_showing_ = true;
+}
+
+AppListView::ScopedContentsResetDisabler::~ScopedContentsResetDisabler() {
+  DCHECK(view_->disable_contents_reset_when_showing_);
+  view_->disable_contents_reset_when_showing_ = false;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppListView::StateAnimationMetricsReporter
@@ -518,25 +530,16 @@ class AppListBackgroundShieldView : public views::View {
   ~AppListBackgroundShieldView() override = default;
 
   void UpdateBackground(bool use_blur) {
-    if (blur_value_ == use_blur)
+    if (use_blur_ == use_blur)
       return;
-    blur_value_ = use_blur;
+    use_blur_ = use_blur;
 
     if (use_blur) {
-      layer()->SetBackgroundBlur(preferred_blur_radius_);
-      layer()->SetBackdropFilterQuality(kAppListBlurQuality);
+      layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+      layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
     } else {
       layer()->SetBackgroundBlur(0);
     }
-  }
-
-  void UpdatePreferredBlurRadius(double preferred_blur_radius) {
-    if (preferred_blur_radius_ == preferred_blur_radius)
-      return;
-
-    preferred_blur_radius_ = preferred_blur_radius;
-    if (blur_value_)
-      layer()->SetBackgroundBlur(preferred_blur_radius);
   }
 
   void UpdateBackgroundRadius(
@@ -597,10 +600,7 @@ class AppListBackgroundShieldView : public views::View {
 
  private:
   // Whether the background blur has been set on the background shield.
-  bool blur_value_ = false;
-
-  // The blur radius to use for blur when blur is enabled.
-  double preferred_blur_radius_ = 0;
+  bool use_blur_ = false;
 
   float corner_radius_ = 0.0f;
 
@@ -620,7 +620,7 @@ AppListView::TestApi::TestApi(AppListView* view) : view_(view) {
 
 AppListView::TestApi::~TestApi() = default;
 
-AppsGridView* AppListView::TestApi::GetRootAppsGridView() {
+PagedAppsGridView* AppListView::TestApi::GetRootAppsGridView() {
   return view_->GetRootAppsGridView();
 }
 
@@ -637,6 +637,12 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       state_animation_metrics_reporter_(
           std::make_unique<StateAnimationMetricsReporter>()) {
   CHECK(delegate);
+  // Default role of WidgetDelegate is ax::mojom::Role::kWindow which traps
+  // ChromeVox focus within the root view. Assign ax::mojom::Role::kGroup here
+  // to allow the focus to move from elements in app list view to search box.
+  // TODO(pbos): Should this be necessary with the OverrideNextFocus() used
+  // below?
+  SetAccessibleRole(ax::mojom::Role::kGroup);
 }
 
 AppListView::~AppListView() {
@@ -703,8 +709,6 @@ void AppListView::InitContents() {
           delegate_->GetShelfSize() / 2, delegate_->IsInTabletMode());
   app_list_background_shield->UpdateBackground(
       /*use_blur*/ !delegate_->IsInTabletMode() && is_background_blur_enabled_);
-  app_list_background_shield->UpdatePreferredBlurRadius(
-      app_list_config_->blur_radius());
   app_list_background_shield_ =
       AddChildView(std::move(app_list_background_shield));
 
@@ -821,9 +825,11 @@ void AppListView::Show(AppListViewState preferred_state, bool is_side_shelf) {
 
   UpdateWidget();
 
-  app_list_main_view_->contents_view()->ResetForShow();
-  if (!delegate_->IsInTabletMode())
-    SelectInitialAppsPage();
+  if (!disable_contents_reset_when_showing_) {
+    app_list_main_view_->contents_view()->ResetForShow();
+    if (!delegate_->IsInTabletMode())
+      SelectInitialAppsPage();
+  }
 
   SetState(preferred_state);
 
@@ -935,13 +941,6 @@ void AppListView::OnThemeChanged() {
   SetBackgroundShieldColor();
 }
 
-ax::mojom::Role AppListView::GetAccessibleWindowRole() {
-  // Default role of root view is ax::mojom::Role::kWindow which traps ChromeVox
-  // focus within the root view. Assign ax::mojom::Role::kGroup here to allow
-  // the focus to move from elements in app list view to search box.
-  return ax::mojom::Role::kGroup;
-}
-
 const AppListConfig& AppListView::GetAppListConfig() const {
   return *app_list_config_;
 }
@@ -1007,11 +1006,6 @@ void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
 
   // Initial config should be set before the app list main view is initialized.
   DCHECK(!is_initial_config || !app_list_main_view_);
-
-  if (app_list_background_shield_) {
-    app_list_background_shield_->UpdatePreferredBlurRadius(
-        app_list_config_->blur_radius());
-  }
 
   // If the config changed, notify apps container the config has changed, so
   // root and folder apps grids are updated for the new config.
@@ -1368,7 +1362,7 @@ PagedAppsGridView* AppListView::GetRootAppsGridView() {
   return GetAppsContainerView()->apps_grid_view();
 }
 
-PagedAppsGridView* AppListView::GetFolderAppsGridView() {
+AppsGridView* AppListView::GetFolderAppsGridView() {
   return GetAppsContainerView()->app_list_folder_view()->items_grid_view();
 }
 
@@ -1680,9 +1674,9 @@ bool AppListView::HandleScroll(const gfx::Point& location,
   if ((offset.y() == 0 && offset.x() == 0) || ShouldIgnoreScrollEvents())
     return false;
 
-  PagedAppsGridView* apps_grid_view = GetAppsContainerView()->IsInFolderView()
-                                          ? GetFolderAppsGridView()
-                                          : GetRootAppsGridView();
+  AppsGridView* apps_grid_view = GetAppsContainerView()->IsInFolderView()
+                                     ? GetFolderAppsGridView()
+                                     : GetRootAppsGridView();
   gfx::Point apps_grid_location(location);
   views::View::ConvertPointToTarget(this, apps_grid_view, &apps_grid_location);
 
@@ -2278,14 +2272,14 @@ void AppListView::OnBoundsAnimationCompleted(AppListViewState target_state) {
     animation_observer->OnImplicitAnimationsCompleted();
 
   // Layout if the animation was completed.
-  if (!was_animation_interrupted) {
+  if (!was_animation_interrupted)
     Layout();
 
-    // NOTE: `target_state` may not match `app_list_state_` if
-    // `OnBoundsAnimationCompleted()` gets called synchronously - for example,
-    // for state changes during drag, and with side shelf.
-    delegate_->OnStateTransitionAnimationCompleted(target_state);
-  }
+  // NOTE: `target_state` may not match `app_list_state_` if
+  // `OnBoundsAnimationCompleted()` gets called synchronously - for example,
+  // for state changes during drag, and with side shelf.
+  delegate_->OnStateTransitionAnimationCompleted(target_state,
+                                                 was_animation_interrupted);
 }
 
 gfx::Rect AppListView::GetItemScreenBoundsInFirstGridPage(

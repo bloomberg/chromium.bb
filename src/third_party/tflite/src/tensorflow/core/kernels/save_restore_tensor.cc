@@ -43,7 +43,7 @@ void SaveTensors(
     bool save_slices) {
   const Tensor& filename_t = context->input(0);
   {
-    const int64 size = filename_t.NumElements();
+    const int64_t size = filename_t.NumElements();
     OP_REQUIRES(
         context, size == 1,
         errors::InvalidArgument(
@@ -64,7 +64,7 @@ void SaveTensors(
     const Tensor& tensor_shapes_and_slices_t = context->input(2);
     OP_REQUIRES(
         context,
-        tensor_shapes_and_slices_t.NumElements() == static_cast<int64>(N),
+        tensor_shapes_and_slices_t.NumElements() == static_cast<int64_t>(N),
         errors::InvalidArgument("Expected ", N,
                                 " elements for the tensor "
                                 "shapes and slices but got ",
@@ -146,16 +146,23 @@ void RestoreTensor(OpKernelContext* context,
                    int preferred_shard, bool restore_slice, int restore_index) {
   const Tensor& file_pattern_t = context->input(0);
   {
-    const int64 size = file_pattern_t.NumElements();
+    const int64_t size = file_pattern_t.NumElements();
     OP_REQUIRES(
         context, size == 1,
         errors::InvalidArgument(
             "Input 0 (file_pattern) must be a string scalar; got a tensor of ",
-            size, "elements"));
+            size, " elements"));
   }
   const string& file_pattern = file_pattern_t.flat<tstring>()(0);
 
   const Tensor& tensor_name_t = context->input(1);
+  {
+    const int64_t size = tensor_name_t.NumElements();
+    OP_REQUIRES(context, size > restore_index,
+                errors::InvalidArgument(
+                    "Input 1 (file_pattern) must be a have at least ",
+                    restore_index + 1, " elements"));
+  }
   const string& tensor_name = tensor_name_t.flat<tstring>()(restore_index);
 
   // If we cannot find a cached reader we will allocate our own.
@@ -235,7 +242,7 @@ void RestoreTensor(OpKernelContext* context,
 namespace {
 
 // Tensors larger than this threshold will be restored from a thread-pool.
-const int64 kLargeShapeThreshold = 16 << 20;  // 16M
+const int64_t kLargeShapeThreshold = 16 << 20;  // 16M
 
 // A restore operation for a single tensor.  Small tensors may be restored
 // directly from the op thread to improve read locality.  Large tensors can be
@@ -301,6 +308,24 @@ struct RestoreOp {
       TF_RETURN_IF_ERROR(
           reader->LookupSlice(tensor_name, parsed_slice, restored_tensor));
     }
+    if (VLOG_IS_ON(5)) {
+      if (restored_tensor->dtype() == DT_FLOAT) {
+        const float* t_data = restored_tensor->flat<float>().data();
+        float min = std::numeric_limits<float>::infinity();
+        float max = -std::numeric_limits<float>::infinity();
+        double avg = 0.0;
+        for (int i = 0; i < restored_tensor->NumElements(); ++i) {
+          if (t_data[i] < min) min = t_data[i];
+          if (t_data[i] > max) max = t_data[i];
+          avg += t_data[i];
+        }
+        VLOG(5) << " min " << min << " max " << max << " avg "
+                << avg / restored_tensor->NumElements() << " total elts "
+                << restored_tensor->NumElements();
+      }
+    }
+    VLOG(1) << "Done restoring tensor " << idx << " : " << tensor_name << " : "
+            << restored_full_shape.num_elements();
     return Status::OK();
   }
 

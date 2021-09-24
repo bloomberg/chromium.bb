@@ -3,6 +3,11 @@
     display: grid;
     row-gap: 5px;
   }
+
+  #addIcon {
+    --iron-icon-fill-color: #1A73E8;
+    padding-top: 11px;
+  }
 </style>
 
 <cr-dialog id="editDialog" on-close="onDialogClose_">
@@ -17,16 +22,16 @@
         </accelerator-edit-view>
       </template>
     </div>
-    <template id="newAccelerator" is="dom-if" if="[[isAddingNewAccelerator_]]"
-        restamp>
+    <template id="newAccelerator" is="dom-if"
+        if="[[!showAddButton_(pendingNewAcceleratorState_)]]" restamp>
       <accelerator-edit-view id="pendingAccelerator"
-          is-edit-view="{{isAddingNewAccelerator_}}">
+          view-state="{{pendingNewAcceleratorState_}}">
       </accelerator-edit-view>
     </template>
-    <div id="addAcceleratorContainer" hidden="[[isAddingNewAccelerator_]]">
+    <div id="addAcceleratorContainer"
+        hidden="[[!showAddButton_(pendingNewAcceleratorState_)]]">
       <cr-button id="addAcceleratorButton" on-click="onAddAcceleratorClicked_">
-        <!-- TODO(jimmyxgong): Replace with proper spec icon -->
-        <iron-icon id="addIcon" icon="shortcut-customization:cancel">
+        <iron-icon id="addIcon" icon="shortcut-customization:add">
         </iron-icon>
         <!-- TODO(jimmyxgong): Localize this string -->
         Add shortcut

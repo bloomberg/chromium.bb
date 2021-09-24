@@ -231,7 +231,7 @@ class TryserverApi(recipe_api.RecipeApi):
           step_test_data=lambda:
             self.m.raw_io.test_api.stream_output('foo.cc'),
           **kwargs)
-    paths = [self.m.path.join(patch_root, p) for p in
+    paths = [self.m.path.join(patch_root, p.decode('utf-8')) for p in
              step_result.stdout.split()]
     paths.sort()
     if self.m.platform.is_win:

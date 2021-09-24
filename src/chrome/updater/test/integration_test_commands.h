@@ -33,7 +33,6 @@ class IntegrationTestCommands
   virtual void ExpectVersionNotActive(const std::string& version) const = 0;
   virtual void Uninstall() const = 0;
   virtual void RegisterApp(const std::string& app_id) const = 0;
-  virtual void RegisterTestApp() const = 0;
   virtual void CopyLog() const = 0;
   virtual void SetupFakeUpdaterHigherVersion() const = 0;
   virtual void SetupFakeUpdaterLowerVersion() const = 0;
@@ -42,7 +41,11 @@ class IntegrationTestCommands
   virtual void SetServerStarts(int value) const = 0;
   virtual void ExpectAppUnregisteredExistenceCheckerPath(
       const std::string& app_id) const = 0;
+  virtual void ExpectAppVersion(const std::string& app_id,
+                                const base::Version& version) const = 0;
   virtual void RunWake(int exit_code) const = 0;
+  virtual void Update(const std::string& app_id) const = 0;
+  virtual void UpdateAll() const = 0;
   virtual void PrintLog() const = 0;
   virtual base::FilePath GetDifferentUserPath() const = 0;
   virtual void WaitForServerExit() const = 0;

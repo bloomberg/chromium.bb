@@ -30,6 +30,8 @@
 @property(nonatomic, assign) BOOL alertedCredentialExists;
 // Whether the |-alertSavePasswordFailed| method was called.
 @property(nonatomic, assign) BOOL alertedSaveFailed;
+// Password passed to the consumer.
+@property(nonatomic, assign) NSString* password;
 
 @end
 
@@ -41,6 +43,10 @@
 
 - (void)alertSavePasswordFailed {
   self.alertedSaveFailed = YES;
+}
+
+- (void)credentialSaved:(ArchivableCredential*)credential {
+  // No-op.
 }
 
 @end

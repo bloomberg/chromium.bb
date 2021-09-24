@@ -117,7 +117,9 @@ class FastSourceLineResolver::Module: public SourceLineResolverBase::Module {
 
   // Looks up the given relative address, and fills the StackFrame struct
   // with the result.
-  virtual void LookupAddress(StackFrame* frame) const;
+  virtual void LookupAddress(
+      StackFrame* frame,
+      std::vector<std::unique_ptr<StackFrame>>* inlined_frames) const;
 
   // Loads a map from the given buffer in char* type.
   virtual bool LoadMapFromMemory(char* memory_buffer,

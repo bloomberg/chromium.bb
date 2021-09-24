@@ -16,6 +16,7 @@
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -219,6 +220,8 @@ void NavigateToURLWithPost(Browser* browser, const GURL& url) {
 }
 
 content::RenderFrameHost* NavigateToURL(Browser* browser, const GURL& url) {
+  // TODO(crbug.com/1243903): Remove logging after bug investigation.
+  LOG(INFO) << __func__ << ": " << url;
   return NavigateToURLWithDisposition(browser, url,
                                       WindowOpenDisposition::CURRENT_TAB,
                                       BROWSER_TEST_WAIT_FOR_LOAD_STOP);
@@ -252,8 +255,8 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       content::MessageLoopRunner::QuitMode::DEFERRED);
 
   std::set<Browser*> initial_browsers;
-  for (auto* browser : *BrowserList::GetInstance())
-    initial_browsers.insert(browser);
+  for (auto* initial_browser : *BrowserList::GetInstance())
+    initial_browsers.insert(initial_browser);
 
   AllBrowserTabAddedWaiter tab_added_waiter;
 
@@ -425,7 +428,7 @@ void DownloadURL(Browser* browser, const GURL& download_url) {
           download_manager, 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
 
-  ui_test_utils::NavigateToURL(browser, download_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser, download_url));
   observer->WaitForFinished();
 }
 

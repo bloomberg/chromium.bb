@@ -64,6 +64,10 @@
 #include "chrome/services/file_util/file_util_service.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(FULL_SAFE_BROWSING) && (defined(OS_LINUX) || defined(OS_WIN))
+#include "chrome/services/file_util/document_analysis_service.h"  // nogncheck
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
 #include "chrome/services/removable_storage_writer/removable_storage_writer.h"
@@ -95,6 +99,7 @@
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/services/quick_pair/quick_pair_service.h"
 #include "ash/services/recording/recording_service.h"
 #include "chrome/services/sharing/sharing_impl.h"
 #include "chromeos/assistant/buildflags.h"  // nogncheck
@@ -207,6 +212,13 @@ auto RunCupsIppParser(
 }
 #endif
 
+#if BUILDFLAG(FULL_SAFE_BROWSING) && (defined(OS_LINUX) || defined(OS_WIN))
+auto RunDocumentAnalysis(
+    mojo::PendingReceiver<chrome::mojom::DocumentAnalysisService> receiver) {
+  return std::make_unique<DocumentAnalysisService>(std::move(receiver));
+}
+#endif
+
 #if BUILDFLAG(FULL_SAFE_BROWSING) || BUILDFLAG(IS_CHROMEOS_ASH)
 auto RunFileUtil(
     mojo::PendingReceiver<chrome::mojom::FileUtilService> receiver) {
@@ -292,6 +304,12 @@ auto RunLocalSearchService(
       std::move(receiver));
 }
 
+auto RunQuickPairService(
+    mojo::PendingReceiver<ash::quick_pair::mojom::QuickPairService> receiver) {
+  return std::make_unique<ash::quick_pair::QuickPairService>(
+      std::move(receiver));
+}
+
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 auto RunAssistantAudioDecoder(
     mojo::PendingReceiver<
@@ -352,6 +370,10 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunFileUtil);
 #endif
 
+#if BUILDFLAG(FULL_SAFE_BROWSING) && (defined(OS_LINUX) || defined(OS_WIN))
+  services.Add(RunDocumentAnalysis);
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
   // On Windows, this service runs in an elevated utility process.
   services.Add(RunRemovableStorageWriter);
@@ -384,6 +406,7 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunSharing);
   services.Add(RunTtsService);
   services.Add(RunLocalSearchService);
+  services.Add(RunQuickPairService);
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   services.Add(RunAssistantAudioDecoder);
   services.Add(RunLibassistantService);

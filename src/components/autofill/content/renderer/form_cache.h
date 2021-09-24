@@ -36,8 +36,21 @@ class FormCache {
   ~FormCache();
 
   // Scans the DOM in |frame_| extracting and storing forms that have not been
-  // seen before. Returns the extracted forms. Note that modified forms are
-  // considered new forms.
+  // seen before. Returns the extracted forms.
+  //
+  // Note that modified forms are considered new forms.
+  //
+  // To reduce the computational cost, we limit the number of fields and frames
+  // summed over all forms, in addition to the per-form limits in
+  // form_util::FormOrFieldsetsToFormData():
+  // - if the number of fields over all forms exceeds |kMaxParseableFields|,
+  //   only a subset of forms is returned which does not exceed the limit is
+  //   returned;
+  // - if the number of frames over all forms exceeds MaxParseableFrames(), all
+  //   forms are returned but only a subset of them have non-empty
+  //   FormData::child_frames.
+  // In either case, the subset is chosen so that the returned list of forms
+  // does not exceed the limits of fields and frames.
   std::vector<FormData> ExtractNewForms(
       const FieldDataManager* field_data_manager);
 
@@ -93,6 +106,12 @@ class FormCache {
   // |initial_checked_state_| whose keys not contained in |ids_to_retain|.
   void PruneInitialValueCaches(const std::set<FieldRendererId>& ids_to_retain);
 
+  // Update the peak size of the cached forms stored in
+  // |peak_size_of_parsed_forms_|.
+  // TODO(crbug/1215333): Remove after `Autofill.FormCacheSize` experiment is
+  // completed.
+  void MaybeUpdateParsedFormsPeak();
+
   // The frame this FormCache is associated with. Weak reference.
   blink::WebLocalFrame* frame_;
 
@@ -104,6 +123,13 @@ class FormCache {
   // `AutofillUseNewFormExtraction` feature is enabled. Remove after the feature
   // is deleted.
   std::map<FormRendererId, CachedFormData> parsed_forms_rendererid_;
+
+  // Stores the peak size of the cached forms for `Autofill.FormCacheSize`
+  // metric. The cached forms are stored in |parsed_forms_| or
+  // |parsed_forms_rendererid_| depending on the `AutofillUseNewFormExtraction`
+  // feature.
+  // TODO(crbug/1215333): Remove after the experiment is completed.
+  size_t peak_size_of_parsed_forms_ = 0;
 
   // The synthetic FormData is for all the fieldsets in the document without a
   // form owner.

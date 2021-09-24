@@ -193,6 +193,7 @@ static const char DECORATE_UNUSED *kVUID_Core_Shader_CooperativeMatrixType = "UN
 static const char DECORATE_UNUSED *kVUID_Core_Shader_CooperativeMatrixMulAdd = "UNASSIGNED-CoreValidation-Shader-CooperativeMatrixMulAdd";
 static const char DECORATE_UNUSED *kVUID_Core_Shader_InvalidExtension = "UNASSIGNED-CoreValidation-Shader-InvalidSpirvExtension";
 static const char DECORATE_UNUSED *kVUID_Core_Shader_ResolveQCOM_InvalidCapability = "UNASSIGNED-CoreValidation-Shader-ResolveQCOM-InvalidCapability";
+static const char DECORATE_UNUSED *kVUID_Core_Shader_MaxComputeWorkGroupSize = "UNASSIGNED-CoreValidation-Shader-MaxComputeWorkGroupSize";
 // Previously defined but unused - uncomment as needed
 //static const char DECORATE_UNUSED *kVUID_Core_Shader_BadCapability = "UNASSIGNED-CoreValidation-Shader-BadCapability";
 //static const char DECORATE_UNUSED *kVUID_Core_Shader_BadSpecialization = "UNASSIGNED-CoreValidation-Shader-BadSpecialization";
@@ -286,9 +287,6 @@ static const char DECORATE_UNUSED *kVUID_Features_shaderStorageImageReadWithoutF
 static const char DECORATE_UNUSED *kVUID_Features_shaderStorageImageWriteWithoutFormat = "UNASSIGNED-features-shaderStorageImageWriteWithoutFormat";
 static const char DECORATE_UNUSED *kVUID_Features_shaderStorageImageReadWithoutFormat_NonReadable = "UNASSIGNED-features-shaderStorageImageReadWithoutFormat-NonReadable";
 static const char DECORATE_UNUSED *kVUID_Features_shaderStorageImageWriteWithoutFormat_NonWritable = "UNASSIGNED-features-shaderStorageImageWriteWithoutFormat-NonWritable";
-
-static const char DECORATE_UNUSED *kVUID_Features_PresentIdKHR = "UNASSIGNED-features-VkPresentIdKHR";
-static const char DECORATE_UNUSED *kVUID_Features_PresentWaitKHR = "UNASSIGNED-features-VkPresentWaitKHR";
 
 // clang-format on
 

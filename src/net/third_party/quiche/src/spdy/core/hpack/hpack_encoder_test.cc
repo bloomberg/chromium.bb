@@ -45,7 +45,7 @@ class HpackEncoderPeer {
   HpackHeaderTablePeer table_peer() { return HpackHeaderTablePeer(table()); }
   void EmitString(absl::string_view str) { encoder_->EmitString(str); }
   void TakeString(std::string* out) {
-    encoder_->output_stream_.TakeString(out);
+    *out = encoder_->output_stream_.TakeString();
   }
   static void CookieToCrumbs(absl::string_view cookie,
                              std::vector<absl::string_view>* out) {
@@ -71,10 +71,9 @@ class HpackEncoderPeer {
 
   // TODO(dahollings): Remove or clean up these methods when deprecating
   // non-incremental encoding path.
-  static bool EncodeHeaderSet(HpackEncoder* encoder,
-                              const SpdyHeaderBlock& header_set,
-                              std::string* output) {
-    return encoder->EncodeHeaderSet(header_set, output);
+  static std::string EncodeHeaderBlock(HpackEncoder* encoder,
+                                       const SpdyHeaderBlock& header_set) {
+    return encoder->EncodeHeaderBlock(header_set);
   }
 
   static bool EncodeIncremental(HpackEncoder* encoder,
@@ -82,12 +81,11 @@ class HpackEncoderPeer {
                                 std::string* output) {
     std::unique_ptr<HpackEncoder::ProgressiveEncoder> encoderator =
         encoder->EncodeHeaderSet(header_set);
-    std::string output_buffer;
     http2::test::Http2Random random;
-    encoderator->Next(random.UniformInRange(0, 16), &output_buffer);
+    std::string output_buffer = encoderator->Next(random.UniformInRange(0, 16));
     while (encoderator->HasNext()) {
-      std::string second_buffer;
-      encoderator->Next(random.UniformInRange(0, 16), &second_buffer);
+      std::string second_buffer =
+          encoderator->Next(random.UniformInRange(0, 16));
       output_buffer.append(second_buffer);
     }
     *output = std::move(output_buffer);
@@ -99,12 +97,11 @@ class HpackEncoderPeer {
                                     std::string* output) {
     std::unique_ptr<HpackEncoder::ProgressiveEncoder> encoderator =
         encoder->EncodeRepresentations(representations);
-    std::string output_buffer;
     http2::test::Http2Random random;
-    encoderator->Next(random.UniformInRange(0, 16), &output_buffer);
+    std::string output_buffer = encoderator->Next(random.UniformInRange(0, 16));
     while (encoderator->HasNext()) {
-      std::string second_buffer;
-      encoderator->Next(random.UniformInRange(0, 16), &second_buffer);
+      std::string second_buffer =
+          encoderator->Next(random.UniformInRange(0, 16));
       output_buffer.append(second_buffer);
     }
     *output = std::move(output_buffer);
@@ -219,12 +216,12 @@ class HpackEncoderTest : public QuicheTestWithParam<EncodeStrategy> {
     return r;
   }
   void CompareWithExpectedEncoding(const SpdyHeaderBlock& header_set) {
-    std::string expected_out, actual_out;
-    expected_.TakeString(&expected_out);
+    std::string actual_out;
+    std::string expected_out = expected_.TakeString();
     switch (strategy_) {
       case kDefault:
-        EXPECT_TRUE(test::HpackEncoderPeer::EncodeHeaderSet(
-            &encoder_, header_set, &actual_out));
+        actual_out =
+            test::HpackEncoderPeer::EncodeHeaderBlock(&encoder_, header_set);
         break;
       case kIncremental:
         EXPECT_TRUE(test::HpackEncoderPeer::EncodeIncremental(
@@ -238,8 +235,8 @@ class HpackEncoderTest : public QuicheTestWithParam<EncodeStrategy> {
     EXPECT_EQ(expected_out, actual_out);
   }
   void CompareWithExpectedEncoding(const Representations& representations) {
-    std::string expected_out, actual_out;
-    expected_.TakeString(&expected_out);
+    std::string actual_out;
+    std::string expected_out = expected_.TakeString();
     EXPECT_TRUE(test::HpackEncoderPeer::EncodeRepresentations(
         &encoder_, representations, &actual_out));
     EXPECT_EQ(expected_out, actual_out);
@@ -460,8 +457,8 @@ TEST_P(HpackEncoderTest, StringsDynamicallySelectHuffmanCoding) {
   expected_.AppendUint32(6);
   expected_.AppendBytes("@@@@@@");
 
-  std::string expected_out, actual_out;
-  expected_.TakeString(&expected_out);
+  std::string actual_out;
+  std::string expected_out = expected_.TakeString();
   peer_.TakeString(&actual_out);
   EXPECT_EQ(expected_out, actual_out);
 }

@@ -102,7 +102,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     The result of attempting to fetch an initial variations seed during Android
     Chrome first run. Records both the HTTP code and various error values in one
-    enumeration.
+    enumeration. Prior to M95, non-200 HTTP codes were counted as IOException.
+    Starting with M95, these codes are logged separately.
   </summary>
 </histogram>
 
@@ -119,6 +120,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Variations.FirstRunPrefsDebug"
     enum="VariationsFirstRunPrefEvents" expires_after="2021-08-29">
+  <obsolete>
+    Removed 2021/08.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -155,7 +159,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.Headers.ExperimentCount" units="units"
-    expires_after="2021-12-26">
+    expires_after="2022-02-27">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -203,6 +207,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name=".Remove"
         summary="Result when checking whether to remove a header."/>
   </token>
+</histogram>
+
+<histogram name="Variations.InvalidStudyReason"
+    enum="VariationsInvalidStudyReason" expires_after="2022-02-26">
+  <owner>jwd@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Records the reason for rejecting an invalid study. Recorded when processing
+    the variations seed at startup and when simulating a new seed.
+  </summary>
 </histogram>
 
 <histogram name="Variations.LoadPermanentConsistencyCountryResult"
@@ -267,7 +281,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SafeMode.FellBackToSafeMode2"
-    enum="BooleanSafeMode" expires_after="2021-12-07">
+    enum="BooleanSafeMode" expires_after="2021-08-29">
+  <obsolete>
+    Replaced by Variations.SeedUsage in September 2021, M95.
+  </obsolete>
   <owner>isherman@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -443,7 +460,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SeedFreshness" units="minutes"
-    expires_after="2021-12-26">
+    expires_after="2022-02-27">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -482,7 +499,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SeedLoadResult" enum="VariationsSeedLoadResult"
-    expires_after="2021-12-26">
+    expires_after="2022-02-27">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -494,7 +511,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SeedProcessingTime" units="ms"
-    expires_after="2021-12-26">
+    expires_after="2022-02-27">
   <owner>isherman@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -512,6 +529,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records the result of storing the variations seed that was received from the
     server. Also logs the types of data received (gzip, delta, etc).
+  </summary>
+</histogram>
+
+<histogram name="Variations.SeedUsage" enum="VariationsSeedUsage"
+    expires_after="2021-12-07">
+  <owner>caitlinfischer@google.com</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Captures details about Chrome's attempt to use a VariationsSeed, e.g.
+    whether Chrome used a safe seed. Recorded once during Chrome startup after
+    attempting to load a seed and before field trials are created.
   </summary>
 </histogram>
 
@@ -615,7 +643,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.UserChannel" enum="UserChannels"
-    expires_after="2021-12-26">
+    expires_after="2022-02-27">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>

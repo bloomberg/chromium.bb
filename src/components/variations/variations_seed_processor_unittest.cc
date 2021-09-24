@@ -164,7 +164,7 @@ class VariationsSeedProcessorTest : public ::testing::Test {
 
   void CreateTrialsFromSeed(const VariationsSeed& seed,
                             double low_entropy = 0.9) {
-    ClientFilterableState client_state({});
+    ClientFilterableState client_state(base::BindOnce([] { return false; }));
     client_state.locale = "en-CA";
     client_state.reference_date = base::Time::Now();
     client_state.version = base::Version("20.0.0.0");
@@ -292,7 +292,7 @@ TEST_F(VariationsSeedProcessorTest,
   const base::Time year_ago =
       base::Time::Now() - base::TimeDelta::FromDays(365);
 
-  ClientFilterableState client_state({});
+  ClientFilterableState client_state(base::BindOnce([] { return false; }));
   client_state.locale = "en-CA";
   client_state.reference_date = base::Time::Now();
   client_state.version = base::Version("20.0.0.0");
@@ -388,6 +388,7 @@ TEST_F(VariationsSeedProcessorTest, OverrideUIStringsWithForcingFlag) {
 
 TEST_F(VariationsSeedProcessorTest, ValidateStudy) {
   Study study;
+  study.set_name("study");
   study.set_default_experiment_name("def");
   AddExperiment("abc", 100, &study);
   Study_Experiment* default_group = AddExperiment("def", 200, &study);
@@ -434,6 +435,7 @@ TEST_F(VariationsSeedProcessorTest, ValidateStudy) {
 
 TEST_F(VariationsSeedProcessorTest, ValidateStudyWithAssociatedFeatures) {
   Study study;
+  study.set_name("study");
   study.set_default_experiment_name("def");
   Study_Experiment* exp1 = AddExperiment("exp1", 100, &study);
   Study_Experiment* exp2 = AddExperiment("exp2", 100, &study);
@@ -487,6 +489,7 @@ TEST_F(VariationsSeedProcessorTest, ValidateStudyWithAssociatedFeatures) {
 
 TEST_F(VariationsSeedProcessorTest, ProcessedStudyAllAssignmentsToOneGroup) {
   Study study;
+  study.set_name("study1");
   study.set_default_experiment_name("def");
   AddExperiment("def", 100, &study);
 
@@ -505,6 +508,7 @@ TEST_F(VariationsSeedProcessorTest, ProcessedStudyAllAssignmentsToOneGroup) {
 
   // Try with default group and first group being at 0.
   Study study2;
+  study2.set_name("study2");
   study2.set_default_experiment_name("def");
   AddExperiment("def", 0, &study2);
   AddExperiment("xyz", 34, &study2);
@@ -572,7 +576,7 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
   AddExperiment("Default", 0, study3);
   study3->set_activation_type(Study_ActivationType_ACTIVATE_ON_QUERY);
 
-  ClientFilterableState client_state({});
+  ClientFilterableState client_state(base::BindOnce([] { return false; }));
   client_state.locale = "en-CA";
   client_state.reference_date = base::Time::Now();
   client_state.version = base::Version("20.0.0.0");

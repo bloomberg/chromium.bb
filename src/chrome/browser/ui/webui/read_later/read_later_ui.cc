@@ -53,6 +53,7 @@ ReadLaterUI::ReadLaterUI(content::WebUI* web_ui)
       {"emptyStateSubheader", IDS_READ_LATER_MENU_EMPTY_STATE_SUBHEADER},
       {"readHeader", IDS_READ_LATER_MENU_READ_HEADER},
       {"title", IDS_READ_LATER_TITLE},
+      {"sidePanelTitle", IDS_SIDE_PANEL_TITLE},
       {"tooltipClose", IDS_CLOSE},
       {"tooltipDelete", IDS_DELETE},
       {"tooltipMarkAsRead", IDS_READ_LATER_MENU_TOOLTIP_MARK_AS_READ},
@@ -70,6 +71,9 @@ ReadLaterUI::ReadLaterUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(features::kReadLaterAddFromDialog) ||
           show_side_panel);
   source->AddBoolean("useRipples", views::PlatformStyle::kUseRipples);
+  source->AddBoolean("bookmarksDragAndDropEnabled",
+                     show_side_panel && base::FeatureList::IsEnabled(
+                                            features::kSidePanelDragAndDrop));
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(

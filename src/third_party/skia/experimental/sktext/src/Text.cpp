@@ -136,6 +136,11 @@ std::unique_ptr<ShapedText> UnicodeText::shape(SkSpan<FontBlock> fontBlocks,
 void UnicodeText::commitRunBuffer(const RunInfo&) {
     fCurrentRun->commit();
 
+    // Convert utf8 range into utf16 range
+    fCurrentRun->convertUtf16Range([this](unsigned long index) {
+        return this->fUTF16FromUTF8[index + fParagraphTextStart];
+    });
+
     // Convert all utf8 indexes into utf16 indexes (and also shift them to be on the entire text scale, too)
     fCurrentRun->convertClusterIndexes([this](TextIndex clusterIndex) {
         auto converted = this->fUTF16FromUTF8[clusterIndex + fParagraphTextStart];
@@ -144,11 +149,6 @@ void UnicodeText::commitRunBuffer(const RunInfo&) {
             fShapedText->fGlyphUnitProperties[converted] |= GlyphUnitFlags::kGraphemeClusterStart;
         }
         return converted;
-    });
-
-    // Convert utf8 range into utf16 range
-    fCurrentRun->convertUtf16Range([this](unsigned long index) {
-        return this->fUTF16FromUTF8[index + fParagraphTextStart];
     });
 
     fShapedText->fRuns.emplace_back(std::move(*fCurrentRun));
@@ -335,101 +335,69 @@ void FormattedText::visit(Visitor* visitor) const {
     SkPoint offset = SkPoint::Make(0 , 0);
     for (auto& line : this->fLines) {
         offset.fX = 0;
-        visitor->onBeginLine(line.text(), line.baseline(), line.horizontalOffset());
+        visitor->onBeginLine(line.text());
         for (auto index = 0; index < line.runsNumber(); ++index) {
             auto runIndex = line.visualRun(index);
             auto& run = this->fRuns[runIndex];
-            auto startGlyph = runIndex == line.glyphStart().runIndex() ? line.glyphStart().glyphIndex() : 0;
-            auto endGlyph = runIndex == line.glyphEnd().runIndex() ? line.glyphEnd().glyphIndex() : run.fGlyphs.size();
-            TextRange textRange(run.fClusters[startGlyph], run.fClusters[endGlyph]);
-            auto count = endGlyph - startGlyph;
-            SkScalar runWidth = run.calculateWidth(Range<GlyphIndex>(startGlyph, endGlyph));
 
+            GlyphRange glyphRange(line.glyphRange(runIndex, run.size(), false /* excluding trailing spaces */));
             // Update positions
-            SkAutoSTMalloc<256, SkPoint> positions(count + 1);
-            SkPoint shift = SkPoint::Make(-run.fPositions[startGlyph].fX, line.baseline());
-            for (size_t i = startGlyph; i <= endGlyph; ++i) {
-                positions[i - startGlyph] = run.fPositions[i] + shift + offset;
+            SkAutoSTMalloc<256, SkPoint> positions(glyphRange.width() + 1);
+            SkPoint shift = SkPoint::Make(-run.fPositions[glyphRange.fStart].fX, line.baseline());
+            for (size_t i = glyphRange.fStart; i <= glyphRange.fEnd; ++i) {
+                positions[i - glyphRange.fStart] = run.fPositions[i] + shift + offset;
             }
-            SkRect boundingRect = SkRect::MakeXYWH(shift.fX + offset.fX, offset.fY, run.fPositions[endGlyph].fX  , run.fTextMetrics.height());
-            visitor->onGlyphRun(run.fFont, textRange, boundingRect, count, run.fGlyphs.data() + startGlyph, positions.data(), run.fOffsets.data() + startGlyph);
-            offset.fX += runWidth;
+            SkRect boundingRect = SkRect::MakeXYWH(shift.fX + offset.fX, offset.fY, run.fPositions[glyphRange.fEnd].fX  , run.fTextMetrics.height());
+            visitor->onGlyphRun(run.fFont, run.getTextRange(glyphRange), boundingRect, glyphRange.width(), run.fGlyphs.data() + glyphRange.fStart, positions.data(), run.fOffsets.data() + glyphRange.fStart);
+            offset.fX += run.calculateWidth(glyphRange);
         }
-        visitor->onEndLine(line.text(), line.baseline());
+        visitor->onEndLine(line.text());
         offset.fY += line.height();
     }
 }
 
-void FormattedText::visit(Visitor* visitor, SkSpan<size_t> chunks) const {
+void FormattedText::visit(Visitor* visitor, SkSpan<TextIndex> textChunks) const {
     // Decor blocks have to be sorted by text cannot intersect but can skip some parts of the text
     // (in which case we use default text style from paragraph style)
     // The edges of the decor blocks don't have to match glyph, grapheme or even unicode code point edges
     // It's out responsibility to adjust them to some reasonable values
     // [a:b) -> [c:d) where
     // c is closest GG cluster edge to a from the left and d is closest GG cluster edge to b from the left
-
-    size_t* currentBlock = &chunks[0];
-    size_t currentStart = 0;
     SkPoint offset = SkPoint::Make(0 , 0);
-    size_t lineIndex = 0;
     for (auto& line : this->fLines) {
         offset.fX = 0;
-        visitor->onBeginLine(line.text(), line.baseline(), line.horizontalOffset());
+        visitor->onBeginLine(line.text());
         for (auto index = 0; index < line.runsNumber(); ++index) {
             auto runIndex = line.visualRun(index);
             auto& run = this->fRuns[runIndex];
             if (run.size() == 0) {
                 continue;
             }
+
+            GlyphRange runGlyphRange(line.glyphRange(runIndex, run.size(), false /* excluding trailing spaces */));
+            SkPoint shift = SkPoint::Make(-run.fPositions[runGlyphRange.fStart].fX, line.baseline());
             // The run edges are good (aligned to GGC)
             // "ABCdef" -> "defCBA"
             // "AB": red
             // "Cd": green
             // "ef": blue
             // green[d] blue[ef] green [C] red [BA]
-            auto startGlyph = runIndex == line.glyphStart().runIndex() ? line.glyphStart().glyphIndex() : 0;
-            auto endGlyph = runIndex == line.glyphEnd().runIndex() ? line.glyphEnd().glyphIndex() : run.fGlyphs.size();
 
-            TextRange textRange(run.fRunStart + run.fClusters[startGlyph], run.fRunStart + run.fClusters[endGlyph]);
-            GlyphRange glyphRange(startGlyph, endGlyph);
-            SkScalar runWidth = run.calculateWidth(glyphRange);
-            size_t currentEnd = *currentBlock;
-            for (auto glyphIndex = startGlyph; glyphIndex <= endGlyph; ++glyphIndex) {
-
-                SkASSERT(currentBlock < chunks.end());
-                auto textIndex = run.fRunStart + run.fClusters[glyphIndex];
-                if (glyphIndex == endGlyph) {
-                    // last piece of the text
-                } else if (run.leftToRight() && textIndex < currentEnd) {
-                    continue;
-                } else if (!run.leftToRight() && textIndex >= currentStart) {
-                    continue;
-                }
-                textRange.fEnd = textIndex;
-                glyphRange.fEnd = glyphIndex;
-
+            // chunks[text index] -> chunks [glyph index] -> walk through in glyph index order (the visual order)
+            run.forEachTextChunkInGlyphRange(textChunks, runGlyphRange, [&](TextRange textRange, GlyphRange glyphRange){
                 // Update positions & calculate the bounding rect
                 SkAutoSTMalloc<256, SkPoint> positions(glyphRange.width() + 1);
-                SkPoint shift = SkPoint::Make(-run.fPositions[startGlyph].fX, line.baseline());
-                for (size_t i = glyphRange.fStart; i <= glyphRange.fEnd; ++i) {
-                    positions[i - glyphRange.fStart] = run.fPositions[i] + shift + offset;
+                for (GlyphIndex i = glyphRange.fStart; i <= glyphRange.fEnd; ++i) {
+                    positions[i - glyphRange.fStart] = run.fPositions[i] + shift + offset + SkPoint::Make(line.horizontalOffset(), 0.0f);
                 }
-                SkRect boundingRect = SkRect::MakeXYWH(positions[0].fX, offset.fY, positions[glyphRange.width()].fX - positions[0].fX, run.fTextMetrics.height());
-                visitor->onGlyphRun(run.fFont, textRange, boundingRect, glyphRange.width(), run.fGlyphs.data() + glyphRange.fStart, positions.data(), run.fOffsets.data() + glyphRange.fStart);
+                SkRect boundingRect = SkRect::MakeXYWH(positions[0].fX + line.horizontalOffset(), offset.fY, positions[glyphRange.width()].fX - positions[0].fX, run.fTextMetrics.height());
+                visitor->onGlyphRun(run.fFont, run.getTextRange(glyphRange), boundingRect, glyphRange.width(), run.fGlyphs.data() + glyphRange.fStart, positions.data(), run.fOffsets.data() + glyphRange.fStart);
 
-                textRange.fStart = textIndex;
-                glyphRange.fStart = glyphIndex;
+            });
 
-                if (glyphIndex != endGlyph) {
-                    // We are here because we reached the end of the block
-                    ++currentBlock;
-                    currentStart = currentEnd;
-                    currentEnd = *currentBlock;
-                }
-            }
-            offset.fX += runWidth;
+            offset.fX += run.calculateWidth(runGlyphRange);
         }
-        visitor->onEndLine(line.text(), line.baseline());
+        visitor->onEndLine(line.text());
         offset.fY += line.height();
     }
 }
@@ -450,31 +418,24 @@ Position FormattedText::adjustedPosition(PositionType positionType, TextIndex te
             auto runIndex = line.visualRun(index);
             auto& run = fRuns[runIndex];
 
-            GlyphIndex start = runIndex == line.glyphStart().runIndex() ? line.glyphStart().glyphIndex() : 0;
-            GlyphIndex end = runIndex == line.glyphTrailingEnd().runIndex() ? line.glyphTrailingEnd().glyphIndex() : run.fGlyphs.size();
-            auto runWidth = run.calculateWidth(GlyphRange(start, end));
+            GlyphRange runGlyphRange(line.glyphRange(runIndex, run.size(), true /* including trailing spaces */));
+            auto runWidth = run.calculateWidth(runGlyphRange);
 
             if (!run.fUtf16Range.contains(textIndex)) {
                 shift += runWidth;
                 continue;
             }
 
-            // This is the run
-            GlyphIndex found = start;
-            for (auto i = start; i <= end; ++i) {
-                if ((run.leftToRight() && run.fClusters[i] > textIndex) ||
-                    (!run.leftToRight() && run.fClusters[i] < textIndex)) {
-                    break;
-                }
-                found = i;
-            }
+            // Find the position left
+            GlyphIndex found = run.findGlyphIndexLeftOf(runGlyphRange, textIndex);
 
             position.fLineIndex = lineIndex(&line);
             position.fRun = &run;
-            position.fGlyphRange = GlyphRange(found, found == end ? found : found + 1);
-            adjustTextRange(&position);
-            position.fBoundaries.fLeft += shift + run.calculateWidth(start, position.fGlyphRange.fStart);
-            position.fBoundaries.fRight += shift + run.calculateWidth(start, position.fGlyphRange.fEnd);
+            position.fGlyphRange = GlyphRange(found, found == runGlyphRange.fEnd ? found : found + 1);
+            position.fTextRange = position.fRun->getTextRange(position.fGlyphRange);
+            this->adjustTextRange(&position);
+            position.fBoundaries.fLeft += shift + run.calculateWidth(runGlyphRange.fStart, position.fGlyphRange.fStart);
+            position.fBoundaries.fRight += shift + run.calculateWidth(runGlyphRange.fStart, position.fGlyphRange.fEnd);
             return position;
         }
         // The cursor is not on the text anymore; position it after the last element
@@ -484,7 +445,8 @@ Position FormattedText::adjustedPosition(PositionType positionType, TextIndex te
     position.fLineIndex = fLines.size() - 1;
     position.fRun = this->visuallyLastRun(position.fLineIndex);
     position.fGlyphRange = GlyphRange(position.fRun->size(), position.fRun->size());
-    adjustTextRange(&position);
+    position.fTextRange = position.fRun->getTextRange(position.fGlyphRange);
+    this->adjustTextRange(&position);
     position.fBoundaries.fLeft = fLines.back().withWithTrailingSpaces();
     position.fBoundaries.fRight = fLines.back().withWithTrailingSpaces();
     return position;
@@ -492,74 +454,101 @@ Position FormattedText::adjustedPosition(PositionType positionType, TextIndex te
 
 Position FormattedText::adjustedPosition(PositionType positionType, SkPoint xy) const {
 
-    if (xy.fX >= this->fActualSize.fWidth) {
-        xy.fX = this->fActualSize.fWidth;
-    }
-    if (xy.fY >= this->fActualSize.fHeight) {
-        xy.fY = this->fActualSize.fHeight;
-    }
+    xy.fX = std::min(xy.fX, this->fActualSize.fWidth);
+    xy.fY = std::min(xy.fY, this->fActualSize.fHeight);
 
     Position position(positionType);
-    SkScalar shift = 0;
+    position.fRun = this->visuallyLastRun(this->fLines.size() - 1);
     for (auto& line : fLines) {
         position.fBoundaries.fTop = position.fBoundaries.fBottom;
         position.fBoundaries.fBottom = line.verticalOffset() + line.height();
         position.fLineIndex = this->lineIndex(&line);
         if (position.fBoundaries.fTop > xy.fY) {
+            // We are past the point vertically
             break;
         } else if (position.fBoundaries.fBottom <= xy.fY) {
+            // We haven't reached the point vertically yet
             continue;
         }
 
-        shift = 0;
+        // We found the line that contains the point;
+        // let's walk through all its runs and find the element
+        SkScalar runOffsetInLine = 0;
         for (auto index = 0; index < line.runsNumber(); ++index) {
             auto runIndex = line.visualRun(index);
             auto& run = fRuns[runIndex];
-            //GlyphIndex start = runIndex == line.glyphStart().runIndex() ? line.glyphStart().glyphIndex() : 0;
-            //GlyphIndex end = runIndex == line.glyphTrailingEnd().runIndex() ? line.glyphTrailingEnd().glyphIndex() : run.fGlyphs.size();
-            GlyphRange runRange = line.glyphRange(runIndex, run.size());
-            auto runWidth = run.calculateWidth(runRange);
-            if (shift > xy.fX) {
+            GlyphRange runGlyphRangeInLine = line.glyphRange(runIndex, run.size(), true /* including trailing space */);
+            SkScalar runWidthInLine = run.calculateWidth(runGlyphRangeInLine);
+            position.fRun = &run;
+            if (runOffsetInLine > xy.fX) {
+                // We are past the point horizontally
                 break;
-            } else if (shift + runWidth < xy.fX) {
-                shift += runWidth;
+            } else if (runOffsetInLine + runWidthInLine < xy.fX) {
+                // We haven't reached the point horizontally yet
+                runOffsetInLine += runWidthInLine;
                 continue;
             }
-            SkScalar startPos = run.fPositions[runRange.fStart].fX;
-            GlyphIndex found = runRange.fStart;
-            for (auto i = runRange.fStart; i <= runRange.fEnd; ++i) {
-                auto currentPos = run.fPositions[i].fX - startPos;
-                if (currentPos > xy.fX) {
+
+            // We found the run that contains the point
+            // let's find the glyph
+            GlyphIndex found = runGlyphRangeInLine.fStart;
+            for (auto i = runGlyphRangeInLine.fStart; i <= runGlyphRangeInLine.fEnd; ++i) {
+                if (runOffsetInLine + run.calculateWidth(runGlyphRangeInLine.fStart, i) > xy.fX) {
                     break;
                 }
                 found = i;
             }
 
-            position.fLineIndex = lineIndex(&line);
-            position.fRun = &run;
-            position.fGlyphRange = GlyphRange(found, found == runRange.fEnd ? found : found + 1);
-            adjustTextRange(&position);
-
-            position.fBoundaries.fLeft += shift + run.calculateWidth(runRange.fStart, position.fGlyphRange.fStart);
-            position.fBoundaries.fRight += shift + run.calculateWidth(runRange.fStart, position.fGlyphRange.fEnd);
+            position.fGlyphRange = GlyphRange(found, found == runGlyphRangeInLine.fEnd ? found : found + 1);
+            position.fTextRange = position.fRun->getTextRange(position.fGlyphRange);
+            this->adjustTextRange(&position);
+            position.fBoundaries.fLeft = runOffsetInLine + run.calculateWidth(runGlyphRangeInLine.fStart, position.fGlyphRange.fStart);
+            position.fBoundaries.fRight = runOffsetInLine + run.calculateWidth(runGlyphRangeInLine.fStart, position.fGlyphRange.fEnd);
             return position;
         }
-        // The cursor is not on the text anymore; position it after the last element
+        // The cursor is not on the text anymore; position it after the last element of the last visual run of the current line
         break;
     }
 
-    auto line = this->line(position.fLineIndex);
     position.fRun = this->visuallyLastRun(position.fLineIndex);
+    auto line = this->line(position.fLineIndex);
     position.fGlyphRange.fStart =
-    position.fGlyphRange.fEnd = line->glyphRange(this->runIndex(position.fRun), position.fRun->size()).fEnd;
-    adjustTextRange(&position);
+    position.fGlyphRange.fEnd = line->glyphRange(this->runIndex(position.fRun), position.fRun->size(), true /* including trailing spaces */).fEnd;
+    position.fTextRange = position.fRun->getTextRange(position.fGlyphRange);
+    this->adjustTextRange(&position);
     position.fBoundaries.fLeft =
     position.fBoundaries.fRight = line->withWithTrailingSpaces();
     return position;
 }
 
+// Adjust the text positions to the position type
+// (assuming for now that a grapheme cannot cross run edges; it's actually not true)
 void FormattedText::adjustTextRange(Position* position) const {
-    // TODO: Adjust the text positions to the position type
+    // The textRange is aligned on a glyph cluster
+    if (position->fPositionType == PositionType::kGraphemeCluster) {
+        // Move left to the beginning of the run
+        while (position->fTextRange.fStart > position->fRun->fUtf8Range.begin() &&
+               !this->hasProperty(position->fTextRange.fStart, GlyphUnitFlags::kGraphemeStart)) {
+            --position->fTextRange.fStart;
+        }
+        // Update glyphRange, too
+        while (position->fRun->fClusters[position->fGlyphRange.fStart] > position->fTextRange.fStart) {
+            --position->fGlyphRange.fStart;
+        }
+
+        // Move right to the end of the run updating glyphRange, too
+        while (position->fTextRange.fEnd < position->fRun->fUtf8Range.end() &&
+               !this->hasProperty(position->fTextRange.fEnd, GlyphUnitFlags::kGraphemeStart)) {
+            ++position->fTextRange.fEnd;
+        }
+        // Update glyphRange, too
+        while (position->fRun->fClusters[position->fGlyphRange.fEnd] < position->fTextRange.fEnd) {
+            ++position->fGlyphRange.fEnd;
+        }
+    } else {
+        // TODO: Implement all the other position types
+        SkASSERT(false);
+    }
     position->fTextRange = TextRange(position->fRun->fClusters[position->fGlyphRange.fStart], position->fRun->fClusters[position->fGlyphRange.fEnd]);
 }
 
@@ -701,7 +690,7 @@ Position FormattedText::nextElement(Position element) const {
         // Shift left visually
         element.fTextRange.fEnd = clusters[++element.fGlyphRange.fEnd];
         if (element.fPositionType == PositionType::kGraphemeCluster) {
-            if (this->hasProperty(element.fTextRange.fStart, GlyphUnitFlags::kGraphemeStart)) {
+            if (this->hasProperty(element.fTextRange.fEnd, GlyphUnitFlags::kGraphemeStart)) {
                 break;
             }
         }

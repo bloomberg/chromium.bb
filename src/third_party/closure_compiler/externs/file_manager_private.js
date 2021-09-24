@@ -625,6 +625,14 @@ chrome.fileManagerPrivate.HoldingSpaceState;
 
 /**
  * @typedef {{
+ *   currentDirectoryURL: (string|undefined),
+ *   selectionURL: (string|undefined)
+ * }}
+ */
+chrome.fileManagerPrivate.OpenWindowParams;
+
+/**
+ * @typedef {{
  *   volumeId: string,
  *   writable: boolean,
  * }}
@@ -1171,18 +1179,6 @@ chrome.fileManagerPrivate.installLinuxPackage = function(entry, callback) {};
 chrome.fileManagerPrivate.importCrostiniImage = function(entry) {};
 
 /**
- * Detect character encoding.
- *
- * @param {!string} bytes a hex-encoded string. Every 2 characters represent
- *     one byte by 2-digit hexadecimal number.
- * @param {function((string|undefined))} callback |mime_name| Preferred MIME
- *     name of the detected character encoding system. Slightly different from
- *     IANA name. See third_party/ced/src/util/encodings/encodings.cc
- */
-chrome.fileManagerPrivate.detectCharacterEncoding = function(bytes, callback) {
-};
-
-/**
  * For a file in DriveFS, retrieves its thumbnail. If |cropToSquare| is true,
  * returns a thumbnail appropriate for file list or grid views; otherwise,
  * returns a thumbnail appropriate for quickview.
@@ -1280,6 +1276,14 @@ chrome.fileManagerPrivate.isTabletModeEnabled = function(callback) {};
  * @param {chrome.fileManagerPrivate.DriveDialogResult} result
  */
 chrome.fileManagerPrivate.notifyDriveDialogResult = function(result) {};
+
+/**
+ * Creates a new Files app window in the directory provided in `params`.
+ * @param {!chrome.fileManagerPrivate.OpenWindowParams} params
+ * @param {function(boolean): void} callback |result| Boolean result returned by
+ *     the invoked function.
+ */
+chrome.fileManagerPrivate.openWindow = function(params, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;

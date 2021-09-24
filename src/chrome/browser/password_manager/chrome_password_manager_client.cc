@@ -12,9 +12,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -70,7 +70,6 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/browser/password_scripts_fetcher.h"
-#include "components/password_manager/core/browser/store_metrics_reporter.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -98,6 +97,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -140,7 +140,10 @@
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "ui/base/ui_base_features.h"
 #else
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "components/policy/core/common/features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -476,8 +479,9 @@ scoped_refptr<device_reauth::BiometricAuthenticator>
 ChromePasswordManagerClient::GetBiometricAuthenticator() {
 #if defined(OS_ANDROID)
   return ChromeBiometricAuthenticatorFactory::GetBiometricAuthenticator();
-#endif
+#else
   return nullptr;
+#endif
 }
 
 void ChromePasswordManagerClient::GeneratePassword(
@@ -864,6 +868,26 @@ void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {
   }
 }
 
+#if !defined(OS_ANDROID)
+void ChromePasswordManagerClient::MaybeReportEnterpriseLoginEvent(
+    const GURL& url,
+    bool is_federated,
+    const url::Origin& federated_origin) const {
+  if (!base::FeatureList::IsEnabled(policy::features::kLoginEventReporting))
+    return;
+
+  extensions::SafeBrowsingPrivateEventRouter* router =
+      extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(
+          profile_);
+  if (!router)
+    return;
+
+  // The router is responsible for checking if the reporting of this event type
+  // is enabled by the admin.
+  router->OnLoginEvent(url, is_federated, federated_origin);
+}
+#endif
+
 ukm::SourceId ChromePasswordManagerClient::GetUkmSourceId() {
   return ukm::GetSourceIdForWebContentsDocument(web_contents());
 }
@@ -905,16 +929,6 @@ network::mojom::NetworkContext* ChromePasswordManagerClient::GetNetworkContext()
   return profile_->GetDefaultStoragePartition()->GetNetworkContext();
 }
 
-bool ChromePasswordManagerClient::IsUnderAdvancedProtection() const {
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  return safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
-             profile_)
-      ->IsUnderAdvancedProtection();
-#else
-  return false;
-#endif
-}
-
 void ChromePasswordManagerClient::UpdateFormManagers() {
   password_manager_.UpdateFormManagers();
 }
@@ -945,6 +959,10 @@ bool ChromePasswordManagerClient::IsNewTabPage() const {
 
 FieldInfoManager* ChromePasswordManagerClient::GetFieldInfoManager() const {
   return FieldInfoManagerFactory::GetForBrowserContext(profile_);
+}
+
+bool ChromePasswordManagerClient::IsWebAuthnAutofillEnabled() const {
+  return base::FeatureList::IsEnabled(features::kWebAuthConditionalUI);
 }
 
 void ChromePasswordManagerClient::AutomaticGenerationAvailable(
@@ -1218,8 +1236,6 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
 
   saving_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
-  static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
-      this, GetSyncService(profile_), GetIdentityManager(), GetPrefs());
   driver_factory_->RequestSendLoggingAvailability();
 
   auto* autofill_assistant_manager =

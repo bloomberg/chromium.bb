@@ -13,7 +13,7 @@
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // #import {Router, routes, PeripheralDataAccessBrowserProxyImpl, DataAccessPolicyState} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {FakeQuickUnlockPrivate} from './fake_quick_unlock_private.m.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.js';
 // clang-format on
 
 const crosSettingPrefName = 'cros.device.peripheral_data_access_enabled';
@@ -132,10 +132,6 @@ suite('PrivacyPageTests', function() {
   });
 
   test('Deep link to verified access', async () => {
-    loadTimeData.overrideValues({
-      isDeepLinkingEnabled: true,
-    });
-
     const params = new URLSearchParams;
     params.append('settingId', '1101');
     settings.Router.getInstance().navigateTo(
@@ -247,10 +243,6 @@ suite('PrivacePageTest_OfficialBuild', async () => {
   });
 
   test('Deep link to send usage stats', async () => {
-    loadTimeData.overrideValues({
-      isDeepLinkingEnabled: true,
-    });
-
     const params = new URLSearchParams;
     params.append('settingId', '1103');
     settings.Router.getInstance().navigateTo(

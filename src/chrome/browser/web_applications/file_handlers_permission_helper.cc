@@ -7,14 +7,14 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/manifest_update_task.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "url/gurl.h"
@@ -96,6 +96,15 @@ FileHandlerUpdateAction FileHandlersPermissionHelper::WillUpdateApp(
   return FileHandlerUpdateAction::kUpdate;
 }
 
+bool FileHandlersPermissionHelper::IsPermissionBlocked(const GURL& scope) {
+  permissions::PermissionManager* permission_manager =
+      PermissionManagerFactory::GetForProfile(finalizer_->profile());
+  permissions::PermissionResult status =
+      permission_manager->GetPermissionStatus(
+          ContentSettingsType::FILE_HANDLING, scope, scope);
+  return status.content_setting == CONTENT_SETTING_BLOCK;
+}
+
 void FileHandlersPermissionHelper::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -109,8 +118,7 @@ void FileHandlersPermissionHelper::OnContentSettingChanged(
 void FileHandlersPermissionHelper::OnWebAppManifestUpdated(
     const AppId& app_id,
     base::StringPiece old_name) {
-  ScopedRegistryUpdate update(
-      finalizer_->registry_controller().AsWebAppSyncBridge());
+  ScopedRegistryUpdate update(&finalizer_->sync_bridge());
   WebApp* app = update->UpdateApp(app_id);
   app->SetFileHandlerPermissionBlocked(IsPermissionBlocked(app->scope()));
 }
@@ -138,15 +146,6 @@ void FileHandlersPermissionHelper::OnWebAppWillBeUninstalled(
   // the permission.
   PermissionManagerFactory::GetForProfile(finalizer_->profile())
       ->ResetPermission(content::PermissionType::FILE_HANDLING, origin, origin);
-}
-
-bool FileHandlersPermissionHelper::IsPermissionBlocked(const GURL& scope) {
-  permissions::PermissionManager* permission_manager =
-      PermissionManagerFactory::GetForProfile(finalizer_->profile());
-  permissions::PermissionResult status =
-      permission_manager->GetPermissionStatus(
-          ContentSettingsType::FILE_HANDLING, scope, scope);
-  return status.content_setting == CONTENT_SETTING_BLOCK;
 }
 
 ContentSetting FileHandlersPermissionHelper::MaybeResetPermission(
@@ -177,8 +176,7 @@ ContentSetting FileHandlersPermissionHelper::MaybeResetPermission(
 
 void FileHandlersPermissionHelper::UpdateAppsMatchingPattern(
     const ContentSettingsPattern& pattern) {
-  ScopedRegistryUpdate update(
-      finalizer_->registry_controller().AsWebAppSyncBridge());
+  ScopedRegistryUpdate update(&finalizer_->sync_bridge());
   for (const AppId& app_id : finalizer_->registrar().GetAppIds()) {
     const WebApp* app = finalizer_->GetWebAppRegistrar().GetAppById(app_id);
     if (!app || !app->is_locally_installed())

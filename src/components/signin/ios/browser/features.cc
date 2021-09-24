@@ -7,9 +7,6 @@
 
 namespace signin {
 
-const base::Feature kSimplifySignOutIOS{"SimplifySignOutIOS",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 bool ForceStartupSigninPromo() {
   return base::FeatureList::IsEnabled(switches::kForceStartupSigninPromo);
 }
@@ -17,10 +14,6 @@ bool ForceStartupSigninPromo() {
 bool ForceDisableExtendedSyncPromos() {
   return base::FeatureList::IsEnabled(
       switches::kForceDisableExtendedSyncPromos);
-}
-
-bool ExtendedSyncPromosCapabilityEnabled() {
-  return base::FeatureList::IsEnabled(switches::kMinorModeSupport);
 }
 
 const base::Feature kRestoreGaiaCookiesOnUserAction{

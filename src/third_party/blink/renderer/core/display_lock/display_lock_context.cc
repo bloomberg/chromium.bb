@@ -43,6 +43,7 @@ const char* kContainmentNotSatisfied =
     "Containment requirement is not satisfied.";
 const char* kUnsupportedDisplay =
     "Element has unsupported display type (display: contents).";
+const char* kNoComputedStyle = "Element does not have a computed style.";
 }  // namespace rejection_names
 
 void RecordActivationReason(Document* document,
@@ -369,7 +370,6 @@ void DisplayLockContext::DidStyleChildren() {
   if (element_->ChildNeedsReattachLayoutTree())
     element_->MarkAncestorsWithChildNeedsReattachLayoutTree();
   blocked_style_traversal_type_ = kStyleUpdateNotRequired;
-  MarkElementsForWhitespaceReattachment();
 }
 
 bool DisplayLockContext::ShouldLayoutChildren() const {
@@ -580,22 +580,6 @@ void DisplayLockContext::Unlock() {
   MarkAncestorsForPrePaintIfNeeded();
   MarkNeedsRepaintAndPaintArtifactCompositorUpdate();
   MarkNeedsCullRectUpdate();
-}
-
-void DisplayLockContext::AddToWhitespaceReattachSet(Element& element) {
-  whitespace_reattach_set_.insert(&element);
-}
-
-void DisplayLockContext::MarkElementsForWhitespaceReattachment() {
-  for (auto element : whitespace_reattach_set_) {
-    if (!element || element->NeedsReattachLayoutTree() ||
-        !element->GetLayoutObject())
-      continue;
-
-    if (Node* first_child = LayoutTreeBuilderTraversal::FirstChild(*element))
-      first_child->MarkAncestorsWithChildNeedsReattachLayoutTree();
-  }
-  whitespace_reattach_set_.clear();
 }
 
 StyleRecalcChange DisplayLockContext::AdjustStyleRecalcChangeForChildren(
@@ -964,10 +948,14 @@ const char* DisplayLockContext::ShouldForceUnlock() const {
     return rejection_names::kUnsupportedDisplay;
 
   auto* style = element_->GetComputedStyle();
-  // Note that if for whatever reason we don't have computed style, then
-  // optimistically assume that we have containment.
+  // Note that if for whatever reason we don't have computed style, then unlock
+  // this lock. This would be the case if we're in a display:none subtree. We
+  // need to unlock to make sure our subtree also clears style so that style
+  // assumptions about display:none subtrees are not broken.
   if (!style)
-    return nullptr;
+    return rejection_names::kNoComputedStyle;
+
+  // We need style and layout containment in order to properly lock the subtree.
   if (!style->ContainsStyle() || !style->ContainsLayout())
     return rejection_names::kContainmentNotSatisfied;
 
@@ -1158,7 +1146,6 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
 void DisplayLockContext::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(document_);
-  visitor->Trace(whitespace_reattach_set_);
 }
 
 void DisplayLockContext::SetShouldUnlockAutoForPrint(bool flag) {

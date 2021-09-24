@@ -34,7 +34,8 @@ import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
+import org.chromium.chrome.browser.signin.SigninFirstRunFragment;
+import org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyFieldTrial;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -152,9 +153,14 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
      * Defines a sequence of pages to be shown (depending on parameters etc).
      */
     private void createPageSequence() {
-        mPages.add(shouldCreateEnterpriseCctTosPage()
-                        ? new TosAndUmaFirstRunFragmentWithEnterpriseSupport.Page()
-                        : new ToSAndUMAFirstRunFragment.Page());
+        FREMobileIdentityConsistencyFieldTrial.createFirstRunTrial();
+        if (FREMobileIdentityConsistencyFieldTrial.isEnabled()) {
+            mPages.add(SigninFirstRunFragment::new);
+        } else {
+            mPages.add(shouldCreateEnterpriseCctTosPage()
+                            ? new TosAndUmaFirstRunFragmentWithEnterpriseSupport.Page()
+                            : new ToSAndUMAFirstRunFragment.Page());
+        }
         mFreProgressStates.add(FRE_PROGRESS_WELCOME_SHOWN);
         mPagerAdapter = new FirstRunPagerAdapter(FirstRunActivity.this, mPages);
         mPager.setAdapter(mPagerAdapter);
@@ -183,6 +189,14 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         mFirstRunFlowSequencer.onNativeAndPoliciesInitialized(mFreProperties);
 
         boolean notifyAdapter = false;
+        // An optional sign-in page.
+        if (FREMobileIdentityConsistencyFieldTrial.isEnabled()
+                && mFreProperties.getBoolean(SHOW_SIGNIN_PAGE)) {
+            mPages.add(SyncConsentFirstRunFragment::new);
+            mFreProgressStates.add(FRE_PROGRESS_SIGNIN_SHOWN);
+            notifyAdapter = true;
+        }
+
         // An optional Data Saver page.
         if (mFreProperties.getBoolean(SHOW_DATA_REDUCTION_PAGE)) {
             mPages.add(new DataReductionProxyFirstRunFragment.Page());
@@ -198,7 +212,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         }
 
         // An optional sign-in page.
-        if (mFreProperties.getBoolean(SHOW_SIGNIN_PAGE)) {
+        if (!FREMobileIdentityConsistencyFieldTrial.isEnabled()
+                && mFreProperties.getBoolean(SHOW_SIGNIN_PAGE)) {
             mPages.add(SyncConsentFirstRunFragment::new);
             mFreProgressStates.add(FRE_PROGRESS_SIGNIN_SHOWN);
             notifyAdapter = true;
@@ -486,8 +501,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
             }
         }
 
-        // Update the search engine name cached by the widget.
-        SearchWidgetProvider.updateCachedEngineName();
         if (sObserver != null) sObserver.onUpdateCachedEngineName(this);
 
         launchPendingIntentAndFinish();

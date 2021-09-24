@@ -63,6 +63,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
       network_handler::ServiceResultCallback callback,
       network_handler::ErrorCallback error_callback) const override;
 
+  void ConfigurePolicyNetwork(const base::Value& shill_properties,
+                              base::OnceClosure callback) const override;
+
   void RemoveConfiguration(
       const std::string& service_path,
       base::OnceClosure callback,
@@ -76,7 +79,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   void SetPolicy(::onc::ONCSource onc_source,
                  const std::string& userhash,
                  const base::Value& network_configs_onc,
-                 const base::DictionaryValue& global_network_config) override;
+                 const base::Value& global_network_config) override;
 
   bool IsAnyPolicyApplicationRunning() const override;
 

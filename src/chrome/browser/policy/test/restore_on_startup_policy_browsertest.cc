@@ -76,7 +76,7 @@ class RestoreOnStartupPolicyTest : public UrlBlockingPolicyTest,
     // Verifies that policy can set the startup pages to a list of URLs.
     base::ListValue urls;
     for (const auto* url : kRestoredURLs) {
-      urls.AppendString(url);
+      urls.Append(url);
       expected_urls_.push_back(GURL(url));
     }
     PolicyMap policies;
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
   // Open some tabs to verify if they are restored after the browser restarts.
   // Most policy settings override this, except kPrefValueLast which enforces
   // a restore.
-  ui_test_utils::NavigateToURL(browser(), GURL(kRestoredURLs[0]));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kRestoredURLs[0])));
   for (size_t i = 1; i < base::size(kRestoredURLs); ++i) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,

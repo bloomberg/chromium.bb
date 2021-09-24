@@ -136,14 +136,21 @@
   "clipboard.setImageData": {
     "dependencies": ["permission:clipboardWrite"]
   },
-  "declarativeNetRequest": {
+  "declarativeNetRequest": [{
     "dependencies": ["permission:declarativeNetRequest"],
+    "contexts": ["blessed_extension"],
+    "default_parent": true
+  }, {
+    "dependencies": ["permission:declarativeNetRequestWithHostAccess"],
     "contexts": ["blessed_extension"]
-  },
-  "declarativeNetRequest.onRuleMatchedDebug": {
-    "dependencies": ["permission:declarativeNetRequest", "permission:declarativeNetRequestFeedback"],
+  }],
+  "declarativeNetRequest.onRuleMatchedDebug": [{
+    "dependencies": ["permission:declarativeNetRequestFeedback", "permission:declarativeNetRequest"],
     "location": "unpacked"
-  },
+  }, {
+    "dependencies": ["permission:declarativeNetRequestFeedback", "permission:declarativeNetRequestWithHostAccess"],
+    "location": "unpacked"
+  }],
   "declarativeWebRequest": {
     "dependencies": ["permission:declarativeWebRequest"],
     "contexts": ["blessed_extension"]
@@ -454,7 +461,7 @@
       "content_script"
     ]
   },
-  "runtime.connect": {
+  "runtime.connect": [{
     // Everything except WebUI.
     "contexts": [
       "blessed_web_page",
@@ -465,7 +472,14 @@
       "web_page"
     ],
     "matches": ["<all_urls>"]
-  },
+  },{
+    "channel": "dev",
+    "contexts": ["webui_untrusted"],
+    "matches": [
+      // Allow only nassh.html page in Terminal System Web App.
+      "chrome-untrusted://terminal/html/nassh.html"
+    ]
+  }],
   "runtime.connectNative": {
     "dependencies": ["permission:nativeMessaging"],
     "contexts": ["blessed_extension"]
@@ -527,6 +541,13 @@
     "matches": [
       "chrome://password-change/*",
       "chrome://file-manager/*"
+    ]
+  },{
+    "channel": "dev",
+    "contexts": ["webui_untrusted"],
+    "matches": [
+      // Allow only nassh.html page in Terminal System Web App.
+      "chrome-untrusted://terminal/html/nassh.html"
     ]
   }],
   "runtime.sendNativeMessage": {
@@ -605,7 +626,11 @@
   }, {
     "channel": "stable",
     "contexts": ["webui"],
-    "matches": ["chrome://extensions/*"]
+    "matches": [
+      "chrome://extensions/*",
+      // System Web App version of File Manager.
+      "chrome://file-manager/*"
+    ]
   }, {
     "channel": "stable",
     "contexts": [ "webui_untrusted" ],

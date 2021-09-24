@@ -145,7 +145,9 @@ class PageContentAnnotationsServiceBrowserTest : public InProcessBrowserTest {
     category_params->set_min_none_weight(0.8);
     category_params->set_min_category_weight(0.0);
     category_params->set_min_normalized_weight_within_top_n(0.1);
-    output_params->mutable_floc_protected_params()->set_category_name(
+    // TODO(crbug.com/1200677): migrate the category name on the test model
+    // itself provided by model owners.
+    output_params->mutable_visibility_params()->set_category_name(
         "FLOC_PROTECTED");
     page_topics_model_metadata.SerializeToString(any_metadata.mutable_value());
     base::FilePath source_root_dir;
@@ -228,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
   base::HistogramTester histogram_tester;
 
   GURL url(embedded_test_server()->GetURL("a.com", "/hello.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   int expected_count = 1;
@@ -275,8 +277,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
   absl::optional<history::VisitContentAnnotations> got_content_annotations =
       GetContentAnnotationsForURL(url);
   ASSERT_TRUE(got_content_annotations.has_value());
-  EXPECT_NE(-1.0,
-            got_content_annotations->model_annotations.floc_protected_score);
+  EXPECT_NE(-1.0, got_content_annotations->model_annotations.visibility_score);
   EXPECT_FALSE(got_content_annotations->model_annotations.categories.empty());
   EXPECT_EQ(
       123,
@@ -359,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceNoHistoryTest,
   base::HistogramTester histogram_tester;
 
   GURL url(embedded_test_server()->GetURL("a.com", "/hello-no-history.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   RetryForHistogramUntilCountReached(
       &histogram_tester,
@@ -397,12 +398,18 @@ class PageContentAnnotationsServiceLoadEachExecutionTest
 };
 
 // Regression test for crbug/1204162.
+// Flaky on Win7 (32) Tests (https://crbug.com/1239996).
+#if defined(OS_WIN)
+#define MAYBE_ModelLoadsAndExecutes DISABLED_ModelLoadsAndExecutes
+#else
+#define MAYBE_ModelLoadsAndExecutes ModelLoadsAndExecutes
+#endif
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceLoadEachExecutionTest,
-                       ModelLoadsAndExecutes) {
+                       MAYBE_ModelLoadsAndExecutes) {
   base::HistogramTester histogram_tester;
 
   GURL url(embedded_test_server()->GetURL("a.com", "/hello.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   RetryForHistogramUntilCountReached(
       &histogram_tester,
@@ -444,8 +451,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceLoadEachExecutionTest,
   absl::optional<history::VisitContentAnnotations> got_content_annotations =
       GetContentAnnotationsForURL(url);
   ASSERT_TRUE(got_content_annotations.has_value());
-  EXPECT_NE(-1.0,
-            got_content_annotations->model_annotations.floc_protected_score);
+  EXPECT_NE(-1.0, got_content_annotations->model_annotations.visibility_score);
   EXPECT_FALSE(got_content_annotations->model_annotations.categories.empty());
   EXPECT_EQ(
       123,
@@ -485,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(
   base::HistogramTester histogram_tester;
 
   GURL url(embedded_test_server()->GetURL("a.com", "/hello.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   RetryForHistogramUntilCountReached(
       &histogram_tester,
@@ -499,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(
 
   GURL url2(
       embedded_test_server()->GetURL("a.com", "/hello.html?totally=different"));
-  ui_test_utils::NavigateToURL(browser(), url2);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url2));
 
   RetryForHistogramUntilCountReached(
       &histogram_tester,

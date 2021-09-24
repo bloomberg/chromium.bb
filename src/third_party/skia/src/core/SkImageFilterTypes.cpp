@@ -26,10 +26,10 @@ static SkVector map_as_vector(SkScalar x, SkScalar y, const SkMatrix& matrix) {
 
 namespace skif {
 
-Mapping Mapping::DecomposeCTM(const SkMatrix& ctm, const SkImageFilter* filter,
-                              const skif::ParameterSpace<SkPoint>& representativePoint) {
+bool Mapping::decomposeCTM(const SkMatrix& ctm, const SkImageFilter* filter,
+                           const skif::ParameterSpace<SkPoint>& representativePt) {
     SkMatrix remainder, layer;
-    SkSize scale;
+    SkSize decomposed;
     using MatrixCapability = SkImageFilter_Base::MatrixCapability;
     MatrixCapability capability =
             filter ? as_IFB(filter)->getCTMCapability() : MatrixCapability::kComplex;
@@ -42,14 +42,14 @@ Mapping Mapping::DecomposeCTM(const SkMatrix& ctm, const SkImageFilter* filter,
         // ctm is. In both cases, the layer space can be equivalent to device space.
         remainder = SkMatrix::I();
         layer = ctm;
-    } else if (ctm.decomposeScale(&scale, &remainder)) {
+    } else if (ctm.decomposeScale(&decomposed, &remainder)) {
         // This case implies some amount of sampling post-filtering, either due to skew or rotation
         // in the original matrix. As such, keep the layer matrix as simple as possible.
-        layer = SkMatrix::Scale(scale.fWidth, scale.fHeight);
+        layer = SkMatrix::Scale(decomposed.fWidth, decomposed.fHeight);
     } else {
         // Perspective, which has a non-uniform scaling effect on the filter. Pick a single scale
         // factor that best matches where the filter will be evaluated.
-        SkScalar scale = SkMatrixPriv::DifferentialAreaScale(ctm, SkPoint(representativePoint));
+        SkScalar scale = SkMatrixPriv::DifferentialAreaScale(ctm, SkPoint(representativePt));
         if (SkScalarIsFinite(scale) && !SkScalarNearlyZero(scale)) {
             // Now take the sqrt to go from an area scale factor to a scaling per X and Y
             // FIXME: It would be nice to be able to choose a non-uniform scale.
@@ -65,7 +65,19 @@ Mapping Mapping::DecomposeCTM(const SkMatrix& ctm, const SkImageFilter* filter,
         layer = SkMatrix::Scale(scale, scale);
     }
 
-    return Mapping(remainder, layer);
+    SkMatrix invRemainder;
+    if (!remainder.invert(&invRemainder)) {
+        // Under floating point arithmetic, it's possible to decompose an invertible matrix into
+        // a scaling matrix and a remainder and have the remainder be non-invertible. Generally
+        // when this happens the scale factors are so large and the matrix so ill-conditioned that
+        // it's unlikely that any drawing would be reasonable, so failing to make a layer is okay.
+        return false;
+    } else {
+        fParamToLayerMatrix = layer;
+        fLayerToDevMatrix = remainder;
+        fDevToLayerMatrix = invRemainder;
+        return true;
+    }
 }
 
 bool Mapping::adjustLayerSpace(const SkMatrix& layer) {

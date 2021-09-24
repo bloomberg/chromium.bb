@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.followmanagement;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.CheckBox;
@@ -32,6 +33,7 @@ public class FollowManagementItemView extends LinearLayout {
 
     public void setTitle(String title) {
         mTitle.setText(title);
+        mSubscribedCheckbox.setContentDescription(title);
     }
 
     public void setUrl(String url) {
@@ -40,7 +42,11 @@ public class FollowManagementItemView extends LinearLayout {
 
     public void setStatus(String status) {
         mStatus.setText(status);
-        if (status != null && status.isEmpty()) mStatus.setVisibility(View.GONE);
+        if (TextUtils.isEmpty(status)) {
+            mStatus.setVisibility(View.GONE);
+        } else {
+            mStatus.setVisibility(View.VISIBLE);
+        }
     }
 
     public void setFavicon(Bitmap favicon) {

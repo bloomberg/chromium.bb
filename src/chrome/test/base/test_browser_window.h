@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/test_download_shelf.h"
 #include "chrome/browser/ui/autofill/test/test_autofill_bubble_handler.h"
 #include "chrome/browser/ui/browser.h"
@@ -123,6 +124,7 @@ class TestBrowserWindow : public BrowserWindow {
   void FocusInactivePopupForAccessibility() override {}
   void FocusHelpBubble() override {}
   void RotatePaneFocus(bool forwards) override {}
+  void FocusWebContentsPane() override {}
   void ShowAppMenu() override {}
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;

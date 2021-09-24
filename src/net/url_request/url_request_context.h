@@ -21,8 +21,6 @@
 #include "build/chromeos_buildflags.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
-#include "net/http/http_server_properties.h"
-#include "net/http/transport_security_state.h"
 #include "net/net_buildflags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
@@ -41,6 +39,7 @@ class HostResolver;
 class HttpAuthHandlerFactory;
 struct HttpNetworkSessionContext;
 struct HttpNetworkSessionParams;
+class HttpServerProperties;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class NetLog;
@@ -51,13 +50,10 @@ class ProxyResolutionService;
 class QuicContext;
 class SCTAuditingDelegate;
 class SSLConfigService;
+class TransportSecurityState;
 class URLRequest;
 class URLRequestJobFactory;
 class URLRequestThrottlerManager;
-
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-class FtpAuthCache;
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 #if BUILDFLAG(ENABLE_REPORTING)
 class NetworkErrorLoggingService;
@@ -99,7 +95,7 @@ class NET_EXPORT URLRequestContext
       URLRequest::Delegate* delegate) const;
 #endif
 
-  // |traffic_annotation| is metadata about the network traffic send via this
+  // `traffic_annotation` is metadata about the network traffic send via this
   // URLRequest, see net::DefineNetworkTrafficAnnotation. Note that:
   // - net provides the API for tagging requests with an opaque identifier.
   // - chrome/browser/privacy/traffic_annotation.proto contains the Chrome
@@ -107,11 +103,16 @@ class NET_EXPORT URLRequestContext
   // callsites are expected to follow.
   // - tools/traffic_annotation/ contains sample and template for annotation and
   // tools will be added for verification following crbug.com/690323.
+  //
+  // `is_for_websockets` should be true iff this was created for use by a
+  // websocket. HTTP/HTTPS requests fail if it's true, and WS/WSS requests fail
+  // if it's false. This is to protect against broken consumers.
   std::unique_ptr<URLRequest> CreateRequest(
       const GURL& url,
       RequestPriority priority,
       URLRequest::Delegate* delegate,
-      NetworkTrafficAnnotationTag traffic_annotation) const;
+      NetworkTrafficAnnotationTag traffic_annotation,
+      bool is_for_websockets = false) const;
 
   NetLog* net_log() const { return net_log_; }
 
@@ -295,13 +296,6 @@ class NET_EXPORT URLRequestContext
     return require_network_isolation_key_;
   }
 
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  void set_ftp_auth_cache(FtpAuthCache* auth_cache) {
-    ftp_auth_cache_ = auth_cache;
-  }
-  FtpAuthCache* ftp_auth_cache() { return ftp_auth_cache_; }
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
-
   // Sets a name for this URLRequestContext. Currently the name is used in
   // MemoryDumpProvier to annotate memory usage. The name does not need to be
   // unique.
@@ -344,9 +338,6 @@ class NET_EXPORT URLRequestContext
   ReportingService* reporting_service_;
   NetworkErrorLoggingService* network_error_logging_service_;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  FtpAuthCache* ftp_auth_cache_;
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
   std::unique_ptr<std::set<const URLRequest*>> url_requests_;
 

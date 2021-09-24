@@ -1127,7 +1127,12 @@ angle::Result TextureGL::setStorage(const gl::Context *context,
     else
     {
         ASSERT(nativegl::UseTexImage3D(getType()));
-        if (functions->texStorage3D)
+        const gl::InternalFormat &internalFormatInfo =
+            gl::GetSizedInternalFormatInfo(internalFormat);
+        const bool bypassTexStorage3D = type == gl::TextureType::_3D &&
+                                        internalFormatInfo.compressed &&
+                                        features.emulateImmutableCompressedTexture3D.enabled;
+        if (functions->texStorage3D && !bypassTexStorage3D)
         {
             ANGLE_GL_TRY_ALWAYS_CHECK(
                 context, functions->texStorage3D(ToGLenum(type), static_cast<GLsizei>(levels),
@@ -1138,9 +1143,6 @@ angle::Result TextureGL::setStorage(const gl::Context *context,
         {
             // Make sure no pixel unpack buffer is bound
             stateManager->bindBuffer(gl::BufferBinding::PixelUnpack, 0);
-
-            const gl::InternalFormat &internalFormatInfo =
-                gl::GetSizedInternalFormatInfo(internalFormat);
 
             // Internal format must be sized
             ASSERT(internalFormatInfo.sized);
@@ -1593,14 +1595,13 @@ angle::Result TextureGL::syncState(const gl::Context *context,
             }
             case gl::Texture::DIRTY_BIT_USAGE:
                 break;
-            case gl::Texture::DIRTY_BIT_LABEL:
-                break;
 
             case gl::Texture::DIRTY_BIT_IMPLEMENTATION:
                 // This special dirty bit is used to signal the front-end that the implementation
                 // has local dirty bits. The real dirty bits are in mLocalDirty bits.
                 break;
             case gl::Texture::DIRTY_BIT_BOUND_AS_IMAGE:
+            case gl::Texture::DIRTY_BIT_BOUND_AS_ATTACHMENT:
                 // Only used for Vulkan.
                 break;
 

@@ -68,7 +68,7 @@ const kAllowedOrigins = [
 
 let extensionServerInstance: ExtensionServer|null;
 
-export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
+export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
   private readonly clientObjects: Map<string, unknown>;
   private readonly handlers:
       Map<string, (message: PrivateAPI.ExtensionServerRequestMessage, port: MessagePort) => unknown>;
@@ -791,9 +791,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   private notifyUISourceCodeContentCommitted(
-      event: Common.EventTarget
-          .EventTargetEvent<{uiSourceCode: Workspace.UISourceCode.UISourceCode, content: string, encoded: boolean}>):
-      void {
+      event: Common.EventTarget.EventTargetEvent<Workspace.Workspace.WorkingCopyCommitedEvent>): void {
     const {uiSourceCode, content} = event.data;
     this.postNotification(PrivateAPI.Events.ResourceContentCommitted, this.makeResource(uiSourceCode), content);
   }
@@ -936,7 +934,8 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             SDK.TargetManager.TargetManager.instance(), modelClass, frontendEventType, handler, this));
   }
 
-  private registerResourceContentCommittedHandler(handler: (arg0: Common.EventTarget.EventTargetEvent) => unknown):
+  private registerResourceContentCommittedHandler(
+      handler: (arg0: Common.EventTarget.EventTargetEvent<Workspace.Workspace.WorkingCopyCommitedEvent>) => unknown):
       void {
     function addFirstEventListener(this: ExtensionServer): void {
       Workspace.Workspace.WorkspaceImpl.instance().addEventListener(
@@ -1113,6 +1112,11 @@ export enum Events {
   SidebarPaneAdded = 'SidebarPaneAdded',
   TraceProviderAdded = 'TraceProviderAdded',
 }
+
+export type EventTypes = {
+  [Events.SidebarPaneAdded]: ExtensionSidebarPane,
+  [Events.TraceProviderAdded]: ExtensionTraceProvider,
+};
 
 class ExtensionServerPanelView extends UI.View.SimpleView {
   private readonly name: string;

@@ -185,11 +185,13 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
 HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnitImpl(
     TextUnit unit) {
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
-  AXPositionInstance normalized_start = start()->Clone();
-  AXPositionInstance normalized_end = end()->Clone();
-  NormalizeTextRange(normalized_start, normalized_end);
-  SetStart(std::move(normalized_start));
-  SetEnd(std::move(normalized_end));
+  {
+    AXPositionInstance normalized_start = start()->Clone();
+    AXPositionInstance normalized_end = end()->Clone();
+    NormalizeTextRange(normalized_start, normalized_end);
+    SetStart(std::move(normalized_start));
+    SetEnd(std::move(normalized_end));
+  }
 
   // Determine if start is on a boundary of the specified TextUnit, if it is
   // not, move backwards until it is. Move the end forwards from start until it
@@ -267,10 +269,11 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnitImpl(
           base::BindRepeating(&AtEndOfLinePredicate)));
       break;
     case TextUnit_Paragraph:
-      SetStart(start()->CreatePreviousParagraphStartPosition(
-          AXBoundaryBehavior::StopIfAlreadyAtBoundary));
-      SetEnd(start()->CreateNextParagraphEndPosition(
-          AXBoundaryBehavior::StopIfAlreadyAtBoundary));
+      SetStart(
+          start()->CreatePreviousParagraphStartPositionSkippingEmptyParagraphs(
+              AXBoundaryBehavior::StopIfAlreadyAtBoundary));
+      SetEnd(start()->CreateNextParagraphStartPositionSkippingEmptyParagraphs(
+          AXBoundaryBehavior::StopAtLastAnchorBoundary));
       break;
     case TextUnit_Page: {
       // Per UIA spec, if the document containing the current range doesn't
@@ -757,7 +760,8 @@ HRESULT AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitImpl(
           MoveEndpointByCharacter(position_to_move, count, units_moved);
       break;
     case TextUnit_Format:
-      new_position = MoveEndpointByFormat(position_to_move, count, units_moved);
+      new_position = MoveEndpointByFormat(position_to_move, is_start_endpoint,
+                                          count, units_moved);
       break;
     case TextUnit_Word:
       new_position = MoveEndpointByWord(position_to_move, count, units_moved);
@@ -1122,11 +1126,14 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByLine(
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
 AXPlatformNodeTextRangeProviderWin::MoveEndpointByFormat(
     const AXPositionInstance& endpoint,
+    const bool is_start_endpoint,
     const int count,
     int* units_moved) {
   return MoveEndpointByUnitHelper(std::move(endpoint),
-                                  ax::mojom::TextBoundary::kFormat, count,
-                                  units_moved);
+                                  is_start_endpoint
+                                      ? ax::mojom::TextBoundary::kFormatStart
+                                      : ax::mojom::TextBoundary::kFormatEnd,
+                                  count, units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
@@ -1135,11 +1142,10 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByParagraph(
     const bool is_start_endpoint,
     const int count,
     int* units_moved) {
-  return MoveEndpointByUnitHelper(std::move(endpoint),
-                                  is_start_endpoint
-                                      ? ax::mojom::TextBoundary::kParagraphStart
-                                      : ax::mojom::TextBoundary::kParagraphEnd,
-                                  count, units_moved);
+  return MoveEndpointByUnitHelper(
+      std::move(endpoint),
+      ax::mojom::TextBoundary::kParagraphStartSkippingEmptyParagraphs, count,
+      units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance

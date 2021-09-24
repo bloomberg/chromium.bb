@@ -81,6 +81,7 @@ void BackgroundFetchDelegateBase::DownloadUrl(
     const std::string& download_guid,
     const std::string& method,
     const GURL& url,
+    ::network::mojom::CredentialsMode credentials_mode,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     const net::HttpRequestHeaders& headers,
     bool has_request_body) {
@@ -95,6 +96,7 @@ void BackgroundFetchDelegateBase::DownloadUrl(
   params.request_params.method = method;
   params.request_params.url = url;
   params.request_params.request_headers = headers;
+  params.request_params.credentials_mode = credentials_mode;
   params.callback =
       base::BindRepeating(&BackgroundFetchDelegateBase::OnDownloadReceived,
                           weak_ptr_factory_.GetWeakPtr());
@@ -151,7 +153,7 @@ void BackgroundFetchDelegateBase::ResumeDownload(const std::string& job_id) {
     std::move(job_details->on_resume).Run();
 }
 
-void BackgroundFetchDelegateBase::CancelDownload(const std::string& job_id) {
+void BackgroundFetchDelegateBase::CancelDownload(std::string job_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   JobDetails* job_details = GetJobDetails(job_id);
 

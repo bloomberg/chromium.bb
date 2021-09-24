@@ -26,6 +26,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 
 #include "base/dcheck_is_on.h"
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
@@ -54,6 +55,7 @@ namespace blink {
 class AccessibleNode;
 class Attr;
 class Attribute;
+class ContainerQueryData;
 class ContainerQueryEvaluator;
 class CSSPropertyName;
 class CSSPropertyValueSet;
@@ -944,15 +946,16 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   }
   DisplayLockContext& EnsureDisplayLockContext();
 
-  ContainerQueryEvaluator* GetContainerQueryEvaluator() const;
-  void SetContainerQueryEvaluator(ContainerQueryEvaluator*);
-
   bool ChildStyleRecalcBlockedByDisplayLock() const;
 
   // Activates all activatable (for a given reason) locked ancestors for this
   // element. Return true if we activated at least one previously locked
   // element.
   bool ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason);
+
+  ContainerQueryData* GetContainerQueryData() const;
+  void SetContainerQueryEvaluator(ContainerQueryEvaluator*);
+  ContainerQueryEvaluator* GetContainerQueryEvaluator() const;
 
   virtual void SetActive(bool active);
   virtual void SetHovered(bool hovered);
@@ -1107,6 +1110,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   StyleRecalcChange RecalcOwnStyle(const StyleRecalcChange,
                                    const StyleRecalcContext&);
 
+  // Returns true if we should skip style recalc for the subtree because this
+  // element is a container for size container queries and we are guaranteed to
+  // reach this element during the subsequent layout to continue doing
+  // interleaved style and layout.
+  bool SkipStyleRecalcForContainer(const ComputedStyle& style,
+                                   const StyleRecalcChange& child_change);
+
+  void MarkNonSlottedHostChildrenForStyleRecalc();
+
   void RebuildPseudoElementLayoutTree(PseudoId, WhitespaceAttacher&);
   void RebuildFirstLetterLayoutTree();
   void RebuildMarkerLayoutTree(WhitespaceAttacher&);
@@ -1248,10 +1260,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void DetachAllAttrNodesFromElement();
   void DetachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
   void DetachAttrNodeAtIndex(Attr*, wtf_size_t index);
-
-  bool DisplayLockPreventsActivation(DisplayLockActivationReason reason) const;
-  FRIEND_TEST_ALL_PREFIXES(DisplayLockContextTest,
-                           DisplayLockPreventsActivation);
 
   // Return whether this element type requires legacy layout.
   virtual bool TypeShouldForceLegacyLayout() const { return false; }

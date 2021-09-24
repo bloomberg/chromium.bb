@@ -15,6 +15,7 @@
 #include "services/network/public/mojom/web_transport.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/webtransport/web_transport_connector.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
@@ -133,7 +134,8 @@ class MockWebTransport : public network::mojom::blink::WebTransport {
   MOCK_METHOD1(SetOutgoingDatagramExpirationDuration, void(base::TimeDelta));
 
   void SendFin(uint32_t stream_id) override {}
-  void AbortStream(uint32_t stream_id, uint64_t code) override {}
+  void AbortStream(uint32_t stream_id, uint8_t code) override {}
+  void StopSending(uint32_t stream_id, uint8_t code) override {}
 
  private:
   mojo::Receiver<network::mojom::blink::WebTransport> receiver_;
@@ -171,7 +173,10 @@ class WebTransportTest : public ::testing::Test {
   }
 
   // Connects a WebTransport object. Runs the event loop.
-  void ConnectSuccessfully(WebTransport* web_transport) {
+  void ConnectSuccessfully(
+      WebTransport* web_transport,
+      base::TimeDelta expected_outgoing_datagram_expiration_duration =
+          base::TimeDelta()) {
     DCHECK(!mock_web_transport_) << "Only one connection supported, sorry";
 
     test::RunPendingTasks();
@@ -205,6 +210,12 @@ class WebTransportTest : public ::testing::Test {
           pending_bidirectional_accept_callbacks_.push_back(
               std::move(callback));
         });
+
+    if (expected_outgoing_datagram_expiration_duration != base::TimeDelta()) {
+      EXPECT_CALL(*mock_web_transport_,
+                  SetOutgoingDatagramExpirationDuration(
+                      expected_outgoing_datagram_expiration_duration));
+    }
 
     handshake_client->OnConnectionEstablished(
         std::move(web_transport_to_pass),
@@ -498,6 +509,27 @@ TEST_F(WebTransportTest, SendConnectWithFingerprint) {
   EXPECT_EQ(args[0].fingerprints[0]->fingerprint,
             "ED:3D:D7:C3:67:10:94:68:D1:DC:D1:26:5C:B2:74:D7:1C:A2:63:3E:94:94:"
             "C0:84:39:D6:64:FA:08:B9:77:37");
+}
+
+// Regression test for https://crbug.com/1242185.
+TEST_F(WebTransportTest, SendConnectWithInvalidFingerprint) {
+  V8TestingScope scope;
+  AddBinder(scope);
+  auto* fingerprints = MakeGarbageCollected<RTCDtlsFingerprint>();
+  // "algorithm" is unset.
+  fingerprints->setValue(
+      "ED:3D:D7:C3:67:10:94:68:D1:DC:D1:26:5C:B2:74:D7:1C:A2:63:3E:94:94:C0:84:"
+      "39:D6:64:FA:08:B9:77:37");
+  auto* options = MakeGarbageCollected<WebTransportOptions>();
+  options->setServerCertificateFingerprints({fingerprints});
+  WebTransport::Create(scope.GetScriptState(), String("https://example.com/"),
+                       options, ASSERT_NO_EXCEPTION);
+
+  test::RunPendingTasks();
+
+  auto args = connector_.TakeConnectArgs();
+  ASSERT_EQ(1u, args.size());
+  ASSERT_EQ(0u, args[0].fingerprints.size());
 }
 
 TEST_F(WebTransportTest, CloseDuringConnect) {
@@ -1109,6 +1141,40 @@ TEST_F(WebTransportTest, IncomingMaxAgeIsObeyed) {
   EXPECT_FALSE(tester.IsRejected());
 }
 
+// This is a regression test for https://crbug.com/1246335
+TEST_F(WebTransportTest, TwoSimultaneousReadsWork) {
+  V8TestingScope scope;
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+  auto* readable = web_transport->datagrams()->readable();
+  auto* script_state = scope.GetScriptState();
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
+
+  ScriptPromise result1 = reader->read(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise result2 = reader->read(script_state, ASSERT_NO_EXCEPTION);
+
+  const std::array<uint8_t, 1> chunk1 = {'A'};
+  client_remote_->OnDatagramReceived(chunk1);
+
+  const std::array<uint8_t, 1> chunk2 = {'B'};
+  client_remote_->OnDatagramReceived(chunk2);
+
+  ScriptPromiseTester tester1(script_state, result1);
+  tester1.WaitUntilSettled();
+  EXPECT_TRUE(tester1.IsFulfilled());
+
+  EXPECT_THAT(GetValueAsVector(script_state, tester1.Value()),
+              ElementsAre('A'));
+
+  ScriptPromiseTester tester2(script_state, result2);
+  tester2.WaitUntilSettled();
+  EXPECT_TRUE(tester2.IsFulfilled());
+
+  EXPECT_THAT(GetValueAsVector(script_state, tester2.Value()),
+              ElementsAre('B'));
+}
+
 bool ValidProducerHandle(const mojo::ScopedDataPipeProducerHandle& handle) {
   return handle.is_valid();
 }
@@ -1628,6 +1694,21 @@ TEST_F(WebTransportTest, SetDatagramWritableQueueExpirationDuration) {
   web_transport->setDatagramWritableQueueExpirationDuration(kDuration);
 
   test::RunPendingTasks();
+}
+
+// Regression test for https://crbug.com/1241489.
+TEST_F(WebTransportTest, SetOutgoingMaxAgeBeforeConnectComplete) {
+  V8TestingScope scope;
+
+  auto* web_transport = Create(scope, "https://example.com/", EmptyOptions());
+
+  constexpr double kDuration = 1000;
+  constexpr base::TimeDelta kDurationDelta =
+      base::TimeDelta::FromMillisecondsD(kDuration);
+
+  web_transport->datagrams()->setOutgoingMaxAge(kDuration);
+
+  ConnectSuccessfully(web_transport, kDurationDelta);
 }
 
 }  // namespace

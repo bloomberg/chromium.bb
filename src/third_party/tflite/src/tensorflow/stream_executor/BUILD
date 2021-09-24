@@ -4,14 +4,15 @@
 # Throughout this file, all targets are built with the standard crosstool and
 # do not link against restricted binary blobs.
 
-load("//tensorflow:tensorflow.bzl", "tf_cc_test")
+load("//tensorflow:tensorflow.bzl", "filegroup", "tf_cc_test", "tf_cuda_library")
+load("//tensorflow/core/platform:rules_cc.bzl", "cc_library")
 load("//tensorflow/core/platform:build_config.bzl", "tf_proto_library")
 load("//tensorflow/core/platform:build_config_root.bzl", "if_static")
 load("//tensorflow/stream_executor:build_defs.bzl", "stream_executor_friends")
 
 package(
     default_visibility = [":friends"],
-    licenses = ["notice"],  # Apache 2.0
+    licenses = ["notice"],
 )
 
 package_group(
@@ -59,7 +60,6 @@ cc_library(
         "blas.h",
         "device_description.h",
         "device_options.h",
-        "dnn.h",
         "event.cc",
         "fft.h",
         "kernel_cache_config.h",
@@ -67,7 +67,6 @@ cc_library(
         "plugin.h",
         "plugin_registry.h",
         "rng.h",
-        "shared_memory_config.h",
         "stream_executor_pimpl.h",
         "temporary_device_memory.h",
         "temporary_memory_manager.h",
@@ -102,7 +101,6 @@ cc_library(
 cc_library(
     name = "kernel",
     srcs = [
-        "dnn.h",
         "fft.h",
         "kernel.cc",
         "plugin.h",
@@ -123,7 +121,6 @@ cc_library(
         "multi_platform_manager.h",
         "platform.h",
         "plugin_registry.h",
-        "shared_memory_config.h",
         "stream_executor.h",
         "stream_executor_internal.h",
         "timer.h",
@@ -171,11 +168,6 @@ cc_library(
         "//tensorflow/stream_executor/lib",
         "//tensorflow/stream_executor/platform",
     ],
-)
-
-cc_library(
-    name = "shared_memory_config",
-    hdrs = ["shared_memory_config.h"],
 )
 
 # Aliases for backwards compatibility.
@@ -305,6 +297,7 @@ cc_library(
     name = "host_or_device_scalar",
     hdrs = ["host_or_device_scalar.h"],
     deps = [
+        ":data_type",
         ":device_memory",
         "//tensorflow/stream_executor/platform",
     ],
@@ -315,6 +308,7 @@ cc_library(
     hdrs = ["device_options.h"],
     deps = [
         "//tensorflow/stream_executor/platform",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -336,14 +330,12 @@ cc_library(
     ],
     hdrs = [
         "blas.h",
-        "dnn.h",
         "executor_cache.h",
         "fft.h",
         "kernel.h",
         "kernel_cache_config.h",
         "kernel_spec.h",
         "platform.h",
-        "shared_memory_config.h",
         "stream.h",
         "stream_executor_internal.h",
         "trace_listener.h",
@@ -430,10 +422,20 @@ tf_proto_library(
 )
 
 cc_library(
+    name = "data_type",
+    hdrs = ["data_type.h"],
+    deps = [
+        ":dnn_proto_cc",
+        "//tensorflow/stream_executor/platform",
+    ],
+)
+
+cc_library(
     name = "dnn",
     srcs = ["dnn.cc"],
     hdrs = ["dnn.h"],
     deps = [
+        ":data_type",
         ":device_memory",
         ":dnn_proto_cc",
         ":stream_executor_headers",
@@ -451,11 +453,9 @@ cc_library(
 cc_library(
     name = "stream_executor_internal",
     srcs = [
-        "dnn.h",
         "stream_executor_internal.cc",
     ],
     hdrs = [
-        "shared_memory_config.h",
         "stream_executor_internal.h",
     ],
     deps = [
@@ -481,10 +481,8 @@ cc_library(
     name = "stream_executor_pimpl_header",
     hdrs = [
         "device_description.h",
-        "dnn.h",
         "kernel.h",
         "kernel_cache_config.h",
-        "shared_memory_config.h",
         "stream_executor_pimpl.h",
     ],
     visibility = ["//visibility:public"],
@@ -506,7 +504,7 @@ cc_library(
 )
 
 # It implements :stream_executor_pimpl_header
-cc_library(
+tf_cuda_library(
     name = "stream_executor_pimpl",
     srcs = [
         "stream.cc",
@@ -532,6 +530,7 @@ cc_library(
         ":timer",
         "//tensorflow/core:lib",
         "//tensorflow/core:lib_internal",
+        "//tensorflow/stream_executor/cuda:cuda_dnn_headers",
         "//tensorflow/stream_executor/lib",
         "//tensorflow/stream_executor/platform",
         "//third_party/eigen3",
@@ -569,7 +568,6 @@ cc_library(
         "plugin.h",
         "plugin_registry.h",
         "rng.h",
-        "shared_memory_config.h",
         "stream.h",
         "stream_executor.h",
         "stream_executor_internal.h",
@@ -585,6 +583,7 @@ cc_library(
         ":dnn_proto_cc",
         ":host_or_device_scalar",
         "//tensorflow/core:lib",
+        "//tensorflow/stream_executor/cuda:cuda_dnn_headers",
         "//tensorflow/stream_executor/lib",
         "//tensorflow/stream_executor/platform",
         "@com_google_absl//absl/base:core_headers",
@@ -619,7 +618,6 @@ cc_library(
         "plugin.h",
         "plugin_registry.h",
         "rng.h",
-        "shared_memory_config.h",
         "stream.h",
         "stream_executor.h",
         "stream_executor_internal.h",
@@ -691,8 +689,8 @@ cc_library(
         ":device_memory_allocator",
         ":platform",
         ":stream_executor_headers",
-        "//tensorflow/core:allocator",
         "//tensorflow/core:lib",
+        "//tensorflow/core/framework:allocator",
         "//tensorflow/stream_executor/lib",
         "//tensorflow/stream_executor/platform",
         "@com_google_absl//absl/base:core_headers",

@@ -60,10 +60,10 @@ SessionLogHandler::SessionLogHandler(
 SessionLogHandler::~SessionLogHandler() = default;
 
 void SessionLogHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "initialize", base::BindRepeating(&SessionLogHandler::HandleInitialize,
                                         base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "saveSessionLog",
       base::BindRepeating(&SessionLogHandler::HandleSaveSessionLogRequest,
                           base::Unretained(this)));
@@ -142,7 +142,7 @@ bool SessionLogHandler::CreateSessionLog(const base::FilePath& file_path) {
 
 void SessionLogHandler::HandleSaveSessionLogRequest(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   DCHECK(save_session_log_callback_id_.empty());
   save_session_log_callback_id_ = args->GetList()[0].GetString();
 

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 module crosapi.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/image/mojom/image.mojom";
+import "url/mojom/url.mojom";
 
 // Information about an app. See components/services/app_service/README.md.
 
@@ -153,6 +155,7 @@ enum ConditionType {
   kPattern,           // Matches the URL pattern (e.g. /abc/*).
   kAction,            // Matches the action type (e.g. view, send).
   kMimeType,          // Matches the data mime type (e.g. image/jpeg).
+  [MinVersion=1] kFileExtension  // Matches the file extension of all files.
 };
 
 // The pattern match type for intent filter pattern condition.
@@ -163,6 +166,7 @@ enum PatternMatchType {
   kPrefix,
   kGlob,
   kMimeType,
+  [MinVersion=1] kFileExtension,
 };
 
 // For pattern type of condition, the value match will be based on the pattern
@@ -259,6 +263,7 @@ struct MenuItems {
 struct MenuItem {
   string label@0;                      // The string label, may be empty.
   gfx.mojom.ImageSkia? image@1;        // The image icon, may be null.
+  [MinVersion=3]string? id@2;          // The id of the item.
 };
 
 [Stable, Extensible]
@@ -272,4 +277,62 @@ enum WindowMode {
   kBrowser,
   // Opens in a tabbed app window
   kTabbedWindow,
+};
+
+// Action and resource handling request. This should
+// be kept in sync with ConvertIntentToValue and ConvertValueToIntent in
+// components/services/app_service/public/cpp/intent_util.*
+[Stable]
+struct Intent {
+  string action@0; // Intent action. e.g. view, send.
+  url.mojom.Url? url@1; // The URL of the intent. e.g. https://www.google.com/.
+  string? mime_type@2; // MIME type. e.g. text/plain, image/*.
+  string? share_text@3; // Text to share. e.g. Share link to other app.
+  string? share_title@4; // Title for the share.
+};
+
+// The result from launching an app.
+[Stable]
+struct LaunchResult {
+  // The id to represent which instance the app is launched in.
+  mojo_base.mojom.UnguessableToken instance_id@0;
+};
+
+// Enumeration of app launch sources.
+[Stable, Extensible]
+enum LaunchSource {
+  [Default] kUnknown = 0,
+  kFromAppListGrid,              // Grid of apps, not the search box.
+  kFromAppListGridContextMenu,   // Grid of apps; context menu.
+  kFromAppListQuery,             // Query-dependent results (larger icons).
+  kFromAppListQueryContextMenu,  // Query-dependent results; context menu.
+  kFromAppListRecommendation,    // Query-less recommendations (smaller
+                                 // icons).
+  kFromParentalControls,         // Parental Controls Settings Section and
+                                 // Per App time notification.
+  kFromShelf,                    // Shelf.
+  kFromFileManager,              // FileManager.
+  kFromLink,                     // Left-clicking on links in the browser.
+  kFromOmnibox,                  // Enter URL in the Omnibox in the
+                                 // browser.
+  kFromChromeInternal,           // Chrome internal call.
+  kFromKeyboard,                 // Keyboard shortcut for opening app.
+  kFromOtherApp,                 // Clicking link in another app or webui.
+  kFromMenu,                     // Menu.
+  kFromInstalledNotification,    // Installed notification
+  kFromTest,                     // Test
+  kFromArc,                      // Arc.
+  kFromSharesheet,               // Sharesheet.
+  kFromReleaseNotesNotification, // Release Notes Notification.
+  kFromFullRestore,              // Full restore.
+  kFromSmartTextContextMenu,     // Smart text selection context menu.
+  kFromDiscoverTabNotification,  // Discover Tab Notification.
+};
+
+[Stable]
+// The parameters to launch an app.
+struct LaunchParams {
+  string app_id;               // The app id of the app.
+  LaunchSource launch_source;  // The app launch source.
+  Intent? intent;              // The intent the app will launch with.
 };

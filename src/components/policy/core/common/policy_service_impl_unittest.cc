@@ -66,14 +66,14 @@ void AddTestPolicies(PolicyBundle* bundle,
   policy_map->Set(kSameLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_ENTERPRISE_DEFAULT, base::Value(value),
                   nullptr);
-  policy_map->Set(kDiffLevelPolicy, level, scope, POLICY_SOURCE_PLATFORM,
+  policy_map->Set(kDiffLevelPolicy, level, scope, POLICY_SOURCE_CLOUD,
                   base::Value(value), nullptr);
   policy_map =
       &bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension));
   policy_map->Set(kSameLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_ENTERPRISE_DEFAULT, base::Value(value),
                   nullptr);
-  policy_map->Set(kDiffLevelPolicy, level, scope, POLICY_SOURCE_PLATFORM,
+  policy_map->Set(kDiffLevelPolicy, level, scope, POLICY_SOURCE_CLOUD,
                   base::Value(value), nullptr);
 }
 
@@ -618,7 +618,7 @@ TEST_F(PolicyServiceTest, NamespaceMerge) {
   // For policies with different levels and scopes, the highest priority
   // level/scope combination takes precedence, on every namespace.
   expected.Set(kDiffLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-               POLICY_SOURCE_PLATFORM, base::Value("bundle2"), nullptr);
+               POLICY_SOURCE_CLOUD, base::Value("bundle2"), nullptr);
   expected.GetMutable(kDiffLevelPolicy)
       ->AddMessage(PolicyMap::MessageType::kWarning,
                    IDS_POLICY_CONFLICT_DIFF_VALUE);
@@ -1212,55 +1212,63 @@ TEST_F(PolicyServiceTest, IsFirstPolicyLoadComplete) {
   policy_service_->RemoveObserver(POLICY_DOMAIN_SIGNIN_EXTENSIONS, &observer);
 }
 
-TEST_F(PolicyServiceTest, SeparateProxyPoliciesMerging) {
+TEST_F(PolicyServiceTest, DictionaryPoliciesMerging) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
-  const PolicyNamespace extension_namespace(POLICY_DOMAIN_EXTENSIONS, "xyz");
 
-  std::unique_ptr<PolicyBundle> policy_bundle(new PolicyBundle());
-  PolicyMap& policy_map = policy_bundle->Get(chrome_namespace);
-  // Individual proxy policy values in the Chrome namespace should be collected
-  // into a dictionary.
-  policy_map.Set(key::kProxyServerMode, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(3),
-                 nullptr);
+  base::Value dict1 = base::Value(base::Value::Type::DICTIONARY);
+  dict1.SetBoolKey(kUrl3, false);
+  dict1.SetBoolKey(kUrl2, true);
+  base::Value dict2 = base::Value(base::Value::Type::DICTIONARY);
+  dict2.SetBoolKey(kUrl1, true);
+  dict2.SetBoolKey(kUrl2, false);
+  base::Value result = base::Value(base::Value::Type::DICTIONARY);
+  result.SetBoolKey(kUrl1, true);
+  result.SetBoolKey(kUrl2, true);
+  result.SetBoolKey(kUrl3, false);
 
-  // Both these policies should be ignored, since there's a higher priority
-  // policy available.
-  policy_map.Set(key::kProxyMode, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, base::Value("pac_script"), nullptr);
-  policy_map.Set(key::kProxyPacUrl, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 base::Value("http://example.com/wpad.dat"), nullptr);
+  std::unique_ptr<base::Value> policy =
+      std::make_unique<base::Value>(base::Value::Type::LIST);
+  policy->Append(base::Value(key::kExtensionSettings));
 
-  // Add a value to a non-Chrome namespace.
-  policy_bundle->Get(extension_namespace)
-      .Set(key::kProxyServerMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD, base::Value(3), nullptr);
+  auto policy_bundle1 = std::make_unique<PolicyBundle>();
+  PolicyMap& policy_map1 = policy_bundle1->Get(chrome_namespace);
+  policy_map1.Set(key::kPolicyDictionaryMultipleSourceMergeList,
+                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                  POLICY_SOURCE_PLATFORM, policy->Clone(), nullptr);
+  PolicyMap::Entry entry_dict_1(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                                POLICY_SOURCE_PLATFORM, std::move(dict1),
+                                nullptr);
+  policy_map1.Set(key::kExtensionSettings, entry_dict_1.DeepCopy());
 
-  // The resulting Chrome namespace map should have the collected policy.
+  auto policy_bundle2 = std::make_unique<PolicyBundle>();
+  PolicyMap& policy_map2 = policy_bundle2->Get(chrome_namespace);
+  PolicyMap::Entry entry_dict_2(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                                POLICY_SOURCE_CLOUD, std::move(dict2), nullptr);
+  policy_map2.Set(key::kExtensionSettings, entry_dict_2.DeepCopy());
+
   PolicyMap expected_chrome;
-  base::Value expected_value(base::Value::Type::DICTIONARY);
-  expected_value.SetIntKey(key::kProxyServerMode, 3);
-  expected_chrome.Set(key::kProxySettings, POLICY_LEVEL_MANDATORY,
-                      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                      std::move(expected_value), nullptr);
+  expected_chrome.Set(key::kPolicyDictionaryMultipleSourceMergeList,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_PLATFORM, policy->Clone(), nullptr);
   expected_chrome.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                       POLICY_SOURCE_PLATFORM, base::Value(15), nullptr);
 
-  // The resulting Extensions namespace map shouldn't have been modified.
-  PolicyMap expected_extension;
-  expected_extension.Set(key::kProxyServerMode, POLICY_LEVEL_MANDATORY,
-                         POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(3),
-                         nullptr);
+  PolicyMap::Entry merged(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                          POLICY_SOURCE_MERGED, std::move(result), nullptr);
+  merged.AddConflictingPolicy(entry_dict_2.DeepCopy());
+  merged.AddConflictingPolicy(entry_dict_1.DeepCopy());
+  expected_chrome.Set(key::kExtensionSettings, std::move(merged));
 
-  provider0_.UpdatePolicy(std::move(policy_bundle));
+  provider0_.UpdatePolicy(std::move(policy_bundle1));
+  provider1_.UpdatePolicy(std::move(policy_bundle2));
   RunUntilIdle();
 
   EXPECT_TRUE(VerifyPolicies(chrome_namespace, expected_chrome));
-  EXPECT_TRUE(VerifyPolicies(extension_namespace, expected_extension));
 }
 
-TEST_F(PolicyServiceTest, DictionaryPoliciesMerging) {
+#if !defined(OS_CHROMEOS)
+// Policy precedence changes are not supported on Chrome OS.
+TEST_F(PolicyServiceTest, DictionaryPoliciesMerging_PrecedenceChange) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
 
   base::Value dict1(base::Value::Type::DICTIONARY);
@@ -1283,6 +1291,9 @@ TEST_F(PolicyServiceTest, DictionaryPoliciesMerging) {
   policy_map1.Set(key::kPolicyDictionaryMultipleSourceMergeList,
                   POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                   POLICY_SOURCE_PLATFORM, policy->Clone(), nullptr);
+  policy_map1.Set(key::kCloudPolicyOverridesPlatformPolicy,
+                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                  POLICY_SOURCE_PLATFORM, base::Value(true), nullptr);
   PolicyMap::Entry entry_dict_1(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                                 POLICY_SOURCE_PLATFORM, std::move(dict1),
                                 nullptr);
@@ -1291,14 +1302,16 @@ TEST_F(PolicyServiceTest, DictionaryPoliciesMerging) {
   auto policy_bundle2 = std::make_unique<PolicyBundle>();
   PolicyMap& policy_map2 = policy_bundle2->Get(chrome_namespace);
   PolicyMap::Entry entry_dict_2(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                                POLICY_SOURCE_PRIORITY_CLOUD, std::move(dict2),
-                                nullptr);
+                                POLICY_SOURCE_CLOUD, std::move(dict2), nullptr);
   policy_map2.Set(key::kExtensionSettings, entry_dict_2.DeepCopy());
 
   PolicyMap expected_chrome;
   expected_chrome.Set(key::kPolicyDictionaryMultipleSourceMergeList,
                       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                       POLICY_SOURCE_PLATFORM, policy->Clone(), nullptr);
+  expected_chrome.Set(key::kCloudPolicyOverridesPlatformPolicy,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_PLATFORM, base::Value(true), nullptr);
   expected_chrome.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                       POLICY_SOURCE_PLATFORM, base::Value(15), nullptr);
 
@@ -1314,6 +1327,7 @@ TEST_F(PolicyServiceTest, DictionaryPoliciesMerging) {
 
   EXPECT_TRUE(VerifyPolicies(chrome_namespace, expected_chrome));
 }
+#endif  // !defined(OS_CHROMEOS)
 
 TEST_F(PolicyServiceTest, ListsPoliciesMerging) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());

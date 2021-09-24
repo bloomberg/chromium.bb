@@ -180,7 +180,7 @@ namespace dawn_native { namespace d3d12 {
         return InitializeBase(parseResult);
     }
 
-    ResultOrError<std::string> ShaderModule::TranslateToHLSLWithTint(
+    ResultOrError<std::string> ShaderModule::TranslateToHLSL(
         const char* entryPointName,
         SingleShaderStage stage,
         PipelineLayout* layout,
@@ -195,8 +195,7 @@ namespace dawn_native { namespace d3d12 {
         BindingRemapper::BindingPoints bindingPoints;
         BindingRemapper::AccessControls accessControls;
 
-        const EntryPointMetadata::BindingInfoArray& moduleBindingInfo =
-            GetEntryPoint(entryPointName).bindings;
+        const BindingInfoArray& moduleBindingInfo = GetEntryPoint(entryPointName).bindings;
 
         // d3d12::BindGroupLayout packs the bindings per HLSL register-space.
         // We modify the Tint AST to make the "bindings" decoration match the
@@ -204,16 +203,15 @@ namespace dawn_native { namespace d3d12 {
         // with the correct registers assigned to each interface variable.
         for (BindGroupIndex group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
             const BindGroupLayout* bgl = ToBackend(layout->GetBindGroupLayout(group));
-            const auto& bindingOffsets = bgl->GetBindingOffsets();
             const auto& groupBindingInfo = moduleBindingInfo[group];
             for (const auto& it : groupBindingInfo) {
                 BindingNumber binding = it.first;
                 auto const& bindingInfo = it.second;
                 BindingIndex bindingIndex = bgl->GetBindingIndex(binding);
-                uint32_t bindingOffset = bindingOffsets[bindingIndex];
                 BindingPoint srcBindingPoint{static_cast<uint32_t>(group),
                                              static_cast<uint32_t>(binding)};
-                BindingPoint dstBindingPoint{static_cast<uint32_t>(group), bindingOffset};
+                BindingPoint dstBindingPoint{static_cast<uint32_t>(group),
+                                             bgl->GetShaderRegister(bindingIndex)};
                 if (srcBindingPoint != dstBindingPoint) {
                     bindingPoints.emplace(srcBindingPoint, dstBindingPoint);
                 }
@@ -324,8 +322,8 @@ namespace dawn_native { namespace d3d12 {
         std::string remappedEntryPoint;
         CompiledShader compiledShader = {};
         DAWN_TRY_ASSIGN(hlslSource,
-                        TranslateToHLSLWithTint(entryPointName, stage, layout, &remappedEntryPoint,
-                                                &compiledShader.firstOffsetInfo));
+                        TranslateToHLSL(entryPointName, stage, layout, &remappedEntryPoint,
+                                        &compiledShader.firstOffsetInfo));
         entryPointName = remappedEntryPoint.c_str();
 
         if (device->IsToggleEnabled(Toggle::DumpShaders)) {

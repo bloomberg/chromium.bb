@@ -302,7 +302,7 @@ class Mirror(object):
     try:
       # create new temporary directory locally
       tempdir = tempfile.mkdtemp(prefix='_cache_tmp', dir=self.GetCachePath())
-      self.RunGit(['init', '--bare', '-b', 'main'], cwd=tempdir)
+      self.RunGit(['init', '--bare'], cwd=tempdir)
       self.print('Downloading files in %s/* into %s.' %
                  (latest_dir, tempdir))
       with self.print_duration_of('download'):
@@ -310,6 +310,8 @@ class Mirror(object):
                            tempdir)
       if code:
         return False
+      # Set HEAD to main.
+      self.RunGit(['symbolic-ref', 'HEAD', 'refs/heads/main'], cwd=tempdir)
       # A quick validation that all references are valid.
       self.RunGit(['for-each-ref'], cwd=tempdir)
     except Exception as e:
@@ -410,7 +412,11 @@ class Mirror(object):
         # 1. No previous cache.
         # 2. Project doesn't have a bootstrap folder.
         # Start with a bare git dir.
-        self.RunGit(['init', '--bare', '-b', 'main'], cwd=self.mirror_path)
+        self.RunGit(['init', '--bare'], cwd=self.mirror_path)
+        # Set HEAD to main. -b is introduced in 2.28 and may not be available
+        # everywhere.
+        self.RunGit(['symbolic-ref', 'HEAD', 'refs/heads/main'],
+                    cwd=self.mirror_path)
       else:
         # Bootstrap failed, previous cache exists; warn and continue.
         logging.warning(

@@ -14,12 +14,6 @@ extern const base::Feature kExpandedTabStrip;
 // Feature to apply UI Refresh theme to the settings.
 extern const base::Feature kSettingsRefresh;
 
-// Feature flag to use the unstacked tabstrip when voiceover is enabled.
-extern const base::Feature kVoiceOverUnstackedTabstrip;
-
-// Feature flag to always force an unstacked tabstrip.
-extern const base::Feature kForceUnstackedTabstrip;
-
 // Test-only: Feature flag used to verify that EG2 can trigger flags. Must be
 // always disabled by default, because it is used to verify that enabling
 // features in tests works.
@@ -48,6 +42,9 @@ extern const base::Feature kIncognitoAuthentication;
 // Enables the usage of dark mode color while in Incognito mode.
 extern const base::Feature kIncognitoBrandConsistencyForIOS;
 
+// Feature flag to enable revamped Incognito NTP page.
+extern const base::Feature kIncognitoNtpRevamp;
+
 // Feature flag that experiments with new location permissions user experiences.
 extern const base::Feature kLocationPermissionsPrompt;
 
@@ -73,5 +70,11 @@ extern const base::Feature kSearchHistoryLinkIOS;
 // Feature flag to enable removing any entry points to the history UI from
 // Incognito mode.
 extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
+
+// Feature to update context menu actions.
+extern const base::Feature kContextMenuActionsRefresh;
+
+// Whether the ContextMenuActionsRefresh flag is enabled.
+bool IsContextMenuActionsRefreshEnabled();
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

@@ -27,6 +27,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -291,8 +292,10 @@ class ASH_EXPORT WallpaperControllerImpl
   bool IsActiveUserWallpaperControlledByPolicy() override;
   WallpaperInfo GetActiveUserWallpaperInfo() override;
   bool ShouldShowWallpaperSetting() override;
-  void SetDailyRefreshCollectionId(const std::string& collection_id) override;
-  std::string GetDailyRefreshCollectionId() const override;
+  void SetDailyRefreshCollectionId(const AccountId& accound_id,
+                                   const std::string& collection_id) override;
+  std::string GetDailyRefreshCollectionId(
+      const AccountId& account_id) const override;
   void UpdateDailyRefreshWallpaper(
       RefreshWallpaperCallback callback = base::DoNothing()) override;
   void OnGoogleDriveMounted(const AccountId& account_id) override;
@@ -577,8 +580,11 @@ class ASH_EXPORT WallpaperControllerImpl
                              const WallpaperInfo& info);
   bool GetLocalWallpaperInfo(const AccountId& account_id,
                              WallpaperInfo* info) const;
-  void SyncLocalAndRemotePrefs();
-  void SyncLocalAndRemotePrefsForAccountId(const AccountId& account_id);
+  bool SetSyncedWallpaperInfo(const AccountId& account_id,
+                              const WallpaperInfo& info);
+  bool GetSyncedWallpaperInfo(const AccountId& account_id,
+                              WallpaperInfo* info) const;
+  void SyncLocalAndRemotePrefs(const AccountId& account_id);
   void HandleWallpaperInfoSyncedIn(const AccountId& account_id,
                                    WallpaperInfo info);
   void OnAttemptSetOnlineWallpaper(const OnlineWallpaperParams& params,
@@ -588,10 +594,6 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // If daily refresh wallpapers is enabled by the user.
   bool IsDailyRefreshEnabled() const;
-
-  // The id of the collection to query for new wallpapers when daily refresh is
-  // enabled. Is an empty string when it is not enabled.
-  std::string GetCollectionId() const;
 
   // Callback from the client providing a url to a wallpaper from the user
   // specified collection when daily refresh is enabled. If |image_url| is
@@ -629,6 +631,11 @@ class ASH_EXPORT WallpaperControllerImpl
                                          WallpaperInfo info);
 
   void DriveFsWallpaperChanged(const base::FilePath& path, bool error);
+
+  PrefService* GetUserPrefServiceSyncable(const AccountId& account_id) const;
+
+  void HandleDailyWallpaperInfoSyncedIn(const AccountId& account_id,
+                                        const WallpaperInfo& info);
 
   bool locked_ = false;
 
@@ -741,6 +748,10 @@ class ASH_EXPORT WallpaperControllerImpl
   base::WallClockTimer daily_refresh_timer_;
 
   base::WeakPtrFactory<WallpaperControllerImpl> weak_factory_{this};
+
+  // Used for setting different types of wallpaper.
+  base::WeakPtrFactory<WallpaperControllerImpl> set_wallpaper_weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperControllerImpl);
 };

@@ -13,8 +13,8 @@
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/geometry/GrRect.h"
-#include "src/gpu/ops/GrClearOp.h"
-#include "src/gpu/ops/GrFillRectOp.h"
+#include "src/gpu/ops/ClearOp.h"
+#include "src/gpu/ops/FillRectOp.h"
 #include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 #define ASSERT_SINGLE_OWNER        GR_ASSERT_SINGLE_OWNER(this->singleOwner())
@@ -34,8 +34,8 @@ private:
 namespace skgpu::v1 {
 
 // In MDB mode the reffing of the 'getLastOpsTask' call's result allows in-progress
-// GrOpsTask to be picked up and added to by SurfaceFillContext lower in the call
-// stack. When this occurs with a closed GrOpsTask, a new one will be allocated
+// OpsTask to be picked up and added to by SurfaceFillContext lower in the call
+// stack. When this occurs with a closed OpsTask, a new one will be allocated
 // when the SurfaceFillContext attempts to use it (via getOpsTask).
 SurfaceFillContext::SurfaceFillContext(GrRecordingContext* rContext,
                                        GrSurfaceProxyView readView,
@@ -64,8 +64,8 @@ void SurfaceFillContext::fillRectWithFP(const SkIRect& dstRect,
     GrPaint paint;
     paint.setColorFragmentProcessor(std::move(fp));
     paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
-    auto op = GrFillRectOp::MakeNonAARect(fContext, std::move(paint), SkMatrix::I(),
-                                          SkRect::Make(dstRect));
+    auto op = FillRectOp::MakeNonAARect(fContext, std::move(paint), SkMatrix::I(),
+                                        SkRect::Make(dstRect));
     this->addDrawOp(std::move(op));
 }
 
@@ -118,7 +118,7 @@ void SurfaceFillContext::addOp(GrOp::Owner op) {
                               *this->caps());
 }
 
-GrOpsTask* SurfaceFillContext::getOpsTask() {
+OpsTask* SurfaceFillContext::getOpsTask() {
     ASSERT_SINGLE_OWNER
     SkDEBUGCODE(this->validate();)
 
@@ -133,8 +133,8 @@ sk_sp<GrRenderTask> SurfaceFillContext::refRenderTask() {
     return sk_ref_sp(this->getOpsTask());
 }
 
-GrOpsTask* SurfaceFillContext::replaceOpsTask() {
-    sk_sp<GrOpsTask> newOpsTask = this->drawingManager()->newOpsTask(
+OpsTask* SurfaceFillContext::replaceOpsTask() {
+    sk_sp<OpsTask> newOpsTask = this->drawingManager()->newOpsTask(
             this->writeSurfaceView(), this->arenas(), fFlushTimeOpsTask);
     this->willReplaceOpsTask(fOpsTask.get(), newOpsTask.get());
     fOpsTask = std::move(newOpsTask);
@@ -197,7 +197,7 @@ void SurfaceFillContext::internalClear(const SkIRect* scissor,
     if (!scissorState.enabled()) {
         // This is a fullscreen clear, so could be handled as a load op. Regardless, we can also
         // discard all prior ops in the current task since the color buffer will be overwritten.
-        GrOpsTask* opsTask = this->getOpsTask();
+        auto opsTask = this->getOpsTask();
         if (opsTask->resetForFullscreenClear(this->canDiscardPreviousOpsOnFullClear()) &&
             !this->caps()->performColorClearsAsDraws()) {
             color = this->writeSurfaceView().swizzle().applyTo(color);
@@ -218,12 +218,12 @@ void SurfaceFillContext::internalClear(const SkIRect* scissor,
     if (clearAsDraw) {
         GrPaint paint;
         ClearToGrPaint(color, &paint);
-        auto op = GrFillRectOp::MakeNonAARect(fContext, std::move(paint), SkMatrix::I(),
-                                              SkRect::Make(scissorState.rect()));
+        auto op = FillRectOp::MakeNonAARect(fContext, std::move(paint), SkMatrix::I(),
+                                            SkRect::Make(scissorState.rect()));
         this->addDrawOp(std::move(op));
     } else {
         color = this->writeSurfaceView().swizzle().applyTo(color);
-        this->addOp(GrClearOp::MakeColor(fContext, scissorState, color));
+        this->addOp(ClearOp::MakeColor(fContext, scissorState, color));
     }
 }
 

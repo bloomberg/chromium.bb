@@ -87,7 +87,7 @@
 <translation id="3199563858620722075">koadro konbinatua</translation>
 <translation id="3220661731597678625">une honetako urratsa</translation>
 <translation id="3321030238473337787">Erreprodukzio-abiadura</translation>
-<translation id="3329013043687509092">Saturazioa</translation>
+<translation id="3329013043687509092">Asetasuna</translation>
 <translation id="3450233048674729344">Balioak <ph name="MAXIMUM" /> edo gutxiago izan behar du.</translation>
 <translation id="3486220673238053218">definizioa</translation>
 <translation id="3557673793733683882"><ph name="HEADING_LEVEL" />. goiburua</translation>
@@ -160,6 +160,7 @@
 <translation id="5406322316791861025">zenbakia</translation>
 <translation id="5425179576310518467">une honetako data</translation>
 <translation id="5453733299334684579">zuhaitzeko elementua</translation>
+<translation id="546643433018805598">azpi-indizea</translation>
 <translation id="5466621249238537318">Hautatu fitxategi bat gutxienez.</translation>
 <translation id="5468998798572797635">irten pantaila osoko modutik</translation>
 <translation id="5516235301412634559">0,75</translation>
@@ -172,6 +173,7 @@
 <translation id="5631759159893697722">laburpena</translation>
 <translation id="5643186887447432888">botoia</translation>
 <translation id="5677946354068040947">aukera gehiago</translation>
+<translation id="5693537480074347398">goi-indizea</translation>
 <translation id="576709008726043716">sarrera</translation>
 <translation id="57838592816432529">Desaktibatu audioa</translation>
 <translation id="5786442179789148008">erakutsi erreprodukzio-abiaduraren menua</translation>
@@ -218,7 +220,7 @@
 <translation id="6790428901817661496">Erreproduzitu</translation>
 <translation id="6820355525329141109">Ezin izan da kargatu plugina.</translation>
 <translation id="6820615603175220800">bibliografia-erreferentzia</translation>
-<translation id="6831465880655513317">Bi dimentsioko graduatzailea duen zirkulu kromatikoa, saturazioa eta argitasuna hautatzeko</translation>
+<translation id="6831465880655513317">Bi dimentsioko graduatzailea duen zirkulu kromatikoa, asetasuna eta argitasuna hautatzeko</translation>
 <translation id="6843725295806269523">desaktibatu audioa</translation>
 <translation id="6885760532393684712">direktorioa</translation>
 <translation id="689129560213475294">azken oharra</translation>
@@ -308,7 +310,7 @@
 <translation id="8861621546968757188">leiho gainerakorraren botoia</translation>
 <translation id="8875657656876809964">Bideoaren erreprodukzio-errorea</translation>
 <translation id="8889402386540077796">Ñabardura</translation>
-<translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="894736920926684893">Formatu-etengailua</translation>
 <translation id="8987927404178983737">Hilabetea</translation>
 <translation id="901493112792887934">oraingo denbora segundotan</translation>

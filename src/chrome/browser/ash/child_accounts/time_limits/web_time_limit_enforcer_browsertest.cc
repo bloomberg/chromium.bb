@@ -27,8 +27,8 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
@@ -184,7 +184,7 @@ content::WebContents* WebTimeLimitEnforcerThrottleTest::InstallAndLaunchWebApp(
   web_app_info->description = u"Web app";
   web_app_info->start_url = url;
   web_app_info->scope = url;
-  web_app_info->open_as_window = true;
+  web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
   web_app::AppId app_id = web_app::test::InstallWebApp(browser()->profile(),
                                                        std::move(web_app_info));
 

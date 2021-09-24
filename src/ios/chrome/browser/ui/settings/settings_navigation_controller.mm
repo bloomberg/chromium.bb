@@ -418,10 +418,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   self.googleServicesSettingsCoordinator =
       [[GoogleServicesSettingsCoordinator alloc]
           initWithBaseNavigationController:self
-                                   browser:self.browser
-                                      mode:GoogleServicesSettingsModeSettings];
-  self.googleServicesSettingsCoordinator.handler =
-      _settingsNavigationDelegate.handlerForSettings;
+                                   browser:self.browser];
   self.googleServicesSettingsCoordinator.delegate = self;
   [self.googleServicesSettingsCoordinator start];
 }
@@ -526,18 +523,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   }
   // Call settingsWasDismissed to make sure any necessary cleanup is performed.
   [self.settingsNavigationDelegate settingsWasDismissed];
-}
-
-- (void)presentationControllerDidAttemptToDismiss:
-    (UIPresentationController*)presentationController {
-  if (@available(iOS 13, *)) {
-    if ([self.currentPresentedViewController
-            respondsToSelector:@selector
-            (presentationControllerDidAttemptToDismiss:)]) {
-      [self.currentPresentedViewController
-          presentationControllerDidAttemptToDismiss:presentationController];
-    }
-  }
 }
 
 - (void)presentationControllerWillDismiss:

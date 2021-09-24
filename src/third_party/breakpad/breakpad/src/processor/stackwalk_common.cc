@@ -57,6 +57,7 @@ namespace google_breakpad {
 namespace {
 
 using std::vector;
+using std::unique_ptr;
 
 // Separator character for machine readable output.
 static const char kOutputSeparator = '|';
@@ -217,25 +218,30 @@ static void PrintStackContents(const string& indent,
         modules->GetModuleForAddress(pointee_frame.instruction);
 
     // Try to look up the function name.
+    vector<unique_ptr<StackFrame>> inlined_frames;
     if (pointee_frame.module)
-      resolver->FillSourceLineInfo(&pointee_frame);
+      resolver->FillSourceLineInfo(&pointee_frame, &inlined_frames);
 
     // Print function name.
-    if (!pointee_frame.function_name.empty()) {
-      if (word_length == 4) {
-        printf("%s *(0x%08x) = 0x%08x", indent.c_str(),
-               static_cast<uint32_t>(address),
-               static_cast<uint32_t>(pointee_frame.instruction));
-      } else {
-        printf("%s *(0x%016" PRIx64 ") = 0x%016" PRIx64,
-               indent.c_str(), address, pointee_frame.instruction);
+    auto print_function_name = [&](StackFrame* frame) {
+      if (!frame->function_name.empty()) {
+        if (word_length == 4) {
+          printf("%s *(0x%08x) = 0x%08x", indent.c_str(),
+                 static_cast<uint32_t>(address),
+                 static_cast<uint32_t>(frame->instruction));
+        } else {
+          printf("%s *(0x%016" PRIx64 ") = 0x%016" PRIx64, indent.c_str(),
+                 address, frame->instruction);
+        }
+        printf(
+            " <%s> [%s : %d + 0x%" PRIx64 "]\n", frame->function_name.c_str(),
+            PathnameStripper::File(frame->source_file_name).c_str(),
+            frame->source_line, frame->instruction - frame->source_line_base);
       }
-      printf(" <%s> [%s : %d + 0x%" PRIx64 "]\n",
-             pointee_frame.function_name.c_str(),
-             PathnameStripper::File(pointee_frame.source_file_name).c_str(),
-             pointee_frame.source_line,
-             pointee_frame.instruction - pointee_frame.source_line_base);
-    }
+    };
+    print_function_name(&pointee_frame);
+    for (unique_ptr<StackFrame> &frame : inlined_frames)
+      print_function_name(frame.get());
   }
   printf("\n");
 }
@@ -287,321 +293,351 @@ static void PrintStack(const CallStack* stack,
     }
     printf("\n ");
 
-    int sequence = 0;
-    if (cpu == "x86") {
-      const StackFrameX86* frame_x86 =
-        reinterpret_cast<const StackFrameX86*>(frame);
+    // Inlined frames don't have registers info.
+    if (frame->trust != StackFrameAMD64::FRAME_TRUST_INLINE) {
+      int sequence = 0;
+      if (cpu == "x86") {
+        const StackFrameX86* frame_x86 =
+            reinterpret_cast<const StackFrameX86*>(frame);
 
-      if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_EIP)
-        sequence = PrintRegister("eip", frame_x86->context.eip, sequence);
-      if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_ESP)
-        sequence = PrintRegister("esp", frame_x86->context.esp, sequence);
-      if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_EBP)
-        sequence = PrintRegister("ebp", frame_x86->context.ebp, sequence);
-      if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_EBX)
-        sequence = PrintRegister("ebx", frame_x86->context.ebx, sequence);
-      if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_ESI)
-        sequence = PrintRegister("esi", frame_x86->context.esi, sequence);
-      if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_EDI)
-        sequence = PrintRegister("edi", frame_x86->context.edi, sequence);
-      if (frame_x86->context_validity == StackFrameX86::CONTEXT_VALID_ALL) {
-        sequence = PrintRegister("eax", frame_x86->context.eax, sequence);
-        sequence = PrintRegister("ecx", frame_x86->context.ecx, sequence);
-        sequence = PrintRegister("edx", frame_x86->context.edx, sequence);
-        sequence = PrintRegister("efl", frame_x86->context.eflags, sequence);
-      }
-    } else if (cpu == "ppc") {
-      const StackFramePPC* frame_ppc =
-        reinterpret_cast<const StackFramePPC*>(frame);
+        if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_EIP)
+          sequence = PrintRegister("eip", frame_x86->context.eip, sequence);
+        if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_ESP)
+          sequence = PrintRegister("esp", frame_x86->context.esp, sequence);
+        if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_EBP)
+          sequence = PrintRegister("ebp", frame_x86->context.ebp, sequence);
+        if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_EBX)
+          sequence = PrintRegister("ebx", frame_x86->context.ebx, sequence);
+        if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_ESI)
+          sequence = PrintRegister("esi", frame_x86->context.esi, sequence);
+        if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_EDI)
+          sequence = PrintRegister("edi", frame_x86->context.edi, sequence);
+        if (frame_x86->context_validity == StackFrameX86::CONTEXT_VALID_ALL) {
+          sequence = PrintRegister("eax", frame_x86->context.eax, sequence);
+          sequence = PrintRegister("ecx", frame_x86->context.ecx, sequence);
+          sequence = PrintRegister("edx", frame_x86->context.edx, sequence);
+          sequence = PrintRegister("efl", frame_x86->context.eflags, sequence);
+        }
+      } else if (cpu == "ppc") {
+        const StackFramePPC* frame_ppc =
+            reinterpret_cast<const StackFramePPC*>(frame);
 
-      if (frame_ppc->context_validity & StackFramePPC::CONTEXT_VALID_SRR0)
-        sequence = PrintRegister("srr0", frame_ppc->context.srr0, sequence);
-      if (frame_ppc->context_validity & StackFramePPC::CONTEXT_VALID_GPR1)
-        sequence = PrintRegister("r1", frame_ppc->context.gpr[1], sequence);
-    } else if (cpu == "amd64") {
-      const StackFrameAMD64* frame_amd64 =
-        reinterpret_cast<const StackFrameAMD64*>(frame);
+        if (frame_ppc->context_validity & StackFramePPC::CONTEXT_VALID_SRR0)
+          sequence = PrintRegister("srr0", frame_ppc->context.srr0, sequence);
+        if (frame_ppc->context_validity & StackFramePPC::CONTEXT_VALID_GPR1)
+          sequence = PrintRegister("r1", frame_ppc->context.gpr[1], sequence);
+      } else if (cpu == "amd64") {
+        const StackFrameAMD64* frame_amd64 =
+            reinterpret_cast<const StackFrameAMD64*>(frame);
 
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RAX)
-        sequence = PrintRegister64("rax", frame_amd64->context.rax, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RDX)
-        sequence = PrintRegister64("rdx", frame_amd64->context.rdx, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RCX)
-        sequence = PrintRegister64("rcx", frame_amd64->context.rcx, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RBX)
-        sequence = PrintRegister64("rbx", frame_amd64->context.rbx, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RSI)
-        sequence = PrintRegister64("rsi", frame_amd64->context.rsi, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RDI)
-        sequence = PrintRegister64("rdi", frame_amd64->context.rdi, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RBP)
-        sequence = PrintRegister64("rbp", frame_amd64->context.rbp, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RSP)
-        sequence = PrintRegister64("rsp", frame_amd64->context.rsp, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R8)
-        sequence = PrintRegister64("r8", frame_amd64->context.r8, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R9)
-        sequence = PrintRegister64("r9", frame_amd64->context.r9, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R10)
-        sequence = PrintRegister64("r10", frame_amd64->context.r10, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R11)
-        sequence = PrintRegister64("r11", frame_amd64->context.r11, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R12)
-        sequence = PrintRegister64("r12", frame_amd64->context.r12, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R13)
-        sequence = PrintRegister64("r13", frame_amd64->context.r13, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R14)
-        sequence = PrintRegister64("r14", frame_amd64->context.r14, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R15)
-        sequence = PrintRegister64("r15", frame_amd64->context.r15, sequence);
-      if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RIP)
-        sequence = PrintRegister64("rip", frame_amd64->context.rip, sequence);
-    } else if (cpu == "sparc") {
-      const StackFrameSPARC* frame_sparc =
-        reinterpret_cast<const StackFrameSPARC*>(frame);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RAX)
+          sequence = PrintRegister64("rax", frame_amd64->context.rax, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RDX)
+          sequence = PrintRegister64("rdx", frame_amd64->context.rdx, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RCX)
+          sequence = PrintRegister64("rcx", frame_amd64->context.rcx, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RBX)
+          sequence = PrintRegister64("rbx", frame_amd64->context.rbx, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RSI)
+          sequence = PrintRegister64("rsi", frame_amd64->context.rsi, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RDI)
+          sequence = PrintRegister64("rdi", frame_amd64->context.rdi, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RBP)
+          sequence = PrintRegister64("rbp", frame_amd64->context.rbp, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RSP)
+          sequence = PrintRegister64("rsp", frame_amd64->context.rsp, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R8)
+          sequence = PrintRegister64("r8", frame_amd64->context.r8, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R9)
+          sequence = PrintRegister64("r9", frame_amd64->context.r9, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R10)
+          sequence = PrintRegister64("r10", frame_amd64->context.r10, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R11)
+          sequence = PrintRegister64("r11", frame_amd64->context.r11, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R12)
+          sequence = PrintRegister64("r12", frame_amd64->context.r12, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R13)
+          sequence = PrintRegister64("r13", frame_amd64->context.r13, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R14)
+          sequence = PrintRegister64("r14", frame_amd64->context.r14, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R15)
+          sequence = PrintRegister64("r15", frame_amd64->context.r15, sequence);
+        if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RIP)
+          sequence = PrintRegister64("rip", frame_amd64->context.rip, sequence);
+      } else if (cpu == "sparc") {
+        const StackFrameSPARC* frame_sparc =
+            reinterpret_cast<const StackFrameSPARC*>(frame);
 
-      if (frame_sparc->context_validity & StackFrameSPARC::CONTEXT_VALID_SP)
-        sequence = PrintRegister("sp", frame_sparc->context.g_r[14], sequence);
-      if (frame_sparc->context_validity & StackFrameSPARC::CONTEXT_VALID_FP)
-        sequence = PrintRegister("fp", frame_sparc->context.g_r[30], sequence);
-      if (frame_sparc->context_validity & StackFrameSPARC::CONTEXT_VALID_PC)
-        sequence = PrintRegister("pc", frame_sparc->context.pc, sequence);
-    } else if (cpu == "arm") {
-      const StackFrameARM* frame_arm =
-        reinterpret_cast<const StackFrameARM*>(frame);
+        if (frame_sparc->context_validity & StackFrameSPARC::CONTEXT_VALID_SP)
+          sequence =
+              PrintRegister("sp", frame_sparc->context.g_r[14], sequence);
+        if (frame_sparc->context_validity & StackFrameSPARC::CONTEXT_VALID_FP)
+          sequence =
+              PrintRegister("fp", frame_sparc->context.g_r[30], sequence);
+        if (frame_sparc->context_validity & StackFrameSPARC::CONTEXT_VALID_PC)
+          sequence = PrintRegister("pc", frame_sparc->context.pc, sequence);
+      } else if (cpu == "arm") {
+        const StackFrameARM* frame_arm =
+            reinterpret_cast<const StackFrameARM*>(frame);
 
-      // Argument registers (caller-saves), which will likely only be valid
-      // for the youngest frame.
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R0)
-        sequence = PrintRegister("r0", frame_arm->context.iregs[0], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R1)
-        sequence = PrintRegister("r1", frame_arm->context.iregs[1], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R2)
-        sequence = PrintRegister("r2", frame_arm->context.iregs[2], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R3)
-        sequence = PrintRegister("r3", frame_arm->context.iregs[3], sequence);
+        // Argument registers (caller-saves), which will likely only be valid
+        // for the youngest frame.
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R0)
+          sequence = PrintRegister("r0", frame_arm->context.iregs[0], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R1)
+          sequence = PrintRegister("r1", frame_arm->context.iregs[1], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R2)
+          sequence = PrintRegister("r2", frame_arm->context.iregs[2], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R3)
+          sequence = PrintRegister("r3", frame_arm->context.iregs[3], sequence);
 
-      // General-purpose callee-saves registers.
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R4)
-        sequence = PrintRegister("r4", frame_arm->context.iregs[4], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R5)
-        sequence = PrintRegister("r5", frame_arm->context.iregs[5], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R6)
-        sequence = PrintRegister("r6", frame_arm->context.iregs[6], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R7)
-        sequence = PrintRegister("r7", frame_arm->context.iregs[7], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R8)
-        sequence = PrintRegister("r8", frame_arm->context.iregs[8], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R9)
-        sequence = PrintRegister("r9", frame_arm->context.iregs[9], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R10)
-        sequence = PrintRegister("r10", frame_arm->context.iregs[10], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R12)
-        sequence = PrintRegister("r12", frame_arm->context.iregs[12], sequence);
+        // General-purpose callee-saves registers.
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R4)
+          sequence = PrintRegister("r4", frame_arm->context.iregs[4], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R5)
+          sequence = PrintRegister("r5", frame_arm->context.iregs[5], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R6)
+          sequence = PrintRegister("r6", frame_arm->context.iregs[6], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R7)
+          sequence = PrintRegister("r7", frame_arm->context.iregs[7], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R8)
+          sequence = PrintRegister("r8", frame_arm->context.iregs[8], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R9)
+          sequence = PrintRegister("r9", frame_arm->context.iregs[9], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R10)
+          sequence =
+              PrintRegister("r10", frame_arm->context.iregs[10], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R12)
+          sequence =
+              PrintRegister("r12", frame_arm->context.iregs[12], sequence);
 
-      // Registers with a dedicated or conventional purpose.
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_FP)
-        sequence = PrintRegister("fp", frame_arm->context.iregs[11], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_SP)
-        sequence = PrintRegister("sp", frame_arm->context.iregs[13], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_LR)
-        sequence = PrintRegister("lr", frame_arm->context.iregs[14], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_PC)
-        sequence = PrintRegister("pc", frame_arm->context.iregs[15], sequence);
-    } else if (cpu == "arm64") {
-      const StackFrameARM64* frame_arm64 =
-        reinterpret_cast<const StackFrameARM64*>(frame);
+        // Registers with a dedicated or conventional purpose.
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_FP)
+          sequence =
+              PrintRegister("fp", frame_arm->context.iregs[11], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_SP)
+          sequence =
+              PrintRegister("sp", frame_arm->context.iregs[13], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_LR)
+          sequence =
+              PrintRegister("lr", frame_arm->context.iregs[14], sequence);
+        if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_PC)
+          sequence =
+              PrintRegister("pc", frame_arm->context.iregs[15], sequence);
+      } else if (cpu == "arm64") {
+        const StackFrameARM64* frame_arm64 =
+            reinterpret_cast<const StackFrameARM64*>(frame);
 
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X0) {
-        sequence =
-            PrintRegister64("x0", frame_arm64->context.iregs[0], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X1) {
-        sequence =
-            PrintRegister64("x1", frame_arm64->context.iregs[1], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X2) {
-        sequence =
-            PrintRegister64("x2", frame_arm64->context.iregs[2], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X3) {
-        sequence =
-            PrintRegister64("x3", frame_arm64->context.iregs[3], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X4) {
-        sequence =
-            PrintRegister64("x4", frame_arm64->context.iregs[4], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X5) {
-        sequence =
-            PrintRegister64("x5", frame_arm64->context.iregs[5], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X6) {
-        sequence =
-            PrintRegister64("x6", frame_arm64->context.iregs[6], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X7) {
-        sequence =
-            PrintRegister64("x7", frame_arm64->context.iregs[7], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X8) {
-        sequence =
-            PrintRegister64("x8", frame_arm64->context.iregs[8], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X9) {
-        sequence =
-            PrintRegister64("x9", frame_arm64->context.iregs[9], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X10) {
-        sequence =
-            PrintRegister64("x10", frame_arm64->context.iregs[10], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X11) {
-        sequence =
-            PrintRegister64("x11", frame_arm64->context.iregs[11], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X12) {
-        sequence =
-            PrintRegister64("x12", frame_arm64->context.iregs[12], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X13) {
-        sequence =
-            PrintRegister64("x13", frame_arm64->context.iregs[13], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X14) {
-        sequence =
-            PrintRegister64("x14", frame_arm64->context.iregs[14], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X15) {
-        sequence =
-            PrintRegister64("x15", frame_arm64->context.iregs[15], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X16) {
-        sequence =
-            PrintRegister64("x16", frame_arm64->context.iregs[16], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X17) {
-        sequence =
-            PrintRegister64("x17", frame_arm64->context.iregs[17], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X18) {
-        sequence =
-            PrintRegister64("x18", frame_arm64->context.iregs[18], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X19) {
-        sequence =
-            PrintRegister64("x19", frame_arm64->context.iregs[19], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X20) {
-        sequence =
-            PrintRegister64("x20", frame_arm64->context.iregs[20], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X21) {
-        sequence =
-            PrintRegister64("x21", frame_arm64->context.iregs[21], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X22) {
-        sequence =
-            PrintRegister64("x22", frame_arm64->context.iregs[22], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X23) {
-        sequence =
-            PrintRegister64("x23", frame_arm64->context.iregs[23], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X24) {
-        sequence =
-            PrintRegister64("x24", frame_arm64->context.iregs[24], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X25) {
-        sequence =
-            PrintRegister64("x25", frame_arm64->context.iregs[25], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X26) {
-        sequence =
-            PrintRegister64("x26", frame_arm64->context.iregs[26], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X27) {
-        sequence =
-            PrintRegister64("x27", frame_arm64->context.iregs[27], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X28) {
-        sequence =
-            PrintRegister64("x28", frame_arm64->context.iregs[28], sequence);
-      }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X0) {
+          sequence =
+              PrintRegister64("x0", frame_arm64->context.iregs[0], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X1) {
+          sequence =
+              PrintRegister64("x1", frame_arm64->context.iregs[1], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X2) {
+          sequence =
+              PrintRegister64("x2", frame_arm64->context.iregs[2], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X3) {
+          sequence =
+              PrintRegister64("x3", frame_arm64->context.iregs[3], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X4) {
+          sequence =
+              PrintRegister64("x4", frame_arm64->context.iregs[4], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X5) {
+          sequence =
+              PrintRegister64("x5", frame_arm64->context.iregs[5], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X6) {
+          sequence =
+              PrintRegister64("x6", frame_arm64->context.iregs[6], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X7) {
+          sequence =
+              PrintRegister64("x7", frame_arm64->context.iregs[7], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X8) {
+          sequence =
+              PrintRegister64("x8", frame_arm64->context.iregs[8], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X9) {
+          sequence =
+              PrintRegister64("x9", frame_arm64->context.iregs[9], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X10) {
+          sequence =
+              PrintRegister64("x10", frame_arm64->context.iregs[10], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X11) {
+          sequence =
+              PrintRegister64("x11", frame_arm64->context.iregs[11], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X12) {
+          sequence =
+              PrintRegister64("x12", frame_arm64->context.iregs[12], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X13) {
+          sequence =
+              PrintRegister64("x13", frame_arm64->context.iregs[13], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X14) {
+          sequence =
+              PrintRegister64("x14", frame_arm64->context.iregs[14], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X15) {
+          sequence =
+              PrintRegister64("x15", frame_arm64->context.iregs[15], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X16) {
+          sequence =
+              PrintRegister64("x16", frame_arm64->context.iregs[16], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X17) {
+          sequence =
+              PrintRegister64("x17", frame_arm64->context.iregs[17], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X18) {
+          sequence =
+              PrintRegister64("x18", frame_arm64->context.iregs[18], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X19) {
+          sequence =
+              PrintRegister64("x19", frame_arm64->context.iregs[19], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X20) {
+          sequence =
+              PrintRegister64("x20", frame_arm64->context.iregs[20], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X21) {
+          sequence =
+              PrintRegister64("x21", frame_arm64->context.iregs[21], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X22) {
+          sequence =
+              PrintRegister64("x22", frame_arm64->context.iregs[22], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X23) {
+          sequence =
+              PrintRegister64("x23", frame_arm64->context.iregs[23], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X24) {
+          sequence =
+              PrintRegister64("x24", frame_arm64->context.iregs[24], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X25) {
+          sequence =
+              PrintRegister64("x25", frame_arm64->context.iregs[25], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X26) {
+          sequence =
+              PrintRegister64("x26", frame_arm64->context.iregs[26], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X27) {
+          sequence =
+              PrintRegister64("x27", frame_arm64->context.iregs[27], sequence);
+        }
+        if (frame_arm64->context_validity &
+            StackFrameARM64::CONTEXT_VALID_X28) {
+          sequence =
+              PrintRegister64("x28", frame_arm64->context.iregs[28], sequence);
+        }
 
-      // Registers with a dedicated or conventional purpose.
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_FP) {
-        sequence =
-            PrintRegister64("fp", frame_arm64->context.iregs[29], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_LR) {
-        sequence =
-            PrintRegister64("lr", frame_arm64->context.iregs[30], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_SP) {
-        sequence =
-            PrintRegister64("sp", frame_arm64->context.iregs[31], sequence);
-      }
-      if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_PC) {
-        sequence =
-            PrintRegister64("pc", frame_arm64->context.iregs[32], sequence);
-      }
-    } else if ((cpu == "mips") || (cpu == "mips64")) {
-      const StackFrameMIPS* frame_mips =
-        reinterpret_cast<const StackFrameMIPS*>(frame);
+        // Registers with a dedicated or conventional purpose.
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_FP) {
+          sequence =
+              PrintRegister64("fp", frame_arm64->context.iregs[29], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_LR) {
+          sequence =
+              PrintRegister64("lr", frame_arm64->context.iregs[30], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_SP) {
+          sequence =
+              PrintRegister64("sp", frame_arm64->context.iregs[31], sequence);
+        }
+        if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_PC) {
+          sequence =
+              PrintRegister64("pc", frame_arm64->context.iregs[32], sequence);
+        }
+      } else if ((cpu == "mips") || (cpu == "mips64")) {
+        const StackFrameMIPS* frame_mips =
+            reinterpret_cast<const StackFrameMIPS*>(frame);
 
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_GP)
-        sequence = PrintRegister64("gp",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_GP],
-                     sequence);
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_SP)
-        sequence = PrintRegister64("sp",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_SP],
-                     sequence);
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_FP)
-        sequence = PrintRegister64("fp",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_FP],
-                     sequence);
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_RA)
-        sequence = PrintRegister64("ra",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_RA],
-                     sequence);
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_PC)
-        sequence = PrintRegister64("pc", frame_mips->context.epc, sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_GP)
+          sequence = PrintRegister64(
+              "gp", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_GP],
+              sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_SP)
+          sequence = PrintRegister64(
+              "sp", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_SP],
+              sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_FP)
+          sequence = PrintRegister64(
+              "fp", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_FP],
+              sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_RA)
+          sequence = PrintRegister64(
+              "ra", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_RA],
+              sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_PC)
+          sequence = PrintRegister64("pc", frame_mips->context.epc, sequence);
 
-      // Save registers s0-s7
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S0)
-        sequence = PrintRegister64("s0",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S0],
-                     sequence);
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S1)
-        sequence = PrintRegister64("s1",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S1],
-                     sequence);
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S2)
-        sequence = PrintRegister64("s2",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S2],
-                     sequence);
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S3)
-        sequence = PrintRegister64("s3",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S3],
-                     sequence);
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S4)
-        sequence = PrintRegister64("s4",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S4],
-                     sequence);
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S5)
-        sequence = PrintRegister64("s5",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S5],
-                     sequence);
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S6)
-        sequence = PrintRegister64("s6",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S6],
-                     sequence);
-      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S7)
-        sequence = PrintRegister64("s7",
-                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S7],
-                     sequence);
+        // Save registers s0-s7
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S0)
+          sequence = PrintRegister64(
+              "s0", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S0],
+              sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S1)
+          sequence = PrintRegister64(
+              "s1", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S1],
+              sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S2)
+          sequence = PrintRegister64(
+              "s2", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S2],
+              sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S3)
+          sequence = PrintRegister64(
+              "s3", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S3],
+              sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S4)
+          sequence = PrintRegister64(
+              "s4", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S4],
+              sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S5)
+          sequence = PrintRegister64(
+              "s5", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S5],
+              sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S6)
+          sequence = PrintRegister64(
+              "s6", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S6],
+              sequence);
+        if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S7)
+          sequence = PrintRegister64(
+              "s7", frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S7],
+              sequence);
+      }
     }
     printf("\n    Found by: %s\n", frame->trust_description().c_str());
 

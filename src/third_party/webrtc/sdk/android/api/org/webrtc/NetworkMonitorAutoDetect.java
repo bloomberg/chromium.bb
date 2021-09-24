@@ -28,8 +28,8 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
+import androidx.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -565,6 +565,7 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
   private ConnectivityManagerDelegate connectivityManagerDelegate;
   private WifiManagerDelegate wifiManagerDelegate;
   private WifiDirectManagerDelegate wifiDirectManagerDelegate;
+  private static boolean includeWifiDirect;
 
   private boolean isRegistered;
   private NetworkChangeDetector.ConnectionType connectionType;
@@ -583,7 +584,7 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
     wifiSSID = getWifiSSID(networkState);
     intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
 
-    if (PeerConnectionFactory.fieldTrialsFindFullName("IncludeWifiDirect").equals("Enabled")) {
+    if (includeWifiDirect) {
       wifiDirectManagerDelegate = new WifiDirectManagerDelegate(observer, context);
     }
 
@@ -605,6 +606,11 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
       mobileNetworkCallback = null;
       allNetworkCallback = null;
     }
+  }
+
+  /** Enables WifiDirectManager. */
+  public static void setIncludeWifiDirect(boolean enable) {
+    includeWifiDirect = enable;
   }
 
   @Override

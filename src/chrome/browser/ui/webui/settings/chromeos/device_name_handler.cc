@@ -8,7 +8,7 @@
 
 #include "base/check.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/device_name_store.h"
+#include "chrome/browser/chromeos/device_name/device_name_store.h"
 #include "content/public/browser/web_ui.h"
 
 namespace chromeos {
@@ -40,12 +40,12 @@ void DeviceNameHandler::OnJavascriptDisallowed() {
 }
 
 void DeviceNameHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "notifyReadyForDeviceName",
       base::BindRepeating(&DeviceNameHandler::HandleNotifyReadyForDeviceName,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "attemptSetDeviceName",
       base::BindRepeating(&DeviceNameHandler::HandleAttemptSetDeviceName,
                           base::Unretained(this)));
@@ -65,7 +65,7 @@ void DeviceNameHandler::HandleAttemptSetDeviceName(
     const base::ListValue* args) {
   AllowJavascript();
 
-  DCHECK_EQ(2U, args->GetSize());
+  DCHECK_EQ(2U, args->GetList().size());
   const base::Value::ConstListView args_list = args->GetList();
   const std::string callback_id = args_list[0].GetString();
   const std::string name_from_user = args_list[1].GetString();

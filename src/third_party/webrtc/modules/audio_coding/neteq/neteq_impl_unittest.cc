@@ -122,7 +122,6 @@ class NetEqImplTest : public ::testing::Test {
       NetEqController::Config controller_config;
       controller_config.tick_timer = tick_timer_;
       controller_config.base_min_delay_ms = config_.min_delay_ms;
-      controller_config.enable_rtx_handling = config_.enable_rtx_handling;
       controller_config.allow_time_stretching = true;
       controller_config.max_packets_in_buffer = config_.max_packets_in_buffer;
       controller_config.clock = &clock_;
@@ -550,6 +549,7 @@ TEST_F(NetEqImplTest, VerifyTimestampPropagation) {
 
 TEST_F(NetEqImplTest, ReorderedPacket) {
   UseNoMocks();
+
   // Create a mock decoder object.
   MockAudioDecoder mock_decoder;
 
@@ -647,6 +647,9 @@ TEST_F(NetEqImplTest, ReorderedPacket) {
   // Now check the packet buffer, and make sure it is empty, since the
   // out-of-order packet should have been discarded.
   EXPECT_TRUE(packet_buffer_->Empty());
+
+  // NetEq `discarded_primary_packets` should capture this packet discard.
+  EXPECT_EQ(1u, neteq_->GetOperationsAndState().discarded_primary_packets);
 
   // Verify `output.packet_infos_`. Expect to only see the second packet.
   ASSERT_THAT(output.packet_infos_, SizeIs(1));
@@ -1599,12 +1602,11 @@ TEST_F(NetEqImplTest, InsertEmptyPacket) {
   neteq_->InsertEmptyPacket(rtp_header);
 }
 
-TEST_F(NetEqImplTest, EnableRtxHandling) {
+TEST_F(NetEqImplTest, NotifyControllerOfReorderedPacket) {
   using ::testing::AllOf;
   using ::testing::Field;
   UseNoMocks();
   use_mock_neteq_controller_ = true;
-  config_.enable_rtx_handling = true;
   CreateInstance();
   EXPECT_CALL(*mock_neteq_controller_, GetDecision(_, _))
       .Times(1)
@@ -1634,7 +1636,7 @@ TEST_F(NetEqImplTest, EnableRtxHandling) {
       *mock_neteq_controller_,
       PacketArrived(
           /*fs_hz*/ 8000,
-          /*should_update_stats*/ _,
+          /*should_update_stats*/ true,
           /*info*/
           AllOf(
               Field(&NetEqController::PacketArrivedInfo::packet_length_samples,

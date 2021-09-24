@@ -95,20 +95,14 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
   /** @type {!SettingsSafetyCheckChromeCleanerChildElement} */
   let page;
 
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      safetyCheckChromeCleanerChildEnabled: true,
-    });
-  });
-
   setup(function() {
     chromeCleanupBrowserProxy = TestBrowserProxy.fromClass(ChromeCleanupProxy);
     chromeCleanupBrowserProxy.setResultFor(
         'restartComputer', Promise.resolve(0));
-    ChromeCleanupProxyImpl.instance_ = chromeCleanupBrowserProxy;
+    ChromeCleanupProxyImpl.setInstance(chromeCleanupBrowserProxy);
 
     metricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
+    MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
 
     document.body.innerHTML = '';
     page = /** @type {!SettingsSafetyCheckChromeCleanerChildElement} */ (
@@ -308,36 +302,5 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
         'Settings.SafetyCheck.ChromeCleanerCaretNavigation');
     // Ensure the correct Settings page is shown.
     assertEquals(routes.CHROME_CLEANUP, Router.getInstance().getCurrentRoute());
-  });
-});
-
-suite('SafetyCheckChromeCleanerFlagDisabledTests', function() {
-  /** @type {!SettingsSafetyCheckChromeCleanerChildElement} */
-  let page;
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      safetyCheckChromeCleanerChildEnabled: false,
-    });
-  });
-
-  setup(function() {
-    document.body.innerHTML = '';
-    page = /** @type {!SettingsSafetyCheckChromeCleanerChildElement} */ (
-        document.createElement('settings-safety-check-chrome-cleaner-child'));
-    document.body.appendChild(page);
-    flush();
-  });
-
-  teardown(function() {
-    page.remove();
-    Router.getInstance().navigateTo(routes.BASIC);
-  });
-
-  test('testChromeCleanerNotPresent', function() {
-    fireSafetyCheckChromeCleanerEvent(SafetyCheckChromeCleanerStatus.INFECTED);
-    flush();
-    // The UI is not visible.
-    assertFalse(!!page.shadowRoot.querySelector('#safetyCheckChild'));
   });
 });

@@ -6,11 +6,11 @@
 
 #include <utility>
 
-#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/default_clock.h"
@@ -64,8 +64,19 @@ bool ShouldRetryReport(const ConversionPolicy& policy,
                        base::Time now,
                        const SentReportInfo& info) {
   bool past_max_allowed_age =
-      (now - info.original_report_time) > policy.GetMaxReportAge();
-  return info.should_retry && !past_max_allowed_age;
+      (now - info.report.original_report_time) > policy.GetMaxReportAge();
+  return info.status == SentReportInfo::Status::kShouldRetry &&
+         !past_max_allowed_age;
+}
+
+void RecordCreateReportStatus(ConversionStorage::CreateReportStatus result) {
+  base::UmaHistogramEnumeration("Conversions.CreateReportStatus", result);
+}
+
+// We measure this in order to be able to count reports that weren't
+// successfully deleted, which can lead to duplicate reports.
+void RecordDeleteEvent(ConversionManagerImpl::DeleteEvent event) {
+  base::UmaHistogramEnumeration("Conversions.DeleteSentReportOperation", event);
 }
 
 }  // namespace
@@ -105,7 +116,11 @@ ConversionManagerImpl::ConversionManagerImpl(
     : ConversionManagerImpl(
           std::make_unique<ConversionReporterImpl>(
               storage_partition,
-              base::DefaultClock::GetInstance()),
+              base::DefaultClock::GetInstance(),
+              // |reporter_| is owned by |this|, so `base::Unretained()` is safe
+              // as the reporter and callbacks will be deleted first.
+              base::BindRepeating(&ConversionManagerImpl::OnReportSent,
+                                  base::Unretained(this))),
           std::make_unique<ConversionPolicy>(
               base::CommandLine::ForCurrentProcess()->HasSwitch(
                   switches::kConversionsDebugMode)),
@@ -172,12 +187,10 @@ void ConversionManagerImpl::HandleImpression(StorableImpression impression) {
 }
 
 void ConversionManagerImpl::HandleConversion(StorableConversion conversion) {
-  // TODO(https://crbug.com/1043345): Add UMA for the number of conversions we
-  // are logging to storage, and the number of new reports logged to storage.
   conversion_storage_
       .AsyncCall(&ConversionStorage::MaybeCreateAndStoreConversionReport)
       .WithArgs(std::move(conversion))
-      .Then(base::DoNothing::Once<bool>());
+      .Then(base::BindOnce(&RecordCreateReportStatus));
 
   // If we are running in debug mode, we should also schedule a task to
   // gather and send any new reports.
@@ -221,6 +234,7 @@ void ConversionManagerImpl::ClearData(
     base::Time delete_end,
     base::RepeatingCallback<bool(const url::Origin&)> filter,
     base::OnceClosure done) {
+  sent_reports_.clear();
   conversion_storage_.AsyncCall(&ConversionStorage::ClearData)
       .WithArgs(delete_begin, delete_end, std::move(filter))
       .Then(std::move(done));
@@ -238,13 +252,6 @@ void ConversionManagerImpl::GetAndHandleReports(
 void ConversionManagerImpl::GetAndQueueReportsForNextInterval() {
   // Get all the reports that will be reported in the next interval and them to
   // the |reporter_|.
-  //
-  // TODO(https://crbug.com/1054127): Consider integrating a
-  // net::NetworkConnectionTracker to control when reports should be queued.
-  // This should limit the number of failed attempts. Its possible this could
-  // also be implemented in the sender layer to provide finer grained-control.
-  // Note that this will still require delaying reports once a network
-  // connection is available to ensure they are not temporally joinable.
   GetAndHandleReports(base::BindOnce(&ConversionManagerImpl::QueueReports,
                                      weak_factory_.GetWeakPtr()),
                       clock_->Now() + kConversionManagerQueueReportsInterval);
@@ -269,77 +276,74 @@ void ConversionManagerImpl::QueueReports(
     report.report_time = updated_report_time;
   }
 
-  // |reporter_| is owned by |this|, so base::Unretained() is safe as the
-  // reporter and callbacks will be deleted first.
-  reporter_->AddReportsToQueue(
-      std::move(reports),
-      base::BindRepeating(&ConversionManagerImpl::OnReportSent,
-                          base::Unretained(this)));
+  reporter_->AddReportsToQueue(std::move(reports));
 }
 
 void ConversionManagerImpl::HandleReportsSentFromWebUI(
     base::OnceClosure done,
     std::vector<ConversionReport> reports) {
-  if (reports.empty()) {
+  // If there's already a send-all in progress, ignore this request.
+  if (reports.empty() || !send_reports_for_web_ui_callback_.is_null()) {
     std::move(done).Run();
     return;
   }
 
+  std::vector<ConversionReport::Id> conversion_ids;
+  conversion_ids.reserve(reports.size());
+  base::Time now = clock_->Now();
   // All reports should be sent immediately.
   for (ConversionReport& report : reports) {
-    report.report_time = base::Time::Min();
+    report.report_time = now;
+    DCHECK(report.conversion_id.has_value());
+    conversion_ids.push_back(*report.conversion_id);
   }
 
-  // Wraps |done| so that is will run once all of the reports have finished
-  // sending.
-  base::RepeatingClosure all_reports_sent =
-      base::BarrierClosure(reports.size(), std::move(done));
+  // Reports may already be in the process of sending, but they will be
+  // deduplicated by `ConversionReporterImpl::AddReportsToQueue()`. In that
+  // case, the callback will be invoked as a result of the in-process reports.
+  pending_conversion_ids_for_internals_ui_ =
+      base::flat_set<ConversionReport::Id>(std::move(conversion_ids));
+  send_reports_for_web_ui_callback_ = std::move(done);
 
-  // |reporter_| is owned by |this|, so base::Unretained() is safe as the
-  // reporter and callbacks will be deleted first.
-  reporter_->AddReportsToQueue(
-      std::move(reports),
-      base::BindRepeating(&ConversionManagerImpl::OnReportSentFromWebUI,
-                          base::Unretained(this), std::move(all_reports_sent)));
+  reporter_->AddReportsToQueue(std::move(reports));
 }
 
-void ConversionManagerImpl::MaybeStoreSentReportInfo(SentReportInfo info) {
-  if (info.report_url.is_empty())
+void ConversionManagerImpl::OnReportSent(SentReportInfo info) {
+  DCHECK(info.report.conversion_id.has_value());
+
+  // Reports that should be retried are not deleted.
+  const bool should_retry =
+      ShouldRetryReport(*conversion_policy_, clock_->Now(), info);
+  if (!should_retry) {
+    RecordDeleteEvent(DeleteEvent::kStarted);
+    conversion_storage_.AsyncCall(&ConversionStorage::DeleteConversion)
+        .WithArgs(*info.report.conversion_id)
+        .Then(base::BindOnce([](bool succeeded) {
+          RecordDeleteEvent(succeeded ? DeleteEvent::kSucceeded
+                                      : DeleteEvent::kFailed);
+        }));
+  }
+
+  DCHECK_EQ(send_reports_for_web_ui_callback_.is_null(),
+            pending_conversion_ids_for_internals_ui_.empty());
+
+  // If there's a `SendReportsForWebUI()` callback waiting on this report's
+  // conversion ID, remove the ID from the wait-set; if it was the last such ID,
+  // run the callback.
+  if (!send_reports_for_web_ui_callback_.is_null() &&
+      pending_conversion_ids_for_internals_ui_.erase(
+          *info.report.conversion_id) > 0 &&
+      pending_conversion_ids_for_internals_ui_.empty()) {
+    std::move(send_reports_for_web_ui_callback_).Run();
+  }
+
+  // TODO(apaseltiner): Consider surfacing retry attempts in internals UI.
+  if (info.status != SentReportInfo::Status::kSent)
     return;
 
   while (sent_reports_.size() >= max_sent_reports_to_store_)
     sent_reports_.pop_front();
   sent_reports_.push_back(std::move(info));
-}
-
-void ConversionManagerImpl::OnReportSent(SentReportInfo info) {
-  // Reports that should be retried are not deleted.
-  if (!ShouldRetryReport(*conversion_policy_, clock_->Now(), info)) {
-    conversion_storage_.AsyncCall(&ConversionStorage::DeleteConversion)
-        .WithArgs(info.conversion_id)
-        .Then(base::DoNothing::Once<bool>());
-  }
-  MaybeStoreSentReportInfo(std::move(info));
-}
-
-void ConversionManagerImpl::OnReportSentFromWebUI(
-    base::OnceClosure reports_sent_barrier,
-    SentReportInfo info) {
-  // |reports_sent_barrier| is a OnceClosure view of a RepeatingClosure obtained
-  // by base::BarrierClosure().
-
-  // Reports that should be retried are not deleted.
-  if (!ShouldRetryReport(*conversion_policy_, clock_->Now(), info)) {
-    conversion_storage_.AsyncCall(&ConversionStorage::DeleteConversion)
-        .WithArgs(info.conversion_id)
-        .Then(base::BindOnce([](base::OnceClosure callback,
-                                bool result) { std::move(callback).Run(); },
-                             std::move(reports_sent_barrier)));
-  } else {
-    std::move(reports_sent_barrier).Run();
-  }
-
-  MaybeStoreSentReportInfo(std::move(info));
 }
 
 }  // namespace content

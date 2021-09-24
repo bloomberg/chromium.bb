@@ -920,13 +920,18 @@ AccessAddressType AccessContext::ImageAddressType(const IMAGE_STATE &image) {
 }
 
 static SyncStageAccessIndex ColorLoadUsage(VkAttachmentLoadOp load_op) {
-    const auto stage_access = (load_op == VK_ATTACHMENT_LOAD_OP_LOAD) ? SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_READ
-                                                                      : SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE;
+    const auto stage_access = (load_op == VK_ATTACHMENT_LOAD_OP_NONE_EXT)
+                                  ? SYNC_ACCESS_INDEX_NONE
+                                  : ((load_op == VK_ATTACHMENT_LOAD_OP_LOAD) ? SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_READ
+                                                                             : SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE);
     return stage_access;
 }
 static SyncStageAccessIndex DepthStencilLoadUsage(VkAttachmentLoadOp load_op) {
-    const auto stage_access = (load_op == VK_ATTACHMENT_LOAD_OP_LOAD) ? SYNC_EARLY_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_READ
-                                                                      : SYNC_EARLY_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE;
+    const auto stage_access =
+        (load_op == VK_ATTACHMENT_LOAD_OP_NONE_EXT)
+            ? SYNC_ACCESS_INDEX_NONE
+            : ((load_op == VK_ATTACHMENT_LOAD_OP_LOAD) ? SYNC_EARLY_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_READ
+                                                       : SYNC_EARLY_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE);
     return stage_access;
 }
 
@@ -1025,16 +1030,16 @@ bool AccessContext::ValidateLoadOperation(const CommandExecutionContext &ex_cont
             const char *aspect = nullptr;
 
             bool checked_stencil = false;
-            if (is_color) {
+            if (is_color && (load_index != SYNC_ACCESS_INDEX_NONE)) {
                 hazard = DetectHazard(view_gen, AttachmentViewGen::Gen::kRenderArea, load_index, SyncOrdering::kColorAttachment);
                 aspect = "color";
             } else {
-                if (has_depth) {
+                if (has_depth && (load_index != SYNC_ACCESS_INDEX_NONE)) {
                     hazard = DetectHazard(view_gen, AttachmentViewGen::Gen::kDepthOnlyRenderArea, load_index,
                                           SyncOrdering::kDepthStencilAttachment);
                     aspect = "depth";
                 }
-                if (!hazard.hazard && has_stencil) {
+                if (!hazard.hazard && has_stencil && (stencil_load_index != SYNC_ACCESS_INDEX_NONE)) {
                     hazard = DetectHazard(view_gen, AttachmentViewGen::Gen::kStencilOnlyRenderArea, stencil_load_index,
                                           SyncOrdering::kDepthStencilAttachment);
                     aspect = "stencil";
@@ -1086,7 +1091,7 @@ bool AccessContext::ValidateStoreOperation(const CommandExecutionContext &ex_con
             const bool has_depth = FormatHasDepth(ci.format);
             const bool has_stencil = FormatHasStencil(ci.format);
             const bool is_color = !(has_depth || has_stencil);
-            const bool store_op_stores = ci.storeOp != VK_ATTACHMENT_STORE_OP_NONE_QCOM;
+            const bool store_op_stores = ci.storeOp != VK_ATTACHMENT_STORE_OP_NONE_EXT;
             if (!has_stencil && !store_op_stores) continue;
 
             HazardResult hazard;
@@ -1097,7 +1102,7 @@ bool AccessContext::ValidateStoreOperation(const CommandExecutionContext &ex_con
                                       SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE, SyncOrdering::kRaster);
                 aspect = "color";
             } else {
-                const bool stencil_op_stores = ci.stencilStoreOp != VK_ATTACHMENT_STORE_OP_NONE_QCOM;
+                const bool stencil_op_stores = ci.stencilStoreOp != VK_ATTACHMENT_STORE_OP_NONE_EXT;
                 if (has_depth && store_op_stores) {
                     hazard = DetectHazard(view_gen, AttachmentViewGen::Gen::kDepthOnlyRenderArea,
                                           SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE, SyncOrdering::kRaster);
@@ -1640,7 +1645,7 @@ void AccessContext::UpdateAttachmentStoreAccess(const RENDER_PASS_STATE &rp_stat
             const bool has_depth = FormatHasDepth(ci.format);
             const bool has_stencil = FormatHasStencil(ci.format);
             const bool is_color = !(has_depth || has_stencil);
-            const bool store_op_stores = ci.storeOp != VK_ATTACHMENT_STORE_OP_NONE_QCOM;
+            const bool store_op_stores = ci.storeOp != VK_ATTACHMENT_STORE_OP_NONE_EXT;
 
             if (is_color && store_op_stores) {
                 UpdateAccessState(view_gen, AttachmentViewGen::Gen::kRenderArea,
@@ -1650,7 +1655,7 @@ void AccessContext::UpdateAttachmentStoreAccess(const RENDER_PASS_STATE &rp_stat
                     UpdateAccessState(view_gen, AttachmentViewGen::Gen::kDepthOnlyRenderArea,
                                       SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE, SyncOrdering::kRaster, tag);
                 }
-                const bool stencil_op_stores = ci.stencilStoreOp != VK_ATTACHMENT_STORE_OP_NONE_QCOM;
+                const bool stencil_op_stores = ci.stencilStoreOp != VK_ATTACHMENT_STORE_OP_NONE_EXT;
                 if (has_stencil && stencil_op_stores) {
                     UpdateAccessState(view_gen, AttachmentViewGen::Gen::kStencilOnlyRenderArea,
                                       SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE, SyncOrdering::kRaster, tag);
@@ -1760,14 +1765,14 @@ bool CommandBufferAccessContext::ValidateDispatchDrawDescriptorSet(VkPipelineBin
     using TexelDescriptor = cvdescriptorset::TexelDescriptor;
 
     for (const auto &stage_state : pipe->stage_state) {
-        if (stage_state.stage_flag == VK_SHADER_STAGE_FRAGMENT_BIT && pipe->graphicsPipelineCI.pRasterizationState &&
-            pipe->graphicsPipelineCI.pRasterizationState->rasterizerDiscardEnable) {
+        if (stage_state.stage_flag == VK_SHADER_STAGE_FRAGMENT_BIT && pipe->create_info.graphics.pRasterizationState &&
+            pipe->create_info.graphics.pRasterizationState->rasterizerDiscardEnable) {
             continue;
         }
         for (const auto &set_binding : stage_state.descriptor_uses) {
-            cvdescriptorset::DescriptorSet *descriptor_set = (*per_sets)[set_binding.first.first].bound_descriptor_set;
+            cvdescriptorset::DescriptorSet *descriptor_set = (*per_sets)[set_binding.first.set].bound_descriptor_set;
             cvdescriptorset::DescriptorSetLayout::ConstBindingIterator binding_it(descriptor_set->GetLayout().get(),
-                                                                                  set_binding.first.second);
+                                                                                  set_binding.first.binding);
             const auto descriptor_type = binding_it.GetType();
             cvdescriptorset::IndexRange index_range = binding_it.GetGlobalIndexRange();
             auto array_idx = 0;
@@ -1797,6 +1802,10 @@ bool CommandBufferAccessContext::ValidateDispatchDrawDescriptorSet(VkPipelineBin
                         }
                         if (!img_view_state) continue;
                         HazardResult hazard;
+                        // NOTE: 2D ImageViews of VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT Images are not allowed in
+                        // Descriptors, so we do not have to worry about depth slicing here.
+                        // See: VUID 00343
+                        assert(!img_view_state->IsDepthSliced());
                         const IMAGE_STATE *img_state = img_view_state->image_state.get();
                         const auto &subresource_range = img_view_state->normalized_subresource_range;
 
@@ -1821,7 +1830,7 @@ bool CommandBufferAccessContext::ValidateDispatchDrawDescriptorSet(VkPipelineBin
                                 sync_state_->report_data->FormatHandle(pipe->pipeline()).c_str(),
                                 sync_state_->report_data->FormatHandle(descriptor_set->GetSet()).c_str(),
                                 string_VkDescriptorType(descriptor_type), string_VkImageLayout(image_layout),
-                                set_binding.first.second, index, FormatUsage(hazard).c_str());
+                                set_binding.first.binding, index, FormatUsage(hazard).c_str());
                         }
                         break;
                     }
@@ -1840,7 +1849,7 @@ bool CommandBufferAccessContext::ValidateDispatchDrawDescriptorSet(VkPipelineBin
                                 sync_state_->report_data->FormatHandle(cb_state_->commandBuffer()).c_str(),
                                 sync_state_->report_data->FormatHandle(pipe->pipeline()).c_str(),
                                 sync_state_->report_data->FormatHandle(descriptor_set->GetSet()).c_str(),
-                                string_VkDescriptorType(descriptor_type), set_binding.first.second, index,
+                                string_VkDescriptorType(descriptor_type), set_binding.first.binding, index,
                                 FormatUsage(hazard).c_str());
                         }
                         break;
@@ -1861,7 +1870,7 @@ bool CommandBufferAccessContext::ValidateDispatchDrawDescriptorSet(VkPipelineBin
                                 sync_state_->report_data->FormatHandle(cb_state_->commandBuffer()).c_str(),
                                 sync_state_->report_data->FormatHandle(pipe->pipeline()).c_str(),
                                 sync_state_->report_data->FormatHandle(descriptor_set->GetSet()).c_str(),
-                                string_VkDescriptorType(descriptor_type), set_binding.first.second, index,
+                                string_VkDescriptorType(descriptor_type), set_binding.first.binding, index,
                                 FormatUsage(hazard).c_str());
                         }
                         break;
@@ -1892,14 +1901,14 @@ void CommandBufferAccessContext::RecordDispatchDrawDescriptorSet(VkPipelineBindP
     using TexelDescriptor = cvdescriptorset::TexelDescriptor;
 
     for (const auto &stage_state : pipe->stage_state) {
-        if (stage_state.stage_flag == VK_SHADER_STAGE_FRAGMENT_BIT && pipe->graphicsPipelineCI.pRasterizationState &&
-            pipe->graphicsPipelineCI.pRasterizationState->rasterizerDiscardEnable) {
+        if (stage_state.stage_flag == VK_SHADER_STAGE_FRAGMENT_BIT && pipe->create_info.graphics.pRasterizationState &&
+            pipe->create_info.graphics.pRasterizationState->rasterizerDiscardEnable) {
             continue;
         }
         for (const auto &set_binding : stage_state.descriptor_uses) {
-            cvdescriptorset::DescriptorSet *descriptor_set = (*per_sets)[set_binding.first.first].bound_descriptor_set;
+            cvdescriptorset::DescriptorSet *descriptor_set = (*per_sets)[set_binding.first.set].bound_descriptor_set;
             cvdescriptorset::DescriptorSetLayout::ConstBindingIterator binding_it(descriptor_set->GetLayout().get(),
-                                                                                  set_binding.first.second);
+                                                                                  set_binding.first.binding);
             const auto descriptor_type = binding_it.GetType();
             cvdescriptorset::IndexRange index_range = binding_it.GetGlobalIndexRange();
             auto array_idx = 0;
@@ -1922,6 +1931,10 @@ void CommandBufferAccessContext::RecordDispatchDrawDescriptorSet(VkPipelineBindP
                             img_view_state = static_cast<const ImageDescriptor *>(descriptor)->GetImageViewState();
                         }
                         if (!img_view_state) continue;
+                        // NOTE: 2D ImageViews of VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT Images are not allowed in
+                        // Descriptors, so we do not have to worry about depth slicing here.
+                        // See: VUID 00343
+                        assert(!img_view_state->IsDepthSliced());
                         const IMAGE_STATE *img_state = img_view_state->image_state.get();
                         if (sync_index == SYNC_FRAGMENT_SHADER_INPUT_ATTACHMENT_READ) {
                             const VkExtent3D extent = CastTo3D(cb_state_->activeRenderPassBeginInfo.renderArea.extent);
@@ -2107,8 +2120,12 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
     bool skip = false;
     const auto &sync_state = ex_context.GetSyncState();
     const auto *pipe = cmd.GetCurrentPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS);
-    if (!pipe ||
-        (pipe->graphicsPipelineCI.pRasterizationState && pipe->graphicsPipelineCI.pRasterizationState->rasterizerDiscardEnable)) {
+    if (!pipe) {
+        return skip;
+    }
+
+    const auto &create_info = pipe->create_info.graphics;
+    if (create_info.pRasterizationState && create_info.pRasterizationState->rasterizerDiscardEnable) {
         return skip;
     }
     const auto &list = pipe->fragmentShader_writable_output_location_list;
@@ -2142,7 +2159,7 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
     // PHASE1 TODO: Add layout based read/vs. write selection.
     // PHASE1 TODO: Read operations for both depth and stencil are possible in the future.
     const uint32_t depth_stencil_attachment =
-        GetSubpassDepthStencilAttachmentIndex(pipe->graphicsPipelineCI.pDepthStencilState, subpass.pDepthStencilAttachment);
+        GetSubpassDepthStencilAttachmentIndex(pipe->create_info.graphics.pDepthStencilState, subpass.pDepthStencilAttachment);
 
     if ((depth_stencil_attachment != VK_ATTACHMENT_UNUSED) && attachment_views_[depth_stencil_attachment].IsValid()) {
         const AttachmentViewGen &view_gen = attachment_views_[depth_stencil_attachment];
@@ -2150,8 +2167,8 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
         bool depth_write = false, stencil_write = false;
 
         // PHASE1 TODO: These validation should be in core_checks.
-        if (!FormatIsStencilOnly(view_state.create_info.format) && pipe->graphicsPipelineCI.pDepthStencilState->depthTestEnable &&
-            pipe->graphicsPipelineCI.pDepthStencilState->depthWriteEnable &&
+        if (!FormatIsStencilOnly(view_state.create_info.format) && create_info.pDepthStencilState->depthTestEnable &&
+            create_info.pDepthStencilState->depthWriteEnable &&
             IsImageLayoutDepthWritable(subpass.pDepthStencilAttachment->layout)) {
             depth_write = true;
         }
@@ -2159,7 +2176,7 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
         //              If failOp, passOp, or depthFailOp are not KEEP, and writeMask isn't 0, it's writable.
         //              If depth test is disable, it's considered depth test passes, and then depthFailOp doesn't run.
         // PHASE1 TODO: These validation should be in core_checks.
-        if (!FormatIsDepthOnly(view_state.create_info.format) && pipe->graphicsPipelineCI.pDepthStencilState->stencilTestEnable &&
+        if (!FormatIsDepthOnly(view_state.create_info.format) && create_info.pDepthStencilState->stencilTestEnable &&
             IsImageLayoutStencilWritable(subpass.pDepthStencilAttachment->layout)) {
             stencil_write = true;
         }
@@ -2199,8 +2216,12 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
 
 void RenderPassAccessContext::RecordDrawSubpassAttachment(const CMD_BUFFER_STATE &cmd, const ResourceUsageTag &tag) {
     const auto *pipe = cmd.GetCurrentPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS);
-    if (!pipe ||
-        (pipe->graphicsPipelineCI.pRasterizationState && pipe->graphicsPipelineCI.pRasterizationState->rasterizerDiscardEnable)) {
+    if (!pipe) {
+        return;
+    }
+
+    const auto &create_info = pipe->create_info.graphics;
+    if (create_info.pRasterizationState && create_info.pRasterizationState->rasterizerDiscardEnable) {
         return;
     }
     const auto &list = pipe->fragmentShader_writable_output_location_list;
@@ -2224,7 +2245,7 @@ void RenderPassAccessContext::RecordDrawSubpassAttachment(const CMD_BUFFER_STATE
     // PHASE1 TODO: Add layout based read/vs. write selection.
     // PHASE1 TODO: Read operations for both depth and stencil are possible in the future.
     const uint32_t depth_stencil_attachment =
-        GetSubpassDepthStencilAttachmentIndex(pipe->graphicsPipelineCI.pDepthStencilState, subpass.pDepthStencilAttachment);
+        GetSubpassDepthStencilAttachmentIndex(create_info.pDepthStencilState, subpass.pDepthStencilAttachment);
     if ((depth_stencil_attachment != VK_ATTACHMENT_UNUSED) && attachment_views_[depth_stencil_attachment].IsValid()) {
         const AttachmentViewGen &view_gen = attachment_views_[depth_stencil_attachment];
         const IMAGE_VIEW_STATE &view_state = *view_gen.GetViewState();
@@ -2233,9 +2254,8 @@ void RenderPassAccessContext::RecordDrawSubpassAttachment(const CMD_BUFFER_STATE
         const bool has_stencil = 0 != (view_state.normalized_subresource_range.aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT);
 
         // PHASE1 TODO: These validation should be in core_checks.
-        if (has_depth && !FormatIsStencilOnly(view_state.create_info.format) &&
-            pipe->graphicsPipelineCI.pDepthStencilState->depthTestEnable &&
-            pipe->graphicsPipelineCI.pDepthStencilState->depthWriteEnable &&
+        if (has_depth && !FormatIsStencilOnly(view_state.create_info.format) && create_info.pDepthStencilState->depthTestEnable &&
+            create_info.pDepthStencilState->depthWriteEnable &&
             IsImageLayoutDepthWritable(subpass.pDepthStencilAttachment->layout)) {
             depth_write = true;
         }
@@ -2243,8 +2263,7 @@ void RenderPassAccessContext::RecordDrawSubpassAttachment(const CMD_BUFFER_STATE
         //              If failOp, passOp, or depthFailOp are not KEEP, and writeMask isn't 0, it's writable.
         //              If depth test is disable, it's considered depth test passes, and then depthFailOp doesn't run.
         // PHASE1 TODO: These validation should be in core_checks.
-        if (has_stencil && !FormatIsDepthOnly(view_state.create_info.format) &&
-            pipe->graphicsPipelineCI.pDepthStencilState->stencilTestEnable &&
+        if (has_stencil && !FormatIsDepthOnly(view_state.create_info.format) && create_info.pDepthStencilState->stencilTestEnable &&
             IsImageLayoutStencilWritable(subpass.pDepthStencilAttachment->layout)) {
             stencil_write = true;
         }
@@ -2360,17 +2379,25 @@ void RenderPassAccessContext::RecordLoadOperations(const ResourceUsageTag &tag) 
             const bool is_color = !(has_depth || has_stencil);
 
             if (is_color) {
-                subpass_context.UpdateAccessState(view_gen, AttachmentViewGen::Gen::kRenderArea, ColorLoadUsage(ci.loadOp),
-                                                  SyncOrdering::kColorAttachment, tag);
+                const SyncStageAccessIndex load_op = ColorLoadUsage(ci.loadOp);
+                if (load_op != SYNC_ACCESS_INDEX_NONE) {
+                    subpass_context.UpdateAccessState(view_gen, AttachmentViewGen::Gen::kRenderArea, load_op,
+                                                      SyncOrdering::kColorAttachment, tag);
+                }
             } else {
                 if (has_depth) {
-                    subpass_context.UpdateAccessState(view_gen, AttachmentViewGen::Gen::kDepthOnlyRenderArea,
-                                                      DepthStencilLoadUsage(ci.loadOp), SyncOrdering::kDepthStencilAttachment, tag);
+                    const SyncStageAccessIndex load_op = DepthStencilLoadUsage(ci.loadOp);
+                    if (load_op != SYNC_ACCESS_INDEX_NONE) {
+                        subpass_context.UpdateAccessState(view_gen, AttachmentViewGen::Gen::kDepthOnlyRenderArea, load_op,
+                                                          SyncOrdering::kDepthStencilAttachment, tag);
+                    }
                 }
                 if (has_stencil) {
-                    subpass_context.UpdateAccessState(view_gen, AttachmentViewGen::Gen::kStencilOnlyRenderArea,
-                                                      DepthStencilLoadUsage(ci.stencilLoadOp),
-                                                      SyncOrdering::kDepthStencilAttachment, tag);
+                    const SyncStageAccessIndex load_op = DepthStencilLoadUsage(ci.stencilLoadOp);
+                    if (load_op != SYNC_ACCESS_INDEX_NONE) {
+                        subpass_context.UpdateAccessState(view_gen, AttachmentViewGen::Gen::kStencilOnlyRenderArea, load_op,
+                                                          SyncOrdering::kDepthStencilAttachment, tag);
+                    }
                 }
             }
         }
@@ -5833,8 +5860,9 @@ AttachmentViewGen::AttachmentViewGen(const IMAGE_VIEW_STATE *view, const VkOffse
     const auto base_address = ResourceBaseAddress(image_state);
     const auto *encoder = image_state.fragment_encoder.get();
     if (!encoder) return;
-    const VkOffset3D zero_offset = {0, 0, 0};
-    const VkExtent3D &image_extent = image_state.createInfo.extent;
+    // Get offset and extent for the view, accounting for possible depth slicing
+    const VkOffset3D zero_offset = view->GetOffset();
+    const VkExtent3D &image_extent = view->GetExtent();
     // Intentional copy
     VkImageSubresourceRange subres_range = view_->normalized_subresource_range;
     view_mask_ = subres_range.aspectMask;

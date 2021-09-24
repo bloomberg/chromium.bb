@@ -7,7 +7,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -22,6 +22,7 @@
 
 namespace blink {
 
+class PaintArtifact;
 enum class PaintPhase;
 
 class PLATFORM_EXPORT DisplayItem {
@@ -166,27 +167,31 @@ class PLATFORM_EXPORT DisplayItem {
   // Ids are for matching new DisplayItems with existing DisplayItems.
   struct Id {
     DISALLOW_NEW();
-    Id(const DisplayItemClient& client, Type type, wtf_size_t fragment = 0)
-        : client(client), type(type), fragment(fragment) {}
+    Id(DisplayItemClientId client_id, Type type, wtf_size_t fragment = 0)
+        : client_id(client_id), type(type), fragment(fragment) {}
     Id(const Id& id, wtf_size_t fragment)
-        : client(id.client), type(id.type), fragment(fragment) {}
+        : client_id(id.client_id), type(id.type), fragment(fragment) {}
 
+    // The no-argument version is for operator<< which is used in DCHECK and
+    // unit tests.
     String ToString() const;
+    // This version will output the debug name of the client.
+    String ToString(const PaintArtifact&) const;
 
-    const DisplayItemClient& client;
+    const DisplayItemClientId client_id;
     const Type type;
     const wtf_size_t fragment;
 
     struct HashKey {
       HashKey() = default;
       explicit HashKey(const DisplayItem::Id& id)
-          : client(&id.client), type(id.type), fragment(id.fragment) {}
+          : client_id(id.client_id), type(id.type), fragment(id.fragment) {}
       bool operator==(const HashKey& other) const {
-        return client == other.client && type == other.type &&
+        return client_id == other.client_id && type == other.type &&
                fragment == other.fragment;
       }
 
-      const DisplayItemClient* client = nullptr;
+      DisplayItemClientId client_id = kInvalidDisplayItemClientId;
       DisplayItem::Type type = static_cast<DisplayItem::Type>(0);
       wtf_size_t fragment = 0;
     };
@@ -194,11 +199,11 @@ class PLATFORM_EXPORT DisplayItem {
     HashKey AsHashKey() const { return HashKey(*this); }
   };
 
-  Id GetId() const { return Id(*client_, GetType(), fragment_); }
+  Id GetId() const { return Id(client_id_, GetType(), fragment_); }
 
-  const DisplayItemClient& Client() const {
-    DCHECK(client_);
-    return *client_;
+  DisplayItemClientId ClientId() const {
+    DCHECK_NE(client_id_, kInvalidDisplayItemClientId);
+    return client_id_;
   }
 
   // The bounding box of all pixels of this display item, in the transform space
@@ -269,36 +274,36 @@ class PLATFORM_EXPORT DisplayItem {
 
 #if DCHECK_IS_ON()
   // A subsequence tombstone is full of zeros set by memset(0);
-  bool IsSubsequenceTombstone() const { return !is_not_tombstone_ && !client_; }
+  bool IsSubsequenceTombstone() const {
+    return !is_not_tombstone_ && client_id_ == kInvalidDisplayItemClientId;
+  }
   static String TypeAsDebugString(DisplayItem::Type);
-  String AsDebugString() const;
-  String IdAsString() const;
+  String AsDebugString(const PaintArtifact&) const;
+  String IdAsString(const PaintArtifact&) const;
   void PropertiesAsJSON(JSONObject&,
+                        const PaintArtifact&,
                         bool client_known_to_be_alive = false) const;
 #endif
 
  protected:
   // Some fields are copied from |client|, because we need to access them in
   // later paint cycles when |client| may have been destroyed.
-  DisplayItem(const DisplayItemClient& client,
+  DisplayItem(const DisplayItemClientId client_id,
               Type type,
               const IntRect& visual_rect,
+              RasterEffectOutset raster_effect_outset,
               PaintInvalidationReason paint_invalidation_reason,
               bool draws_content = false)
-      : client_(&client),
+      : client_id_(client_id),
         visual_rect_(visual_rect),
         fragment_(0),
         paint_invalidation_reason_(
             static_cast<unsigned>(paint_invalidation_reason)),
         type_(type),
-        raster_effect_outset_(
-            static_cast<unsigned>(client.VisualRectOutsetForRasterEffects())),
+        raster_effect_outset_(static_cast<unsigned>(raster_effect_outset)),
         draws_content_(draws_content),
         is_not_tombstone_(true),
-        opaqueness_(0) {
-    DCHECK_EQ(client.VisualRectOutsetForRasterEffects(),
-              GetRasterEffectOutset());
-  }
+        opaqueness_(0) {}
 
   ~DisplayItem() = default;
 
@@ -319,7 +324,7 @@ class PLATFORM_EXPORT DisplayItem {
     is_not_tombstone_ = false;
   }
 
-  const DisplayItemClient* client_;
+  DisplayItemClientId client_id_;
   IntRect visual_rect_;
   wtf_size_t fragment_;
   // paint_invalidation_reason_ is set during construction (or, in the case of a
@@ -339,7 +344,8 @@ class PLATFORM_EXPORT DisplayItem {
 };
 
 inline bool operator==(const DisplayItem::Id& a, const DisplayItem::Id& b) {
-  return a.client == b.client && a.type == b.type && a.fragment == b.fragment;
+  return a.client_id == b.client_id && a.type == b.type &&
+         a.fragment == b.fragment;
 }
 
 inline bool operator!=(const DisplayItem::Id& a, const DisplayItem::Id& b) {
@@ -347,6 +353,9 @@ inline bool operator!=(const DisplayItem::Id& a, const DisplayItem::Id& b) {
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, DisplayItem::Type);
+// These are mainly for DCHECK and unit tests. They don't output debug names of
+// DisplayItemClients. Use the argumented version of DisplayItem::Id::ToString()
+// or DisplayItem::AsDebugString() if you want to see debug names.
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const DisplayItem::Id&);
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const DisplayItem&);
 
@@ -371,7 +380,7 @@ struct DefaultHash<blink::DisplayItem::Id::HashKey> {
     using Key = blink::DisplayItem::Id::HashKey;
     static unsigned GetHash(const Key& id) {
       unsigned hash =
-          PtrHash<const blink::DisplayItemClient>::GetHash(id.client);
+          IntHash<blink::DisplayItemClientId>::GetHash(id.client_id);
       WTF::AddIntToHash(hash, id.type);
       WTF::AddIntToHash(hash, id.fragment);
       return hash;

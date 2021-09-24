@@ -76,11 +76,8 @@ void DrawImageExpectingGrayBoxOnly(PlaceholderImage& image,
   EXPECT_CALL(canvas, drawImageRect(_, _, _, _, _, _)).Times(0);
   EXPECT_CALL(canvas, drawTextBlob(_, _, _, _)).Times(0);
 
-  ImageDrawOptions draw_options;
-  draw_options.sampling_options = SkSamplingOptions();
   image.Draw(&canvas, PaintFlags(), dest_rect,
-             FloatRect(0.0f, 0.0f, 100.0f, 100.0f), draw_options,
-             Image::kClampImageToSourceRect, Image::kUnspecifiedDecode);
+             FloatRect(0.0f, 0.0f, 100.0f, 100.0f), ImageDrawOptions());
 }
 
 void DrawImageExpectingIconOnly(PlaceholderImage& image,
@@ -111,24 +108,22 @@ void DrawImageExpectingIconOnly(PlaceholderImage& image,
   EXPECT_CALL(canvas, drawTextBlob(_, _, _, _)).Times(0);
 
   ImageDrawOptions draw_options;
-  draw_options.sampling_options = SkSamplingOptions();
-  draw_options.respect_image_orientation = kDoNotRespectImageOrientation;
+  draw_options.respect_orientation = kDoNotRespectImageOrientation;
   image.Draw(&canvas, PaintFlags(), dest_rect,
-             FloatRect(0.0f, 0.0f, 100.0f, 100.0f), draw_options,
-             Image::kClampImageToSourceRect, Image::kUnspecifiedDecode);
+             FloatRect(0.0f, 0.0f, 100.0f, 100.0f), draw_options);
 }
 
 float GetExpectedPlaceholderTextWidth(const StringView& text,
                                       float scale_factor) {
   FontDescription description;
-  description.FirstFamily().SetFamily("Roboto");
+  description.FirstFamily().SetFamily("Roboto", FontFamily::Type::kFamilyName);
 
   scoped_refptr<SharedFontFamily> helvetica_neue = SharedFontFamily::Create();
-  helvetica_neue->SetFamily("Helvetica Neue");
+  helvetica_neue->SetFamily("Helvetica Neue", FontFamily::Type::kFamilyName);
   scoped_refptr<SharedFontFamily> helvetica = SharedFontFamily::Create();
-  helvetica->SetFamily("Helvetica");
+  helvetica->SetFamily("Helvetica", FontFamily::Type::kFamilyName);
   scoped_refptr<SharedFontFamily> arial = SharedFontFamily::Create();
-  arial->SetFamily("Arial");
+  arial->SetFamily("Arial", FontFamily::Type::kFamilyName);
 
   helvetica->AppendFamily(std::move(arial));
   helvetica_neue->AppendFamily(std::move(helvetica));
@@ -203,11 +198,9 @@ void DrawImageExpectingIconAndTextLTR(PlaceholderImage& image,
       }));
 
   ImageDrawOptions draw_options;
-  draw_options.sampling_options = SkSamplingOptions();
-  draw_options.respect_image_orientation = kDoNotRespectImageOrientation;
+  draw_options.respect_orientation = kDoNotRespectImageOrientation;
   image.Draw(&canvas, PaintFlags(), dest_rect,
-             FloatRect(0.0f, 0.0f, 100.0f, 100.0f), draw_options,
-             Image::kClampImageToSourceRect, Image::kUnspecifiedDecode);
+             FloatRect(0.0f, 0.0f, 100.0f, 100.0f), draw_options);
 }
 
 class TestingUnitsPlatform : public TestingPlatformSupport {
@@ -296,14 +289,12 @@ TEST_F(PlaceholderImageTest, DrawNonIntersectingSrcRect) {
   EXPECT_CALL(canvas, drawTextBlob(_, _, _, _)).Times(0);
 
   ImageDrawOptions draw_options;
-  draw_options.sampling_options = SkSamplingOptions();
-  draw_options.respect_image_orientation = kDoNotRespectImageOrientation;
+  draw_options.respect_orientation = kDoNotRespectImageOrientation;
   PlaceholderImage::Create(nullptr, IntSize(800, 600), 0)
       ->Draw(&canvas, PaintFlags(), FloatRect(0.0f, 0.0f, 800.0f, 600.0f),
              // The source rectangle is outside the 800x600 bounds of the image,
              // so nothing should be drawn.
-             FloatRect(1000.0f, 0.0f, 800.0f, 600.0f), draw_options,
-             Image::kClampImageToSourceRect, Image::kUnspecifiedDecode);
+             FloatRect(1000.0f, 0.0f, 800.0f, 600.0f), draw_options);
 }
 
 TEST_F(PlaceholderImageTest, DrawWithoutOriginalResourceSize) {
@@ -460,11 +451,9 @@ TEST_F(PlaceholderImageTest, DrawWithOriginalResourceSizeRTL) {
       }));
 
   ImageDrawOptions draw_options;
-  draw_options.sampling_options = SkSamplingOptions();
-  draw_options.respect_image_orientation = kDoNotRespectImageOrientation;
+  draw_options.respect_orientation = kDoNotRespectImageOrientation;
   image->Draw(&canvas, PaintFlags(), dest_rect,
-              FloatRect(0.0f, 0.0f, 100.0f, 100.0f), draw_options,
-              Image::kClampImageToSourceRect, Image::kUnspecifiedDecode);
+              FloatRect(0.0f, 0.0f, 100.0f, 100.0f), draw_options);
 }
 
 TEST_F(PlaceholderImageTest, DrawSeparateImageWithDifferentScaleFactor) {

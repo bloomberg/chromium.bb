@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_EVENT_HANDLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_EVENT_HANDLER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
@@ -122,6 +123,8 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   // Return whether a mouse cursor update is currently pending.  Used for
   // testing.
   bool CursorUpdatePending();
+
+  bool IsHandlingKeyEvent() const;
 
   void SetResizingFrameSet(HTMLFrameSetElement*);
 

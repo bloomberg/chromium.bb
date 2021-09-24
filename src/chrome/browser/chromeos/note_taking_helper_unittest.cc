@@ -25,10 +25,10 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -747,7 +747,7 @@ TEST_F(NoteTakingHelperTest, CustomWebApps_FlagDisabled) {
     web_app::test::InstallWebApp(profile(), std::move(app_info));
   }
   // Check apps were installed.
-  auto* provider = web_app::WebAppProvider::Get(profile());
+  auto* provider = web_app::WebAppProvider::GetForTest(profile());
   EXPECT_EQ(provider->registrar().CountUserInstalledApps(), 2);
 
   // Apps with note_taking_new_note_url are not yet supported.
@@ -778,7 +778,7 @@ TEST_F(NoteTakingHelperTest, CustomWebApps_FlagEnabled) {
     app2_id = web_app::test::InstallWebApp(profile(), std::move(app_info));
   }
   // Check apps were installed.
-  auto* provider = web_app::WebAppProvider::Get(profile());
+  auto* provider = web_app::WebAppProvider::GetForTest(profile());
   EXPECT_EQ(provider->registrar().CountUserInstalledApps(), 2);
 
   // Apps with note_taking_new_note_url are listed.

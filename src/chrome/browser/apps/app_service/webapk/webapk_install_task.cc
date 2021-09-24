@@ -18,10 +18,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/mojom/webapk.mojom.h"
@@ -239,7 +239,7 @@ namespace apps {
 WebApkInstallTask::WebApkInstallTask(Profile* profile,
                                      const std::string& app_id)
     : profile_(profile),
-      web_app_provider_(web_app::WebAppProvider::Get(profile_)),
+      web_app_provider_(web_app::WebAppProvider::GetDeprecated(profile_)),
       app_id_(app_id),
       package_name_to_update_(
           webapk_prefs::GetWebApkPackageName(profile_, app_id_)),
@@ -348,8 +348,9 @@ void WebApkInstallTask::OnArcFeaturesLoaded(
   const auto& icon_infos = registrar.GetAppIconInfos(app_id_);
   auto it = std::find_if(
       icon_infos.begin(), icon_infos.end(),
-      [&icon_size_and_purpose](const WebApplicationIconInfo& info) {
-        return info.purpose == icon_size_and_purpose->purpose;
+      [&icon_size_and_purpose](const apps::IconInfo& info) {
+        return info.purpose ==
+               ManifestPurposeToIconInfoPurpose(icon_size_and_purpose->purpose);
       });
 
   if (it == icon_infos.end()) {

@@ -54,9 +54,9 @@ constants.SetBuildType('Release')
 # Architecture specific GN args. Trying to build an orderfile for an
 # architecture not listed here will eventually throw.
 _ARCH_GN_ARGS = {
-    'arm': [ 'target_cpu = "arm"' ],
-    'arm64': [ 'target_cpu = "arm64"',
-               'android_64bit_browser = true'],
+    'arm': ['target_cpu = "arm"'],
+    'arm64': ['target_cpu = "arm64"', 'android_64bit_browser = true'],
+    'x86': ['target_cpu = "x86"'],
 }
 
 class CommandError(Exception):
@@ -484,7 +484,11 @@ class OrderfileGenerator(object):
 
   def _GetPathToOrderfile(self):
     """Gets the path to the architecture-specific orderfile."""
-    return self._path_to_orderfile % self._options.arch
+    # Build GN files use the ".arm" orderfile irrespective of the actual
+    # architecture. Fake it, otherwise the orderfile we generate here is not
+    # going to be picked up by builds.
+    orderfile_fake_arch = 'arm'
+    return self._path_to_orderfile % orderfile_fake_arch
 
   def _GetUnpatchedOrderfileFilename(self):
     """Gets the path to the architecture-specific unpatched orderfile."""
@@ -894,6 +898,7 @@ class OrderfileGenerator(object):
     Returns:
       benchmark_results: (dict) Results extracted from benchmarks.
     """
+    benchmark_results = {}
     try:
       _UnstashOutputDirectory(out_directory)
       self._compiler = ClankCompiler(out_directory, self._step_recorder,
@@ -913,7 +918,6 @@ class OrderfileGenerator(object):
       self._compiler.CompileChromeApk(instrumented=False,
                                       use_call_graph=False,
                                       force_relink=True)
-      benchmark_results = dict()
       benchmark_results['Speedometer2.0'] = self._PerformanceBenchmark(
           self._compiler.chrome_apk)
       benchmark_results['orderfile.memory_mobile'] = (
@@ -1051,9 +1055,11 @@ def CreateArgumentParser():
   parser.add_argument(
       '--verify', action='store_true',
       help='If true, the script only verifies the current orderfile')
-  parser.add_argument('--target-arch', action='store', dest='arch',
+  parser.add_argument('--target-arch',
+                      action='store',
+                      dest='arch',
                       default='arm',
-                      choices=['arm', 'arm64'],
+                      choices=list(_ARCH_GN_ARGS.keys()),
                       help='The target architecture for which to build.')
   parser.add_argument('--output-json', action='store', dest='json_file',
                       help='Location to save stats in json format')
@@ -1134,6 +1140,14 @@ def CreateOrderfile(options, orderfile_updater_class=None):
   """
   logging.basicConfig(level=logging.INFO)
   devil_chromium.Initialize(adb_path=options.adb_path)
+
+  # Since we generate a ".arm" orderfile irrespective of the architecture (see
+  # comment in _GetPathToOrderfile()), make sure that we don't commit it.
+  if options.arch != 'arm':
+    assert not options.buildbot, (
+        'ARM is the only supported architecture on bots')
+    assert not options.upload_ready_orderfiles, (
+        'ARM is the only supported architecture on bots')
 
   generator = OrderfileGenerator(options, orderfile_updater_class)
   try:

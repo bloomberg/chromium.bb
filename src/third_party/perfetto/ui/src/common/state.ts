@@ -12,7 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {AggregationAttrs, PivotAttrs} from './pivot_table_query_generator';
+import {
+  AggregationAttrs,
+  PivotAttrs,
+  SubQueryAttrs,
+  TableAttrs
+} from './pivot_table_data';
 
 /**
  * A plain js object, holding objects of type |Class| keyed by string id.
@@ -94,10 +99,20 @@ export interface TraceFileSource {
 
 export interface TraceArrayBufferSource {
   type: 'ARRAY_BUFFER';
+  buffer: ArrayBuffer;
   title: string;
   url?: string;
   fileName?: string;
-  buffer: ArrayBuffer;
+
+  // |uuid| is set only when loading from the cache via ?trace_id=123. When set,
+  // this matches global.state.traceUuid, with the exception of the following
+  // time window: When a trace T1 is loaded and the user loads another trace T2,
+  // this |uuid| will be == T2, but the globals.state.traceUuid will be
+  // temporarily == T1 until T2 has been loaded (consistently to what happens
+  // with all other state fields).
+  uuid?: string;
+  // if |localOnly| is true then the trace should not be shared or downloaded.
+  localOnly?: boolean;
 }
 
 export interface TraceUrlSource {
@@ -272,11 +287,7 @@ export interface MetricsState {
 }
 
 export interface PivotTableConfig {
-  availableColumns?: Array<{
-    tableName: string,
-    columns: string[]
-  }>;                                // Undefined until list is loaded.
-  totalColumnsCount?: number;        // Total columns in all tables.
+  availableColumns?: TableAttrs[];   // Undefined until list is loaded.
   availableAggregations?: string[];  // Undefined until list is loaded.
 }
 
@@ -285,18 +296,15 @@ export interface PivotTableState {
   name: string;
   selectedPivots: PivotAttrs[];
   selectedAggregations: AggregationAttrs[];
-  selectedColumnIndex?: number;
-  selectedAggregationIndex?: number;
-  isPivot: boolean;
-  requestedAction?:
-      string;  // Unset after pivot table column request is handled.
+  requestedAction?:  // Unset after pivot table column request is handled.
+      {action: string, attrs?: SubQueryAttrs};
+  isLoadingQuery: boolean;
 }
 
 export interface State {
   // tslint:disable-next-line:no-any
   [key: string]: any;
   version: number;
-  route?: string;
   nextId: number;
   nextNoteId: number;
   nextAreaId: number;
@@ -587,7 +595,7 @@ export function getDefaultRecordingTargets(): RecordingTarget[] {
 }
 
 export function getBuiltinChromeCategoryList(): string[] {
-  // List of static Chrome categories, last updated at Chromium 81.0.4021.0 from
+  // List of static Chrome categories, last updated at 2021-09-09 from HEAD of
   // Chromium's //base/trace_event/builtin_categories.h.
   return [
     'accessibility',
@@ -601,11 +609,12 @@ export function getBuiltinChromeCategoryList(): string[] {
     'blink.animations',
     'blink.bindings',
     'blink.console',
-    'blink_gc',
     'blink.net',
-    'blink_style',
+    'blink.resource',
     'blink.user_timing',
     'blink.worker',
+    'blink_gc',
+    'blink_style',
     'Blob',
     'browser',
     'browsing_data',
@@ -637,10 +646,10 @@ export function getBuiltinChromeCategoryList(): string[] {
     'drmcursor',
     'dwrite',
     'DXVA_Decoding',
-    'EarlyJava',
     'evdev',
     'event',
     'exo',
+    'extensions',
     'explore_sites',
     'FileSystem',
     'file_system_provider',
@@ -698,6 +707,7 @@ export function getBuiltinChromeCategoryList(): string[] {
     'RLZ',
     'safe_browsing',
     'screenlock_monitor',
+    'segmentation_platform',
     'sequence_manager',
     'service_manager',
     'ServiceWorker',
@@ -712,7 +722,7 @@ export function getBuiltinChromeCategoryList(): string[] {
     'stadia_rtc',
     'startup',
     'sync',
-    'sync_lock_contention',
+    'system_apps',
     'test_gpu',
     'thread_pool',
     'toplevel',
@@ -735,6 +745,7 @@ export function getBuiltinChromeCategoryList(): string[] {
     'disabled-by-default-animation-worklet',
     'disabled-by-default-audio',
     'disabled-by-default-audio-worklet',
+    'disabled-by-default-base',
     'disabled-by-default-blink.debug',
     'disabled-by-default-blink.debug.display_lock',
     'disabled-by-default-blink.debug.layout',
@@ -771,7 +782,6 @@ export function getBuiltinChromeCategoryList(): string[] {
     'disabled-by-default-gpu.service',
     'disabled-by-default-gpu.vulkan.vma',
     'disabled-by-default-histogram_samples',
-    'disabled-by-default-ipc.flow',
     'disabled-by-default-java-heap-profiler',
     'disabled-by-default-layer-element',
     'disabled-by-default-layout_shift.debug',
@@ -798,12 +808,10 @@ export function getBuiltinChromeCategoryList(): string[] {
     'disabled-by-default-SyncFileSystem',
     'disabled-by-default-system_stats',
     'disabled-by-default-thread_pool_diagnostics',
-    'disabled-by-default-toplevel.flow',
     'disabled-by-default-toplevel.ipc',
     'disabled-by-default-user_action_samples',
     'disabled-by-default-v8.compile',
     'disabled-by-default-v8.cpu_profiler',
-    'disabled-by-default-v8.cpu_profiler.hires',
     'disabled-by-default-v8.gc',
     'disabled-by-default-v8.gc_stats',
     'disabled-by-default-v8.ic_stats',
@@ -812,12 +820,11 @@ export function getBuiltinChromeCategoryList(): string[] {
     'disabled-by-default-v8.runtime_stats_sampling',
     'disabled-by-default-v8.stack_trace',
     'disabled-by-default-v8.turbofan',
-    'disabled-by-default-v8.wasm',
     'disabled-by-default-v8.wasm.detailed',
     'disabled-by-default-v8.wasm.turbofan',
     'disabled-by-default-video_and_image_capture',
-    'disabled-by-default-viz.debug.overlay_planes',
     'disabled-by-default-viz.gpu_composite_time',
+    'disabled-by-default-viz.debug.overlay_planes',
     'disabled-by-default-viz.hit_testing_flow',
     'disabled-by-default-viz.overdraw',
     'disabled-by-default-viz.quads',

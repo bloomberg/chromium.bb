@@ -5,8 +5,6 @@
 #ifndef ASH_APP_LIST_VIEWS_APP_LIST_BUBBLE_APPS_PAGE_H_
 #define ASH_APP_LIST_VIEWS_APP_LIST_BUBBLE_APPS_PAGE_H_
 
-#include <memory>
-
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/ash_export.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -16,6 +14,7 @@ namespace ash {
 
 class ApplicationDragAndDropHost;
 class AppListA11yAnnouncer;
+class AppListFolderController;
 class AppListViewDelegate;
 class ContinueSectionView;
 class RecentAppsView;
@@ -31,19 +30,23 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View {
   METADATA_HEADER(AppListBubbleAppsPage);
 
   AppListBubbleAppsPage(AppListViewDelegate* view_delegate,
-                        ApplicationDragAndDropHost* drag_and_drop_host);
+                        ApplicationDragAndDropHost* drag_and_drop_host,
+                        AppListA11yAnnouncer* a11y_announcer,
+                        AppListFolderController* folder_controller);
   AppListBubbleAppsPage(const AppListBubbleAppsPage&) = delete;
   AppListBubbleAppsPage& operator=(const AppListBubbleAppsPage&) = delete;
   ~AppListBubbleAppsPage() override;
 
   views::ScrollView* scroll_view() { return scroll_view_; }
+  ScrollableAppsGridView* scrollable_apps_grid_view() {
+    return scrollable_apps_grid_view_;
+  }
 
   RecentAppsView* recent_apps_for_test() { return recent_apps_; }
 
  private:
   friend class AppListTestHelper;
 
-  std::unique_ptr<AppListA11yAnnouncer> a11y_announcer_;
   ContinueSectionView* continue_section_ = nullptr;
   RecentAppsView* recent_apps_ = nullptr;
   views::ScrollView* scroll_view_ = nullptr;

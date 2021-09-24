@@ -224,6 +224,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                 PersistedTabDataConfiguration.get(ShoppingPersistedTabData.class, tab.isIncognito())
                         .getId());
         setupPersistence(tab);
+        mPriceDropMetricsLogger = new PriceDropMetricsLogger(this);
     }
 
     private void prefetchOnNewNavigation(Tab tab, NavigationHandle navigationHandle) {
@@ -245,12 +246,20 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         OptimizationGuideBridgeFactoryHolder.sOptimizationGuideBridgeFactory.create()
                 .canApplyOptimizationAsync(navigationHandle,
                         HintsProto.OptimizationType.PRICE_TRACKING, (decision, metadata) -> {
-                            if (!tab.isInitialized()
-                                    || !tab.getUrl().equals(navigationHandle.getUrl())
+                            if (!tab.isInitialized()) {
+                                if (onCompleteForTesting != null) {
+                                    onCompleteForTesting.run();
+                                }
+                                return;
+                            }
+                            if (!tab.getUrl().equals(navigationHandle.getUrl())
                                     || decision != OptimizationGuideDecision.TRUE) {
                                 if (onCompleteForTesting != null) {
                                     onCompleteForTesting.run();
                                 }
+                                mPriceDropMetricsLogger.logPriceDropMetrics(
+                                        METRICS_IDENTIFIER_PREFIX,
+                                        getTimeSinceTabLastOpenedMs(tab));
                                 return;
                             }
                             try {
@@ -258,7 +267,6 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                                         PriceTrackingData.parseFrom(metadata.getValue());
                                 parsePriceTrackingDataProto(tab, priceTrackingDataProto, null);
                                 setLastUpdatedMs(System.currentTimeMillis());
-                                mPriceDropMetricsLogger = new PriceDropMetricsLogger(this);
                                 mPriceDropMetricsLogger.logPriceDropMetrics(
                                         METRICS_IDENTIFIER_PREFIX,
                                         getTimeSinceTabLastOpenedMs(tab));
@@ -301,6 +309,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         super(tab, storage, persistedTabDataId);
         deserializeAndLog(data);
         setupPersistence(tab);
+        mPriceDropMetricsLogger = new PriceDropMetricsLogger(this);
     }
 
     private void setupPersistence(Tab tab) {
@@ -352,7 +361,6 @@ public class ShoppingPersistedTabData extends PersistedTabData {
     private void resetPriceData() {
         delete();
         mPriceDropData = new PriceDropData();
-        mPriceDropMetricsLogger = null;
     }
 
     @VisibleForTesting
@@ -895,7 +903,6 @@ public class ShoppingPersistedTabData extends PersistedTabData {
             mPriceDropData.currencyCode = shoppingPersistedTabDataProto.getPriceCurrencyCode();
             mPriceDropData.gurl =
                     GURL.deserialize(shoppingPersistedTabDataProto.getSerializedGurl());
-            mPriceDropMetricsLogger = new PriceDropMetricsLogger(this);
             return true;
         } catch (InvalidProtocolBufferException e) {
             Log.e(TAG,
@@ -948,6 +955,8 @@ public class ShoppingPersistedTabData extends PersistedTabData {
             currencyFormatter.destroy();
         }
         mCurrencyFormatterMap.clear();
+        mPriceDropMetricsLogger.destroy();
+        mPriceDropMetricsLogger = null;
         super.destroy();
     }
 
@@ -1005,5 +1014,15 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                             callback.onResult(decision == OptimizationGuideDecision.TRUE
                                     || decision == OptimizationGuideDecision.UNKNOWN);
                         });
+    }
+
+    /**
+     * @return a list of Shopping Hints needed to be registered on deferred startup
+     */
+    public static List<HintsProto.OptimizationType> getShoppingHintsToRegisterOnDeferredStartup() {
+        if (ShoppingPersistedTabData.isPriceTrackingWithOptimizationGuideEnabled()) {
+            return Arrays.asList(HintsProto.OptimizationType.PRICE_TRACKING);
+        }
+        return Arrays.asList();
     }
 }

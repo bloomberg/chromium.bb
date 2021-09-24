@@ -39,6 +39,7 @@ class FastPairPresenter {
                             AssociateAccountCallback callback);
   void ShowCompanionApp(scoped_refptr<Device> device,
                         CompanionAppCallback callback);
+  void RemoveNotifications(scoped_refptr<Device> device);
 
  private:
   void OnDiscoveryClicked(DiscoveryCallback action_callback);
@@ -51,6 +52,11 @@ class FastPairPresenter {
   void OnDiscoveryMetadataRetrieved(scoped_refptr<Device> device,
                                     DiscoveryCallback callback,
                                     DeviceMetadata* device_metadata);
+  void OnPairingMetadataRetrieved(scoped_refptr<Device> device,
+                                  DeviceMetadata* device_metadata);
+  void OnPairingFailedMetadataRetrieved(scoped_refptr<Device> device,
+                                        PairingFailedCallback callback,
+                                        DeviceMetadata* device_metadata);
 
   std::unique_ptr<FastPairNotificationController> notification_controller_;
   base::WeakPtrFactory<FastPairPresenter> weak_pointer_factory_{this};

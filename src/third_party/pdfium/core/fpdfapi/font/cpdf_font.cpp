@@ -6,6 +6,7 @@
 
 #include "core/fpdfapi/font/cpdf_font.h"
 
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <utility>
@@ -107,10 +108,6 @@ const CPDF_CIDFont* CPDF_Font::AsCIDFont() const {
 
 CPDF_CIDFont* CPDF_Font::AsCIDFont() {
   return nullptr;
-}
-
-bool CPDF_Font::IsUnicodeCompatible() const {
-  return false;
 }
 
 size_t CPDF_Font::CountChar(ByteStringView pString) const {
@@ -216,7 +213,8 @@ void CPDF_Font::LoadFontDescriptor(const CPDF_Dictionary* pFontDesc) {
   if (!m_pFontFile)
     return;
 
-  if (!m_Font.LoadEmbedded(m_pFontFile->GetSpan(), IsVertWriting())) {
+  if (!m_Font.LoadEmbedded(m_pFontFile->GetSpan(), IsVertWriting(),
+                           pFontFile->KeyForCache())) {
     pData->MaybePurgeFontFileStreamAcc(m_pFontFile->GetStream()->AsStream());
     m_pFontFile = nullptr;
   }
@@ -244,18 +242,10 @@ void CPDF_Font::CheckFontMetrics() {
           m_FontBBox = rect;
           bFirst = false;
         } else {
-          if (m_FontBBox.top < rect.top) {
-            m_FontBBox.top = rect.top;
-          }
-          if (m_FontBBox.right < rect.right) {
-            m_FontBBox.right = rect.right;
-          }
-          if (m_FontBBox.left > rect.left) {
-            m_FontBBox.left = rect.left;
-          }
-          if (m_FontBBox.bottom > rect.bottom) {
-            m_FontBBox.bottom = rect.bottom;
-          }
+          m_FontBBox.left = std::min(m_FontBBox.left, rect.left);
+          m_FontBBox.top = std::max(m_FontBBox.top, rect.top);
+          m_FontBBox.right = std::max(m_FontBBox.right, rect.right);
+          m_FontBBox.bottom = std::min(m_FontBBox.bottom, rect.bottom);
         }
       }
     }

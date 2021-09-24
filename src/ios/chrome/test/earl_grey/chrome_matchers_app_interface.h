@@ -199,10 +199,6 @@
 // Returns matcher for the "Done" button in the settings' navigation bar.
 + (id<GREYMatcher>)settingsDoneButton;
 
-// Returns matcher for the "Confirm" button in the Sync and Google services
-// settings' navigation bar.
-+ (id<GREYMatcher>)syncSettingsConfirmButton;
-
 // Returns matcher for the Autofill Credit Card "Payment Methods" edit view.
 + (id<GREYMatcher>)autofillCreditCardEditTableView;
 
@@ -268,9 +264,6 @@
 
 // Returns matcher for the privacy table view.
 + (id<GREYMatcher>)settingsPrivacyTableView;
-
-// Returns matcher for the menu button to sync accounts.
-+ (id<GREYMatcher>)accountsSyncButton;
 
 // Returns matcher for the Content Settings button on the main Settings screen.
 + (id<GREYMatcher>)contentSettingsButton;

@@ -52,7 +52,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Profile.AllAccounts.Names" enum="ProfileAllAccountsNames"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>jkrcal@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -394,7 +394,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Profile.NukeFromDisk.Result" enum="NukeProfileResult"
-    expires_after="2021-08-29">
+    expires_after="2022-02-01">
   <owner>nicolaso@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -619,7 +619,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Profile.State.SyncEnabled" enum="BooleanEnabled"
-    expires_after="2021-12-12">
+    expires_after="2022-02-20">
   <owner>jkrcal@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>

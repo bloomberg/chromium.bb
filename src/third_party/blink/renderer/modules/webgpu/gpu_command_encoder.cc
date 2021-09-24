@@ -33,12 +33,7 @@ WGPURenderPassColorAttachment AsDawnType(
   DCHECK(webgpu_desc);
 
   WGPURenderPassColorAttachment dawn_desc = {};
-  if (webgpu_desc->hasView()) {
-    dawn_desc.view = webgpu_desc->view()->GetHandle();
-  } else if (webgpu_desc->hasAttachment()) {
-    // Deprecated path
-    dawn_desc.view = webgpu_desc->attachment()->GetHandle();
-  }
+  dawn_desc.view = webgpu_desc->view()->GetHandle();
   dawn_desc.resolveTarget = webgpu_desc->hasResolveTarget()
                                 ? webgpu_desc->resolveTarget()->GetHandle()
                                 : nullptr;
@@ -74,12 +69,7 @@ WGPURenderPassDepthStencilAttachment AsDawnType(
   DCHECK(webgpu_desc);
 
   WGPURenderPassDepthStencilAttachment dawn_desc = {};
-  if (webgpu_desc->hasView()) {
     dawn_desc.view = webgpu_desc->view()->GetHandle();
-  } else if (webgpu_desc->hasAttachment()) {
-    // Deprecated path
-    dawn_desc.view = webgpu_desc->attachment()->GetHandle();
-  }
 
   switch (webgpu_desc->depthLoadValue()->GetContentType()) {
     case V8UnionFloatOrGPULoadOp::ContentType::kGPULoadOp:
@@ -114,13 +104,13 @@ WGPURenderPassDepthStencilAttachment AsDawnType(
   return dawn_desc;
 }
 
-WGPUBufferCopyView ValidateAndConvertBufferCopyView(
+WGPUImageCopyBuffer ValidateAndConvertImageCopyBuffer(
     const GPUImageCopyBuffer* webgpu_view,
     const char** error) {
   DCHECK(webgpu_view);
   DCHECK(webgpu_view->buffer());
 
-  WGPUBufferCopyView dawn_view = {};
+  WGPUImageCopyBuffer dawn_view = {};
   dawn_view.nextInChain = nullptr;
   dawn_view.buffer = webgpu_view->buffer()->GetHandle();
 
@@ -184,24 +174,10 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
     const GPURenderPassColorAttachment* color_attachment =
         descriptor->colorAttachments()[i];
 
-    if (color_attachment->hasAttachment()) {
-      device_->AddConsoleWarning(
-          "Specifying the texture view for a render pass color attachment with "
-          "'attachment' has been deprecated. Use 'view' instead.");
-    } else if (!color_attachment->hasView()) {
-      exception_state.ThrowTypeError("required member view is undefined.");
-      return nullptr;
-    }
-
     if (color_attachment->loadValue()->IsDoubleSequence() &&
         color_attachment->loadValue()->GetAsDoubleSequence().size() != 4) {
       exception_state.ThrowRangeError("loadValue color size must be 4");
       return nullptr;
-    }
-
-    if (color_attachment->storeOp() == "clear") {
-      device_->AddConsoleWarning(
-          "The storeOp 'clear' has been deprecated. Use 'discard' instead.");
     }
   }
 
@@ -223,22 +199,6 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
 
   WGPURenderPassDepthStencilAttachment depthStencilAttachment = {};
   if (descriptor->hasDepthStencilAttachment()) {
-    if (descriptor->depthStencilAttachment()->hasAttachment()) {
-      device_->AddConsoleWarning(
-          "Specifying the texture view for a render pass depth/stencil "
-          "attachment with 'attachment' has been deprecated. Use 'view' "
-          "instead.");
-    } else if (!descriptor->depthStencilAttachment()->hasView()) {
-      exception_state.ThrowTypeError("required member view is undefined.");
-      return nullptr;
-    }
-
-    if (descriptor->depthStencilAttachment()->depthStoreOp() == "clear" ||
-        descriptor->depthStencilAttachment()->stencilStoreOp() == "clear") {
-      device_->AddConsoleWarning(
-          "The storeOp 'clear' has been deprecated. Use 'discard' instead.");
-    }
-
     depthStencilAttachment = AsDawnType(descriptor->depthStencilAttachment());
     dawn_desc.depthStencilAttachment = &depthStencilAttachment;
   } else {
@@ -280,11 +240,11 @@ void GPUCommandEncoder::copyBufferToTexture(GPUImageCopyBuffer* source,
                                             GPUImageCopyTexture* destination,
                                             const V8GPUExtent3D* copy_size) {
   WGPUExtent3D dawn_copy_size = AsDawnType(copy_size);
-  WGPUTextureCopyView dawn_destination = AsDawnType(destination, device_);
+  WGPUImageCopyTexture dawn_destination = AsDawnType(destination, device_);
 
   const char* error = nullptr;
-  WGPUBufferCopyView dawn_source =
-      ValidateAndConvertBufferCopyView(source, &error);
+  WGPUImageCopyBuffer dawn_source =
+      ValidateAndConvertImageCopyBuffer(source, &error);
   if (error) {
     GetProcs().commandEncoderInjectValidationError(GetHandle(), error);
     return;
@@ -298,11 +258,11 @@ void GPUCommandEncoder::copyTextureToBuffer(GPUImageCopyTexture* source,
                                             GPUImageCopyBuffer* destination,
                                             const V8GPUExtent3D* copy_size) {
   WGPUExtent3D dawn_copy_size = AsDawnType(copy_size);
-  WGPUTextureCopyView dawn_source = AsDawnType(source, device_);
+  WGPUImageCopyTexture dawn_source = AsDawnType(source, device_);
 
   const char* error = nullptr;
-  WGPUBufferCopyView dawn_destination =
-      ValidateAndConvertBufferCopyView(destination, &error);
+  WGPUImageCopyBuffer dawn_destination =
+      ValidateAndConvertImageCopyBuffer(destination, &error);
   if (error) {
     GetProcs().commandEncoderInjectValidationError(GetHandle(), error);
     return;
@@ -315,8 +275,8 @@ void GPUCommandEncoder::copyTextureToBuffer(GPUImageCopyTexture* source,
 void GPUCommandEncoder::copyTextureToTexture(GPUImageCopyTexture* source,
                                              GPUImageCopyTexture* destination,
                                              const V8GPUExtent3D* copy_size) {
-  WGPUTextureCopyView dawn_source = AsDawnType(source, device_);
-  WGPUTextureCopyView dawn_destination = AsDawnType(destination, device_);
+  WGPUImageCopyTexture dawn_source = AsDawnType(source, device_);
+  WGPUImageCopyTexture dawn_destination = AsDawnType(destination, device_);
   WGPUExtent3D dawn_copy_size = AsDawnType(copy_size);
 
   GetProcs().commandEncoderCopyTextureToTexture(

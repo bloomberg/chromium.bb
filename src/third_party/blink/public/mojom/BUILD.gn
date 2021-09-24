@@ -58,13 +58,18 @@ mojom("mojom_platform") {
     "devtools/devtools_frontend.mojom",
     "devtools/inspector_issue.mojom",
     "disk_allocator.mojom",
+    "dom_storage/dom_storage.mojom",
+    "dom_storage/session_storage_namespace.mojom",
+    "dom_storage/storage_area.mojom",
     "favicon/favicon_url.mojom",
     "feature_observer/feature_observer.mojom",
     "federated_learning/floc.mojom",
+    "fenced_frame/fenced_frame.mojom",
     "fetch/fetch_api_request.mojom",
     "fetch/fetch_api_response.mojom",
     "file/file_utilities.mojom",
     "file_system_access/file_system_access_access_handle_host.mojom",
+    "file_system_access/file_system_access_capacity_allocation_host.mojom",
     "file_system_access/file_system_access_data_transfer_token.mojom",
     "file_system_access/file_system_access_directory_handle.mojom",
     "file_system_access/file_system_access_error.mojom",
@@ -91,7 +96,6 @@ mojom("mojom_platform") {
     "input/touch_event.mojom",
     "interest_group/ad_auction_service.mojom",
     "interest_group/interest_group_types.mojom",
-    "interest_group/restricted_interest_group_store.mojom",
     "keyboard_lock/keyboard_lock.mojom",
     "leak_detector/leak_detector.mojom",
     "link_to_text/link_to_text.mojom",
@@ -247,12 +251,12 @@ mojom("mojom_platform") {
     "//services/device/public/mojom",
     "//services/network/public/mojom",
     "//services/network/public/mojom:mojom_ip_address",
+    "//services/network/public/mojom:mojom_proxy_config",
     "//services/network/public/mojom:url_loader_base",
     "//services/network/public/mojom:websocket_mojom",
     "//services/service_manager/public/mojom",
     "//services/viz/public/mojom",
     "//skia/public/mojom",
-    "//third_party/blink/public/mojom/dom_storage",
     "//third_party/blink/public/mojom/frame",
     "//third_party/blink/public/mojom/gpu",
     "//third_party/blink/public/mojom/service_worker:storage",
@@ -276,6 +280,7 @@ mojom("mojom_platform") {
     public_deps += [
       "//services/network/public/mojom:cookies_mojom",
       "//services/network/public/mojom:mojom_network_param",
+      "//services/network/public/mojom:mojom_schemeful_site",
       "//ui/latency/mojom",
     ]
   } else {
@@ -641,6 +646,15 @@ mojom("mojom_platform") {
     {
       types = [
         {
+          mojom = "blink.mojom.StorageKey"
+          cpp = "::blink::StorageKey"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/storage_key/storage_key_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
           mojom = "blink.mojom.UseCounterFeature"
           cpp = "::blink::UseCounterFeature"
         },
@@ -839,15 +853,6 @@ mojom("android_mojo_bindings") {
         "//device/fido",
       ]
     },
-    {
-      types = [
-        {
-          mojom = "blink.mojom.StorageKey"
-          cpp = "::blink::StorageKey"
-        },
-      ]
-      traits_headers = [ "//third_party/blink/public/common/storage_key/storage_key_mojom_traits.h" ]
-    },
   ]
 
   blink_cpp_typemaps = [
@@ -860,15 +865,6 @@ mojom("android_mojo_bindings") {
         },
       ]
       traits_headers = [ "//third_party/blink/renderer/platform/blob/serialized_blob_mojom_traits.h" ]
-    },
-    {
-      types = [
-        {
-          mojom = "blink.mojom.StorageKey"
-          cpp = "::blink::BlinkStorageKey"
-        },
-      ]
-      traits_headers = [ "//third_party/blink/renderer/platform/storage/blink_storage_key_mojom_traits.h" ]
     },
   ]
 

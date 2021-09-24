@@ -161,25 +161,6 @@ export class FileTasks {
               FileTasks.INSTALL_LINUX_PACKAGE_TASK_DESCRIPTOR));
     }
 
-    // Filters out Pack with Zip Archiver task because it will be accessible via
-    // 'Zip selection' context menu button
-    tasks = tasks.filter(
-        task =>
-            !util.descriptorEqual(
-                task.descriptor, FileTasks.ZIP_ARCHIVER_ZIP_TASK_DESCRIPTOR) &&
-            !util.descriptorEqual(
-                task.descriptor,
-                FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_DESCRIPTOR));
-
-    // The Files App and the Zip Archiver are two extensions that can handle ZIP
-    // files. Depending on the state of the FilesZipMount feature, we want to
-    // filter out one of these extensions.
-    const toExclude = util.isZipMountEnabled() ?
-        FileTasks.ZIP_ARCHIVER_UNZIP_TASK_DESCRIPTOR :
-        FileTasks.FILES_OPEN_ZIP_TASK_DESCRIPTOR;
-    tasks =
-        tasks.filter(task => !util.descriptorEqual(task.descriptor, toExclude));
-
     tasks = FileTasks.annotateTasks_(tasks, entries);
 
     const defaultTask = FileTasks.getDefaultTask(tasks, taskHistory);
@@ -308,19 +289,6 @@ export class FileTasks {
   }
 
   /**
-   * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} descriptor
-   */
-  static recordZipHandlerUMA_(descriptor) {
-    if (FileTasks.UMA_ZIP_HANDLER_TASK_DESCRIPTORS_.some(
-            zipDescriptor => util.descriptorEqual(zipDescriptor, descriptor))) {
-      metrics.recordEnum(
-          'ZipFileTask', util.makeTaskID(descriptor),
-          FileTasks.UMA_ZIP_HANDLER_TASK_DESCRIPTORS_.map(
-              desc => util.makeTaskID(desc)));
-    }
-  }
-
-  /**
    * Returns true if the descriptor is for an internal task.
    *
    * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} descriptor
@@ -334,7 +302,6 @@ export class FileTasks {
     }
     switch (actionId) {
       case 'mount-archive':
-      case 'open-zip':
       case 'install-linux-package':
       case 'import-crostini-image':
         return true;
@@ -721,7 +688,6 @@ export class FileTasks {
       if (FileTasks.isInternalTask_(task.descriptor)) {
         this.executeInternalTask_(task.descriptor);
       } else {
-        FileTasks.recordZipHandlerUMA_(task.descriptor);
         chrome.fileManagerPrivate.executeTask(
             task.descriptor, this.entries_, onFileManagerPrivateExecuteTask);
       }
@@ -832,7 +798,7 @@ export class FileTasks {
    */
   executeInternalTask_(descriptor) {
     const {actionId} = descriptor;
-    if (actionId === 'mount-archive' || actionId === 'open-zip') {
+    if (actionId === 'mount-archive') {
       this.mountArchives_();
       return;
     }
@@ -1324,61 +1290,10 @@ FileTasks.INSTALL_LINUX_PACKAGE_TASK_DESCRIPTOR = {
 };
 
 /**
- * The task descriptor of Files App's 'Open ZIP'.
- * @const {!chrome.fileManagerPrivate.FileTaskDescriptor}
- */
-FileTasks.FILES_OPEN_ZIP_TASK_DESCRIPTOR = {
-  appId: LEGACY_FILES_EXTENSION_ID,
-  taskType: 'app',
-  actionId: 'open-zip'
-};
-
-/**
  * The app ID of the video player app.
  * @const {string}
  */
 FileTasks.VIDEO_PLAYER_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
-
-/**
- * The task descriptor of the zip unpacker app.
- * @const {!chrome.fileManagerPrivate.FileTaskDescriptor}
- */
-FileTasks.ZIP_UNPACKER_TASK_DESCRIPTOR = {
-  appId: 'oedeeodfidgoollimchfdnbmhcpnklnd',
-  taskType: 'app',
-  actionId: 'zip'
-};
-
-/**
- * The task descriptor of unzip action of Zip Archiver app.
- * @const {!chrome.fileManagerPrivate.FileTaskDescriptor}
- */
-FileTasks.ZIP_ARCHIVER_UNZIP_TASK_DESCRIPTOR = {
-  appId: 'dmboannefpncccogfdikhmhpmdnddgoe',
-  taskType: 'app',
-  actionId: 'open'
-};
-
-/**
- * The task descriptor of zip action of Zip Archiver app.
- * @const {!chrome.fileManagerPrivate.FileTaskDescriptor}
- */
-FileTasks.ZIP_ARCHIVER_ZIP_TASK_DESCRIPTOR = {
-  appId: 'dmboannefpncccogfdikhmhpmdnddgoe',
-  taskType: 'app',
-  actionId: 'pack'
-};
-
-/**
- * The task descriptor of zip action of Zip Archiver app, using temporary dir as
- * workdir.
- * @const {!chrome.fileManagerPrivate.FileTaskDescriptor}
- */
-FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_DESCRIPTOR = {
-  appId: 'dmboannefpncccogfdikhmhpmdnddgoe',
-  taskType: 'app',
-  actionId: 'pack_using_tmp'
-};
 
 /**
  * Available tasks in task menu button.
@@ -1437,18 +1352,6 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
   '.dng',      '.nef',         '.nrw',
   '.orf',      '.raf',         '.rw2',
   '.tini'
-]);
-
-/**
- * Task IDs of the zip file handlers to be recorded.
- * The indexes of the IDs must match with the values of
- * FileManagerZipHandlerType in enums.xml, and should not change.
- * @const {Array<!chrome.fileManagerPrivate.FileTaskDescriptor>}
- */
-FileTasks.UMA_ZIP_HANDLER_TASK_DESCRIPTORS_ = Object.freeze([
-  FileTasks.ZIP_UNPACKER_TASK_DESCRIPTOR,
-  FileTasks.ZIP_ARCHIVER_UNZIP_TASK_DESCRIPTOR,
-  FileTasks.ZIP_ARCHIVER_ZIP_TASK_DESCRIPTOR
 ]);
 
 /**

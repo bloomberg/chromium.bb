@@ -18,6 +18,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
+#include "base/scoped_observation.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -54,12 +56,12 @@
 #include "chrome/browser/ui/views/web_apps/web_app_url_handler_intent_picker_dialog_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/webui/welcome/helpers.h"
-#include "chrome/browser/web_applications/components/url_handler_manager.h"
-#include "chrome/browser/web_applications/components/url_handler_manager_impl.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_origin_association_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/url_handler_manager.h"
+#include "chrome/browser/web_applications/url_handler_manager_impl.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -170,6 +172,34 @@ void AutoCloseDialog(views::Widget* widget) {
   views::test::CancelDialog(widget);
 }
 
+// Key for ProfileDestroyedData user data.
+const char kProfileDestrictionWaiterUserDataKey = 0;
+
+// Waits until the Profile instance is destroyed.
+class ProfileDestructionWaiter {
+ public:
+  explicit ProfileDestructionWaiter(Profile* profile) {
+    profile->SetUserData(
+        &kProfileDestrictionWaiterUserDataKey,
+        std::make_unique<ProfileDestroyedData>(run_loop_.QuitClosure()));
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  // Simple user data that calls a callback at destruction.
+  class ProfileDestroyedData : public base::SupportsUserData::Data {
+   public:
+    explicit ProfileDestroyedData(base::OnceClosure callback)
+        : scoped_closure_runner_(std::move(callback)) {}
+
+   private:
+    base::ScopedClosureRunner scoped_closure_runner_;
+  };
+
+  base::RunLoop run_loop_;
+};
+
 }  // namespace
 
 @interface TestOpenShortcutOnStartup : NSObject
@@ -271,24 +301,11 @@ IN_PROC_BROWSER_TEST_F(AppControllerBrowserTest, DeleteEphemeralProfile) {
 
   // Add sentinel data to observe profile destruction. Ephemeral profiles are
   // destroyed immediately upon browser close.
-  class ProfileDestroyedData : public base::SupportsUserData::Data {
-   public:
-    ProfileDestroyedData(base::OnceClosure callback)
-        : callback_(std::move(callback)) {}
-
-    ~ProfileDestroyedData() override { std::move(callback_).Run(); }
-
-   private:
-    base::OnceClosure callback_;
-  };
-  base::RunLoop loop;
-  const char kUserDataKey = 0;
-  profile->SetUserData(&kUserDataKey, std::make_unique<ProfileDestroyedData>(
-                                          loop.QuitClosure()));
+  ProfileDestructionWaiter waiter(profile);
 
   // Close browser and wait for the profile to be deleted.
   CloseBrowserSynchronously(browser());
-  loop.Run();
+  waiter.Wait();
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
   // Create a new profile and activate it.
@@ -312,43 +329,6 @@ class AppControllerKeepAliveBrowserTest : public InProcessBrowserTest {
 
   base::test::ScopedFeatureList features_;
 };
-
-IN_PROC_BROWSER_TEST_F(AppControllerKeepAliveBrowserTest,
-                       LastProfileKeepAlive) {
-  // The User Manager uses the system profile as its underlying profile. To
-  // minimize flakiness due to the scheduling/descheduling of tasks on the
-  // different threads, pre-initialize the guest profile before it is needed.
-  CreateAndWaitForSystemProfile();
-  AppController* ac = base::mac::ObjCCast<AppController>(
-      [[NSApplication sharedApplication] delegate]);
-  ASSERT_TRUE(ac);
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  DCHECK(profile_manager);
-
-  // Switch the controller to profile1.
-  Profile* profile1 = browser()->profile();
-  Profile* profile2 = CreateAndWaitForProfile(
-      profile_manager->user_data_dir().AppendASCII("Profile 2"));
-  [ac setLastProfile:profile1];
-  ASSERT_EQ(profile1, [ac lastProfile]);
-
-  // |profile1| is active.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(profile_manager->HasKeepAliveForTesting(
-      profile1, ProfileKeepAliveOrigin::kAppControllerMac));
-  EXPECT_FALSE(profile_manager->HasKeepAliveForTesting(
-      profile2, ProfileKeepAliveOrigin::kAppControllerMac));
-
-  // Make |profile2| active.
-  [ac setLastProfile:profile2];
-  ASSERT_EQ(profile2, [ac lastProfile]);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(profile_manager->HasKeepAliveForTesting(
-      profile1, ProfileKeepAliveOrigin::kAppControllerMac));
-  EXPECT_TRUE(profile_manager->HasKeepAliveForTesting(
-      profile2, ProfileKeepAliveOrigin::kAppControllerMac));
-}
 
 class AppControllerPlatformAppBrowserTest
     : public extensions::PlatformAppBrowserTest {
@@ -920,6 +900,72 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
+                       HistoryAndBookmarksMenusResetAfterAllProfilesDestroyed) {
+  AppController* ac =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+
+  Profile* profile = browser()->profile();
+
+  // Load profile's History Service backend so it will be assigned to the
+  // HistoryMenuBridge when setLastProfile is called, or else this test will
+  // fail flaky.
+  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS));
+  // Ditto for the Bookmark Model.
+  bookmarks::test::WaitForBookmarkModelToLoad(
+      BookmarkModelFactory::GetForBrowserContext(profile));
+  // Switch the controller to |profile|.
+  [ac setLastProfile:profile];
+  base::RunLoop().RunUntilIdle();
+
+  // Verify there are History and Bookmarks menus controllers.
+  EXPECT_NE(nullptr, [ac historyMenuBridge]);
+  EXPECT_NE(nullptr, [ac bookmarkMenuBridge]);
+
+  // Trigger Profile* destruction. Note that this event (destruction from
+  // memory) is a separate event from profile deletion (from disk).
+  chrome::CloseAllBrowsers();
+  ProfileDestructionWaiter(profile).Wait();
+
+  // Verify the History and Bookmarks menus' controllers have been reset.
+  EXPECT_EQ(nullptr, [ac historyMenuBridge]);
+  EXPECT_EQ(nullptr, [ac bookmarkMenuBridge]);
+}
+
+IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
+                       ReloadingDestroyedProfileDoesNotCrash) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  AppController* ac =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+
+  Profile* profile = browser()->profile();
+  base::FilePath profile_path = profile->GetPath();
+
+  // Switch the controller to |profile|.
+  [ac setLastProfile:profile];
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(profile, [ac lastProfileIfLoaded]);
+
+  // Trigger Profile* destruction. Note that this event (destruction from
+  // memory) is a separate event from profile deletion (from disk).
+  chrome::CloseAllBrowsers();
+  ProfileDestructionWaiter(profile).Wait();
+  EXPECT_EQ(nullptr, [ac lastProfileIfLoaded]);
+
+  // Re-open the profile. Since the Profile* is destroyed, this involves loading
+  // it from disk.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  profile = profile_manager->GetProfile(profile_path);
+  [ac setLastProfile:profile];
+  base::RunLoop().RunUntilIdle();
+
+  // We mostly want to make sure re-loading the same profile didn't cause a
+  // crash. This means we didn't have e.g. a dangling ProfilePrefRegistrar, or
+  // observers pointing to the old (now dead) Profile.
+  EXPECT_EQ(profile, [ac lastProfileIfLoaded]);
+}
+
+IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
     BookmarksMenuIsRestoredAfterProfileSwitch) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   AppController* ac = base::mac::ObjCCast<AppController>(
@@ -1393,6 +1439,40 @@ IN_PROC_BROWSER_TEST_F(StartupWebAppUrlHandlingBrowserTest, UrlNotCaptured) {
             web_contents->GetVisibleURL());
 }
 
+class AppControllerIncognitoSwitchTest : public InProcessBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kIncognito);
+  }
+};
+
+// Regression test for https://crbug.com/1248661
+IN_PROC_BROWSER_TEST_F(AppControllerIncognitoSwitchTest,
+                       ObserveProfileDestruction) {
+  // Chrome is launched in incognito.
+  Profile* otr_profile = browser()->profile();
+  EXPECT_EQ(otr_profile,
+            otr_profile->GetPrimaryOTRProfile(/*create_if_needed=*/false));
+  EXPECT_EQ(BrowserList::GetInstance()->size(), 1u);
+  AppController* ac =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidBecomeMainNotification
+                    object:browser()
+                               ->window()
+                               ->GetNativeWindow()
+                               .GetNativeNSWindow()];
+  // The last profile is the incognito profile.
+  EXPECT_EQ([ac lastProfileIfLoaded], otr_profile);
+  // Destroy the incognito profile.
+  ProfileDestructionWaiter waiter(otr_profile);
+  CloseBrowserSynchronously(browser());
+  waiter.Wait();
+  // Check that |-lastProfileIfLoaded| is not pointing to released memory.
+  EXPECT_NE([ac lastProfileIfLoaded], otr_profile);
+}
+
 }  // namespace
 
 //--------------------------AppControllerHandoffBrowserTest---------------------
@@ -1460,7 +1540,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerHandoffBrowserTest, TestHandoffURLs) {
 
   // Test that navigating to a URL updates the handoff URL.
   GURL test_url1 = embedded_test_server()->GetURL("/title1.html");
-  ui_test_utils::NavigateToURL(browser(), test_url1);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_url1));
   EXPECT_EQ(g_handoff_url, test_url1);
 
   // Test that opening a new tab updates the handoff URL.
@@ -1511,7 +1591,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerHandoffBrowserTest, TestHandoffURLs) {
   EXPECT_EQ(g_handoff_url, GURL());
 
   // Navigate the current tab in the incognito window.
-  ui_test_utils::NavigateToURL(browser3, test_url1);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser3, test_url1));
   EXPECT_EQ(g_handoff_url, GURL());
 
   // Activate the original browser window.

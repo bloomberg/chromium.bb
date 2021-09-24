@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AyncDropCallback) {
 
   ui::DropTargetEvent event(data, gfx::PointF(), gfx::PointF(),
                             ui::DragDropTypes::DRAG_COPY);
-  auto cb = omnibox_view_views->GetDropCallback(event);
+  auto cb = omnibox_view_views->CreateDropCallback(event);
   ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
   std::move(cb).Run(event, output_drag_op);
 
@@ -399,7 +399,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTabToFocus) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
-  ui_test_utils::NavigateToURL(browser(), GURL("http://www.google.com/"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("http://www.google.com/")));
   // RevertAll after navigation to invalidate the selection range saved on blur.
   omnibox_view->RevertAll();
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
@@ -551,8 +552,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, TextElideStatus) {
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FragmentUnescapedForDisplay) {
   OmniboxView* view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &view));
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL("http://example.com/#%E2%98%83"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("http://example.com/#%E2%98%83")));
 
   EXPECT_EQ(view->GetText(), u"example.com/#\u2603");
 }
@@ -709,14 +710,16 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, DISABLED_ReloadAfterKill) {
       static_cast<OmniboxViewViews*>(omnibox_view);
 
   // Open new tab page.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(chrome::kChromeUINewTabURL)));
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   // Kill the tab with chrome://kill
   {
     content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
-    ui_test_utils::NavigateToURL(browser(), GURL(blink::kChromeUIKillURL));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL(blink::kChromeUIKillURL)));
     EXPECT_TRUE(tab->IsCrashed());
   }
 
@@ -743,7 +746,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AlwaysShowFullURLs) {
   GURL url = embedded_test_server()->GetURL("a.test", "/title1.html");
   std::u16string url_text = base::ASCIIToUTF16(url.spec());
 
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   EXPECT_EQ(url_text, u"http://" + omnibox_view_views->GetText());
 
@@ -878,6 +881,21 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsIMETest, TextInputTypeChangedTest) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_SEARCH, omnibox_view_views->GetTextInputType());
 
   GetInputMethod()->SetInputLocaleCJK(/*is_cjk=*/false);
+  omnibox_view_views->OnInputMethodChanged();
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_URL, omnibox_view_views->GetTextInputType());
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsIMETest, TextInputTypeInitRespectsIME) {
+  OmniboxMockInputMethod* input_method = new OmniboxMockInputMethod();
+  ui::SetUpInputMethodForTesting(input_method);
+  input_method->SetInputLocaleCJK(/*is_cjk=*/true);
+  Browser* browser_2 = CreateBrowser(browser()->profile());
+  OmniboxView* view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser_2, &view));
+  OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
+  EXPECT_EQ(omnibox_view_views->GetWidget()->GetInputMethod(), input_method);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_SEARCH, omnibox_view_views->GetTextInputType());
+  input_method->SetInputLocaleCJK(/*is_cjk=*/false);
   omnibox_view_views->OnInputMethodChanged();
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_URL, omnibox_view_views->GetTextInputType());
 }

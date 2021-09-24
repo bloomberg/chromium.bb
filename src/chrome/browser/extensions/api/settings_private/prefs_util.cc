@@ -58,6 +58,7 @@
 #include "extensions/common/extension.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_pref_names.h"  // nogncheck
 #include "ash/public/cpp/ambient/ambient_prefs.h"
@@ -74,7 +75,6 @@
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
-#include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/account_manager_core/pref_names.h"
@@ -272,17 +272,15 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kDnsOverHttpsTemplates] =
       settings_api::PrefType::PREF_TYPE_STRING;
 
-  // Privacy sandbox
-  if (PrivacySandboxSettings::PrivacySandboxSettingsFunctional()) {
-    (*s_allowlist)[::prefs::kPrivacySandboxApisEnabled] =
-        settings_api::PrefType::PREF_TYPE_BOOLEAN;
-    (*s_allowlist)[::prefs::kPrivacySandboxManuallyControlled] =
-        settings_api::PrefType::PREF_TYPE_BOOLEAN;
-    (*s_allowlist)[::prefs::kPrivacySandboxPageViewed] =
-        settings_api::PrefType::PREF_TYPE_BOOLEAN;
-    (*s_allowlist)[::kGeneratedFlocPref] =
-        settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  }
+  // Privacy Sandbox page
+  (*s_allowlist)[::prefs::kPrivacySandboxApisEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kPrivacySandboxManuallyControlled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kPrivacySandboxPageViewed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::kGeneratedFlocPref] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Security page
   (*s_allowlist)[::kGeneratedPasswordLeakDetectionPref] =
@@ -326,6 +324,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[language::prefs::kForcedLanguages] =
       settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_allowlist)[::language::prefs::kAcceptLanguages] =
+      settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[translate::prefs::kPrefTranslateRecentTarget] =
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[translate::prefs::kPrefAlwaysTranslateList] =
@@ -351,6 +351,9 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   // Nearby Share.
   (*s_allowlist)[::prefs::kNearbySharingEnabledPrefName] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)
+      [::prefs::kNearbySharingFastInitiationNotificationEnabledPrefName] =
+          settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kNearbySharingOnboardingCompletePrefName] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kNearbySharingActiveProfilePrefName] =
@@ -620,16 +623,14 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Quick Answers.
-  (*s_allowlist)[chromeos::quick_answers::prefs::kQuickAnswersEnabled] =
+  (*s_allowlist)[ash::quick_answers::prefs::kQuickAnswersEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::quick_answers::prefs::kQuickAnswersDefinitionEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::quick_answers::prefs::kQuickAnswersTranslationEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)
-      [chromeos::quick_answers::prefs::kQuickAnswersDefinitionEnabled] =
-          settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)
-      [chromeos::quick_answers::prefs::kQuickAnswersTranslationEnabled] =
-          settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)
-      [chromeos::quick_answers::prefs::kQuickAnswersUnitConverstionEnabled] =
+      [ash::quick_answers::prefs::kQuickAnswersUnitConverstionEnabled] =
           settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Misc.
@@ -789,9 +790,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
 #else
-  (*s_allowlist)[::language::prefs::kAcceptLanguages] =
-      settings_api::PrefType::PREF_TYPE_STRING;
-
   // System settings.
   (*s_allowlist)[::prefs::kBackgroundModeEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -1101,12 +1099,12 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
     const base::Value* value) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (pref_name == chromeos::kSystemTimezone) {
-    std::string string_value;
-    if (!value->GetAsString(&string_value))
+    const std::string* string_value = value->GetIfString();
+    if (!string_value)
       return settings_private::SetPrefResult::PREF_TYPE_MISMATCH;
     const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-    if (user && ash::system::SetSystemTimezone(user, string_value))
+    if (user && ash::system::SetSystemTimezone(user, *string_value))
       return settings_private::SetPrefResult::SUCCESS;
     return settings_private::SetPrefResult::PREF_NOT_MODIFIABLE;
   }

@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 import {$} from 'chrome://resources/js/util.m.js';
 import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
-import {ConversionInternalsHandler, ConversionInternalsHandlerRemote, SentReportInfo, SourceType, WebUIConversionReport, WebUIImpression} from './conversion_internals.mojom-webui.js';
+import {ConversionInternalsHandler, ConversionInternalsHandlerRemote, SourceType, WebUIConversionReport, WebUIImpression} from './conversion_internals.mojom-webui.js';
 
 /**
  * Reference to the backend providing all the data.
@@ -28,15 +29,9 @@ let reports = [];
 
 /**
  * All sent reports at last update.
- * @type {!Array<!SentReportInfo>}
+ * @type {!Array<!WebUIConversionReport>}
  */
 let sentReports = [];
-
-/**
- * This is used to create TrustedHTML.
- * @type {?TrustedTypePolicy}
- */
-let staticHtmlPolicy = null;
 
 /**
  * Remove all rows from the given table.
@@ -98,40 +93,35 @@ function createSourceRow(source) {
   td[5].textContent = new Date(source.expiryTime).toLocaleString();
   td[6].textContent = SourceTypeToText(source.sourceType);
   td[7].textContent = source.priority;
-  td[8].textContent = source.dedupKeys.join();
+  td[8].textContent = source.dedupKeys.join(', ');
   return document.importNode(template.content, true);
 }
 
 /**
  * Creates a single row for the report table.
  * @param {!WebUIConversionReport} report The info to create the row.
+ * @param {boolean} sent Whether the report has been sent yet.
  * @return {!Node}
  */
-function createReportRow(report) {
+function createReportRow(report, sent) {
   const template = $('report-row').cloneNode(true);
   const td = template.content.querySelectorAll('td');
 
-  td[0].textContent = report.impressionData;
-  td[1].textContent = report.conversionData;
-  td[2].textContent = UrlToText(report.conversionOrigin);
-  td[3].textContent = UrlToText(report.reportingOrigin);
-  td[4].textContent = new Date(report.reportTime).toLocaleString();
-  td[5].textContent = SourceTypeToText(report.sourceType);
-  return document.importNode(template.content, true);
-}
+  td[0].querySelector('code').textContent = report.reportBody;
+  td[1].textContent = UrlToText(report.conversionOrigin);
+  td[2].textContent = report.reportUrl.url;
+  td[3].textContent = new Date(report.reportTime).toLocaleString();
+  td[4].textContent = report.priority;
 
-/**
- * Creates a single row for the sent report table.
- * @param {!SentReportInfo} info The info to create the row.
- * @return {!Node}
- */
-function createSentReportRow(info) {
-  const template = $('sent-report-row').cloneNode(true);
-  const td = template.content.querySelectorAll('td');
+  if (sent) {
+    td[5].textContent = `Sent: HTTP ${report.httpResponseCode}`;
+    if (report.httpResponseCode < 200 || report.httpResponseCode >= 400) {
+      template.content.querySelector('tr').classList.add('http-error');
+    }
+  } else {
+    td[5].textContent = 'Pending';
+  }
 
-  td[0].textContent = info.reportUrl.url;
-  td[1].textContent = info.reportBody;
-  td[2].textContent = info.httpResponseCode;
   return document.importNode(template.content, true);
 }
 
@@ -155,41 +145,24 @@ function renderSourceTable() {
 }
 
 /**
- * Regenerates the report table from |reports|.
+ * Regenerates the report table from |sentReports| and |reports|.
  */
 function renderReportTable() {
   const reportTable = $('report-table-body');
   assert(reportTable);
   clearTable(reportTable);
-  reports.forEach(report => reportTable.appendChild(createReportRow(report)));
+  reports.forEach(
+      report =>
+          reportTable.appendChild(createReportRow(report, /*sent=*/ false)));
+  sentReports.forEach(
+      report =>
+          reportTable.appendChild(createReportRow(report, /*sent=*/ true)));
 
   // If there are no reports, add an empty row to indicate the table is
   // purposefully empty.
-  if (!reports.length) {
-    const template = $('report-row').cloneNode(true);
-    const td = template.content.querySelectorAll('td');
-    td[0].textContent = 'No pending reports.';
+  if (!sentReports.length && !reports.length) {
+    const template = $('no-reports-row').cloneNode(true);
     reportTable.appendChild(document.importNode(template.content, true));
-  }
-}
-
-/**
- * Regenerates the sent report table from |sentReports|.
- */
-function renderSentReportTable() {
-  const sentReportTable = $('sent-report-table-body');
-  assert(sentReportTable);
-  clearTable(sentReportTable);
-  sentReports.forEach(
-      report => sentReportTable.appendChild(createSentReportRow(report)));
-
-  // If there are no sent reports, add an empty row to indicate the table is
-  // purposefully empty.
-  if (!sentReports.length) {
-    const template = $('sent-report-row').cloneNode(true);
-    const td = template.content.querySelectorAll('td');
-    td[0].textContent = 'No sent reports.';
-    sentReportTable.appendChild(document.importNode(template.content, true));
   }
 }
 
@@ -204,19 +177,9 @@ function updatePageData() {
         response.enabled ? 'enabled' : 'disabled';
     $('feature-status-content').classList.toggle('disabled', !response.enabled);
 
-    const htmlString = 'The #conversion-measurement-debug-mode flag is ' +
-        '<strong>enabled</strong>, ' +
-        'reports are sent immediately and never pending.';
-
-    if (window.trustedTypes) {
-      if (staticHtmlPolicy === null) {
-        staticHtmlPolicy = trustedTypes.createPolicy(
-            'cr-ui-tree-js-static', {createHTML: () => htmlString});
-      }
-      $('debug-mode-content').innerHTML = staticHtmlPolicy.createHTML('');
-    } else {
-      $('debug-mode-content').innerHTML = htmlString;
-    }
+    $('debug-mode-content').innerHTML =
+        getTrustedHTML`The #conversion-measurement-debug-mode flag is
+ <strong>enabled</strong>, reports are sent immediately and never pending.`;
 
     if (!response.debugMode) {
       $('debug-mode-content').innerText = '';
@@ -228,14 +191,10 @@ function updatePageData() {
     renderSourceTable();
   });
 
-  pageHandler.getPendingReports().then((response) => {
-    reports = response.reports;
+  pageHandler.getSentAndPendingReports().then((response) => {
+    sentReports = response.sentReports;
+    reports = response.pendingReports;
     renderReportTable();
-  });
-
-  pageHandler.getSentReports().then((response) => {
-    sentReports = response.reports;
-    renderSentReportTable();
   });
 }
 

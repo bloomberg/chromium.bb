@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -20,19 +21,6 @@
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
-
-namespace {
-
-std::vector<apps::mojom::CapabilityAccessPtr> CloneCapabilityAccesses(
-    const std::vector<apps::mojom::CapabilityAccessPtr>& clone_from) {
-  std::vector<apps::mojom::CapabilityAccessPtr> clone_to;
-  for (const auto& capability_access : clone_from) {
-    clone_to.push_back(capability_access->Clone());
-  }
-  return clone_to;
-}
-
-}  // namespace
 
 namespace apps {
 
@@ -87,7 +75,23 @@ void WebAppsCrosapi::Launch(const std::string& app_id,
                             int32_t event_flags,
                             apps::mojom::LaunchSource launch_source,
                             apps::mojom::WindowInfoPtr window_info) {
-  // TODO(crbug.com/1144877): Implement this.
+  auto launch_params = crosapi::mojom::LaunchParams::New();
+  launch_params->app_id = app_id;
+  launch_params->launch_source = launch_source;
+  controller_->Launch(std::move(launch_params), base::DoNothing());
+}
+
+void WebAppsCrosapi::LaunchAppWithIntent(
+    const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::LaunchSource launch_source,
+    apps::mojom::WindowInfoPtr window_info) {
+  auto launch_params = crosapi::mojom::LaunchParams::New();
+  launch_params->app_id = app_id;
+  launch_params->launch_source = launch_source;
+  launch_params->intent = std::move(intent);
+  controller_->Launch(std::move(launch_params), base::DoNothing());
 }
 
 void WebAppsCrosapi::Uninstall(const std::string& app_id,
@@ -177,15 +181,12 @@ void WebAppsCrosapi::OnGetMenuModelFromCrosapi(
 
     // Uses integer |command_id| to store menu item index.
     const int command_id = ash::LAUNCH_APP_SHORTCUT_FIRST + item_index;
-    // Passes menu_type argument as shortcut_id to use it in
-    // ExecuteContextMenuCommand().
-    std::string shortcut_id{apps::MenuTypeToString(menu_type)};
 
     auto& icon_image = crosapi_menu_item->image;
 
     icon_image = apps::ApplyBackgroundAndMask(icon_image);
 
-    apps::AddShortcutCommandItem(command_id, shortcut_id,
+    apps::AddShortcutCommandItem(command_id, crosapi_menu_item->id.value_or(""),
                                  crosapi_menu_item->label, icon_image,
                                  &menu_items);
   }
@@ -210,13 +211,22 @@ void WebAppsCrosapi::SetWindowMode(const std::string& app_id,
   controller_->SetWindowMode(app_id, window_mode);
 }
 
+void WebAppsCrosapi::ExecuteContextMenuCommand(const std::string& app_id,
+                                               int command_id,
+                                               const std::string& shortcut_id,
+                                               int64_t display_id) {
+  controller_->ExecuteContextMenuCommand(app_id, shortcut_id,
+                                         base::DoNothing());
+}
+
 void WebAppsCrosapi::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   if (!base::FeatureList::IsEnabled(features::kWebAppsCrosapi))
     return;
   for (auto& subscriber : subscribers_) {
-    subscriber->OnApps(apps_util::CloneApps(deltas), apps::mojom::AppType::kWeb,
-                       false /* should_notify_initialized */);
+    subscriber->OnApps(apps_util::CloneStructPtrVector(deltas),
+                       apps::mojom::AppType::kWeb, should_notify_initialized_);
   }
+  should_notify_initialized_ = false;
 }
 
 void WebAppsCrosapi::RegisterAppController(
@@ -234,7 +244,7 @@ void WebAppsCrosapi::OnCapabilityAccesses(
   if (!base::FeatureList::IsEnabled(features::kWebAppsCrosapi))
     return;
   for (auto& subscriber : subscribers_) {
-    subscriber->OnCapabilityAccesses(CloneCapabilityAccesses(deltas));
+    subscriber->OnCapabilityAccesses(apps_util::CloneStructPtrVector(deltas));
   }
 }
 

@@ -84,11 +84,13 @@ class DownloadManager;
 class ClientHintsControllerDelegate;
 class ContentIndexProvider;
 class DownloadManagerDelegate;
+class FederatedIdentityActiveSessionPermissionContextDelegate;
 class FederatedIdentityRequestPermissionContextDelegate;
 class FederatedIdentitySharingPermissionContextDelegate;
 class FileSystemAccessPermissionContext;
 class PermissionController;
 class PermissionControllerDelegate;
+class PlatformNotificationService;
 class PushMessagingService;
 class ResourceContext;
 class SharedCorsOriginAccessList;
@@ -159,8 +161,13 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the number of StoragePartitions that exist for `this`
   // BrowserContext.
   size_t GetStoragePartitionCount();
+
+  // Starts an asynchronous best-effort attempt to delete all on-disk storage
+  // related to |partition_domain| and synchronously invokes |done_callback|
+  // once all on-disk storage is deleted.
   void AsyncObliterateStoragePartition(const std::string& partition_domain,
-                                       base::OnceClosure on_gc_required);
+                                       base::OnceClosure on_gc_required,
+                                       base::OnceClosure done_callback);
 
   // This function clears the contents of |active_paths| but does not take
   // ownership of the pointer.
@@ -329,6 +336,11 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns a special storage policy implementation, or nullptr.
   virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() = 0;
 
+  // Returns the platform notification service, capable of displaying Web
+  // Notifications to the user. The embedder can return a nullptr if they don't
+  // support this functionality. Must be called on the UI thread.
+  virtual PlatformNotificationService* GetPlatformNotificationService() = 0;
+
   // Returns a push messaging service. The embedder owns the service, and is
   // responsible for ensuring that it outlives RenderProcessHost. It's valid to
   // return nullptr.
@@ -400,6 +412,11 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual std::unique_ptr<media::VideoDecodePerfHistory>
   CreateVideoDecodePerfHistory();
 
+  // Gets the permission context for allowing session management capabilities
+  // between an identity provider and a relying party if one exists, or
+  // nullptr otherwise.
+  virtual FederatedIdentityActiveSessionPermissionContextDelegate*
+  GetFederatedIdentityActiveSessionPermissionContext();
   // Gets the permission context for issuing WebID requests if one exists, or
   // nullptr otherwise.
   virtual FederatedIdentityRequestPermissionContextDelegate*

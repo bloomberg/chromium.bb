@@ -78,11 +78,12 @@ public class AutofillAssistantKeyboardIntegrationTest {
     private boolean isKeyboardVisible() {
         CustomTabActivity activity = mTestRule.getActivity();
         return activity.getWindowAndroid().getKeyboardDelegate().isKeyboardShowing(
-                activity, activity.getCompositorViewHolder());
+                activity, activity.getCompositorViewHolderForTesting());
     }
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1245563")
     public void keyboardDoesNotShowOnElementClick() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
 

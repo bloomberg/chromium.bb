@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
 
 #include "base/callback_helpers.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -15,14 +16,17 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_menu_model_factory.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -39,12 +43,44 @@ constexpr char kRelationship[] = "delegate_permission/common.handle_all_urls";
 }
 #endif
 
+namespace {
+
+// SystemWebAppDelegate provides menu.
+class SystemAppTabMenuModelFactory : public TabMenuModelFactory {
+ public:
+  explicit SystemAppTabMenuModelFactory(
+      const web_app::SystemWebAppDelegate* system_app)
+      : system_app_(system_app) {}
+  SystemAppTabMenuModelFactory(const SystemAppTabMenuModelFactory&) = delete;
+  SystemAppTabMenuModelFactory& operator=(const SystemAppTabMenuModelFactory&) =
+      delete;
+  ~SystemAppTabMenuModelFactory() override = default;
+
+  std::unique_ptr<ui::SimpleMenuModel> Create(
+      ui::SimpleMenuModel::Delegate* delegate,
+      TabMenuModelDelegate* tab_menu_model_delegate,
+      TabStripModel*,
+      int) override {
+    return system_app_->GetTabMenuModel(delegate);
+  }
+
+ private:
+  const web_app::SystemWebAppDelegate* system_app_;
+};
+
+}  // namespace
+
 namespace web_app {
 
-WebAppBrowserController::WebAppBrowserController(Browser* browser)
-    : AppBrowserController(browser,
-                           GetAppIdFromApplicationName(browser->app_name())),
-      provider_(*WebAppProvider::GetForLocalApps(browser->profile())) {
+WebAppBrowserController::WebAppBrowserController(
+    WebAppProvider& provider,
+    Browser* browser,
+    AppId app_id,
+    const SystemWebAppDelegate* system_app,
+    bool has_tab_strip)
+    : AppBrowserController(browser, std::move(app_id), has_tab_strip),
+      provider_(provider),
+      system_app_(system_app) {
   registrar_observation_.Observe(&provider_.registrar());
   PerformDigitalAssetLinkVerification(browser);
 }
@@ -64,6 +100,14 @@ bool WebAppBrowserController::IsHostedApp() const {
   return true;
 }
 
+std::unique_ptr<TabMenuModelFactory>
+WebAppBrowserController::GetTabMenuModelFactory() const {
+  if (system_app() && system_app()->HasCustomTabMenuModel()) {
+    return std::make_unique<SystemAppTabMenuModelFactory>(system_app());
+  }
+  return nullptr;
+}
+
 bool WebAppBrowserController::AppUsesWindowControlsOverlay() const {
   DisplayMode display = registrar().GetAppEffectiveDisplayMode(app_id());
   return display == DisplayMode::kWindowControlsOverlay;
@@ -77,8 +121,27 @@ bool WebAppBrowserController::IsWindowControlsOverlayEnabled() const {
 void WebAppBrowserController::ToggleWindowControlsOverlayEnabled() {
   DCHECK(AppUsesWindowControlsOverlay());
 
-  provider_.registry_controller().SetAppWindowControlsOverlayEnabled(
+  provider_.sync_bridge().SetAppWindowControlsOverlayEnabled(
       app_id(), !registrar().GetWindowControlsOverlayEnabled(app_id()));
+}
+
+gfx::Rect WebAppBrowserController::GetDefaultBounds() const {
+  if (system_app_) {
+    return system_app_->GetDefaultBounds(browser());
+  }
+
+  return gfx::Rect();
+}
+
+bool WebAppBrowserController::HasReloadButton() const {
+  if (!system_app_)
+    return true;
+
+  return system_app_->ShouldHaveReloadButtonInMinimalUi();
+}
+
+const SystemWebAppDelegate* WebAppBrowserController::system_app() const {
+  return system_app_;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -136,9 +199,9 @@ ui::ImageModel WebAppBrowserController::GetWindowAppIcon() const {
 #endif
 
   if (provider_.icon_manager().HasSmallestIcon(app_id(), {IconPurpose::ANY},
-                                               web_app::kWebAppIconSmall)) {
+                                               kWebAppIconSmall)) {
     provider_.icon_manager().ReadSmallestIconAny(
-        app_id(), web_app::kWebAppIconSmall,
+        app_id(), kWebAppIconSmall,
         base::BindOnce(&WebAppBrowserController::OnReadIcon,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -152,7 +215,7 @@ ui::ImageModel WebAppBrowserController::GetWindowIcon() const {
 
 absl::optional<SkColor> WebAppBrowserController::GetThemeColor() const {
   // System App popups (settings pages) always use default theme.
-  if (is_for_system_web_app() && browser()->is_type_app_popup())
+  if (system_app_ && browser()->is_type_app_popup())
     return absl::nullopt;
 
   absl::optional<SkColor> web_theme_color =
@@ -210,7 +273,20 @@ std::u16string WebAppBrowserController::GetTitle() const {
     return base::UTF8ToUTF16(registrar().GetAppShortName(app_id()));
   }
 
-  return AppBrowserController::GetTitle();
+  const std::u16string raw_title = AppBrowserController::GetTitle();
+
+  if (!base::FeatureList::IsEnabled(features::kPrefixWebAppWindowsWithAppName))
+    return raw_title;
+
+  const std::u16string app_name =
+      base::UTF8ToUTF16(provider_.registrar().GetAppShortName(app_id()));
+  if (base::StartsWith(raw_title, app_name)) {
+    return raw_title;
+  } else if (raw_title.empty()) {
+    return app_name;
+  } else {
+    return base::StrCat({app_name, u" - ", raw_title});
+  }
 }
 
 std::u16string WebAppBrowserController::GetAppShortName() const {
@@ -241,12 +317,12 @@ bool WebAppBrowserController::IsInstalled() const {
 
 void WebAppBrowserController::OnTabInserted(content::WebContents* contents) {
   AppBrowserController::OnTabInserted(contents);
-  web_app::SetAppPrefsForWebContents(contents);
+  SetAppPrefsForWebContents(contents);
 }
 
 void WebAppBrowserController::OnTabRemoved(content::WebContents* contents) {
   AppBrowserController::OnTabRemoved(contents);
-  web_app::ClearAppPrefsForWebContents(contents);
+  ClearAppPrefsForWebContents(contents);
 }
 
 const WebAppRegistrar& WebAppBrowserController::registrar() const {
@@ -257,7 +333,7 @@ void WebAppBrowserController::LoadAppIcon(bool allow_placeholder_icon) const {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
   proxy->LoadIcon(proxy->AppRegistryCache().GetAppType(app_id()), app_id(),
-                  apps::mojom::IconType::kStandard, web_app::kWebAppIconSmall,
+                  apps::mojom::IconType::kStandard, kWebAppIconSmall,
                   allow_placeholder_icon,
                   base::BindOnce(&WebAppBrowserController::OnLoadIcon,
                                  weak_ptr_factory_.GetWeakPtr()));

@@ -134,6 +134,7 @@ FileSystemAccessFileWriterImpl::FileSystemAccessFileWriterImpl(
     const BindingContext& context,
     const storage::FileSystemURL& url,
     const storage::FileSystemURL& swap_url,
+    scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
     const SharedHandleState& handle_state,
     mojo::PendingReceiver<blink::mojom::FileSystemAccessFileWriter> receiver,
     bool has_transient_user_activation,
@@ -142,11 +143,14 @@ FileSystemAccessFileWriterImpl::FileSystemAccessFileWriterImpl(
     : FileSystemAccessHandleBase(manager, context, url, handle_state),
       receiver_(this, std::move(receiver)),
       swap_url_(swap_url),
+      lock_(std::move(lock)),
       quarantine_connection_callback_(
           std::move(quarantine_connection_callback)),
       has_transient_user_activation_(has_transient_user_activation),
       auto_close_(auto_close) {
   DCHECK_EQ(swap_url.type(), url.type());
+  DCHECK_EQ(lock_->type(),
+            FileSystemAccessWriteLockManager::WriteLockType::kShared);
   receiver_.set_disconnect_handler(base::BindOnce(
       &FileSystemAccessFileWriterImpl::OnDisconnect, base::Unretained(this)));
 }
@@ -227,14 +231,14 @@ void FileSystemAccessFileWriterImpl::Abort(AbortCallback callback) {
       std::move(callback));
 }
 
-// Do not call this method if |close_callback_| is not set.
+// Do not call this method if `close_callback_` is not set.
 void FileSystemAccessFileWriterImpl::CallCloseCallbackAndDeleteThis(
     blink::mojom::FileSystemAccessErrorPtr result) {
   should_purge_swap_file_on_destruction_ =
       result->status != blink::mojom::FileSystemAccessStatus::kOk;
   std::move(close_callback_).Run(std::move(result));
 
-  // |this| is deleted after this call.
+  // `this` is deleted after this call.
   manager()->RemoveFileWriter(this);
 }
 
@@ -247,7 +251,7 @@ void FileSystemAccessFileWriterImpl::OnDisconnect() {
     return;
 
   if (auto_close_) {
-    // Close the Writer. |this| is deleted via
+    // Close the Writer. `this` is deleted via
     // CallCloseCallbackAndDeleteThis when Close() finishes.
     Close(base::BindOnce([](blink::mojom::FileSystemAccessErrorPtr result) {
       if (result->status != blink::mojom::FileSystemAccessStatus::kOk) {
@@ -258,7 +262,7 @@ void FileSystemAccessFileWriterImpl::OnDisconnect() {
     return;
   }
 
-  // Mojo connection severed before Close() called. Destroy |this|.
+  // Mojo connection severed before Close() called. Destroy `this`.
   manager()->RemoveFileWriter(this);
 }
 
@@ -363,7 +367,7 @@ void FileSystemAccessFileWriterImpl::AbortImpl(AbortCallback callback) {
 
   std::move(callback).Run(file_system_access_error::Ok());
 
-  // |this| is deleted after this call.
+  // `this` is deleted after this call.
   manager()->RemoveFileWriter(this);
 }
 
@@ -433,7 +437,7 @@ void FileSystemAccessFileWriterImpl::DidAfterWriteCheck(
   DoFileSystemOperation(
       FROM_HERE, &FileSystemOperationRunner::MoveFileLocal,
       std::move(result_callback), swap_url(), url(),
-      storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED);
+      storage::FileSystemOperation::OPTION_PRESERVE_DESTINATION_PERMISSIONS);
 }
 
 void FileSystemAccessFileWriterImpl::DidSwapFileSkipQuarantine(

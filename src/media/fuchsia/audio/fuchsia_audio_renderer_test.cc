@@ -9,6 +9,7 @@
 #include <lib/fidl/cpp/binding.h>
 
 #include "base/containers/queue.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -489,6 +490,11 @@ class FuchsiaAudioRendererTest
                               base::TimeTicks expected_wall_clock,
                               bool is_time_moving);
 
+  void TestPcmStream(SampleFormat sample_format,
+                     size_t bytes_per_sample_input,
+                     fuchsia::media::AudioSampleFormat fuchsia_sample_format,
+                     size_t bytes_per_sample_output);
+
   // Starts playback from |start_time| at the specified |playback_rate| and
   // verifies that the clock works correctly.
   void StartPlaybackAndVerifyClock(base::TimeDelta start_time,
@@ -520,8 +526,8 @@ void FuchsiaAudioRendererTest::CreateUninitializedRenderer() {
 }
 
 void FuchsiaAudioRendererTest::CreateTestDemuxerStream() {
-  AudioDecoderConfig config(kCodecPCM, kSampleFormatF32, CHANNEL_LAYOUT_MONO,
-                            kDefaultSampleRate, {},
+  AudioDecoderConfig config(AudioCodec::kPCM, kSampleFormatF32,
+                            CHANNEL_LAYOUT_MONO, kDefaultSampleRate, {},
                             EncryptionScheme::kUnencrypted);
 
   if (GetParam().simulate_fuchsia_cdm) {
@@ -793,8 +799,8 @@ TEST_P(FuchsiaAudioRendererTest, ChangeConfig) {
   const size_t kNewSampleRate = 44100;
   const std::vector<uint8_t> kArbitraryExtraData = {1, 2, 3};
   AudioDecoderConfig updated_config(
-      kCodecOpus, kSampleFormatF32, CHANNEL_LAYOUT_STEREO, kNewSampleRate,
-      kArbitraryExtraData, EncryptionScheme::kUnencrypted);
+      AudioCodec::kOpus, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
+      kNewSampleRate, kArbitraryExtraData, EncryptionScheme::kUnencrypted);
   demuxer_stream_->QueueReadResult(
       TestDemuxerStream::ReadResult(updated_config));
 
@@ -1005,6 +1011,79 @@ TEST_P(FuchsiaAudioRendererTest, PlaybackBeforeSinkCreation) {
   audio_consumer_->WaitStarted();
   stream_sink_ = audio_consumer_->TakeStreamSink();
   EXPECT_GT(stream_sink_->received_packets()->size(), 0U);
+}
+
+void FuchsiaAudioRendererTest::TestPcmStream(
+    SampleFormat sample_format,
+    size_t bytes_per_sample_input,
+    fuchsia::media::AudioSampleFormat fuchsia_sample_format,
+    size_t bytes_per_sample_output) {
+  AudioDecoderConfig config(AudioCodec::kPCM, sample_format,
+                            CHANNEL_LAYOUT_STEREO, kDefaultSampleRate, {},
+                            EncryptionScheme::kUnencrypted);
+
+  demuxer_stream_ = std::make_unique<TestDemuxerStream>(config);
+
+  ASSERT_NO_FATAL_FAILURE(CreateAndInitializeRenderer());
+  stream_sink_ = audio_consumer_->WaitStreamSinkConnected();
+  EXPECT_EQ(stream_sink_->stream_type().sample_format, fuchsia_sample_format);
+
+  // Create a dummy packet that contains 1 sample.
+  const size_t kNumSamples = 10;
+  const size_t kChannels = 2;
+  size_t input_buffer_size = kNumSamples * kChannels * bytes_per_sample_input;
+  scoped_refptr<DecoderBuffer> buffer = new DecoderBuffer(input_buffer_size);
+  buffer->set_timestamp(demuxer_stream_pos_);
+  buffer->set_duration(kPacketDuration);
+  for (size_t i = 0; i < input_buffer_size; ++i) {
+    buffer->writable_data()[i] = i;
+  }
+  demuxer_stream_->QueueReadResult(TestDemuxerStream::ReadResult(buffer));
+
+  // Start playback. The renderer will process the packet queued above.
+  audio_renderer_->StartPlaying();
+  task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(stream_sink_->received_packets()->size(), 1U);
+  auto packet = stream_sink_->received_packets()->at(0);
+
+  // Read and verify packet content
+  size_t output_size = kNumSamples * kChannels * bytes_per_sample_output;
+  EXPECT_EQ(packet.payload_size, output_size);
+  uint8_t data[output_size];
+  zx_status_t result = stream_sink_->buffers()[packet.payload_buffer_id].read(
+      data, 0, output_size);
+  ZX_CHECK(result == ZX_OK, result);
+
+  for (size_t i = 0; i < output_size; ++i) {
+    size_t pos_within_sample = i % bytes_per_sample_output;
+    uint8_t expected_value =
+        (pos_within_sample < bytes_per_sample_input)
+            ? (i / bytes_per_sample_output * bytes_per_sample_input +
+               pos_within_sample)
+            : 0;
+    EXPECT_EQ(data[i], expected_value);
+  }
+}
+
+TEST_F(FuchsiaAudioRendererTest, PcmU8Stream) {
+  TestPcmStream(kSampleFormatU8, 1,
+                fuchsia::media::AudioSampleFormat::UNSIGNED_8, 1);
+}
+
+TEST_F(FuchsiaAudioRendererTest, PcmS16Stream) {
+  TestPcmStream(kSampleFormatS16, 2,
+                fuchsia::media::AudioSampleFormat::SIGNED_16, 2);
+}
+
+TEST_F(FuchsiaAudioRendererTest, PcmS24Stream) {
+  TestPcmStream(kSampleFormatS24, 3,
+                fuchsia::media::AudioSampleFormat::SIGNED_24_IN_32, 4);
+}
+
+TEST_F(FuchsiaAudioRendererTest, PcmF32Stream) {
+  TestPcmStream(kSampleFormatF32, 4, fuchsia::media::AudioSampleFormat::FLOAT,
+                4);
 }
 
 }  // namespace media

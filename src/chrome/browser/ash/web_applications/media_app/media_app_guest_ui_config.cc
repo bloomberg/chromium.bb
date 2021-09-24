@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
+#include "ash/webui/media_app_ui/url_constants.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chromeos/components/media_app_ui/url_constants.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -22,6 +22,9 @@ ChromeMediaAppGuestUIDelegate::ChromeMediaAppGuestUIDelegate() = default;
 void ChromeMediaAppGuestUIDelegate::PopulateLoadTimeData(
     content::WebUIDataSource* source) {
   source->AddString("appLocale", g_browser_process->GetApplicationLocale());
+  source->AddBoolean(
+      "audioHandler",
+      base::FeatureList::IsEnabled(chromeos::features::kMediaAppHandlesAudio));
   source->AddBoolean("pdfInInk", base::FeatureList::IsEnabled(
                                      chromeos::features::kMediaAppHandlesPdf));
   version_info::Channel channel = chrome::GetChannel();
@@ -32,12 +35,12 @@ void ChromeMediaAppGuestUIDelegate::PopulateLoadTimeData(
 
 MediaAppGuestUIConfig::MediaAppGuestUIConfig()
     : WebUIConfig(content::kChromeUIUntrustedScheme,
-                  chromeos::kChromeUIMediaAppHost) {}
+                  ash::kChromeUIMediaAppHost) {}
 
 MediaAppGuestUIConfig::~MediaAppGuestUIConfig() = default;
 
 std::unique_ptr<content::WebUIController>
 MediaAppGuestUIConfig::CreateWebUIController(content::WebUI* web_ui) {
   ChromeMediaAppGuestUIDelegate delegate;
-  return std::make_unique<chromeos::MediaAppGuestUI>(web_ui, &delegate);
+  return std::make_unique<ash::MediaAppGuestUI>(web_ui, &delegate);
 }

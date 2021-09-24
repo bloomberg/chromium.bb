@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -543,6 +544,11 @@ class IdentityManager : public KeyedService,
       const std::string& given_name,
       const std::string& locale,
       const std::string& picture_url);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  friend account_manager::AccountManager* GetAccountManager(
+      IdentityManager* identity_manager);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Temporary access to getters (e.g. GetTokenService()).
   // TODO(https://crbug.com/944127): Remove this friendship by

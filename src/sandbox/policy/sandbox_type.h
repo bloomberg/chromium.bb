@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "sandbox/policy/export.h"
 #include "sandbox/policy/mojom/sandbox.mojom.h"
@@ -32,9 +33,6 @@ enum class SandboxType {
 
   // The XR Compositing process.
   kXrCompositing,
-
-  // The proxy resolver process.
-  kProxyResolver,
 
   // The PDF conversion service process used in printing.
   kPdfConversion,
@@ -65,8 +63,10 @@ enum class SandboxType {
   // GPU process.
   kGpu,
 
+#if BUILDFLAG(ENABLE_PLUGINS)
   // The PPAPI plugin process.
   kPpapi,
+#endif
 
   // The network service process.
   kNetwork,
@@ -110,14 +110,16 @@ enum class SandboxType {
   kZygoteIntermediateSandbox,
 #endif
 
-  // The speech recognition service process.
-  kSpeechRecognition,
-
+#if defined(OS_FUCHSIA)
   // Equivalent to no sandbox on all non-Fuchsia platforms.
   // Minimally privileged sandbox on Fuchsia.
   kVideoCapture,
+#endif  // defined(OS_FUCHSIA)
 
-  kMaxValue = kVideoCapture
+  // The speech recognition service process.
+  kSpeechRecognition,
+
+  kMaxValue = kSpeechRecognition
 };
 
 inline constexpr sandbox::policy::SandboxType MapToSandboxType(
@@ -125,20 +127,38 @@ inline constexpr sandbox::policy::SandboxType MapToSandboxType(
   switch (mojo_sandbox) {
     case sandbox::mojom::Sandbox::kCdm:
       return sandbox::policy::SandboxType::kCdm;
+    case sandbox::mojom::Sandbox::kGpu:
+      return sandbox::policy::SandboxType::kGpu;
+    case sandbox::mojom::Sandbox::kNoSandbox:
+      return sandbox::policy::SandboxType::kNoSandbox;
     case sandbox::mojom::Sandbox::kPrintCompositor:
       return sandbox::policy::SandboxType::kPrintCompositor;
     case sandbox::mojom::Sandbox::kService:
       return sandbox::policy::SandboxType::kService;
+    case sandbox::mojom::Sandbox::kSpeechRecognition:
+      return sandbox::policy::SandboxType::kSpeechRecognition;
     case sandbox::mojom::Sandbox::kUtility:
       return sandbox::policy::SandboxType::kUtility;
+#if defined(OS_FUCHSIA)
     case sandbox::mojom::Sandbox::kVideoCapture:
       return sandbox::policy::SandboxType::kVideoCapture;
+#endif
 #if defined(OS_WIN)
+    case sandbox::mojom::Sandbox::kIconReader:
+      return sandbox::policy::SandboxType::kIconReader;
     case sandbox::mojom::Sandbox::kMediaFoundationCdm:
       return sandbox::policy::SandboxType::kMediaFoundationCdm;
+    case sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges:
+      return sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges;
+    case sandbox::mojom::Sandbox::kPdfConversion:
+      return sandbox::policy::SandboxType::kPdfConversion;
     case sandbox::mojom::Sandbox::kXrCompositing:
       return sandbox::policy::SandboxType::kXrCompositing;
 #endif  // OS_WIN
+#if defined(OS_MAC)
+    case sandbox::mojom::Sandbox::kMirroring:
+      return sandbox::policy::SandboxType::kMirroring;
+#endif  // defined(OS_MAC)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case sandbox::mojom::Sandbox::kIme:
       return sandbox::policy::SandboxType::kIme;

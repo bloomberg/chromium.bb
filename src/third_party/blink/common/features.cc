@@ -50,7 +50,7 @@ const base::Feature kPaintHolding{"PaintHolding",
 
 // Enable defer commits to avoid flash of unstyled content, for all navigation.
 const base::Feature kPaintHoldingCrossOrigin{"PaintHoldingCrossOrigin",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable eagerly setting up a CacheStorage interface pointer and
 // passing it to service workers on startup as an optimization.
@@ -66,6 +66,10 @@ const base::Feature kScriptStreaming{"ScriptStreaming",
 // Allow streaming small (<30kB) scripts.
 const base::Feature kSmallScriptStreaming{"SmallScriptStreaming",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls off-thread code cache consumption.
+const base::Feature kConsumeCodeCacheOffThread{
+    "ConsumeCodeCacheOffThread", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables user level memory pressure signal generation on Android.
 const base::Feature kUserLevelMemoryPressureSignal{
@@ -132,6 +136,11 @@ const base::Feature kLangClientHintHeader{"LangClientHintHeader",
 // Handle prefers-color-scheme user preference media feature via client hints.
 const base::Feature kPrefersColorSchemeClientHintHeader{
     "PrefersColorSchemeClientHintHeader", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether the Viewport Height client hint can be added to request
+// headers.
+const base::Feature kViewportHeightClientHintHeader{
+    "ViewportHeightClientHintHeader", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Used to control the collection of anchor element metrics (crbug.com/856683).
 // If kNavigationPredictor is enabled, then metrics of anchor elements
@@ -537,12 +546,6 @@ const base::Feature kBlinkHeapIncrementalMarking{
 const base::Feature kBlinkHeapIncrementalMarkingStress{
     "BlinkHeapIncrementalMarkingStress", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables removing AppCache delays when triggering requests when the HTML was
-// not fetched from AppCache.
-const base::Feature kVerifyHTMLFetchedFromAppCacheBeforeDelay{
-    "VerifyHTMLFetchedFromAppCacheBeforeDelay",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether we use ThreadPriority::DISPLAY for renderer
 // compositor & IO threads.
 const base::Feature kBlinkCompositorUseDisplayThreadPriority {
@@ -648,7 +651,7 @@ const base::Feature kKeepScriptResourceAlive{"KeepScriptResourceAlive",
 // both backend and API.  If disabled, then it will turn off the backend and
 // api, regardless of the presence of valid origin trial tokens.  Disabling
 // AppCache will also delete any AppCache data from the profile directory.
-const base::Feature kAppCache{"AppCache", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAppCache{"AppCache", base::FEATURE_DISABLED_BY_DEFAULT};
 // If AppCacheRequireOriginTrial is enabled, then the AppCache backend in the
 // browser will require origin trial tokens in order to load or store manifests
 // and their contents.
@@ -698,7 +701,7 @@ const base::Feature kResamplingInputEvents{"ResamplingInputEvents",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kInputTargetClientHighPriority{
-    "InputTargetClientHighPriority", base::FEATURE_DISABLED_BY_DEFAULT};
+    "InputTargetClientHighPriority", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kResamplingScrollEvents{"ResamplingScrollEvents",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -741,14 +744,9 @@ const char kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[] =
 const base::Feature kCompressParkableStrings{"CompressParkableStrings",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether ParkableStrings can be written out to disk.
-// Depends on compression above.
-const base::Feature kParkableStringsToDisk{"ParkableStringsToDisk",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 bool IsParkableStringsToDiskEnabled() {
-  return base::FeatureList::IsEnabled(kParkableStringsToDisk) &&
-         base::FeatureList::IsEnabled(kCompressParkableStrings);
+  // Always enabled as soon as compression is enabled.
+  return base::FeatureList::IsEnabled(kCompressParkableStrings);
 }
 
 // Controls whether to auto select on contextual menu click in Chrome OS.
@@ -756,7 +754,7 @@ const base::Feature kCrOSAutoSelect{"CrOSAutoSelect",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCLSScrollAnchoring{"CLSScrollAnchoring",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Reduce the amount of information in the default 'referer' header for
 // cross-origin requests.
@@ -845,12 +843,15 @@ const base::Feature kWebAppNoteTaking{"WebAppNoteTaking",
 // Makes network loading tasks unfreezable so that they can be processed while
 // the page is frozen.
 const base::Feature kLoadingTasksUnfreezable{"LoadingTasksUnfreezable",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Makes freezing of frame-associated task queues happen even when KeepActive is
-// true.
-const base::Feature kFreezeWhileKeepActive{"FreezeWhileKeepActive",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+// BackForwardCache:
+// Only use per-process buffer limit and not per-request limt. When this flag is
+// on network requests can continue buffering data as long as it is under per
+// process limit.
+const base::Feature kNetworkRequestUsesOnlyPerProcessBufferLimit{
+    "NetworkRequestUsesOnlyPerProcessBufferLimit",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for the new behavior whereby anchors with target=_blank get
 // noopener behavior by default. TODO(crbug.com/898942): Remove in Chrome 95.
@@ -1007,7 +1008,7 @@ const base::Feature kDesktopPWAsSubApps{"DesktopPWAsSubApps",
 
 // Enables reporting all JavaScript frameworks via a manual traversal to detect
 // the properties and attributes required.
-const base::Feature kReportAllJavascriptFrameworks{
+const base::Feature kReportAllJavaScriptFrameworks{
     "ReportAllJavaScriptFrameworks", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Suppresses console errors for CORS problems which report an associated
@@ -1015,10 +1016,27 @@ const base::Feature kReportAllJavascriptFrameworks{
 const base::Feature kCORSErrorsIssueOnly{"CORSErrorsIssueOnly",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables deprecating warnings (in Issues tab of DevTools) for third party
-// context use of WebSQL (`DOMWindowWebDatabase::openDatabase`).
-const base::Feature kDeprecateThirdPartyContextWebSQL{
-    "DeprecateThirdPartyContextWebSQL", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSyncLoadDataUrlFonts{"SyncLoadDataUrlFonts",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPersistentQuotaIsTemporaryQuota{
+    "PersistentQuotaIsTemporaryQuota", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDelayLowPriorityRequestsAccordingToNetworkState{
+    "DelayLowPriorityRequestsAccordingToNetworkState",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode{
+    &kDelayLowPriorityRequestsAccordingToNetworkState,
+    "MaxNumOfThrottleableRequestsInTightMode", 5};
+
+const base::FeatureParam<base::TimeDelta> kHttpRttThreshold{
+    &kDelayLowPriorityRequestsAccordingToNetworkState, "HttpRttThreshold",
+    base::TimeDelta::FromMilliseconds(450)};
+
+const base::FeatureParam<double> kCostReductionOfMultiplexedRequests{
+    &kDelayLowPriorityRequestsAccordingToNetworkState,
+    "CostReductionOfMultiplexedRequests", 0.5};
 
 }  // namespace features
 }  // namespace blink

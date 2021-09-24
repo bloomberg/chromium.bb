@@ -71,7 +71,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -332,14 +331,16 @@ void RenderWidgetHostViewAndroid::InitAsChild(gfx::NativeView parent_view) {
 }
 
 void RenderWidgetHostViewAndroid::InitAsPopup(
-    RenderWidgetHostView* parent_host_view, const gfx::Rect& pos) {
+    RenderWidgetHostView* parent_host_view,
+    const gfx::Rect& pos,
+    const gfx::Rect& anchor_rect) {
   NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewAndroid::NotifyVirtualKeyboardOverlayRect(
     const gfx::Rect& keyboard_rect) {
-  RenderFrameHostImpl* frame_host = static_cast<RenderFrameHostImpl*>(
-      RenderViewHost::From(host())->GetMainFrame());
+  RenderFrameHostImpl* frame_host =
+      RenderViewHostImpl::From(host())->GetMainRenderFrameHost();
   if (frame_host && frame_host->ShouldVirtualKeyboardOverlayContent()) {
     float scale = IsUseZoomForDSFEnabled() ? 1 / view_.GetDipScale() : 1.f;
     frame_host->NotifyVirtualKeyboardOverlayRect(
@@ -348,8 +349,8 @@ void RenderWidgetHostViewAndroid::NotifyVirtualKeyboardOverlayRect(
 }
 
 bool RenderWidgetHostViewAndroid::ShouldVirtualKeyboardOverlayContent() {
-  RenderFrameHostImpl* frame_host = static_cast<RenderFrameHostImpl*>(
-      RenderViewHost::From(host())->GetMainFrame());
+  RenderFrameHostImpl* frame_host =
+      RenderViewHostImpl::From(host())->GetMainRenderFrameHost();
   return frame_host && frame_host->ShouldVirtualKeyboardOverlayContent();
 }
 
@@ -613,6 +614,10 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedAfterActivation(
       metadata.local_surface_id.value_or(viz::LocalSurfaceId());
 
   if (activated_local_surface_id.is_valid()) {
+    // We have received content, ensure that any subsequent navigation allocates
+    // a new surface.
+    pre_navigation_content_ = true;
+
     while (!rotation_metrics_.empty()) {
       auto rotation_target = rotation_metrics_.front();
       // Activation from a previous surface before the new rotation has set a
@@ -865,12 +870,16 @@ void RenderWidgetHostViewAndroid::OnTextSelectionChanged(
 }
 
 viz::FrameSinkId RenderWidgetHostViewAndroid::GetRootFrameSinkId() {
+  if (sync_compositor_)
+    return sync_compositor_->GetFrameSinkId();
   if (view_.GetWindowAndroid() && view_.GetWindowAndroid()->GetCompositor())
     return view_.GetWindowAndroid()->GetCompositor()->GetFrameSinkId();
   return viz::FrameSinkId();
 }
 
 viz::SurfaceId RenderWidgetHostViewAndroid::GetCurrentSurfaceId() const {
+  if (sync_compositor_)
+    return sync_compositor_->GetSurfaceId();
   return delegated_frame_host_ ? delegated_frame_host_->SurfaceId()
                                : viz::SurfaceId();
 }
@@ -1044,9 +1053,13 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
 
 void RenderWidgetHostViewAndroid::OnDidNavigateMainFrameToNewPage() {
   // Move to front only if we are the primary page (we don't want to receive
-  // events in the Prerender)
+  // events in the Prerender). GetMainRenderFrameHost() may be null in
+  // tests.
   if (view_.parent() &&
-      RenderViewHost::From(host())->GetMainFrame()->GetLifecycleState() ==
+      RenderViewHostImpl::From(host())->GetMainRenderFrameHost() &&
+      RenderViewHostImpl::From(host())
+              ->GetMainRenderFrameHost()
+              ->GetLifecycleState() ==
           RenderFrameHost::LifecycleState::kActive) {
     view_.parent()->MoveToFront(&view_);
   }
@@ -1099,7 +1112,11 @@ void RenderWidgetHostViewAndroid::UpdateTooltipUnderCursor(
 void RenderWidgetHostViewAndroid::UpdateTooltipFromKeyboard(
     const std::u16string& tooltip_text,
     const gfx::Rect& bounds) {
-  // Tooltips don't makes sense on Android.
+  // Tooltips don't make sense on Android.
+}
+
+void RenderWidgetHostViewAndroid::ClearKeyboardTriggeredTooltip() {
+  // Tooltips don't make sense on Android.
 }
 
 void RenderWidgetHostViewAndroid::UpdateBackgroundColor() {
@@ -1227,8 +1244,8 @@ void RenderWidgetHostViewAndroid::FrameTokenChangedForSynchronousCompositor(
     // we're currently in SynchronousCopyContents, as this can lead to
     // redundant copies.
     if (!in_sync_copy_contents_) {
-      RenderFrameHost* frame_host =
-          RenderViewHost::From(host())->GetMainFrame();
+      RenderFrameHostImpl* frame_host =
+          RenderViewHostImpl::From(host())->GetMainRenderFrameHost();
       if (frame_host && last_render_frame_metadata_) {
         // Update our |root_scroll_offset|, as changes to this value do not
         // trigger a new RenderFrameMetadata, and it may be out of date. This
@@ -1251,8 +1268,8 @@ void RenderWidgetHostViewAndroid::SetSynchronousCompositorClient(
 
 void RenderWidgetHostViewAndroid::MaybeCreateSynchronousCompositor() {
   if (!sync_compositor_ && synchronous_compositor_client_) {
-    sync_compositor_ =
-        SynchronousCompositorHost::Create(this, host()->GetFrameSinkId());
+    sync_compositor_ = SynchronousCompositorHost::Create(
+        this, host()->GetFrameSinkId(), GetHostFrameSinkManager());
     view_.SetCopyOutputCallback(sync_compositor_->GetCopyViewCallback());
     if (renderer_widget_created_)
       sync_compositor_->InitMojo();
@@ -2494,7 +2511,17 @@ void RenderWidgetHostViewAndroid::DidNavigate() {
     local_surface_id_allocator_.Invalidate();
     navigation_while_hidden_ = true;
   } else {
-    if (is_first_navigation_) {
+    // TODO(jonross): This was a legacy optimization to not perform too many
+    // Surface Synchronization iterations for the first navigation. However we
+    // currently are performing 5 full synchornizations before navigation
+    // completes anyways. So we need to re-do RWHVA setup.
+    // (https://crbug.com/1245652)
+    //
+    // In the interim we will not allocate a new Surface as long as the Renderer
+    // has yet to produce any content. If we have existing content always
+    // allocate a new surface, as the content will be from a pre-navigation
+    // source.
+    if (!pre_navigation_content_) {
       SynchronizeVisualProperties(
           cc::DeadlinePolicy::UseExistingDeadline(),
           local_surface_id_allocator_.GetCurrentLocalSurfaceId());
@@ -2505,7 +2532,7 @@ void RenderWidgetHostViewAndroid::DidNavigate() {
     // Only notify of navigation once a surface has been embedded.
     delegated_frame_host_->DidNavigate();
   }
-  is_first_navigation_ = false;
+  pre_navigation_content_ = true;
 }
 
 WebContentsAccessibility*

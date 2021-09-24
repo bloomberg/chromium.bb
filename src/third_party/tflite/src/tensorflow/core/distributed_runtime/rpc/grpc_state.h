@@ -44,34 +44,49 @@ class RPCState : public GrpcClientCQTag {
   RPCState(::grpc::GenericStub* stub, ::grpc::CompletionQueue* cq,
            const ::grpc::string& method, const protobuf::Message& request,
            Response* response, StatusCallback done, CallOptions* call_opts,
-           thread::ThreadPool* threadpool, int32 max_retries = 0,
+           thread::ThreadPool* threadpool, int32_t max_retries = 0,
            bool fail_fast = true, const string* target = nullptr)
       : RPCState(
             stub, cq, method, request, response, std::move(done), call_opts,
             threadpool,
-            // 1) If GRPC_FAIL_FAST is specified, fail_fast=$GRPC_FAIL_FAST.
-            // See b/141948186.
-            // 2) Otherwise, if the platform is Google, use the fail_fast from
-            // the caller. See b/140260119.
-            // 3) Otherwise, use fail_fast=false.
-            [fail_fast]() -> bool {
-              bool x;
-#if defined(PLATFORM_GOOGLE)
-              TF_CHECK_OK(ReadBoolFromEnvVar("GRPC_FAIL_FAST", fail_fast, &x));
-#else
-              TF_CHECK_OK(ReadBoolFromEnvVar("GRPC_FAIL_FAST", false, &x));
-#endif  // PLATFORM_GOOGLE
-              return x;
+            // 1) If GRPC_FAIL_FAST is set to 'true' or 'false',
+            // fail_fast=$GRPC_FAIL_FAST. See b/141948186.
+            // 2) Otherwise if GRPC_FAIL_FAST is set to 'use_caller', use the
+            // fail_fast from the caller. See b/140260119.
+            //
+            // Current default: use caller's fail_fast argument.
+            //
+            // NOTE: Callers mostly set fail_fast=true to prevent job hanging
+            // on worker task failures, except a few cases such as GetStatus
+            // in cluster initialization and collective param resolution.
+            [fail_fast, &done]() -> bool {
+              string fail_fast_env;
+              TF_CHECK_OK(ReadStringFromEnvVar("GRPC_FAIL_FAST", "use_caller",
+                                               &fail_fast_env));
+              string fail_fast_env_lower = absl::AsciiStrToLower(fail_fast_env);
+              if (fail_fast_env_lower == "true") {
+                return true;
+              } else if (fail_fast_env_lower == "use_caller") {
+                return fail_fast;
+              } else if (fail_fast_env_lower == "false") {
+                return false;
+              } else {
+                string error_message = strings::StrCat(
+                    "Invalid GRPC_FAIL_FAST config: ", fail_fast_env);
+                LOG(WARNING) << error_message;
+                done(errors::InvalidArgument(error_message));
+                return false;
+              }
             }(),
-            /*timeout_in_ms=*/0, max_retries, target) {
-  }
+            (call_opts != nullptr ? call_opts->GetTimeout() : 0), max_retries,
+            target) {}
 
   template <typename Request>
   RPCState(::grpc::GenericStub* stub, ::grpc::CompletionQueue* cq,
            const ::grpc::string& method, const Request& request,
            Response* response, StatusCallback done, CallOptions* call_opts,
-           thread::ThreadPool* threadpool, bool fail_fast, int64 timeout_in_ms,
-           int32 max_retries, const string* target)
+           thread::ThreadPool* threadpool, bool fail_fast,
+           int64_t timeout_in_ms, int32_t max_retries, const string* target)
       : call_opts_(call_opts),
         threadpool_(threadpool),
         done_(std::move(done)),
@@ -149,8 +164,11 @@ class RPCState : public GrpcClientCQTag {
       response_buf_.Clear();
       VLOG(1) << "Retrying call for " << method_ << "Retry: " << num_retries_
               << " of " << max_retries_;
-      // TODO(b/139945426) Allow user to configure the retry backoff time.
-      StartCall();
+
+      ComputeRetryBackoffMs(/*min_backoff_ms=*/1, /*max_backoff_ms=*/10000);
+      int64_t backoff_us = retry_backoff_ms_ * 1000;
+      Env::Default()->SchedClosureAfter(/*micros=*/backoff_us,
+                                        [this]() { StartCall(); });
     } else {
       // Attach additional GRPC error information if any to the final status
       string error_msg = s.error_message();
@@ -182,6 +200,18 @@ class RPCState : public GrpcClientCQTag {
   }
 
  private:
+  void ComputeRetryBackoffMs(int min_backoff_ms, int max_backoff_ms) {
+    constexpr float kBackoffBase = 1.3;
+    if (retry_backoff_ms_ < 0) {
+      retry_backoff_ms_ = min_backoff_ms;
+    } else {
+      retry_backoff_ms_ *= kBackoffBase;
+      if (retry_backoff_ms_ > max_backoff_ms) {
+        retry_backoff_ms_ = max_backoff_ms;
+      }
+    }
+  }
+
   CallOptions* call_opts_;
   std::unique_ptr<::grpc::ClientContext> context_;
   thread::ThreadPool* threadpool_;
@@ -191,10 +221,11 @@ class RPCState : public GrpcClientCQTag {
   ::grpc::ByteBuffer response_buf_;
   ::grpc::Status status_;
   StatusCallback done_;
-  int64 timeout_in_ms_;
+  int64_t timeout_in_ms_;
 
   size_t num_retries_ = 0;
   size_t max_retries_;
+  double retry_backoff_ms_ = -1;
 
   ::grpc::CompletionQueue* cq_;
   ::grpc::GenericStub* stub_;

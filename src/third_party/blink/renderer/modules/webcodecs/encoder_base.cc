@@ -201,11 +201,13 @@ void EncoderBase<Traits>::reset(ExceptionState& exception_state) {
 
   TRACE_EVENT0(kCategory, GetTraceNames()->reset.c_str());
 
-  MarkCodecActive();
-
   state_ = V8CodecState(V8CodecState::Enum::kUnconfigured);
   ResetInternal();
   media_encoder_.reset();
+
+  // This codec isn't holding on to any resources, and doesn't need to be
+  // reclaimed.
+  PauseCodecReclamation();
 }
 
 template <typename Traits>
@@ -221,7 +223,7 @@ void EncoderBase<Traits>::ResetInternal() {
       pending_req->input.Release()->close();
   }
   requested_encodes_ = 0;
-  stall_request_processing_ = false;
+  blocking_request_in_progress_ = false;
 }
 
 template <typename Traits>
@@ -237,6 +239,7 @@ void EncoderBase<Traits>::HandleError(DOMException* ex) {
   state_ = V8CodecState(V8CodecState::Enum::kClosed);
 
   ResetInternal();
+  PauseCodecReclamation();
 
   // Errors are permanent. Shut everything down.
   error_callback_.Clear();
@@ -261,7 +264,7 @@ void EncoderBase<Traits>::EnqueueRequest(Request* request) {
 
 template <typename Traits>
 void EncoderBase<Traits>::ProcessRequests() {
-  while (!requests_.empty() && !stall_request_processing_) {
+  while (!requests_.empty() && ReadyToProcessNextRequest()) {
     TraceQueueSizes();
 
     Request* request = requests_.TakeFirst();
@@ -285,6 +288,11 @@ void EncoderBase<Traits>::ProcessRequests() {
   }
 
   TraceQueueSizes();
+}
+
+template <typename Traits>
+bool EncoderBase<Traits>::ReadyToProcessNextRequest() {
+  return !blocking_request_in_progress_;
 }
 
 template <typename Traits>
@@ -320,13 +328,13 @@ void EncoderBase<Traits>::ProcessFlush(Request* request) {
     }
     req->EndTracing();
 
-    self->stall_request_processing_ = false;
+    self->blocking_request_in_progress_ = false;
     self->ProcessRequests();
   };
 
   request->StartTracing();
 
-  stall_request_processing_ = true;
+  blocking_request_in_progress_ = true;
   media_encoder_->Flush(ConvertToBaseOnceCallback(
       CrossThreadBindOnce(done_callback, WrapCrossThreadWeakPersistent(this),
                           WrapCrossThreadPersistent(request))));
@@ -335,6 +343,7 @@ void EncoderBase<Traits>::ProcessFlush(Request* request) {
 template <typename Traits>
 void EncoderBase<Traits>::OnCodecReclaimed(DOMException* exception) {
   TRACE_EVENT0(kCategory, GetTraceNames()->reclaimed.c_str());
+  DCHECK_EQ(state_.AsEnum(), V8CodecState::Enum::kConfigured);
   HandleError(exception);
 }
 
@@ -347,7 +356,7 @@ void EncoderBase<Traits>::ContextDestroyed() {
 
 template <typename Traits>
 bool EncoderBase<Traits>::HasPendingActivity() const {
-  return stall_request_processing_ || !requests_.empty();
+  return blocking_request_in_progress_ || !requests_.empty();
 }
 
 template <typename Traits>

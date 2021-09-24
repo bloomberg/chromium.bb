@@ -94,18 +94,11 @@ void InitializeResourceBundle(const base::CommandLine& command_line) {
 #ifdef HEADLESS_USE_EMBEDDED_RESOURCES
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromBuffer(
       {kHeadlessResourcePak.contents, kHeadlessResourcePak.length},
-      ui::SCALE_FACTOR_NONE);
+      ui::kScaleFactorNone);
 
 #else
   base::FilePath dir_module;
-
-// Fuchsia doesn't implement DIR_MODULE
-#if !defined(OS_FUCHSIA)
-  bool result = base::PathService::Get(base::DIR_MODULE, &dir_module);
-#else
   bool result = base::PathService::Get(base::DIR_ASSETS, &dir_module);
-#endif  // !defined(OS_FUCHSIA)
-
   DCHECK(result);
 
   // Try loading the headless library pak file first. If it doesn't exist (i.e.,
@@ -115,7 +108,7 @@ void InitializeResourceBundle(const base::CommandLine& command_line) {
       dir_module.Append(FILE_PATH_LITERAL("headless_lib.pak"));
   if (base::PathExists(headless_pak)) {
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        headless_pak, ui::SCALE_FACTOR_NONE);
+        headless_pak, ui::kScaleFactorNone);
     return;
   }
 
@@ -141,11 +134,11 @@ void InitializeResourceBundle(const base::CommandLine& command_line) {
 #endif
 
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      resources_pak, ui::SCALE_FACTOR_NONE);
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      chrome_100_pak, ui::SCALE_FACTOR_100P);
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      chrome_200_pak, ui::SCALE_FACTOR_200P);
+      resources_pak, ui::kScaleFactorNone);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(chrome_100_pak,
+                                                              ui::k100Percent);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(chrome_200_pak,
+                                                              ui::k200Percent);
 #endif
 }
 

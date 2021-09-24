@@ -2185,28 +2185,35 @@ angle::Result GenerateInitialTextureData(
     const d3d11::DXGIFormatSize &dxgiFormatInfo =
         d3d11::GetDXGIFormatSizeInfo(d3dFormatInfo.texFormat);
 
-    unsigned int rowPitch     = dxgiFormatInfo.pixelBytes * width;
-    unsigned int depthPitch   = rowPitch * height;
-    unsigned int maxImageSize = depthPitch * depth;
+    using CheckedSize        = angle::CheckedNumeric<size_t>;
+    CheckedSize rowPitch     = CheckedSize(dxgiFormatInfo.pixelBytes) * CheckedSize(width);
+    CheckedSize depthPitch   = rowPitch * CheckedSize(height);
+    CheckedSize maxImageSize = depthPitch * CheckedSize(depth);
+
+    Context11 *context11 = GetImplAs<Context11>(context);
+    ANGLE_CHECK_GL_ALLOC(context11, maxImageSize.IsValid());
 
     angle::MemoryBuffer *scratchBuffer = nullptr;
-    ANGLE_CHECK_GL_ALLOC(GetImplAs<Context11>(context),
-                         context->getScratchBuffer(maxImageSize, &scratchBuffer));
+    ANGLE_CHECK_GL_ALLOC(context11,
+                         context->getScratchBuffer(maxImageSize.ValueOrDie(), &scratchBuffer));
 
-    d3dFormatInfo.dataInitializerFunction(width, height, depth, scratchBuffer->data(), rowPitch,
-                                          depthPitch);
+    d3dFormatInfo.dataInitializerFunction(width, height, depth, scratchBuffer->data(),
+                                          rowPitch.ValueOrDie(), depthPitch.ValueOrDie());
 
     for (unsigned int i = 0; i < mipLevels; i++)
     {
         unsigned int mipWidth  = std::max(width >> i, 1U);
         unsigned int mipHeight = std::max(height >> i, 1U);
 
-        unsigned int mipRowPitch   = dxgiFormatInfo.pixelBytes * mipWidth;
-        unsigned int mipDepthPitch = mipRowPitch * mipHeight;
+        using CheckedUINT         = angle::CheckedNumeric<UINT>;
+        CheckedUINT mipRowPitch   = CheckedUINT(dxgiFormatInfo.pixelBytes) * CheckedUINT(mipWidth);
+        CheckedUINT mipDepthPitch = mipRowPitch * CheckedUINT(mipHeight);
+
+        ANGLE_CHECK_GL_ALLOC(context11, mipRowPitch.IsValid() && mipDepthPitch.IsValid());
 
         outSubresourceData->at(i).pSysMem          = scratchBuffer->data();
-        outSubresourceData->at(i).SysMemPitch      = mipRowPitch;
-        outSubresourceData->at(i).SysMemSlicePitch = mipDepthPitch;
+        outSubresourceData->at(i).SysMemPitch      = mipRowPitch.ValueOrDie();
+        outSubresourceData->at(i).SysMemSlicePitch = mipDepthPitch.ValueOrDie();
     }
 
     return angle::Result::Continue;
@@ -2277,33 +2284,16 @@ bool operator!=(const RasterizerStateKey &a, const RasterizerStateKey &b)
     return !(a == b);
 }
 
-HRESULT SetDebugName(ID3D11DeviceChild *resource, const char *name)
+HRESULT SetDebugName(ID3D11DeviceChild *resource,
+                     const char *internalName,
+                     const std::string *khrDebugName)
 {
-    UINT existingDataSize = 0;
-    resource->GetPrivateData(WKPDID_D3DDebugObjectName, &existingDataSize, nullptr);
-    // Don't check the HRESULT- if it failed then that probably just means that no private data
-    // exists yet
-
-    if (existingDataSize > 0)
-    {
-        // In some cases, ANGLE will try to apply two names to one object, which causes
-        // a D3D SDK Layers warning. This can occur if, for example, you 'create' two objects
-        // (e.g.Rasterizer States) with identical DESCs on the same device. D3D11 will optimize
-        // these calls and return the same object both times.
-        static const char *multipleNamesUsed = "MultipleNamesSetByANGLE";
-
-        // Remove the existing name
-        const HRESULT hr = resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
-        if (FAILED(hr))
-        {
-            return hr;
-        }
-
-        name = multipleNamesUsed;
-    }
-
-    // Prepend ANGLE_ to separate names from other components in the same process.
-    const std::string d3dName = std::string("ANGLE_") + name;
+    // Prepend ANGLE to separate names from other components in the same process.
+    std::string d3dName = "ANGLE";
+    if (internalName)
+        d3dName += std::string("_") + internalName;
+    if (khrDebugName)
+        d3dName += std::string("_") + *khrDebugName;
     return resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(d3dName.size()),
                                     d3dName.c_str());
 }
@@ -2321,7 +2311,7 @@ angle::Result LazyResource<ResourceT>::resolveImpl(d3d::Context *context,
     if (!mResource.valid())
     {
         ANGLE_TRY(renderer->allocateResource(context, desc, initData, &mResource));
-        mResource.setDebugName(name);
+        mResource.setInternalName(name);
     }
     return angle::Result::Continue;
 }

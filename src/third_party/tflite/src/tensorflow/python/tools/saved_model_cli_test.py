@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for SavedModelCLI tool.
-
-"""
+"""Tests for SavedModelCLI tool."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -22,6 +20,7 @@ from __future__ import print_function
 import contextlib
 import os
 import pickle
+import platform
 import shutil
 import sys
 
@@ -29,6 +28,7 @@ from absl.testing import parameterized
 import numpy as np
 from six import StringIO
 
+from tensorflow.core.example import example_pb2
 from tensorflow.core.framework import types_pb2
 from tensorflow.core.protobuf import meta_graph_pb2
 from tensorflow.python.debug.wrappers import local_cli_wrapper
@@ -59,6 +59,11 @@ def captured_output():
 
 
 class SavedModelCLITestCase(test.TestCase, parameterized.TestCase):
+
+  def setUp(self):
+    super(SavedModelCLITestCase, self).setUp()
+    if platform.system() == 'Windows':
+      self.skipTest('Skipping failing tests on Windows.')
 
   def testShowCommandAll(self):
     base_path = test.test_src_dir_path(SAVED_MODEL_PATH)
@@ -177,8 +182,7 @@ signature_def['serving_default']:
     saved_model_dir = os.path.join(test.get_temp_dir(), 'dummy_model')
     dummy_model = DummyModel()
     # Call with specific values to create new polymorphic function traces.
-    dummy_model.func1(
-        constant_op.constant(5), constant_op.constant(9), True)
+    dummy_model.func1(constant_op.constant(5), constant_op.constant(9), True)
     dummy_model(constant_op.constant(5))
     save.save(dummy_model, saved_model_dir)
     self.parser = saved_model_cli.create_parser()
@@ -391,6 +395,33 @@ Defined Functions:
     self.assertTrue(len(input_dict) == 2)
     self.assertTrue(len(input_expr_dict) == 2)
 
+  def testInputPreProcessExamplesWithStrAndBytes(self):
+    input_examples_str = 'inputs=[{"text":["foo"], "bytes":[b"bar"]}]'
+    input_dict = saved_model_cli.preprocess_input_examples_arg_string(
+        input_examples_str)
+    feature = example_pb2.Example.FromString(input_dict['inputs'][0])
+    self.assertProtoEquals(
+        """
+          features {
+            feature {
+              key: "bytes"
+              value {
+                bytes_list {
+                  value: "bar"
+                }
+              }
+            }
+            feature {
+              key: "text"
+              value {
+                bytes_list {
+                  value: "foo"
+                }
+              }
+            }
+          }
+    """, feature)
+
   def testInputPreProcessFileNames(self):
     input_str = (r'inputx=C:\Program Files\data.npz[v:0];'
                  r'input:0=c:\PROGRA~1\data.npy')
@@ -596,6 +627,17 @@ Defined Functions:
     with self.assertRaises(ValueError):
       saved_model_cli.run(args)
 
+  def testRunCommandInvalidSignature(self):
+    self.parser = saved_model_cli.create_parser()
+    base_path = test.test_src_dir_path(SAVED_MODEL_PATH)
+    args = self.parser.parse_args([
+        'run', '--dir', base_path, '--tag_set', 'serve', '--signature_def',
+        'INVALID_SIGNATURE', '--input_exprs', 'x2=np.ones((3,1))'
+    ])
+    with self.assertRaisesRegex(ValueError,
+                                'Could not find signature "INVALID_SIGNATURE"'):
+      saved_model_cli.run(args)
+
   def testRunCommandInputExamplesNotListError(self):
     self.parser = saved_model_cli.create_parser()
     base_path = test.test_src_dir_path(SAVED_MODEL_PATH)
@@ -605,7 +647,7 @@ Defined Functions:
         'regress_x_to_y', '--input_examples', 'inputs={"x":8.0,"x2":5.0}',
         '--outdir', output_dir
     ])
-    with self.assertRaisesRegexp(ValueError, 'must be a list'):
+    with self.assertRaisesRegex(ValueError, 'must be a list'):
       saved_model_cli.run(args)
 
   def testRunCommandInputExamplesFeatureValueNotListError(self):
@@ -617,7 +659,7 @@ Defined Functions:
         'regress_x_to_y', '--input_examples', 'inputs=[{"x":8.0,"x2":5.0}]',
         '--outdir', output_dir
     ])
-    with self.assertRaisesRegexp(ValueError, 'feature value must be a list'):
+    with self.assertRaisesRegex(ValueError, 'feature value must be a list'):
       saved_model_cli.run(args)
 
   def testRunCommandInputExamplesFeatureBadType(self):
@@ -629,7 +671,7 @@ Defined Functions:
         'regress_x_to_y', '--input_examples', 'inputs=[{"x":[[1],[2]]}]',
         '--outdir', output_dir
     ])
-    with self.assertRaisesRegexp(ValueError, 'is not supported'):
+    with self.assertRaisesRegex(ValueError, 'is not supported'):
       saved_model_cli.run(args)
 
   def testRunCommandOutputFileExistError(self):
@@ -680,10 +722,11 @@ Defined Functions:
     def fake_wrapper_session(sess):
       return sess
 
-    with test.mock.patch.object(local_cli_wrapper,
-                                'LocalCLIDebugWrapperSession',
-                                side_effect=fake_wrapper_session,
-                                autospec=True) as fake:
+    with test.mock.patch.object(
+        local_cli_wrapper,
+        'LocalCLIDebugWrapperSession',
+        side_effect=fake_wrapper_session,
+        autospec=True) as fake:
       saved_model_cli.run(args)
       fake.assert_called_with(test.mock.ANY)
 
@@ -698,18 +741,18 @@ Defined Functions:
     with captured_output() as (out, _):
       saved_model_cli.scan(args)
     output = out.getvalue().strip()
-    self.assertTrue('does not contain blacklisted ops' in output)
+    self.assertTrue('does not contain denylisted ops' in output)
 
-  def testScanCommandFoundBlacklistedOp(self):
+  def testScanCommandFoundDenylistedOp(self):
     self.parser = saved_model_cli.create_parser()
     base_path = test.test_src_dir_path(SAVED_MODEL_PATH)
     args = self.parser.parse_args(
         ['scan', '--dir', base_path, '--tag_set', 'serve'])
-    op_blacklist = saved_model_cli._OP_BLACKLIST
-    saved_model_cli._OP_BLACKLIST = set(['VariableV2'])
+    op_denylist = saved_model_cli._OP_DENYLIST
+    saved_model_cli._OP_DENYLIST = set(['VariableV2'])
     with captured_output() as (out, _):
       saved_model_cli.scan(args)
-    saved_model_cli._OP_BLACKLIST = op_blacklist
+    saved_model_cli._OP_DENYLIST = op_denylist
     output = out.getvalue().strip()
     self.assertTrue('\'VariableV2\'' in output)
 
@@ -720,12 +763,12 @@ Defined Functions:
     self.parser = saved_model_cli.create_parser()
     base_path = test.test_src_dir_path(SAVED_MODEL_PATH)
     output_dir = os.path.join(test.get_temp_dir(), 'aot_compile_cpu_dir')
-    args = self.parser.parse_args(
-        ['aot_compile_cpu', '--dir', base_path, '--tag_set', 'serve',
-         '--output_prefix', output_dir,
-         '--cpp_class', 'Compiled',
-         '--signature_def_key', 'MISSING'])
-    with self.assertRaisesRegexp(ValueError, 'Unable to find signature_def'):
+    args = self.parser.parse_args([
+        'aot_compile_cpu', '--dir', base_path, '--tag_set', 'serve',
+        '--output_prefix', output_dir, '--cpp_class', 'Compiled',
+        '--signature_def_key', 'MISSING'
+    ])
+    with self.assertRaisesRegex(ValueError, 'Unable to find signature_def'):
       saved_model_cli.aot_compile_cpu(args)
 
   class AOTCompileDummyModel(tracking.AutoTrackable):
@@ -763,13 +806,18 @@ Defined Functions:
       return {'res': self.write_var}
 
   @parameterized.named_parameters(
-      ('VariablesToFeedNone', '', 'func2'),
-      ('VariablesToFeedAll', 'all', 'func2'),
-      ('VariablesToFeedMyVar', 'my_var', 'func2'),
-      ('VariablesToFeedNoneLargeConstant', '', 'func3'),
-      ('WriteToWriteVar', 'all', 'func_write'),
+      ('VariablesToFeedNone', '', 'func2', None),
+      ('VariablesToFeedNoneTargetAarch64Linux', '', 'func2',
+       'aarch64-none-linux-gnu'),
+      ('VariablesToFeedNoneTargetAarch64Android', '', 'func2',
+       'aarch64-none-android'),
+      ('VariablesToFeedAll', 'all', 'func2', None),
+      ('VariablesToFeedMyVar', 'my_var', 'func2', None),
+      ('VariablesToFeedNoneLargeConstant', '', 'func3', None),
+      ('WriteToWriteVar', 'all', 'func_write', None),
   )
-  def testAOTCompileCPUFreezesAndCompiles(self, variables_to_feed, func):
+  def testAOTCompileCPUFreezesAndCompiles(
+      self, variables_to_feed, func, target_triple):
     if not test.is_built_with_xla():
       self.skipTest('Skipping test because XLA is not compiled in.')
 
@@ -783,15 +831,17 @@ Defined Functions:
 
     self.parser = saved_model_cli.create_parser()
     output_prefix = os.path.join(test.get_temp_dir(), 'aot_compile_cpu_dir/out')
-    args = self.parser.parse_args([
+    args = [  # Use the default seving signature_key.
         'aot_compile_cpu', '--dir', saved_model_dir, '--tag_set', 'serve',
-        '--signature_def_key', 'func',
-        '--output_prefix', output_prefix, '--variables_to_feed',
-        variables_to_feed, '--cpp_class', 'Generated'
-    ])  # Use the default seving signature_key.
+        '--signature_def_key', 'func', '--output_prefix', output_prefix,
+        '--variables_to_feed', variables_to_feed, '--cpp_class', 'Generated'
+    ]
+    if target_triple:
+      args.extend(['--target_triple', target_triple])
+    args = self.parser.parse_args(args)
     with test.mock.patch.object(logging, 'warn') as captured_warn:
       saved_model_cli.aot_compile_cpu(args)
-    self.assertRegexpMatches(
+    self.assertRegex(
         str(captured_warn.call_args),
         'Signature input key \'y\'.*has been pruned while freezing the graph.')
     self.assertTrue(file_io.file_exists('{}.o'.format(output_prefix)))
@@ -812,8 +862,8 @@ Defined Functions:
     if func == dummy_model.func_write:
       # Writeable variables setters do not preserve constness.
       self.assertIn('set_var_param_write_var_data(float', header_contents)
-      self.assertNotIn(
-          'set_var_param_write_var_data(const float', header_contents)
+      self.assertNotIn('set_var_param_write_var_data(const float',
+                       header_contents)
 
     makefile_contents = file_io.read_file_to_string(
         '{}_makefile.inc'.format(output_prefix))

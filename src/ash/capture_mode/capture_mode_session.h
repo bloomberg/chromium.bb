@@ -51,8 +51,9 @@ class ASH_EXPORT CaptureModeSession : public ui::LayerOwner,
                                       public aura::WindowObserver,
                                       public display::DisplayObserver {
  public:
-  // Creates the bar widget on a calculated root window.
-  explicit CaptureModeSession(CaptureModeController* controller);
+  // Creates the bar widget on a calculated root window. |projector_mode|
+  // specifies whether this session was started for the projector workflow.
+  CaptureModeSession(CaptureModeController* controller, bool projector_mode);
   CaptureModeSession(const CaptureModeSession&) = delete;
   CaptureModeSession& operator=(const CaptureModeSession&) = delete;
   ~CaptureModeSession() override;
@@ -68,6 +69,7 @@ class ASH_EXPORT CaptureModeSession : public ui::LayerOwner,
   views::Widget* capture_mode_bar_widget() {
     return capture_mode_bar_widget_.get();
   }
+  bool is_in_projector_mode() const { return is_in_projector_mode_; }
   bool is_selecting_region() const { return is_selecting_region_; }
   bool is_drag_in_progress() const { return is_drag_in_progress_; }
   void set_a11y_alert_on_session_exit(bool value) {
@@ -133,6 +135,10 @@ class ASH_EXPORT CaptureModeSession : public ui::LayerOwner,
   // tune position in region capture mode. We'll have a larger hit test region
   // for the touch events than the mouse events.
   void UpdateCursor(const gfx::Point& location_in_screen, bool is_touch);
+
+  // Highlights the give |window| for keyboard navigation
+  // events (tabbing through windows in capture window mode).
+  void HighlightWindowForTab(aura::Window* window);
 
  private:
   friend class CaptureModeSessionFocusCycler;
@@ -307,6 +313,9 @@ class ASH_EXPORT CaptureModeSession : public ui::LayerOwner,
 
   // Magnifier glass used during a region capture session.
   MagnifierGlass magnifier_glass_;
+
+  // Whether this session was started from a projector workflow.
+  const bool is_in_projector_mode_ = false;
 
   // Stores the data needed to select a region during a region capture session.
   // This variable indicates if the user is currently selecting a region to

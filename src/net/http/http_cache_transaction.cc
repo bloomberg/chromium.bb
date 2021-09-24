@@ -637,11 +637,6 @@ void HttpCache::Transaction::SetValidatingCannotProceed() {
   entry_ = nullptr;
 }
 
-size_t HttpCache::Transaction::EstimateMemoryUsage() const {
-  // TODO(xunjieli): Consider improving the coverage. crbug.com/669108.
-  return 0;
-}
-
 void HttpCache::Transaction::WriterAboutToBeRemovedFromEntry(int result) {
   // Since the transaction can no longer access the network transaction, save
   // all network related info now.
@@ -2146,8 +2141,8 @@ int HttpCache::Transaction::DoFinishHeadersComplete(int rv) {
   // If already reading, that means it is a partial request coming back to the
   // headers phase, continue to the appropriate reading state.
   if (reading_) {
-    int rv = TransitionToReadingState();
-    DCHECK_EQ(OK, rv);
+    int reading_state_rv = TransitionToReadingState();
+    DCHECK_EQ(OK, reading_state_rv);
     return OK;
   }
 

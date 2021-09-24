@@ -24,6 +24,7 @@
 <translation id="1119348796022671382">带主题背景的颜色模式会使用从您壁纸中提取的颜色为界面略施粉黛。</translation>
 <translation id="112308213915226829">自动隐藏任务栏</translation>
 <translation id="1148499908455722006">打开“<ph name="USER_NAME" />”的信息对话框</translation>
+<translation id="1150989369772528668">日历</translation>
 <translation id="1153356358378277386">已配对的设备</translation>
 <translation id="1165712434476988950">必须重启设备，才能应用这项更新。</translation>
 <translation id="1175572348579024023">滚动</translation>
@@ -92,6 +93,7 @@
 <translation id="1611993646327628135">开启</translation>
 <translation id="1615402009686901181">管理员政策禁止在屏幕显示机密内容时截取屏幕</translation>
 <translation id="1632985212731562677">您可在“设置”&gt;“无障碍”中停用“开关控制”功能。</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> 部设备</translation>
 <translation id="1654477262762802994">启动语音查询</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />；<ph name="RESULT_TEXT" />；按搜索键 + 空格键即可查看 Google 助理给出的结果。</translation>
 <translation id="1667964833127753507">中性颜色模式不会使用从壁纸中提取的颜色，而是会将其替换为一组中性的浅色调或深色调。</translation>
@@ -141,6 +143,7 @@
 <translation id="2016340657076538683">请输入消息</translation>
 <translation id="2018630726571919839">给我讲个笑话</translation>
 <translation id="2021864487439853900">点击即可解锁</translation>
+<translation id="2023558322300866873">您可随时停止捕获数据包</translation>
 <translation id="2047639699071423250">添加核心观点</translation>
 <translation id="2049240716062114887">桌面名称已更改为“<ph name="DESK_NAME" />”</translation>
 <translation id="2050339315714019657">纵向</translation>
@@ -191,6 +194,7 @@
 <translation id="2427507373259914951">点击鼠标左键</translation>
 <translation id="2429753432712299108">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。在接受之前，请确保该设备上显示以下配对密钥：<ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">显示密码</translation>
+<translation id="24452542372838207">展开通知</translation>
 <translation id="2450205753526923158">截屏模式</translation>
 <translation id="2473177541599297363">确认分辨率</translation>
 <translation id="2475982808118771221">出现错误</translation>
@@ -319,6 +323,7 @@
 <translation id="3486220673238053218">定义</translation>
 <translation id="3510164367642747937">突出显示鼠标光标</translation>
 <translation id="3513798432020909783">该帐号由 <ph name="MANAGER_EMAIL" /> 管理</translation>
+<translation id="353086728817903341">已连接到 <ph name="NUM_DEVICES" /> 部设备</translation>
 <translation id="3552189655002856821">Wi-Fi 处于关闭状态</translation>
 <translation id="3560866052109807830">标记绘制工具</translation>
 <translation id="3563775809269155755">启用热点</translation>
@@ -347,6 +352,7 @@
 <translation id="3702846122927433391">尼日利亚的人口</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">正在加载...</translation>
+<translation id="3708186454126126312">曾经连接过</translation>
 <translation id="371370241367527062">前置麦克风</translation>
 <translation id="3713734891607377840">下载完成后打开</translation>
 <translation id="3742055079367172538">已完成屏幕截图</translation>
@@ -402,6 +408,7 @@
 <translation id="4129129681837227511">要想在锁定屏幕上看到通知，请解锁设备以更改设置</translation>
 <translation id="4146833061457621061">播放音乐</translation>
 <translation id="4157822100366708405">深色主题设置</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> - <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">语言</translation>
 <translation id="4195877955194704651">“自动点击”按钮</translation>
 <translation id="4197790712631116042">已关闭</translation>
@@ -495,6 +502,7 @@
 <translation id="4774338217796918551">您需要等到明天<ph name="COME_BACK_TIME" /> 才能再次使用此设备。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密码</translation>
 <translation id="4778095205580009397">无法在演示会话中使用 Google 助理。</translation>
+<translation id="4782311465517282004">在您右键点击或轻触并按住文字时获取定义、翻译或单位换算结果</translation>
 <translation id="479989351350248267">搜索</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="4814539958450445987">登录屏幕</translation>
@@ -553,6 +561,7 @@
 <translation id="5222676887888702881">退出</translation>
 <translation id="5234764350956374838">关闭</translation>
 <translation id="523505283826916779">无障碍设置</translation>
+<translation id="5253783950165989294">已连接到一部名为“<ph name="DEVICE_NAME" />”的设备，它的电池电量为 <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="5260676007519551770">桌面 4</translation>
 <translation id="5283198616748585639">加 1 分钟</translation>
 <translation id="528468243742722775">结束</translation>
@@ -563,6 +572,7 @@
 <translation id="5308380583665731573">连接</translation>
 <translation id="5313326810920013265">蓝牙设置</translation>
 <translation id="5314219114274263156">已录制屏幕</translation>
+<translation id="5319712128756744240">为新设备配对</translation>
 <translation id="5322611492012084517">找不到您的手机</translation>
 <translation id="5329548388331921293">正在连接…</translation>
 <translation id="5331975486040154427">USB-C 设备（左侧后端端口）</translation>
@@ -765,6 +775,7 @@
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="698231206551913481">移除该用户后，与其关联的所有文件和本地数据都会被永久删除。</translation>
 <translation id="7007983414944123363">无法验证您的 PIN 码或密码。请重试。</translation>
+<translation id="7014684956566476813">已连接到一部名为“<ph name="DEVICE_NAME" />”的设备</translation>
 <translation id="7015766095477679451">您需要等到<ph name="COME_BACK_TIME" /> 才能再次使用此设备。</translation>
 <translation id="70168403932084660">桌面 6</translation>
 <translation id="7025533177575372252">将您的<ph name="DEVICE_NAME" />连接到手机</translation>
@@ -824,9 +835,7 @@
 <translation id="7461924472993315131">固定</translation>
 <translation id="746232733191930409">录屏模式</translation>
 <translation id="7466449121337984263">请轻触传感器</translation>
-<translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7477793887173910789">控制您的音乐、视频等媒体内容</translation>
-<translation id="7482097454533720217">在您右键点击或轻触并按住内容时获取定义、翻译或单位换算。</translation>
 <translation id="7483025031359818980">所选区域设为全屏</translation>
 <translation id="7486227320194954040">收起标记工具</translation>
 <translation id="7497767806359279797">选择语言和键盘布局</translation>
@@ -868,6 +877,7 @@
 <translation id="7780159184141939021">旋转屏幕</translation>
 <translation id="7796353162336583443">点按任务栏中的触控笔按钮可开始记事、截取屏幕截图，以及使用 Google 助理、激光笔或放大镜。</translation>
 <translation id="7798302898096527229">按搜索键或按 Shift 键可取消。</translation>
+<translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">信号较强</translation>
 <translation id="7837740436429729974">时间到</translation>
@@ -999,7 +1009,7 @@
 <translation id="8818320199597151042">正在移除配置文件。请稍等几分钟。</translation>
 <translation id="8825863694328519386">从左侧向右滑动手指即可返回</translation>
 <translation id="8828714802988429505">90°</translation>
-<translation id="8832757911363938552">您可随时停止捕获数据包。</translation>
+<translation id="8834539327799336565">目前已连接</translation>
 <translation id="8841375032071747811">“返回”按钮</translation>
 <translation id="8843682306134542540">切换旋转锁定设置。<ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -1030,6 +1040,7 @@
 <translation id="9024331582947483881">全屏</translation>
 <translation id="9047624247355796468">打开“<ph name="NETWORK_NAME" />”的设置。</translation>
 <translation id="9056839673611986238">设备将被回滚</translation>
+<translation id="9059834730836941392">收起通知</translation>
 <translation id="9063800855227801443">无法截取机密内容</translation>
 <translation id="9065203028668620118">编辑</translation>
 <translation id="9070640332319875144">Google 助理设置</translation>

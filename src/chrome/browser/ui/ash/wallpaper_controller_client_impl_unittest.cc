@@ -54,13 +54,15 @@ TEST_F(WallpaperControllerClientImplTest, MigrateCollectionIdFromValueStore) {
   WallpaperControllerClientImpl client;
   client.InitForTesting(&controller);
 
-  TestingValueStore value_store;
+  value_store::TestingValueStore value_store;
 
   // There is also a resume token and an enabled state, but that's not what is
   // being tested here, so only populate collectionId.
   std::string json("{\"collectionId\" : \"fun_collection\"}");
   value_store.Set(0, kChromeAppDailyRefreshInfoKey, base::Value(json));
-  client.MigrateCollectionIdFromValueStoreForTesting(&value_store);
+  AccountId account_id =
+      AccountId::FromUserEmailGaiaId("fake@test.com", "444444");
+  client.MigrateCollectionIdFromValueStoreForTesting(account_id, &value_store);
 
   EXPECT_EQ("fun_collection", controller.collection_id());
 }
@@ -71,13 +73,15 @@ TEST_F(WallpaperControllerClientImplTest,
   WallpaperControllerClientImpl client;
   client.InitForTesting(&controller);
 
-  TestingValueStore value_store;
+  value_store::TestingValueStore value_store;
 
   // There is also a resume token and an enabled state, but that's not what is
   // being tested here, so only populate collectionId.
   std::string json("{\"collectionId\" : null}");
   value_store.Set(0, kChromeAppDailyRefreshInfoKey, base::Value(json));
-  client.MigrateCollectionIdFromValueStoreForTesting(&value_store);
+  AccountId account_id =
+      AccountId::FromUserEmailGaiaId("fake@test.com", "444444");
+  client.MigrateCollectionIdFromValueStoreForTesting(account_id, &value_store);
 
   EXPECT_EQ(std::string(), controller.collection_id());
 }
@@ -88,27 +92,31 @@ TEST_F(WallpaperControllerClientImplTest,
   WallpaperControllerClientImpl client;
   client.InitForTesting(&controller);
 
-  client.MigrateCollectionIdFromValueStoreForTesting(nullptr);
+  AccountId account_id =
+      AccountId::FromUserEmailGaiaId("fake@test.com", "444444");
+  client.MigrateCollectionIdFromValueStoreForTesting(account_id, nullptr);
 
   EXPECT_EQ(std::string(), controller.collection_id());
 }
 
 TEST_F(WallpaperControllerClientImplTest,
        MigrateCollectionIdFromValueStoreNotOKStatusCode) {
-  using StatusCode = ValueStore::StatusCode;
+  using StatusCode = value_store::ValueStore::StatusCode;
 
   TestWallpaperController controller;
   WallpaperControllerClientImpl client;
   client.InitForTesting(&controller);
 
-  TestingValueStore value_store;
+  value_store::TestingValueStore value_store;
   value_store.set_status_code(StatusCode::OTHER_ERROR);
 
   // There is also a resume token and an enabled state, but that's not what is
   // being tested here, so only populate collectionId.
   std::string json("{\"collectionId\" : \"fun_collection\"}");
   value_store.Set(0, kChromeAppDailyRefreshInfoKey, base::Value(json));
-  client.MigrateCollectionIdFromValueStoreForTesting(&value_store);
+  AccountId account_id =
+      AccountId::FromUserEmailGaiaId("fake@test.com", "444444");
+  client.MigrateCollectionIdFromValueStoreForTesting(account_id, &value_store);
 
   EXPECT_EQ(std::string(), controller.collection_id());
 }
@@ -119,8 +127,10 @@ TEST_F(WallpaperControllerClientImplTest,
   WallpaperControllerClientImpl client;
   client.InitForTesting(&controller);
 
-  TestingValueStore value_store;
-  client.MigrateCollectionIdFromValueStoreForTesting(&value_store);
+  value_store::TestingValueStore value_store;
+  AccountId account_id =
+      AccountId::FromUserEmailGaiaId("fake@test.com", "444444");
+  client.MigrateCollectionIdFromValueStoreForTesting(account_id, &value_store);
 
   EXPECT_EQ(std::string(), controller.collection_id());
 }
@@ -131,12 +141,24 @@ TEST_F(WallpaperControllerClientImplTest,
   WallpaperControllerClientImpl client;
   client.InitForTesting(&controller);
 
-  TestingValueStore value_store;
+  value_store::TestingValueStore value_store;
   std::string json("{");
   value_store.Set(0, kChromeAppDailyRefreshInfoKey, base::Value(json));
-  client.MigrateCollectionIdFromValueStoreForTesting(&value_store);
+  AccountId account_id =
+      AccountId::FromUserEmailGaiaId("fake@test.com", "444444");
+  client.MigrateCollectionIdFromValueStoreForTesting(account_id, &value_store);
 
   EXPECT_EQ(std::string(), controller.collection_id());
+}
+
+TEST_F(WallpaperControllerClientImplTest, IsWallpaperSyncEnabledNoProfile) {
+  TestWallpaperController controller;
+  WallpaperControllerClientImpl client;
+  client.InitForTesting(&controller);
+  AccountId account_id =
+      AccountId::FromUserEmailGaiaId("idontexist@test.com", "444444");
+  EXPECT_FALSE(
+      client.WallpaperControllerClientImpl::IsWallpaperSyncEnabled(account_id));
 }
 
 }  // namespace

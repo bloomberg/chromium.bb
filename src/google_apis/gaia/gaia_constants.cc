@@ -128,6 +128,10 @@ const char kDriveReadOnlyOAuth2Scope[] =
 const char kAssistantOAuth2Scope[] =
     "https://www.googleapis.com/auth/assistant-sdk-prototype";
 
+// OAuth2 scope for access to nearby devices (fast pair) APIs.
+const char kCloudPlatformProjectsOAuth2Scope[] =
+    "https://www.googleapis.com/auth/cloudplatformprojects";
+
 // OAuth2 scope for access to nearby sharing.
 const char kNearbyShareOAuth2Scope[] =
     "https://www.googleapis.com/auth/nearbysharing-pa";
@@ -144,6 +148,10 @@ const char kChromeWebstoreOAuth2Scope[] =
 // OAuth2 scope for access to Account Capabilities API.
 const char kAccountCapabilitiesOAuth2Scope[] =
     "https://www.googleapis.com/auth/account.capabilities";
+
+// OAuth2 scope for support content API.
+const char kSupportContentOAuth2Scope[] =
+    "https://www.googleapis.com/auth/supportcontent";
 
 // Used to mint uber auth tokens when needed.
 const char kGaiaSid[] = "sid";

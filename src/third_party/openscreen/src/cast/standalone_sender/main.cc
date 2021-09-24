@@ -23,6 +23,7 @@
 #include "platform/api/time.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
+#include "platform/impl/network_interface.h"
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/text_trace_logging_platform.h"
@@ -214,7 +215,7 @@ int StandaloneSenderMain(int argc, char* argv[]) {
 
   IPEndpoint remote_endpoint = ParseAsEndpoint(iface_or_endpoint);
   if (!remote_endpoint.port) {
-    for (const InterfaceInfo& interface : GetNetworkInterfaces()) {
+    for (const InterfaceInfo& interface : GetAllInterfaces()) {
       if (interface.name == iface_or_endpoint) {
         ReceiverChooser chooser(interface, task_runner,
                                 [&](IPEndpoint endpoint) {

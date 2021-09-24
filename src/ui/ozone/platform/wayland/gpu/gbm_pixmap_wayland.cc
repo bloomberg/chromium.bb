@@ -88,6 +88,34 @@ bool GbmPixmapWayland::InitializeBuffer(
   return true;
 }
 
+bool GbmPixmapWayland::InitializeBufferFromHandle(
+    gfx::AcceleratedWidget widget,
+    gfx::Size size,
+    gfx::BufferFormat format,
+    gfx::NativePixmapHandle handle) {
+  TRACE_EVENT0("wayland", "GbmPixmapWayland::InitializeBufferFromHandle");
+  if (!buffer_manager_->gbm_device())
+    return false;
+
+  widget_ = widget;
+
+  // Create a buffer object from handle.
+  gbm_bo_ = buffer_manager_->gbm_device()->CreateBufferFromHandle(
+      GetFourCCFormatFromBufferFormat(format), size, std::move(handle));
+  if (!gbm_bo_) {
+    LOG(ERROR) << "Cannot create bo with format= "
+               << gfx::BufferFormatToString(format);
+    return false;
+  }
+
+  DVLOG(3) << "Created gbm bo. format= " << gfx::BufferFormatToString(format);
+
+  visible_area_size_ = size;
+  if (widget_ != gfx::kNullAcceleratedWidget)
+    CreateDmabufBasedBuffer();
+  return true;
+}
+
 bool GbmPixmapWayland::AreDmaBufFdsValid() const {
   return gbm_bo_->AreFdsValid();
 }
@@ -136,6 +164,7 @@ bool GbmPixmapWayland::ScheduleOverlayPlane(
     const gfx::RectF& crop_rect,
     bool enable_blend,
     const gfx::Rect& damage_rect,
+    float opacity,
     std::vector<gfx::GpuFence> acquire_fences,
     std::vector<gfx::GpuFence> release_fences) {
   DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
@@ -169,7 +198,7 @@ bool GbmPixmapWayland::ScheduleOverlayPlane(
                                           : std::make_unique<gfx::GpuFence>(
                                                 std::move(acquire_fences[0])),
                    plane_z_order, plane_transform, display_bounds, crop_rect,
-                   enable_blend, damage_rect),
+                   enable_blend, damage_rect, opacity),
       buffer_id_);
   return true;
 }

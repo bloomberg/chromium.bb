@@ -7,6 +7,7 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {BookmarkFolderElement, FOLDER_OPEN_CHANGED_EVENT} from './bookmark_folder.js';
 import {BookmarksApiProxy} from './bookmarks_api_proxy.js';
+import {BookmarksDragManager} from './bookmarks_drag_manager.js';
 
 // Key for localStorage object that refers to all the open folders.
 export const LOCAL_STORAGE_OPEN_FOLDERS_KEY = 'openFolders';
@@ -39,6 +40,8 @@ export class BookmarksListElement extends BookmarksListElementBase {
   }
 
   private bookmarksApi_: BookmarksApiProxy = BookmarksApiProxy.getInstance();
+  private bookmarksDragManager_: BookmarksDragManager =
+      new BookmarksDragManager(this);
   private listeners_ = new Map<string, Function>();
   private folders_: chrome.bookmarks.BookmarkTreeNode[];
   private openFolders_: string[];
@@ -84,6 +87,8 @@ export class BookmarksListElement extends BookmarksListElementBase {
         window.localStorage[LOCAL_STORAGE_OPEN_FOLDERS_KEY] =
             JSON.stringify(this.openFolders_);
       }
+
+      this.bookmarksDragManager_.startObserving();
     });
   }
 
@@ -91,11 +96,32 @@ export class BookmarksListElement extends BookmarksListElementBase {
     for (const [eventName, callback] of this.listeners_.entries()) {
       this.bookmarksApi_.callbackRouter[eventName]!.removeListener(callback);
     }
+    this.bookmarksDragManager_.stopObserving();
+  }
+
+  /** BookmarksDragDelegate */
+  getAscendants(bookmarkId: string): string[] {
+    const path = this.findPathToId_(bookmarkId);
+    return path.map(bookmark => bookmark.id);
+  }
+
+  /** BookmarksDragDelegate */
+  getIndex(bookmark: chrome.bookmarks.BookmarkTreeNode): number {
+    const path = this.findPathToId_(bookmark.id);
+    const parent = path[path.length - 2];
+    if (!parent || !parent.children) {
+      return -1;
+    }
+    return parent.children.findIndex((child) => child.id === bookmark.id);
+  }
+  /** BookmarksDragDelegate */
+  isFolderOpen(bookmark: chrome.bookmarks.BookmarkTreeNode): boolean {
+    return this.openFolders_.some(id => bookmark.id === id);
   }
 
   private addListener_(eventName: string, callback: Function): void {
     this.bookmarksApi_.callbackRouter[eventName]!.addListener(callback);
-    this.listeners_.set(eventName, callback.bind(this));
+    this.listeners_.set(eventName, callback);
   }
 
   /**
@@ -170,6 +196,12 @@ export class BookmarksListElement extends BookmarksListElementBase {
   private onCreated_(node: chrome.bookmarks.BookmarkTreeNode) {
     const pathToParent = this.findPathToId_(node.parentId as string);
     const pathToParentString = this.getPathString_(pathToParent);
+    const parent = pathToParent[pathToParent.length - 1];
+    if (parent && !parent.children) {
+      // Newly created folders in this session may not have an array of
+      // children yet, so create an empty one.
+      parent.children = [];
+    }
     this.splice(`${pathToParentString}.children`, node.index!, 0, node);
   }
 
@@ -225,6 +257,10 @@ export class BookmarksListElement extends BookmarksListElementBase {
     // Get new parent's path and add the node to the new parent at index.
     const newParentPath = this.findPathToId_(movedInfo.parentId);
     const newParentPathString = this.getPathString_(newParentPath);
+    const newParent = newParentPath[newParentPath.length - 1];
+    if (newParent && !newParent.children) {
+      newParent.children = [];
+    }
     this.splice(
         `${newParentPathString}.children`, movedInfo.index, 0, movedNode);
   }

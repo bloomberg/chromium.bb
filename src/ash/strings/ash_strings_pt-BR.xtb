@@ -24,6 +24,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1119348796022671382">O modo de cores temático usa as cores extraídas do plano de fundo para colorir levemente a interface.</translation>
 <translation id="112308213915226829">Ocultar estante automaticamente</translation>
 <translation id="1148499908455722006">Abrir a caixa de diálogo de informações da conta <ph name="USER_NAME" /></translation>
+<translation id="1150989369772528668">Agenda</translation>
 <translation id="1153356358378277386">Dispositivos pareados</translation>
 <translation id="1165712434476988950">É necessário reiniciar o dispositivo para aplicar a atualização.</translation>
 <translation id="1175572348579024023">Rolar</translation>
@@ -92,6 +93,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1611993646327628135">Ativado</translation>
 <translation id="1615402009686901181">A captura da tela é desativada pela política do administrador quando há conteúdo protegido visível</translation>
 <translation id="1632985212731562677">O "acesso com interruptor" pode ser desativado em Configurações &gt; Acessibilidade.</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> dispositivos</translation>
 <translation id="1654477262762802994">Iniciar uma consulta por voz</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Pressione Pesquisar + barra de espaço para ver o resultado no Google Assistente.</translation>
 <translation id="1667964833127753507">O modo de cores neutras substitui as cores extraídas do plano de fundo por um conjunto de tons neutros claros ou escuros.</translation>
@@ -141,6 +143,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="2016340657076538683">Digite uma mensagem</translation>
 <translation id="2018630726571919839">Conte uma piada</translation>
 <translation id="2021864487439853900">Clique para desbloquear</translation>
+<translation id="2023558322300866873">Você pode interromper a captura de pacote a qualquer momento</translation>
 <translation id="2047639699071423250">Adicionar ideia importante</translation>
 <translation id="2049240716062114887">O nome do espaço de trabalho foi mudado para <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Retrato</translation>
@@ -191,6 +194,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="2427507373259914951">Clicar com o botão esquerdo</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Antes de aceitar, verifique se esta senha aparece no dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Mostrar senha</translation>
+<translation id="24452542372838207">Expandir notificação</translation>
 <translation id="2450205753526923158">Modo de captura de tela</translation>
 <translation id="2473177541599297363">Confirmar resolução</translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
@@ -255,7 +259,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="3017687597151988916">Área de seleção definida como janela</translation>
 <translation id="3033545621352269033">Ativada</translation>
 <translation id="3036649622769666520">Abrir arquivos</translation>
-<translation id="3038571455154067151">Para fazer login, insira seu código de acesso de pai/mãe do Family Link</translation>
+<translation id="3038571455154067151">Para fazer login, insira seu código de acesso do familiar responsável do Family Link</translation>
 <translation id="3039939407102840004">Bateria da stylus em <ph name="PERCENTAGE" />%.</translation>
 <translation id="3045488863354895414">Boa tarde,</translation>
 <translation id="3051189971848907985">Renomeando o perfil. Aguarde alguns minutos.</translation>
@@ -319,6 +323,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="3486220673238053218">definição</translation>
 <translation id="3510164367642747937">Destacar cursor do mouse</translation>
 <translation id="3513798432020909783">Conta gerenciada por <ph name="MANAGER_EMAIL" /></translation>
+<translation id="353086728817903341">Conectado a <ph name="NUM_DEVICES" /> dispositivos</translation>
 <translation id="3552189655002856821">O Wi-Fi está desativado</translation>
 <translation id="3560866052109807830">Ferramentas de marcador para desenho</translation>
 <translation id="3563775809269155755">Ativar ponto de acesso</translation>
@@ -347,6 +352,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="3702846122927433391">População da Nigéria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Carregando...</translation>
+<translation id="3708186454126126312">Conectados anteriormente</translation>
 <translation id="371370241367527062">Microfone frontal</translation>
 <translation id="3713734891607377840">Abrir quando o download for concluído</translation>
 <translation id="3742055079367172538">Captura de tela realizada</translation>
@@ -402,6 +408,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="4129129681837227511">Para ver as notificações na sua tela de bloqueio, desbloqueie a tela e altere a configuração</translation>
 <translation id="4146833061457621061">Ouvir música</translation>
 <translation id="4157822100366708405">Configurações do tema escuro</translation>
+<translation id="4170634509222878053"><ph name="TITLE" />: <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botão de cliques automáticos</translation>
 <translation id="4197790712631116042">Desativado</translation>
@@ -487,7 +494,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="4702647871202761252">A tela de privacidade está desativada</translation>
 <translation id="4705716602320768426">Enviar feedback</translation>
 <translation id="4706121060329443414">O download será feito mais tarde. Por enquanto, a fala será enviada ao Google para processamento.</translation>
-<translation id="4731797938093519117">Acesso de pai/mãe</translation>
+<translation id="4731797938093519117">Acesso do familiar responsável</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4735498845456076464">O atalho de teclado <ph name="LAUNCHER_KEY_NAME" /> + tecla numérica mudou. Para usar as teclas de função, pressione <ph name="LAUNCHER_KEY_NAME" /> + uma tecla na linha superior.</translation>
 <translation id="4744944742468440486">Informações relacionadas à sua seleção</translation>
@@ -495,6 +502,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="4774338217796918551">Volte amanhã, neste horário: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Senha para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">O Google Assistente não está disponível para uma sessão de demonstração.</translation>
+<translation id="4782311465517282004">Veja definições, traduções ou conversões de unidades ao clicar com o botão direito do mouse no texto ou tocar nele e mantê-lo pressionado</translation>
 <translation id="479989351350248267">pesquisar</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4814539958450445987">Tela de login</translation>
@@ -553,6 +561,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="5234764350956374838">Dispensar</translation>
 <translation id="523505283826916779">Configurações de acessibilidade</translation>
+<translation id="5253783950165989294">Conectado a um dispositivo chamado <ph name="DEVICE_NAME" />. <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="5260676007519551770">Espaço de trabalho 4</translation>
 <translation id="5283198616748585639">Adicionar 1 min</translation>
 <translation id="528468243742722775">Fim</translation>
@@ -563,6 +572,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5313326810920013265">Configurações de Bluetooth</translation>
 <translation id="5314219114274263156">Gravação de tela capturada</translation>
+<translation id="5319712128756744240">Parear novo dispositivo</translation>
 <translation id="5322611492012084517">Smartphone não encontrado</translation>
 <translation id="5329548388331921293">Conectando…</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira da esquerda)</translation>
@@ -765,6 +775,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="698231206551913481">Todos os arquivos e dados locais associados a este usuário serão excluídos permanentemente quando o usuário for removido.</translation>
 <translation id="7007983414944123363">Não foi possível verificar seu PIN ou sua senha. Tente novamente.</translation>
+<translation id="7014684956566476813">Conectado a um dispositivo chamado <ph name="DEVICE_NAME" /></translation>
 <translation id="7015766095477679451">Volte às <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Espaço de trabalho 6</translation>
 <translation id="7025533177575372252">Conecte seu <ph name="DEVICE_NAME" /> ao smartphone</translation>
@@ -811,7 +822,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="7378889811480108604">Modo de Economia de bateria desativado</translation>
 <translation id="7392563512730092880">Se quiser definir mais tarde, basta acessar as configurações a qualquer momento.</translation>
 <translation id="7398254312354928459">Conexão de rede alterada</translation>
-<translation id="7405710164030118432">Para desbloquear o dispositivo, insira seu código de acesso de pai/mãe do Family Link</translation>
+<translation id="7405710164030118432">Para desbloquear o dispositivo, insira seu código de acesso do familiar responsável do Family Link</translation>
 <translation id="7406608787870898861">Termine de configurar sua rede móvel</translation>
 <translation id="741244894080940828">conversão</translation>
 <translation id="7413851974711031813">Pressione "Esc" para fechar</translation>
@@ -824,9 +835,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="7461924472993315131">Fixar</translation>
 <translation id="746232733191930409">Modo de gravação de tela</translation>
 <translation id="7466449121337984263">Toque no sensor</translation>
-<translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7477793887173910789">Controle suas músicas, seus vídeos e muito mais</translation>
-<translation id="7482097454533720217">Veja definições, traduções ou conversões de unidades ao clicar com o botão direito do mouse no texto ou tocar nele e mantê-lo pressionado.</translation>
 <translation id="7483025031359818980">Área de seleção definida como tela cheia</translation>
 <translation id="7486227320194954040">Recolher ferramentas de marcador</translation>
 <translation id="7497767806359279797">Escolher idioma e teclado</translation>
@@ -868,6 +877,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="7780159184141939021">Girar tela</translation>
 <translation id="7796353162336583443">Toque no botão da stylus na estante para criar uma nota, uma captura de tela, usar o Google Assistente, o apontador laser ou a lupa.</translation>
 <translation id="7798302898096527229">Pressione Pesquisar ou Shift para cancelar.</translation>
+<translation id="780301667611848630">Não</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinal forte</translation>
 <translation id="7837740436429729974">Tempo esgotado</translation>
@@ -970,7 +980,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante(s)</translation>
 <translation id="8641805545866562088">Atualizando a lista de perfis. Aguarde alguns minutos.</translation>
 <translation id="8646417893960517480">Timer de <ph name="TOTAL_TIME" /></translation>
-<translation id="8647931990447795414">Para adicionar uma pessoa, insira seu código de acesso de pai/mãe do Family Link</translation>
+<translation id="8647931990447795414">Para adicionar uma pessoa, insira seu código de acesso do familiar responsável do Family Link</translation>
 <translation id="8649101189709089199">Selecionar para ouvir</translation>
 <translation id="8652175077544655965">Fechar configurações</translation>
 <translation id="8653151467777939995">Mostrar configurações de notificação. As notificações estão ativadas</translation>
@@ -999,7 +1009,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="8818320199597151042">Removendo o perfil. Aguarde alguns minutos.</translation>
 <translation id="8825863694328519386">Deslize da esquerda para voltar</translation>
 <translation id="8828714802988429505">90°</translation>
-<translation id="8832757911363938552">Você pode interromper a captura de pacote a qualquer momento.</translation>
+<translation id="8834539327799336565">Conectados no momento</translation>
 <translation id="8841375032071747811">Botão "Voltar"</translation>
 <translation id="8843682306134542540">Alternar bloqueio de rotação. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Pesquisa+Esc</translation>
@@ -1026,10 +1036,11 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Usando <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Desbloqueie o dispositivo com a conta <ph name="LOGIN_ID" /> para executar a ação de notificação</translation>
-<translation id="9017320285115481645">Insira o código de acesso de pai/mãe do Family Link.</translation>
+<translation id="9017320285115481645">Insira o código de acesso do familiar responsável do Family Link.</translation>
 <translation id="9024331582947483881">tela cheia</translation>
 <translation id="9047624247355796468">Abrir configurações de <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">O dispositivo será revertido</translation>
+<translation id="9059834730836941392">Recolher notificação</translation>
 <translation id="9063800855227801443">Não é possível fazer a captura de conteúdo confidencial</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9070640332319875144">Configurações do Google Assistente</translation>

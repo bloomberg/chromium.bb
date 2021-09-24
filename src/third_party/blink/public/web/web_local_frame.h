@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "base/types/pass_key.h"
@@ -373,15 +374,6 @@ class WebLocalFrame : public WebFrame {
       v8::Isolate* isolate,
       int world_id) const = 0;
 
-  // Executes script in the context of the current page and returns the value
-  // that the script evaluated to with callback. Script execution can be
-  // suspend.
-  // DEPRECATED: Prefer requestExecuteScriptInIsolatedWorld().
-  virtual void RequestExecuteScriptAndReturnValue(
-      const WebScriptSource&,
-      bool user_gesture,
-      WebScriptExecutionCallback*) = 0;
-
   // Requests execution of the given function, but allowing for script
   // suspension and asynchronous execution.
   virtual void RequestExecuteV8Function(v8::Local<v8::Context>,
@@ -400,8 +392,10 @@ class WebLocalFrame : public WebFrame {
     kAsynchronousBlockingOnload
   };
 
-  // worldID must be > 0 (as 0 represents the main world).
-  // worldID must be < kEmbedderWorldIdLimit, high number used internally.
+  // worldID must be > 0 (as 0 is kMainDOMWorldId, which represents the
+  // main world) and must be < kEmbedderWorldIdLimit, high number used
+  // internally.
+  // DEPRECATED: Prefer RequestExecuteScript().
   virtual void RequestExecuteScriptInIsolatedWorld(
       int32_t world_id,
       const WebScriptSource* source_in,
@@ -410,6 +404,16 @@ class WebLocalFrame : public WebFrame {
       ScriptExecutionType,
       WebScriptExecutionCallback*,
       BackForwardCacheAware) = 0;
+
+  // Executes the script in the main world of the page.
+  // Use kMainDOMWorldId to execute in the main world; otherwise,
+  // `world_id` must be a positive integer and less than kEmbedderWorldIdLimit.
+  virtual void RequestExecuteScript(int32_t world_id,
+                                    base::span<const WebScriptSource> sources,
+                                    bool user_gesture,
+                                    ScriptExecutionType,
+                                    WebScriptExecutionCallback*,
+                                    BackForwardCacheAware) = 0;
 
   // Logs to the console associated with this frame. If |discard_duplicates| is
   // set, the message will only be added if it is unique (i.e. has not been

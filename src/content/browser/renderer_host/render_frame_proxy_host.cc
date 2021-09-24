@@ -16,6 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "base/trace_event/typed_macros.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -316,8 +317,7 @@ void RenderFrameProxyHost::OnAssociatedInterfaceRequest(
     mojo::ScopedInterfaceEndpointHandle handle) {
   // A RenderFrameProxyHost is reused after a crash, so allow reuse of the
   // receivers by resetting them before binding.
-  // TODO(dcheng): Maybe there should be an equivalent to RenderFrameHostImpl's
-  // InvalidateMojoConnection()?
+  // TODO(dcheng): Maybe this should move to InvalidateMojoConnection()?
   if (interface_name == blink::mojom::RemoteFrameHost::Name_) {
     remote_frame_host_receiver_.reset();
     remote_frame_host_receiver_.Bind(
@@ -691,11 +691,7 @@ void RenderFrameProxyHost::OpenURL(blink::mojom::OpenURLParamsPtr params) {
   if ((frame_tree_node_->pending_frame_policy().sandbox_flags &
        network::mojom::WebSandboxFlags::kDownloads) !=
       network::mojom::WebSandboxFlags::kNone) {
-    if (download_policy.blocking_downloads_in_sandbox_enabled) {
-      download_policy.SetDisallowed(blink::NavigationDownloadType::kSandbox);
-    } else {
-      download_policy.SetAllowed(blink::NavigationDownloadType::kSandbox);
-    }
+    download_policy.SetDisallowed(blink::NavigationDownloadType::kSandbox);
   }
 
   // TODO(lfg, lukasza): Remove |extra_headers| parameter from
@@ -797,8 +793,24 @@ void RenderFrameProxyHost::BindRemoteMainFrameInterfaces(
 }
 
 void RenderFrameProxyHost::InvalidateMojoConnection() {
+  remote_frame_.reset();
   remote_main_frame_.reset();
   remote_main_frame_host_receiver_.reset();
+}
+
+void RenderFrameProxyHost::WriteIntoTrace(
+    perfetto::TracedProto<perfetto::protos::pbzero::RenderFrameProxyHost>
+        proto) {
+  proto->set_routing_id(GetRoutingID());
+  proto->set_process_id(GetProcess()->GetID());
+  proto->set_is_render_frame_proxy_live(is_render_frame_proxy_live());
+  auto* site_instance = GetSiteInstance();
+  if (site_instance) {
+    proto->set_rvh_map_id(frame_tree_node_->frame_tree()
+                              ->GetRenderViewHostMapId(site_instance)
+                              .value());
+    proto->set_site_instance_id(site_instance->GetId().value());
+  }
 }
 
 }  // namespace content

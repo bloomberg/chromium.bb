@@ -7,8 +7,10 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/isolation_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -21,6 +23,10 @@ class ThrottlingURLLoader;
 }  // namespace blink
 
 namespace network {
+namespace mojom {
+class NetworkContext;
+}  // namespace mojom
+
 struct ResourceRequest;
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -28,9 +34,32 @@ class SharedURLLoaderFactory;
 namespace content {
 
 class BrowserContext;
+class StoragePartition;
 
-// Handles 103 Early Hints responses for navigation. Responsible for preloads
-// requested by Early Hints responses. Created when the first 103 response is
+// Contains parameters to create NavigationEarlyHintsManager.
+struct CONTENT_EXPORT NavigationEarlyHintsManagerParams {
+  NavigationEarlyHintsManagerParams(
+      const url::Origin& origin,
+      net::IsolationInfo isolation_info,
+      mojo::Remote<network::mojom::URLLoaderFactory> loader_factory);
+  ~NavigationEarlyHintsManagerParams();
+
+  NavigationEarlyHintsManagerParams(NavigationEarlyHintsManagerParams&&);
+  NavigationEarlyHintsManagerParams& operator=(
+      NavigationEarlyHintsManagerParams&&);
+
+  NavigationEarlyHintsManagerParams(const NavigationEarlyHintsManagerParams&) =
+      delete;
+  NavigationEarlyHintsManagerParams& operator=(
+      const NavigationEarlyHintsManagerParams&) = delete;
+
+  url::Origin origin;
+  net::IsolationInfo isolation_info;
+  mojo::Remote<network::mojom::URLLoaderFactory> loader_factory;
+};
+
+// Handles 103 Early Hints responses for navigation. Responsible for resource
+// hints in Early Hints responses. Created when the first 103 response is
 // received and owned by NavigationURLLoaderImpl until the final response to the
 // navigation request is received. NavigationURLLoaderImpl transfers the
 // ownership of this instance to RenderFrameHostImpl via NavigationRequest when
@@ -55,11 +84,10 @@ class CONTENT_EXPORT NavigationEarlyHintsManager {
   };
   using PreloadedResources = base::flat_map<GURL, PreloadedResource>;
 
-  NavigationEarlyHintsManager(
-      BrowserContext& browser_context,
-      mojo::Remote<network::mojom::URLLoaderFactory> loader_factory,
-      url::Origin origin,
-      int frame_tree_node_id);
+  NavigationEarlyHintsManager(BrowserContext& browser_context,
+                              StoragePartition& storage_partition,
+                              int frame_tree_node_id,
+                              NavigationEarlyHintsManagerParams params);
 
   ~NavigationEarlyHintsManager();
 
@@ -88,32 +116,45 @@ class CONTENT_EXPORT NavigationEarlyHintsManager {
   void WaitForPreloadsFinishedForTesting(
       base::OnceCallback<void(PreloadedResources)> callback);
 
+  void SetNetworkContextForTesting(
+      network::mojom::NetworkContext* network_context);
+
  private:
   class PreloadURLLoaderClient;
 
+  struct PreconnectEntry;
+
+  network::mojom::NetworkContext* GetNetworkContext();
+
   bool IsPreloadForNavigationEnabledByOriginTrial(
       const std::vector<std::string>& raw_tokens);
+
+  void MaybePreconnect(const network::mojom::LinkHeaderPtr& link,
+                       bool enabled_by_origin_trial);
 
   void MaybePreloadHintedResource(
       const network::mojom::LinkHeaderPtr& link,
       const network::ResourceRequest& navigation_request,
       bool enabled_by_origin_trial);
 
-  // Determines whether the linked resource should be preloaded.
-  // Currently we are running two trials: The field trial and the origin trial.
-  // When the field trial forcibly disables preloads, always returns false.
-  // Otherwise, returns true when either of trials is enabled and there is
-  // no inflight preload for the resource, with additional checks.
-  bool ShouldPreload(const network::mojom::LinkHeaderPtr& link,
-                     bool enabled_by_origin_trial);
+  // Determines whether resource hints like preload and preconnect should be
+  // handled or not. Currently we are running two trials: The field trial and
+  // the origin trial. When the field trial forcibly disables preloads, always
+  // returns false. Otherwise, returns true when either of trials is enabled.
+  bool ShouldHandleResourceHints(const network::mojom::LinkHeaderPtr& link,
+                                 bool enabled_by_origin_trial);
 
   void OnPreloadComplete(const GURL& url, const PreloadedResource& result);
 
   BrowserContext& browser_context_;
+  StoragePartition& storage_partition_;
+  const int frame_tree_node_id_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory_;
   mojo::Remote<network::mojom::URLLoaderFactory> loader_factory_;
   const url::Origin origin_;
-  const int frame_tree_node_id_;
+  const net::IsolationInfo isolation_info_;
+
+  base::flat_set<PreconnectEntry> preconnect_entries_;
 
   struct InflightPreload {
     InflightPreload(std::unique_ptr<blink::ThrottlingURLLoader> loader,
@@ -143,6 +184,8 @@ class CONTENT_EXPORT NavigationEarlyHintsManager {
 
   base::OnceCallback<void(PreloadedResources)>
       preloads_completion_callback_for_testing_;
+
+  network::mojom::NetworkContext* network_context_for_testing_ = nullptr;
 };
 
 }  // namespace content

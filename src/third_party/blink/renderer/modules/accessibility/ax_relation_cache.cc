@@ -173,6 +173,11 @@ bool AXRelationCache::IsValidOwner(AXObject* owner) {
   if (!AXObject::CanComputeAsNaturalParent(owner->GetNode()))
     return false;
 
+  // Problematic for cycles, and does not solve a known use case.
+  // Easiest to omit the possibility.
+  if (owner->IsAriaHidden())
+    return false;
+
   return true;
 }
 
@@ -188,6 +193,17 @@ bool AXRelationCache::IsValidOwnedChild(AXObject* child) {
 
   if (child->IsImageMapLink())
     return false;  // An area can't be owned, only parented by <img usemap>.
+
+  // <select> options can only be children of AXMenuListPopup or AXListBox.
+  if (IsA<HTMLOptionElement>(child->GetNode()) ||
+      IsA<HTMLOptGroupElement>(child->GetNode())) {
+    return false;
+  }
+
+  // Problematic for cycles, and does not solve a known use case.
+  // Easiest to omit the possibility.
+  if (child->IsAriaHidden())
+    return false;
 
   return true;
 }

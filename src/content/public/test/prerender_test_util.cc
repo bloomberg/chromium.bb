@@ -16,7 +16,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -402,6 +401,15 @@ int PrerenderTestHelper::GetRequestCount(const GURL& url) {
   return request_count_by_path_[url.PathForRequest()];
 }
 
+net::test_server::HttpRequest::HeaderMap PrerenderTestHelper::GetRequestHeaders(
+    const GURL& url) {
+  EXPECT_TRUE(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::AutoLock auto_lock(lock_);
+  std::string path = url.PathForRequest();
+  DCHECK(base::Contains(request_headers_by_path_, path)) << path;
+  return request_headers_by_path_[path];
+}
+
 void PrerenderTestHelper::WaitForRequest(const GURL& url, int count) {
   TRACE_EVENT("test", "PrerenderTestHelper::WaitForRequest", "url", url,
               "count", count);
@@ -423,6 +431,8 @@ void PrerenderTestHelper::MonitorResourceRequest(
   EXPECT_FALSE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::AutoLock auto_lock(lock_);
   request_count_by_path_[request.GetURL().PathForRequest()]++;
+  request_headers_by_path_.emplace(request.GetURL().PathForRequest(),
+                                   request.headers);
   if (monitor_callback_)
     std::move(monitor_callback_).Run();
 }

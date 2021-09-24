@@ -41,9 +41,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/arc/arc_service_manager.h"
@@ -620,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
 
   // Create FullRestoreAppLaunchHandler to simulate the system startup.
   auto* full_restore_service = FullRestoreService::GetForProfile(profile());
-  full_restore_service->SetAppLaunchHanlderForTesting(
+  full_restore_service->SetAppLaunchHandlerForTesting(
       std::make_unique<FullRestoreAppLaunchHandler>(
           profile(), /*should_init_service=*/true));
   auto* app_launch_handler1 = full_restore_service->app_launch_handler();
@@ -635,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
   ::full_restore::FullRestoreSaveHandler::GetInstance()->ClearForTesting();
 
   // Create FullRestoreAppLaunchHandler to simulate the system startup again.
-  full_restore_service->SetAppLaunchHanlderForTesting(
+  full_restore_service->SetAppLaunchHandlerForTesting(
       std::make_unique<FullRestoreAppLaunchHandler>(
           profile(), /*should_init_service=*/true));
   auto* app_launch_handler2 = full_restore_service->app_launch_handler();
@@ -674,7 +674,7 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
 
   // Create FullRestoreAppLaunchHandler to simulate the system startup.
   auto* full_restore_service = FullRestoreService::GetForProfile(profile());
-  full_restore_service->SetAppLaunchHanlderForTesting(
+  full_restore_service->SetAppLaunchHandlerForTesting(
       std::make_unique<FullRestoreAppLaunchHandler>(
           profile(), /*should_init_service=*/true));
   auto* app_launch_handler1 = full_restore_service->app_launch_handler();
@@ -1349,7 +1349,7 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
                         uint32_t primary_color,
                         uint32_t status_bar_color) {
     const auto& app_id_to_launch_list =
-        app_launch_handler()->restore_data_->app_id_to_launch_list();
+        app_launch_handler()->restore_data()->app_id_to_launch_list();
 
     auto it = app_id_to_launch_list.find(app_id);
     EXPECT_TRUE(it != app_id_to_launch_list.end());
@@ -1368,7 +1368,7 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
     DCHECK(app_launch_handler());
 
     const auto& app_id_to_launch_list =
-        app_launch_handler()->restore_data_->app_id_to_launch_list();
+        app_launch_handler()->restore_data()->app_id_to_launch_list();
 
     auto it = app_id_to_launch_list.find(app_id);
     EXPECT_TRUE(it != app_id_to_launch_list.end());
@@ -1381,7 +1381,7 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
     DCHECK(app_launch_handler());
 
     const auto& app_id_to_launch_list =
-        app_launch_handler()->restore_data_->app_id_to_launch_list();
+        app_launch_handler()->restore_data()->app_id_to_launch_list();
 
     auto it = app_id_to_launch_list.find(app_id);
     EXPECT_FALSE(it != app_id_to_launch_list.end());
@@ -1461,30 +1461,26 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
 
   // Create the window to simulate launching the ARC app.
   int32_t kTaskId2 = 200;
-  widget = CreateExoWindow("org.chromium.arc.200");
-  window = widget->GetNativeWindow();
+  auto* widget1 = CreateExoWindow("org.chromium.arc.200");
+  auto* window1 = widget1->GetNativeWindow();
 
   // The task is not ready, so the window is currently in a hidden container.
-  EXPECT_EQ(ash::Shell::GetContainer(window->GetRootWindow(),
+  EXPECT_EQ(ash::Shell::GetContainer(window1->GetRootWindow(),
                                      ash::kShellWindowId_UnparentedContainer),
-            window->parent());
+            window1->parent());
 
-  VerifyObserver(window, /*launch_count=*/0, /*init_count=*/1);
-  VerifyWindowProperty(window, kTaskId2,
+  VerifyObserver(window1, /*launch_count=*/0, /*init_count=*/1);
+  VerifyWindowProperty(window1, kTaskId2,
                        ::full_restore::kParentToHiddenContainer,
                        /*hidden=*/true);
 
   // Simulate creating the task for the ARC app window.
   CreateTask(app_id, kTaskId2, session_id2);
 
-  VerifyObserver(window, /*launch_count=*/0, /*init_count=*/1);
-  VerifyWindowProperty(window, kTaskId2,
+  VerifyObserver(window1, /*launch_count=*/0, /*init_count=*/1);
+  VerifyWindowProperty(window1, kTaskId2,
                        ::full_restore::kParentToHiddenContainer,
                        /*hidden=*/false);
-
-  // Destroy the task and close the window.
-  app_host()->OnTaskDestroyed(kTaskId2);
-  widget->CloseNow();
 
   int32_t session_id3 = 2;
   int32_t kTaskId3 = 300;
@@ -1492,18 +1488,20 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
   CreateTask(app_id, kTaskId3, session_id3);
 
   // Create the window to simulate launching the ARC app.
-  widget = CreateExoWindow("org.chromium.arc.300");
-  window = widget->GetNativeWindow();
+  auto* widget2 = CreateExoWindow("org.chromium.arc.300");
+  auto* window2 = widget2->GetNativeWindow();
 
-  VerifyObserver(window, /*launch_count=*/0, /*init_count=*/0);
+  VerifyObserver(window2, /*launch_count=*/0, /*init_count=*/0);
   // The window should not be hidden.
-  VerifyWindowProperty(window, kTaskId3,
+  VerifyWindowProperty(window2, kTaskId3,
                        /*restore_window_id=*/0,
                        /*hidden=*/false);
 
   // Destroy the task and close the window.
+  app_host()->OnTaskDestroyed(kTaskId2);
+  widget1->CloseNow();
   app_host()->OnTaskDestroyed(kTaskId3);
-  widget->CloseNow();
+  widget2->CloseNow();
 
   ::full_restore::FullRestoreInfo::GetInstance()->RemoveObserver(
       test_full_restore_info_observer());

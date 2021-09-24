@@ -11,6 +11,9 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import '../../prefs/prefs.js';
 import '../../settings_shared_css.js';
+import './privacy_review_clear_on_exit_fragment.js';
+import './privacy_review_msbb_fragment.js';
+import './step_indicator.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -19,7 +22,6 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 import {routes} from '../../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../../router.js';
 
-import {PrivacyReviewMsbbFragmentElement} from './privacy_review_msbb_fragment.js';
 /**
  * Steps in the privacy review flow. The page updates from those steps to show
  * the corresponding page content.
@@ -28,8 +30,25 @@ import {PrivacyReviewMsbbFragmentElement} from './privacy_review_msbb_fragment.j
 const PrivacyReviewStep = {
   WELCOME: 'welcome',
   MSBB: 'msbb',
+  CLEAR_ON_EXIT: 'clearOnExit',
   COMPLETION: 'completion',
 };
+
+/**
+ * TODO(crbug/1215630): This should be computed from the number of steps the
+ * user will actually see, but not all steps are implemented yet.
+ * @type {number}
+ */
+const REVIEW_STEPS = 5;
+
+/**
+ * @typedef {{
+ *   headerString: (string|undefined),
+ *   onNextButtonClick: function(),
+ *   onBackButtonClick: (function()|undefined),
+ * }}
+ */
+let PrivacyReviewStepComponents;
 
 /**
  * @constructor
@@ -68,7 +87,24 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
         type: String,
         value: PrivacyReviewStep.WELCOME,
       },
+
+      /**
+       * Used by the 'step-indicator' element to display its dots.
+       * @private {!Object<number, number>}
+       */
+      stepIndicatorModel_: {
+        type: Object,
+        computed: 'computeStepIndicatorModel_(privacyReviewStep_)',
+      },
     };
+  }
+
+  constructor() {
+    super();
+
+    /** @private {Map<PrivacyReviewStep, PrivacyReviewStepComponents>} */
+    this.privacyReviewStepToComponentsMap_ =
+        this.computePrivacyReviewStepToComponentsMap_();
   }
 
   /**
@@ -80,6 +116,56 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
     if (newRoute === routes.PRIVACY_REVIEW) {
       this.updateStateFromQueryParameters_();
     }
+  }
+
+  /**
+   * Returns the map of privacy review steps to their components.
+   * @return {Map<PrivacyReviewStep, PrivacyReviewStepComponents>}
+   * @private
+   */
+  computePrivacyReviewStepToComponentsMap_() {
+    // This allows states to directly call page actions.
+    const page = this;
+
+    return new Map([
+      [
+        PrivacyReviewStep.WELCOME,
+        {
+          onNextButtonClick: function() {
+            page.navigateToCard_(PrivacyReviewStep.MSBB);
+          },
+        },
+      ],
+      [
+        PrivacyReviewStep.COMPLETION,
+        {
+          onNextButtonClick: function() {
+            Router.getInstance().navigateToPreviousRoute();
+          },
+        },
+      ],
+      [
+        PrivacyReviewStep.MSBB,
+        {
+          headerString: page.i18n('privacyReviewMsbbCardHeader'),
+          onNextButtonClick: function() {
+            page.navigateToCard_(PrivacyReviewStep.CLEAR_ON_EXIT);
+          },
+        },
+      ],
+      [
+        PrivacyReviewStep.CLEAR_ON_EXIT,
+        {
+          headerString: page.i18n('privacyReviewClearOnExitCardHeader'),
+          onNextButtonClick: function() {
+            page.navigateToCard_(PrivacyReviewStep.COMPLETION);
+          },
+          onBackButtonClick: function() {
+            page.navigateToCard_(PrivacyReviewStep.MSBB);
+          },
+        },
+      ],
+    ]);
   }
 
   /**
@@ -105,82 +191,83 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
    * @param {!PrivacyReviewStep} step
    */
   navigateToCard_(step) {
-    Router.getInstance().navigateTo(
-        routes.PRIVACY_REVIEW,
-        /* opt_dynamicParameters */ new URLSearchParams('step=' + step),
-        /* opt_removeSearch */ false,
-        /* opt_skipHistoryEntry */ true);
+    Router.getInstance().updateRouteParams(new URLSearchParams('step=' + step));
     // TODO(crbug/1215630): Programmatically put the focus to the corresponding
     // element.
   }
 
   /** @private */
   onNextButtonClick_() {
+    this.privacyReviewStepToComponentsMap_.get(this.privacyReviewStep_)
+        .onNextButtonClick();
+  }
+
+  /**
+   * @private
+   * @return {string}
+   */
+  computeBackButtonClass_() {
+    return 'cr-button' +
+        (this.privacyReviewStepToComponentsMap_.get(this.privacyReviewStep_)
+                     .onBackButtonClick === undefined ?
+             ' visibility-hidden' :
+             '');
+  }
+
+  /** @private */
+  onBackButtonClick_() {
+    this.privacyReviewStepToComponentsMap_.get(this.privacyReviewStep_)
+        .onBackButtonClick();
+  }
+
+  /**
+   * @private
+   * @return {number}
+   */
+  computeActiveStepIndex_() {
     switch (this.privacyReviewStep_) {
-      case PrivacyReviewStep.WELCOME:
-        this.navigateToCard_(PrivacyReviewStep.MSBB);
-        break;
-      case PrivacyReviewStep.COMPLETION:
-        // TODO(crbug/1215630): Navigate to routes.PRIVACY and focus the
-        // privacy review row.
-        break;
       case PrivacyReviewStep.MSBB:
-        this.navigateToCard_(PrivacyReviewStep.COMPLETION);
-        break;
+        return 0;
+      case PrivacyReviewStep.CLEAR_ON_EXIT:
+        return 1;
       default:
-        assertNotReached();
+        // Welcome or completion cards do not show the step indicator, but since
+        // the HTML element is still present it's computed anyway.
+        return 0;
     }
   }
 
   /**
    * @private
-   * @return string
+   * @return {!Object<number, number>}
+   */
+  computeStepIndicatorModel_() {
+    return {
+      active: this.computeActiveStepIndex_(),
+      total: REVIEW_STEPS,
+    };
+  }
+
+  /**
+   * @private
+   * @return {string|undefined}
    */
   computeHeaderString_() {
-    switch (this.privacyReviewStep_) {
-      case PrivacyReviewStep.MSBB:
-        return this.i18n('privacyReviewMsbbCardHeader');
-      default:
-        return null;
-    }
+    return this.privacyReviewStepToComponentsMap_.get(this.privacyReviewStep_)
+        .headerString;
   }
 
   /**
    * @private
-   * @return boolean
+   * @return {boolean}
    */
   showHeader_() {
-    return this.computeHeaderString_() != null;
+    return !!this.computeHeaderString_();
   }
 
   /**
    * @private
-   * @return string
-   */
-  computeNextButtonLabel_() {
-    switch (this.privacyReviewStep_) {
-      case PrivacyReviewStep.WELCOME:
-        return this.i18n('privacyReviewWelcomeCardStartButton');
-      case PrivacyReviewStep.COMPLETION:
-        return this.i18n('privacyReviewCompletionCardLeaveButton');
-      case PrivacyReviewStep.MSBB:
-        return this.i18n('privacyReviewNextButton');
-      default:
-        return '';
-    }
-  }
-
-  /**
-   * @private
-   * @return string
-   */
-  computeFooterClass_() {
-    return this.privacyReviewStep_ === PrivacyReviewStep.WELCOME ? null : 'hr';
-  }
-
-  /**
-   * @private
-   * @return boolean
+   * @return {boolean}
    */
   showWelcomeFragment_() {
     return this.privacyReviewStep_ === PrivacyReviewStep.WELCOME;
@@ -188,7 +275,7 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
 
   /**
    * @private
-   * @return boolean
+   * @return {boolean}
    */
   showCompletionFragment_() {
     return this.privacyReviewStep_ === PrivacyReviewStep.COMPLETION;
@@ -196,10 +283,26 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
 
   /**
    * @private
-   * @return boolean
+   * @return {boolean}
+   */
+  showAnySettingFragment_() {
+    return !this.showWelcomeFragment_() && !this.showCompletionFragment_();
+  }
+
+  /**
+   * @private
+   * @return {boolean}
    */
   showMsbbFragment_() {
     return this.privacyReviewStep_ === PrivacyReviewStep.MSBB;
+  }
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  showClearOnExitFragment_() {
+    return this.privacyReviewStep_ === PrivacyReviewStep.CLEAR_ON_EXIT;
   }
 }
 

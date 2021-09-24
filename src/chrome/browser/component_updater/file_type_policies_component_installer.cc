@@ -21,6 +21,7 @@
 #include "base/version.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/safe_browsing/content/common/file_type_policies.h"
+#include "components/safe_browsing/core/common/features.h"
 
 using component_updater::ComponentUpdateService;
 
@@ -122,7 +123,9 @@ std::string FileTypePoliciesComponentInstallerPolicy::GetName() const {
 
 update_client::InstallerAttributes
 FileTypePoliciesComponentInstallerPolicy::GetInstallerAttributes() const {
-  return update_client::InstallerAttributes();
+  update_client::InstallerAttributes attributes;
+  attributes["tag"] = safe_browsing::GetFileTypePoliciesTag();
+  return attributes;
 }
 
 void RegisterFileTypePoliciesComponent(ComponentUpdateService* cus) {

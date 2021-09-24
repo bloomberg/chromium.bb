@@ -15,6 +15,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -44,12 +45,15 @@ ScrollableAppsGridView::ScrollableAppsGridView(
     AppListA11yAnnouncer* a11y_announcer,
     AppListViewDelegate* view_delegate,
     AppsGridViewFolderDelegate* folder_delegate,
-    views::ScrollView* parent_scroll_view)
+    views::ScrollView* parent_scroll_view,
+    AppListFolderController* folder_controller)
     : AppsGridView(/*contents_view=*/nullptr,
                    a11y_announcer,
                    view_delegate,
-                   folder_delegate),
+                   folder_delegate,
+                   folder_controller),
       scroll_view_(parent_scroll_view) {
+  DCHECK(scroll_view_);
   view_structure_.Init(PagedViewStructure::Mode::kSinglePage);
 }
 
@@ -92,6 +96,9 @@ gfx::Size ScrollableAppsGridView::GetTileViewSize() const {
 }
 
 gfx::Insets ScrollableAppsGridView::GetTilePadding() const {
+  if (has_fixed_tile_padding_)
+    return gfx::Insets(-vertical_tile_padding_, -horizontal_tile_padding_);
+
   int content_width = GetContentsBounds().width();
   int tile_width = GetAppListConfig().grid_tile_width();
   int width_to_distribute = content_width - cols() * tile_width;
@@ -112,6 +119,14 @@ gfx::Size ScrollableAppsGridView::GetTileGridSize() const {
 
 int ScrollableAppsGridView::GetPaddingBetweenPages() const {
   // The scrollable apps grid does not use pages.
+  return 0;
+}
+
+int ScrollableAppsGridView::GetTotalPages() const {
+  return 1;
+}
+
+int ScrollableAppsGridView::GetSelectedPage() const {
   return 0;
 }
 
@@ -237,6 +252,17 @@ bool ScrollableAppsGridView::CanAutoScrollView(
   return visible_rect.bottom() < scroll_view_->contents()->height();
 }
 
+void ScrollableAppsGridView::HandleScrollFromAppListView(
+    const gfx::Vector2d& offset,
+    ui::EventType type) {
+  // AppListView uses a paged apps grid view, so this must be a folder opened
+  // in the fullscreen launcher.
+  DCHECK(IsInFolder());
+
+  // TODO(crbug.com/1214064): Handle scroll events once folders are working.
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void ScrollableAppsGridView::SetFocusAfterEndDrag() {
   auto* focus_manager = GetFocusManager();
   if (!focus_manager)  // Does not exist during widget close.
@@ -253,25 +279,19 @@ void ScrollableAppsGridView::RecordAppMovingTypeMetrics(
                             kMaxAppListAppMovingType);
 }
 
-void ScrollableAppsGridView::OnAppListItemViewActivated(
-    AppListItemView* pressed_item_view,
-    const ui::Event& event) {
-  if (IsDragging())
-    return;
+int ScrollableAppsGridView::TilesPerPage(int page) const {
+  return cols() * rows_per_page();
+}
 
-  if (IsFolderItem(pressed_item_view->item())) {
-    // TODO(https://crbug.com/1214064): Implement showing folder contents.
-    return;
-  }
-  // TODO(https://crbug.com/1218435): Implement metrics for app launch.
+void ScrollableAppsGridView::EnsureViewVisible(const GridIndex& index) {
+  // TODO(https://crbug.com/1245865): Make sure that the view at |index| is
+  // visible. Mainly called when keyboard reordering item views.
+}
 
-  // Avoid using |item->id()| as the parameter. In some rare situations,
-  // activating the item may destruct it. Using the reference to an object
-  // which may be destroyed during the procedure as the function parameter
-  // may bring the crash like https://crbug.com/990282.
-  const std::string id = pressed_item_view->item()->id();
-  app_list_view_delegate()->ActivateItem(
-      id, event.flags(), AppListLaunchedFrom::kLaunchedFromGrid);
+const gfx::Vector2d ScrollableAppsGridView::CalculateTransitionOffset(
+    int page_of_view) const {
+  // The ScrollableAppsGridView has no page transitions.
+  return gfx::Vector2d();
 }
 
 BEGIN_METADATA(ScrollableAppsGridView, AppsGridView)

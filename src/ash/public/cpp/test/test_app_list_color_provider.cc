@@ -72,8 +72,7 @@ SkColor TestAppListColorProvider::GetSearchBoxIconColor(
   return gfx::kGoogleGrey200;
 }
 
-SkColor TestAppListColorProvider::GetFolderTitleTextColor(
-    SkColor default_color) const {
+SkColor TestAppListColorProvider::GetFolderTitleTextColor() const {
   return gfx::kGoogleGrey200;
 }
 
@@ -129,6 +128,10 @@ float TestAppListColorProvider::GetRippleAttributesInkDropOpacity(
 float TestAppListColorProvider::GetRippleAttributesHighlightOpacity(
     SkColor bg_color) const {
   return 0.08f;
+}
+
+SkColor TestAppListColorProvider::GetSearchResultViewHighlightColor() const {
+  return SkColorSetA(SK_ColorWHITE, 0x0D);
 }
 
 }  // namespace ash

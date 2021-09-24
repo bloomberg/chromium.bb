@@ -9,16 +9,16 @@
 #include "include/gpu/GrRecordingContext.h"
 #include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrOpsTask.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/geometry/GrQuad.h"
-#include "src/gpu/ops/GrTextureOp.h"
+#include "src/gpu/ops/OpsTask.h"
+#include "src/gpu/ops/TextureOp.h"
 #include "tests/Test.h"
 
 class OpsTaskTestingAccess {
 public:
-    typedef GrOpsTask::OpChain OpChain;
+    typedef skgpu::v1::OpsTask::OpChain OpChain;
 };
 
 static void check_chain(OpsTaskTestingAccess::OpChain* chain, SkRect firstRect, SkRect lastRect,
@@ -57,19 +57,19 @@ static GrOp::Owner create_op(GrDirectContext* dContext, SkRect rect,
     quad.fLocal = GrQuad(rect);
     quad.fEdgeFlags = isAA ? GrQuadAAFlags::kAll : GrQuadAAFlags::kNone;
 
-    return GrTextureOp::Make(dContext,
-                             proxyView,
-                             kPremul_SkAlphaType,
-                             nullptr,
-                             GrSamplerState::Filter::kNearest,
-                             GrSamplerState::MipmapMode::kNone,
-                             {1.f, 1.f, 1.f, 1.f},
-                             GrTextureOp::Saturate::kYes,
-                             SkBlendMode::kSrcOver,
-                             isAA ? GrAAType::kCoverage
-                                  : GrAAType::kNone,
-                             &quad,
-                             nullptr);
+    return skgpu::v1::TextureOp::Make(dContext,
+                                      proxyView,
+                                      kPremul_SkAlphaType,
+                                      nullptr,
+                                      GrSamplerState::Filter::kNearest,
+                                      GrSamplerState::MipmapMode::kNone,
+                                      {1.f, 1.f, 1.f, 1.f},
+                                      skgpu::v1::TextureOp::Saturate::kYes,
+                                      SkBlendMode::kSrcOver,
+                                      isAA ? GrAAType::kCoverage
+                                           : GrAAType::kNone,
+                                      &quad,
+                                      nullptr);
 }
 
 // This unit test exercises the crbug.com/1112259 case.

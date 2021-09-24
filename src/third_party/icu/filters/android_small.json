@@ -701,6 +701,20 @@
         "-/*/202"
       ]
     },
+// Based on https://cs.chromium.org/chromium/src/third_party/icu/patches/data.build.patch?rcl=797b7c
+// +# Chromium : To save space, use '-R' option (exclude collation rules. just
+// +# include the compiled binary data.)
+// +GENRBOPTS=-k -R
+    {
+      "categories": [
+        "coll_tree"
+      ],
+      "rules": [
+	"-/UCARules",
+	"-/collations/*/Sequence"
+      ]
+    },
+// The following rules must be placed below "-/collations/*/Sequence" to avoid keeping empty unihan, big5han and gb2312han
 // Based on remove_legacy_chinese_codepoint_collation
 // # big5han and gb2312han collation do not make any sense and nobody uses them.
     {
@@ -716,19 +730,6 @@
         "-/*/unihan",
         "-/*/big5han",
         "-/*/gb2312han"
-      ]
-    },
-// Based on https://cs.chromium.org/chromium/src/third_party/icu/patches/data.build.patch?rcl=797b7c
-// +# Chromium : To save space, use '-R' option (exclude collation rules. just
-// +# include the compiled binary data.)
-// +GENRBOPTS=-k -R
-    {
-      "categories": [
-        "coll_tree"
-      ],
-      "rules": [
-	"-/UCARules",
-	"-/collations/*/Sequence"
       ]
     },
 // Based on filter_unit_data

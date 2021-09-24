@@ -126,22 +126,22 @@ ArcPowerControlHandler::~ArcPowerControlHandler() {
 }
 
 void ArcPowerControlHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "ready", base::BindRepeating(&ArcPowerControlHandler::HandleReady,
                                    base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setWakefulnessMode",
       base::BindRepeating(&ArcPowerControlHandler::HandleSetWakefulnessMode,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setThrottling",
       base::BindRepeating(&ArcPowerControlHandler::HandleSetThrottling,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "startTracing",
       base::BindRepeating(&ArcPowerControlHandler::HandleStartTracing,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "stopTracing",
       base::BindRepeating(&ArcPowerControlHandler::HandleStopTracing,
                           base::Unretained(this)));
@@ -205,7 +205,7 @@ void ArcPowerControlHandler::HandleReady(const base::ListValue* args) {
 
 void ArcPowerControlHandler::HandleSetWakefulnessMode(
     const base::ListValue* args) {
-  DCHECK_EQ(1U, args->GetSize());
+  DCHECK_EQ(1U, args->GetList().size());
 
   if (!power_control_enabled_) {
     LOG(ERROR) << "Power control is not enabled";
@@ -250,7 +250,7 @@ void ArcPowerControlHandler::HandleSetWakefulnessMode(
 }
 
 void ArcPowerControlHandler::HandleSetThrottling(const base::ListValue* args) {
-  DCHECK_EQ(1U, args->GetSize());
+  DCHECK_EQ(1U, args->GetList().size());
 
   if (!power_control_enabled_) {
     LOG(ERROR) << "Power control is not enabled";
@@ -279,12 +279,12 @@ void ArcPowerControlHandler::HandleSetThrottling(const base::ListValue* args) {
 }
 
 void ArcPowerControlHandler::HandleStartTracing(const base::ListValue* args) {
-  DCHECK(!args->GetSize());
+  DCHECK(!args->GetList().size());
   StartTracing();
 }
 
 void ArcPowerControlHandler::HandleStopTracing(const base::ListValue* args) {
-  DCHECK(!args->GetSize());
+  DCHECK(!args->GetList().size());
   StopTracing();
 }
 

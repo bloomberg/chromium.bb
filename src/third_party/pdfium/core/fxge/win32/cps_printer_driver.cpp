@@ -19,22 +19,40 @@
 #include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 
+namespace {
+
+CFX_PSRenderer::RenderingLevel RenderingLevelFromWindowsPrintMode(
+    WindowsPrintMode mode) {
+  switch (mode) {
+    case WindowsPrintMode::kPostScript2:
+    case WindowsPrintMode::kPostScript2PassThrough:
+      return CFX_PSRenderer::RenderingLevel::kLevel2;
+    case WindowsPrintMode::kPostScript3:
+    case WindowsPrintMode::kPostScript3PassThrough:
+      return CFX_PSRenderer::RenderingLevel::kLevel3;
+    case WindowsPrintMode::kPostScript3Type42:
+    case WindowsPrintMode::kPostScript3Type42PassThrough:
+      return CFX_PSRenderer::RenderingLevel::kLevel3Type42;
+    default:
+      // |mode| should be PostScript.
+      NOTREACHED();
+      return CFX_PSRenderer::RenderingLevel::kLevel2;
+  }
+}
+
+}  // namespace
+
 CPSPrinterDriver::CPSPrinterDriver(HDC hDC,
                                    WindowsPrintMode mode,
-                                   const EncoderIface* pEncoderIface)
-    : m_hDC(hDC), m_PSRenderer(pEncoderIface) {
-  // |mode| should be PostScript.
-  DCHECK(mode == WindowsPrintMode::kModePostScript2 ||
-         mode == WindowsPrintMode::kModePostScript3 ||
-         mode == WindowsPrintMode::kModePostScript2PassThrough ||
-         mode == WindowsPrintMode::kModePostScript3PassThrough);
-  int pslevel = (mode == WindowsPrintMode::kModePostScript2 ||
-                 mode == WindowsPrintMode::kModePostScript2PassThrough)
-                    ? 2
-                    : 3;
+                                   CFX_PSFontTracker* ps_font_tracker,
+                                   const EncoderIface* encoder_iface)
+    : m_hDC(hDC), m_PSRenderer(ps_font_tracker, encoder_iface) {
+  CFX_PSRenderer::RenderingLevel level =
+      RenderingLevelFromWindowsPrintMode(mode);
   CPSOutput::OutputMode output_mode =
-      (mode == WindowsPrintMode::kModePostScript2 ||
-       mode == WindowsPrintMode::kModePostScript3)
+      (mode == WindowsPrintMode::kPostScript2 ||
+       mode == WindowsPrintMode::kPostScript3 ||
+       mode == WindowsPrintMode::kPostScript3Type42)
           ? CPSOutput::OutputMode::kGdiComment
           : CPSOutput::OutputMode::kExtEscape;
 
@@ -44,7 +62,7 @@ CPSPrinterDriver::CPSPrinterDriver(HDC hDC,
   m_Height = ::GetDeviceCaps(m_hDC, VERTRES);
   m_nBitsPerPixel = ::GetDeviceCaps(m_hDC, BITSPIXEL);
 
-  m_PSRenderer.Init(pdfium::MakeRetain<CPSOutput>(m_hDC, output_mode), pslevel,
+  m_PSRenderer.Init(pdfium::MakeRetain<CPSOutput>(m_hDC, output_mode), level,
                     m_Width, m_Height);
   HRGN hRgn = ::CreateRectRgn(0, 0, 1, 1);
   if (::GetClipRgn(m_hDC, hRgn) == 1) {

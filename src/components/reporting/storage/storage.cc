@@ -45,6 +45,11 @@ namespace {
 // Parameters of individual queues.
 // TODO(b/159352842): Deliver space and upload parameters from outside.
 
+constexpr base::FilePath::CharType kSecurityQueueSubdir[] =
+    FILE_PATH_LITERAL("Security");
+constexpr base::FilePath::CharType kSecurityQueuePrefix[] =
+    FILE_PATH_LITERAL("P_Security");
+
 constexpr base::FilePath::CharType kImmediateQueueSubdir[] =
     FILE_PATH_LITERAL("Immediate");
 constexpr base::FilePath::CharType kImmediateQueuePrefix[] =
@@ -92,6 +97,11 @@ constexpr base::TimeDelta kFailedUploadRetryDelay =
 std::vector<std::pair<Priority, QueueOptions>> ExpectedQueues(
     const StorageOptions& options) {
   return {
+      std::make_pair(SECURITY,
+                     QueueOptions(options)
+                         .set_subdirectory(kSecurityQueueSubdir)
+                         .set_file_prefix(kSecurityQueuePrefix)
+                         .set_upload_retry_delay(kFailedUploadRetryDelay)),
       std::make_pair(IMMEDIATE,
                      QueueOptions(options)
                          .set_subdirectory(kImmediateQueueSubdir)
@@ -134,10 +144,13 @@ class Storage::QueueUploaderInterface : public UploaderInterface {
   static void AsyncProvideUploader(
       Priority priority,
       Storage* storage,
+      UploaderInterface::UploadReason reason,
       UploaderInterfaceResultCb start_uploader_cb) {
     storage->async_start_upload_cb_.Run(
-        /*need_encryption_key=*/EncryptionModuleInterface::is_enabled() &&
-            storage->encryption_module_->need_encryption_key(),
+        (/*need_encryption_key=*/EncryptionModuleInterface::is_enabled() &&
+         storage->encryption_module_->need_encryption_key())
+            ? UploaderInterface::KEY_DELIVERY
+            : reason,
         base::BindOnce(&QueueUploaderInterface::WrapInstantiatedUploader,
                        priority, std::move(start_uploader_cb)));
   }
@@ -224,7 +237,7 @@ class Storage::KeyDelivery {
         base::BindOnce(&KeyDelivery::EncryptionKeyReceiverReady,
                        base::Unretained(this));
     async_start_upload_cb_.Run(
-        /*need_encryption_key=*/true,
+        UploaderInterface::KEY_DELIVERY,
         base::BindOnce(&KeyDelivery::WrapInstantiatedKeyUploader,
                        /*priority=*/MANUAL_BATCH,
                        std::move(start_uploader_cb)));
@@ -401,8 +414,9 @@ class Storage::KeyInStorage {
         directory_,
         /*recursive=*/false, base::FileEnumerator::FILES,
         base::StrCat({kEncryptionKeyFilePrefix, FILE_PATH_LITERAL("*")}));
-    base::FilePath full_name;
-    while (full_name = dir_enum.Next(), !full_name.empty()) {
+
+    for (base::FilePath full_name = dir_enum.Next(); !full_name.empty();
+         full_name = dir_enum.Next()) {
       const auto result = key_files_to_remove.emplace(full_name);
       if (!result.second) {
         // Duplicate file name. Should not happen.

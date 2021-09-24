@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/cross_origin_embedder_policy.h"
+#include "content/browser/renderer_host/cross_origin_opener_policy_access_report_manager.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
@@ -87,6 +88,9 @@ CrossOriginOpenerPolicyStatus::CrossOriginOpenerPolicyStatus(
       frame_tree_node_(navigation_request->frame_tree_node()),
       virtual_browsing_context_group_(frame_tree_node_->current_frame_host()
                                           ->virtual_browsing_context_group()),
+      soap_by_default_virtual_browsing_context_group_(
+          frame_tree_node_->current_frame_host()
+              ->soap_by_default_virtual_browsing_context_group()),
       is_initial_navigation_(!frame_tree_node_->has_committed_real_load()),
       current_coop_(
           frame_tree_node_->current_frame_host()->cross_origin_opener_policy()),
@@ -170,7 +174,9 @@ void CrossOriginOpenerPolicyStatus::EnforceCOOP(
       base::UnguessableToken::Create(), network_isolation_key);
   CrossOriginOpenerPolicyReporter* previous_reporter =
       use_current_document_coop_reporter_
-          ? frame_tree_node_->current_frame_host()->coop_reporter()
+          ? frame_tree_node_->current_frame_host()
+                ->coop_access_report_manager()
+                ->coop_reporter()
           : coop_reporter_.get();
 
   bool cross_origin_policy_swap =
@@ -248,7 +254,19 @@ void CrossOriginOpenerPolicyStatus::EnforceCOOP(
 
   if (require_browsing_instance_swap_ || virtual_browsing_instance_swap) {
     virtual_browsing_context_group_ =
-        CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup();
+        CrossOriginOpenerPolicyAccessReportManager::
+            NextVirtualBrowsingContextGroup();
+  }
+
+  // Check if a COOP of same-origin-allow-popups by default would result in a
+  // browsing context group switch.
+  if (ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
+          current_coop_.soap_by_default_value, current_origin_,
+          is_initial_navigation_, response_coop.soap_by_default_value,
+          response_origin)) {
+    soap_by_default_virtual_browsing_context_group_ =
+        CrossOriginOpenerPolicyAccessReportManager::
+            NextVirtualBrowsingContextGroup();
   }
 
   // Finally, update the current COOP, origin and reporter to those of the
@@ -295,8 +313,8 @@ void CrossOriginOpenerPolicyStatus::SanitizeCoopHeaders(
   if (coop == network::CrossOriginOpenerPolicy())
     return;
 
-  if (!base::FeatureList::IsEnabled(
-          network::features::kCrossOriginOpenerPolicy) ||
+  if (base::FeatureList::IsEnabled(
+          network::features::kCrossOriginOpenerPolicy) &&
       // https://html.spec.whatwg.org/multipage#the-cross-origin-opener-policy-header
       // ```
       // 1. If reservedEnvironment is a non-secure context, then return
@@ -308,45 +326,33 @@ void CrossOriginOpenerPolicyStatus::SanitizeCoopHeaders(
       // 2. If the result of Is url potentially trustworthy? given environment's
       // top-level creation URL is "Potentially Trustworthy", then return true.
       // ```
-      !network::IsUrlPotentiallyTrustworthy(response_url) ||
+      network::IsUrlPotentiallyTrustworthy(response_url) &&
       // The COOP header must be ignored outside of the top-level context. It is
       // removed as a defensive measure.
-      !frame_tree_node_->IsMainFrame()) {
-    coop = network::CrossOriginOpenerPolicy();
-
-    if (!network::IsUrlPotentiallyTrustworthy(response_url)) {
-      navigation_request_->AddDeferredConsoleMessage(
-          blink::mojom::ConsoleMessageLevel::kError,
-          "The Cross-Origin-Opener-Policy header has been ignored, because "
-          "the URL's origin was untrustworthy. It was defined either in the "
-          "final response or a redirect. Please deliver the response using "
-          "the HTTPS protocol. You can also use the 'localhost' origin "
-          "instead. See "
-          "https://www.w3.org/TR/powerful-features/"
-          "#potentially-trustworthy-origin and "
-          "https://html.spec.whatwg.org/"
-          "#the-cross-origin-opener-policy-header.");
-    }
+      frame_tree_node_->IsMainFrame()) {
     return;
   }
 
-  // The reporting part can be enabled via either a command-line flag or an
-  // origin trial.
-  bool reporting_enabled = base::FeatureList::IsEnabled(
-      network::features::kCrossOriginOpenerPolicyReporting);
+  bool has_coop_header =
+      coop.value != network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone ||
+      coop.report_only_value !=
+          network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone ||
+      coop.reporting_endpoint || coop.report_only_reporting_endpoint;
 
-  reporting_enabled |=
-      base::FeatureList::IsEnabled(
-          network::features::kCrossOriginOpenerPolicyReportingOriginTrial) &&
-      blink::TrialTokenValidator().RequestEnablesFeature(
-          response_url, response_head->headers.get(),
-          "CrossOriginOpenerPolicyReporting", base::Time::Now());
+  coop = network::CrossOriginOpenerPolicy();
 
-  if (!reporting_enabled) {
-    coop.reporting_endpoint = absl::nullopt;
-    coop.report_only_reporting_endpoint = absl::nullopt;
-    coop.report_only_value =
-        network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone;
+  if (!network::IsUrlPotentiallyTrustworthy(response_url) && has_coop_header) {
+    navigation_request_->AddDeferredConsoleMessage(
+        blink::mojom::ConsoleMessageLevel::kError,
+        "The Cross-Origin-Opener-Policy header has been ignored, because "
+        "the URL's origin was untrustworthy. It was defined either in the "
+        "final response or a redirect. Please deliver the response using "
+        "the HTTPS protocol. You can also use the 'localhost' origin "
+        "instead. See "
+        "https://www.w3.org/TR/powerful-features/"
+        "#potentially-trustworthy-origin and "
+        "https://html.spec.whatwg.org/"
+        "#the-cross-origin-opener-policy-header.");
   }
 }
 

@@ -30,6 +30,7 @@
 
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
 import * as Workspace from '../workspace/workspace.js';
 
 import {ContentProviderBasedProject} from './ContentProviderBasedProject.js';
@@ -57,25 +58,20 @@ export class SASSSourceMapping implements SourceMapping {
 
     this.eventListeners = [
       this.sourceMapManager.addEventListener(
-          SDK.SourceMapManager.Events.SourceMapAttached,
-          event => {
-            this.sourceMapAttached(event);
-          },
-          this),
+          SDK.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this),
       this.sourceMapManager.addEventListener(
-          SDK.SourceMapManager.Events.SourceMapDetached,
-          event => {
-            this.sourceMapDetached(event);
-          },
-          this),
+          SDK.SourceMapManager.Events.SourceMapDetached, this.sourceMapDetached, this),
     ];
   }
 
   private sourceMapAttachedForTest(_sourceMap: SDK.SourceMap.SourceMap|null): void {
   }
 
-  private async sourceMapAttached(event: Common.EventTarget.EventTargetEvent): Promise<void> {
-    const header = (event.data.client as SDK.CSSStyleSheetHeader.CSSStyleSheetHeader);
+  private async sourceMapAttached(
+      event: Common.EventTarget
+          .EventTargetEvent<{client: SDK.CSSStyleSheetHeader.CSSStyleSheetHeader, sourceMap: SDK.SourceMap.SourceMap}>):
+      Promise<void> {
+    const header = event.data.client;
     const sourceMap = (event.data.sourceMap as SDK.SourceMap.TextSourceMap);
     const project = this.project;
     const bindings = this.bindings;
@@ -91,8 +87,11 @@ export class SASSSourceMapping implements SourceMapping {
     this.sourceMapAttachedForTest(sourceMap);
   }
 
-  private async sourceMapDetached(event: Common.EventTarget.EventTargetEvent): Promise<void> {
-    const header = (event.data.client as SDK.CSSStyleSheetHeader.CSSStyleSheetHeader);
+  private async sourceMapDetached(
+      event: Common.EventTarget
+          .EventTargetEvent<{client: SDK.CSSStyleSheetHeader.CSSStyleSheetHeader, sourceMap: SDK.SourceMap.SourceMap}>):
+      Promise<void> {
+    const header = event.data.client;
     const sourceMap = (event.data.sourceMap as SDK.SourceMap.TextSourceMap);
     const bindings = this.bindings;
     for (const sourceURL of sourceMap.sourceURLs()) {
@@ -177,7 +176,7 @@ class Binding {
     this.uiSourceCode = null;
   }
 
-  private recreateUISourceCodeIfNeeded(frameId: string): void {
+  private recreateUISourceCodeIfNeeded(frameId: Protocol.Page.FrameId): void {
     const sourceMap = this.referringSourceMaps[this.referringSourceMaps.length - 1];
 
     const contentProvider =
@@ -201,7 +200,7 @@ class Binding {
     this.project.addUISourceCodeWithProvider(this.uiSourceCode, contentProvider, metadata, mimeType);
   }
 
-  addSourceMap(sourceMap: SDK.SourceMap.TextSourceMap, frameId: string): void {
+  addSourceMap(sourceMap: SDK.SourceMap.TextSourceMap, frameId: Protocol.Page.FrameId): void {
     if (this.uiSourceCode) {
       NetworkProject.addFrameAttribution(this.uiSourceCode, frameId);
     }
@@ -209,7 +208,7 @@ class Binding {
     this.recreateUISourceCodeIfNeeded(frameId);
   }
 
-  removeSourceMap(sourceMap: SDK.SourceMap.TextSourceMap, frameId: string): void {
+  removeSourceMap(sourceMap: SDK.SourceMap.TextSourceMap, frameId: Protocol.Page.FrameId): void {
     const uiSourceCode = (this.uiSourceCode as Workspace.UISourceCode.UISourceCode);
     NetworkProject.removeFrameAttribution(uiSourceCode, frameId);
     const lastIndex = this.referringSourceMaps.lastIndexOf(sourceMap);

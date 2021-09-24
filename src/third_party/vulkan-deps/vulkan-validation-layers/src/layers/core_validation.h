@@ -83,6 +83,7 @@ struct DrawDispatchVuid {
     const char* primitive_restart_enable = kVUIDUndefined;
     const char* vertex_input_binding_stride = kVUIDUndefined;
     const char* vertex_input = kVUIDUndefined;
+    const char* blend_enable = kVUIDUndefined;
 };
 
 struct ValidateBeginQueryVuids {
@@ -123,6 +124,9 @@ class CoreChecks : public ValidationStateTracker {
     std::string validation_cache_path;
 
     CoreChecks() { container_type = LayerObjectTypeCoreValidation; }
+
+    const CMD_BUFFER_STATE* GetCBState(const VkCommandBuffer cb) const { return Get<CMD_BUFFER_STATE>(cb); }
+    CMD_BUFFER_STATE* GetCBState(const VkCommandBuffer cb) { return Get<CMD_BUFFER_STATE>(cb); }
 
     // Override base class, we have some extra work to do here
     void InitDeviceValidationObject(bool add_obj, ValidationObject* inst_obj, ValidationObject* dev_obj) override;
@@ -364,6 +368,8 @@ class CoreChecks : public ValidationStateTracker {
     bool ValidateCmdQueueFlags(const CMD_BUFFER_STATE* cb_node, const char* caller_name, VkQueueFlags flags,
                                const char* error_code) const;
     bool ValidateSampleLocationsInfo(const VkSampleLocationsInfoEXT* pSampleLocationsInfo, const char* apiName) const;
+    bool MatchSampleLocationsInfo(const VkSampleLocationsInfoEXT* pSampleLocationsInfo1,
+                                  const VkSampleLocationsInfoEXT* pSampleLocationsInfo2) const;
     bool InsideRenderPass(const CMD_BUFFER_STATE* pCB, const char* apiName, const char* msgCode) const;
     bool OutsideRenderPass(const CMD_BUFFER_STATE* pCB, const char* apiName, const char* msgCode) const;
 
@@ -508,15 +514,15 @@ class CoreChecks : public ValidationStateTracker {
     bool ValidateGraphicsPipelineShaderState(const PIPELINE_STATE* pPipeline) const;
     bool ValidateGraphicsPipelineShaderDynamicState(const PIPELINE_STATE* pPipeline, const CMD_BUFFER_STATE* pCB,
                                                     const char* caller, const DrawDispatchVuid& vuid) const;
+    bool ValidateGraphicsPipelineBlendEnable(const PIPELINE_STATE* pPipeline) const;
     void RecordGraphicsPipelineShaderDynamicState(PIPELINE_STATE *pipeline);
     bool ValidateComputePipelineShaderState(PIPELINE_STATE* pPipeline) const;
     uint32_t CalcShaderStageCount(const PIPELINE_STATE* pipeline, VkShaderStageFlagBits stageBit) const;
     bool ValidateRayTracingPipeline(PIPELINE_STATE* pipeline, VkPipelineCreateFlags flags, bool isKHR) const;
     bool PreCallValidateCreateShaderModule(VkDevice device, const VkShaderModuleCreateInfo* pCreateInfo,
                                            const VkAllocationCallbacks* pAllocator, VkShaderModule* pShaderModule) const override;
-    bool ValidatePipelineShaderStage(VkPipelineShaderStageCreateInfo const* pStage, const PIPELINE_STATE* pipeline,
-                                     const PipelineStageState& stage_state, const SHADER_MODULE_STATE* module,
-                                     const spirv_inst_iter& entrypoint, bool check_point_size) const;
+    bool ValidatePipelineShaderStage(const PIPELINE_STATE* pipeline, const PipelineStageState& stage_state,
+                                     bool check_point_size) const;
     bool ValidatePointListShaderState(const PIPELINE_STATE* pipeline, SHADER_MODULE_STATE const* src, spirv_inst_iter entrypoint,
                                       VkShaderStageFlagBits stage) const;
     bool ValidatePrimitiveRateShaderState(const PIPELINE_STATE* pipeline, SHADER_MODULE_STATE const* src,
@@ -530,6 +536,8 @@ class CoreChecks : public ValidationStateTracker {
     bool ValidateShaderStageMaxResources(VkShaderStageFlagBits stage, const PIPELINE_STATE* pipeline) const;
     bool ValidateShaderStageGroupNonUniform(SHADER_MODULE_STATE const* src, VkShaderStageFlagBits stage,
                                             spirv_inst_iter& insn) const;
+    bool ValidateWorkgroupSize(SHADER_MODULE_STATE const* src, VkPipelineShaderStageCreateInfo const* pStage,
+                               const std::unordered_map<uint32_t, std::vector<uint32_t>>& id_value_map) const;
     bool ValidateCooperativeMatrix(SHADER_MODULE_STATE const* src, VkPipelineShaderStageCreateInfo const* pStage,
                                    const PIPELINE_STATE* pipeline) const;
     bool ValidateShaderResolveQCOM(SHADER_MODULE_STATE const* src, VkPipelineShaderStageCreateInfo const* pStage,
@@ -569,11 +577,6 @@ class CoreChecks : public ValidationStateTracker {
                                        const VkImageSubresourceRange& subresourceRange, const char* cmd_name,
                                        const char* param_name, const char* image_layer_count_var_name, const VkImage image,
                                        const SubresourceRangeErrorCodes& errorCodes) const;
-    void SetImageLayout(CMD_BUFFER_STATE* cb_node, const IMAGE_STATE& image_state,
-                        const VkImageSubresourceRange& image_subresource_range, VkImageLayout layout,
-                        VkImageLayout expected_layout = kInvalidLayout);
-    void SetImageLayout(CMD_BUFFER_STATE* cb_node, const IMAGE_STATE& image_state,
-                        const VkImageSubresourceLayers& image_subresource_layers, VkImageLayout layout);
     bool ValidateRenderPassLayoutAgainstFramebufferImageUsage(RenderPassCreateVersion rp_version, VkImageLayout layout,
                                                               VkImage image, VkImageView image_view, VkFramebuffer framebuffer,
                                                               VkRenderPass renderpass, uint32_t attachment_index,
@@ -658,17 +661,6 @@ class CoreChecks : public ValidationStateTracker {
                                                 const VkImageSubresourceRange* pRanges) override;
 
     bool FindLayouts(const IMAGE_STATE& image_state, std::vector<VkImageLayout>& layouts) const;
-
-    void SetImageViewLayout(CMD_BUFFER_STATE* cb_node, const IMAGE_VIEW_STATE& view_state, VkImageLayout layout,
-                            VkImageLayout layoutStencil);
-    void SetImageViewInitialLayout(CMD_BUFFER_STATE* cb_node, const IMAGE_VIEW_STATE& view_state, VkImageLayout layout);
-
-    void SetImageInitialLayout(CMD_BUFFER_STATE* cb_node, VkImage image, const VkImageSubresourceRange& range,
-                               VkImageLayout layout);
-    void SetImageInitialLayout(CMD_BUFFER_STATE* cb_node, const IMAGE_STATE& image_state, const VkImageSubresourceRange& range,
-                               VkImageLayout layout);
-    void SetImageInitialLayout(CMD_BUFFER_STATE* cb_node, const IMAGE_STATE& image_state, const VkImageSubresourceLayers& layers,
-                               VkImageLayout layout);
 
     bool VerifyFramebufferAndRenderPassLayouts(RenderPassCreateVersion rp_version, const CMD_BUFFER_STATE* pCB,
                                                const VkRenderPassBeginInfo* pRenderPassBegin,
@@ -1321,6 +1313,7 @@ class CoreChecks : public ValidationStateTracker {
     bool PreCallValidateSetEvent(VkDevice device, VkEvent event) const override;
     bool PreCallValidateResetEvent(VkDevice device, VkEvent event) const override;
     bool PreCallValidateGetEventStatus(VkDevice device, VkEvent event) const override;
+    bool ValidateSparseMemoryBind(const VkSparseMemoryBind* bind, const char* func_name, const char* parameter_name) const;
     bool PreCallValidateQueueBindSparse(VkQueue queue, uint32_t bindInfoCount, const VkBindSparseInfo* pBindInfo,
                                         VkFence fence) const override;
     bool ValidateSignalSemaphore(VkDevice device, const VkSemaphoreSignalInfo* pSignalInfo, const char* api_name) const;
@@ -1547,6 +1540,11 @@ class CoreChecks : public ValidationStateTracker {
                                                      const VkFragmentShadingRateCombinerOpKHR combinerOps[2]) const override;
     bool PreCallValidateCmdSetColorWriteEnableEXT(VkCommandBuffer commandBuffer, uint32_t attachmentCount,
                                                   const VkBool32* pColorWriteEnables) const override;
+    bool PreCallValidateCmdBeginConditionalRenderingEXT(
+        VkCommandBuffer commandBuffer, const VkConditionalRenderingBeginInfoEXT* pConditionalRenderingBegin) const override;
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+    bool PreCallValidateAcquireFullScreenExclusiveModeEXT(VkDevice device, VkSwapchainKHR swapchain) const override;
+#endif
 
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
     bool PreCallValidateGetAndroidHardwareBufferPropertiesANDROID(

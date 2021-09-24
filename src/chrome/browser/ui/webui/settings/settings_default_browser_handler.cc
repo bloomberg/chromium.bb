@@ -33,11 +33,11 @@ DefaultBrowserHandler::DefaultBrowserHandler() = default;
 DefaultBrowserHandler::~DefaultBrowserHandler() = default;
 
 void DefaultBrowserHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "requestDefaultBrowserState",
       base::BindRepeating(&DefaultBrowserHandler::RequestDefaultBrowserState,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setAsDefaultBrowser",
       base::BindRepeating(&DefaultBrowserHandler::SetAsDefaultBrowser,
                           base::Unretained(this)));
@@ -63,7 +63,7 @@ void DefaultBrowserHandler::RequestDefaultBrowserState(
     const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(args->GetSize(), 1U);
+  CHECK_EQ(args->GetList().size(), 1U);
   CHECK(args->GetString(0, &check_default_callback_id_));
 
   default_browser_worker_->StartCheckIsDefault(

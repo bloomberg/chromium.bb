@@ -410,7 +410,7 @@ source_set("core_internal") {
 source_set("core_internal_test") {
   testonly = true
   public_configs = [ ":nearby_include_config" ]
-  public = [ "src/cpp/core/internal/mock_service_controller.h" ]
+  public = [ "src/cpp/core/internal/mock_service_controller_router.h" ]
   deps = [
     ":core_internal",
     "//third_party/googletest:gmock",
@@ -500,4 +500,12 @@ source_set("core_internal_mediums_webrtc") {
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+}
+
+# Dummy build target to support running Skylab tests from Chrome builder.
+# Chrome builder expects a build target for test artifacts.
+# The name of the build target is required in builder configuration
+# files to link builders to their corresponding tests and hardware variants.
+
+source_set("nearby_dummy_tast_tests") {
 }

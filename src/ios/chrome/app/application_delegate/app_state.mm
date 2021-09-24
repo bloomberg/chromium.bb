@@ -151,7 +151,7 @@ const NSTimeInterval kMemoryFootprintRecordingTimeInterval = 5;
 // while queueTransitionToNextInitStage is already on the call stack.
 @property(nonatomic, assign) BOOL needsIncrementInitStage;
 
-// Redefined internaly as readwrite.
+// Redefined internally as readwrite.
 @property(nonatomic, assign, readwrite) InitStage initStage;
 
 @end
@@ -240,7 +240,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   // Exit the app if backgrounding the app while being in safe mode.
   if (self.initStage == InitStageSafeMode) {
     exit(0);
-    return;
   }
 
   if (_applicationInBackground) {

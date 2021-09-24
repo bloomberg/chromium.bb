@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/native_pixmap.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -38,6 +39,15 @@ class GbmPixmapWayland : public gfx::NativePixmap {
       gfx::BufferUsage usage,
       absl::optional<gfx::Size> visible_area_size = absl::nullopt);
 
+  // Creates a buffer object from native pixmap handle and initializes the
+  // pixmap buffer. If |widget| is provided, browser side wl_buffer is also
+  // created. Otherwise, this pixmap behaves as a staging pixmap and mustn't be
+  // scheduled as an overlay.
+  bool InitializeBufferFromHandle(gfx::AcceleratedWidget widget,
+                                  gfx::Size size,
+                                  gfx::BufferFormat format,
+                                  gfx::NativePixmapHandle handle);
+
   // gfx::NativePixmap overrides:
   bool AreDmaBufFdsValid() const override;
   int GetDmaBufFd(size_t plane) const override;
@@ -56,6 +66,7 @@ class GbmPixmapWayland : public gfx::NativePixmap {
                             const gfx::RectF& crop_rect,
                             bool enable_blend,
                             const gfx::Rect& damage_rect,
+                            float opacity,
                             std::vector<gfx::GpuFence> acquire_fences,
                             std::vector<gfx::GpuFence> release_fences) override;
   gfx::NativePixmapHandle ExportHandle() override;

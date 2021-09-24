@@ -368,8 +368,7 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
         delegate_->OnDownloadUpdated(this, invalidate_image);
         break;
       case crosapi::mojom::DownloadState::kComplete:
-        delegate_->OnDownloadCompleted(
-            this, invalidate_image);  // NOTE: Destroys `this`.
+        delegate_->OnDownloadCompleted(this);  // NOTE: Destroys `this`.
         break;
       case crosapi::mojom::DownloadState::kCancelled:
       case crosapi::mojom::DownloadState::kInterrupted:
@@ -585,14 +584,12 @@ bool HoldingSpaceDownloadsDelegate::OpenWhenComplete(
 
 void HoldingSpaceDownloadsDelegate::OnPersistenceRestored() {
   // ARC downloads.
-  if (features::IsHoldingSpaceArcIntegrationEnabled()) {
-    // NOTE: The `arc_intent_helper_bridge` may be `nullptr` if the `profile()`
-    // is not allowed to use ARC, e.g. if the `profile()` is OTR.
-    auto* const arc_intent_helper_bridge =
-        arc::ArcIntentHelperBridge::GetForBrowserContext(profile());
-    if (arc_intent_helper_bridge)
-      arc_intent_helper_observation_.Observe(arc_intent_helper_bridge);
-  }
+  // NOTE: The `arc_intent_helper_bridge` may be `nullptr` if the `profile()`
+  // is not allowed to use ARC, e.g. if the `profile()` is OTR.
+  auto* const arc_intent_helper_bridge =
+      arc::ArcIntentHelperBridge::GetForBrowserContext(profile());
+  if (arc_intent_helper_bridge)
+    arc_intent_helper_observation_.Observe(arc_intent_helper_bridge);
 
   // Ash Chrome downloads.
   download_notifier_.AddProfile(profile());
@@ -686,7 +683,6 @@ bool HoldingSpaceDownloadsDelegate::ShouldObserveProfile(Profile* profile) {
 void HoldingSpaceDownloadsDelegate::OnArcDownloadAdded(
     const base::FilePath& relative_path,
     const std::string& owner_package_name) {
-  DCHECK(features::IsHoldingSpaceArcIntegrationEnabled());
   if (is_restoring_persistence())
     return;
 
@@ -769,11 +765,10 @@ void HoldingSpaceDownloadsDelegate::OnDownloadUpdated(
 }
 
 void HoldingSpaceDownloadsDelegate::OnDownloadCompleted(
-    InProgressDownload* in_progress_download,
-    bool invalidate_image) {
+    InProgressDownload* in_progress_download) {
   // If in-progress downloads integration is enabled, a holding space item will
   // have already been associated with the download while it was in-progress.
-  CreateOrUpdateHoldingSpaceItem(in_progress_download, invalidate_image);
+  CreateOrUpdateHoldingSpaceItem(in_progress_download, true);
   EraseDownload(in_progress_download);
 }
 

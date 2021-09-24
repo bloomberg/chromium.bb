@@ -82,12 +82,12 @@ void SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
     HostContentSettingsMap* host_content_settings_map,
     SafeBrowsingNavigationObserverManager* observer_manager,
     PrefService* prefs,
-    SafeBrowsingServiceInterface* safe_browsing_service) {
+    bool has_safe_browsing_service) {
   if (FromWebContents(web_contents))
     return;
 
   if (safe_browsing::SafeBrowsingNavigationObserverManager::IsEnabledAndReady(
-          prefs, safe_browsing_service)) {
+          prefs, has_safe_browsing_service)) {
     web_contents->SetUserData(
         kWebContentsUserDataKey,
         std::make_unique<SafeBrowsingNavigationObserver>(
@@ -244,7 +244,7 @@ void SafeBrowsingNavigationObserver::OnContentSettingChanged(
     ContentSettingsType content_type) {
   // For all the content settings that can be changed via page info UI, we
   // assume there is a user gesture associated with the content setting change.
-  if (web_contents() &&
+  if (web_contents() && !primary_pattern.MatchesAllHosts() &&
       primary_pattern.Matches(web_contents()->GetLastCommittedURL()) &&
       PageInfoUI::ContentSettingsTypeInPageInfo(content_type)) {
     OnUserInteraction();

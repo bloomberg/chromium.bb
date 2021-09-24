@@ -215,25 +215,6 @@ namespace dawn_native {
             return {};
         }
 
-        static constexpr wgpu::BlendFactor kFirstDeprecatedBlendFactor =
-            wgpu::BlendFactor::SrcColor;
-        static constexpr uint32_t kDeprecatedBlendFactorOffset = 100;
-
-        bool IsDeprecatedBlendFactor(wgpu::BlendFactor blendFactor) {
-            return blendFactor >= kFirstDeprecatedBlendFactor;
-        }
-
-        wgpu::BlendFactor NormalizeBlendFactor(wgpu::BlendFactor blendFactor) {
-            // If the specified format is from the deprecated range return the corresponding
-            // non-deprecated format.
-            if (blendFactor >= kFirstDeprecatedBlendFactor) {
-                uint32_t blendFactorValue = static_cast<uint32_t>(blendFactor);
-                return static_cast<wgpu::BlendFactor>(blendFactorValue -
-                                                      kDeprecatedBlendFactorOffset);
-            }
-            return blendFactor;
-        }
-
         MaybeError ValidateBlendState(DeviceBase* device, const BlendState* descriptor) {
             DAWN_TRY(ValidateBlendOperation(descriptor->alpha.operation));
             DAWN_TRY(ValidateBlendFactor(descriptor->alpha.srcFactor));
@@ -241,15 +222,6 @@ namespace dawn_native {
             DAWN_TRY(ValidateBlendOperation(descriptor->color.operation));
             DAWN_TRY(ValidateBlendFactor(descriptor->color.srcFactor));
             DAWN_TRY(ValidateBlendFactor(descriptor->color.dstFactor));
-
-            if (IsDeprecatedBlendFactor(descriptor->alpha.srcFactor) ||
-                IsDeprecatedBlendFactor(descriptor->alpha.dstFactor) ||
-                IsDeprecatedBlendFactor(descriptor->color.srcFactor) ||
-                IsDeprecatedBlendFactor(descriptor->color.dstFactor)) {
-                device->EmitDeprecationWarning(
-                    "Blend factor enums have changed and the old enums will be removed soon.");
-            }
-
             return {};
         }
 
@@ -391,6 +363,72 @@ namespace dawn_native {
         }
     }  // anonymous namespace
 
+    // FlatRenderPipelineDescriptor
+    FlatRenderPipelineDescriptor::FlatRenderPipelineDescriptor(
+        const RenderPipelineDescriptor* descriptor)
+        : mLabel(descriptor->label != nullptr ? descriptor->label : ""),
+          mLayout(descriptor->layout),
+          mVertexModule(descriptor->vertex.module),
+          mVertexEntryPoint(descriptor->vertex.entryPoint) {
+        label = mLabel.c_str();
+
+        ASSERT(descriptor->layout != nullptr);
+        layout = mLayout.Get();
+
+        vertex.module = mVertexModule.Get();
+        vertex.entryPoint = mVertexEntryPoint.c_str();
+        vertex.bufferCount = descriptor->vertex.bufferCount;
+        vertex.buffers = mVertexBuffers.data();
+        uint32_t vertexAttributeCount = 0;
+        for (uint32_t vertexBufferIndex = 0; vertexBufferIndex < vertex.bufferCount;
+             ++vertexBufferIndex) {
+            const VertexBufferLayout& vertexLayout = descriptor->vertex.buffers[vertexBufferIndex];
+            mVertexBuffers[vertexBufferIndex] = vertexLayout;
+            mVertexBuffers[vertexBufferIndex].attributes = &mVertexAttributes[vertexAttributeCount];
+            for (uint32_t attributeIndex = 0; attributeIndex < vertexLayout.attributeCount;
+                 ++attributeIndex) {
+                mVertexAttributes[vertexAttributeCount + attributeIndex] =
+                    vertexLayout.attributes[attributeIndex];
+            }
+
+            vertexAttributeCount += vertexLayout.attributeCount;
+        }
+
+        primitive = descriptor->primitive;
+
+        if (descriptor->depthStencil != nullptr) {
+            mDepthStencilState = *(descriptor->depthStencil);
+            depthStencil = &mDepthStencilState;
+        }
+
+        multisample = descriptor->multisample;
+
+        if (descriptor->fragment != nullptr) {
+            mFragmentModule = descriptor->fragment->module;
+            mFragmentState.module = mFragmentModule.Get();
+
+            mFragmentEntryPoint = descriptor->fragment->entryPoint;
+            mFragmentState.entryPoint = mFragmentEntryPoint.c_str();
+
+            mFragmentState.targetCount = descriptor->fragment->targetCount;
+
+            mFragmentState.targets = mColorTargetStates.data();
+            for (uint32_t colorTargetIndex = 0; colorTargetIndex < mFragmentState.targetCount;
+                 ++colorTargetIndex) {
+                mColorTargetStates[colorTargetIndex] =
+                    descriptor->fragment->targets[colorTargetIndex];
+
+                if (descriptor->fragment->targets[colorTargetIndex].blend != nullptr) {
+                    mColorTargetStates[colorTargetIndex].blend = &mBlendStates[colorTargetIndex];
+                    mBlendStates[colorTargetIndex] =
+                        *(descriptor->fragment->targets[colorTargetIndex].blend);
+                }
+            }
+
+            fragment = &mFragmentState;
+        }
+    }
+
     // Helper functions
     size_t IndexFormatSize(wgpu::IndexFormat format) {
         switch (format) {
@@ -473,6 +511,7 @@ namespace dawn_native {
                                            const RenderPipelineDescriptor* descriptor)
         : PipelineBase(device,
                        descriptor->layout,
+                       descriptor->label,
                        {{SingleShaderStage::Vertex, descriptor->vertex.module,
                          descriptor->vertex.entryPoint},
                         {SingleShaderStage::Fragment, descriptor->fragment->module,
@@ -490,6 +529,7 @@ namespace dawn_native {
             mVertexBufferSlotsUsed.set(typedSlot);
             mVertexBufferInfos[typedSlot].arrayStride = buffers[slot].arrayStride;
             mVertexBufferInfos[typedSlot].stepMode = buffers[slot].stepMode;
+            mVertexBufferInfos[typedSlot].usedBytesInStride = 0;
             switch (buffers[slot].stepMode) {
                 case wgpu::VertexStepMode::Vertex:
                     mVertexBufferSlotsUsedAsVertexBuffer.set(typedSlot);
@@ -509,6 +549,17 @@ namespace dawn_native {
                 mAttributeInfos[location].vertexBufferSlot = typedSlot;
                 mAttributeInfos[location].offset = buffers[slot].attributes[i].offset;
                 mAttributeInfos[location].format = buffers[slot].attributes[i].format;
+                // Compute the access boundary of this attribute by adding attribute format size to
+                // attribute offset. Although offset is in uint64_t, such sum must be no larger than
+                // maxVertexBufferArrayStride (2048), which is promised by the GPUVertexBufferLayout
+                // validation of creating render pipeline. Therefore, calculating in uint16_t will
+                // cause no overflow.
+                DAWN_ASSERT(buffers[slot].attributes[i].offset <= 2048);
+                uint16_t accessBoundary =
+                    uint16_t(buffers[slot].attributes[i].offset) +
+                    uint16_t(GetVertexFormatInfo(buffers[slot].attributes[i].format).byteSize);
+                mVertexBufferInfos[typedSlot].usedBytesInStride =
+                    std::max(mVertexBufferInfos[typedSlot].usedBytesInStride, accessBoundary);
             }
         }
 
@@ -553,14 +604,6 @@ namespace dawn_native {
             if (target->blend != nullptr) {
                 mTargetBlend[i] = *target->blend;
                 mTargets[i].blend = &mTargetBlend[i];
-                mTargetBlend[i].alpha.srcFactor =
-                    NormalizeBlendFactor(mTargetBlend[i].alpha.srcFactor);
-                mTargetBlend[i].alpha.dstFactor =
-                    NormalizeBlendFactor(mTargetBlend[i].alpha.dstFactor);
-                mTargetBlend[i].color.srcFactor =
-                    NormalizeBlendFactor(mTargetBlend[i].color.srcFactor);
-                mTargetBlend[i].color.dstFactor =
-                    NormalizeBlendFactor(mTargetBlend[i].color.dstFactor);
             }
         }
     }

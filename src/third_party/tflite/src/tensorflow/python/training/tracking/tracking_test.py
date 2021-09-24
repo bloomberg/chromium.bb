@@ -16,16 +16,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
-import contextlib
-import multiprocessing.dummy
 import os
-import pickle
-import time
-import timeit
 
 import numpy as np
 
+from tensorflow.python.eager import context
+from tensorflow.python.eager import wrap_function
+from tensorflow.python.framework import ops
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
@@ -35,21 +32,28 @@ from tensorflow.python.training.tracking import util
 from tensorflow.python.util import nest
 
 
-_PICKLEABLE_CALL_COUNT = collections.Counter()
+def run_inside_wrap_function_in_eager_mode(graph_function):
+  """Decorator to execute the same graph code in eager and graph modes.
 
+  In graph mode, we just execute the graph_function passed as argument. In eager
+  mode, we wrap the function using wrap_function and then execute the wrapped
+  result.
 
-class MyPickleableObject(tracking.AutoTrackable):
-  """Needed for InterfaceTests.test_property_cache_serialization.
+  Args:
+    graph_function: python function containing graph code to be wrapped
 
-  This class must be at the top level. This is a constraint of pickle,
-  unrelated to `cached_per_instance`.
+  Returns:
+    decorated function
   """
-
-  @property
-  @tracking.cached_per_instance
-  def my_id(self):
-    _PICKLEABLE_CALL_COUNT[self] += 1
-    return id(self)
+  def wrap_and_execute(self):
+    if context.executing_eagerly():
+      wrapped = wrap_function.wrap_function(graph_function, [self])
+      # use the wrapped graph function
+      wrapped()
+    else:
+      # use the original function
+      graph_function(self)
+  return wrap_and_execute
 
 
 class InterfaceTests(test.TestCase):
@@ -59,7 +63,7 @@ class InterfaceTests(test.TestCase):
     root.leaf = tracking.AutoTrackable()
     root.leaf = root.leaf
     duplicate_name_dep = tracking.AutoTrackable()
-    with self.assertRaisesRegexp(ValueError, "already declared"):
+    with self.assertRaisesRegex(ValueError, "already declared"):
       root._track_trackable(duplicate_name_dep, name="leaf")
     # No error; we're overriding __setattr__, so we can't really stop people
     # from doing this while maintaining backward compatibility.
@@ -106,7 +110,7 @@ class InterfaceTests(test.TestCase):
     c = tracking.AutoTrackable()
     a.l.insert(0, c)
     checkpoint = util.Checkpoint(a=a)
-    with self.assertRaisesRegexp(ValueError, "A list element was replaced"):
+    with self.assertRaisesRegex(ValueError, "A list element was replaced"):
       checkpoint.save(os.path.join(self.get_temp_dir(), "ckpt"))
 
   @test_util.run_in_graph_and_eager_modes
@@ -118,7 +122,7 @@ class InterfaceTests(test.TestCase):
     c = tracking.AutoTrackable()
     held_reference.append(c)
     checkpoint = util.Checkpoint(a=a)
-    with self.assertRaisesRegexp(ValueError, "The wrapped list was modified"):
+    with self.assertRaisesRegex(ValueError, "The wrapped list was modified"):
       checkpoint.save(os.path.join(self.get_temp_dir(), "ckpt"))
 
   @test_util.run_in_graph_and_eager_modes
@@ -154,7 +158,7 @@ class InterfaceTests(test.TestCase):
     checkpoint.save(os.path.join(self.get_temp_dir(), "ckpt"))
     # Dirtying the inner list means the root object is unsaveable.
     a.l[0][1] = 2
-    with self.assertRaisesRegexp(ValueError, "A list element was replaced"):
+    with self.assertRaisesRegex(ValueError, "A list element was replaced"):
       checkpoint.save(os.path.join(self.get_temp_dir(), "ckpt"))
 
   @test_util.run_in_graph_and_eager_modes
@@ -169,126 +173,23 @@ class InterfaceTests(test.TestCase):
     self.assertAllClose({"k": [np.ones([2, 2]), np.zeros([3, 3])]},
                         self.evaluate(a.tensors))
 
-  def test_property_cache(self):
-    test_counter = collections.Counter()
-
-    class MyObject(tracking.AutoTrackable):
-
-      def __init__(self):
-        super(MyObject, self).__init__()
-        self._frozen = True
-
-      def __setattr__(self, key, value):
-        """Enforce that cache does not set attribute on MyObject."""
-        if getattr(self, "_frozen", False):
-          raise ValueError("Cannot mutate when frozen.")
-        return super(MyObject, self).__setattr__(key, value)
-
-      @property
-      @tracking.cached_per_instance
-      def test_property(self):
-        test_counter[id(self)] += 1
-        return id(self)
-
-    first_object = MyObject()
-    second_object = MyObject()
-
-    # Make sure the objects return the correct values
-    self.assertEqual(first_object.test_property, id(first_object))
-    self.assertEqual(second_object.test_property, id(second_object))
-
-    # Make sure the cache does not share across objects
-    self.assertNotEqual(first_object.test_property, second_object.test_property)
-
-    # Check again (Now the values should be cached.)
-    self.assertEqual(first_object.test_property, id(first_object))
-    self.assertEqual(second_object.test_property, id(second_object))
-
-    # Count the function calls to make sure the cache is actually being used.
-    self.assertAllEqual(tuple(test_counter.values()), (1, 1))
-
-  def test_property_cache_threaded(self):
-    call_count = collections.Counter()
-
-    class MyObject(tracking.AutoTrackable):
-
-      @property
-      @tracking.cached_per_instance
-      def test_property(self):
-        # Random sleeps to ensure that the execution thread changes
-        # mid-computation.
-        call_count["test_property"] += 1
-        time.sleep(np.random.random() + 1.)
-
-        # Use a RandomState which is seeded off the instance's id (the mod is
-        # because numpy limits the range of seeds) to ensure that an instance
-        # returns the same value in different threads, but different instances
-        # return different values.
-        return int(np.random.RandomState(id(self) % (2 ** 31)).randint(2 ** 16))
-
-      def get_test_property(self, _):
-        """Function provided to .map for threading test."""
-        return self.test_property
-
-    # Test that multiple threads return the same value. This requires that
-    # the underlying function is repeatable, as cached_property makes no attempt
-    # to prioritize the first call.
-    test_obj = MyObject()
-    with contextlib.closing(multiprocessing.dummy.Pool(32)) as pool:
-      # Intentionally make a large pool (even when there are only a small number
-      # of cpus) to ensure that the runtime switches threads.
-      results = pool.map(test_obj.get_test_property, range(64))
-    self.assertEqual(len(set(results)), 1)
-
-    # Make sure we actually are testing threaded behavior.
-    self.assertGreater(call_count["test_property"], 1)
-
-    # Make sure new threads still cache hit.
-    with contextlib.closing(multiprocessing.dummy.Pool(2)) as pool:
-      start_time = timeit.default_timer()  # Don't time pool instantiation.
-      results = pool.map(test_obj.get_test_property, range(4))
-    total_time = timeit.default_timer() - start_time
-
-    # Note(taylorrobie): The reason that it is safe to time a unit test is that
-    #                    a cache hit will be << 1 second, and a cache miss is
-    #                    guaranteed to be >= 1 second. Empirically confirmed by
-    #                    100,000 runs with no flakes.
-    self.assertLess(total_time, 0.95)
-
-  def test_property_cache_serialization(self):
-    # Reset call count. .keys() must be wrapped in a list, because otherwise we
-    # would mutate the iterator while iterating.
-    for k in list(_PICKLEABLE_CALL_COUNT.keys()):
-      _PICKLEABLE_CALL_COUNT.pop(k)
-
-    first_instance = MyPickleableObject()
-    self.assertEqual(id(first_instance), first_instance.my_id)
-
-    # Test that we can pickle and un-pickle
-    second_instance = pickle.loads(pickle.dumps(first_instance))
-
-    self.assertEqual(id(second_instance), second_instance.my_id)
-    self.assertNotEqual(first_instance.my_id, second_instance.my_id)
-
-    # Make sure de-serialized object uses the cache.
-    self.assertEqual(_PICKLEABLE_CALL_COUNT[second_instance], 1)
-
-    # Make sure the decorator cache is not being serialized with the object.
-    expected_size = len(pickle.dumps(second_instance))
-    for _ in range(5):
-      # Add some more entries to the cache.
-      _ = MyPickleableObject().my_id
-    self.assertEqual(len(_PICKLEABLE_CALL_COUNT), 7)
-    size_check_instance = MyPickleableObject()
-    _ = size_check_instance.my_id
-    self.assertEqual(expected_size, len(pickle.dumps(size_check_instance)))
-
 
 class _DummyResource(tracking.TrackableResource):
 
   def __init__(self, handle_name):
     self._handle_name = handle_name
     super(_DummyResource, self).__init__()
+
+  def _create_resource(self):
+    return self._handle_name
+
+
+class _DummyResource1(tracking.TrackableResource):
+
+  def __init__(self, handle_name):
+    self._handle_name = handle_name
+    self._value = 0
+    super(_DummyResource1, self).__init__()
 
   def _create_resource(self):
     return self._handle_name
@@ -317,7 +218,7 @@ class ResourceTrackerTest(test.TestCase):
 
     self.assertEqual(1, len(resource_tracker1.resources))
     self.assertEqual("test1", resource_tracker1.resources[0].resource_handle)
-    self.assertEqual(1, len(resource_tracker1.resources))
+    self.assertEqual(1, len(resource_tracker2.resources))
     self.assertEqual("test2", resource_tracker2.resources[0].resource_handle)
 
   def testNestedScopesScopes(self):
@@ -333,11 +234,71 @@ class ResourceTrackerTest(test.TestCase):
 
     self.assertEqual(1, len(resource_tracker1.resources))
     self.assertEqual("test1", resource_tracker1.resources[0].resource_handle)
-    self.assertEqual(1, len(resource_tracker1.resources))
+    self.assertEqual(1, len(resource_tracker2.resources))
     self.assertEqual("test2", resource_tracker2.resources[0].resource_handle)
     self.assertEqual(2, len(resource_tracker.resources))
     self.assertEqual("test1", resource_tracker.resources[0].resource_handle)
     self.assertEqual("test2", resource_tracker.resources[1].resource_handle)
+
+
+class ResourceCreatorScopeTest(test.TestCase):
+
+  @test_util.run_in_graph_and_eager_modes
+  @run_inside_wrap_function_in_eager_mode
+  def testResourceCreator(self):
+    def resource_creator_fn(next_creator, *a, **kwargs):
+      kwargs["handle_name"] = "forced_name"
+      return next_creator(*a, **kwargs)
+
+    # test that two resource classes use the same creator function
+    with ops.resource_creator_scope(["_DummyResource", "_DummyResource1"],
+                                    resource_creator_fn):
+      dummy_0 = _DummyResource(handle_name="fake_name_0")
+      dummy_1 = _DummyResource1(handle_name="fake_name_1")
+
+    self.assertEqual(dummy_0._handle_name, "forced_name")
+    self.assertEqual(dummy_1._handle_name, "forced_name")
+
+  @test_util.run_in_graph_and_eager_modes
+  @run_inside_wrap_function_in_eager_mode
+  def testResourceCreatorNestingError(self):
+
+    def creator(next_creator, *a, **kwargs):
+      return next_creator(*a, **kwargs)
+
+    # Save the state so we can clean up at the end.
+    graph = ops.get_default_graph()
+    old_creator_stack = graph._resource_creator_stack["_DummyResource"]
+
+    try:
+      scope = ops.resource_creator_scope(creator, "_DummyResource")
+      scope.__enter__()
+      with ops.resource_creator_scope(creator, "_DummyResource"):
+        with self.assertRaises(RuntimeError):
+          scope.__exit__(None, None, None)
+    finally:
+      graph._resource_creator_stack["_DummyResource"] = old_creator_stack
+
+  @test_util.run_in_graph_and_eager_modes
+  @run_inside_wrap_function_in_eager_mode
+  def testResourceCreatorNesting(self):
+
+    def resource_creator_fn_0(next_creator, *a, **kwargs):
+      instance = next_creator(*a, **kwargs)
+      instance._value = 1
+      return instance
+
+    def resource_creator_fn_1(next_creator, *a, **kwargs):
+      kwargs["handle_name"] = "forced_name1"
+      return next_creator(*a, **kwargs)
+
+    with ops.resource_creator_scope(["_DummyResource1"], resource_creator_fn_0):
+      with ops.resource_creator_scope(["_DummyResource1"],
+                                      resource_creator_fn_1):
+        dummy_0 = _DummyResource1(handle_name="fake_name")
+
+    self.assertEqual(dummy_0._handle_name, "forced_name1")
+    self.assertEqual(dummy_0._value, 1)
 
 
 if __name__ == "__main__":

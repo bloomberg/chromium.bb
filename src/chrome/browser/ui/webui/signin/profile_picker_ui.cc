@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/signin/profile_picker_ui.h"
-#include "base/feature_list.h"
 
+#include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
@@ -155,6 +155,8 @@ void AddStrings(content::WebUIDataSource* html_source) {
        IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_ACCOUNT_SELECTION_LACROS_TITLE},
       {"accountSelectionLacrosSubtitle",
        IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_ACCOUNT_SELECTION_LACROS_SUBTITLE},
+      {"accountSelectionLacrosOtherAccountButtonLabel",
+       IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_ACCOUNT_SELECTION_LACROS_OTHER_ACCOUNT_BUTTON_LABEL},
 #endif
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);

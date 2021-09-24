@@ -343,7 +343,8 @@ RenderWidgetHostViewBase* RenderWidgetHostViewChildFrame::GetRootView() {
 
 void RenderWidgetHostViewChildFrame::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
-    const gfx::Rect& bounds) {
+    const gfx::Rect& bounds,
+    const gfx::Rect& anchor_rect) {
   NOTREACHED();
 }
 
@@ -432,6 +433,17 @@ void RenderWidgetHostViewChildFrame::UpdateTooltipFromKeyboard(
   gfx::Rect adjusted_bounds(TransformPointToRootCoordSpace(bounds.origin()),
                             bounds.size());
   root_view->UpdateTooltipFromKeyboard(tooltip_text, adjusted_bounds);
+}
+
+void RenderWidgetHostViewChildFrame::ClearKeyboardTriggeredTooltip() {
+  if (!frame_connector_)
+    return;
+
+  auto* root_view = frame_connector_->GetRootRenderWidgetHostView();
+  if (!root_view)
+    return;
+
+  root_view->ClearKeyboardTriggeredTooltip();
 }
 
 RenderWidgetHostViewBase* RenderWidgetHostViewChildFrame::GetParentView() {

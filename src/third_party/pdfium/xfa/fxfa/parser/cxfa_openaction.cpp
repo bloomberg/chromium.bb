@@ -12,7 +12,7 @@
 namespace {
 
 const CXFA_Node::PropertyData kOpenActionPropertyData[] = {
-    {XFA_Element::Destination, 1, 0},
+    {XFA_Element::Destination, 1, {}},
 };
 
 const CXFA_Node::AttributeData kOpenActionAttributeData[] = {
@@ -25,7 +25,7 @@ const CXFA_Node::AttributeData kOpenActionAttributeData[] = {
 CXFA_OpenAction::CXFA_OpenAction(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::Node,
                 XFA_Element::OpenAction,
                 kOpenActionPropertyData,

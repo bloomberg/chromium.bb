@@ -116,12 +116,6 @@ struct TestCase {
     return *this;
   }
 
-  // TODO(crbug.com/912236) Remove once transition to new ZIP system is done.
-  TestCase& ZipNoNaCl() {
-    options.zip_no_nacl = true;
-    return *this;
-  }
-
   TestCase& EnableDriveDssPin() {
     options.drive_dss_pin = true;
     return *this;
@@ -166,9 +160,6 @@ struct TestCase {
     if (options.photos_documents_provider)
       full_name += "_PhotosDocumentsProvider";
 
-    if (options.zip_no_nacl)
-      full_name += "_ZipNoNaCl";
-
     if (options.drive_dss_pin)
       full_name += "_DriveDssPin";
 
@@ -189,10 +180,9 @@ std::ostream& operator<<(std::ostream& out, const TestCase& test_case) {
   return out << test_case.options;
 }
 
-// FilesAppBrowserTest with zip/unzip support.
+// TODO(crbug.com/1240426) Remove this function.
 TestCase ZipCase(const char* const name) {
   TestCase test_case(name);
-  test_case.options.zip = true;
   return test_case;
 }
 
@@ -276,6 +266,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayDownloads").FilesSwa().TabletMode(),
         TestCase("fileDisplayLaunchOnLocalFolder").DontObserveFileTasks(),
         TestCase("fileDisplayLaunchOnDrive").DontObserveFileTasks(),
+        TestCase("fileDisplayLaunchOnLocalFolder")
+            .DontObserveFileTasks()
+            .FilesSwa(),
+        TestCase("fileDisplayLaunchOnLocalFile").DontObserveFileTasks(),
+        TestCase("fileDisplayLaunchOnLocalFile")
+            .DontObserveFileTasks()
+            .FilesSwa(),
         TestCase("fileDisplayDrive").TabletMode(),
         TestCase("fileDisplayDrive"),
         TestCase("fileDisplayDriveOffline").Offline(),
@@ -364,20 +361,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("textOpenDownloads"),
                       TestCase("textOpenDrive")));
 
-// NaCl fails to compile zip plugin.pexe too often on ASAN, crbug.com/867738
-// The tests are flaky on the debug bot and always time out first and then pass
-// on retry. Disabled for debug as per crbug.com/936429.
-#if defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
-#define MAYBE_ZipFiles DISABLED_ZipFiles
-#else
-#define MAYBE_ZipFiles ZipFiles
-#endif
+// TODO(crbug.com/1240426) Make these tests work with the new ZIP systems.
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    MAYBE_ZipFiles, /* zip_files.js */
+    DISABLED_ZipFiles, /* zip_files.js */
     FilesAppBrowserTest,
     ::testing::Values(ZipCase("zipFileOpenDownloads").InGuestMode(),
                       ZipCase("zipFileOpenDownloads"),
-                      ZipCase("zipNotifyFileTasks").ZipNoNaCl(),
+                      ZipCase("zipNotifyFileTasks"),
                       ZipCase("zipFileOpenDownloadsShiftJIS"),
                       ZipCase("zipFileOpenDownloadsMacOs"),
                       ZipCase("zipFileOpenDownloadsWithAbsolutePaths"),
@@ -427,6 +417,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("keyboardDisableCopyWhenDialogDisplayed"),
         TestCase("keyboardOpenNewWindow"),
         TestCase("keyboardOpenNewWindow").InGuestMode(),
+        TestCase("keyboardOpenNewWindow").FilesSwa(),
         TestCase("renameFileDownloads").InGuestMode(),
         TestCase("renameFileDownloads"),
         TestCase("renameFileDrive"),
@@ -650,12 +641,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirCreateWithKeyboard"),
         TestCase("dirCreateWithoutChangingCurrent"),
         TestCase("dirCreateMultipleFolders"),
-#if !(defined(ADDRESS_SANITIZER) || !defined(NDEBUG))
-        // Zip tests times out too often on ASAN and DEBUG. crbug.com/936429
-        // and crbug.com/944697
-        ZipCase("dirContextMenuZip"),
-        ZipCase("dirEjectContextMenuZip"),
-#endif
+
+        // TODO(crbug.com/1240426) Make these tests work with the new ZIP
+        // systems.
+        ZipCase("DISABLED_dirContextMenuZip"),
+        ZipCase("DISABLED_dirEjectContextMenuZip"),
+
         TestCase("dirContextMenuRecent"),
         TestCase("dirContextMenuMyFiles"),
         TestCase("dirContextMenuMyFiles").EnableTrash(),
@@ -913,10 +904,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openFileDialogAriaMultipleSelect").WithBrowser(),
         TestCase("saveFileDialogAriaSingleSelect").WithBrowser(),
         TestCase("saveFileDialogDownloads").WithBrowser(),
+        TestCase("saveFileDialogDownloads").WithBrowser().FilesSwa(),
         TestCase("saveFileDialogDownloads").WithBrowser().InGuestMode(),
         TestCase("saveFileDialogDownloads").WithBrowser().InIncognito(),
-// TODO(crbug.com/1236842): Remove flakiness and enable this test.
-//        TestCase("saveFileDialogDownloadsNewFolderButton").WithBrowser(),
+        // TODO(crbug.com/1236842): Remove flakiness and enable this test.
+        // TestCase("saveFileDialogDownloadsNewFolderButton").WithBrowser(),
         TestCase("saveFileDialogPanelsDisabled").WithBrowser(),
         TestCase("openFileDialogCancelDownloads").WithBrowser(),
         TestCase("openFileDialogEscapeDownloads").WithBrowser(),

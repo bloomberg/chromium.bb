@@ -21,14 +21,13 @@ namespace {
 
 using chromeos::assistant::prefs::kAssistantContextEnabled;
 using chromeos::assistant::prefs::kAssistantEnabled;
-using chromeos::quick_answers::prefs::ConsentStatus;
-using chromeos::quick_answers::prefs::kQuickAnswersConsentStatus;
-using chromeos::quick_answers::prefs::kQuickAnswersDefinitionEnabled;
-using chromeos::quick_answers::prefs::kQuickAnswersEnabled;
-using chromeos::quick_answers::prefs::kQuickAnswersNoticeImpressionCount;
-using chromeos::quick_answers::prefs::kQuickAnswersNoticeImpressionDuration;
-using chromeos::quick_answers::prefs::kQuickAnswersTranslationEnabled;
-using chromeos::quick_answers::prefs::kQuickAnswersUnitConverstionEnabled;
+using quick_answers::prefs::ConsentStatus;
+using quick_answers::prefs::kQuickAnswersConsentStatus;
+using quick_answers::prefs::kQuickAnswersDefinitionEnabled;
+using quick_answers::prefs::kQuickAnswersEnabled;
+using quick_answers::prefs::kQuickAnswersNoticeImpressionCount;
+using quick_answers::prefs::kQuickAnswersTranslationEnabled;
+using quick_answers::prefs::kQuickAnswersUnitConverstionEnabled;
 
 QuickAnswersState* g_quick_answers_state = nullptr;
 
@@ -62,12 +61,14 @@ void MigrateQuickAnswersConsentStatus(PrefService* prefs) {
       prefs->SetInteger(
           kQuickAnswersConsentStatus,
           consented ? ConsentStatus::kAccepted : ConsentStatus::kRejected);
+      // Enable Quick Answers settings for existing users.
+      if (consented)
+        prefs->SetBoolean(kQuickAnswersEnabled, true);
     } else {
       // Set the consent status to unknown for new users.
       prefs->SetInteger(kQuickAnswersConsentStatus, ConsentStatus::kUnknown);
-      // Reset the impression count and duration for new users.
+      // Reset the impression count for new users.
       prefs->SetInteger(kQuickAnswersNoticeImpressionCount, 0);
-      prefs->SetInteger(kQuickAnswersNoticeImpressionDuration, 0);
     }
   }
 }
@@ -94,6 +95,9 @@ std::string ConsentResultTypeToString(ConsentResultType type) {
 void RecordConsentResult(ConsentResultType type,
                          int nth_impression,
                          const base::TimeDelta duration) {
+  base::UmaHistogramExactLinear(kQuickAnswersConsent, nth_impression,
+                                kConsentImpressionCap);
+
   std::string interaction_type = ConsentResultTypeToString(type);
   base::UmaHistogramExactLinear(
       base::StringPrintf("%s.%s", kQuickAnswersConsentImpression,
@@ -198,48 +202,43 @@ void QuickAnswersState::OnLocaleChanged(const std::string& locale) {
 }
 
 void QuickAnswersState::StartConsent() {
-  // Increments impression count.
-  IncrementPrefCounter(pref_change_registrar_->prefs(),
-                       kQuickAnswersNoticeImpressionCount, 1);
-
-  // Record how many times the user has seen the consent.
-  base::UmaHistogramExactLinear(kQuickAnswersConsent,
-                                pref_change_registrar_->prefs()->GetInteger(
-                                    kQuickAnswersNoticeImpressionCount),
-                                kConsentImpressionCap);
-
   consent_start_time_ = base::TimeTicks::Now();
 }
 
 void QuickAnswersState::OnConsentResult(ConsentResultType result) {
   auto* prefs = pref_change_registrar_->prefs();
 
-  // Increments impression duration.
   DCHECK(!consent_start_time_.is_null());
   auto duration = base::TimeTicks::Now() - consent_start_time_;
-  IncrementPrefCounter(prefs, kQuickAnswersNoticeImpressionDuration,
-                       duration.InSeconds());
-  RecordConsentResult(
-      result, prefs->GetInteger(kQuickAnswersNoticeImpressionCount), duration);
+
+  // Only increase the counter and record the impression if the minimum duration
+  // has been reached.
+  if (duration.InSeconds() >= kConsentImpressionMinimumDuration) {
+    // Increments impression count.
+    IncrementPrefCounter(pref_change_registrar_->prefs(),
+                         kQuickAnswersNoticeImpressionCount, 1);
+    RecordConsentResult(result,
+                        prefs->GetInteger(kQuickAnswersNoticeImpressionCount),
+                        duration);
+  }
 
   switch (result) {
     case ConsentResultType::kAllow:
       prefs->SetInteger(kQuickAnswersConsentStatus, ConsentStatus::kAccepted);
+      // Enable Quick Answers if the user accepted the consent.
+      prefs->SetBoolean(kQuickAnswersEnabled, true);
       break;
     case ConsentResultType::kNoThanks:
       prefs->SetInteger(kQuickAnswersConsentStatus, ConsentStatus::kRejected);
       prefs->SetBoolean(kQuickAnswersEnabled, false);
       break;
     case ConsentResultType::kDismiss:
-      // If the count or duration cap is reached, set the consented status to
+      // If the impression count cap is reached, set the consented status to
       // false;
       bool impression_cap_reached =
           prefs->GetInteger(kQuickAnswersNoticeImpressionCount) >=
           kConsentImpressionCap;
-      bool duration_cap_reached =
-          prefs->GetInteger(kQuickAnswersNoticeImpressionDuration) >=
-          kConsentDurationCap;
-      if (impression_cap_reached || duration_cap_reached) {
+      if (impression_cap_reached) {
         prefs->SetInteger(kQuickAnswersConsentStatus, ConsentStatus::kRejected);
         prefs->SetBoolean(kQuickAnswersEnabled, false);
       }
@@ -282,12 +281,6 @@ void QuickAnswersState::UpdateConsentStatus() {
     return;
   }
   consent_status_ = consent_status;
-
-  // If the user allow Quick Answers consent, turn on the Quick Answers settings
-  // pref.
-  if (consent_status_) {
-    pref_change_registrar_->prefs()->SetBoolean(kQuickAnswersEnabled, true);
-  }
 }
 
 void QuickAnswersState::UpdateDefinitionEnabled() {
@@ -327,10 +320,8 @@ void QuickAnswersState::UpdateEligibility() {
     std::string resolved_locale;
     l10n_util::CheckAndResolveLocale(locale, &resolved_locale,
                                      /*perform_io=*/false);
-    bool should_show_consent = consent_status_ == ConsentStatus::kUnknown;
-    is_eligible_ = (settings_enabled_ || should_show_consent) &&
-                   IsQuickAnswersAllowedForLocale(
-                       resolved_locale, icu::Locale::getDefault().getName());
+    is_eligible_ = IsQuickAnswersAllowedForLocale(
+        resolved_locale, icu::Locale::getDefault().getName());
     return;
   }
 

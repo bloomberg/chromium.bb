@@ -528,6 +528,8 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
           ax::mojom::blink::Role::kSearch,
           ax::mojom::blink::Role::kSection,
           ax::mojom::blink::Role::kSplitter,
+          ax::mojom::blink::Role::kSubscript,
+          ax::mojom::blink::Role::kSuperscript,
           ax::mojom::blink::Role::kTime,
       };
 
@@ -1030,6 +1032,12 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   if (GetNode()->HasTagName(html_names::kInsTag))
     return ax::mojom::blink::Role::kContentInsertion;
+
+  if (GetNode()->HasTagName(html_names::kSubTag))
+    return ax::mojom::blink::Role::kSubscript;
+
+  if (GetNode()->HasTagName(html_names::kSupTag))
+    return ax::mojom::blink::Role::kSuperscript;
 
   if (GetNode()->HasTagName(html_names::kMainTag))
     return ax::mojom::blink::Role::kMain;
@@ -2016,32 +2024,34 @@ ax::mojom::blink::WritingDirection AXNodeObject::GetTextDirection() const {
   return AXNodeObject::GetTextDirection();
 }
 
-ax::mojom::blink::TextPosition AXNodeObject::GetTextPositionFromAria() const {
+ax::mojom::blink::TextPosition AXNodeObject::GetTextPositionFromRole() const {
   // Check for role="subscript" or role="superscript" on the element, or if
   // static text, on the containing element.
   AXObject* obj = nullptr;
   if (RoleValue() == ax::mojom::blink::Role::kStaticText)
     obj = ParentObject();
-  else if (RoleValue() == ax::mojom::blink::Role::kGenericContainer)
-    obj = const_cast<AXNodeObject*>(this);  // May have role=sub/superscript.
+  else
+    obj = const_cast<AXNodeObject*>(this);
 
-  if (obj) {
-    const AtomicString& aria_role =
-        obj->GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
-    if (aria_role == "subscript")
-      return ax::mojom::blink::TextPosition::kSubscript;
-    if (aria_role == "superscript")
-      return ax::mojom::blink::TextPosition::kSuperscript;
-  }
+  if (obj->RoleValue() == ax::mojom::blink::Role::kSubscript)
+    return ax::mojom::blink::TextPosition::kSubscript;
+  if (obj->RoleValue() == ax::mojom::blink::Role::kSuperscript)
+    return ax::mojom::blink::TextPosition::kSuperscript;
+
+  if (!GetLayoutObject() || !GetLayoutObject()->IsInline())
+    return ax::mojom::blink::TextPosition::kNone;
+
+  // We could have an inline element which descends from a subscript or
+  // superscript.
+  if (auto* parent = obj->ParentObjectUnignored())
+    return static_cast<AXNodeObject*>(parent)->GetTextPositionFromRole();
 
   return ax::mojom::blink::TextPosition::kNone;
 }
 
 ax::mojom::blink::TextPosition AXNodeObject::GetTextPosition() const {
   if (GetNode()) {
-    // role="subscript" and role="superscript" don't use an internal role, they
-    // just return a TextPosition here.
-    const auto& text_position = GetTextPositionFromAria();
+    const auto& text_position = GetTextPositionFromRole();
     if (text_position != ax::mojom::blink::TextPosition::kNone)
       return text_position;
   }
@@ -2301,7 +2311,7 @@ const AtomicString& AXNodeObject::ComputedFontFamily() const {
     return AXObject::ComputedFontFamily();
 
   const FontDescription& font_description = style->GetFontDescription();
-  return font_description.FirstFamily().Family();
+  return font_description.FirstFamily().FamilyName();
 }
 
 String AXNodeObject::FontFamilyForSerialization() const {
@@ -2702,8 +2712,7 @@ String AXNodeObject::GetValueForControl() const {
     String aria_value_text =
         GetAOMPropertyOrARIAAttribute(AOMStringProperty::kValueText)
             .GetString();
-    if (!aria_value_text.IsEmpty())
-      return aria_value_text;
+    return aria_value_text;
   }
 
   if (GetLayoutObject() && GetLayoutObject()->IsFileUploadControl())
@@ -3164,18 +3173,43 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
   HeapVector<Member<AXObject>> owned_children;
   AXObjectCache().ValidatedAriaOwnedChildren(this, owned_children);
 
-  // TODO(aleventhal) Why isn't this just using cached children?
-  for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node_); child;
-       child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
-    auto* child_text_node = DynamicTo<Text>(child);
-    if (child_text_node &&
-        child_text_node->wholeText().ContainsOnlyWhitespaceOrEmpty()) {
-      // skip over empty text nodes
-      continue;
+  if (ShouldUseLayoutObjectTraversalForChildren()) {
+    // This is a pseudo element and its descendants don't have an associated
+    // node, so we cannot use a DOM traversal. In this case, we can traverse the
+    // children of the accessible object directly, because CSS ::before and
+    // ::after do generate accessibility nodes.
+    // We include only ::before and ::after pseudo elements, because these are
+    // the only ones explicitly specified in the accname spec.
+    // TODO(accessibility): Chrome has never included markers, but that's
+    // actually undefined behavior. We will have to revisit after this is
+    // settled, see: https://github.com/w3c/accname/issues/76
+    if (GetElement() && (GetElement()->GetPseudoId() == kPseudoIdBefore ||
+                         GetElement()->GetPseudoId() == kPseudoIdAfter)) {
+      for (const auto& child : ChildrenIncludingIgnored())
+        children.push_back(child);
     }
-    AXObject* child_obj = AXObjectCache().GetOrCreate(child);
-    if (child_obj && !AXObjectCache().IsAriaOwned(child_obj))
-      children.push_back(child_obj);
+  } else {
+    // For regular elements, we traverse the flattened DOM tree exposed by
+    // LayoutTreeBuilderTraversal that includes pseudo elements such as
+    // ::before, but not their children. We don't traverse the accessibility
+    // tree because it doesn't contain all the nodes we need. In particular, it
+    // will fail when there's a hidden node that is the target of an
+    // aria-labelledby or -describedby relation. Check content_browsertests at:
+    // All/DumpAccessibilityAccNameTest.NameTextLabelledbyHiddenWithHiddenChild/blink
+    // TODO(accessibility): Revisit this code after an agreement for the case
+    // explained above is reached, see: https://github.com/w3c/accname/issues/57
+    for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node_); child;
+         child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
+      auto* child_text_node = DynamicTo<Text>(child);
+      if (child_text_node &&
+          child_text_node->wholeText().ContainsOnlyWhitespaceOrEmpty()) {
+        // skip over empty text nodes
+        continue;
+      }
+      AXObject* child_obj = AXObjectCache().GetOrCreate(child);
+      if (child_obj && !AXObjectCache().IsAriaOwned(child_obj))
+        children.push_back(child_obj);
+    }
   }
   for (const auto& owned_child : owned_children)
     children.push_back(owned_child);
@@ -3186,7 +3220,7 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
       break;  // Need to add 1 because the root naming node is in the list.
 
     // Don't recurse into children that are explicitly hidden.
-    // Note that we don't call IsInertOrAriaHidden because that would return
+    // Note that we don't call IsInert()/IsAriaHidden because they would return
     // true if any ancestor is hidden, but we need to be able to compute the
     // accessible name of object inside hidden subtrees (for example, if
     // aria-labelledby points to an object that's hidden).
@@ -5121,8 +5155,8 @@ String AXNodeObject::Description(
     description = TextFromElements(true, visited, elements_from_attribute,
                                    related_objects);
 
-    for (auto& element : elements_from_attribute)
-      ids.push_back(element->GetIdAttribute());
+    for (auto& member_element : elements_from_attribute)
+      ids.push_back(member_element->GetIdAttribute());
 
     TokenVectorFromAttribute(element, ids, html_names::kAriaDescribedbyAttr);
     AXObjectCache().UpdateReverseRelations(this, ids);

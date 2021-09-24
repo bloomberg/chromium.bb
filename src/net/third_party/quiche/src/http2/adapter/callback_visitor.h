@@ -1,6 +1,7 @@
 #ifndef QUICHE_HTTP2_ADAPTER_CALLBACK_VISITOR_H_
 #define QUICHE_HTTP2_ADAPTER_CALLBACK_VISITOR_H_
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -21,11 +22,9 @@ class QUICHE_EXPORT_PRIVATE CallbackVisitor : public Http2VisitorInterface {
                            const nghttp2_session_callbacks& callbacks,
                            void* user_data);
 
-  ssize_t OnReadyToSend(absl::string_view serialized) override;
+  int64_t OnReadyToSend(absl::string_view serialized) override;
   void OnConnectionError() override;
-  void OnFrameHeader(Http2StreamId stream_id,
-                     size_t length,
-                     uint8_t type,
+  bool OnFrameHeader(Http2StreamId stream_id, size_t length, uint8_t type,
                      uint8_t flags) override;
   void OnSettingsStart() override;
   void OnSetting(Http2Setting setting) override;
@@ -35,10 +34,10 @@ class QUICHE_EXPORT_PRIVATE CallbackVisitor : public Http2VisitorInterface {
   OnHeaderResult OnHeaderForStream(Http2StreamId stream_id,
                                    absl::string_view name,
                                    absl::string_view value) override;
-  void OnEndHeadersForStream(Http2StreamId stream_id) override;
-  void OnBeginDataForStream(Http2StreamId stream_id,
+  bool OnEndHeadersForStream(Http2StreamId stream_id) override;
+  bool OnBeginDataForStream(Http2StreamId stream_id,
                             size_t payload_length) override;
-  void OnDataForStream(Http2StreamId stream_id,
+  bool OnDataForStream(Http2StreamId stream_id,
                        absl::string_view data) override;
   void OnEndStream(Http2StreamId stream_id) override;
   void OnRstStream(Http2StreamId stream_id, Http2ErrorCode error_code) override;
@@ -51,7 +50,7 @@ class QUICHE_EXPORT_PRIVATE CallbackVisitor : public Http2VisitorInterface {
   void OnPing(Http2PingId ping_id, bool is_ack) override;
   void OnPushPromiseForStream(Http2StreamId stream_id,
                               Http2StreamId promised_stream_id) override;
-  void OnGoAway(Http2StreamId last_accepted_stream_id,
+  bool OnGoAway(Http2StreamId last_accepted_stream_id,
                 Http2ErrorCode error_code,
                 absl::string_view opaque_data) override;
   void OnWindowUpdate(Http2StreamId stream_id, int window_increment) override;
@@ -59,19 +58,10 @@ class QUICHE_EXPORT_PRIVATE CallbackVisitor : public Http2VisitorInterface {
                         size_t length, uint8_t flags) override;
   int OnFrameSent(uint8_t frame_type, Http2StreamId stream_id, size_t length,
                   uint8_t flags, uint32_t error_code) override;
-  void OnReadyToSendDataForStream(Http2StreamId stream_id,
-                                  char* destination_buffer,
-                                  size_t length,
-                                  ssize_t* written,
-                                  bool* end_stream) override;
   bool OnInvalidFrame(Http2StreamId stream_id, int error_code) override;
-  void OnReadyToSendMetadataForStream(Http2StreamId stream_id,
-                                      char* buffer,
-                                      size_t length,
-                                      ssize_t* written) override;
   void OnBeginMetadataForStream(Http2StreamId stream_id,
                                 size_t payload_length) override;
-  void OnMetadataForStream(Http2StreamId stream_id,
+  bool OnMetadataForStream(Http2StreamId stream_id,
                            absl::string_view metadata) override;
   bool OnMetadataEndForStream(Http2StreamId stream_id) override;
   void OnErrorDebug(absl::string_view message) override;

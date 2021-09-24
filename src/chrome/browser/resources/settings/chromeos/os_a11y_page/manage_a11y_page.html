@@ -14,7 +14,7 @@
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../device_page/device_page_browser_proxy.html">
-<link rel="import" href="../localized_link/localized_link.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/localized_link/localized_link.html">
 <link rel="import" href="../route_origin_behavior.html">
 <link rel="import" href="manage_a11y_page_browser_proxy.html">
 
@@ -50,13 +50,18 @@
       #screenMagnifierZoomHintLabel {
         white-space: pre-line;
       }
+
+      #dictationLocaleMenuSubtitle {
+        max-width: 450px;
+        overflow-wrap: break-word;
+      }
     </style>
     <template is="dom-if" if="[[!isKioskModeActive_]]">
       <div class="settings-box row first">
-        <settings-localized-link
+        <localized-link
             localized-string="$i18n{a11yExplanation}"
             link-url="$i18nRaw{a11yLearnMoreUrl}">
-        </settings-localized-link>
+        </localized-link>
       </div>
     </template>
     <h2>$i18n{textToSpeechHeading}</h2>
@@ -120,43 +125,41 @@
         deep-link-focus-id$="[[Setting.kFullscreenMagnifier]]">
     </settings-toggle-button>
     <template is="dom-if" if="[[prefs.settings.a11y.screen_magnifier.value]]">
-      <template is="dom-if" if="[[isMagnifierPanningImprovementsEnabled_]]">
-        <div class="settings-box continuation">
-          <settings-radio-group id="screenMagnifierMouseFollowingModeRadioGroup"
-              pref="{{prefs.settings.a11y.screen_magnifier_mouse_following_mode}}"
-              class="sub-item">
-            <template
-                is="dom-if"
-                if="[[isMagnifierContinuousMouseFollowingModeSettingEnabled_]]">
-              <controlled-radio-button
-                  id="screenMagnifierMouseFollowingModeContinuous"
-                  name="[[screenMagnifierMouseFollowingModePrefValues_.CONTINUOUS]]"
-                  pref="[[prefs.settings.a11y.screen_magnifier_mouse_following_mode]]"
-                  label="$i18n{screenMagnifierMouseFollowingModeContinuous}">
-              </controlled-radio-button>
-            </template>
+      <div class="settings-box continuation">
+        <settings-radio-group id="screenMagnifierMouseFollowingModeRadioGroup"
+            pref="{{prefs.settings.a11y.screen_magnifier_mouse_following_mode}}"
+            class="sub-item">
+          <template
+              is="dom-if"
+              if="[[isMagnifierContinuousMouseFollowingModeSettingEnabled_]]">
             <controlled-radio-button
-                id="screenMagnifierMouseFollowingModeCentered"
-                name="[[screenMagnifierMouseFollowingModePrefValues_.CENTERED]]"
+                id="screenMagnifierMouseFollowingModeContinuous"
+                name="[[screenMagnifierMouseFollowingModePrefValues_.CONTINUOUS]]"
                 pref="[[prefs.settings.a11y.screen_magnifier_mouse_following_mode]]"
-                label="$i18n{screenMagnifierMouseFollowingModeCentered}">
+                label="$i18n{screenMagnifierMouseFollowingModeContinuous}">
             </controlled-radio-button>
-            <controlled-radio-button
-                id="screenMagnifierMouseFollowingModeEdge"
-                name="[[screenMagnifierMouseFollowingModePrefValues_.EDGE]]"
-                pref="[[prefs.settings.a11y.screen_magnifier_mouse_following_mode]]"
-                label="$i18n{screenMagnifierMouseFollowingModeEdge}">
-            </controlled-radio-button>
-          </settings-radio-group>
-        </div>
-        <settings-toggle-button
-            class="indented hr"
-            pref="{{prefs.settings.a11y.screen_magnifier_focus_following}}"
-            label="$i18n{screenMagnifierFocusFollowingLabel}"
-            deep-link-focus-id$=
-                "[[Setting.kFullscreenMagnifierFocusFollowing]]">
-        </settings-toggle-button>
-      </template>
+          </template>
+          <controlled-radio-button
+              id="screenMagnifierMouseFollowingModeCentered"
+              name="[[screenMagnifierMouseFollowingModePrefValues_.CENTERED]]"
+              pref="[[prefs.settings.a11y.screen_magnifier_mouse_following_mode]]"
+              label="$i18n{screenMagnifierMouseFollowingModeCentered}">
+          </controlled-radio-button>
+          <controlled-radio-button
+              id="screenMagnifierMouseFollowingModeEdge"
+              name="[[screenMagnifierMouseFollowingModePrefValues_.EDGE]]"
+              pref="[[prefs.settings.a11y.screen_magnifier_mouse_following_mode]]"
+              label="$i18n{screenMagnifierMouseFollowingModeEdge}">
+          </controlled-radio-button>
+        </settings-radio-group>
+      </div>
+      <settings-toggle-button
+          class="indented hr"
+          pref="{{prefs.settings.a11y.screen_magnifier_focus_following}}"
+          label="$i18n{screenMagnifierFocusFollowingLabel}"
+          deep-link-focus-id$=
+              "[[Setting.kFullscreenMagnifierFocusFollowing]]">
+      </settings-toggle-button>
       <div class="settings-box indented">
         <div class="flex start settings-box-text" id="labelWrapper">
           <div class="label" aria-hidden="true">$i18n{screenMagnifierZoomLabel}</div>
@@ -224,10 +227,10 @@
       <template is="dom-if" if="[[prefs.settings.a11y.dictation.value]]">
         <div class="settings-box continuation indented">
           <div class="flex start settings-box-text" id="labelWrapper">
-            <div class="label" aria-hidden="true">
+            <div class="label" aria-hidden="true" id="dictationLocaleMenuLabel">
                 $i18n{dictationLocaleMenuLabel}
             </div>
-            <div class="secondary label">
+            <div class="secondary label" id="dictationLocaleMenuSubtitle">
                 [[dictationLocaleMenuSubtitle_]]
             </div>
           </div>

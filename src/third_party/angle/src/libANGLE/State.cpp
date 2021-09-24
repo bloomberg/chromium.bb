@@ -319,8 +319,6 @@ State::State(const State *shareContextState,
       mSemaphoreManager(AllocateOrGetSharedResourceManager(shareContextState,
                                                            &State::mSemaphoreManager,
                                                            shareSemaphores)),
-      mMaxDrawBuffers(0),
-      mMaxCombinedTextureImageUnits(0),
       mDepthClearValue(0),
       mStencilClearValue(0),
       mScissorTest(false),
@@ -361,6 +359,9 @@ State::State(const State *shareContextState,
       mPatchVertices(3),
       mOverlay(overlay),
       mNoSimultaneousConstantColorAndAlphaBlendFunc(false),
+      mSetBlendIndexedInvoked(false),
+      mSetBlendFactorsIndexedInvoked(false),
+      mSetBlendEquationsIndexedInvoked(false),
       mBoundingBoxMinX(-1.0f),
       mBoundingBoxMinY(-1.0f),
       mBoundingBoxMinZ(-1.0f),
@@ -375,14 +376,10 @@ State::~State() {}
 
 void State::initialize(Context *context)
 {
-    const Caps &caps                   = context->getCaps();
-    const Extensions &extensions       = context->getExtensions();
     const Extensions &nativeExtensions = context->getImplementation()->getNativeExtensions();
     const Version &clientVersion       = context->getClientVersion();
 
-    mMaxDrawBuffers               = static_cast<GLuint>(caps.maxDrawBuffers);
-    mBlendStateExt                = BlendStateExt(mMaxDrawBuffers);
-    mMaxCombinedTextureImageUnits = static_cast<GLuint>(caps.maxCombinedTextureImageUnits);
+    mBlendStateExt = BlendStateExt(mCaps.maxDrawBuffers);
 
     setColorClearValue(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -407,7 +404,7 @@ void State::initialize(Context *context)
     mSampleCoverageValue  = 1.0f;
     mSampleCoverageInvert = false;
 
-    mMaxSampleMaskWords = static_cast<GLuint>(caps.maxSampleMaskWords);
+    mMaxSampleMaskWords = static_cast<GLuint>(mCaps.maxSampleMaskWords);
     mSampleMask         = false;
     mSampleMaskValues.fill(~GLbitfield(0));
 
@@ -429,7 +426,7 @@ void State::initialize(Context *context)
 
     mActiveSampler = 0;
 
-    mVertexAttribCurrentValues.resize(caps.maxVertexAttributes);
+    mVertexAttribCurrentValues.resize(mCaps.maxVertexAttributes);
 
     // Set all indexes in state attributes type mask to float (default)
     for (int i = 0; i < MAX_VERTEX_ATTRIBS; i++)
@@ -437,58 +434,59 @@ void State::initialize(Context *context)
         SetComponentTypeMask(ComponentType::Float, i, &mCurrentValuesTypeMask);
     }
 
-    mUniformBuffers.resize(caps.maxUniformBufferBindings);
+    mUniformBuffers.resize(mCaps.maxUniformBufferBindings);
 
-    mSamplerTextures[TextureType::_2D].resize(caps.maxCombinedTextureImageUnits);
-    mSamplerTextures[TextureType::CubeMap].resize(caps.maxCombinedTextureImageUnits);
+    mSamplerTextures[TextureType::_2D].resize(mCaps.maxCombinedTextureImageUnits);
+    mSamplerTextures[TextureType::CubeMap].resize(mCaps.maxCombinedTextureImageUnits);
     if (clientVersion >= Version(3, 0) || nativeExtensions.texture3DOES)
     {
-        mSamplerTextures[TextureType::_3D].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::_3D].resize(mCaps.maxCombinedTextureImageUnits);
     }
     if (clientVersion >= Version(3, 0))
     {
-        mSamplerTextures[TextureType::_2DArray].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::_2DArray].resize(mCaps.maxCombinedTextureImageUnits);
     }
     if (clientVersion >= Version(3, 1) || nativeExtensions.textureMultisample)
     {
-        mSamplerTextures[TextureType::_2DMultisample].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::_2DMultisample].resize(mCaps.maxCombinedTextureImageUnits);
     }
     if (clientVersion >= Version(3, 1))
     {
         mSamplerTextures[TextureType::_2DMultisampleArray].resize(
-            caps.maxCombinedTextureImageUnits);
+            mCaps.maxCombinedTextureImageUnits);
 
-        mAtomicCounterBuffers.resize(caps.maxAtomicCounterBufferBindings);
-        mShaderStorageBuffers.resize(caps.maxShaderStorageBufferBindings);
-        mImageUnits.resize(caps.maxImageUnits);
+        mAtomicCounterBuffers.resize(mCaps.maxAtomicCounterBufferBindings);
+        mShaderStorageBuffers.resize(mCaps.maxShaderStorageBufferBindings);
+        mImageUnits.resize(mCaps.maxImageUnits);
     }
-    if (clientVersion >= Version(3, 2) || extensions.textureCubeMapArrayAny())
+    if (clientVersion >= Version(3, 2) || mExtensions.textureCubeMapArrayAny())
     {
-        mSamplerTextures[TextureType::CubeMapArray].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::CubeMapArray].resize(mCaps.maxCombinedTextureImageUnits);
     }
-    if (clientVersion >= Version(3, 2) || extensions.textureBufferAny())
+    if (clientVersion >= Version(3, 2) || mExtensions.textureBufferAny())
     {
-        mSamplerTextures[TextureType::Buffer].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::Buffer].resize(mCaps.maxCombinedTextureImageUnits);
     }
     if (nativeExtensions.textureRectangle)
     {
-        mSamplerTextures[TextureType::Rectangle].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::Rectangle].resize(mCaps.maxCombinedTextureImageUnits);
     }
     if (nativeExtensions.eglImageExternalOES || nativeExtensions.eglStreamConsumerExternalNV)
     {
-        mSamplerTextures[TextureType::External].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::External].resize(mCaps.maxCombinedTextureImageUnits);
     }
     if (nativeExtensions.webglVideoTexture)
     {
-        mSamplerTextures[TextureType::VideoImage].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::VideoImage].resize(mCaps.maxCombinedTextureImageUnits);
     }
-    mCompleteTextureBindings.reserve(caps.maxCombinedTextureImageUnits);
-    for (int32_t textureIndex = 0; textureIndex < caps.maxCombinedTextureImageUnits; ++textureIndex)
+    mCompleteTextureBindings.reserve(mCaps.maxCombinedTextureImageUnits);
+    for (int32_t textureIndex = 0; textureIndex < mCaps.maxCombinedTextureImageUnits;
+         ++textureIndex)
     {
         mCompleteTextureBindings.emplace_back(context, textureIndex);
     }
 
-    mSamplers.resize(caps.maxCombinedTextureImageUnits);
+    mSamplers.resize(mCaps.maxCombinedTextureImageUnits);
 
     for (QueryType type : angle::AllEnums<QueryType>())
     {
@@ -503,7 +501,7 @@ void State::initialize(Context *context)
 
     mPrimitiveRestart = false;
 
-    mDebug.setMaxLoggedMessages(extensions.maxDebugLoggedMessages);
+    mDebug.setMaxLoggedMessages(mExtensions.maxDebugLoggedMessages);
 
     mMultiSampling    = true;
     mSampleAlphaToOne = false;
@@ -854,20 +852,31 @@ void State::setClipControl(GLenum origin, GLenum depth)
 
 void State::setBlend(bool enabled)
 {
-    mBlendState.blend = enabled;
+    if (mSetBlendIndexedInvoked || mBlendState.blend != enabled)
+    {
+        mBlendState.blend = enabled;
 
-    mBlendStateExt.setEnabled(enabled);
-    mDirtyBits.set(DIRTY_BIT_BLEND_ENABLED);
+        mSetBlendIndexedInvoked = false;
+        mBlendStateExt.setEnabled(enabled);
+        mDirtyBits.set(DIRTY_BIT_BLEND_ENABLED);
+    }
 }
 
 void State::setBlendIndexed(bool enabled, GLuint index)
 {
+    mSetBlendIndexedInvoked = true;
     mBlendStateExt.setEnabledIndexed(index, enabled);
     mDirtyBits.set(DIRTY_BIT_BLEND_ENABLED);
 }
 
 void State::setBlendFactors(GLenum sourceRGB, GLenum destRGB, GLenum sourceAlpha, GLenum destAlpha)
 {
+    if (!mSetBlendFactorsIndexedInvoked && mBlendState.sourceBlendRGB == sourceRGB &&
+        mBlendState.destBlendRGB == destRGB && mBlendState.sourceBlendAlpha == sourceAlpha &&
+        mBlendState.destBlendAlpha == destAlpha)
+    {
+        return;
+    }
 
     mBlendState.sourceBlendRGB   = sourceRGB;
     mBlendState.destBlendRGB     = destRGB;
@@ -895,6 +904,7 @@ void State::setBlendFactors(GLenum sourceRGB, GLenum destRGB, GLenum sourceAlpha
         }
     }
 
+    mSetBlendFactorsIndexedInvoked = false;
     mBlendStateExt.setFactors(sourceRGB, destRGB, sourceAlpha, destAlpha);
     mDirtyBits.set(DIRTY_BIT_BLEND_FUNCS);
 }
@@ -911,6 +921,7 @@ void State::setBlendFactorsIndexed(GLenum sourceRGB,
         mBlendFuncConstantAlphaDrawBuffers.set(index, hasConstantAlpha(sourceRGB, destRGB));
     }
 
+    mSetBlendFactorsIndexedInvoked = true;
     mBlendStateExt.setFactorsIndexed(index, sourceRGB, destRGB, sourceAlpha, destAlpha);
     mDirtyBits.set(DIRTY_BIT_BLEND_FUNCS);
 }
@@ -931,24 +942,34 @@ void State::setBlendColor(float red, float green, float blue, float alpha)
         alpha = clamp01(alpha);
     }
 
-    mBlendColor.red   = red;
-    mBlendColor.green = green;
-    mBlendColor.blue  = blue;
-    mBlendColor.alpha = alpha;
-    mDirtyBits.set(DIRTY_BIT_BLEND_COLOR);
+    if (mBlendColor.red != red || mBlendColor.green != green || mBlendColor.blue != blue ||
+        mBlendColor.alpha != alpha)
+    {
+        mBlendColor.red   = red;
+        mBlendColor.green = green;
+        mBlendColor.blue  = blue;
+        mBlendColor.alpha = alpha;
+        mDirtyBits.set(DIRTY_BIT_BLEND_COLOR);
+    }
 }
 
 void State::setBlendEquation(GLenum rgbEquation, GLenum alphaEquation)
 {
-    mBlendState.blendEquationRGB   = rgbEquation;
-    mBlendState.blendEquationAlpha = alphaEquation;
+    if (mSetBlendEquationsIndexedInvoked || mBlendState.blendEquationRGB != rgbEquation ||
+        mBlendState.blendEquationAlpha != alphaEquation)
+    {
+        mBlendState.blendEquationRGB   = rgbEquation;
+        mBlendState.blendEquationAlpha = alphaEquation;
 
-    mBlendStateExt.setEquations(rgbEquation, alphaEquation);
-    mDirtyBits.set(DIRTY_BIT_BLEND_EQUATIONS);
+        mSetBlendEquationsIndexedInvoked = false;
+        mBlendStateExt.setEquations(rgbEquation, alphaEquation);
+        mDirtyBits.set(DIRTY_BIT_BLEND_EQUATIONS);
+    }
 }
 
 void State::setBlendEquationIndexed(GLenum rgbEquation, GLenum alphaEquation, GLuint index)
 {
+    mSetBlendEquationsIndexedInvoked = true;
     mBlendStateExt.setEquationsIndexed(index, rgbEquation, alphaEquation);
     mDirtyBits.set(DIRTY_BIT_BLEND_EQUATIONS);
 }
@@ -2553,7 +2574,7 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
     if (pname >= GL_DRAW_BUFFER0_EXT && pname <= GL_DRAW_BUFFER15_EXT)
     {
         size_t drawBuffer = (pname - GL_DRAW_BUFFER0_EXT);
-        ASSERT(drawBuffer < mMaxDrawBuffers);
+        ASSERT(drawBuffer < static_cast<size_t>(mCaps.maxDrawBuffers));
         Framebuffer *framebuffer = mDrawFramebuffer;
         // The default framebuffer may have fewer draw buffer states than a user-created one. The
         // user is always allowed to query up to GL_MAX_DRAWBUFFERS so just return GL_NONE here if
@@ -2831,55 +2852,55 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
         }
         break;
         case GL_TEXTURE_BINDING_2D:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params =
                 getSamplerTextureId(static_cast<unsigned int>(mActiveSampler), TextureType::_2D)
                     .value;
             break;
         case GL_TEXTURE_BINDING_RECTANGLE_ANGLE:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::Rectangle)
                           .value;
             break;
         case GL_TEXTURE_BINDING_CUBE_MAP:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params =
                 getSamplerTextureId(static_cast<unsigned int>(mActiveSampler), TextureType::CubeMap)
                     .value;
             break;
         case GL_TEXTURE_BINDING_3D:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params =
                 getSamplerTextureId(static_cast<unsigned int>(mActiveSampler), TextureType::_3D)
                     .value;
             break;
         case GL_TEXTURE_BINDING_2D_ARRAY:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::_2DArray)
                           .value;
             break;
         case GL_TEXTURE_BINDING_2D_MULTISAMPLE:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::_2DMultisample)
                           .value;
             break;
         case GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::_2DMultisampleArray)
                           .value;
             break;
         case GL_TEXTURE_BINDING_CUBE_MAP_ARRAY:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::CubeMapArray)
                           .value;
             break;
         case GL_TEXTURE_BINDING_EXTERNAL_OES:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::External)
                           .value;
@@ -2887,7 +2908,7 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
 
         // GL_OES_texture_buffer
         case GL_TEXTURE_BINDING_BUFFER:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params =
                 getSamplerTextureId(static_cast<unsigned int>(mActiveSampler), TextureType::Buffer)
                     .value;
@@ -2922,7 +2943,7 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
             *params = mReadFramebuffer->getReadBufferState();
             break;
         case GL_SAMPLER_BINDING:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerId(static_cast<GLuint>(mActiveSampler)).value;
             break;
         case GL_DEBUG_LOGGED_MESSAGES:
@@ -3660,6 +3681,17 @@ State::ExtendedDirtyBits State::getAndResetExtendedDirtyBits() const
     ExtendedDirtyBits retVal = mExtendedDirtyBits;
     mExtendedDirtyBits.reset();
     return retVal;
+}
+
+void State::initializeForCapture(const Context *context)
+{
+    mCaps       = context->getCaps();
+    mExtensions = context->getExtensions();
+
+    // This little kludge gets around the frame capture "constness". It should be safe because
+    // nothing in the context is modified in a non-compatible way during capture.
+    Context *mutableContext = const_cast<Context *>(context);
+    initialize(mutableContext);
 }
 
 constexpr State::DirtyObjectHandler State::kDirtyObjectHandlers[DIRTY_OBJECT_MAX];

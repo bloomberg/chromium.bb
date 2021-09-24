@@ -59,9 +59,7 @@ class WebUIIOS;
 //  - SessionWindows are transient owners, passing ownership into WebControllers
 //    during session restore, and discarding owned copies of WebStateImpls after
 //    writing them out for session saves.
-class WebStateImpl : public WebState,
-                     public NavigationManagerDelegate,
-                     public WebFramesManagerDelegate {
+class WebStateImpl : public WebState, public NavigationManagerDelegate {
  public:
   // Constructor for WebStateImpls created for new sessions.
   explicit WebStateImpl(const CreateParams& params);
@@ -168,26 +166,17 @@ class WebStateImpl : public WebState,
       bool for_main_frame,
       WebStatePolicyDecider::PolicyDecisionCallback callback);
 
-  // Determines whether the given link with |link_url| should show a preview on
-  // force touch.
-  bool ShouldPreviewLink(const GURL& link_url);
-  // Called when the user performs a peek action on a link with |link_url| with
-  // force touch. Returns a view controller shown as a pop-up. Uses Webkit's
-  // default preview behavior when it returns nil.
-  UIViewController* GetPreviewingViewController(const GURL& link_url);
-  // Called when the user performs a pop action on the preview on force touch.
-  // |previewing_view_controller| is the view controller that is popped.
-  // It should display |previewing_view_controller| inside the app.
-  void CommitPreviewingViewController(
-      UIViewController* previewing_view_controller);
-
   // Returns the UIView used to contain the WebView for sizing purposes. Can be
   // nil.
   UIView* GetWebViewContainer();
 
-  // WebFramesManagerDelegate.
-  void OnWebFrameAvailable(web::WebFrame* frame) override;
-  void OnWebFrameUnavailable(web::WebFrame* frame) override;
+  // Registers |frame| as a new web frame and notifies any observers.
+  void WebFrameBecameAvailable(std::unique_ptr<WebFrame> frame);
+  // Removes the web frame with |frame_id|, if one exists and notifies any
+  // observers.
+  void WebFrameBecameUnavailable(const std::string& frame_id);
+  // Removes all current web frames.
+  void RemoveAllWebFrames();
 
   // WebState:
   Getter CreateDefaultGetter() override;
@@ -342,6 +331,9 @@ class WebStateImpl : public WebState,
 
   // Returns true if |web_controller_| has been set.
   bool Configured() const;
+
+  // Notifies observers that |frame| will be removed and then removes it.
+  void NotifyObserversAndRemoveWebFrame(WebFrame* frame);
 
   // Restores session history into the navigation manager.
   void RestoreSessionStorage(CRWSessionStorage* session_storage);

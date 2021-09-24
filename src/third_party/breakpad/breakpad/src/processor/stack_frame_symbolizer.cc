@@ -57,7 +57,8 @@ StackFrameSymbolizer::SymbolizerResult StackFrameSymbolizer::FillSourceLineInfo(
     const CodeModules* modules,
     const CodeModules* unloaded_modules,
     const SystemInfo* system_info,
-    StackFrame* frame) {
+    StackFrame* frame,
+    std::vector<std::unique_ptr<StackFrame>>* inlined_frames) {
   assert(frame);
 
   const CodeModule* module = NULL;
@@ -80,7 +81,7 @@ StackFrameSymbolizer::SymbolizerResult StackFrameSymbolizer::FillSourceLineInfo(
 
   // If module is already loaded, go ahead to fill source line info and return.
   if (resolver_->HasModule(frame->module)) {
-    resolver_->FillSourceLineInfo(frame);
+    resolver_->FillSourceLineInfo(frame, inlined_frames);
     return resolver_->IsModuleCorrupt(frame->module) ?
         kWarningCorruptSymbols : kNoError;
   }
@@ -108,7 +109,7 @@ StackFrameSymbolizer::SymbolizerResult StackFrameSymbolizer::FillSourceLineInfo(
       }
 
       if (load_success) {
-        resolver_->FillSourceLineInfo(frame);
+        resolver_->FillSourceLineInfo(frame, inlined_frames);
         return resolver_->IsModuleCorrupt(frame->module) ?
             kWarningCorruptSymbols : kNoError;
       } else {

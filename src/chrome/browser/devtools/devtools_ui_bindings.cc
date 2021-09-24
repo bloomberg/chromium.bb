@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -129,8 +130,6 @@ static const char kDevtoolsExperimentDisabledHistogram[] =
     "DevTools.ExperimentDisabled";
 static const char kDevtoolsExperimentEnabledAtLaunchHistogram[] =
     "DevTools.ExperimentEnabledAtLaunch";
-static const char kDevToolsColorPickerFixedColorHistogram[] =
-    "DevTools.ColorPicker.FixedColor";
 static const char kDevToolsComputedStyleGroupingHistogram[] =
     "DevTools.ComputedStyleGrouping";
 static const char kDevtoolsIssuesPanelIssueExpandedHistogram[] =
@@ -150,6 +149,7 @@ static const char kDevToolsLinearMemoryInspectorRevealedFromHistogram[] =
     "DevTools.LinearMemoryInspector.RevealedFrom";
 static const char kDevToolsLinearMemoryInspectorTargetHistogram[] =
     "DevTools.LinearMemoryInspector.Target";
+static const char kDevToolsLanguageHistogram[] = "DevTools.Language";
 
 static const char kRemotePageActionInspect[] = "inspect";
 static const char kRemotePageActionReload[] = "reload";
@@ -169,10 +169,6 @@ static const char kConfigNetworkDiscoveryConfig[] = "networkDiscoveryConfig";
 // kLayoutTestMaxMessageChunkSize in
 // content/shell/browser/layout_test/devtools_protocol_test_bindings.cc.
 const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
-
-typedef std::vector<DevToolsUIBindings*> DevToolsUIBindingsList;
-base::LazyInstance<DevToolsUIBindingsList>::Leaky
-    g_devtools_ui_bindings_instances = LAZY_INSTANCE_INITIALIZER;
 
 base::DictionaryValue CreateFileSystemValue(
     DevToolsFileHelper::FileSystem file_system) {
@@ -375,8 +371,10 @@ std::string SanitizeFrontendQueryParam(
   // Convert boolean flags to true.
   if (key == "can_dock" || key == "debugFrontend" || key == "isSharedWorker" ||
       key == "v8only" || key == "remoteFrontend" || key == "nodeFrontend" ||
-      key == "hasOtherClients" || key == "uiDevTools")
+      key == "hasOtherClients" || key == "uiDevTools" ||
+      key == "browserConnection") {
     return "true";
+  }
 
   // Pass connection endpoints as is.
   if (key == "ws" || key == "service-backend")
@@ -683,11 +681,9 @@ void DevToolsUIBindings::FrontendWebContentsObserver::DidFinishNavigation(
 
 DevToolsUIBindings* DevToolsUIBindings::ForWebContents(
      content::WebContents* web_contents) {
-  if (!g_devtools_ui_bindings_instances.IsCreated())
-    return nullptr;
-  DevToolsUIBindingsList* instances =
-      g_devtools_ui_bindings_instances.Pointer();
-  for (DevToolsUIBindings* binding : *instances) {
+  DevToolsUIBindingsList& instances =
+      DevToolsUIBindings::GetDevToolsUIBindings();
+  for (DevToolsUIBindings* binding : instances) {
     if (binding->web_contents() == web_contents)
       return binding;
   }
@@ -701,7 +697,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       delegate_(new DefaultBindingsDelegate(web_contents_)),
       devices_updates_enabled_(false),
       frontend_loaded_(false) {
-  g_devtools_ui_bindings_instances.Get().push_back(this);
+  DevToolsUIBindings::GetDevToolsUIBindings().push_back(this);
   frontend_contents_observer_ =
       std::make_unique<FrontendWebContentsObserver>(this);
 
@@ -728,11 +724,11 @@ DevToolsUIBindings::~DevToolsUIBindings() {
   SetDevicesUpdatesEnabled(false);
 
   // Remove self from global list.
-  DevToolsUIBindingsList* instances =
-      g_devtools_ui_bindings_instances.Pointer();
-  auto it(std::find(instances->begin(), instances->end(), this));
-  DCHECK(it != instances->end());
-  instances->erase(it);
+  DevToolsUIBindingsList& instances =
+      DevToolsUIBindings::GetDevToolsUIBindings();
+  auto it(std::find(instances.begin(), instances.end(), this));
+  DCHECK(it != instances.end());
+  instances.erase(it);
 }
 
 // content::DevToolsFrontendHost::Delegate implementation ---------------------
@@ -1327,7 +1323,6 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
       name == kDevtoolsExperimentEnabledHistogram ||
       name == kDevtoolsExperimentDisabledHistogram ||
       name == kDevtoolsExperimentEnabledAtLaunchHistogram ||
-      name == kDevToolsColorPickerFixedColorHistogram ||
       name == kDevToolsComputedStyleGroupingHistogram ||
       name == kDevtoolsIssuesPanelIssueExpandedHistogram ||
       name == kDevtoolsIssuesPanelResourceOpenedHistogram ||
@@ -1337,7 +1332,8 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
       name == kDevToolsDeveloperResourceLoadedHistogram ||
       name == kDevToolsDeveloperResourceSchemeHistogram ||
       name == kDevToolsLinearMemoryInspectorRevealedFromHistogram ||
-      name == kDevToolsLinearMemoryInspectorTargetHistogram)
+      name == kDevToolsLinearMemoryInspectorTargetHistogram ||
+      name == kDevToolsLanguageHistogram)
     base::UmaHistogramExactLinear(name, sample, boundary_value);
   else
     frontend_host_->BadMessageReceived();
@@ -1603,6 +1599,18 @@ void DevToolsUIBindings::AttachTo(
   InnerAttach();
 }
 
+void DevToolsUIBindings::AttachViaBrowserTarget(
+    const scoped_refptr<content::DevToolsAgentHost>& agent_host) {
+  DCHECK(!agent_host_ ||
+         agent_host->GetType() == content::DevToolsAgentHost::kTypeBrowser);
+  if (!agent_host_)
+    agent_host_ = content::DevToolsAgentHost::CreateForBrowser(
+        nullptr /* tethering_task_runner */,
+        content::DevToolsAgentHost::CreateServerSocketCallback());
+  initial_target_id_ = agent_host->GetId();
+  InnerAttach();
+}
+
 void DevToolsUIBindings::Detach() {
   if (agent_host_.get())
     agent_host_->DetachClient(this);
@@ -1610,7 +1618,9 @@ void DevToolsUIBindings::Detach() {
 }
 
 bool DevToolsUIBindings::IsAttachedTo(content::DevToolsAgentHost* agent_host) {
-  return agent_host_.get() == agent_host;
+  // TODO(caseq): find better way to track attached targets.
+  return initial_target_id_.empty() ? agent_host_.get() == agent_host
+                                    : initial_target_id_ == agent_host->GetId();
 }
 
 void DevToolsUIBindings::CallClientMethod(
@@ -1705,5 +1715,15 @@ void DevToolsUIBindings::FrontendLoaded() {
   // Call delegate first - it seeds importants bit of information.
   delegate_->OnLoadCompleted();
 
+  if (!initial_target_id_.empty())
+    CallClientMethod("DevToolsAPI", "setInitialTargetId",
+                     base::Value(initial_target_id_));
   AddDevToolsExtensionsToClient();
+}
+
+DevToolsUIBindings::DevToolsUIBindingsList&
+DevToolsUIBindings::GetDevToolsUIBindings() {
+  static base::NoDestructor<DevToolsUIBindings::DevToolsUIBindingsList>
+      bindings;
+  return *bindings;
 }

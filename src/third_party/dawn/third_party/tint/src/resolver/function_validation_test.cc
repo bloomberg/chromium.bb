@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "src/ast/discard_statement.h"
 #include "src/ast/return_statement.h"
 #include "src/ast/stage_decoration.h"
 #include "src/resolver/resolver.h"
@@ -26,8 +27,8 @@ class ResolverFunctionValidationTest : public resolver::TestHelper,
                                        public testing::Test {};
 
 TEST_F(ResolverFunctionValidationTest, FunctionNamesMustBeUnique_fail) {
-  // fn func -> i32 { return 2; }
-  // fn func -> i32 { return 2; }
+  // fn func() -> i32 { return 2; }
+  // fn func() -> i32 { return 2; }
   Func(Source{{56, 78}}, "func", ast::VariableList{}, ty.i32(),
        ast::StatementList{
            Return(2),
@@ -58,7 +59,7 @@ TEST_F(ResolverFunctionValidationTest, ParameterNamesMustBeUnique_fail) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            R"(12:34 error: redefinition of 'common_name'
+            R"(12:34 error: redefinition of parameter 'common_name'
 56:78 note: previous definition is here)");
 }
 
@@ -67,6 +68,17 @@ TEST_F(ResolverFunctionValidationTest, ParameterNamesMustBeUnique_pass) {
   // fn func_b(common_name : f32) { }
   Func("func_a", {Param("common_name", ty.f32())}, ty.void_(), {});
   Func("func_b", {Param("common_name", ty.f32())}, ty.void_(), {});
+
+  EXPECT_TRUE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "");
+}
+
+TEST_F(ResolverFunctionValidationTest,
+       ParameterNamesMustBeUniqueShadowsGlobal_pass) {
+  // var<private> common_name : f32;
+  // fn func(common_name : f32) { }
+  Global("common_name", ty.f32(), ast::StorageClass::kPrivate);
+  Func("func", {Param("common_name", ty.f32())}, ty.void_(), {});
 
   EXPECT_TRUE(r()->Resolve());
   EXPECT_EQ(r()->error(), "");
@@ -161,24 +173,74 @@ TEST_F(ResolverFunctionValidationTest,
 
 TEST_F(ResolverFunctionValidationTest, UnreachableCode_return) {
   // fn func() -> {
+  //  var a : i32;
   //  return;
-  //  var a: i32 = 2;
+  //  a = 2;
   //}
-  auto* decl = Decl(Source{{12, 34}},
-                    Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2)));
 
   Func("func", ast::VariableList{}, ty.void_(),
-       ast::StatementList{
+       {
+           Decl(Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2))),
            Return(),
-           decl,
-       },
-       ast::DecorationList{});
+           Assign(Source{{12, 34}}, "a", 2),
+       });
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+}
+
+TEST_F(ResolverFunctionValidationTest, UnreachableCode_return_InBlocks) {
+  // fn func() -> {
+  //  var a : i32;
+  //  {{{return;}}}
+  //  a = 2;
+  //}
+
+  Func("func", ast::VariableList{}, ty.void_(),
+       {
+           Decl(Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2))),
+           Block(Block(Block(Return()))),
+           Assign(Source{{12, 34}}, "a", 2),
+       });
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+}
+
+TEST_F(ResolverFunctionValidationTest, UnreachableCode_discard) {
+  // fn func() -> {
+  //  var a : i32;
+  //  discard;
+  //  a = 2;
+  //}
+
+  Func("func", ast::VariableList{}, ty.void_(),
+       {
+           Decl(Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2))),
+           create<ast::DiscardStatement>(),
+           Assign(Source{{12, 34}}, "a", 2),
+       });
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+}
+
+TEST_F(ResolverFunctionValidationTest, UnreachableCode_discard_InBlocks) {
+  // fn func() -> {
+  //  var a : i32;
+  //  {{{discard;}}}
+  //  a = 2;
+  //}
+
+  Func("func", ast::VariableList{}, ty.void_(),
+       {
+           Decl(Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2))),
+           Block(Block(Block(create<ast::DiscardStatement>()))),
+           Assign(Source{{12, 34}}, "a", 2),
+       });
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
 }
 
 TEST_F(ResolverFunctionValidationTest, FunctionEndWithoutReturnStatement_Fail) {
-  // fn func -> int { var a:i32 = 2; }
+  // fn func() -> int { var a:i32 = 2; }
 
   auto* var = Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2));
 
@@ -205,7 +267,7 @@ TEST_F(ResolverFunctionValidationTest,
 
 TEST_F(ResolverFunctionValidationTest,
        FunctionEndWithoutReturnStatementEmptyBody_Fail) {
-  // fn func -> int {}
+  // fn func() -> int {}
 
   Func(Source{Source::Location{12, 34}}, "func", ast::VariableList{}, ty.i32(),
        ast::StatementList{}, ast::DecorationList{});
@@ -258,7 +320,7 @@ TEST_F(ResolverFunctionValidationTest,
 
 TEST_F(ResolverFunctionValidationTest,
        FunctionTypeMustMatchReturnStatementTypeMissing_fail) {
-  // fn func -> f32 { return; }
+  // fn func() -> f32 { return; }
   Func("func", ast::VariableList{}, ty.f32(),
        ast::StatementList{
            Return(Source{Source::Location{12, 34}}, nullptr),
@@ -273,7 +335,7 @@ TEST_F(ResolverFunctionValidationTest,
 
 TEST_F(ResolverFunctionValidationTest,
        FunctionTypeMustMatchReturnStatementTypeF32_pass) {
-  // fn func -> f32 { return 2.0; }
+  // fn func() -> f32 { return 2.0; }
   Func("func", ast::VariableList{}, ty.f32(),
        ast::StatementList{
            Return(Source{Source::Location{12, 34}}, Expr(2.f)),
@@ -285,7 +347,7 @@ TEST_F(ResolverFunctionValidationTest,
 
 TEST_F(ResolverFunctionValidationTest,
        FunctionTypeMustMatchReturnStatementTypeF32_fail) {
-  // fn func -> f32 { return 2; }
+  // fn func() -> f32 { return 2; }
   Func("func", ast::VariableList{}, ty.f32(),
        ast::StatementList{
            Return(Source{Source::Location{12, 34}}, Expr(2)),
@@ -301,7 +363,7 @@ TEST_F(ResolverFunctionValidationTest,
 TEST_F(ResolverFunctionValidationTest,
        FunctionTypeMustMatchReturnStatementTypeF32Alias_pass) {
   // type myf32 = f32;
-  // fn func -> myf32 { return 2.0; }
+  // fn func() -> myf32 { return 2.0; }
   auto* myf32 = Alias("myf32", ty.f32());
   Func("func", ast::VariableList{}, ty.Of(myf32),
        ast::StatementList{
@@ -315,7 +377,7 @@ TEST_F(ResolverFunctionValidationTest,
 TEST_F(ResolverFunctionValidationTest,
        FunctionTypeMustMatchReturnStatementTypeF32Alias_fail) {
   // type myf32 = f32;
-  // fn func -> myf32 { return 2; }
+  // fn func() -> myf32 { return 2; }
   auto* myf32 = Alias("myf32", ty.f32());
   Func("func", ast::VariableList{}, ty.Of(myf32),
        ast::StatementList{
@@ -327,6 +389,24 @@ TEST_F(ResolverFunctionValidationTest,
   EXPECT_EQ(r()->error(),
             "12:34 error: return statement type must match its function return "
             "type, returned 'u32', expected 'myf32'");
+}
+
+TEST_F(ResolverFunctionValidationTest, CannotCallEntryPoint) {
+  // [[stage(compute), workgroup_size(1)]] fn entrypoint() {}
+  // fn func() { return entrypoint(); }
+  Func("entrypoint", ast::VariableList{}, ty.void_(), {},
+       {Stage(ast::PipelineStage::kCompute), WorkgroupSize(1)});
+
+  Func("func", ast::VariableList{}, ty.void_(),
+       {
+           create<ast::CallStatement>(Call(Source{{12, 34}}, "entrypoint")),
+       });
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(
+      r()->error(),
+
+      R"(12:34 error: entry point functions cannot be the target of a function call)");
 }
 
 TEST_F(ResolverFunctionValidationTest, PipelineStage_MustBeUnique_Fail) {
@@ -432,8 +512,8 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_MismatchTypeU32) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameters must be of the same "
-            "type, either i32 or u32");
+            "12:34 error: workgroup_size arguments must be of the same type, "
+            "either i32 or u32");
 }
 
 TEST_F(ResolverFunctionValidationTest, WorkgroupSize_MismatchTypeI32) {
@@ -446,8 +526,8 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_MismatchTypeI32) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameters must be of the same "
-            "type, either i32 or u32");
+            "12:34 error: workgroup_size arguments must be of the same type, "
+            "either i32 or u32");
 }
 
 TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Const_TypeMismatch) {
@@ -461,8 +541,8 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Const_TypeMismatch) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameters must be of the same "
-            "type, either i32 or u32");
+            "12:34 error: workgroup_size arguments must be of the same type, "
+            "either i32 or u32");
 }
 
 TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Const_TypeMismatch2) {
@@ -478,8 +558,8 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Const_TypeMismatch2) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameters must be of the same "
-            "type, either i32 or u32");
+            "12:34 error: workgroup_size arguments must be of the same type, "
+            "either i32 or u32");
 }
 TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Mismatch_ConstU32) {
   // let x = 4u;
@@ -495,8 +575,8 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Mismatch_ConstU32) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameters must be of the same "
-            "type, either i32 or u32");
+            "12:34 error: workgroup_size arguments must be of the same type, "
+            "either i32 or u32");
 }
 
 TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Literal_BadType) {
@@ -510,7 +590,7 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Literal_BadType) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameter must be either literal or "
+            "12:34 error: workgroup_size argument must be either literal or "
             "module-scope constant of type i32 or u32");
 }
 
@@ -525,7 +605,7 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Literal_Negative) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameter must be at least 1");
+            "12:34 error: workgroup_size argument must be at least 1");
 }
 
 TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Literal_Zero) {
@@ -539,7 +619,7 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Literal_Zero) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameter must be at least 1");
+            "12:34 error: workgroup_size argument must be at least 1");
 }
 
 TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Const_BadType) {
@@ -553,7 +633,7 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Const_BadType) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameter must be either literal or "
+            "12:34 error: workgroup_size argument must be either literal or "
             "module-scope constant of type i32 or u32");
 }
 
@@ -568,7 +648,7 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Const_Negative) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameter must be at least 1");
+            "12:34 error: workgroup_size argument must be at least 1");
 }
 
 TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Const_Zero) {
@@ -582,7 +662,7 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_Const_Zero) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameter must be at least 1");
+            "12:34 error: workgroup_size argument must be at least 1");
 }
 
 TEST_F(ResolverFunctionValidationTest,
@@ -598,7 +678,7 @@ TEST_F(ResolverFunctionValidationTest,
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameter must be at least 1");
+            "12:34 error: workgroup_size argument must be at least 1");
 }
 
 TEST_F(ResolverFunctionValidationTest, WorkgroupSize_NonConst) {
@@ -612,8 +692,22 @@ TEST_F(ResolverFunctionValidationTest, WorkgroupSize_NonConst) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: workgroup_size parameter must be either literal or "
+            "12:34 error: workgroup_size argument must be either literal or "
             "module-scope constant of type i32 or u32");
+}
+
+TEST_F(ResolverFunctionValidationTest, WorkgroupSize_InvalidExpr) {
+  // [[stage(compute), workgroup_size(i32(1))]
+  // fn main() {}
+  Func("main", {}, ty.void_(), {},
+       {Stage(ast::PipelineStage::kCompute),
+        WorkgroupSize(
+            Construct(Source{Source::Location{12, 34}}, ty.i32(), 1))});
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: workgroup_size argument must be either a literal or "
+            "a module-scope constant");
 }
 
 TEST_F(ResolverFunctionValidationTest, ReturnIsConstructible_NonPlain) {
@@ -655,7 +749,7 @@ TEST_F(ResolverFunctionValidationTest, ReturnIsConstructible_StructOfAtomic) {
 }
 
 TEST_F(ResolverFunctionValidationTest, ReturnIsConstructible_RuntimeArray) {
-  auto* ret_type = ty.array(Source{{12, 34}}, ty.i32(), 0);
+  auto* ret_type = ty.array(Source{{12, 34}}, ty.i32());
   Func("f", {}, ret_type, {});
 
   EXPECT_FALSE(r()->Resolve());

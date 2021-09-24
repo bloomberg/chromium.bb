@@ -116,6 +116,10 @@ void FakeAudioReceiveStream::SetUseTransportCcAndNackHistory(
   config_.rtp.nack.rtp_history_ms = history_ms;
 }
 
+void FakeAudioReceiveStream::SetNonSenderRttMeasurement(bool enabled) {
+  config_.enable_non_sender_rtt = enabled;
+}
+
 void FakeAudioReceiveStream::SetFrameDecryptor(
     rtc::scoped_refptr<webrtc::FrameDecryptorInterface> frame_decryptor) {
   config_.frame_decryptor = std::move(frame_decryptor);
@@ -371,6 +375,11 @@ webrtc::VideoReceiveStream::Stats FakeVideoReceiveStream::GetStats() const {
   return stats_;
 }
 
+void FakeVideoReceiveStream::SetRtpExtensions(
+    std::vector<webrtc::RtpExtension> extensions) {
+  config_.rtp.extensions = std::move(extensions);
+}
+
 void FakeVideoReceiveStream::Start() {
   receiving_ = true;
 }
@@ -387,6 +396,11 @@ void FakeVideoReceiveStream::SetStats(
 FakeFlexfecReceiveStream::FakeFlexfecReceiveStream(
     const webrtc::FlexfecReceiveStream::Config& config)
     : config_(config) {}
+
+void FakeFlexfecReceiveStream::SetRtpExtensions(
+    std::vector<webrtc::RtpExtension> extensions) {
+  config_.rtp.extensions = std::move(extensions);
+}
 
 const webrtc::FlexfecReceiveStream::Config&
 FakeFlexfecReceiveStream::GetConfig() const {

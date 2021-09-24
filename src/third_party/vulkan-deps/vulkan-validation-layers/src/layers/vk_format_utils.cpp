@@ -255,7 +255,7 @@ const std::map<VkFormat, VULKAN_FORMAT_INFO> kVkFormatTable = {
     {VK_FORMAT_R10X6G10X6_UNORM_2PACK16,                    {4, 2, VK_FORMAT_COMPATIBILITY_CLASS_32_BIT}},
     {VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16,          {8, 4, VK_FORMAT_COMPATIBILITY_CLASS_64BIT_R10G10B10A10}},
     {VK_FORMAT_R12X4_UNORM_PACK16,                          {2, 1, VK_FORMAT_COMPATIBILITY_CLASS_16_BIT}},
-    {VK_FORMAT_R12X4G12X4_UNORM_2PACK16,                    {4, 2, VK_FORMAT_COMPATIBILITY_CLASS_16_BIT}},
+    {VK_FORMAT_R12X4G12X4_UNORM_2PACK16,                    {4, 2, VK_FORMAT_COMPATIBILITY_CLASS_32_BIT}},
     {VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16,          {8, 4, VK_FORMAT_COMPATIBILITY_CLASS_64BIT_R12G12B12A12}},
     // _422 formats encode 2 texels per entry with B, R components shared - treated as compressed w/ 2x1 block size
     {VK_FORMAT_G8B8G8R8_422_UNORM,                          {4, 4, VK_FORMAT_COMPATIBILITY_CLASS_32BIT_G8B8G8R8}},
@@ -1538,19 +1538,4 @@ VK_LAYER_EXPORT bool FormatIsYChromaSubsampled(VkFormat format) {
     }
 
     return is_y_chroma_subsampled;
-}
-
-VK_LAYER_EXPORT VkDeviceSize GetIndexAlignment(VkIndexType indexType) {
-    switch (indexType) {
-        case VK_INDEX_TYPE_UINT16:
-            return 2;
-        case VK_INDEX_TYPE_UINT32:
-            return 4;
-        case VK_INDEX_TYPE_UINT8_EXT:
-            return 1;
-        default:
-            // Not a real index type. Express no alignment requirement here; we expect upper layer
-            // to have already picked up on the enum being nonsense.
-            return 1;
-    }
 }

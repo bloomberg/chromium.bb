@@ -21,6 +21,10 @@ const char* const kIntentNotSet = "NotSet";
 namespace {
 const char kDropOutEnumName[] = "Android.AutofillAssistant.DropOutReason";
 const char kOnboardingEnumName[] = "Android.AutofillAssistant.OnBoarding";
+const char kTtsButtonActionEnumName[] =
+    "Android.AutofillAssistant.TextToSpeech.ButtonAction";
+const char kTtsEngineEventEnumName[] =
+    "Android.AutofillAssistant.TextToSpeech.EngineEvent";
 const char kFeatureModuleInstallationEnumName[] =
     "Android.AutofillAssistant.FeatureModuleInstallation";
 const char kPaymentRequestPrefilledName[] =
@@ -218,9 +222,31 @@ void Metrics::RecordOnboardingResult(OnBoarding event) {
 }
 
 // static
+void Metrics::RecordTtsButtonAction(TtsButtonAction action) {
+  DCHECK_LE(action, TtsButtonAction::kMaxValue);
+  base::UmaHistogramEnumeration(kTtsButtonActionEnumName, action);
+}
+
+// static
+void Metrics::RecordTtsEngineEvent(TtsEngineEvent event) {
+  DCHECK_LE(event, TtsEngineEvent::kMaxValue);
+  base::UmaHistogramEnumeration(kTtsEngineEventEnumName, event);
+}
+
+// static
 void Metrics::RecordFeatureModuleInstallation(FeatureModuleInstallation event) {
   DCHECK_LE(event, FeatureModuleInstallation::kMaxValue);
   base::UmaHistogramEnumeration(kFeatureModuleInstallationEnumName, event);
+}
+
+// static
+void Metrics::RecordTriggerConditionEvaluationTime(
+    ukm::UkmRecorder* ukm_recorder,
+    ukm::SourceId source_id,
+    base::TimeDelta evaluation_time) {
+  ukm::builders::AutofillAssistant_Timing(source_id)
+      .SetTriggerConditionEvaluationMs(evaluation_time.InMilliseconds())
+      .Record(ukm_recorder);
 }
 
 }  // namespace autofill_assistant

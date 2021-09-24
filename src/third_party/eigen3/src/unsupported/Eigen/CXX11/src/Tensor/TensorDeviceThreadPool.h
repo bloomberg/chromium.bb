@@ -122,6 +122,11 @@ struct ThreadPoolDevice {
     ::memset(buffer, c, n);
   }
 
+  template<typename T>
+  EIGEN_STRONG_INLINE void fill(T* begin, T* end, const T& value) const {
+    std::fill(begin, end, value);
+  }
+
   EIGEN_STRONG_INLINE int numThreads() const {
     return num_threads_;
   }

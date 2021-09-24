@@ -250,12 +250,12 @@ class PrintPreviewDelegate : printing::PrintPreviewUI::TestDelegate {
     // 'UIFailedLoadingForTest' is sent when the setting could not be set. This
     // causes the browser test to fail.
     void RegisterMessages() override {
-      web_ui()->RegisterMessageCallback(
+      web_ui()->RegisterDeprecatedMessageCallback(
           "UILoadedForTest",
           base::BindRepeating(&UIDoneLoadingMessageHandler::HandleDone,
                               base::Unretained(this)));
 
-      web_ui()->RegisterMessageCallback(
+      web_ui()->RegisterDeprecatedMessageCallback(
           "UIFailedLoadingForTest",
           base::BindRepeating(&UIDoneLoadingMessageHandler::HandleFailure,
                               base::Unretained(this)));
@@ -302,7 +302,7 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
     base::FilePath path(file_name);
     GURL gurl = net::FilePathToFileURL(base::MakeAbsoluteFilePath(path));
 
-    ui_test_utils::NavigateToURL(browser(), gurl);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
 
     base::RunLoop loop;
     print_preview_delegate_->set_quit_closure(loop.QuitClosure());

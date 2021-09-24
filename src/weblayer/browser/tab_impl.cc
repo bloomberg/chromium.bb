@@ -111,6 +111,8 @@
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"  // nogncheck
 #include "components/safe_browsing/android/remote_database_manager.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer.h"
+#include "components/safe_browsing/content/browser/safe_browsing_tab_observer.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -120,7 +122,8 @@
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/javascript_tab_modal_dialog_manager_delegate_android.h"
 #include "weblayer/browser/js_communication/web_message_host_factory_proxy.h"
-#include "weblayer/browser/safe_browsing/safe_browsing_tab_observer.h"
+#include "weblayer/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
+#include "weblayer/browser/safe_browsing/weblayer_safe_browsing_tab_observer_delegate.h"
 #include "weblayer/browser/translate_client_impl.h"
 #include "weblayer/browser/url_bar/trusted_cdn_observer.h"
 #include "weblayer/browser/weblayer_factory_impl_android.h"
@@ -267,10 +270,8 @@ GetDatabaseManagerFromSafeBrowsingService() {
 #if defined(OS_ANDROID)
   SafeBrowsingService* safe_browsing_service =
       BrowserProcess::GetInstance()->GetSafeBrowsingService();
-  return safe_browsing_service
-             ? scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>(
-                   safe_browsing_service->GetSafeBrowsingDBManager())
-             : nullptr;
+  return scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>(
+      safe_browsing_service->GetSafeBrowsingDBManager());
 #else
   return nullptr;
 #endif
@@ -403,8 +404,20 @@ TabImpl::TabImpl(ProfileImpl* profile,
 
   if (base::FeatureList::IsEnabled(
           features::kWebLayerClientSidePhishingDetection)) {
-    SafeBrowsingTabObserver::CreateForWebContents(web_contents_.get());
+    safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(
+        web_contents_.get(),
+        std::make_unique<WebLayerSafeBrowsingTabObserverDelegate>());
   }
+
+  auto* browser_context =
+      static_cast<BrowserContextImpl*>(web_contents_->GetBrowserContext());
+  safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
+      web_contents_.get(),
+      HostContentSettingsMapFactory::GetForBrowserContext(browser_context),
+      SafeBrowsingNavigationObserverManagerFactory::GetForBrowserContext(
+          browser_context),
+      browser_context->pref_service(),
+      BrowserProcess::GetInstance()->GetSafeBrowsingService());
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)

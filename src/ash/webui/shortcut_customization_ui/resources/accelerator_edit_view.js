@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './accelerator_view.js'
 import './icons.js'
 import './shortcut_customization_shared_css.js';
-
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
@@ -13,7 +11,8 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {AcceleratorKeys, AcceleratorInfo, AcceleratorState, AcceleratorType} from './shortcut_types.js';
+import {ViewState} from './accelerator_view.js'
+import {AcceleratorInfo, AcceleratorKeys, AcceleratorState, AcceleratorType} from './shortcut_types.js';
 
 /**
  * @fileoverview
@@ -49,16 +48,43 @@ export class AcceleratorEditViewElement extends PolymerElement {
 
       isEditView: {
         type: Boolean,
-        value: false,
-        notify:true,
+        computed: 'showEditView_(viewState)',
         reflectToAttribute: true,
       },
+
+      viewState: {
+        type: Number,
+        value: ViewState.VIEW,
+        notify: true,
+      },
+
+      /** @protected */
+      statusMessage: {
+        type: String,
+        value: '',
+        observer: 'onStatusMessageChanged_',
+      },
+
+      hasError: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      }
+    }
+  }
+
+  /** @protected */
+  onStatusMessageChanged_() {
+    if (this.statusMessage === '') {
+      // TODO(jimmyxgong): i18n this string.
+      this.statusMessage =
+          'Press 1-4 modifiers and 1 other key on your keyboard';
     }
   }
 
   /** @protected */
   onEditButtonClicked_() {
-    this.isEditView = true;
+    this.viewState = ViewState.EDIT;
   }
 
   /** @protected */
@@ -68,7 +94,16 @@ export class AcceleratorEditViewElement extends PolymerElement {
 
   /** @protected  */
   onCancelButtonClicked_() {
-    this.isEditView = false;
+    this.statusMessage = '';
+    this.viewState = ViewState.VIEW;
+  }
+
+  /**
+   * @return {boolean}
+   * @protected
+   */
+  showEditView_() {
+    return this.viewState !== ViewState.VIEW;
   }
 }
 

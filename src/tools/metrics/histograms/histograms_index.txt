@@ -15,6 +15,7 @@ tools/metrics/histograms/metadata/borealis/histograms.xml
 tools/metrics/histograms/metadata/browser/histograms.xml
 tools/metrics/histograms/metadata/chrome/histograms.xml
 tools/metrics/histograms/metadata/chromeos/histograms.xml
+tools/metrics/histograms/metadata/chromeos_hps/histograms.xml
 tools/metrics/histograms/metadata/cloud/histograms.xml
 tools/metrics/histograms/metadata/commerce/histograms.xml
 tools/metrics/histograms/metadata/compositing/histograms.xml
@@ -120,6 +121,7 @@ tools/metrics/histograms/metadata/web_apk/histograms.xml
 tools/metrics/histograms/metadata/web_audio/histograms.xml
 tools/metrics/histograms/metadata/web_core/histograms.xml
 tools/metrics/histograms/metadata/web_rtc/histograms.xml
+tools/metrics/histograms/metadata/webapps/histograms.xml
 tools/metrics/histograms/metadata/webauthn/histograms.xml
 tools/metrics/histograms/metadata/weblayer/histograms.xml
 tools/metrics/histograms/metadata/windows/histograms.xml

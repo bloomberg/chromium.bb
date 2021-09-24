@@ -33,7 +33,7 @@ namespace blink {
 
 class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
                         public ThreadableLoaderClient,
-                        public network::mojom::WebBundleHandle {
+                        public network::mojom::blink::WebBundleHandle {
  public:
   WebBundleLoader(LinkWebBundle& link_web_bundle,
                   Document& document,
@@ -70,8 +70,13 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
     request.SetRequestDestination(
         network::mojom::RequestDestination::kWebBundle);
     request.SetPriority(ResourceLoadPriority::kHigh);
+    // Skip the service worker for a short term solution.
+    // TODO(crbug.com/1240424): Figure out the ideal design of the service
+    // worker integration.
+    request.SetSkipServiceWorker(true);
 
-    mojo::PendingRemote<network::mojom::WebBundleHandle> web_bundle_handle;
+    mojo::PendingRemote<network::mojom::blink::WebBundleHandle>
+        web_bundle_handle;
     receivers_.Add(web_bundle_handle.InitWithNewPipeAndPassReceiver(),
                    task_runner_);
     request.SetWebBundleTokenParams(ResourceRequestHead::WebBundleTokenParams(
@@ -103,15 +108,14 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
   void DidFail(uint64_t, const ResourceError&) override { DidFailInternal(); }
   void DidFailRedirectCheck(uint64_t) override { DidFailInternal(); }
 
-  // network::mojom::WebBundleHandle
-  void Clone(mojo::PendingReceiver<network::mojom::WebBundleHandle> receiver)
-      override {
+  // network::mojom::blink::WebBundleHandle
+  void Clone(mojo::PendingReceiver<network::mojom::blink::WebBundleHandle>
+                 receiver) override {
     receivers_.Add(std::move(receiver), task_runner_);
   }
   void OnWebBundleError(network::mojom::WebBundleErrorType type,
-                        const std::string& message) override {
-    link_web_bundle_->OnWebBundleError(url_.ElidedString() + ": " +
-                                       message.c_str());
+                        const String& message) override {
+    link_web_bundle_->OnWebBundleError(url_.ElidedString() + ": " + message);
   }
   void OnWebBundleLoadFinished(bool success) override {
     if (failed_)
@@ -151,7 +155,7 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   // we need ReceiverSet here because WebBundleHandle is cloned when
   // ResourceRequest is copied.
-  HeapMojoReceiverSet<network::mojom::WebBundleHandle, WebBundleLoader>
+  HeapMojoReceiverSet<network::mojom::blink::WebBundleHandle, WebBundleLoader>
       receivers_;
 };
 
@@ -314,14 +318,22 @@ void LinkWebBundle::ReleaseBundleLoader() {
 }
 
 // static
-KURL LinkWebBundle::ParseResourceUrl(const AtomicString& str) {
+KURL LinkWebBundle::CompleteURL(const KURL& base_url, const String& str) {
+  if (str.IsNull())
+    return KURL();
+  return KURL(base_url, str);
+}
+
+// static
+KURL LinkWebBundle::ParseResourceUrl(const AtomicString& str,
+                                     CompleteURLCallback callback) {
   // The implementation is almost copy and paste from ParseExchangeURL() defined
   // in services/data_decoder/web_bundle_parser.cc, replacing GURL with KURL.
 
-  // TODO(hayato): Consider to support a relative URL.
-  KURL url(str);
-  if (!url.IsValid())
+  KURL url = callback.Run(str);
+  if (!url.IsValid()) {
     return KURL();
+  }
 
   // Exchange URL must not have a fragment or credentials.
   if (url.HasFragmentIdentifier() || !url.User().IsEmpty() ||

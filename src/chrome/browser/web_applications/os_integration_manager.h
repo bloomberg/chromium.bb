@@ -13,14 +13,14 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
-#include "chrome/browser/web_applications/components/file_handler_manager.h"
-#include "chrome/browser/web_applications/components/protocol_handler_manager.h"
-#include "chrome/browser/web_applications/components/url_handler_manager.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_run_on_os_login.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/url_handler_manager.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_file_handler_manager.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_protocol_handler_manager.h"
+#include "chrome/browser/web_applications/web_app_run_on_os_login.h"
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -37,9 +37,15 @@ class WebAppIconManager;
 class TestOsIntegrationManager;
 class WebAppUiManager;
 
-// OsHooksResults contains the result of all Os hook deployments.
-// If a bit is set to `true`, then an error did not occur.
-using OsHooksResults = std::bitset<OsHookType::kMaxValue + 1>;
+// OsHooksErrors contains the result of all Os hook deployments.
+// If a bit is set to `true`, then an error did occur.
+using OsHooksErrors = std::bitset<OsHookType::kMaxValue + 1>;
+
+// OsHooksOptions contains the (install/uninstall) options of all Os hook
+// deployments.
+using OsHooksOptions = std::bitset<OsHookType::kMaxValue + 1>;
+
+using content::ProtocolHandler;
 
 // Used to pass install options configured from upstream caller.
 // All options are disabled by default.
@@ -48,18 +54,18 @@ struct InstallOsHooksOptions {
   InstallOsHooksOptions(const InstallOsHooksOptions& other);
   InstallOsHooksOptions& operator=(const InstallOsHooksOptions& other);
 
-  OsHooksResults os_hooks;
+  OsHooksOptions os_hooks;
   bool add_to_desktop = false;
   bool add_to_quick_launch_bar = false;
 };
 
 // Callback made after InstallOsHooks is finished.
 using InstallOsHooksCallback =
-    base::OnceCallback<void(OsHooksResults os_hooks_info)>;
+    base::OnceCallback<void(OsHooksErrors os_hooks_errors)>;
 
 // Callback made after UninstallOsHooks is finished.
 using UninstallOsHooksCallback =
-    base::OnceCallback<void(OsHooksResults os_hooks_info)>;
+    base::OnceCallback<void(OsHooksErrors os_hooks_errors)>;
 
 // Used to suppress OS hooks within this object's lifetime.
 using ScopedOsHooksSuppress = std::unique_ptr<base::AutoReset<bool>>;
@@ -76,8 +82,8 @@ class OsIntegrationManager {
   explicit OsIntegrationManager(
       Profile* profile,
       std::unique_ptr<WebAppShortcutManager> shortcut_manager,
-      std::unique_ptr<FileHandlerManager> file_handler_manager,
-      std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager,
+      std::unique_ptr<WebAppFileHandlerManager> file_handler_manager,
+      std::unique_ptr<WebAppProtocolHandlerManager> protocol_handler_manager,
       std::unique_ptr<UrlHandlerManager> url_handler_manager);
   virtual ~OsIntegrationManager();
 
@@ -102,7 +108,7 @@ class OsIntegrationManager {
   // TODO(https://crbug.com/1108109) we should record uninstall result and allow
   // callback. virtual for testing
   virtual void UninstallOsHooks(const AppId& app_id,
-                                const OsHooksResults& os_hooks,
+                                const OsHooksOptions& os_hooks,
                                 UninstallOsHooksCallback callback);
 
   // Uninstall all OS hooks for the web app.
@@ -130,7 +136,7 @@ class OsIntegrationManager {
       const AppId& app_id,
       WebAppShortcutManager::GetShortcutInfoCallback callback);
 
-  // Proxy calls for FileHandlerManager.
+  // Proxy calls for WebAppFileHandlerManager.
   bool IsFileHandlingAPIAvailable(const AppId& app_id);
   const apps::FileHandlers* GetEnabledFileHandlers(const AppId& app_id);
   const absl::optional<GURL> GetMatchingFileHandlerURL(
@@ -142,7 +148,7 @@ class OsIntegrationManager {
   void ForceEnableFileHandlingOriginTrial(const AppId& app_id);
   void DisableForceEnabledFileHandlingOriginTrial(const AppId& app_id);
 
-  // Proxy calls for ProtocolHandlerManager.
+  // Proxy calls for WebAppProtocolHandlerManager.
   virtual absl::optional<GURL> TranslateProtocolUrl(const AppId& app_id,
                                                     const GURL& protocol_url);
   virtual std::vector<ProtocolHandler> GetHandlersForProtocol(
@@ -150,12 +156,12 @@ class OsIntegrationManager {
   virtual std::vector<ProtocolHandler> GetAppProtocolHandlers(
       const AppId& app_id);
 
-  // Getter for testing FileHandlerManager
-  FileHandlerManager& file_handler_manager_for_testing();
+  // Getter for testing WebAppFileHandlerManager
+  WebAppFileHandlerManager& file_handler_manager_for_testing();
 
   UrlHandlerManager& url_handler_manager_for_testing();
 
-  ProtocolHandlerManager& protocol_handler_manager_for_testing();
+  WebAppProtocolHandlerManager& protocol_handler_manager_for_testing();
 
   static ScopedOsHooksSuppress ScopedSuppressOsHooksForTesting();
 
@@ -176,10 +182,10 @@ class OsIntegrationManager {
 
  protected:
   WebAppShortcutManager* shortcut_manager() { return shortcut_manager_.get(); }
-  FileHandlerManager* file_handler_manager() {
+  WebAppFileHandlerManager* file_handler_manager() {
     return file_handler_manager_.get();
   }
-  ProtocolHandlerManager* protocol_handler_manager() {
+  WebAppProtocolHandlerManager* protocol_handler_manager() {
     return protocol_handler_manager_.get();
   }
   UrlHandlerManager* url_handler_manager() {
@@ -190,11 +196,11 @@ class OsIntegrationManager {
     shortcut_manager_ = std::move(shortcut_manager);
   }
   void set_file_handler_manager(
-      std::unique_ptr<FileHandlerManager> file_handler_manager) {
+      std::unique_ptr<WebAppFileHandlerManager> file_handler_manager) {
     file_handler_manager_ = std::move(file_handler_manager);
   }
   void set_protocol_handler_manager(
-      std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager) {
+      std::unique_ptr<WebAppProtocolHandlerManager> protocol_handler_manager) {
     protocol_handler_manager_ = std::move(protocol_handler_manager);
   }
 
@@ -277,8 +283,8 @@ class OsIntegrationManager {
   WebAppUiManager* ui_manager_ = nullptr;
 
   std::unique_ptr<WebAppShortcutManager> shortcut_manager_;
-  std::unique_ptr<FileHandlerManager> file_handler_manager_;
-  std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager_;
+  std::unique_ptr<WebAppFileHandlerManager> file_handler_manager_;
+  std::unique_ptr<WebAppProtocolHandlerManager> protocol_handler_manager_;
   std::unique_ptr<UrlHandlerManager> url_handler_manager_;
 
   base::WeakPtrFactory<OsIntegrationManager> weak_ptr_factory_{this};

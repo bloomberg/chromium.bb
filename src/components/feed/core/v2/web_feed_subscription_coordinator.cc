@@ -5,6 +5,7 @@
 #include "components/feed/core/v2/web_feed_subscription_coordinator.h"
 
 #include <memory>
+#include <ostream>
 
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
@@ -44,6 +45,7 @@ WebFeedMetadata MakeWebFeedMetadata(
   }
   result.title = web_feed_info.title();
   result.subscription_status = subscribe_status;
+  result.favicon_url = GURL(web_feed_info.favicon().url());
   return result;
 }
 
@@ -199,8 +201,9 @@ class WebFeedSubscriptionModel {
 }  // namespace internal
 
 WebFeedSubscriptionCoordinator::WebFeedSubscriptionCoordinator(
+    Delegate* delegate,
     FeedStream* feed_stream)
-    : feed_stream_(feed_stream) {
+    : delegate_(delegate), feed_stream_(feed_stream) {
   base::TimeDelta delay = GetFeedConfig().fetch_web_feed_info_delay;
   if (IsSignedInAndWebFeedsEnabled() && !delay.is_zero()) {
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
@@ -231,6 +234,11 @@ void WebFeedSubscriptionCoordinator::Populate(
   index_.Populate(startup_data.recommended_feed_index);
   index_.Populate(startup_data.subscribed_web_feeds);
   populated_ = true;
+
+  if (IsSignedInAndWebFeedsEnabled()) {
+    delegate_->RegisterFollowingFeedFollowCountFieldTrial(
+        startup_data.subscribed_web_feeds.feeds_size());
+  }
 
   auto on_populated = std::move(on_populated_);
   for (base::OnceClosure& callback : on_populated) {
@@ -616,6 +624,12 @@ SubscriptionInfo WebFeedSubscriptionCoordinator::FindSubscriptionInfoById(
   return model_->GetSubscriptionInfo(web_feed_id);
 }
 
+void WebFeedSubscriptionCoordinator::RefreshRecommendedFeeds() {
+  WithModel(base::BindOnce(
+      &WebFeedSubscriptionCoordinator::FetchRecommendedWebFeedsStart,
+      base::Unretained(this)));
+}
+
 void WebFeedSubscriptionCoordinator::FetchRecommendedWebFeedsIfStale() {
   if (!IsSignedInAndWebFeedsEnabled())
     return;
@@ -624,9 +638,7 @@ void WebFeedSubscriptionCoordinator::FetchRecommendedWebFeedsIfStale() {
       base::Time::Now() - index_.GetRecommendedFeedsUpdateTime();
   if (staleness > GetFeedConfig().recommended_feeds_staleness_threshold ||
       staleness < -base::TimeDelta::FromHours(1)) {
-    WithModel(base::BindOnce(
-        &WebFeedSubscriptionCoordinator::FetchRecommendedWebFeedsStart,
-        base::Unretained(this)));
+    RefreshRecommendedFeeds();
   }
 }
 
@@ -739,6 +751,15 @@ void WebFeedSubscriptionCoordinator::SubscribedWebFeedCount(
   FetchSubscribedWebFeedsIfStale(base::BindOnce(
       &WebFeedSubscriptionCoordinator::SubscribedWebFeedCountDone,
       base::Unretained(this), std::move(callback)));
+}
+
+void WebFeedSubscriptionCoordinator::DumpStateForDebugging(std::ostream& os) {
+  if (populated_) {
+    index_.DumpStateForDebugging(os);
+  } else {
+    os << "index not populated";
+  }
+  os << '\n';
 }
 
 void WebFeedSubscriptionCoordinator::IsWebFeedSubscriberDone(

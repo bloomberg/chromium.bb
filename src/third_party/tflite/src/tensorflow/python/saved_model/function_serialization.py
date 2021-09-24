@@ -30,7 +30,7 @@ def _serialize_function_spec(function_spec, coder):
   """Serialize a FunctionSpec object into its proto representation."""
   if function_spec.is_method and not function_spec.fullargspec.args:
     raise NotImplementedError(
-        "Missing support to serialize a method function without a named "
+        "Cannot serialize a method function without a named "
         "'self' argument.")
   proto = saved_object_graph_pb2.FunctionSpec()
 
@@ -46,6 +46,14 @@ def _serialize_function_spec(function_spec, coder):
   proto.is_method = function_spec.is_method
   proto.input_signature.CopyFrom(
       coder.encode_structure(function_spec.input_signature))
+
+  # See `tf.function` and the JitCompile proto for details.
+  proto.jit_compile = {
+      None: saved_object_graph_pb2.FunctionSpec.JitCompile.DEFAULT,
+      True: saved_object_graph_pb2.FunctionSpec.JitCompile.ON,
+      False: saved_object_graph_pb2.FunctionSpec.JitCompile.OFF,
+  }.get(function_spec.jit_compile)
+
   return proto
 
 
@@ -57,13 +65,12 @@ def serialize_concrete_function(concrete_function, node_ids, coder):
       bound_inputs.append(node_ids[capture])
   except KeyError:
     raise KeyError(
-        "Failed to add concrete function %s to object based saved model as it "
-        "captures tensor %s which is unsupported or not reachable from root. "
+        f"Failed to add concrete function '{concrete_function.name}' to object-"
+        f"based SavedModel as it captures tensor {capture!r} which is unsupported"
+        " or not reachable from root. "
         "One reason could be that a stateful object or a variable that the "
         "function depends on is not assigned to an attribute of the serialized "
-        "trackable object "
-        "(see SaveTest.test_captures_unreachable_variable)."
-        % (concrete_function.name, capture))
+        "trackable object (see SaveTest.test_captures_unreachable_variable).")
   concrete_function_proto = saved_object_graph_pb2.SavedConcreteFunction()
   structured_outputs = func_graph_module.convert_structure_to_signature(
       concrete_function.structured_outputs)
@@ -77,17 +84,19 @@ def serialize_concrete_function(concrete_function, node_ids, coder):
 
 def serialize_bare_concrete_function(concrete_function, name_map):
   """Build a SavedBareConcreteFunction."""
-  # TODO(edloper): Currently, bare concrete functions don't have access to a
-  # function_spec, so they can't be called with the structured signature.
-  # Update the serialization to include a function_spec.
-
   # pylint: disable=protected-access
   name = name_map.get(compat.as_text(concrete_function.name),
                       concrete_function.name)
-  return saved_object_graph_pb2.SavedBareConcreteFunction(
+  proto = saved_object_graph_pb2.SavedBareConcreteFunction(
       concrete_function_name=name,
       allowed_positional_arguments=concrete_function._num_positional_args,
       argument_keywords=concrete_function._arg_keywords)
+  if concrete_function._pre_initialized_function_spec is not None:
+    coder = nested_structure_coder.StructureCoder()
+    proto.function_spec.CopyFrom(
+        _serialize_function_spec(
+            concrete_function._pre_initialized_function_spec, coder))
+  return proto
   # pylint: enable=protected-access
 
 

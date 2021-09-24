@@ -17,6 +17,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
@@ -160,6 +161,30 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             mAnimDelegate.startTitleAnimation(getContext());
         }
     };
+
+    /**
+     * Whether to use the toolbar as handle to resize the Window height.
+     */
+    public interface HandleStrategy {
+        /**
+         * Decide whether we need to intercept the touch events so the events will be passed to the
+         * {@link #onTouchEvent()} method.
+         *
+         * @param event The touch event to be examined.
+         * @return whether the event will be passed to {@link #onTouchEvent()}.
+         */
+        boolean onInterceptTouchEvent(MotionEvent event);
+
+        /**
+         * Handling the touch events.
+         *
+         * @param event The touch event to be handled.
+         * @return whether the event is consumed..
+         */
+        boolean onTouchEvent(MotionEvent event);
+    }
+
+    private HandleStrategy mHandleStrategy;
 
     /**
      * Constructor for getting this class inflated from an xml layout file.
@@ -361,6 +386,27 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         mLocationBarModel.notifySecurityStateChanged();
     }
 
+    @Override
+    @SuppressLint("ClickableViewAccessibility")
+    public boolean onTouchEvent(MotionEvent event) {
+        if (mHandleStrategy != null) {
+            return mHandleStrategy.onTouchEvent(event);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        if (mHandleStrategy != null) {
+            return mHandleStrategy.onInterceptTouchEvent(event);
+        }
+        return false;
+    }
+
+    public void setHandleStrategy(HandleStrategy strategy) {
+        mHandleStrategy = strategy;
+    }
+
     private void updateButtonsTint() {
         updateButtonTint(mCloseButton);
         int numCustomActionButtons = mCustomActionButtons.getChildCount();
@@ -534,9 +580,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                         + fraction * (Color.blue(finalColor) - Color.blue(initialColor)));
                 int color = Color.rgb(red, green, blue);
                 background.setColor(color);
-                if (mHandleView != null) {
-                    mHandleView.getBackground().setTint(color);
-                }
+                setHandleViewBackgroundColor(color);
             }
         });
         mBrandColorTransitionAnimation.addListener(new AnimatorListenerAdapter() {
@@ -575,7 +619,13 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
     public void setHandleView(ImageView view) {
         mHandleView = view;
-        mHandleView.getBackground().setTint(getBackground().getColor());
+        setHandleViewBackgroundColor(getBackground().getColor());
+    }
+
+    private void setHandleViewBackgroundColor(int color) {
+        if (mHandleView == null) return;
+        GradientDrawable drawable = (GradientDrawable) mHandleView.getBackground();
+        ((GradientDrawable) drawable.mutate()).setColor(color);
     }
 
     @Override

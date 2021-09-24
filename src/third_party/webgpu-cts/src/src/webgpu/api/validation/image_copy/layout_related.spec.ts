@@ -120,6 +120,16 @@ g.test('required_bytes_in_copy')
         { copyWidthInBlocks: 5, copyHeightInBlocks: 4, copyDepth: 1, offsetInBlocks: 0 }, // copyDepth = 1
         { copyWidthInBlocks: 7, copyHeightInBlocks: 1, copyDepth: 1, offsetInBlocks: 0 }, // copyHeight = 1 and copyDepth = 1
       ])
+      // The test texture size will be rounded up from the copy size to the next valid texture size.
+      // If the format is a depth/stencil format, its copy size must equal to subresource's size.
+      // So filter out depth/stencil cases where the rounded-up texture size would be different from the copy size.
+      .filter(({ format, copyWidthInBlocks, copyHeightInBlocks, copyDepth }) => {
+        const info = kTextureFormatInfo[format];
+        return (
+          (!info.depth && !info.stencil) ||
+          (copyWidthInBlocks > 0 && copyHeightInBlocks > 0 && copyDepth > 0)
+        );
+      })
   )
   .fn(async t => {
     const {
@@ -178,24 +188,32 @@ g.test('rows_per_image_alignment')
       .filter(formatCopyableWithMethod)
       .beginSubcases()
       .expand('rowsPerImage', texelBlockAlignmentTestExpanderForRowsPerImage)
+      // Copy height is info.blockHeight, so rowsPerImage must be equal or greater than it.
+      .filter(({ rowsPerImage, format }) => rowsPerImage >= kTextureFormatInfo[format].blockHeight)
   )
   .fn(async t => {
     const { rowsPerImage, format, method } = t.params;
     const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
-    const size = { width: 0, height: 0, depthOrArrayLayers: 0 };
+    const size = { width: info.blockWidth, height: info.blockHeight, depthOrArrayLayers: 1 };
+    const texture = t.device.createTexture({
+      size,
+      format,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,
+    });
 
-    const texture = t.createAlignedTexture(format, size);
-
-    t.testRun({ texture }, { bytesPerRow: 0, rowsPerImage }, size, {
-      dataSize: 1,
+    t.testRun({ texture }, { bytesPerRow: 256, rowsPerImage }, size, {
+      dataSize: info.bytesPerBlock,
       method,
       success: true,
     });
   });
 
-g.test('texel_block_alignment_on_offset')
+g.test('offset_alignment')
+  .desc(
+    `If texture format is not depth/stencil format, offset should be aligned with texture block. If texture format is depth/stencil format, offset should be a multiple of 4.`
+  )
   .params(u =>
     u
       .combine('method', kImageCopyTypes)
@@ -209,14 +227,26 @@ g.test('texel_block_alignment_on_offset')
     const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
-    const size = { width: 0, height: 0, depthOrArrayLayers: 0 };
+    const size = { width: info.blockWidth, height: info.blockHeight, depthOrArrayLayers: 1 };
+    const texture = t.device.createTexture({
+      size,
+      format,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,
+    });
 
-    const texture = t.createAlignedTexture(format, size);
+    let success = false;
+    if (method === 'WriteTexture') success = true;
+    if (info.depth || info.stencil) {
+      if (offset % 4 === 0) success = true;
+    } else {
+      if (offset % info.bytesPerBlock === 0) success = true;
+    }
 
-    const success =
-      method === 'WriteTexture' || offset % kTextureFormatInfo[format].bytesPerBlock === 0;
-
-    t.testRun({ texture }, { offset, bytesPerRow: 0 }, size, { dataSize: offset, method, success });
+    t.testRun({ texture }, { offset, bytesPerRow: 256 }, size, {
+      dataSize: offset + info.bytesPerBlock,
+      method,
+      success,
+    });
   });
 
 g.test('bound_on_bytes_per_row')

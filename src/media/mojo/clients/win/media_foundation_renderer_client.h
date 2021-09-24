@@ -22,19 +22,31 @@
 
 namespace media {
 
+class MediaLog;
+
 // MediaFoundationRendererClient lives in Renderer process talks to the
 // MediaFoundationRenderer living in the MediaFoundationService (utility)
 // process, using `mojo_renderer_` and `renderer_extension_`.
 //
-// It also manages a DCOMPTexture living in the GPU process via
-// `dcomp_texture_wrapper_` and notifies the VideoRendererSink when new frames
-// are available.
+// It also manages a DCOMPTexture (via `dcomp_texture_wrapper_`) living in the
+// GPU process for direct composition support. The initialization of the
+// compositing path is summarized as follows:
+// ```
+// OnVideoNaturalSizeChange() -> CreateVideoFrame(natural_size) ->
+// PaintSingleFrame() -> SwapChainPresenter::PresentDCOMPSurface() ->
+// DCOMPTexture::OnUpdateParentWindowRect() -> DCOMPTexture::SendOutputRect() ->
+// OnOutputRectChange() -> SetOutputRect() -> OnSetOutputRectDone()
+// a) -> UpdateTextureSize(output_size), and
+// b) -> renderer_extension_->GetDCOMPSurface() -> OnDCOMPSurfaceReceived() ->
+//    SetDCOMPSurfaceHandle() -> OnDCOMPSurfaceHandleSet()
+// ```
 class MediaFoundationRendererClient : public Renderer, public RendererClient {
  public:
   using RendererExtension = mojom::MediaFoundationRendererExtension;
 
   MediaFoundationRendererClient(
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+      std::unique_ptr<MediaLog> media_log,
       std::unique_ptr<MojoRenderer> mojo_renderer,
       mojo::PendingRemote<RendererExtension> pending_renderer_extension,
       std::unique_ptr<DCOMPTextureWrapper> dcomp_texture_wrapper,
@@ -72,14 +84,13 @@ class MediaFoundationRendererClient : public Renderer, public RendererClient {
 
  private:
   void OnRemoteRendererInitialized(PipelineStatus status);
-  void OnDCOMPTextureInitialized(bool success);
+  void OnOutputRectChange(gfx::Rect output_rect);
+  void OnSetOutputRectDone(const gfx::Size& output_size, bool success);
   void InitializeDCOMPRenderingIfNeeded();
   void OnDCOMPSurfaceReceived(
       const absl::optional<base::UnguessableToken>& token);
-  void OnDCOMPSurfaceHandleCreated(bool success);
+  void OnDCOMPSurfaceHandleSet(bool success);
   void OnVideoFrameCreated(scoped_refptr<VideoFrame> video_frame);
-  void OnCompositionParamsReceived(gfx::Rect output_rect);
-
   void OnCdmAttached(bool success);
   void OnConnectionError();
 
@@ -87,16 +98,19 @@ class MediaFoundationRendererClient : public Renderer, public RendererClient {
   // media thread. Hence we store PendingRemotes so we can bind the Remotes
   // on the media task runner during/after Initialize().
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  std::unique_ptr<MediaLog> media_log_;
   std::unique_ptr<MojoRenderer> mojo_renderer_;
   mojo::PendingRemote<RendererExtension> pending_renderer_extension_;
   std::unique_ptr<DCOMPTextureWrapper> dcomp_texture_wrapper_;
-  VideoRendererSink* sink_;
+  VideoRendererSink* sink_ = nullptr;
 
   mojo::Remote<RendererExtension> renderer_extension_;
 
   RendererClient* client_ = nullptr;
   bool dcomp_rendering_initialized_ = false;
   gfx::Size natural_size_;  // video's native size.
+  gfx::Size output_size_;   // video's output size (the on-screen video size).
+  bool output_size_updated_ = false;
 
   bool has_video_ = false;
   scoped_refptr<VideoFrame> dcomp_video_frame_;

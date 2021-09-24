@@ -239,17 +239,27 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (void)setMode:(TabGridMode)mode {
+  if (_mode == mode) {
+    return;
+  }
+
   _mode = mode;
 
-  NSRange allSectionsRange =
-      NSMakeRange(/*location=*/0, self.collectionView.numberOfSections);
-  NSIndexSet* allSectionsIndexSet =
-      [NSIndexSet indexSetWithIndexesInRange:allSectionsRange];
   // Reloading specific sections in a |performBatchUpdates| fades the changes in
   // rather than reloads the collection view with a harsh flash.
+  __weak GridViewController* weakSelf = self;
   [self.collectionView
       performBatchUpdates:^{
-        [self.collectionView reloadSections:allSectionsIndexSet];
+        GridViewController* strongSelf = weakSelf;
+        if (!strongSelf || !strongSelf.collectionView) {
+          return;
+        }
+
+        NSRange allSectionsRange = NSMakeRange(
+            /*location=*/0, strongSelf.collectionView.numberOfSections);
+        NSIndexSet* allSectionsIndexSet =
+            [NSIndexSet indexSetWithIndexesInRange:allSectionsRange];
+        [strongSelf.collectionView reloadSections:allSectionsIndexSet];
       }
                completion:nil];
 
@@ -445,7 +455,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     contextMenuConfigurationForItemAtIndexPath:(NSIndexPath*)indexPath
                                          point:(CGPoint)point {
   // Context menu shouldn't appear in the selection mode.
-  if (!IsTabGridContextMenuEnabled() || _mode == TabGridModeSelection) {
+  if (_mode == TabGridModeSelection) {
     return nil;
   }
   GridCell* cell = base::mac::ObjCCastStrict<GridCell>(

@@ -10,7 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/policy/dm_token_utils.h"
-#include "chrome/browser/safe_browsing/user_population.h"
+#include "chrome/browser/safe_browsing/chrome_user_population_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/policy/core/common/cloud/dm_token.h"
@@ -90,7 +90,8 @@ class ChromeEnterpriseRealTimeUrlLookupServiceTest : public PlatformTest {
         test_shared_loader_factory_, cache_manager_.get(), test_profile_.get(),
         base::BindRepeating(
             [](Profile* profile, syncer::TestSyncService* test_sync_service) {
-              ChromeUserPopulation population = GetUserPopulation(profile);
+              ChromeUserPopulation population =
+                  GetUserPopulationForProfile(profile);
               population.set_is_history_sync_enabled(
                   safe_browsing::SyncUtils::IsHistorySyncEnabled(
                       test_sync_service));

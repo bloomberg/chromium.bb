@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -282,6 +283,8 @@ TEST_F(InputDataProviderTest, KeyboardPhysicalLayoutDetection) {
                   builtin_keyboard->physical_layout);
         EXPECT_EQ(mojom::MechanicalLayout::kIso,
                   builtin_keyboard->mechanical_layout);
+        EXPECT_EQ(mojom::NumberPadPresence::kNotPresent,
+                  builtin_keyboard->number_pad_present);
 
         mojom::KeyboardInfoPtr external_keyboard = keyboards[1].Clone();
         EXPECT_EQ(4u, external_keyboard->id);
@@ -289,6 +292,8 @@ TEST_F(InputDataProviderTest, KeyboardPhysicalLayoutDetection) {
                   external_keyboard->physical_layout);
         EXPECT_EQ(mojom::MechanicalLayout::kUnknown,
                   external_keyboard->mechanical_layout);
+        EXPECT_EQ(mojom::NumberPadPresence::kUnknown,
+                  external_keyboard->number_pad_present);
 
         mojom::KeyboardInfoPtr dell_internal_keyboard = keyboards[2].Clone();
         EXPECT_EQ(5u, dell_internal_keyboard->id);
@@ -296,6 +301,8 @@ TEST_F(InputDataProviderTest, KeyboardPhysicalLayoutDetection) {
                   dell_internal_keyboard->physical_layout);
         EXPECT_EQ(mojom::MechanicalLayout::kIso,
                   dell_internal_keyboard->mechanical_layout);
+        EXPECT_EQ(mojom::NumberPadPresence::kNotPresent,
+                  dell_internal_keyboard->number_pad_present);
 
         run_loop.Quit();
       }));
@@ -326,6 +333,31 @@ TEST_F(InputDataProviderTest, KeyboardAssistantKeyDetection) {
         EXPECT_EQ(6u, eve_keyboard->id);
         EXPECT_TRUE(eve_keyboard->has_assistant_key);
       }));
+}
+
+TEST_F(InputDataProviderTest, KeyboardNumberPadDetection) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--has-number-pad"});
+  base::RunLoop run_loop;
+  ui::DeviceEvent link_event(ui::DeviceEvent::DeviceType::INPUT,
+                             ui::DeviceEvent::ActionType::ADD,
+                             base::FilePath("/dev/input/event0"));
+  provider_->OnDeviceEvent(link_event);
+  task_environment_.RunUntilIdle();
+
+  provider_->GetConnectedDevices(base::BindLambdaForTesting(
+      [&](std::vector<mojom::KeyboardInfoPtr> keyboards,
+          std::vector<mojom::TouchDeviceInfoPtr> touch_devices) {
+        ASSERT_EQ(1ul, keyboards.size());
+
+        mojom::KeyboardInfoPtr builtin_keyboard = keyboards[0].Clone();
+        EXPECT_EQ(0u, builtin_keyboard->id);
+        EXPECT_EQ(mojom::NumberPadPresence::kPresent,
+                  builtin_keyboard->number_pad_present);
+
+        run_loop.Quit();
+      }));
+  run_loop.Run();
 }
 
 TEST_F(InputDataProviderTest, ObserveConnectedDevices_Keyboards) {
@@ -378,6 +410,91 @@ TEST_F(InputDataProviderTest, BadDeviceDoesntCrash) {
                                        base::FilePath("/dev/input/event7"));
   provider_->OnDeviceEvent(add_bad_device_event);
   task_environment_.RunUntilIdle();
+}
+
+TEST_F(InputDataProviderTest, GetKeyboardVisualLayout_AmericanEnglish) {
+  statistics_provider_.SetMachineStatistic(chromeos::system::kKeyboardLayoutKey,
+                                           "xkb:us::eng,m17n:ar,t13n:ar");
+
+  ui::DeviceEvent add_keyboard_event(ui::DeviceEvent::DeviceType::INPUT,
+                                     ui::DeviceEvent::ActionType::ADD,
+                                     base::FilePath("/dev/input/event6"));
+  provider_->OnDeviceEvent(add_keyboard_event);
+  task_environment_.RunUntilIdle();
+
+  base::RunLoop run_loop;
+  provider_->GetKeyboardVisualLayout(
+      6, base::BindLambdaForTesting(
+             [&](base::flat_map<uint32_t, mojom::KeyGlyphSetPtr> layout) {
+               ASSERT_FALSE(layout[KEY_Q].is_null());
+               EXPECT_EQ("q", layout[KEY_Q]->main_glyph);
+               EXPECT_FALSE(layout[KEY_Q]->shift_glyph.has_value());
+
+               ASSERT_FALSE(layout[KEY_3].is_null());
+               EXPECT_EQ("3", layout[KEY_3]->main_glyph);
+               EXPECT_EQ("#", layout[KEY_3]->shift_glyph);
+
+               // Check all of the essential keys (at least on US QWERTY) have
+               // glyphs.
+               for (auto const& entry : layout) {
+                 EXPECT_FALSE(entry.second.is_null())
+                     << "No glyphs for evdev code " << entry.first;
+               }
+
+               run_loop.Quit();
+             }));
+  run_loop.Run();
+}
+
+TEST_F(InputDataProviderTest, GetKeyboardVisualLayout_FrenchFrench) {
+  statistics_provider_.SetMachineStatistic(chromeos::system::kKeyboardLayoutKey,
+                                           "xkb:fr::fra");
+
+  ui::DeviceEvent add_keyboard_event(ui::DeviceEvent::DeviceType::INPUT,
+                                     ui::DeviceEvent::ActionType::ADD,
+                                     base::FilePath("/dev/input/event6"));
+  provider_->OnDeviceEvent(add_keyboard_event);
+  task_environment_.RunUntilIdle();
+
+  base::RunLoop run_loop;
+  provider_->GetKeyboardVisualLayout(
+      6, base::BindLambdaForTesting(
+             [&](base::flat_map<uint32_t, mojom::KeyGlyphSetPtr> layout) {
+               ASSERT_FALSE(layout[KEY_Q].is_null());
+               EXPECT_EQ("a", layout[KEY_Q]->main_glyph);
+               EXPECT_FALSE(layout[KEY_Q]->shift_glyph.has_value());
+
+               ASSERT_FALSE(layout[KEY_3].is_null());
+               EXPECT_EQ("\"", layout[KEY_3]->main_glyph);
+               EXPECT_EQ("3", layout[KEY_3]->shift_glyph);
+
+               // Check all of the essential keys have glyphs.
+               for (auto const& entry : layout) {
+                 EXPECT_FALSE(entry.second.is_null())
+                     << "No glyphs for evdev code " << entry.first;
+               }
+
+               run_loop.Quit();
+             }));
+  run_loop.Run();
+}
+
+TEST_F(InputDataProviderTest, ResetReceiverOnDisconnect) {
+  ASSERT_FALSE(provider_->ReceiverIsBound());
+  mojo::Remote<mojom::InputDataProvider> remote;
+  provider_->BindInterface(remote.BindNewPipeAndPassReceiver());
+  ASSERT_TRUE(provider_->ReceiverIsBound());
+
+  // Unbind remote to trigger disconnect and disconnect handler.
+  remote.reset();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(provider_->ReceiverIsBound());
+
+  // Test intent is to ensure interface can be rebound when application is
+  // reloaded using |CTRL + R|.  A disconnect should be signaled in which we
+  // will reset the receiver to its unbound state.
+  provider_->BindInterface(remote.BindNewPipeAndPassReceiver());
+  ASSERT_TRUE(provider_->ReceiverIsBound());
 }
 
 }  // namespace diagnostics

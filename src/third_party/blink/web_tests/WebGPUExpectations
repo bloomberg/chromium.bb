@@ -27,6 +27,7 @@ crbug.com/1231599 wpt_internal/webgpu/000_run_me_first.html [ Skip ]
 ###
 
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,attachment_compatibility:render_pass_or_bundle_and_pipeline,color_format:* [ Slow ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,operation,rendering,basic:large_draw:* [ Slow ]
 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,compute,basic:large_dispatch:* [ Slow ]
 wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api,operation,compute,basic:large_dispatch:* [ Slow ]
 wpt_internal/webgpu/cts.html?q=webgpu:web_platform,copyToTexture,canvas:copy_contents_from_2d_context_canvas:* [ Slow ]
@@ -68,8 +69,14 @@ crbug.com/dawn/986 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,vertex_s
 # Linux: Crashes
 crbug.com/1083478 [ Linux ] wpt_internal/webgpu/web_platform/reftests/* [ Skip ]
 # Mac/Win: Shifted by about half a pixel
-crbug.com/1083478 [ Win ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_bgra8unorm.html [ Failure ]
-crbug.com/1083478 [ Mac ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_bgra8unorm.html [ Failure ]
+crbug.com/1083478 [ Win ] wpt_internal/webgpu/web_platform/reftests/canvas_composite_alpha_bgra8unorm_opaque.html [ Failure ]
+crbug.com/1083478 [ Mac ] wpt_internal/webgpu/web_platform/reftests/canvas_composite_alpha_bgra8unorm_opaque.html [ Failure ]
+crbug.com/1083478 [ Win ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_bgra8unorm_copy.html [ Failure ]
+crbug.com/1083478 [ Mac ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_bgra8unorm_copy.html [ Failure ]
+crbug.com/1083478 [ Win ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_bgra8unorm_draw.html [ Failure ]
+crbug.com/1083478 [ Mac ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_bgra8unorm_draw.html [ Failure ]
+crbug.com/1083478 [ Win ] wpt_internal/webgpu/web_platform/reftests/canvas_composite_alpha_bgra8unorm_premultiplied.html [ Failure ]
+crbug.com/1083478 [ Mac ] wpt_internal/webgpu/web_platform/reftests/canvas_composite_alpha_bgra8unorm_premultiplied.html [ Failure ]
 
 # Spec was changed so BGLs should eagerly apply per-pipeline limits. Tests need fixing, then Dawn
 # needs to pass them. https://github.com/gpuweb/cts/issues/230
@@ -94,6 +101,11 @@ crbug.com/dawn/1047 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,
 crbug.com/dawn/1047 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rg8snorm";* [ Failure ]
 crbug.com/dawn/1047 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rgba8snorm";* [ Failure ]
 
+# Incorrect results, only on Mac Intel.
+crbug.com/dawn/1083 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:copy_depth_stencil:format="depth32float";* [ Failure ]
+crbug.com/dawn/1083 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:copy_depth_stencil:format="depth24plus";* [ Failure ]
+crbug.com/dawn/1083 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:copy_depth_stencil:format="depth24plus-stencil8";* [ Failure ]
+
 # Limits that should be updated.
 # maxStorageTexturePerShaderStage 8 -> 4
 crbug.com/dawn/796 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:max_resources_per_stage,in_pipeline_layout:* [ Failure ]
@@ -112,6 +124,9 @@ wpt_internal/webgpu/cts.html?q=webgpu:idl,constants,flags:TextureUsage,count:* [
 ###
 ### Platform-independent failures
 ###
+
+# Intentionally hits a CHECK.
+crbug.com/1243842 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_ArrayBuffer:postMessage:transfer=true;* [ Crash ]
 
 # Our automated build does not support mp4 currently (fails on Linux, Mac, and Win Intel)
 wpt_internal/webgpu/cts.html?q=webgpu:web_platform,external_texture,video:importExternalTexture,sample:videoSource="red-green.mp4" [ Failure ]
@@ -157,11 +172,50 @@ crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,encoding
 crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,encoding,cmds,buffer_texture_copies:depth_stencil_format,copy_usage_and_aspect:format="depth16unorm";* [ Failure ]
 crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,encoding,cmds,buffer_texture_copies:depth_stencil_format,copy_buffer_offset:format="depth16unorm";* [ Failure ]
 crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,encoding,cmds,buffer_texture_copies:depth_stencil_format,copy_buffer_offset:format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:bound_on_bytes_per_row:method="CopyB2T";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:bound_on_bytes_per_row:method="CopyB2T";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:bound_on_bytes_per_row:method="CopyT2B";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:bound_on_bytes_per_row:method="CopyT2B";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:bound_on_bytes_per_row:method="WriteTexture";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:bound_on_bytes_per_row:method="WriteTexture";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:offset_alignment:method="CopyB2T";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:offset_alignment:method="CopyB2T";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:offset_alignment:method="CopyT2B";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:offset_alignment:method="CopyT2B";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:offset_alignment:method="WriteTexture";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:offset_alignment:method="WriteTexture";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:required_bytes_in_copy:method="CopyB2T";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:required_bytes_in_copy:method="CopyB2T";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:required_bytes_in_copy:method="CopyT2B";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:required_bytes_in_copy:method="CopyT2B";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:required_bytes_in_copy:method="WriteTexture";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:required_bytes_in_copy:method="WriteTexture";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:rows_per_image_alignment:method="CopyB2T";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:rows_per_image_alignment:method="CopyB2T";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:rows_per_image_alignment:method="CopyT2B";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:rows_per_image_alignment:method="CopyT2B";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:rows_per_image_alignment:method="WriteTexture";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,layout_related:rows_per_image_alignment:method="WriteTexture";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="WriteTexture";depthOrArrayLayers=1;dimension="2d";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="WriteTexture";depthOrArrayLayers=1;dimension="2d";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="WriteTexture";depthOrArrayLayers=3;dimension="2d";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="WriteTexture";depthOrArrayLayers=3;dimension="2d";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="CopyB2T";depthOrArrayLayers=1;dimension="2d";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="CopyB2T";depthOrArrayLayers=1;dimension="2d";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="CopyB2T";depthOrArrayLayers=3;dimension="2d";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="CopyB2T";depthOrArrayLayers=3;dimension="2d";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="CopyT2B";depthOrArrayLayers=1;dimension="2d";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="CopyT2B";depthOrArrayLayers=1;dimension="2d";format="stencil8";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="CopyT2B";depthOrArrayLayers=3;dimension="2d";format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="CopyT2B";depthOrArrayLayers=3;dimension="2d";format="stencil8";* [ Failure ]
+
 crbug.com/dawn/690 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,image_copy:offsets_and_sizes_copy_depth_stencil:format="stencil8";* [ Failure ]
 crbug.com/dawn/690 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,image_copy:offsets_and_sizes_copy_depth_stencil:format="depth16unorm";* [ Failure ]
 crbug.com/dawn/690 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,image_copy:rowsPerImage_and_bytesPerRow_depth_stencil:format="stencil8";* [ Failure ]
 crbug.com/dawn/690 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,image_copy:rowsPerImage_and_bytesPerRow_depth_stencil:format="depth16unorm";* [ Failure ]
 crbug.com/dawn/690 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:copy_stencil_aspect:format="stencil8";* [ Failure ]
+crbug.com/dawn/690 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:copy_depth_stencil:format="depth16unorm";* [ Failure ]
+crbug.com/dawn/690 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:copy_depth_stencil:format="stencil8";* [ Failure ]
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createTexture:zero_size:dimension="1d";* [ Failure ]
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createTexture:mipLevelCount,bound_check:dimension="1d";* [ Failure ]
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createTexture:mipLevelCount,format:format="depth16unorm";* [ Failure ]
@@ -211,7 +265,19 @@ wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:format:viewForma
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:mip_levels:textureDimension="1d";* [ Failure ]
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:mip_levels:viewDimension="1d";* [ Failure ]
 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,image_copy:rowsPerImage_and_bytesPerRow_copy_with_stencil_aspect:stencilFormat="stencil8";* [ Failure ]
-wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,image_copy:offsets_and_sizes_copy_with_stencil_aspect:stencilFormat="stencil8";* [ Failure ]
+[ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,image_copy:offsets_and_sizes_copy_with_stencil_aspect:stencilFormat="stencil8";* [ Failure ]
+
+# Failures because readonly storage textures have been removed. https://crbug.com/dawn/1025
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:binding_must_contain_resource_defined_in_layout:entry={"storageTexture":{"access":"read-only","format":"rgba8unorm"}};* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:texture_binding_must_have_correct_usage:entry={"storageTexture":{"access":"read-only","format":"rgba8unorm"}};* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:texture,resource_state:entry={"storageTexture":{"access":"read-only","format":"rgba8unorm"}};* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:visibility:entry={"storageTexture":{"access":"read-only","format":"rgba8unorm"}};* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:bindings_in_bundle:type0="readonly-storage-texture";* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:bindings_in_bundle:type1="readonly-storage-texture";* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:replaced_binding:entry={"storageTexture":{"access":"read-only","format":"rgba8unorm"}};* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_color:type0="readonly-storage-texture";* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_color:type1="readonly-storage-texture";* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:unused_bindings_in_pipeline:* [ Failure ]
 
 # Dawn treats 0 and undefined as the same
 crbug.com/dawn/1026 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:mip_levels:mipLevelCount=0;* [ Failure ]
@@ -235,9 +301,6 @@ crbug.com/dawn/812 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_
 crbug.com/dawn/812 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="2d";readMethod="StencilTest";format="depth24plus-stencil8";* [ Failure Crash Timeout ]
 crbug.com/dawn/812 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_aspect:format="depth24plus-stencil8";aspect1="depth-only";type1="render-target";* [ Failure ]
 crbug.com/dawn/812 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_aspect:format="depth24plus-stencil8";aspect1="stencil-only";type1="render-target";* [ Failure ]
-
-# Failing new updated tests, about to remove shortly after
-crbug.com/dawn/811 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createRenderPipeline:pipeline_output_targets,blend:* [ Failure ]
 
 ###
 ### Mac (Metal) specific
@@ -295,6 +358,12 @@ crbug.com/dawn/1064 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,operatio
 
 # Null-deref on Intel; failure on NVIDIA.
 crbug.com/1237592 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:web_platform,external_texture,video:importExternalTexture,* [ Failure Crash ]
+
+# Flaky "Check failed: bytes_in_use_ == 0u"
+crbug.com/1005284 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,texture,destroy:twice:* [ Crash ]
+
+# Fails once then passes once, on ~every build, on Linux/NVIDIA.
+crbug.com/dawn/1095 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertex_buffer_access:* [ Failure ]
 
 ###
 ### Windows (D3D12) specific

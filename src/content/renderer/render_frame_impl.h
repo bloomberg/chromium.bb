@@ -76,6 +76,7 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/unique_name/unique_name_helper.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -360,7 +361,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void PluginDidStartLoading() override;
   void PluginDidStopLoading() override;
 #endif
-  bool IsFTPDirectoryListing() override;
   void SetSelectedText(const std::u16string& selection_text,
                        size_t offset,
                        const gfx::Range& range) override;
@@ -377,6 +377,8 @@ class CONTENT_EXPORT RenderFrameImpl
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       blink::TaskType task_type) override;
   int GetEnabledBindings() override;
+  void EnableMojoJsBindingsWithBroker(
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>) override;
   void SetAccessibilityModeForTest(ui::AXMode new_mode) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   const RenderFrameMediaPlaybackOptions& GetRenderFrameMediaPlaybackOptions()
@@ -513,7 +515,9 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::PortalToken& portal_token,
       const blink::WebElement& portal_element) override;
   blink::WebRemoteFrame* CreateFencedFrame(
-      const blink::WebElement& fenced_frame_element) override;
+      const blink::WebElement& fenced_frame_element,
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::FencedFrameOwnerHostInterfaceBase> receiver) override;
   blink::WebFrame* FindFrame(const blink::WebString& name) override;
   void WillDetach() override;
   void FrameDetached() override;
@@ -545,7 +549,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidCreateDocumentElement() override;
   void RunScriptsAtDocumentElementAvailable() override;
   void DidReceiveTitle(const blink::WebString& title) override;
-  void DidFinishDocumentLoad() override;
+  void DidDispatchDOMContentLoadedEvent() override;
   void RunScriptsAtDocumentReady() override;
   void RunScriptsAtDocumentIdle() override;
   void DidHandleOnloadEvents() override;
@@ -897,7 +901,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // that means we have got specified title. Because in most of webpages,
   // title tags will follow meta tags. In here we try to get encoding of
   // page if it has been specified in meta tag.
-  // c) function:DidFinishDocumentLoadForFrame. When this function is
+  // c) function:DidDispatchDOMContentLoadedEvent. When this function is
   // called, that means we have got whole html page. In here we should
   // finally get right encoding of page.
   void UpdateEncoding(blink::WebFrame* frame, const std::string& encoding_name);
@@ -1213,6 +1217,11 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<BlinkInterfaceRegistryImpl> blink_interface_registry_;
 
   blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
+
+  // If valid, the next ExecutionContext created will enable MojoJS bindings and
+  // use this broker to handle Mojo.bindInterface calls.
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      mojo_js_interface_broker_;
 
   // Valid during the entire life time of the RenderFrame.
   std::unique_ptr<RenderAccessibilityManager> render_accessibility_manager_;

@@ -83,6 +83,7 @@ class GitApi(recipe_api.RecipeApi):
 
       result = {}
       for line in step_result.stdout.splitlines():
+        line = line.decode('utf-8')
         name, value = line.split(':', 1)
         result[name] = int(value.strip())
 
@@ -214,7 +215,7 @@ class GitApi(recipe_api.RecipeApi):
               stdout=self.m.raw_io.output(),
               step_test_data=lambda:
                   self.m.raw_io.test_api.stream_output('mirror_dir'))
-          mirror_dir = dir_cmd.stdout.strip()
+          mirror_dir = dir_cmd.stdout.strip().decode('utf-8')
           self('remote', 'set-url', 'origin', mirror_dir,
                can_fail_build=can_fail_build)
 
@@ -297,7 +298,7 @@ class GitApi(recipe_api.RecipeApi):
                               self.m.raw_io.test_api.stream_output('deadbeef'))
 
       if rev_parse_step.presentation.status == 'SUCCESS':
-        sha = rev_parse_step.stdout.strip()
+        sha = rev_parse_step.stdout.strip().decode('utf-8')
         retVal = sha
         rev_parse_step.presentation.step_text = "<br/>checked out %r<br/>" % sha
         if set_got_revision:
@@ -370,7 +371,7 @@ class GitApi(recipe_api.RecipeApi):
     value = result.stdout
     if value:
       value = value.strip()
-      result.presentation.step_text = value
+      result.presentation.step_text = value.decode('utf-8')
     return value
 
   def get_remote_url(self, remote_name=None, **kwargs):
@@ -398,7 +399,12 @@ class GitApi(recipe_api.RecipeApi):
       rev_list_args = ['--all']
     self('bundle', 'create', bundle_path, *rev_list_args, **kwargs)
 
-  def new_branch(self, branch, name=None, upstream=None, **kwargs):
+  def new_branch(self,
+                 branch,
+                 name=None,
+                 upstream=None,
+                 upstream_current=False,
+                 **kwargs):
     """Runs git new-branch on a Git repository, to be used before git cl
     upload.
 
@@ -406,14 +412,19 @@ class GitApi(recipe_api.RecipeApi):
       * branch (str): new branch name, which must not yet exist.
       * name (str): step name.
       * upstream (str): to origin/main.
+      * upstream_current (bool): whether to use '--upstream_current'.
       * kwargs: Forwarded to '__call__'.
     """
+    if upstream and upstream_current:
+      raise ValueError('Can not define both upstream and upstream_current')
     env = self.m.context.env
     env['PATH'] = self.m.path.pathsep.join([
         str(self.repo_resource()), '%(PATH)s'])
     args = ['new-branch', branch]
     if upstream:
       args.extend(['--upstream', upstream])
+    if upstream_current:
+      args.append('--upstream_current')
     if not name:
       name = 'git new-branch %s' % branch
     with self.m.context(env=env):

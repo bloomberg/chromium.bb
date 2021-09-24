@@ -14,14 +14,18 @@
 #include "content/browser/conversions/sent_report_info.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_client.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace content {
 
 ConversionReporterImpl::ConversionReporterImpl(
     StoragePartitionImpl* storage_partition,
-    const base::Clock* clock)
+    const base::Clock* clock,
+    base::RepeatingCallback<void(SentReportInfo)> callback)
     : clock_(clock),
+      callback_(std::move(callback)),
       partition_(storage_partition),
       network_sender_(
           std::make_unique<ConversionNetworkSenderImpl>(storage_partition)) {
@@ -29,11 +33,13 @@ ConversionReporterImpl::ConversionReporterImpl(
   DCHECK(partition_);
 }
 
-ConversionReporterImpl::~ConversionReporterImpl() = default;
+ConversionReporterImpl::~ConversionReporterImpl() {
+  if (network_connection_tracker_)
+    network_connection_tracker_->RemoveNetworkConnectionObserver(this);
+}
 
 void ConversionReporterImpl::AddReportsToQueue(
-    std::vector<ConversionReport> reports,
-    base::RepeatingCallback<void(SentReportInfo)> report_sent_callback) {
+    std::vector<ConversionReport> reports) {
   DCHECK(!reports.empty());
 
   // Shuffle new reports to provide plausible deniability on the ordering of
@@ -44,10 +50,9 @@ void ConversionReporterImpl::AddReportsToQueue(
   base::RandomShuffle(reports.begin(), reports.end());
 
   for (ConversionReport& report : reports) {
+    DCHECK(report.conversion_id.has_value());
     // If the given report is already being processed, ignore it.
-    bool inserted = conversion_report_callbacks_
-                        .emplace(*report.conversion_id, report_sent_callback)
-                        .second;
+    bool inserted = pending_reports_.emplace(*report.conversion_id).second;
     if (inserted)
       report_queue_.push(std::move(report));
   }
@@ -59,36 +64,57 @@ void ConversionReporterImpl::SetNetworkSenderForTesting(
   network_sender_ = std::move(network_sender);
 }
 
+void ConversionReporterImpl::SetNetworkConnectionTracker(
+    network::NetworkConnectionTracker* network_connection_tracker) {
+  DCHECK(network_connection_tracker);
+  DCHECK(!network_connection_tracker_);
+
+  network_connection_tracker_ = network_connection_tracker;
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
+}
+
+void ConversionReporterImpl::OnConnectionChanged(
+    network::mojom::ConnectionType connection_type) {
+  offline_ = connection_type == network::mojom::ConnectionType::CONNECTION_NONE;
+}
+
 void ConversionReporterImpl::SendNextReport() {
   DCHECK(!report_queue_.empty());
 
-  // Send the next report and remove it from the queue. Bind the conversion id
-  // to the sent callback so we know which conversion report has finished
-  // sending.
-  const ConversionReport& report = report_queue_.top();
+  // Send the next report and remove it from the queue.
+  ConversionReport report = report_queue_.top();
   DCHECK(report.conversion_id.has_value());
+  report_queue_.pop();
   if (GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
           partition_->browser_context(),
           ContentBrowserClient::ConversionMeasurementOperation::kReport,
           &report.impression.impression_origin(),
           &report.impression.conversion_origin(),
           &report.impression.reporting_origin())) {
-    network_sender_->SendReport(
-        report, base::BindOnce(&ConversionReporterImpl::OnReportSent,
-                               base::Unretained(this)));
+    if (!network_connection_tracker_)
+      SetNetworkConnectionTracker(content::GetNetworkConnectionTracker());
+
+    // If there's no network connection, drop the report and tell the manager to
+    // retry it later.
+    if (offline_) {
+      OnReportSent(SentReportInfo(std::move(report),
+                                  SentReportInfo::Status::kShouldRetry,
+                                  /*http_response_code=*/0));
+    } else {
+      network_sender_->SendReport(
+          std::move(report),
+          base::BindOnce(&ConversionReporterImpl::OnReportSent,
+                         base::Unretained(this)));
+    }
   } else {
     // If measurement is disallowed, just drop the report on the floor. We need
     // to make sure we forward that the report was "sent" to ensure it is
     // deleted from storage, etc. This simulates sending the report through a
     // null channel.
-    OnReportSent(SentReportInfo(*report.conversion_id,
-                                report.original_report_time,
-                                /*report_url=*/GURL(),
-                                /*report_body=*/"",
-                                /*http_response_code=*/0,
-                                /*should_retry*/ false));
+    OnReportSent(SentReportInfo(std::move(report),
+                                SentReportInfo::Status::kDropped,
+                                /*http_response_code=*/0));
   }
-  report_queue_.pop();
   MaybeScheduleNextReport();
 }
 
@@ -113,10 +139,10 @@ void ConversionReporterImpl::MaybeScheduleNextReport() {
 }
 
 void ConversionReporterImpl::OnReportSent(SentReportInfo info) {
-  auto it = conversion_report_callbacks_.find(info.conversion_id);
-  DCHECK(it != conversion_report_callbacks_.end());
-  std::move(it->second).Run(std::move(info));
-  conversion_report_callbacks_.erase(it);
+  DCHECK(info.report.conversion_id.has_value());
+  size_t num_removed = pending_reports_.erase(*info.report.conversion_id);
+  DCHECK_GT(num_removed, 0u);
+  callback_.Run(std::move(info));
 }
 
 bool ConversionReporterImpl::ReportComparator::operator()(

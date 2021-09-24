@@ -753,7 +753,6 @@ TEST_F(LayoutObjectTest, VisualRect) {
   class MockLayoutObject : public LayoutObject {
    public:
     MockLayoutObject() : LayoutObject(nullptr) {}
-    ~MockLayoutObject() override { SetBeingDestroyedForTesting(); }
     MOCK_CONST_METHOD0(VisualRectRespectsVisibility, bool());
 
    private:
@@ -767,19 +766,20 @@ TEST_F(LayoutObjectTest, VisualRect) {
     }
   };
 
-  MockLayoutObject mock_object;
+  MockLayoutObject* mock_object = MakeGarbageCollected<MockLayoutObject>();
   auto style = GetDocument().GetStyleResolver().CreateComputedStyle();
-  mock_object.SetStyle(style.get());
-  EXPECT_EQ(PhysicalRect(10, 10, 20, 20), mock_object.LocalVisualRect());
-  EXPECT_EQ(PhysicalRect(10, 10, 20, 20), mock_object.LocalVisualRect());
+  mock_object->SetStyle(style.get());
+  EXPECT_EQ(PhysicalRect(10, 10, 20, 20), mock_object->LocalVisualRect());
+  EXPECT_EQ(PhysicalRect(10, 10, 20, 20), mock_object->LocalVisualRect());
 
   style->SetVisibility(EVisibility::kHidden);
-  EXPECT_CALL(mock_object, VisualRectRespectsVisibility())
+  EXPECT_CALL(*mock_object, VisualRectRespectsVisibility())
       .WillOnce(Return(true));
-  EXPECT_TRUE(mock_object.LocalVisualRect().IsEmpty());
-  EXPECT_CALL(mock_object, VisualRectRespectsVisibility())
+  EXPECT_TRUE(mock_object->LocalVisualRect().IsEmpty());
+  EXPECT_CALL(*mock_object, VisualRectRespectsVisibility())
       .WillOnce(Return(false));
-  EXPECT_EQ(PhysicalRect(10, 10, 20, 20), mock_object.LocalVisualRect());
+  EXPECT_EQ(PhysicalRect(10, 10, 20, 20), mock_object->LocalVisualRect());
+  mock_object->SetDestroyedForTesting();
 }
 
 TEST_F(LayoutObjectTest, DisplayContentsInlineWrapper) {
@@ -1615,6 +1615,38 @@ TEST_F(LayoutObjectTest,
 
   EXPECT_EQ(PhysicalRect(0, 1800, 100, 100),
             target->LocalToAncestorRect(rect, nullptr, 0));
+}
+
+// crbug.com/1246619
+TEST_F(LayoutObjectTest, SetNeedsCollectInlinesForSvgText) {
+  SetBodyInnerHTML(R"HTML(
+    <div>
+    <svg xmlns="http://www.w3.org/2000/svg" id="ancestor">
+    <text id="text">Internet</text>
+    </svg></div>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* text = GetLayoutObjectByElementId("text");
+  if (text->IsNGSVGText()) {
+    text->SetNeedsCollectInlines();
+    EXPECT_TRUE(GetLayoutObjectByElementId("ancestor")->NeedsCollectInlines());
+  }
+}
+
+// crbug.com/1247686
+TEST_F(LayoutObjectTest, SetNeedsCollectInlinesForSvgInline) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <div>
+    <svg xmlns="http://www.w3.org/2000/svg" id="ancestor">
+    <text id="text">Inter<a id="anchor">net</a></text>
+    </svg></div>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* anchor = GetLayoutObjectByElementId("anchor");
+  anchor->SetNeedsCollectInlines();
+  EXPECT_TRUE(GetLayoutObjectByElementId("text")->NeedsCollectInlines());
 }
 
 static const char* const kTransformsWith3D[] = {"transform: rotateX(20deg)",

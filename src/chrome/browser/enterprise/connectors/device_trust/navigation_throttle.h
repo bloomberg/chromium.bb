@@ -33,6 +33,8 @@ class DeviceTrustService;
 // back to the origin via the X-Verified-Access-Challenge-Response HTTP header.
 class DeviceTrustNavigationThrottle : public content::NavigationThrottle {
  public:
+  // Create a navigation throttle for the given navigation if device trust is
+  // enabled.  Returns nullptr if no throttling should be done.
   static std::unique_ptr<DeviceTrustNavigationThrottle> MaybeCreateThrottleFor(
       content::NavigationHandle* navigation_handle);
 
@@ -40,6 +42,9 @@ class DeviceTrustNavigationThrottle : public content::NavigationThrottle {
 
   explicit DeviceTrustNavigationThrottle(
       content::NavigationHandle* navigation_handle);
+  DeviceTrustNavigationThrottle(DeviceTrustService* device_trust_service,
+                                content::NavigationHandle* navigation_handle);
+
   DeviceTrustNavigationThrottle(const DeviceTrustNavigationThrottle&) = delete;
   DeviceTrustNavigationThrottle& operator=(
       const DeviceTrustNavigationThrottle&) = delete;
@@ -53,12 +58,12 @@ class DeviceTrustNavigationThrottle : public content::NavigationThrottle {
  private:
   ThrottleCheckResult GetUrlThrottleResult(const GURL& url);
 
-  void OnTrustedUrlPatternsChanged(const base::ListValue*);
+  void OnTrustedUrlPatternsChanged(const base::ListValue& origins);
 
   content::NavigationThrottle::ThrottleCheckResult AddHeadersIfNeeded();
 
   // Not owned.
-  DeviceTrustService* device_trust_service_;
+  DeviceTrustService* const device_trust_service_;
 
   // Set `challege_response` into the header
   // `X-Verified-Access-Challenge-Response` of the redirection request to the

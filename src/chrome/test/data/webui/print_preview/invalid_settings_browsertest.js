@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterfaceEventType, CloudPrintInterfaceImpl, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, LocalDestinationInfo, makeRecentDestination, MeasurementSystemUnitType, NativeInitialSettings, NativeLayer, NativeLayerImpl, PluginProxyImpl, PrintPreviewAppElement, ScalingType, State, whenReady} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceEventType, CloudPrintInterfaceImpl, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, LocalDestinationInfo, makeRecentDestination, MeasurementSystemUnitType, NativeInitialSettings, NativeLayer, NativeLayerImpl, PluginProxyImpl, PrintPreviewAppElement, PrintPreviewDestinationSettingsElement, PrintPreviewLayoutSettingsElement, PrintPreviewNumberSettingsSectionElement, PrintPreviewPreviewAreaElement, PrintPreviewSidebarElement, ScalingType, State, whenReady} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isWindows} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {eventToPromise, waitBeforeNextRender} from '../test_util.m.js';
+import {eventToPromise, waitBeforeNextRender} from '../test_util.js';
 
 import {CloudPrintInterfaceStub} from './cloud_print_interface_stub.js';
 // <if expr="chromeos or lacros">
@@ -137,8 +137,10 @@ suite(invalid_settings_browsertest.suiteName, function() {
             page.shadowRoot.querySelector('#previewArea'));
 
         return nativeLayer.whenCalled('getInitialSettings').then(function() {
-          const overlayEl = previewArea.$$('.preview-area-overlay-layer');
-          const messageEl = previewArea.$$('.preview-area-message');
+          const overlayEl = previewArea.shadowRoot.querySelector(
+              '.preview-area-overlay-layer');
+          const messageEl =
+              previewArea.shadowRoot.querySelector('.preview-area-message');
           assertEquals(State.FATAL_ERROR, page.state);
 
           // Make sure the overlay is visible.
@@ -179,18 +181,22 @@ suite(invalid_settings_browsertest.suiteName, function() {
         // Get references to relevant elements.
         const previewAreaEl = /** @type {!PrintPreviewPreviewAreaElement} */ (
             page.shadowRoot.querySelector('#previewArea'));
-        const overlay = previewAreaEl.$$('.preview-area-overlay-layer');
-        const messageEl = previewAreaEl.$$('.preview-area-message');
+        const overlay = previewAreaEl.shadowRoot.querySelector(
+            '.preview-area-overlay-layer');
+        const messageEl =
+            previewAreaEl.shadowRoot.querySelector('.preview-area-message');
         const sidebar = /** @type {!PrintPreviewSidebarElement} */ (
             page.shadowRoot.querySelector('print-preview-sidebar'));
         let printButton = null;
         const destinationSettings =
             /** @type {!PrintPreviewDestinationSettingsElement} */ (
-                sidebar.$$('print-preview-destination-settings'));
+                sidebar.shadowRoot.querySelector(
+                    'print-preview-destination-settings'));
 
         return waitBeforeNextRender(page)
             .then(() => {
-              const parentElement = sidebar.$$('print-preview-button-strip');
+              const parentElement = sidebar.shadowRoot.querySelector(
+                  'print-preview-button-strip');
               printButton =
                   parentElement.shadowRoot.querySelector('.action-button');
 
@@ -220,8 +226,9 @@ suite(invalid_settings_browsertest.suiteName, function() {
 
               // Select should still be enabled so that the user can select a
               // new printer.
-              assertFalse(
-                  destinationSettings.$$('#destinationSelect').disabled);
+              assertFalse(destinationSettings.shadowRoot
+                              .querySelector('#destinationSelect')
+                              .disabled);
 
               // Reset
               nativeLayer.reset();
@@ -296,25 +303,32 @@ suite(invalid_settings_browsertest.suiteName, function() {
         // Get references to relevant elements.
         const previewAreaEl = /** @type {!PrintPreviewPreviewAreaElement} */ (
             page.shadowRoot.querySelector('#previewArea'));
-        const overlayEl = previewAreaEl.$$('.preview-area-overlay-layer');
-        const messageEl = previewAreaEl.$$('.preview-area-message');
+        const overlayEl = previewAreaEl.shadowRoot.querySelector(
+            '.preview-area-overlay-layer');
+        const messageEl =
+            previewAreaEl.shadowRoot.querySelector('.preview-area-message');
         const sidebar = /** @type {!PrintPreviewSidebarElement} */ (
             page.shadowRoot.querySelector('print-preview-sidebar'));
         let printButton = null;
         const destinationSettings =
             /** @type {!PrintPreviewDestinationSettingsElement} */ (
-                sidebar.$$('print-preview-destination-settings'));
+                sidebar.shadowRoot.querySelector(
+                    'print-preview-destination-settings'));
         const scalingSettings =
             /** @type {!PrintPreviewNumberSettingsSectionElement} */ (
-                sidebar.$$('print-preview-scaling-settings')
-                    .$$('print-preview-number-settings-section'));
+                sidebar.shadowRoot
+                    .querySelector('print-preview-scaling-settings')
+                    .shadowRoot.querySelector(
+                        'print-preview-number-settings-section'));
         const layoutSettings =
             /** @type {!PrintPreviewLayoutSettingsElement} */ (
-                sidebar.$$('print-preview-layout-settings'));
+                sidebar.shadowRoot.querySelector(
+                    'print-preview-layout-settings'));
 
         return waitBeforeNextRender(page)
             .then(() => {
-              const parentElement = sidebar.$$('print-preview-button-strip');
+              const parentElement = sidebar.shadowRoot.querySelector(
+                  'print-preview-button-strip');
               printButton =
                   parentElement.shadowRoot.querySelector('.action-button');
               return Promise.all([
@@ -349,13 +363,16 @@ suite(invalid_settings_browsertest.suiteName, function() {
               // Verify the state is invalid and that some settings sections are
               // also disabled, so there is no way to regenerate the preview.
               assertEquals(State.ERROR, page.state);
-              assertTrue(layoutSettings.$$('select').disabled);
-              assertTrue(scalingSettings.$$('cr-input').disabled);
+              assertTrue(
+                  layoutSettings.shadowRoot.querySelector('select').disabled);
+              assertTrue(scalingSettings.shadowRoot.querySelector('cr-input')
+                             .disabled);
 
               // The destination select dropdown should be enabled, so that the
               // user can select a new printer.
-              assertFalse(
-                  destinationSettings.$$('#destinationSelect').disabled);
+              assertFalse(destinationSettings.shadowRoot
+                              .querySelector('#destinationSelect')
+                              .disabled);
 
               // Reset
               nativeLayer.reset();
@@ -372,12 +389,15 @@ suite(invalid_settings_browsertest.suiteName, function() {
               assertEquals(State.READY, page.state);
 
               // Settings sections are now active.
-              assertFalse(layoutSettings.$$('select').disabled);
-              assertFalse(scalingSettings.$$('cr-input').disabled);
+              assertFalse(
+                  layoutSettings.shadowRoot.querySelector('select').disabled);
+              assertFalse(scalingSettings.shadowRoot.querySelector('cr-input')
+                              .disabled);
 
               // The destination select dropdown should still be enabled.
-              assertFalse(
-                  destinationSettings.$$('#destinationSelect').disabled);
+              assertFalse(destinationSettings.shadowRoot
+                              .querySelector('#destinationSelect')
+                              .disabled);
 
               // Message text should have changed and overlay should be
               // invisible.
@@ -403,18 +423,22 @@ suite(invalid_settings_browsertest.suiteName, function() {
         // Get references to relevant elements.
         const previewAreaEl = /** @type {!PrintPreviewPreviewAreaElement} */ (
             page.shadowRoot.querySelector('#previewArea'));
-        const overlayEl = previewAreaEl.$$('.preview-area-overlay-layer');
-        const messageEl = previewAreaEl.$$('.preview-area-message');
+        const overlayEl = previewAreaEl.shadowRoot.querySelector(
+            '.preview-area-overlay-layer');
+        const messageEl =
+            previewAreaEl.shadowRoot.querySelector('.preview-area-message');
         const sidebar = /** @type {!PrintPreviewSidebarElement} */ (
             page.shadowRoot.querySelector('print-preview-sidebar'));
         let printButton = null;
         const destinationSettings =
             /** @type {!PrintPreviewDestinationSettingsElement} */ (
-                sidebar.$$('print-preview-destination-settings'));
+                sidebar.shadowRoot.querySelector(
+                    'print-preview-destination-settings'));
 
         return waitBeforeNextRender(page)
             .then(() => {
-              const parentElement = sidebar.$$('print-preview-button-strip');
+              const parentElement = sidebar.shadowRoot.querySelector(
+                  'print-preview-button-strip');
               printButton =
                   parentElement.shadowRoot.querySelector('.action-button');
               return Promise.all([

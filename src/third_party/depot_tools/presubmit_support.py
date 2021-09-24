@@ -565,46 +565,6 @@ class InputApi(object):
       r'.+\.patch$',
   )
 
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @property
-  def DEFAULT_WHITE_LIST(self):
-    return self.DEFAULT_FILES_TO_CHECK
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @DEFAULT_WHITE_LIST.setter
-  def DEFAULT_WHITE_LIST(self, value):
-    self.DEFAULT_FILES_TO_CHECK = value
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @property
-  def DEFAULT_ALLOW_LIST(self):
-    return self.DEFAULT_FILES_TO_CHECK
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @DEFAULT_ALLOW_LIST.setter
-  def DEFAULT_ALLOW_LIST(self, value):
-    self.DEFAULT_FILES_TO_CHECK = value
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @property
-  def DEFAULT_BLACK_LIST(self):
-    return self.DEFAULT_FILES_TO_SKIP
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @DEFAULT_BLACK_LIST.setter
-  def DEFAULT_BLACK_LIST(self, value):
-    self.DEFAULT_FILES_TO_SKIP = value
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @property
-  def DEFAULT_BLOCK_LIST(self):
-    return self.DEFAULT_FILES_TO_SKIP
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @DEFAULT_BLOCK_LIST.setter
-  def DEFAULT_BLOCK_LIST(self, value):
-    self.DEFAULT_FILES_TO_SKIP = value
-
   def __init__(self, change, presubmit_path, is_committing,
       verbose, gerrit_obj, dry_run=None, thread_pool=None, parallel=False):
     """Builds an InputApi object.

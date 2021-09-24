@@ -569,7 +569,12 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   void InitViewForPopup(RenderWidgetHostViewAura* parent_view,
                         const gfx::Rect& bounds_in_screen) {
     view_->SetWidgetType(WidgetType::kPopup);
-    view_->InitAsPopup(parent_view, bounds_in_screen);
+    // Let anchor have same origin as bounds, but its width and height should be
+    // 1,1 as RenderWidgetHostViewAura sets OwnedWindowAnchorPosition as
+    // kBottomLeft.
+    gfx::Rect anchor = bounds_in_screen;
+    anchor.set_size({1, 1});
+    view_->InitAsPopup(parent_view, bounds_in_screen, anchor);
 
     widget_host_->RendererWidgetCreated(/*for_frame_widget=*/false);
     // The RenderWidgetHostImpl sets up additional connections over mojo to the
@@ -5825,9 +5830,9 @@ TEST_F(RenderWidgetHostViewAuraWithViewHarnessTest,
   // getting called. This means that the request worked correctly.
   ContextMenuParams context_menu_params;
   context_menu_params.source_type = ui::MENU_SOURCE_MOUSE;
-  contents()->ShowContextMenu(contents()->GetRenderViewHost()->GetMainFrame(),
-                              mojo::NullAssociatedRemote(),
-                              context_menu_params);
+  contents()->ShowContextMenu(
+      contents()->GetRenderViewHost()->GetMainRenderFrameHost(),
+      mojo::NullAssociatedRemote(), context_menu_params);
   EXPECT_TRUE(delegate->context_menu_request_received());
   EXPECT_EQ(delegate->context_menu_source_type(), ui::MENU_SOURCE_MOUSE);
 
@@ -5837,9 +5842,9 @@ TEST_F(RenderWidgetHostViewAuraWithViewHarnessTest,
   // correctly.
   delegate->ClearState();
   context_menu_params.source_type = ui::MENU_SOURCE_TOUCH;
-  contents()->ShowContextMenu(contents()->GetRenderViewHost()->GetMainFrame(),
-                              mojo::NullAssociatedRemote(),
-                              context_menu_params);
+  contents()->ShowContextMenu(
+      contents()->GetRenderViewHost()->GetMainRenderFrameHost(),
+      mojo::NullAssociatedRemote(), context_menu_params);
   EXPECT_TRUE(delegate->context_menu_request_received());
 
   // A context menu request with the MENU_SOURCE_LONG_TAP source type should
@@ -5848,9 +5853,9 @@ TEST_F(RenderWidgetHostViewAuraWithViewHarnessTest,
   // correctly.
   delegate->ClearState();
   context_menu_params.source_type = ui::MENU_SOURCE_LONG_TAP;
-  contents()->ShowContextMenu(contents()->GetRenderViewHost()->GetMainFrame(),
-                              mojo::NullAssociatedRemote(),
-                              context_menu_params);
+  contents()->ShowContextMenu(
+      contents()->GetRenderViewHost()->GetMainRenderFrameHost(),
+      mojo::NullAssociatedRemote(), context_menu_params);
   EXPECT_TRUE(delegate->context_menu_request_received());
 
   // A context menu request with the MENU_SOURCE_LONG_PRESS source type should
@@ -5859,9 +5864,9 @@ TEST_F(RenderWidgetHostViewAuraWithViewHarnessTest,
   //  worked correctly.
   delegate->ClearState();
   context_menu_params.source_type = ui::MENU_SOURCE_LONG_PRESS;
-  contents()->ShowContextMenu(contents()->GetRenderViewHost()->GetMainFrame(),
-                              mojo::NullAssociatedRemote(),
-                              context_menu_params);
+  contents()->ShowContextMenu(
+      contents()->GetRenderViewHost()->GetMainRenderFrameHost(),
+      mojo::NullAssociatedRemote(), context_menu_params);
   EXPECT_TRUE(delegate->context_menu_request_received());
 
   RenderViewHostFactory::set_is_real_render_view_host(false);
@@ -6339,7 +6344,6 @@ TEST_F(InputMethodStateAuraTest, GetCompositionTextRange) {
     state.type = ui::TEXT_INPUT_TYPE_TEXT;
     state.composition = expected_range;
     views_[index]->TextInputStateChanged(state);
-    gfx::Range range_from_client;
 
     EXPECT_TRUE(
         text_input_client()->GetCompositionTextRange(&range_from_client));
@@ -6614,7 +6618,7 @@ TEST_F(RenderWidgetHostViewAuraInputMethodTest,
   input_method->RemoveObserver(this);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 class MockVirtualKeyboardController final
     : public ui::VirtualKeyboardController {
  public:
@@ -6662,6 +6666,13 @@ class RenderWidgetHostViewAuraKeyboardMockInputMethod
   void ShowVirtualKeyboardIfEnabled() override {
     keyboard_controller_.DisplayVirtualKeyboard();
   }
+  void SetVirtualKeyboardVisibilityIfEnabled(bool should_show) override {
+    if (should_show) {
+      keyboard_controller_.DisplayVirtualKeyboard();
+    } else {
+      keyboard_controller_.DismissVirtualKeyboard();
+    }
+  }
   bool IsKeyboardVisible() { return keyboard_controller_.IsKeyboardVisible(); }
 
  private:
@@ -6691,7 +6702,34 @@ class RenderWidgetHostViewAuraKeyboardTest
   RenderWidgetHostViewAuraKeyboardMockInputMethod* input_method_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraKeyboardTest);
 };
+#endif
 
+#if defined(OS_CHROMEOS)
+TEST_F(RenderWidgetHostViewAuraKeyboardTest,
+       UpdateTextInputStateUpdatesVirtualKeyboardState) {
+  ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
+
+  ui::mojom::TextInputState state;
+  state.type = ui::TEXT_INPUT_TYPE_TEXT;
+  state.mode = ui::TEXT_INPUT_MODE_NONE;
+  state.last_vk_visibility_request =
+      ui::mojom::VirtualKeyboardVisibilityRequest::SHOW;
+
+  EXPECT_EQ(IsKeyboardVisible(), false);
+
+  GetTextInputManager(parent_view_)->UpdateTextInputState(parent_view_, state);
+
+  EXPECT_EQ(IsKeyboardVisible(), true);
+
+  state.last_vk_visibility_request =
+      ui::mojom::VirtualKeyboardVisibilityRequest::HIDE;
+  GetTextInputManager(parent_view_)->UpdateTextInputState(parent_view_, state);
+
+  EXPECT_EQ(IsKeyboardVisible(), false);
+}
+#endif
+
+#if defined(OS_WIN)
 TEST_F(RenderWidgetHostViewAuraKeyboardTest, KeyboardObserverDestroyed) {
   parent_view_->SetLastPointerType(ui::EventPointerType::kTouch);
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);

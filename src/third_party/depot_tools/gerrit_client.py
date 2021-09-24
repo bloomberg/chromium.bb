@@ -249,6 +249,17 @@ def CMDsubmitchange(parser, args):
 
 
 @subcommand.usage('[args ...]')
+def CMDchangesubmittedtogether(parser, args):
+  """Get all changes submitted with the given one."""
+  parser.add_option('-c', '--change', type=int, help='change number')
+  (opt, args) = parser.parse_args(args)
+  result = gerrit_util.GetChangesSubmittedTogether(
+      urlparse.urlparse(opt.host).netloc, opt.change)
+  logging.info(result)
+  write_result(result, opt)
+
+
+@subcommand.usage('[args ...]')
 def CMDgetcommitincludedin(parser, args):
   """Retrieves the branches and tags for a given commit."""
   parser.add_option('--commit', dest='commit', help='commit hash')

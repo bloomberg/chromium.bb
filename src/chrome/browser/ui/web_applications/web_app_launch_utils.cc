@@ -16,9 +16,13 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
@@ -26,6 +30,8 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
+#include "extensions/browser/extension_registry.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "url/gurl.h"
 
@@ -168,6 +174,44 @@ void ClearAppPrefsForWebContents(content::WebContents* web_contents) {
   web_contents->SyncRendererPrefs();
 
   web_contents->NotifyPreferencesChanged();
+}
+
+std::unique_ptr<AppBrowserController> MaybeCreateAppBrowserController(
+    Browser* browser) {
+  std::unique_ptr<AppBrowserController> controller;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  const AppId app_id = GetAppIdFromApplicationName(browser->app_name());
+  auto* const provider =
+      WebAppProvider::GetForLocalAppsUnchecked(browser->profile());
+  if (provider && provider->registrar().IsInstalled(app_id)) {
+    const SystemWebAppDelegate* system_app = nullptr;
+    auto system_app_type =
+        GetSystemWebAppTypeForAppId(browser->profile(), app_id);
+    if (system_app_type) {
+      system_app =
+          provider->system_web_app_manager().GetSystemApp(*system_app_type);
+    }
+    const bool has_tab_strip =
+        (system_app && system_app->ShouldHaveTabStrip()) ||
+        (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
+         provider->registrar().IsTabbedWindowModeEnabled(app_id));
+    controller = std::make_unique<WebAppBrowserController>(
+        *provider, browser, app_id, system_app, has_tab_strip);
+  } else {
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(browser->profile())
+            ->GetExtensionById(app_id,
+                               extensions::ExtensionRegistry::EVERYTHING);
+    if (extension && extension->is_hosted_app() &&
+        !extension->from_bookmark()) {
+      controller =
+          std::make_unique<extensions::HostedAppBrowserController>(browser);
+    }
+  }
+#endif
+  if (controller)
+    controller->Init();
+  return controller;
 }
 
 }  // namespace web_app

@@ -56,7 +56,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     bool use_extensions_root_dir = false;
   };
 
-  ExtensionApiTest();
+  explicit ExtensionApiTest(ContextType context_type = ContextType::kNone);
   ~ExtensionApiTest() override;
 
  protected:
@@ -133,6 +133,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
   // If it failed, what was the error message?
   std::string message_;
+
+  base::DictionaryValue* GetTestConfig() { return test_config_.get(); }
 
  private:
   void OpenURL(const GURL& url, bool open_in_incognito);

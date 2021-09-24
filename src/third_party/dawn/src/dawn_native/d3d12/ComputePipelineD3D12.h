@@ -29,13 +29,16 @@ namespace dawn_native { namespace d3d12 {
             Device* device,
             const ComputePipelineDescriptor* descriptor);
         static void CreateAsync(Device* device,
-                                const ComputePipelineDescriptor* descriptor,
+                                std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
                                 size_t blueprintHash,
                                 WGPUCreateComputePipelineAsyncCallback callback,
                                 void* userdata);
         ComputePipeline() = delete;
 
         ID3D12PipelineState* GetPipelineState() const;
+
+        // Dawn API
+        void SetLabelImpl() override;
 
       private:
         ~ComputePipeline() override;

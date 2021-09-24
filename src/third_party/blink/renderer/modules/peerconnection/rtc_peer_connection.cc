@@ -1595,7 +1595,6 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
   NoteCallSetupStateEventPending(SetSdpOperationType::kSetRemoteDescription,
                                  *session_description_init);
   if (ContainsLegacyRtpDataChannel(session_description_init->sdp())) {
-    ExecutionContext* context = ExecutionContext::From(script_state);
     UseCounter::Count(context, WebFeature::kRTCLegacyRtpDataChannelNegotiated);
   }
 
@@ -2667,9 +2666,14 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   return channel;
 }
 
-MediaStreamTrack* RTCPeerConnection::GetTrack(
+MediaStreamTrack* RTCPeerConnection::GetTrackForTesting(
     MediaStreamComponent* component) const {
-  return tracks_.DeprecatedAtOrEmptyValue(component);
+  auto it = tracks_.find(component);
+  if (it != tracks_.end()) {
+    return it->value;
+  } else {
+    return nullptr;
+  }
 }
 
 RTCRtpSender* RTCPeerConnection::FindSenderForTrackAndStream(

@@ -24,7 +24,6 @@
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_tab_helper.h"
-#include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
@@ -50,15 +49,16 @@
 #include "chrome/browser/permissions/last_tab_standing_tracker_tab_helper.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
+#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_tab_helper.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
+#include "chrome/browser/safe_browsing/chrome_safe_browsing_tab_observer_delegate.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/safe_browsing/trigger_creator.h"
 #include "chrome/browser/sessions/session_tab_helper_factory.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
@@ -85,7 +85,6 @@
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -103,6 +102,7 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_web_contents_observer.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
@@ -112,6 +112,8 @@
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_observer.h"
+#include "components/safe_browsing/content/browser/safe_browsing_tab_observer.h"
+#include "components/site_engagement/content/site_engagement_helper.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -178,8 +180,8 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_tab_helper.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/mojom/view_type.mojom.h"
 #endif
@@ -321,7 +323,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       safe_browsing::SafeBrowsingNavigationObserverManagerFactory::
           GetForBrowserContext(profile),
       profile->GetPrefs(), g_browser_process->safe_browsing_service());
-  safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);
+  safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(
+      web_contents,
+      std::make_unique<safe_browsing::ChromeSafeBrowsingTabObserverDelegate>());
   safe_browsing::TriggerCreator::MaybeCreateTriggersForWebContents(
       profile, web_contents);
   ReputationWebContentsObserver::CreateForWebContents(web_contents);
@@ -329,7 +333,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SecurityStateTabHelper::CreateForWebContents(web_contents);
   if (site_engagement::SiteEngagementService::IsEnabled()) {
     site_engagement::SiteEngagementService::Helper::CreateForWebContents(
-        web_contents);
+        web_contents,
+        prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
+            profile));
   }
   SoundContentSettingObserver::CreateForWebContents(web_contents);
   subresource_redirect::SubresourceRedirectObserver::MaybeCreateForWebContents(

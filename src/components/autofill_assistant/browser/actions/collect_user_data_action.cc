@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -386,6 +387,23 @@ void SetInitialUserDataForAdditionalSection(
   }
 }
 
+bool RequiresPaymentMethod(
+    const CollectUserDataOptions& collect_user_data_options) {
+  return collect_user_data_options.request_payment_method;
+}
+
+bool RequiresContact(const CollectUserDataOptions& collect_user_data_options) {
+  return collect_user_data_options.request_payer_name ||
+         collect_user_data_options.request_payer_email ||
+         collect_user_data_options.request_payer_phone;
+}
+
+bool RequiresProfiles(const CollectUserDataOptions& collect_user_data_options) {
+  return RequiresContact(collect_user_data_options) ||
+         collect_user_data_options.request_shipping ||
+         RequiresPaymentMethod(collect_user_data_options);
+}
+
 }  // namespace
 
 namespace autofill_assistant {
@@ -419,7 +437,7 @@ CollectUserDataAction::~CollectUserDataAction() {
 
   // Report UMA histograms.
   if (shown_to_user_) {
-    Metrics::RecordPaymentRequestPrefilledSuccess(initially_prefilled,
+    Metrics::RecordPaymentRequestPrefilledSuccess(initially_prefilled_,
                                                   action_successful_);
     Metrics::RecordPaymentRequestAutofillChanged(personal_data_changed_,
                                                  action_successful_);
@@ -606,7 +624,7 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
   // Gather info for UMA histograms.
   if (!shown_to_user_) {
     shown_to_user_ = true;
-    initially_prefilled =
+    initially_prefilled_ =
         CheckInitialAutofillDataComplete(delegate_->GetPersonalDataManager());
   }
 
@@ -628,6 +646,7 @@ void CollectUserDataAction::OnGetUserData(
   delegate_->GetPersonalDataManager()->RemoveObserver(this);
 
   WriteProcessedAction(user_data, user_model);
+  UpdateProfileAndCardUse(user_data);
   DCHECK(
       IsUserDataComplete(*user_data, *user_model, *collect_user_data_options_));
   EndAction(ClientStatus(ACTION_APPLIED));
@@ -717,9 +736,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
       collect_user_data_options_->contact_full_max_lines =
           contact_details.max_number_full_lines();
     }
-    if (collect_user_data_options_->request_payer_email ||
-        collect_user_data_options_->request_payer_name ||
-        collect_user_data_options_->request_payer_phone) {
+    if (RequiresContact(*collect_user_data_options_)) {
       if (!contact_details.has_contact_details_name()) {
         VLOG(1) << "Contact details name missing";
         return false;
@@ -955,9 +972,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
 bool CollectUserDataAction::CheckInitialAutofillDataComplete(
     autofill::PersonalDataManager* personal_data_manager) {
   DCHECK(collect_user_data_options_ != nullptr);
-  bool request_contact = collect_user_data_options_->request_payer_name ||
-                         collect_user_data_options_->request_payer_email ||
-                         collect_user_data_options_->request_payer_phone;
+  bool request_contact = RequiresContact(*collect_user_data_options_);
   if (request_contact || collect_user_data_options_->request_shipping) {
     auto profiles = personal_data_manager->GetProfiles();
     if (request_contact) {
@@ -987,22 +1002,23 @@ bool CollectUserDataAction::CheckInitialAutofillDataComplete(
 
   if (collect_user_data_options_->request_payment_method) {
     auto credit_cards = personal_data_manager->GetCreditCards();
-    auto completeCardIter =
-        std::find_if(credit_cards.begin(), credit_cards.end(),
-                     [this, personal_data_manager](const auto* credit_card) {
-                       // TODO(b/142630213): Figure out how to retrieve billing
-                       // profile if user has turned off addresses in Chrome
-                       // settings.
-                       return user_data::GetPaymentInstrumentValidationErrors(
-                                  credit_card,
-                                  credit_card != nullptr
-                                      ? personal_data_manager->GetProfileByGUID(
-                                            credit_card->guid())
-                                      : nullptr,
-                                  *this->collect_user_data_options_.get())
-                           .empty();
-                     });
-    if (completeCardIter == credit_cards.end()) {
+    auto complete_card_iter = std::find_if(
+        credit_cards.begin(), credit_cards.end(),
+        [this, personal_data_manager](const auto* credit_card) {
+          // TODO(b/142630213): Figure out how to retrieve billing
+          // profile if user has turned off addresses in Chrome
+          // settings.
+          return user_data::GetPaymentInstrumentValidationErrors(
+                     credit_card,
+                     credit_card != nullptr &&
+                             !credit_card->billing_address_id().empty()
+                         ? personal_data_manager->GetProfileByGUID(
+                               credit_card->billing_address_id())
+                         : nullptr,
+                     *this->collect_user_data_options_.get())
+              .empty();
+        });
+    if (complete_card_iter == credit_cards.end()) {
       return false;
     }
   }
@@ -1136,7 +1152,6 @@ void CollectUserDataAction::WriteProcessedAction(UserData* user_data,
         ->set_card_issuer_network(card_issuer_network);
   }
 
-  std::set<const autofill::AutofillProfile*> profiles_used;
   if (proto().collect_user_data().has_contact_details()) {
     auto contact_details_proto = proto().collect_user_data().contact_details();
     auto* selected_profile = user_data->selected_address(
@@ -1153,32 +1168,7 @@ void CollectUserDataAction::WriteProcessedAction(UserData* user_data,
             ->set_payer_email(base::UTF16ToUTF8(
                 selected_profile->GetRawInfo(autofill::EMAIL_ADDRESS)));
       }
-
-      profiles_used.emplace(selected_profile);
     }
-  }
-  if (!proto().collect_user_data().shipping_address_name().empty()) {
-    auto* selected_shipping_address = user_data->selected_address(
-        proto().collect_user_data().shipping_address_name());
-    if (selected_shipping_address != nullptr) {
-      profiles_used.emplace(selected_shipping_address);
-    }
-  }
-  if (!proto().collect_user_data().billing_address_name().empty()) {
-    auto* selected_billing_address = user_data->selected_address(
-        proto().collect_user_data().billing_address_name());
-    if (selected_billing_address != nullptr) {
-      profiles_used.emplace(selected_billing_address);
-    }
-  }
-  if (proto().collect_user_data().request_payment_method()) {
-    auto* selected_card = user_data->selected_card();
-    if (selected_card != nullptr) {
-      delegate_->GetPersonalDataManager()->RecordUseOf(selected_card);
-    }
-  }
-  for (const auto* profile : profiles_used) {
-    delegate_->GetPersonalDataManager()->RecordUseOf(profile);
   }
 
   if (proto().collect_user_data().has_login_details()) {
@@ -1251,12 +1241,51 @@ void CollectUserDataAction::WriteProcessedAction(UserData* user_data,
       ->set_shown_to_user(shown_to_user_);
 }
 
+void CollectUserDataAction::UpdateProfileAndCardUse(UserData* user_data) {
+  base::flat_map<std::string, const autofill::AutofillProfile*> profiles_used;
+  if (proto().collect_user_data().has_contact_details()) {
+    auto contact_details_proto = proto().collect_user_data().contact_details();
+    auto* selected_contact_profile = user_data->selected_address(
+        contact_details_proto.contact_details_name());
+    if (selected_contact_profile != nullptr) {
+      profiles_used.emplace(selected_contact_profile->guid(),
+                            selected_contact_profile);
+    }
+  }
+  if (!proto().collect_user_data().shipping_address_name().empty()) {
+    auto* selected_shipping_address = user_data->selected_address(
+        proto().collect_user_data().shipping_address_name());
+    if (selected_shipping_address != nullptr) {
+      profiles_used.emplace(selected_shipping_address->guid(),
+                            selected_shipping_address);
+    }
+  }
+  if (!proto().collect_user_data().billing_address_name().empty()) {
+    auto* selected_billing_address = user_data->selected_address(
+        proto().collect_user_data().billing_address_name());
+    if (selected_billing_address != nullptr) {
+      profiles_used.emplace(selected_billing_address->guid(),
+                            selected_billing_address);
+    }
+  }
+  for (const auto& it : profiles_used) {
+    delegate_->GetPersonalDataManager()->RecordUseOf(it.second);
+  }
+  if (proto().collect_user_data().request_payment_method()) {
+    auto* selected_card = user_data->selected_card();
+    if (selected_card != nullptr) {
+      delegate_->GetPersonalDataManager()->RecordUseOf(selected_card);
+    }
+  }
+}
+
 void CollectUserDataAction::UpdatePersonalDataManagerProfiles(
     UserData* user_data,
     UserData::FieldChange* field_change) {
-  if (user_data == nullptr) {
+  if (!RequiresProfiles(*collect_user_data_options_)) {
     return;
   }
+  DCHECK(user_data != nullptr);
 
   bool found_profile = false;
   bool found_shipping_address = false;
@@ -1291,9 +1320,7 @@ void CollectUserDataAction::UpdatePersonalDataManagerProfiles(
 
   if (!user_data->has_selected_address(
           collect_user_data_options_->contact_details_name) &&
-      (collect_user_data_options_->request_payer_name ||
-       collect_user_data_options_->request_payer_phone ||
-       collect_user_data_options_->request_payer_email)) {
+      RequiresContact(*collect_user_data_options_)) {
     int default_selection = user_data::GetDefaultContactProfile(
         *collect_user_data_options_, user_data->available_profiles_);
     if (default_selection != -1) {
@@ -1332,6 +1359,9 @@ void CollectUserDataAction::UpdatePersonalDataManagerProfiles(
 void CollectUserDataAction::UpdatePersonalDataManagerCards(
     UserData* user_data,
     UserData::FieldChange* field_change) {
+  if (!RequiresPaymentMethod(*collect_user_data_options_)) {
+    return;
+  }
   DCHECK(user_data != nullptr);
 
   bool found_card = false;

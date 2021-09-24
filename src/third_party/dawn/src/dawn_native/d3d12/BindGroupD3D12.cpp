@@ -40,7 +40,7 @@ namespace dawn_native { namespace d3d12 {
 
         mCPUViewAllocation = viewAllocation;
 
-        const auto& bindingOffsets = bgl->GetBindingOffsets();
+        const auto& descriptorHeapOffsets = bgl->GetDescriptorHeapOffsets();
 
         ID3D12Device* d3d12Device = device->GetD3D12Device();
 
@@ -69,13 +69,14 @@ namespace dawn_native { namespace d3d12 {
                     switch (bindingInfo.buffer.type) {
                         case wgpu::BufferBindingType::Uniform: {
                             D3D12_CONSTANT_BUFFER_VIEW_DESC desc;
-                            desc.SizeInBytes = Align(binding.size, 256);
+                            desc.SizeInBytes =
+                                Align(binding.size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
                             desc.BufferLocation =
                                 ToBackend(binding.buffer)->GetVA() + binding.offset;
 
                             d3d12Device->CreateConstantBufferView(
-                                &desc, viewAllocation.OffsetFrom(viewSizeIncrement,
-                                                                 bindingOffsets[bindingIndex]));
+                                &desc, viewAllocation.OffsetFrom(
+                                           viewSizeIncrement, descriptorHeapOffsets[bindingIndex]));
                             break;
                         }
                         case wgpu::BufferBindingType::Storage:
@@ -99,7 +100,7 @@ namespace dawn_native { namespace d3d12 {
                             d3d12Device->CreateUnorderedAccessView(
                                 resource, nullptr, &desc,
                                 viewAllocation.OffsetFrom(viewSizeIncrement,
-                                                          bindingOffsets[bindingIndex]));
+                                                          descriptorHeapOffsets[bindingIndex]));
                             break;
                         }
                         case wgpu::BufferBindingType::ReadOnlyStorage: {
@@ -118,7 +119,7 @@ namespace dawn_native { namespace d3d12 {
                             d3d12Device->CreateShaderResourceView(
                                 resource, &desc,
                                 viewAllocation.OffsetFrom(viewSizeIncrement,
-                                                          bindingOffsets[bindingIndex]));
+                                                          descriptorHeapOffsets[bindingIndex]));
                             break;
                         }
                         case wgpu::BufferBindingType::Undefined:
@@ -142,7 +143,8 @@ namespace dawn_native { namespace d3d12 {
 
                     d3d12Device->CreateShaderResourceView(
                         resource, &srv,
-                        viewAllocation.OffsetFrom(viewSizeIncrement, bindingOffsets[bindingIndex]));
+                        viewAllocation.OffsetFrom(viewSizeIncrement,
+                                                  descriptorHeapOffsets[bindingIndex]));
                     break;
                 }
 
@@ -165,7 +167,7 @@ namespace dawn_native { namespace d3d12 {
                             d3d12Device->CreateShaderResourceView(
                                 resource, &srv,
                                 viewAllocation.OffsetFrom(viewSizeIncrement,
-                                                          bindingOffsets[bindingIndex]));
+                                                          descriptorHeapOffsets[bindingIndex]));
                             break;
                         }
 
@@ -174,7 +176,7 @@ namespace dawn_native { namespace d3d12 {
                             d3d12Device->CreateUnorderedAccessView(
                                 resource, nullptr, &uav,
                                 viewAllocation.OffsetFrom(viewSizeIncrement,
-                                                          bindingOffsets[bindingIndex]));
+                                                          descriptorHeapOffsets[bindingIndex]));
                             break;
                         }
 
@@ -201,7 +203,8 @@ namespace dawn_native { namespace d3d12 {
 
                     d3d12Device->CreateShaderResourceView(
                         resource, &srv,
-                        viewAllocation.OffsetFrom(viewSizeIncrement, bindingOffsets[bindingIndex]));
+                        viewAllocation.OffsetFrom(viewSizeIncrement,
+                                                  descriptorHeapOffsets[bindingIndex]));
                     break;
                 }
 

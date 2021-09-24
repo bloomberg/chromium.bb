@@ -16,6 +16,7 @@
 #include "src/sksl/ir/SkSLBinaryExpression.h"
 #include "src/sksl/ir/SkSLBoolLiteral.h"
 #include "src/sksl/ir/SkSLBreakStatement.h"
+#include "src/sksl/ir/SkSLChildCall.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLConstructorArray.h"
 #include "src/sksl/ir/SkSLConstructorArrayCast.h"
@@ -161,7 +162,7 @@ static std::unique_ptr<Statement>* find_parent_statement(
 std::unique_ptr<Expression> clone_with_ref_kind(const Expression& expr,
                                                 VariableReference::RefKind refKind) {
     std::unique_ptr<Expression> clone = expr.clone();
-    Analysis::UpdateRefKind(clone.get(), refKind);
+    Analysis::UpdateVariableRefKind(clone.get(), refKind);
     return clone;
 }
 
@@ -311,6 +312,14 @@ std::unique_ptr<Expression> Inliner::inlineExpression(int offset,
         case Expression::Kind::kIntLiteral:
         case Expression::Kind::kFloatLiteral:
             return expression.clone();
+        case Expression::Kind::kChildCall: {
+            const ChildCall& childCall = expression.as<ChildCall>();
+            return ChildCall::Make(*fContext,
+                                   offset,
+                                   childCall.type().clone(symbolTableForExpression),
+                                   childCall.child(),
+                                   argList(childCall.arguments()));
+        }
         case Expression::Kind::kConstructorArray: {
             const ConstructorArray& ctor = expression.as<ConstructorArray>();
             return ConstructorArray::Make(*fContext, offset,
@@ -390,6 +399,8 @@ std::unique_ptr<Expression> Inliner::inlineExpression(int offset,
             const IndexExpression& idx = expression.as<IndexExpression>();
             return IndexExpression::Make(*fContext, expr(idx.base()), expr(idx.index()));
         }
+        case Expression::Kind::kMethodReference:
+            return expression.clone();
         case Expression::Kind::kPrefix: {
             const PrefixExpression& p = expression.as<PrefixExpression>();
             return PrefixExpression::Make(*fContext, p.getOperator(), expr(p.operand()));
@@ -482,8 +493,10 @@ std::unique_ptr<Statement> Inliner::inlineStatement(int offset,
             // need to ensure initializer is evaluated first so that we've already remapped its
             // declarations by the time we evaluate test & next
             std::unique_ptr<Statement> initializer = stmt(f.initializer());
+            // We can't reuse the unroll info from the original for loop, because it uses a
+            // different induction variable. Ours is a clone.
             return ForStatement::Make(*fContext, offset, std::move(initializer), expr(f.test()),
-                                      expr(f.next()), stmt(f.statement()),
+                                      expr(f.next()), stmt(f.statement()), /*unrollInfo=*/nullptr,
                                       SymbolTable::WrapIfBuiltin(f.symbols()));
         }
         case Statement::Kind::kIf: {
@@ -599,9 +612,14 @@ Inliner::InlineVariable Inliner::makeInlineVariable(const String& baseName,
                                           type,
                                           isBuiltinCode,
                                           Variable::Storage::kLocal);
-
+    // If we are creating an array type, reduce it to base type plus array-size.
+    int arraySize = 0;
+    if (type->isArray()) {
+        arraySize = type->columns();
+        type = &type->componentType();
+    }
     // Create our variable declaration.
-    result.fVarDecl = VarDeclaration::Make(*fContext, var.get(), type, /*arraySize=*/0,
+    result.fVarDecl = VarDeclaration::Make(*fContext, var.get(), type, arraySize,
                                            std::move(*initialValue));
     result.fVarSymbol = symbolTable->add(std::move(var));
     return result;
@@ -704,7 +722,7 @@ Inliner::InlinedCall Inliner::inlineCall(FunctionCall* call,
         // returned anything on any path! This should have been detected in the function finalizer.
         // Still, discard our output and generate an error.
         SkDEBUGFAIL("inliner found non-void function that fails to return a value on any path");
-        fContext->errors().error(function.fOffset, "inliner found non-void function '" +
+        fContext->fErrors->error(function.fOffset, "inliner found non-void function '" +
                                                    function.declaration().name() +
                                                    "' that fails to return a value on any path");
         inlinedCall = {};
@@ -932,6 +950,7 @@ public:
             case Expression::Kind::kFloatLiteral:
             case Expression::Kind::kFunctionReference:
             case Expression::Kind::kIntLiteral:
+            case Expression::Kind::kMethodReference:
             case Expression::Kind::kSetting:
             case Expression::Kind::kTypeReference:
             case Expression::Kind::kVariableReference:
@@ -955,6 +974,13 @@ public:
                                          op.kind() == Token::Kind::TK_LOGICALOR);
                 if (!shortCircuitable) {
                     this->visitExpression(&binaryExpr.right());
+                }
+                break;
+            }
+            case Expression::Kind::kChildCall: {
+                ChildCall& childCallExpr = (*expr)->as<ChildCall>();
+                for (std::unique_ptr<Expression>& arg : childCallExpr.arguments()) {
+                    this->visitExpression(&arg);
                 }
                 break;
             }

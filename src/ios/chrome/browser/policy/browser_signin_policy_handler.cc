@@ -15,7 +15,9 @@
 #include "components/prefs/pref_value_map.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/policy/policy_util.h"
+#include "ios/chrome/browser/pref_names.h"
 
 namespace policy {
 BrowserSigninPolicyHandler::BrowserSigninPolicyHandler(Schema chrome_schema)
@@ -36,13 +38,15 @@ bool BrowserSigninPolicyHandler::CheckPolicySettings(
   if (!SchemaValidatingPolicyHandler::CheckPolicySettings(policies, errors))
     return false;
 
-  absl::optional<int> optional_int_value = value->GetIfInt();
-  if (optional_int_value) {
-    const int int_value = optional_int_value.value();
-    if (int_value == static_cast<int>(BrowserSigninMode::kForced)) {
-      // Don't return false because in this case the policy falls back to
-      // BrowserSigninMode::kEnabled
-      errors->AddError(policy_name(), IDS_POLICY_LEVEL_ERROR);
+  if (!IsForcedBrowserSigninEnabled()) {
+    absl::optional<int> optional_int_value = value->GetIfInt();
+    if (optional_int_value) {
+      const int int_value = optional_int_value.value();
+      if (int_value == static_cast<int>(BrowserSigninMode::kForced)) {
+        // Don't return false because in this case the policy falls back to
+        // BrowserSigninMode::kEnabled
+        errors->AddError(policy_name(), IDS_POLICY_LEVEL_ERROR);
+      }
     }
   }
 
@@ -69,14 +73,19 @@ void BrowserSigninPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 
   switch (static_cast<BrowserSigninMode>(int_value)) {
     case BrowserSigninMode::kForced:
-      // Forced sign-in isn't supported at the moment on iOS. Fall back to
-      // sign-in enabled.
+      if (IsForcedBrowserSigninEnabled()) {
+        prefs->SetInteger(prefs::kBrowserSigninPolicy,
+                          static_cast<int>(BrowserSigninMode::kForced));
+        break;
+      }
       FALLTHROUGH;
     case BrowserSigninMode::kEnabled:
-      prefs->SetBoolean(prefs::kSigninAllowedByPolicy, true);
+      prefs->SetInteger(prefs::kBrowserSigninPolicy,
+                        static_cast<int>(BrowserSigninMode::kEnabled));
       break;
     case BrowserSigninMode::kDisabled:
-      prefs->SetBoolean(prefs::kSigninAllowedByPolicy, false);
+      prefs->SetInteger(prefs::kBrowserSigninPolicy,
+                        static_cast<int>(BrowserSigninMode::kDisabled));
       break;
   }
 }

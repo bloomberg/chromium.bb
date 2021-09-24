@@ -250,9 +250,7 @@ UIImage* FakeChromeIdentityService::GetCachedAvatarForIdentity(
   return ::GetCachedAvatarForIdentity(identity);
 }
 
-void FakeChromeIdentityService::GetAvatarForIdentity(
-    ChromeIdentity* identity,
-    GetAvatarCallback callback) {
+void FakeChromeIdentityService::GetAvatarForIdentity(ChromeIdentity* identity) {
   // |GetAvatarForIdentity| is normally an asynchronous operation, this is
   // replicated here by dispatching it.
   ++_pendingCallback;
@@ -263,8 +261,7 @@ void FakeChromeIdentityService::GetAvatarForIdentity(
       avatar = ios::provider::GetSigninDefaultAvatar();
       ::SetCachedAvatarForIdentity(identity, avatar);
     }
-    if (callback)
-      callback(avatar);
+    FireProfileDidUpdate(identity);
   });
 }
 
@@ -279,6 +276,10 @@ void FakeChromeIdentityService::GetHostedDomainForIdentity(
     --_pendingCallback;
     callback(domain, nil);
   });
+}
+
+bool FakeChromeIdentityService::IsServiceSupported() {
+  return true;
 }
 
 NSString* FakeChromeIdentityService::GetCachedHostedDomainForIdentity(

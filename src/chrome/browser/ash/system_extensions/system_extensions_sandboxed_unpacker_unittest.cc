@@ -9,6 +9,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "base/threading/thread_restrictions.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_status_or.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,27 +18,73 @@ using Status = SystemExtensionsSandboxedUnpacker::Status;
 
 namespace {
 
-class SystemExtensionsSandboxedUnpackerTest : public testing::Test {
- public:
-  std::tuple<Status, std::unique_ptr<SystemExtension>>
-  GetSystemExtensionFromStringAndWait(base::StringPiece manifest) {
+enum class TestMethod {
+  kFromDir,
+  kFromString,
+};
+
+std::string TestMethodToString(
+    const ::testing::TestParamInfo<TestMethod>& info) {
+  switch (info.param) {
+    case TestMethod::kFromDir:
+      return "FromDir";
+    case TestMethod::kFromString:
+      return "FromString";
+  }
+}
+
+class SystemExtensionsSandboxedUnpackerTest
+    : public testing::TestWithParam<TestMethod> {
+ protected:
+  StatusOrSystemExtension<Status> GetSystemExtensionFromDirAndWait(
+      base::FilePath system_extension_dir) {
     base::RunLoop run_loop;
-    Status status;
-    std::unique_ptr<SystemExtension> system_extension;
+    StatusOrSystemExtension<Status> status;
+
+    SystemExtensionsSandboxedUnpacker unpacker;
+    unpacker.GetSystemExtensionFromDir(
+        system_extension_dir,
+        base::BindLambdaForTesting([&](StatusOrSystemExtension<Status> s) {
+          status = std::move(s);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return status;
+  }
+
+  StatusOrSystemExtension<Status> GetSystemExtensionFromStringAndWait(
+      base::StringPiece manifest) {
+    base::RunLoop run_loop;
+    StatusOrSystemExtension<Status> status;
 
     // Create SystemExtension.
     SystemExtensionsSandboxedUnpacker unpacker;
     unpacker.GetSystemExtensionFromString(
-        manifest, base::BindLambdaForTesting(
-                      [&](Status returned_status,
-                          std::unique_ptr<SystemExtension> returned_extension) {
-                        status = returned_status;
-                        system_extension = std::move(returned_extension);
-                        run_loop.Quit();
-                      }));
+        manifest,
+        base::BindLambdaForTesting([&](StatusOrSystemExtension<Status> s) {
+          status = std::move(s);
+          run_loop.Quit();
+        }));
     run_loop.Run();
+    return status;
+  }
 
-    return {status, std::move(system_extension)};
+  // Runs the necessary setup and calls the method being tested.
+  StatusOrSystemExtension<Status> CallGetSystemExtensionFrom(
+      base::StringPiece manifest_str) {
+    TestMethod method = GetParam();
+    if (method == TestMethod::kFromDir) {
+      base::ScopedTempDir system_extension_dir;
+      CHECK(system_extension_dir.CreateUniqueTempDir());
+
+      base::FilePath manifest_file =
+          system_extension_dir.GetPath().Append("manifest.json");
+      CHECK(base::WriteFile(manifest_file, manifest_str));
+
+      return GetSystemExtensionFromDirAndWait(system_extension_dir.GetPath());
+    }
+    CHECK_EQ(method, TestMethod::kFromString);
+    return GetSystemExtensionFromStringAndWait(manifest_str);
   }
 
  private:
@@ -45,9 +93,12 @@ class SystemExtensionsSandboxedUnpackerTest : public testing::Test {
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 };
 
+using SystemExtensionsSandboxedUnpackerFromDirTest =
+    SystemExtensionsSandboxedUnpackerTest;
+
 }  // namespace
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Success) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Success) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
     "type": "echo",
@@ -57,49 +108,38 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Success) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-  EXPECT_EQ(Status::kOk, status);
-  EXPECT_TRUE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_TRUE(result.ok());
+  auto system_extension = std::move(result).value();
 
-  EXPECT_EQ(SystemExtensionId({1, 2, 3, 4}), system_extension->id);
-  EXPECT_EQ(SystemExtensionType::kEcho, system_extension->type);
+  EXPECT_EQ(SystemExtensionId({1, 2, 3, 4}), system_extension.id);
+  EXPECT_EQ(SystemExtensionType::kEcho, system_extension.type);
   EXPECT_EQ("chrome-untrusted://system-extension-echo-01020304/",
-            system_extension->base_url.spec());
+            system_extension.base_url.spec());
   EXPECT_EQ("chrome-untrusted://system-extension-echo-01020304/sw.js",
-            system_extension->service_worker_url.spec());
-  EXPECT_EQ("Long Test", system_extension->name);
-  ASSERT_TRUE(system_extension->short_name.has_value());
-  EXPECT_EQ("Test", system_extension->short_name);
-  ASSERT_TRUE(system_extension->companion_web_app_url.has_value());
+            system_extension.service_worker_url.spec());
+  EXPECT_EQ("Long Test", system_extension.name);
+  ASSERT_TRUE(system_extension.short_name.has_value());
+  EXPECT_EQ("Test", system_extension.short_name);
+  ASSERT_TRUE(system_extension.companion_web_app_url.has_value());
   EXPECT_EQ("https://test.example/",
-            system_extension->companion_web_app_url->spec());
+            system_extension.companion_web_app_url->spec());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_EmptyManifest) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_EmptyManifest) {
   static constexpr const char kSystemExtensionManifest[] = R"()";
   std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-  EXPECT_EQ(Status::kFailedJsonErrorParsingManifest, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedJsonErrorParsingManifest, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_EmptyManifest2) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_EmptyManifest2) {
   static constexpr const char kSystemExtensionManifest[] = R"({})";
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedIdMissing, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedIdMissing, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_IdMissing) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_IdMissing) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "type": "echo",
     "service_worker_url": "/sw.js",
@@ -108,16 +148,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_IdMissing) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedIdMissing, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedIdMissing, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_IdInvalidTooShort) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_IdInvalidTooShort) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "0102",
     "type": "echo",
@@ -127,16 +162,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_IdInvalidTooShort) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedIdInvalid, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedIdInvalid, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_IdInvalidTooLong) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_IdInvalidTooLong) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "010203040506",
     "type": "echo",
@@ -146,16 +176,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_IdInvalidTooLong) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedIdInvalid, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedIdInvalid, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_IdInvalidCharacters) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_IdInvalidCharacters) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "0102030X",
     "type": "echo",
@@ -165,16 +190,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_IdInvalidCharacters) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedIdInvalid, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedIdInvalid, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_TypeMissing) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_TypeMissing) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
     "service_worker_url": "/sw.js",
@@ -183,16 +203,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_TypeMissing) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedTypeMissing, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedTypeMissing, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_TypeInvalid) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_TypeInvalid) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
     "type": "foo",
@@ -202,16 +217,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_TypeInvalid) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedTypeInvalid, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedTypeInvalid, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_ServiceWorkerUrlMissing) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_ServiceWorkerUrlMissing) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
     "type": "echo",
@@ -220,16 +230,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_ServiceWorkerUrlMissing) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedServiceWorkerUrlMissing, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedServiceWorkerUrlMissing, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_ServiceWorkerUrlInvalid) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_ServiceWorkerUrlInvalid) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
     "type": "echo",
@@ -239,16 +244,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_ServiceWorkerUrlInvalid) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedServiceWorkerUrlInvalid, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedServiceWorkerUrlInvalid, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_ServiceWorkerUrlEmpty) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_ServiceWorkerUrlEmpty) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
     "type": "echo",
@@ -258,16 +258,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_ServiceWorkerUrlEmpty) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedServiceWorkerUrlInvalid, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedServiceWorkerUrlInvalid, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest,
+TEST_P(SystemExtensionsSandboxedUnpackerTest,
        Failure_ServiceWorkerUrlInvalidDifferentOrigin) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
@@ -278,16 +273,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest,
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedServiceWorkerUrlDifferentOrigin, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedServiceWorkerUrlDifferentOrigin, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_NameMissing) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_NameMissing) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
     "type": "echo",
@@ -296,16 +286,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_NameMissing) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedNameMissing, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedNameMissing, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_NameEmpty) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Failure_NameEmpty) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
     "type": "echo",
@@ -315,16 +300,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Failure_NameEmpty) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kFailedNameEmpty, status);
-  EXPECT_FALSE(system_extension.get());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_EQ(Status::kFailedNameEmpty, result.status());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Success_NoShortName) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Success_NoShortName) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
     "type": "echo",
@@ -333,17 +313,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Success_NoShortName) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kOk, status);
-  ASSERT_TRUE(system_extension.get());
-  EXPECT_FALSE(system_extension->short_name.has_value());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_FALSE(result.value().short_name.has_value());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Success_EmptyShortName) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Success_EmptyShortName) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
     "type": "echo",
@@ -353,17 +327,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Success_EmptyShortName) {
     "companion_web_app_url": "https://test.example/"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kOk, status);
-  ASSERT_TRUE(system_extension.get());
-  EXPECT_FALSE(system_extension->short_name.has_value());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_FALSE(result.value().short_name.has_value());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest, Success_NoCompanionWebAppUrl) {
+TEST_P(SystemExtensionsSandboxedUnpackerTest, Success_NoCompanionWebAppUrl) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
     "type": "echo",
@@ -372,17 +340,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest, Success_NoCompanionWebAppUrl) {
     "short_name": "Test"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kOk, status);
-  ASSERT_TRUE(system_extension.get());
-  EXPECT_FALSE(system_extension->companion_web_app_url.has_value());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_FALSE(result.value().companion_web_app_url.has_value());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest,
+TEST_P(SystemExtensionsSandboxedUnpackerTest,
        Success_InvalidCompanionWebAppUrl) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
@@ -393,17 +355,11 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest,
     "companion_web_app_url": "foobar"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kOk, status);
-  ASSERT_TRUE(system_extension.get());
-  EXPECT_FALSE(system_extension->companion_web_app_url.has_value());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_FALSE(result.value().companion_web_app_url.has_value());
 }
 
-TEST_F(SystemExtensionsSandboxedUnpackerTest,
+TEST_P(SystemExtensionsSandboxedUnpackerTest,
        Success_InsecureCompanionWebAppUrl) {
   static constexpr const char kSystemExtensionManifest[] = R"({
     "id": "01020304",
@@ -414,12 +370,38 @@ TEST_F(SystemExtensionsSandboxedUnpackerTest,
     "companion_web_app_url": "http://test.example"
   })";
 
-  std::unique_ptr<SystemExtension> system_extension;
-  Status status;
-  std::tie(status, system_extension) =
-      GetSystemExtensionFromStringAndWait(kSystemExtensionManifest);
-
-  EXPECT_EQ(Status::kOk, status);
-  ASSERT_TRUE(system_extension.get());
-  EXPECT_FALSE(system_extension->companion_web_app_url.has_value());
+  auto result = CallGetSystemExtensionFrom(kSystemExtensionManifest);
+  EXPECT_FALSE(result.value().companion_web_app_url.has_value());
 }
+
+TEST_P(SystemExtensionsSandboxedUnpackerFromDirTest, Failure_NoDir) {
+  // Create a directory and delete a directory to get a unique file path to a
+  // non existent directory.
+  base::ScopedTempDir system_extension_dir;
+  ASSERT_TRUE(system_extension_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(base::DeleteFile(system_extension_dir.GetPath()));
+
+  auto result =
+      GetSystemExtensionFromDirAndWait(system_extension_dir.GetPath());
+  EXPECT_EQ(Status::kFailedDirectoryMissing, result.status());
+}
+
+TEST_P(SystemExtensionsSandboxedUnpackerFromDirTest, Failure_NoManifest) {
+  base::ScopedTempDir system_extension_dir;
+  ASSERT_TRUE(system_extension_dir.CreateUniqueTempDir());
+
+  auto result =
+      GetSystemExtensionFromDirAndWait(system_extension_dir.GetPath());
+  EXPECT_EQ(Status::kFailedManifestReadError, result.status());
+}
+
+INSTANTIATE_TEST_SUITE_P(CreateFromDir,
+                         SystemExtensionsSandboxedUnpackerFromDirTest,
+                         testing::Values(TestMethod::kFromDir),
+                         TestMethodToString);
+
+INSTANTIATE_TEST_SUITE_P(CreateFrom,
+                         SystemExtensionsSandboxedUnpackerTest,
+                         testing::Values(TestMethod::kFromDir,
+                                         TestMethod::kFromString),
+                         TestMethodToString);

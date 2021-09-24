@@ -42,8 +42,19 @@
 #include "src/sem/storage_texture_type.h"
 #include "src/sem/struct.h"
 #include "src/sem/variable.h"
+#include "src/transform/add_empty_entry_point.h"
 #include "src/transform/calculate_array_length.h"
-#include "src/transform/hlsl.h"
+#include "src/transform/canonicalize_entry_point_io.h"
+#include "src/transform/decompose_memory_access.h"
+#include "src/transform/external_texture_transform.h"
+#include "src/transform/fold_trivial_single_use_lets.h"
+#include "src/transform/inline_pointer_lets.h"
+#include "src/transform/loop_to_for_loop.h"
+#include "src/transform/manager.h"
+#include "src/transform/pad_array_elements.h"
+#include "src/transform/promote_initializers_to_const_var.h"
+#include "src/transform/simplify.h"
+#include "src/transform/zero_init_workgroup_memory.h"
 #include "src/utils/defer.h"
 #include "src/utils/get_or_create.h"
 #include "src/utils/scoped_assignment.h"
@@ -102,19 +113,51 @@ std::ostream& operator<<(std::ostream& s, const RegisterAndSpace& rs) {
 
 }  // namespace
 
+SanitizedResult Sanitize(const Program* in, bool disable_workgroup_init) {
+  transform::Manager manager;
+  transform::DataMap data;
+
+  // Attempt to convert `loop`s into for-loops. This is to try and massage the
+  // output into something that will not cause FXC to choke or misbehave.
+  manager.Add<transform::FoldTrivialSingleUseLets>();
+  manager.Add<transform::LoopToForLoop>();
+
+  if (!disable_workgroup_init) {
+    // ZeroInitWorkgroupMemory must come before CanonicalizeEntryPointIO as
+    // ZeroInitWorkgroupMemory may inject new builtin parameters.
+    manager.Add<transform::ZeroInitWorkgroupMemory>();
+  }
+  manager.Add<transform::CanonicalizeEntryPointIO>();
+  manager.Add<transform::InlinePointerLets>();
+  // Simplify cleans up messy `*(&(expr))` expressions from InlinePointerLets.
+  manager.Add<transform::Simplify>();
+  // DecomposeMemoryAccess must come after InlinePointerLets as we cannot take
+  // the address of calls to DecomposeMemoryAccess::Intrinsic. Must also come
+  // after Simplify, as we need to fold away the address-of and defers of
+  // `*(&(intrinsic_load()))` expressions.
+  manager.Add<transform::DecomposeMemoryAccess>();
+  // CalculateArrayLength must come after DecomposeMemoryAccess, as
+  // DecomposeMemoryAccess special-cases the arrayLength() intrinsic, which
+  // will be transformed by CalculateArrayLength
+  manager.Add<transform::CalculateArrayLength>();
+  manager.Add<transform::ExternalTextureTransform>();
+  manager.Add<transform::PromoteInitializersToConstVar>();
+  manager.Add<transform::PadArrayElements>();
+  manager.Add<transform::AddEmptyEntryPoint>();
+
+  data.Add<transform::CanonicalizeEntryPointIO::Config>(
+      transform::CanonicalizeEntryPointIO::ShaderStyle::kHlsl);
+
+  SanitizedResult result;
+  result.program = std::move(manager.Run(in, data).program);
+  return result;
+}
+
 GeneratorImpl::GeneratorImpl(const Program* program) : TextGenerator(program) {}
 
 GeneratorImpl::~GeneratorImpl() = default;
 
 bool GeneratorImpl::Generate() {
-  if (!builder_.HasTransformApplied<transform::Hlsl>()) {
-    diagnostics_.add_error(
-        diag::System::Writer,
-        "HLSL writer requires the transform::Hlsl sanitizer to have been "
-        "applied to the input program");
-    return false;
-  }
-
   const TypeInfo* last_kind = nullptr;
   size_t last_padding_line = 0;
 
@@ -869,6 +912,7 @@ bool GeneratorImpl::EmitStorageBufferAccess(
     case Op::kAtomicLoad:
     case Op::kAtomicStore:
     case Op::kAtomicAdd:
+    case Op::kAtomicSub:
     case Op::kAtomicMax:
     case Op::kAtomicMin:
     case Op::kAtomicAnd:
@@ -930,7 +974,14 @@ bool GeneratorImpl::EmitStorageAtomicCall(
         }
         l << " = 0;";
       }
-      line(&buf) << "buffer." << hlsl << "(offset, value, original_value);";
+      {
+        auto l = line(&buf);
+        l << "buffer." << hlsl << "(offset, ";
+        if (intrinsic->op == Op::kAtomicSub) {
+          l << "-";
+        }
+        l << "value, original_value);";
+      }
       line(&buf) << "return original_value;";
       return name;
     };
@@ -938,6 +989,10 @@ bool GeneratorImpl::EmitStorageAtomicCall(
     switch (intrinsic->op) {
       case Op::kAtomicAdd:
         return rmw("atomicAdd", "InterlockedAdd");
+
+      case Op::kAtomicSub:
+        // Use add with the operand negated.
+        return rmw("atomicSub", "InterlockedAdd");
 
       case Op::kAtomicMax:
         return rmw("atomicMax", "InterlockedMax");
@@ -1130,6 +1185,10 @@ bool GeneratorImpl::EmitWorkgroupAtomicCall(std::ostream& out,
         if (i > 0) {
           pre << ", ";
         }
+        if (i == 1 && intrinsic->Type() == sem::IntrinsicType::kAtomicSub) {
+          // Sub uses InterlockedAdd with the operand negated.
+          pre << "-";
+        }
         if (!EmitExpression(pre, arg)) {
           return false;
         }
@@ -1240,6 +1299,7 @@ bool GeneratorImpl::EmitWorkgroupAtomicCall(std::ostream& out,
     }
 
     case sem::IntrinsicType::kAtomicAdd:
+    case sem::IntrinsicType::kAtomicSub:
       return call("InterlockedAdd");
 
     case sem::IntrinsicType::kAtomicMax:

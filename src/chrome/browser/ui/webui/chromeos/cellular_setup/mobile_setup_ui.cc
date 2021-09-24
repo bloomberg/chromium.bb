@@ -420,19 +420,19 @@ void MobileSetupHandler::Reset() {
 }
 
 void MobileSetupHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kJsApiStartActivation,
       base::BindRepeating(&MobileSetupHandler::HandleStartActivation,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kJsApiSetTransactionStatus,
       base::BindRepeating(&MobileSetupHandler::HandleSetTransactionStatus,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kJsApiPaymentPortalLoad,
       base::BindRepeating(&MobileSetupHandler::HandlePaymentPortalLoad,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kJsGetDeviceInfo,
       base::BindRepeating(&MobileSetupHandler::HandleGetDeviceInfo,
                           base::Unretained(this)));
@@ -463,7 +463,7 @@ void MobileSetupHandler::HandleSetTransactionStatus(
     return;
 
   const size_t kSetTransactionStatusParamCount = 1;
-  if (args->GetSize() != kSetTransactionStatusParamCount)
+  if (args->GetList().size() != kSetTransactionStatusParamCount)
     return;
   // Get change callback function name.
   std::string status;
@@ -480,7 +480,7 @@ void MobileSetupHandler::HandlePaymentPortalLoad(const base::ListValue* args) {
     return;
 
   const size_t kPaymentPortalLoadParamCount = 1;
-  if (args->GetSize() != kPaymentPortalLoadParamCount)
+  if (args->GetList().size() != kPaymentPortalLoadParamCount)
     return;
   // Get change callback function name.
   std::string result;

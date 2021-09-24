@@ -1072,7 +1072,8 @@ void WebTestControlHost::RenderViewHostChanged(RenderViewHost* old_host,
                                                RenderViewHost* new_host) {
   // Notifies the main frame of |old_host| that it is deactivated while it's
   // kept alive in back-forward cache.
-  GetWebTestRenderFrameRemote(old_host->GetMainFrame())->OnDeactivated();
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(old_host);
+  GetWebTestRenderFrameRemote(rvhi->GetMainRenderFrameHost())->OnDeactivated();
 }
 
 void WebTestControlHost::RenderViewDeleted(RenderViewHost* render_view_host) {
@@ -1281,8 +1282,7 @@ void WebTestControlHost::OnDumpFrameLayoutResponse(int frame_tree_node_id,
     auto it =
         frame_to_layout_dump_map_.find(render_frame_host->GetFrameTreeNodeId());
     if (it != frame_to_layout_dump_map_.end()) {
-      const std::string& dump = it->second;
-      stitched_layout_dump.append(dump);
+      stitched_layout_dump.append(it->second);
     }
   }
 
@@ -1634,7 +1634,7 @@ void WebTestControlHost::SimulateWebNotificationClick(
     const absl::optional<std::u16string>& reply) {
   auto* client = WebTestContentBrowserClient::Get();
   auto* context = client->GetWebTestBrowserContext();
-  auto* service = client->GetPlatformNotificationService(context);
+  auto* service = context->GetPlatformNotificationService();
   static_cast<MockPlatformNotificationService*>(service)->SimulateClick(
       title,
       action_index == std::numeric_limits<int32_t>::min()
@@ -1647,7 +1647,7 @@ void WebTestControlHost::SimulateWebNotificationClose(const std::string& title,
                                                       bool by_user) {
   auto* client = WebTestContentBrowserClient::Get();
   auto* context = client->GetWebTestBrowserContext();
-  auto* service = client->GetPlatformNotificationService(context);
+  auto* service = context->GetPlatformNotificationService();
   static_cast<MockPlatformNotificationService*>(service)->SimulateClose(
       title, by_user);
 }

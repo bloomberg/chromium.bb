@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -37,6 +38,7 @@
 #include "fuchsia/engine/browser/media_resource_provider_service.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
+#include "fuchsia/engine/browser/web_engine_memory_inspector.h"
 #include "fuchsia/engine/common/cast_streaming.h"
 #include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -126,6 +128,10 @@ int WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   component_inspector_ = std::make_unique<sys::ComponentInspector>(
       base::ComponentContextForProcess());
   cr_fuchsia::PublishVersionInfoToInspect(component_inspector_.get());
+
+  // Add a node providing memory details for this whole web instance.
+  memory_inspector_ =
+      std::make_unique<WebEngineMemoryInspector>(component_inspector_->root());
 
   const auto* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -316,11 +322,17 @@ void WebEngineBrowserMainParts::OnIntlProfileChanged(
       base::FuchsiaIntlProfileWatcher::GetPrimaryLocaleIdFromProfile(profile);
   base::i18n::SetICUDefaultLocale(primary_locale);
 
-  // Reload locale-specific resources.
-  std::string loaded_locale =
-      ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(
-          base::i18n::GetConfiguredLocale());
-  VLOG(1) << "Reloaded locale resources: " << loaded_locale;
+  {
+    // Reloading locale-specific resources requires synchronous blocking.
+    // Locale changes should not be frequent enough for this to cause jank.
+    base::ScopedAllowBlocking allow_blocking;
+
+    std::string loaded_locale =
+        ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(
+            base::i18n::GetConfiguredLocale());
+
+    VLOG(1) << "Reloaded locale resources: " << loaded_locale;
+  }
 
   // Reconfigure each web.Context's NetworkContext with the new setting.
   for (auto& binding : context_bindings_.bindings()) {

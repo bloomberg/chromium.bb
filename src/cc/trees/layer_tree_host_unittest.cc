@@ -9641,7 +9641,11 @@ class LayerTreeHostUkmSmoothnessMetric : public LayerTreeTest {
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                   const viz::BeginFrameArgs& args,
                                   bool has_damage) override {
-    host_impl->dropped_frame_counter()->OnFcpReceived();
+    last_args_ = args;
+    if (!fcp_sent_) {
+      host_impl->dropped_frame_counter()->OnFcpReceived();
+      fcp_sent_ = true;
+    }
   }
 
   void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) override {
@@ -9654,7 +9658,7 @@ class LayerTreeHostUkmSmoothnessMetric : public LayerTreeTest {
     }
 
     // Mark every frame as a dropped frame affecting smoothness.
-    host_impl->dropped_frame_counter()->OnEndFrame(viz::BeginFrameArgs(), true);
+    host_impl->dropped_frame_counter()->OnEndFrame(last_args_, true);
     host_impl->SetNeedsRedraw();
     --frames_counter_;
   }
@@ -9662,6 +9666,8 @@ class LayerTreeHostUkmSmoothnessMetric : public LayerTreeTest {
  private:
   const uint32_t kTotalFramesForTest = 5;
   uint32_t frames_counter_ = kTotalFramesForTest;
+  bool fcp_sent_ = false;
+  viz::BeginFrameArgs last_args_;
   base::ReadOnlySharedMemoryRegion shmem_region_;
 };
 
@@ -9687,7 +9693,11 @@ class LayerTreeHostUkmSmoothnessMemoryOwnership : public LayerTreeTest {
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                   const viz::BeginFrameArgs& args,
                                   bool has_damage) override {
-    host_impl->dropped_frame_counter()->OnFcpReceived();
+    last_args_ = args;
+    if (!fcp_sent_) {
+      host_impl->dropped_frame_counter()->OnFcpReceived();
+      fcp_sent_ = true;
+    }
     host_impl->SetNeedsCommit();
   }
 
@@ -9701,7 +9711,7 @@ class LayerTreeHostUkmSmoothnessMemoryOwnership : public LayerTreeTest {
     }
 
     // Mark every frame as a dropped frame affecting smoothness.
-    host_impl->dropped_frame_counter()->OnEndFrame(viz::BeginFrameArgs(), true);
+    host_impl->dropped_frame_counter()->OnEndFrame(last_args_, true);
     host_impl->SetNeedsRedraw();
     --frames_counter_;
   }
@@ -9714,6 +9724,8 @@ class LayerTreeHostUkmSmoothnessMemoryOwnership : public LayerTreeTest {
  private:
   const uint32_t kTotalFramesForTest = 50;
   uint32_t frames_counter_ = kTotalFramesForTest;
+  bool fcp_sent_ = false;
+  viz::BeginFrameArgs last_args_;
   base::ReadOnlySharedMemoryRegion shmem_region_;
 };
 
@@ -9731,7 +9743,8 @@ class LayerTreeHostTestDocumentTransitionsPropagatedToMetadata
     layer_tree_host()->AddDocumentTransitionRequest(
         DocumentTransitionRequest::CreatePrepare(
             DocumentTransitionRequest::Effect::kExplode,
-            /*document_tag=*/0, /*shared_element_count=*/0,
+            /*document_tag=*/0, DocumentTransitionRequest::TransitionConfig(),
+            /*shared_elements=*/{},
             base::BindLambdaForTesting([this]() { CommitLambdaCalled(); })));
     layer_tree_host()->AddDocumentTransitionRequest(
         DocumentTransitionRequest::CreateStart(

@@ -9,7 +9,7 @@ import {PaymentsManagerImpl} from 'chrome://settings/lazy_load.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
 import {createCreditCardEntry, createEmptyCreditCardEntry,TestPaymentsManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
-import {eventToPromise, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
+import {eventToPromise, isVisible, whenAttributeIs} from 'chrome://test/test_util.js';
 
 // clang-format on
 
@@ -55,7 +55,7 @@ suite('PaymentsSection', function() {
     const paymentsManager = new TestPaymentsManager();
     paymentsManager.data.creditCards = creditCards;
     paymentsManager.data.upiIds = upiIds;
-    PaymentsManagerImpl.instance_ = paymentsManager;
+    PaymentsManagerImpl.setInstance(paymentsManager);
 
     const section = document.createElement('settings-payments-section');
     section.prefs = {autofill: prefValues};
@@ -599,7 +599,7 @@ suite('PaymentsSection', function() {
 
   test('CanMakePaymentToggle_RecordsMetrics', async function() {
     const testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
+    MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
 
     const section = createPaymentsSection(
         /*creditCards=*/[], /*upiIds=*/[], /*prefValues=*/ {});

@@ -20,6 +20,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/apps/intent_helper/intent_picker_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -79,8 +80,8 @@
 #include "chrome/browser/ui/user_education/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/buildflags.h"
@@ -144,7 +145,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -249,6 +250,15 @@ ReadingListModel* GetReadingListModel(Browser* browser) {
   if (!model || !model->loaded())
     return nullptr;  // Ignore requests until model has loaded.
   return model;
+}
+
+bool CanMoveWebContentsToReadLater(Browser* browser,
+                                   content::WebContents* web_contents,
+                                   ReadingListModel* model,
+                                   GURL* url,
+                                   std::u16string* title) {
+  return model && GetTabURLAndTitleToSave(web_contents, url, title) &&
+         model->IsUrlSupported(*url) && !browser->profile()->IsGuestSession();
 }
 
 }  // namespace
@@ -1111,15 +1121,13 @@ bool CanBookmarkAllTabs(const Browser* browser) {
 }
 
 bool CanMoveActiveTabToReadLater(Browser* browser) {
+  GURL url;
+  std::u16string title;
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   ReadingListModel* model = GetReadingListModel(browser);
-  // |web_contents| can be nullptr if the last tab in the browser was closed
-  // but the browser wasn't closed yet. https://crbug.com/799668
-  if (!web_contents || !model)
-    return false;
-  GURL url = GetURLToBookmark(web_contents);
-  return model->IsUrlSupported(url);
+  return CanMoveWebContentsToReadLater(browser, web_contents, model, &url,
+                                       &title);
 }
 
 bool MoveCurrentTabToReadLater(Browser* browser) {
@@ -1131,9 +1139,10 @@ bool MoveTabToReadLater(Browser* browser, content::WebContents* web_contents) {
   GURL url;
   std::u16string title;
   ReadingListModel* model = GetReadingListModel(browser);
-  if (!model || !GetTabURLAndTitleToSave(web_contents, &url, &title) ||
-      !model->IsUrlSupported(url))
+  if (!CanMoveWebContentsToReadLater(browser, web_contents, model, &url,
+                                     &title)) {
     return false;
+  }
   model->AddEntry(url, base::UTF16ToUTF8(title),
                   reading_list::EntrySource::ADDED_VIA_CURRENT_APP);
   MaybeShowBookmarkBarForReadLater(browser);
@@ -1344,6 +1353,7 @@ void Print(Browser* browser) {
 }
 
 bool CanPrint(Browser* browser) {
+#if BUILDFLAG(ENABLE_PRINTING)
   // Do not print when printing is disabled via pref or policy.
   // Do not print when a page has crashed.
   // Do not print when a constrained window is showing. It's confusing.
@@ -1356,6 +1366,9 @@ bool CanPrint(Browser* browser) {
          (current_tab && !current_tab->IsCrashed()) &&
          !(IsShowingWebContentsModalDialog(browser) ||
            GetContentRestrictions(browser) & CONTENT_RESTRICTION_PRINT);
+#else   // BUILDFLAG(ENABLE_PRINTING)
+  return false;
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 }
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -1496,6 +1509,11 @@ void FocusNextPane(Browser* browser) {
 void FocusPreviousPane(Browser* browser) {
   base::RecordAction(UserMetricsAction("FocusPreviousPane"));
   browser->window()->RotatePaneFocus(false);
+}
+
+void FocusWebContentsPane(Browser* browser) {
+  base::RecordAction(UserMetricsAction("FocusWebContentsPane"));
+  browser->window()->FocusWebContentsPane();
 }
 
 void ToggleDevToolsWindow(Browser* browser,
@@ -1698,6 +1716,8 @@ Browser* OpenInChrome(Browser* hosted_app_browser) {
       source_tabstrip->DetachWebContentsAtForInsertion(
           source_tabstrip->active_index()),
       true);
+  apps::MaybeShowIntentPicker(
+      target_browser->tab_strip_model()->GetActiveWebContents());
   target_browser->window()->Show();
   return target_browser;
 }

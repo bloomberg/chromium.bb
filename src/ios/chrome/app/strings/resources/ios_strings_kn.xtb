@@ -28,7 +28,6 @@
 <translation id="1165039591588034296">ದೋಷ</translation>
 <translation id="1172898394251786223">ಮುಂದಿನ ಕ್ಷೇತ್ರ</translation>
 <translation id="1176932207622159128">ಚಿತ್ರವನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ</translation>
-<translation id="1180526666083833456">ಸಾಧನಗಳಾದ್ಯಂತ ಸಿಂಕ್ ಮಾಡಿ ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಿ.</translation>
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="1207113853726624428">ಹೊಸ ಹುಡುಕಾಟ</translation>
 <translation id="1209206284964581585">ಸದ್ಯಕ್ಕೆ ಮರೆಮಾಡಿ</translation>
@@ -117,6 +116,7 @@
 <translation id="2073572773299281212"><ph name="DAYS" /> ದಿನಗಳ ಹಿಂದೆ ಸಕ್ರಿಯ</translation>
 <translation id="2074131957428911366">ನೀವು ಏನನ್ನು ಸಿಂಕ್ ಮಾಡಬೇಕು ಎಂಬುದನ್ನು <ph name="BEGIN_LINK" />ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಯಾವಾಗ ಬೇಕಾದರೂ ಆರಿಸಿಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="2079545284768500474">ರದ್ದುಮಾಡಿ</translation>
+<translation id="2080769225927880590">ಮಾನ್ಯವಾದ ಖಾತೆಯ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="209018056901015185">ಡೆಸ್ಕ್‌ಟಾಪ್‌ ಸೈಟ್‌ ಅನ್ನು ವಿನಂತಿಸಿ</translation>
 <translation id="2103075008456228677">history.google.com ತೆರೆಯಿರಿ</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ಐಟಂಗಳನ್ನು ಸರಿಸಲಾಗಿದೆ</translation>
@@ -135,7 +135,6 @@
 <translation id="2302742851632557585">ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿ ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಯಿಸಿ</translation>
 <translation id="2316709634732130529">ಸೂಚಿಸಿರುವ ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ</translation>
 <translation id="2320166752086256636">ಕೀಬೋರ್ಡ್ ಮರೆಮಾಡಿ</translation>
-<translation id="2339560363438331454">ಸಿಂಕ್ ಮತ್ತು Google ಸೇವೆಗಳು</translation>
 <translation id="2351097562818989364">ನಿಮ್ಮ ಅನುವಾದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರು ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="235789365079050412">Google ಗೌಪ್ಯತೆ ನೀತಿ</translation>
 <translation id="2359043044084662842">Translate</translation>
@@ -185,7 +184,6 @@
 <translation id="2820289420301699633">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು Chrome ಮೇಲೆ ನಿಯಂತ್ರಣವನ್ನು ಹೊಂದಿದ್ದಾರೆ ಮತ್ತು ಅದರ ಡೇಟಾವನ್ನು ಪ್ರವೇಶಿಸಬಹುದು</translation>
 <translation id="2830972654601096923">ವಿಳಾಸಗಳನ್ನು ನಿರ್ವಹಿಸಿ...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
-<translation id="2840687315230832938">ಆರಂಭಿಕ ಸಿಂಕ್ ಸೆಟಪ್ ಪೂರ್ಣಗೊಂಡಿಲ್ಲ</translation>
 <translation id="2843803966603263712">ಅನುವಾದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸಿ</translation>
 <translation id="2848086008667475748">ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಡೀಫಾಲ್ಟ್ ಎಂಬುದನ್ನು ಬದಲಿಸಿ…</translation>
 <translation id="2858204748079866344">ನಿಮ್ಮ ಗೌಪ್ಯತೆಯನ್ನು ರಕ್ಷಿಸಲು, Chrome ಈ ಫೀಲ್ಡ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಸ್ವಯಂ ಭರ್ತಿ ಮಾಡುವುದಿಲ್ಲ.</translation>
@@ -224,7 +222,6 @@
 <translation id="3153862085237805241">ಕಾರ್ಡ್‌ ಅನ್ನು ಉಳಿಸಿ</translation>
 <translation id="3157387275655328056">ಓದುವ ಪಟ್ಟಿಗೆ ಸೇರಿಸಿ</translation>
 <translation id="3157684681743766797">ಎಲ್ಲವನ್ನೂ ಗುರುತಿಸಿ…</translation>
-<translation id="3161291298470460782">ಇದು ನಿಮ್ಮನ್ನು ಸೈನ್ ಔಟ್ ಮಾಡುತ್ತದೆ, ಸಿಂಕ್ ಅನ್ನು ಆಫ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ಈ ಸಾಧನದಲ್ಲಿರುವ ಎಲ್ಲಾ Chrome ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ. ಸಿಂಕ್ ಮಾಡಿರುವ ನಿಮ್ಮ ಡೇಟಾ ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಯುತ್ತದೆ.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3175081911749765310">ವೆಬ್‌ ಸೇವೆಗಳು</translation>
 <translation id="3178650076442119961">ಇಂದು ಸಕ್ರಿಯ</translation>
@@ -233,6 +230,7 @@
 <translation id="3184767182050912705"><ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> ಬಳಸಿಕೊಂಡು ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="3207960819495026254">ಬುಕ್‌ಮಾರ್ಕ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3224641773458703735">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಲು, ನೀವು ಮೊದಲು ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಪಾಸ್‌ಕೋಡ್ ಅನ್ನು ಹೊಂದಿಸಬೇಕು.</translation>
+<translation id="3230318355092723906">ಸಿಂಕ್ ಆಫ್ ಆಗಿರುವಾಗ, ನೀವು ಈಗಲೂ ಈ ಸಾಧನದಲ್ಲಿ ನಿಮ್ಮ ಎಲ್ಲಾ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನೋಡಬಹುದು. ನೀವು ಬದಲಾವಣೆಗಳನ್ನು ಮಾಡಿದರೆ, ಅವುಗಳು ನಿಮ್ಮ ಖಾತೆಗೆ ಸಿಂಕ್ ಆಗುವುದಿಲ್ಲ.</translation>
 <translation id="3240426699337459095">ಲಿಂಕ್ ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="3244271242291266297">ಮಿಮೀ</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> ರಲ್ಲಿ <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
@@ -267,7 +265,6 @@
 <translation id="3494788280727468875">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲು ದೃಢೀಕರಿಸಿ</translation>
 <translation id="35083190962747987">${url} ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="3519193562722059437">ವೆಬ್ ಬ್ರೌಸ್ ಮಾಡಲು ಟ್ಯಾಬ್ ತೆರೆಯಿರಿ.</translation>
-<translation id="3523473570015918798">ಸೈನ್ ಔಟ್ ಮಾಡುವುದರಿಂದ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ Chrome ಡೇಟಾವನ್ನು ಇನ್ನು ಮುಂದೆ ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸಿಂಕ್ ಮಾಡುವುದಿಲ್ಲ.</translation>
 <translation id="3527085408025491307">ಫೋಲ್ಡರ್</translation>
 <translation id="3529024052484145543">ಸುರಕ್ಷಿತವಾಗಿಲ್ಲ</translation>
 <translation id="3533202363250687977">ಎಲ್ಲಾ ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿ</translation>
@@ -360,6 +357,7 @@
 <translation id="4619564267100705184">ಇದು ನೀವೇ ಎಂಬುದನ್ನು ದೃಢೀಕರಿಸಿ</translation>
 <translation id="4619615317237390068">ಇತರ ಸಾಧನಗಳಿಂದ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="4620246317052452550">ನೀವು ಓದಿದ ಪುಟಗಳು</translation>
+<translation id="4620888520263267479">ಲಿಂಕ್ ಪೂರ್ವವೀಕ್ಷಣೆಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="4630540211544979320">ಪುಟಗಳನ್ನು ಅನುವಾದಿಸಿ</translation>
 <translation id="4634124774493850572">ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ</translation>
 <translation id="4636930964841734540">ಮಾಹಿತಿ</translation>
@@ -447,7 +445,6 @@
 <translation id="5457226814769348910">ಆಫ್‌ಲೈನ್ ಆವೃತ್ತಿಯನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="5489208564673669003">ಈ ಎಲ್ಲಾ ಸೈಟ್‌ಗಳಿಗಾಗಿ ಕುಕಿಗಳನ್ನು ನಿರ್ವಹಿಸಲು, <ph name="BEGIN_LINK" />ಕುಕಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="END_LINK" /> ನೋಡಿ.</translation>
 <translation id="5490005495580364134">ಎಲ್ಲಾ ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿಲ್ಲ)</translation>
-<translation id="5508435575041083207">ಸೈನ್ ಔಟ್ ಮಾಡಿ ಮತ್ತು ಈ ಸಾಧನದಲ್ಲಿರುವ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> ಗಂಟೆಯ ಹಿಂದೆ</translation>
 <translation id="5525269841082836315">ಪಾಸ್‌ಫ್ರೇಸ್ ರಚಿಸಿ</translation>
 <translation id="5532698011560297095">ಸೈನ್ ಇನ್ ಆಗಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
@@ -458,6 +455,7 @@
 <translation id="5556459405103347317">ಮರುಲೋಡ್‌</translation>
 <translation id="5580834567471114021">ನಂತರಕ್ಕಾಗಿ ಓದುವ ಪಟ್ಟಿಗೆ ಸೇರಿಸಬೇಕೆ?</translation>
 <translation id="5592679540098330836"><ph name="NAME" /> ರವರಿಗಾಗಿ ಸಿಂಕ್ ಆನ್ ಮಾಡು</translation>
+<translation id="560322036295180549">ನಿಮ್ಮ ಸಂಸ್ಥೆಯವರು ಆಫ್ ಮಾಡಿದ್ದಾರೆ.</translation>
 <translation id="5614553682702429503">ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸುವುದೇ?</translation>
 <translation id="5626245204502895507">ಈ ಸಮಯದಲ್ಲಿ ಫೈಲ್ ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="5631164295104953411">ಪಾವತಿ ವಿಧಾನವನ್ನು ಸೇರಿಸಿ</translation>
@@ -473,6 +471,8 @@
 <translation id="5737974891429562743">ಖಾತೆಯ ಸೈನ್-ಇನ್ ವಿವರಗಳು ಹಳೆಯದಾಗಿವೆ. ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ.</translation>
 <translation id="5738887413654608789">ನಿಮ್ಮ ಸುತ್ತಲಿನಲ್ಲಿರುವುದನ್ನು ಆಧರಿಸಿ, ಸಂಬಂಧಿಸಿದ ವೆಬ್ ಪುಟಗಳನ್ನು ಅನ್ವೇಷಿಸಲು ಇದು ನಿಮಗೆ ಅನುಮತಿಸುತ್ತದೆ.</translation>
 <translation id="5758631781033351321">ನಿಮ್ಮ ಓದುವ ಪಟ್ಟಿಯನ್ನು ಇಲ್ಲಿ ಕಾಣಬಹುದು</translation>
+<translation id="575902488528307720">ಚಿತ್ರಕ್ಕಾಗಿ ಹುಡುಕಿ</translation>
+<translation id="5781453543752460388">ಫೋಟೋಗಳನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="5782227691023083829">ಅನುವಾದ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5803566855766646066">ಈ ಹೊಸ ಕಾರ್ಡ್ ಅನ್ನು ತ್ಯಜಿಸಲು ನೀವು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ?</translation>
 <translation id="5812974770859303494">ಇದಕ್ಕೆ ಸೇರಿಸಿ...</translation>
@@ -510,6 +510,7 @@
 <translation id="6042308850641462728">ಇನ್ನಷ್ಟು</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6059830886158432458">ನಿಮ್ಮ ಕತೆಗಳು ಮತ್ತು ಚಟುವಟಿಕೆಯನ್ನು ಇಲ್ಲಿ ನಿರ್ವಹಿಸಿ</translation>
+<translation id="6064824697233747382">ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ನೀತಿಯ ಪ್ರಕಾರ ನೀವು ಸಿಂಕ್ ಅನ್ನು ಆಫ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="6066301408025741299">ರದ್ದುಮಾಡಲು ಟ್ಯಾಪ್‌ ಮಾಡಿ</translation>
 <translation id="60829778314739003">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಮುಂದುವರಿಯಿರಿ</translation>
 <translation id="6084848228346514841">ಟ್ಯಾಬ್‌ಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
@@ -585,7 +586,6 @@
 <translation id="6628106477656132239">ಅವಧಿ ಮುಗಿಯುವ ದಿನಾಂಕ ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="6634432609054530164">ನಿಮ್ಮ ಸಂಸ್ಥೆಯು, ಅಜ್ಞಾತ ಮೋಡ್ ಅನ್ನು ಆಫ್ ಮಾಡಿದೆ</translation>
 <translation id="6638511529934826365">ಪಠ್ಯವನ್ನು ಝೂಮ್ ಮಾಡಿ…</translation>
-<translation id="6639730758971422557">ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್ ಅನ್ನು ಆನ್ ಮಾಡಲು, <ph name="BEGIN_LINK" />ಸಿಂಕ್ ಮತ್ತು Google ಸೇವೆಗಳನ್ನು<ph name="END_LINK" /> ತೆರೆಯಿರಿ ಮತ್ತು ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="6642362222295953972">ಪ್ರಸ್ತುತ ಟ್ಯಾಬ್‌ಗೆ ಬದಲಿಸಿ</translation>
 <translation id="6643016212128521049">ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="6645899968535965230">QR ಕೋಡ್‌: <ph name="PAGE_TITLE" /></translation>
@@ -610,6 +610,7 @@
 <translation id="6801927553864092214">ಖಾಸಗಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡಲು, ಅಜ್ಞಾತ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="6807889908376551050">ಎಲ್ಲಾ ತೋರಿಸಿ...</translation>
 <translation id="681368974849482173">ಐಟಂ ರಚಿಸಲಾಗಿದೆ</translation>
+<translation id="681450999322335505">ನಿಮ್ಮ ಸಂಸ್ಥೆಯು ಸಿಂಕ್ ಅನ್ನು ಆಫ್ ಮಾಡಿದೆ.</translation>
 <translation id="6830804042318138535">ಇನ್ನಷ್ಟು ಓದಿ</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="6842136130964845393">ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳಿಗೆ ನೀವು ಯಾವಾಗಲೂ ಪ್ರವೇಶಿಸಲು ಸಾಧ್ಯವಾಗುವ ಹಾಗೆ ನೋಡಿಕೊಳ್ಳಲು, ಅದು ನೀವೇ ಎಂದು ದೃಢೀಕರಿಸಿ</translation>
@@ -635,7 +636,6 @@
 <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="7004499039102548441">ಇತ್ತೀಚಿನ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="7006788746334555276">ವಿಷಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
-<translation id="7015203776128479407">ಪ್ರಾರಂಭಿಕ ಸಿಂಕ್ ಸೆಟಪ್ ಮುಗಿದಿಲ್ಲ. ಸಿಂಕ್ ಆಫ್ ಆಗಿದೆ.</translation>
 <translation id="7029809446516969842">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
 <translation id="7053983685419859001">ನಿರ್ಬಂಧಿಸು</translation>
 <translation id="7062545763355031412">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಖಾತೆಗಳನ್ನು ಬದಲಾಯಿಸಿ</translation>
@@ -658,12 +658,12 @@
 <translation id="7265758999917665941">ಈ ಸೈಟ್‌ಗೆ ಎಂದಿಗೂ ಬೇಡ</translation>
 <translation id="7272437679830969316">ನಿಮ್ಮ ಗುರುತನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ನಕಲಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="7291368939935408496">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತಿದೆ...</translation>
-<translation id="7293171162284876153">ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು, "ನಿಮ್ಮ Chrome ಡೇಟಾ ಸಿಂಕ್ ಮಾಡಿ" ಆಯ್ಕೆಯನ್ನು ಆನ್ ಮಾಡಿ.</translation>
 <translation id="7313347584264171202">ನಿಮ್ಮ ಅಜ್ಞಾತ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಇಲ್ಲಿ ಕಾಣಬಹುದು</translation>
 <translation id="7319242366286515846">ಮುಂದುವರಿಯುವ ಮೂಲಕ, ನೀವು <ph name="BEGIN_LINK" />ಸೇವಾ ನಿಯಮಗಳಿಗೆ<ph name="END_LINK" /> ಸಮ್ಮತಿಸುತ್ತೀರಿ</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> ಪ್ರತಿಶತ ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7340958967809483333">Discover ಗಾಗಿ ಆಯ್ಕೆಗಳು</translation>
 <translation id="7346909386216857016">ಸರಿ, ಅರ್ಥವಾಯಿತು</translation>
+<translation id="7347393021726115275">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಅನುಮೋದಿಸಿದ ಖಾತೆಗಳನ್ನು ಬಳಸಿಕೊಂಡು ಮಾತ್ರ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಬಹುದು. <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="734758817008927353">ಕಾರ್ಡ್ ಅನ್ನು ಉಳಿಸಲು ಆಯ್ಕೆಗಳು</translation>
 <translation id="7348502496356775519">ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ</translation>
 <translation id="7353432112255316844">ಇದು ನೀವೇ ಎಂಬುದನ್ನು ದೃಢೀಕರಿಸಿ</translation>
@@ -702,9 +702,6 @@
 <translation id="7701040980221191251">ಯಾವುದೂ ಇಲ್ಲ</translation>
 <translation id="7741325291586284254">ಹೊಸ ಅದೃಶ್ಯ ಟ್ಯಾಬ್ ಪುಟ</translation>
 <translation id="7765158879357617694">ಸರಿಸು</translation>
-<translation id="7771470029643830783">ಸೈನ್ ಔಟ್ ಮಾಡುವುದರಿಂದ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ Chrome ಡೇಟಾವನ್ನು ಇನ್ನು ಮುಂದೆ ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸಿಂಕ್ ಮಾಡುವುದಿಲ್ಲ.
-
-ಏಕೆಂದರೆ, ನಿಮ್ಮ ಖಾತೆಯನ್ನು <ph name="HOSTED_DOMAIN" /> ಡೊಮೇನ್ ಮೂಲಕ ನಿರ್ವಹಿಸಲಾಗುತ್ತದೆ, ಸೈನ್ ಔಟ್ ಮಾಡಿದಾಗ ಈ ಸಾಧನದಲ್ಲಿರುವ ನಿಮ್ಮ Chrome ಡೇಟಾವನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ. ಸಿಂಕ್ ಮಾಡಿರುವ ನಿಮ್ಮ ಡೇಟಾ ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಯುತ್ತದೆ.</translation>
 <translation id="7772032839648071052">ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ದೃಢೀಕರಿಸಿ</translation>
 <translation id="7778472311864276518">ಈ ಸಾಧನದಿಂದ ಖಾತೆಯನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="7781011649027948662">ಪುಟವನ್ನು ಅನುವಾದಿಸಬೇಕೇ?</translation>
@@ -717,6 +714,7 @@
 <translation id="7856733331829174190">ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="7859704718976024901">ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸ</translation>
 <translation id="7887198238286927132">ನಿಮ್ಮ ಗೌಪ್ಯತೆಯನ್ನು ರಕ್ಷಿಸಲು, Chrome ಈ ಫೀಲ್ಡ್ ಅನ್ನು ಸ್ವಯಂ ಭರ್ತಿ ಮಾಡುವುದಿಲ್ಲ.</translation>
+<translation id="7911190106180361398">ಎಲ್ಲವನ್ನೂ ಸಿಂಕ್ ಮಾಡಲು ನಿಮ್ಮ ಸಂಸ್ಥೆ ನಿಮಗೆ ಅನುಮತಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಎಕ್ಸ್‌ಪೋರ್ಟ್ ಮಾಡಿ...</translation>
 <translation id="794799177247607889">ಲಾಗ್ ಮಾಡುವುದನ್ನು ನಿಲ್ಲಿಸಿ</translation>
@@ -744,12 +742,13 @@
 <translation id="8080028325999236607">ಎಲ್ಲ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿ</translation>
 <translation id="8105368624971345109">ಆಫ್ ಮಾಡು</translation>
 <translation id="8114753159095730575">ಫೈಲ್‌ ಅನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡುವ ಸೌಲಭ್ಯ ಲಭ್ಯವಿದೆ. ಪರದೆಯ ಕೆಳಗಿನ ಭಾಗದಲ್ಲಿ ಆಯ್ಕೆಗಳು ಲಭ್ಯವಿವೆ.</translation>
-<translation id="8131740175452115882">ದೃಢೀಕರಿಸು</translation>
 <translation id="8156478151976189188">ಪಾಸ್‌ವರ್ಡ್ ಸಿಂಕ್ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿಲ್ಲ</translation>
+<translation id="8193953846147532858"><ph name="BEGIN_LINK" />ನಿಮ್ಮ ಸಾಧನಗಳು<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8197543752516192074">ಪುಟವನ್ನು ಅನುವಾದಿಸಿ</translation>
 <translation id="8205564605687841303">ರದ್ದುಮಾಡಿ</translation>
 <translation id="8206354486702514201">ಈ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ಜಾರಿಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="8225985093977202398">ಸಂಗ್ರಹಿಸಲಾಗಿರುವ ಚಿತ್ರಗಳು ಮತ್ತು ಫೈಲ್‌ಗಳು</translation>
+<translation id="8228176677386827255">ನಿಮ್ಮ ಸಾಧನವನ್ನು ನಿರ್ವಹಿಸಲಾಗಿದೆ. ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಖಾತೆಯ ಮೂಲಕ ಮಾತ್ರ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಬಹುದು.</translation>
 <translation id="8261506727792406068">ಅಳಿಸಿ</translation>
 <translation id="8271720166617117963">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಸೈನ್‌ ಇನ್‌ ಮಾಡಿ</translation>
 <translation id="8281781826761538115">ಡಿಫಾಲ್ಟ್ - <ph name="DEFAULT_LOCALE" /></translation>
@@ -774,7 +773,6 @@
 <translation id="8495097701594799854">ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಮೂಲಕ ಆಫ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="8503813439785031346">ಬಳಕೆದಾರರಹೆಸರು</translation>
 <translation id="850600235656508448">ಅದೃಶ್ಯ ಮೋಡ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
-<translation id="8510057420705599706">ಇದು ನಿಮ್ಮನ್ನು ಸೈನ್ ಔಟ್ ಮಾಡುತ್ತದೆ, ಸಿಂಕ್ ಅನ್ನು ಆಫ್ ಮಾಡುತ್ತದೆ, ಆದರೆ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ Chrome ಡೇಟಾವನ್ನು ಈ ಸಾಧನದಲ್ಲೇ ಉಳಿಸುತ್ತದೆ.</translation>
 <translation id="8517375800490286174">ಓಪನ್ ಸೋರ್ಸ್ ಪರವಾನಗಿಗಳು</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> ರಲ್ಲಿ <ph name="LAST_VISIBLE_TAB" /> ಮೂಲಕ <ph name="INCOGNITO" /> ಟ್ಯಾಬ್‌ಗಳು <ph name="FIRST_VISIBLE_TAB" /></translation>
 <translation id="8529767659511976195">ಹೊಸತು</translation>

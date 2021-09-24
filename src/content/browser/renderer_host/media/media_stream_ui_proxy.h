@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_stream_request.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -68,6 +69,23 @@ class CONTENT_EXPORT MediaStreamUIProxy {
 
   virtual void OnDeviceStopped(const std::string& label,
                                const DesktopMediaID& media_id);
+
+#if !defined(OS_ANDROID)
+  // Determines whether the captured display surface represented by |media_id|
+  // should be focused or not.
+  // Only the first call to this method on a given object has an effect; the
+  // rest are ignored.
+  //
+  // |is_from_microtask| and |is_from_timer| are used to distinguish:
+  // a. Explicit calls from the Web-application.
+  // b. Implicit calls resulting from the focusability-window-closing microtask.
+  // c. The browser-side timer.
+  // This distinction is reflected by UMA.
+  virtual void SetFocus(const DesktopMediaID& media_id,
+                        bool focus,
+                        bool is_from_microtask,
+                        bool is_from_timer);
+#endif
 
  protected:
   explicit MediaStreamUIProxy(RenderFrameHostDelegate* test_render_delegate);

@@ -613,6 +613,21 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetPaintTiming_NavigationToLargestContentfulPaint2(
         all_frames_largest_contentful_paint.Time().value().InMilliseconds());
   }
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      cross_site_sub_frame_largest_contentful_paint =
+          GetDelegate()
+              .GetLargestContentfulPaintHandler()
+              .CrossSiteSubframesLargestContentfulPaint();
+  if (cross_site_sub_frame_largest_contentful_paint.ContainsValidTime() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          cross_site_sub_frame_largest_contentful_paint.Time(),
+          GetDelegate())) {
+    builder
+        .SetPaintTiming_NavigationToLargestContentfulPaint2_CrossSiteSubFrame(
+            cross_site_sub_frame_largest_contentful_paint.Time()
+                .value()
+                .InMilliseconds());
+  }
   // TODO(crbug.com/1045640): Stop reporting the experimental obsolete versions.
   const page_load_metrics::ContentfulPaintTimingInfo&
       main_frame_experimental_largest_contentful_paint =
@@ -1123,7 +1138,14 @@ void UkmPageLoadMetricsObserver::RecordSmoothnessMetrics() {
       .SetAboveThreshold(smoothness_data.above_threshold)
       .SetWorstCase(smoothness_data.worst_smoothness)
       .SetTimingSinceFCPWorstCase(
-          smoothness_data.time_max_delta.InMilliseconds());
+          smoothness_data.time_max_delta.InMilliseconds())
+      .SetSmoothnessVeryGood(smoothness_data.buckets[0])
+      .SetSmoothnessGood(smoothness_data.buckets[1])
+      .SetSmoothnessOkay(smoothness_data.buckets[2])
+      .SetSmoothnessBad(smoothness_data.buckets[3])
+      .SetSmoothnessVeryBad25to50(smoothness_data.buckets[4])
+      .SetSmoothnessVeryBad50to75(smoothness_data.buckets[5])
+      .SetSmoothnessVeryBad75to100(smoothness_data.buckets[6]);
   if (smoothness_data.worst_smoothness_after1sec >= 0)
     builder.SetWorstCaseAfter1Sec(smoothness_data.worst_smoothness_after1sec);
   if (smoothness_data.worst_smoothness_after2sec >= 0)

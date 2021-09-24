@@ -27,12 +27,15 @@ import {fromNs, toNs} from '../common/time';
 
 import {Analytics, initAnalytics} from './analytics';
 import {FrontendLocalState} from './frontend_local_state';
+import {PivotTableHelper} from './pivot_table_helper';
 import {RafScheduler} from './raf_scheduler';
+import {Router} from './router';
 import {ServiceWorkerController} from './service_worker_controller';
 
 type Dispatch = (action: DeferredAction) => void;
 type TrackDataStore = Map<string, {}>;
 type QueryResultsStore = Map<string, {}|undefined>;
+type PivotTableHelperStore = Map<string, PivotTableHelper>;
 type AggregateDataStore = Map<string, AggregateData>;
 type Description = Map<string, string>;
 export interface SliceDetails {
@@ -163,6 +166,7 @@ class Globals {
   // TODO(hjd): Unify trackDataStore, queryResults, overviewStore, threads.
   private _trackDataStore?: TrackDataStore = undefined;
   private _queryResults?: QueryResultsStore = undefined;
+  private _pivotTableHelper?: PivotTableHelperStore = undefined;
   private _overviewStore?: OverviewStore = undefined;
   private _aggregateDataStore?: AggregateDataStore = undefined;
   private _threadMap?: ThreadMap = undefined;
@@ -182,6 +186,7 @@ class Globals {
   private _metricResult?: MetricResult = undefined;
   private _hasFtrace?: boolean = undefined;
   private _jobStatus?: Map<ConversionJobName, ConversionJobStatus> = undefined;
+  private _router?: Router = undefined;
 
   // TODO(hjd): Remove once we no longer need to update UUID on redraw.
   private _publishRedraw?: () => void = undefined;
@@ -200,19 +205,21 @@ class Globals {
     count: new Uint8Array(0),
   };
 
-  initialize(dispatch: Dispatch) {
+  initialize(dispatch: Dispatch, router: Router) {
     this._dispatch = dispatch;
+    this._router = router;
     this._state = createEmptyState();
     this._frontendLocalState = new FrontendLocalState();
     this._rafScheduler = new RafScheduler();
     this._serviceWorkerController = new ServiceWorkerController();
     this._testing =
-        self.location && self.location.hash.indexOf('testing=1') >= 0;
+        self.location && self.location.search.indexOf('testing=1') >= 0;
     this._logging = initAnalytics();
 
     // TODO(hjd): Unify trackDataStore, queryResults, overviewStore, threads.
     this._trackDataStore = new Map<string, {}>();
     this._queryResults = new Map<string, {}>();
+    this._pivotTableHelper = new Map<string, PivotTableHelper>();
     this._overviewStore = new Map<string, QuantizedLoad[]>();
     this._aggregateDataStore = new Map<string, AggregateData>();
     this._threadMap = new Map<number, ThreadDesc>();
@@ -224,6 +231,10 @@ class Globals {
     this._threadStateDetails = {};
     this._heapProfileDetails = {};
     this._cpuProfileDetails = {};
+  }
+
+  get router(): Router {
+    return assertExists(this._router);
   }
 
   get publishRedraw(): () => void {
@@ -273,6 +284,10 @@ class Globals {
 
   get queryResults(): QueryResultsStore {
     return assertExists(this._queryResults);
+  }
+
+  get pivotTableHelper(): PivotTableHelperStore {
+    return assertExists(this._pivotTableHelper);
   }
 
   get threads() {
@@ -488,6 +503,7 @@ class Globals {
     // TODO(hjd): Unify trackDataStore, queryResults, overviewStore, threads.
     this._trackDataStore = undefined;
     this._queryResults = undefined;
+    this._pivotTableHelper = undefined;
     this._overviewStore = undefined;
     this._threadMap = undefined;
     this._sliceDetails = undefined;

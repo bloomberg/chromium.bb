@@ -246,6 +246,15 @@ bool IsRemoteApp(const std::string& app_id) {
   return cache && cache->GetAppType(app_id) == apps::mojom::AppType::kRemote;
 }
 
+bool IsStandaloneBrowser(const std::string& app_id) {
+  AccountId account_id =
+      Shell::Get()->session_controller()->GetActiveAccountId();
+  apps::AppRegistryCache* cache =
+      apps::AppRegistryCacheWrapper::Get().GetAppRegistryCache(account_id);
+  return cache &&
+         cache->GetAppType(app_id) == apps::mojom::AppType::kStandaloneBrowser;
+}
+
 // Records the user metric action for whenever a shelf item is pinned or
 // unpinned.
 void RecordPinUnpinUserAction(bool pinned) {
@@ -1118,9 +1127,15 @@ bool ShelfView::StartDrag(const std::string& app_id,
   // to be pinned to give them the same (order) possibilities as a shortcut.
   if (!model_->IsAppPinned(app_id)) {
     ShelfModel::ScopedUserTriggeredMutation user_triggered(model_);
-    model_->PinAppWithID(app_id);
-    drag_and_drop_item_pinned_ = true;
+
+    if (model_->ItemIndexByAppID(app_id) >= 0) {
+      model_->PinExistingItemWithID(app_id);
+    } else {
+      model_->AddAndPinAppWithFactoryConstructedDelegate(app_id);
+      drag_and_drop_item_pinned_ = true;
+    }
   }
+
   views::View* drag_and_drop_view =
       view_model_->view_at(model_->ItemIndexByID(drag_and_drop_shelf_id_));
   DCHECK(drag_and_drop_view);
@@ -1309,7 +1324,7 @@ void ShelfView::PointerReleasedOnButton(const views::View* view,
         if (model_->IsAppPinned(drag_app_id)) {
           model_->UnpinAppWithID(drag_app_id);
         } else {
-          model_->PinAppWithID(drag_app_id);
+          model_->PinExistingItemWithID(drag_app_id);
         }
       }
     }
@@ -1459,7 +1474,7 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
     drag_icon_proxy_ = std::make_unique<AppDragIconProxy>(
         root_window, drag_view_->GetImage(), screen_location, gfx::Vector2d(),
         /*scale_factor=*/1.0f,
-        /*blur_radius=*/0);
+        /*use_blurred_background=*/false);
   }
 }
 
@@ -1591,7 +1606,7 @@ void ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
             root_window, drag_view_->GetImage(), screen_location,
             /*cursor_offset_from_center=*/gfx::Vector2d(),
             kDragAndDropProxyScale,
-            /*blur_radius=*/0);
+            /*use_blurred_background=*/false);
       }
 
       // Re-insert the item and return simply false since the caller will handle
@@ -1618,7 +1633,7 @@ void ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
       drag_icon_proxy_ = std::make_unique<AppDragIconProxy>(
           root_window, drag_view_->GetImage(), screen_location,
           cursor_offset_from_center, kDragAndDropProxyScale,
-          /*blur_radius=*/0);
+          /*use_blurred_background=*/false);
       delegate_->CancelScrollForItemDrag();
     }
 
@@ -1709,6 +1724,11 @@ ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
 
   // Note: Only pinned app shortcuts can be removed!
   const std::string& app_id = model_->items()[index].id.app_id;
+
+  // Pinned standalone browser apps should not be removable.
+  if (IsStandaloneBrowser(app_id))
+    return DRAGGABLE;
+
   return (type == TYPE_PINNED_APP && model_->IsAppPinned(app_id)) ? REMOVABLE
                                                                   : DRAGGABLE;
 }

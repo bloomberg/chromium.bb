@@ -37,6 +37,18 @@ class PrefService;
 
 namespace password_manager_util {
 
+// For credentials returned from PasswordStore::GetLogins, the enum specifies
+// the type of the match for the requested page. Higher value always means
+// weaker match.
+enum class GetLoginMatchType {
+  // Exact origin or Android credentials.
+  kExact,
+  // A web site affiliated with the requesting page.
+  kAffiliated,
+  // eTLD + 1 match.
+  kPSL,
+};
+
 // Update |credential| to reflect usage.
 void UpdateMetadataForUsage(password_manager::PasswordForm* credential);
 
@@ -101,6 +113,10 @@ void RemoveUselessCredentials(
 base::StringPiece GetSignonRealmWithProtocolExcluded(
     const password_manager::PasswordForm& form);
 
+// For credentials returned from PasswordStore::GetLogins, specifies the type of
+// the match for the requested page.
+GetLoginMatchType GetMatchType(const password_manager::PasswordForm& form);
+
 // Given all non-blocklisted |non_federated_matches|, finds and populates
 // |non_federated_same_scheme|, |best_matches|, and |preferred_match|
 // accordingly. For comparing credentials the following rule is used: non-psl
@@ -144,6 +160,9 @@ password_manager::PasswordForm MakeNormalizedBlocklistedForm(
 
 // Helper which checks if biometric authentication is available.
 bool CanUseBiometricAuth(device_reauth::BiometricAuthenticator* authenticator);
+
+// Strips any authentication data, as well as query and ref portions of URL.
+GURL StripAuthAndParams(const GURL& gurl);
 
 }  // namespace password_manager_util
 

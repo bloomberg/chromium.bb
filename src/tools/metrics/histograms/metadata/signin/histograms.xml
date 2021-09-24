@@ -129,6 +129,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Signin.AccountConsistencyPromoAfterDismissal"
     enum="AccountConsistencyPromoAfterDismissal" expires_after="2022-01-02">
+  <obsolete>
+    Removed 2021-08-23
+  </obsolete>
   <owner>triploblastic@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <summary>
@@ -222,8 +225,28 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
+<histogram name="Signin.AccountType.SigninConsent" enum="SigninAccountType"
+    expires_after="2022-04-01">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@chromium.org</owner>
+  <summary>
+    Records the sign-in consent by regular Gmail account or managed account.
+    Recorded when the user signs in (iOS only).
+  </summary>
+</histogram>
+
+<histogram name="Signin.AccountType.SyncConsent" enum="SigninAccountType"
+    expires_after="2022-04-01">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@chromium.org</owner>
+  <summary>
+    Records the sync consent done by regular Gmail account or managed account.
+    Recorded when the user signs in (iOS only).
+  </summary>
+</histogram>
+
 <histogram name="Signin.AndroidAccountInfoFetchTime" units="ms"
-    expires_after="2021-12-19">
+    expires_after="2022-02-20">
   <owner>aliceywang@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -337,7 +360,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AuthError" enum="GoogleServiceAuthError"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -453,6 +476,31 @@ prefs when the profile is loaded.  -->
   <summary>Outcome of the token fetch in Dice signin.</summary>
 </histogram>
 
+<histogram name="Signin.Enterprise.WorkProfile.ProfileCreatedWithPolicySet"
+    enum="BooleanCreated" expires_after="2022-09-14">
+  <owner>pastarmovj@chromium.org</owner>
+  <owner>ydago@chromium.org</owner>
+  <summary>
+    Whether the user chose to create a new work profile after a signin while
+    profile separation is enforced by policy. This is recorded after the user
+    accepts or refuses to create a new profile when shown the enterprise profile
+    confirmation dialog and enterprise profile separation is enforced by policy.
+  </summary>
+</histogram>
+
+<histogram name="Signin.Enterprise.WorkProfile.ProfileCreatedwithPolicyUnset"
+    enum="BooleanCreated" expires_after="2022-09-14">
+  <owner>pastarmovj@chromium.org</owner>
+  <owner>ydago@chromium.org</owner>
+  <summary>
+    Whether the user chose to create a new work profile after a signin while
+    profile separation is not enforced by policy. This is recorded after the
+    user accepts or refuses to create a new profile when shown the enterprise
+    profile confirmation dialog and enterprise profile separation is not
+    enforced by policy.
+  </summary>
+</histogram>
+
 <histogram name="Signin.Extensions.GaiaRemoteConsentFlowResult"
     enum="GaiaRemoteConsentFlowResult" expires_after="2021-12-12">
   <owner>alexilin@chromium.org</owner>
@@ -564,7 +612,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Intercept.HeuristicOutcome"
-    enum="SigninInterceptHeuristicOutcome" expires_after="2021-12-19">
+    enum="SigninInterceptHeuristicOutcome" expires_after="2022-02-20">
   <owner>droger@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -652,7 +700,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram base="true" name="Signin.InterceptResult"
-    enum="SigninInterceptResult" expires_after="2021-12-19">
+    enum="SigninInterceptResult" expires_after="2022-02-20">
 <!-- Name completed by histogram_suffixes name="SigninInterceptType" -->
 
   <owner>alexilin@chromium.org</owner>
@@ -998,7 +1046,7 @@ should be kept to monitor/debug signin Multilogin issues-->
 
 <histogram
     name="Signin.Reconciler.RejectedRequestsDueToThrottler.{RequestType}"
-    units="requests" expires_after="M95">
+    units="requests" expires_after="2022-09-30">
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>msalama@chromium.org</owner>
@@ -1421,7 +1469,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram name="Signin.SyncFirstSetupCompleteSource"
-    enum="SyncFirstSetupCompleteSource" expires_after="2021-10-10">
+    enum="SyncFirstSetupCompleteSource" expires_after="2022-04-01">
   <owner>triploblastic@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>Tracks where FirstSetupComplete bit is set from.</summary>

@@ -80,6 +80,7 @@ class MediaInterfaceProxy final
 #endif  // defined(OS_ANDROID)
 #if defined(OS_WIN)
   void CreateMediaFoundationRenderer(
+      mojo::PendingRemote<media::mojom::MediaLog> media_log_remote,
       mojo::PendingReceiver<media::mojom::Renderer> receiver,
       mojo::PendingReceiver<media::mojom::MediaFoundationRendererExtension>
           renderer_extension_receiver) final;
@@ -153,7 +154,7 @@ class MediaInterfaceProxy final
 
   // InterfacePtr to the remote InterfaceFactory implementation in the Media
   // Service hosted in the process specified by the "mojo_media_host" gn
-  // argument. Available options are browser, GPU and utility processes.
+  // argument. Available options are browser or GPU processes.
   std::unique_ptr<MediaInterfaceFactoryHolder> media_interface_factory_ptr_;
 
   // An interface factory bound to a secondary instance of the Media Service,

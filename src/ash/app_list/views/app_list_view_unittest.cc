@@ -26,6 +26,7 @@
 #include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
+#include "ash/app_list/views/folder_background_view.h"
 #include "ash/app_list/views/folder_header_view.h"
 #include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
@@ -56,6 +57,7 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
@@ -288,7 +290,7 @@ class AppListViewTest : public views::ViewsTestBase,
     return view_->app_list_main_view()->contents_view();
   }
 
-  AppsGridView* apps_grid_view() {
+  PagedAppsGridView* apps_grid_view() {
     return contents_view()->apps_container_view()->apps_grid_view();
   }
 
@@ -465,7 +467,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     // Add suggestion apps, a folder with apps and other app list items.
     const int kSuggestionAppNum = 3;
     const int kItemNumInFolder = 25;
-    const int kAppListItemNum = test_api_->TilesPerPage() + 1;
+    const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
     AppListTestModel* model = delegate_->GetTestModel();
     SearchModel* search_model = delegate_->GetSearchModel();
     for (size_t i = 0; i < kSuggestionAppNum; i++) {
@@ -764,7 +766,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     return view_->app_list_main_view()->contents_view();
   }
 
-  AppsGridView* apps_grid_view() {
+  PagedAppsGridView* apps_grid_view() {
     return main_view()
         ->contents_view()
         ->apps_container_view()
@@ -1219,8 +1221,10 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInSecondPageOfFolder) {
   EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
 
   // Select the second page.
-  app_list_folder_view()->items_grid_view()->pagination_model()->SelectPage(
-      1, false /* animate */);
+  ASSERT_FALSE(features::IsAppListBubbleEnabled());
+  static_cast<PagedAppsGridView*>(app_list_folder_view()->items_grid_view())
+      ->pagination_model()
+      ->SelectPage(1, false /* animate */);
 
   std::vector<views::View*> forward_view_list;
   const views::ViewModelT<AppListItemView>* view_model =
@@ -1410,7 +1414,16 @@ TEST_F(AppListViewFocusTest, CtrlASelectsAllTextInSearchbox) {
 
 // Tests that the first search result's view is selected after search results
 // are updated when the focus is on search box.
-TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
+// crbug.com/1242053: flaky on chromeos
+#if defined(OS_CHROMEOS)
+#define MAYBE_FirstResultSelectedAfterSearchResultsUpdated \
+  DISABLED_FirstResultSelectedAfterSearchResultsUpdated
+#else
+#define MAYBE_FirstResultSelectedAfterSearchResultsUpdated \
+  FirstResultSelectedAfterSearchResultsUpdated
+#endif
+TEST_F(AppListViewFocusTest,
+       MAYBE_FirstResultSelectedAfterSearchResultsUpdated) {
   Show();
 
   // Type something in search box to transition to HALF state and populate
@@ -1577,14 +1590,14 @@ TEST_F(AppListViewFocusTest, SelectionHighlightFollowsChangingPage) {
   apps_grid_view()->pagination_model()->SelectPage(1, false);
 
   // Test that focus followed to the next page.
-  EXPECT_EQ(view_model->view_at(test_api()->TilesPerPage()),
+  EXPECT_EQ(view_model->view_at(test_api()->TilesPerPage(0)),
             apps_grid_view()->selected_view());
 
   // Select the first page.
   apps_grid_view()->pagination_model()->SelectPage(0, false);
 
   // Test that focus followed.
-  EXPECT_EQ(view_model->view_at(test_api()->TilesPerPage() - 1),
+  EXPECT_EQ(view_model->view_at(test_api()->TilesPerPage(0) - 1),
             apps_grid_view()->selected_view());
 }
 
@@ -2437,7 +2450,7 @@ TEST_F(AppListViewTest, BackAction) {
   // Populate apps to fill up the first page and add a folder in the second
   // page.
   AppListTestModel* model = delegate_->GetTestModel();
-  const int kAppListItemNum = test_api_->TilesPerPage();
+  const int kAppListItemNum = test_api_->TilesPerPage(0);
   const int kItemNumInFolder = 5;
   model->PopulateApps(kAppListItemNum);
   model->CreateAndPopulateFolderWithApps(kItemNumInFolder);
@@ -2482,13 +2495,38 @@ TEST_F(AppListViewTest, BackAction) {
   EXPECT_EQ(0, apps_grid_view()->pagination_model()->selected_page());
 }
 
+TEST_F(AppListViewTest, CloseFolderByClickingBackground) {
+  Initialize(/*is_tablet_mode=*/false);
+
+  AppListTestModel* model = delegate_->GetTestModel();
+  model->CreateAndPopulateFolderWithApps(3);
+  EXPECT_EQ(1u, model->top_level_item_list()->item_count());
+  EXPECT_EQ(AppListFolderItem::kItemType,
+            model->top_level_item_list()->item_at(0)->GetItemType());
+
+  // Open the folder.
+  Show();
+  test_api_->PressItemAt(0);
+
+  AppsContainerView* apps_container_view =
+      contents_view()->apps_container_view();
+  EXPECT_TRUE(apps_container_view->IsInFolderView());
+
+  // Simulate mouse press on folder background to close the folder.
+  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_LEFT_MOUSE_BUTTON);
+  apps_container_view->folder_background_view()->OnMouseEvent(&event);
+  EXPECT_FALSE(apps_container_view->IsInFolderView());
+}
+
 // Tests that, in clamshell mode, the current app list page resets to the
 // initial page when app list is closed and re-opened.
 TEST_F(AppListViewTest, InitialPageResetClamshellModeTest) {
   Initialize(false /*is_tablet_mode*/);
 
   AppListTestModel* model = delegate_->GetTestModel();
-  const int kAppListItemNum = test_api_->TilesPerPage() + 1;
+  const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
   model->PopulateApps(kAppListItemNum);
 
   Show();
@@ -2510,7 +2548,7 @@ TEST_F(AppListViewTest, PagePersistanceTabletModeTest) {
   Initialize(true /*is_tablet_mode*/);
 
   AppListTestModel* model = delegate_->GetTestModel();
-  const int kAppListItemNum = test_api_->TilesPerPage() + 1;
+  const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
   model->PopulateApps(kAppListItemNum);
 
   Show();

@@ -36,6 +36,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "build/chromeos_buildflags.h"
+#include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
@@ -109,7 +110,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
-#include "third_party/blink/renderer/platform/loader/ftp_directory_listing.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
@@ -253,7 +253,6 @@ struct SameSizeAsDocumentLoader
   Member<HistoryItem> history_item;
   Member<DocumentParser> parser;
   Member<SubresourceFilter> subresource_filter;
-  KURL original_url;
   Referrer original_referrer;
   ResourceResponse response;
   WebFrameLoadType load_type;
@@ -358,7 +357,6 @@ DocumentLoader::DocumentLoader(
       history_item_(IsBackForwardLoadType(params_->frame_load_type)
                         ? params_->history_item
                         : nullptr),
-      original_url_(params_->url),
       original_referrer_(referrer_),
       response_(params_->response.ToResourceResponse()),
       load_type_(params_->frame_load_type),
@@ -487,7 +485,6 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   // based on copying fields that are populated in the DocumentLoader
   // constructor. Some exclusions:
   // |history_item_| is set in SetHistoryItemStateForCommit().
-  // |original_url_| will use the newly committed URL.
   // |response_| will use the newly committed response.
   // |load_type_| will use default kStandard value.
   // |replaces_current_history_item_| will be false.
@@ -589,10 +586,6 @@ uint64_t DocumentLoader::MainResourceIdentifier() const {
 
 ResourceTimingInfo* DocumentLoader::GetNavigationTimingInfo() const {
   return navigation_timing_info_.get();
-}
-
-const KURL& DocumentLoader::OriginalUrl() const {
-  return original_url_;
 }
 
 const Referrer& DocumentLoader::OriginalReferrer() const {
@@ -700,8 +693,8 @@ static SinglePageAppNavigationType CategorizeSinglePageAppNavigation(
       // WebFrameLoadType::kBackForward.
       DCHECK(frame_load_type != WebFrameLoadType::kBackForward);
       return kSPANavTypeHistoryPushStateOrReplaceState;
-    case mojom::blink::SameDocumentNavigationType::kAppHistoryRespondWith:
-      return kSPANavTypeAppHistoryRespondWith;
+    case mojom::blink::SameDocumentNavigationType::kAppHistoryTransitionWhile:
+      return kSPANavTypeAppHistoryTransitionWhile;
   }
   NOTREACHED();
   return kSPANavTypeSameDocumentBackwardOrForward;
@@ -752,7 +745,6 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   frame_->GetDocument()->SetURL(new_url);
 
   KURL old_url = url_;
-  original_url_ = new_url;
   url_ = new_url;
   replaces_current_history_item_ = type != WebFrameLoadType::kStandard;
   bool is_history_api_or_app_history_navigation =
@@ -927,7 +919,7 @@ void DocumentLoader::BodyDataReceived(base::span<const char> data) {
   DCHECK(!frame_->GetPage()->Paused());
   time_of_last_data_received_ = clock_->NowTicks();
 
-  if (listing_ftp_directory_ || loading_main_document_from_mhtml_archive_) {
+  if (loading_main_document_from_mhtml_archive_) {
     // 1) Ftp directory listings accumulate data buffer and transform it later
     //    to the actual document content.
     // 2) Mhtml archives accumulate data buffer and parse it as mhtml later
@@ -1034,12 +1026,6 @@ void DocumentLoader::FinishedLoading(base::TimeTicks finish_time) {
   DCHECK(commit_reason_ == CommitReason::kInitialization ||
          !frame_->GetPage()->Paused() ||
          MainThreadDebugger::Instance()->IsPaused());
-
-  if (listing_ftp_directory_) {
-    data_buffer_ = GenerateFtpDirectoryListingHtml(
-        response_.CurrentRequestUrl(), data_buffer_.get());
-    ProcessDataBuffer();
-  }
 
   if (loading_main_document_from_mhtml_archive_ && state_ < kCommitted) {
     // The browser process should block any navigation to an MHTML archive
@@ -1154,7 +1140,6 @@ void DocumentLoader::ConsoleError(const String& message) {
 void DocumentLoader::ReplaceWithEmptyDocument() {
   DCHECK(params_);
   KURL blocked_url = SecurityOrigin::UrlWithUniqueOpaqueOrigin();
-  original_url_ = blocked_url;
   url_ = blocked_url;
   params_->url = blocked_url;
   WebNavigationParams::FillStaticResponse(params_.get(), "text/html", "UTF-8",
@@ -1222,18 +1207,6 @@ DocumentPolicy::ParsedDocumentPolicy DocumentLoader::CreateDocumentPolicy() {
 void DocumentLoader::HandleResponse() {
   DCHECK(frame_);
   application_cache_host_->DidReceiveResponseForMainResource(response_);
-
-  if (response_.CurrentRequestUrl().ProtocolIs("ftp") &&
-      response_.MimeType() == "text/vnd.chromium.ftp-dir") {
-    if (response_.CurrentRequestUrl().Query() == "raw") {
-      // Interpret the FTP LIST command result as text.
-      response_.SetMimeType("text/plain");
-    } else {
-      // FTP directory listing: Make up an HTML for the entries.
-      listing_ftp_directory_ = true;
-      response_.SetMimeType("text/html");
-    }
-  }
 
   if (response_.IsHTTP() && !cors::IsOkStatus(response_.HttpStatusCode())) {
     DCHECK(!IsA<HTMLObjectElement>(frame_->Owner()));
@@ -1329,17 +1302,17 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
         involvement, nullptr, history_item);
     if (dispatch_result == AppHistory::DispatchResult::kAbort)
       return mojom::blink::CommitResult::Aborted;
-    // In the kRespondWith case, if the navigation is not back-forward,
+    // In the kTransitionWhile case, if the navigation is not back-forward,
     // DispatchNavigateEvent() will have taken care of emulating a commit and we
     // can abort here. In the back-forward case, though, DispatchNavigateEvent()
     // doesn't have all the state needed to correctly commit, so fall through
     // and let the commit proceed normally, just with the
     // mojom::blink::SameDocumentNavigationType modified.
-    if (dispatch_result == AppHistory::DispatchResult::kRespondWith) {
+    if (dispatch_result == AppHistory::DispatchResult::kTransitionWhile) {
       if (frame_load_type != WebFrameLoadType::kBackForward)
         return mojom::blink::CommitResult::Aborted;
       same_document_navigation_type =
-          mojom::blink::SameDocumentNavigationType::kAppHistoryRespondWith;
+          mojom::blink::SameDocumentNavigationType::kAppHistoryTransitionWhile;
     }
   }
 
@@ -2623,7 +2596,7 @@ void DocumentLoader::RecordUseCountersForCommit() {
     CountUse(WebFeature::kRequiredDocumentPolicy);
 
   FrameClientHintsPreferencesContext hints_context(frame_);
-  for (size_t i = 0; i < kClientHintsMappingsCount; ++i) {
+  for (size_t i = 0; i < network::kClientHintsNameMappingCount; ++i) {
     auto type = static_cast<network::mojom::WebClientHintsType>(i);
     if (client_hints_preferences_.ShouldSend(type))
       hints_context.CountClientHints(type);
@@ -2786,6 +2759,16 @@ blink::mojom::CodeCacheHost* DocumentLoader::GetCodeCacheHost() {
         &DocumentLoader::OnCodeCacheHostClosed, WrapWeakPersistent(this)));
   }
   return code_cache_host_.get();
+}
+
+mojo::PendingRemote<blink::mojom::CodeCacheHost>
+DocumentLoader::CreateWorkerCodeCacheHost() {
+  if (GetDisableCodeCacheForTesting())
+    return mojo::NullRemote();
+  mojo::PendingRemote<blink::mojom::CodeCacheHost> pending_code_cache_host;
+  GetLocalFrameClient().GetBrowserInterfaceBroker().GetInterface(
+      pending_code_cache_host.InitWithNewPipeAndPassReceiver());
+  return pending_code_cache_host;
 }
 
 void DocumentLoader::OnCodeCacheHostClosed() {

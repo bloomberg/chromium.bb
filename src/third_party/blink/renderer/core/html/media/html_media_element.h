@@ -154,8 +154,6 @@ class CORE_EXPORT HTMLMediaElement
   };
   void ScheduleTextTrackResourceLoad();
 
-  bool HasRemoteRoutes() const;
-
   // error state
   MediaError* error() const;
 
@@ -518,6 +516,7 @@ class CORE_EXPORT HTMLMediaElement
   void RequestSeekTo(base::TimeDelta seek_time) override;
   void RequestEnterPictureInPicture() override {}
   void RequestExitPictureInPicture() override {}
+  void RequestMute(bool mute) override;
   void SetVolumeMultiplier(double multiplier) override;
   void SetPersistentState(bool persistent) override {}
   void SetPowerExperimentState(bool enabled) override;

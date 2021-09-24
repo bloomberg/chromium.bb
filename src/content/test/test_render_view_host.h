@@ -101,7 +101,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   // RenderWidgetHostViewBase:
   uint32_t GetCaptureSequenceNumber() const override;
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                   const gfx::Rect& bounds) override {}
+                   const gfx::Rect& bounds,
+                   const gfx::Rect& anchor_rect) override {}
   void Focus() override {}
   void SetIsLoading(bool is_loading) override {}
   void UpdateCursor(const WebCursor& cursor) override;
@@ -110,6 +111,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void UpdateTooltipUnderCursor(const std::u16string& tooltip_text) override {}
   void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
                                  const gfx::Rect& bounds) override {}
+  void ClearKeyboardTriggeredTooltip() override {}
   gfx::Rect GetBoundsInRootWindow() override;
   blink::mojom::PointerLockResult LockMouse(bool) override;
   blink::mojom::PointerLockResult ChangeMouseLock(bool) override;

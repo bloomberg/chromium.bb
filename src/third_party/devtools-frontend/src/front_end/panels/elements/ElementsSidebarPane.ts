@@ -2,38 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import type * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
+import type {ComputedStyleChangedEvent} from './ComputedStyleModel.js';
 import {ComputedStyleModel, Events} from './ComputedStyleModel.js';
 
 export class ElementsSidebarPane extends UI.Widget.VBox {
-  _computedStyleModel: ComputedStyleModel;
-  _updateThrottler: Common.Throttler.Throttler;
-  _updateWhenVisible: boolean;
+  protected computedStyleModelInternal: ComputedStyleModel;
+  private readonly updateThrottler: Common.Throttler.Throttler;
+  private updateWhenVisible: boolean;
   constructor(delegatesFocus?: boolean) {
     super(true, delegatesFocus);
     this.element.classList.add('flex-none');
-    this._computedStyleModel = new ComputedStyleModel();
-    this._computedStyleModel.addEventListener(Events.ComputedStyleChanged, this.onCSSModelChanged, this);
+    this.computedStyleModelInternal = new ComputedStyleModel();
+    this.computedStyleModelInternal.addEventListener(Events.ComputedStyleChanged, this.onCSSModelChanged, this);
 
-    this._updateThrottler = new Common.Throttler.Throttler(100);
-    this._updateWhenVisible = false;
+    this.updateThrottler = new Common.Throttler.Throttler(100);
+    this.updateWhenVisible = false;
   }
 
   node(): SDK.DOMModel.DOMNode|null {
-    return this._computedStyleModel.node();
+    return this.computedStyleModelInternal.node();
   }
 
   cssModel(): SDK.CSSModel.CSSModel|null {
-    return this._computedStyleModel.cssModel();
+    return this.computedStyleModelInternal.cssModel();
   }
 
   computedStyleModel(): ComputedStyleModel {
-    return this._computedStyleModel;
+    return this.computedStyleModelInternal;
   }
 
   async doUpdate(): Promise<void> {
@@ -41,11 +40,11 @@ export class ElementsSidebarPane extends UI.Widget.VBox {
   }
 
   update(): void {
-    this._updateWhenVisible = !this.isShowing();
-    if (this._updateWhenVisible) {
+    this.updateWhenVisible = !this.isShowing();
+    if (this.updateWhenVisible) {
       return;
     }
-    this._updateThrottler.schedule(innerUpdate.bind(this));
+    this.updateThrottler.schedule(innerUpdate.bind(this));
 
     function innerUpdate(this: ElementsSidebarPane): Promise<void> {
       return this.isShowing() ? this.doUpdate() : Promise.resolve();
@@ -54,11 +53,11 @@ export class ElementsSidebarPane extends UI.Widget.VBox {
 
   wasShown(): void {
     super.wasShown();
-    if (this._updateWhenVisible) {
+    if (this.updateWhenVisible) {
       this.update();
     }
   }
 
-  onCSSModelChanged(_event: Common.EventTarget.EventTargetEvent): void {
+  onCSSModelChanged(_event: Common.EventTarget.EventTargetEvent<ComputedStyleChangedEvent|null>): void {
   }
 }

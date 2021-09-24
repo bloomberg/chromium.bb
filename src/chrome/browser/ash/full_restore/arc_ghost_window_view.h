@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_ASH_FULL_RESTORE_ARC_GHOST_WINDOW_VIEW_H_
 #define CHROME_BROWSER_ASH_FULL_RESTORE_ARC_GHOST_WINDOW_VIEW_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -21,6 +23,8 @@ namespace full_restore {
 // be destroyed after actual ARC task window launched.
 class ArcGhostWindowView : public views::View {
  public:
+  METADATA_HEADER(ArcGhostWindowView);
+
   explicit ArcGhostWindowView(int throbber_diameter,
                               uint32_t theme_color);
   ArcGhostWindowView(const ArcGhostWindowView&) = delete;
@@ -30,11 +34,12 @@ class ArcGhostWindowView : public views::View {
   void LoadIcon(const std::string& app_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ArcGhostWindowViewTest, IconLoadTest);
+
   void InitLayout(uint32_t theme_color, int diameter);
   void OnIconLoaded(apps::mojom::IconType icon_type,
                     apps::mojom::IconValuePtr icon_value);
 
-  FRIEND_TEST_ALL_PREFIXES(ArcGhostWindowViewTest, IconLoadTest);
   views::ImageView* icon_view_;
   base::OnceCallback<void(apps::mojom::IconValuePtr icon_value)>
       icon_loaded_cb_for_testing_;

@@ -135,7 +135,6 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
       ::prefs::kSystemTimezoneAutomaticDetectionPolicy,
       enterprise_management::SystemTimezoneProto::USERS_DECIDE);
   registry->RegisterStringPref(::prefs::kMinimumAllowedChromeVersion, "");
-  registry->RegisterBooleanPref(::prefs::kLacrosAllowed, true);
   registry->RegisterIntegerPref(
       ::prefs::kLacrosLaunchSwitch,
       static_cast<int>(crosapi::browser_util::LacrosLaunchSwitch::kUserChoice));
@@ -169,11 +168,6 @@ void Preferences::RegisterProfilePrefs(
   }
 
   registry->RegisterBooleanPref(::prefs::kPerformanceTracingEnabled, false);
-
-  // This pref is device specific and must not be synced.
-  registry->RegisterIntegerPref(
-      ::prefs::kAccountManagerNumTimesMigrationRanSuccessfully,
-      0 /* default_value */);
 
   // This pref is device specific and must not be synced.
   registry->RegisterIntegerPref(

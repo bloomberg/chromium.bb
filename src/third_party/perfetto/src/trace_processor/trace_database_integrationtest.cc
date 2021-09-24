@@ -35,6 +35,44 @@ namespace {
 
 constexpr size_t kMaxChunkSize = 4 * 1024 * 1024;
 
+TEST(TraceProcessorCustomConfigTest, SkipInternalMetricsMatchingMountPath) {
+  auto config = Config();
+  config.skip_builtin_metric_paths = {"android/"};
+  auto processor = TraceProcessor::CreateInstance(config);
+  processor->NotifyEndOfFile();
+
+  // Check that andorid metrics have not been loaded.
+  auto it = processor->ExecuteQuery(
+      "select count(*) from trace_metrics "
+      "where name = 'android_cpu';");
+  ASSERT_TRUE(it.Next());
+  ASSERT_EQ(it.Get(0).type, SqlValue::kLong);
+  ASSERT_EQ(it.Get(0).long_value, 0);
+
+  // Check that other metrics have been loaded.
+  it = processor->ExecuteQuery(
+      "select count(*) from trace_metrics "
+      "where name = 'trace_metadata';");
+  ASSERT_TRUE(it.Next());
+  ASSERT_EQ(it.Get(0).type, SqlValue::kLong);
+  ASSERT_EQ(it.Get(0).long_value, 1);
+}
+
+TEST(TraceProcessorCustomConfigTest, HandlesMalformedMountPath) {
+  auto config = Config();
+  config.skip_builtin_metric_paths = {"", "androi"};
+  auto processor = TraceProcessor::CreateInstance(config);
+  processor->NotifyEndOfFile();
+
+  // Check that andorid metrics have been loaded.
+  auto it = processor->ExecuteQuery(
+      "select count(*) from trace_metrics "
+      "where name = 'android_cpu';");
+  ASSERT_TRUE(it.Next());
+  ASSERT_EQ(it.Get(0).type, SqlValue::kLong);
+  ASSERT_EQ(it.Get(0).long_value, 1);
+}
+
 class TraceProcessorIntegrationTest : public ::testing::Test {
  public:
   TraceProcessorIntegrationTest()
@@ -198,16 +236,28 @@ TEST_F(TraceProcessorIntegrationTest, SerializeMetricDescriptors) {
   ASSERT_EQ(trace_metrics_count, 1);
 }
 
-TEST_F(TraceProcessorIntegrationTest, ComputeMetricsFormatted) {
+TEST_F(TraceProcessorIntegrationTest, ComputeMetricsFormattedExtension) {
   std::string metric_output;
   util::Status status = Processor()->ComputeMetricText(
       std::vector<std::string>{"test_chrome_metric"},
       TraceProcessor::MetricResultFormat::kProtoText, &metric_output);
   ASSERT_TRUE(status.ok());
+  // Extension fields are output as [fully.qualified.name].
   ASSERT_EQ(metric_output,
-            "test_chrome_metric: {\n"
+            "[perfetto.protos.test_chrome_metric]: {\n"
             "  test_value: 1\n"
             "}");
+}
+
+TEST_F(TraceProcessorIntegrationTest, ComputeMetricsFormattedNoExtension) {
+  std::string metric_output;
+  util::Status status = Processor()->ComputeMetricText(
+      std::vector<std::string>{"trace_metadata"},
+      TraceProcessor::MetricResultFormat::kProtoText, &metric_output);
+  ASSERT_TRUE(status.ok());
+  // Check that metric result starts with trace_metadata field. Since this is
+  // not an extension field, the field name is not fully qualified.
+  ASSERT_TRUE(metric_output.rfind("trace_metadata: {") == 0);
 }
 
 // TODO(hjd): Add trace to test_data.
@@ -397,6 +447,7 @@ TEST_F(TraceProcessorIntegrationTest, TraceWithUuidReadInParts) {
   ASSERT_TRUE(it.Next());
   EXPECT_STREQ(it.Get(0).string_value, "123e4567-e89b-12d3-a456-426655443322");
 }
+
 }  // namespace
 }  // namespace trace_processor
 }  // namespace perfetto

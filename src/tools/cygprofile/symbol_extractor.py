@@ -162,7 +162,7 @@ def _SymbolInfosFromStream(objdump_lines):
   name_to_offsets = collections.defaultdict(list)
   symbol_infos = []
   for line in objdump_lines:
-    symbol_info = _FromObjdumpLine(line.rstrip('\n'))
+    symbol_info = _FromObjdumpLine(line.decode('utf-8').rstrip('\n'))
     if symbol_info is not None:
       # On ARM the LLD linker inserts pseudo-functions (thunks) that allow
       # jumping distances farther than 16 MiB. Such thunks are known to often
@@ -174,9 +174,10 @@ def _SymbolInfosFromStream(objdump_lines):
 
   # Outlined functions are known to be repeated often, so ignore them in the
   # repeated symbol count.
-  repeated_symbols = filter(lambda s: len(name_to_offsets[s]) > 1,
-                            (k for k in name_to_offsets.keys()
-                             if not k.startswith('OUTLINED_FUNCTION_')))
+  repeated_symbols = list(
+      filter(lambda s: len(name_to_offsets[s]) > 1,
+             (k for k in name_to_offsets.keys()
+              if not k.startswith('OUTLINED_FUNCTION_'))))
   if repeated_symbols:
     # Log the first 5 repeated offsets of the first 10 repeated symbols.
     logging.warning('%d symbols repeated with multiple offsets:\n %s',
@@ -224,6 +225,7 @@ def _SymbolInfosFromLlvmNm(lines):
   """
   symbol_names = []
   for line in lines:
+    line = line.decode('utf-8')
     m = _LLVM_NM_LINE_RE.match(line)
     assert m is not None, line
     if m.group('symbol_type') not in ['t', 'T', 'w', 'W']:
@@ -251,7 +253,7 @@ def SymbolNamesFromLlvmBitcodeFile(filename):
   Returns:
     [str] A list of symbol names, can be empty.
   """
-  command = (_NM_PATH, '-defined-only', filename)
+  command = (_NM_PATH, '--defined-only', filename)
   p = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
   try:
@@ -316,7 +318,7 @@ def CreateNameToSymbolInfo(symbol_infos):
   # check_orderfile.
   symbol_infos_by_name = {}
   warnings = cygprofile_utils.WarningCollector(_MAX_WARNINGS_TO_PRINT)
-  for infos in GroupSymbolInfosByName(symbol_infos).itervalues():
+  for infos in GroupSymbolInfosByName(symbol_infos).values():
     first_symbol_info = min(infos, key=lambda x: x.offset)
     symbol_infos_by_name[first_symbol_info.name] = first_symbol_info
     if len(infos) > 1:
@@ -332,5 +334,6 @@ def DemangleSymbol(mangled_symbol):
   """Return the demangled form of mangled_symbol."""
   cmd = [host_paths.ToolPath('c++filt', _arch)]
   process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-  demangled_symbol, _ = process.communicate(mangled_symbol + '\n')
+  demangled_symbol, _ = process.communicate(
+      (mangled_symbol + '\n').encode('utf-8'))
   return demangled_symbol

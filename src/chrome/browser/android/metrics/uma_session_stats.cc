@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
@@ -38,15 +39,6 @@ namespace {
 // This is used/read only within the ChromeMetricsServiceAccessor methods.
 bool g_metrics_consent_for_testing = false;
 }  // namespace
-
-UmaSessionStats::UmaSessionStats() = default;
-UmaSessionStats::~UmaSessionStats() = default;
-
-// static
-UmaSessionStats* UmaSessionStats::GetInstance() {
-  static base::NoDestructor<UmaSessionStats> instance;
-  return instance.get();
-}
 
 void UmaSessionStats::UmaResumeSession(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
@@ -111,9 +103,25 @@ void UmaSessionStats::UmaEndSession(JNIEnv* env,
   }
 }
 
+void UmaSessionStats::ProvideCurrentSessionData() {
+  base::UmaHistogramBoolean("Session.IsActive", active_session_count_ != 0);
+
+  // We record Session.Background.TotalDuration here to ensure each UMA log
+  // containing a background session contains this histogram.
+  session_time_tracker_.AccumulateBackgroundSessionTime();
+  session_time_tracker_.ReportBackgroundSessionTime();
+}
+
+// static
+UmaSessionStats* UmaSessionStats::GetInstance() {
+  static base::NoDestructor<UmaSessionStats> instance;
+  return instance.get();
+}
+
 // Called on startup. If there is an activity, do nothing because a foreground
 // session will be created naturally. Otherwise, begin recording a background
 // session.
+// static
 void UmaSessionStats::OnStartup() {
   if (!Java_UmaSessionStats_hasVisibleActivity(
           base::android::AttachCurrentThread())) {
@@ -121,11 +129,19 @@ void UmaSessionStats::OnStartup() {
   }
 }
 
-bool UmaSessionStats::SessionTimeTracker::BeginForegroundSession() {
-  AccumulateBackgroundSessionTime();
-  background_session_start_time_ = {};
-  session_start_time_ = base::TimeTicks::Now();
-  return !background_session_accumulated_time_.is_zero();
+// static
+void UmaSessionStats::RegisterSyntheticFieldTrial(
+    const std::string& trial_name,
+    const std::string& group_name) {
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(trial_name,
+                                                            group_name);
+}
+
+// static
+bool UmaSessionStats::IsBackgroundSessionStartForTesting() {
+  return !GetInstance()
+              ->session_time_tracker_.background_session_start_time()
+              .is_null();
 }
 
 void UmaSessionStats::SessionTimeTracker::AccumulateBackgroundSessionTime() {
@@ -154,6 +170,13 @@ void UmaSessionStats::SessionTimeTracker::ReportBackgroundSessionTime() {
   background_session_accumulated_time_ = base::TimeDelta();
 }
 
+bool UmaSessionStats::SessionTimeTracker::BeginForegroundSession() {
+  AccumulateBackgroundSessionTime();
+  background_session_start_time_ = {};
+  session_start_time_ = base::TimeTicks::Now();
+  return !background_session_accumulated_time_.is_zero();
+}
+
 base::TimeDelta UmaSessionStats::SessionTimeTracker::EndForegroundSession() {
   base::TimeDelta duration = base::TimeTicks::Now() - session_start_time_;
 
@@ -168,27 +191,6 @@ base::TimeDelta UmaSessionStats::SessionTimeTracker::EndForegroundSession() {
 
 void UmaSessionStats::SessionTimeTracker::BeginBackgroundSession() {
   background_session_start_time_ = base::TimeTicks::Now();
-}
-
-// static
-void UmaSessionStats::RegisterSyntheticFieldTrial(
-    const std::string& trial_name,
-    const std::string& group_name) {
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(trial_name,
-                                                            group_name);
-}
-
-bool UmaSessionStats::IsBackgroundSessionStartForTesting() {
-  return !GetInstance()
-              ->session_time_tracker_.background_session_start_time()
-              .is_null();
-}
-
-void UmaSessionStats::ProvideCurrentSessionData() {
-  // We record Session.Background.TotalDuration here to ensure each UMA log
-  // containing a background session contains this histogram.
-  session_time_tracker_.AccumulateBackgroundSessionTime();
-  session_time_tracker_.ReportBackgroundSessionTime();
 }
 
 // Updates metrics reporting state managed by native code. This should only be

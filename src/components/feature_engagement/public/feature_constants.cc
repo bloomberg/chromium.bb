@@ -20,6 +20,8 @@ const base::Feature kIPHFocusModeFeature{"IPH_FocusMode",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHGlobalMediaControlsFeature{
     "IPH_GlobalMediaControls", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHGMCCastStartStopFeature{
+    "IPH_GMCCastStartStop", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHLiveCaptionFeature{"IPH_LiveCaption",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHPasswordsAccountStorageFeature{
@@ -28,6 +30,8 @@ const base::Feature kIPHReadingListDiscoveryFeature{
     "IPH_ReadingListDiscovery", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHReadingListEntryPointFeature{
     "IPH_ReadingListEntryPoint", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHReadingListInSidePanelFeature{
+    "IPH_ReadingListInSidePanel", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHReopenTabFeature{"IPH_ReopenTab",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTabSearchFeature{"IPH_TabSearch",
@@ -149,15 +153,15 @@ const base::Feature kIPHTabSwitcherButtonFeature{
 const base::Feature kIPHTranslateMenuButtonFeature{
     "IPH_TranslateMenuButton", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHVideoTutorialNTPChromeIntroFeature{
-    "IPH_VideoTutorial_NTP_ChromeIntro", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_VideoTutorial_NTP_ChromeIntro", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHVideoTutorialNTPDownloadFeature{
-    "IPH_VideoTutorial_NTP_Download", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_VideoTutorial_NTP_Download", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHVideoTutorialNTPSearchFeature{
-    "IPH_VideoTutorial_NTP_Search", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_VideoTutorial_NTP_Search", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHVideoTutorialNTPVoiceSearchFeature{
-    "IPH_VideoTutorial_NTP_VoiceSearch", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_VideoTutorial_NTP_VoiceSearch", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHVideoTutorialNTPSummaryFeature{
-    "IPH_VideoTutorial_NTP_Summary", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_VideoTutorial_NTP_Summary", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHExploreSitesTileFeature{
     "IPH_ExploreSitesTile", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFeedHeaderMenuFeature{"IPH_FeedHeaderMenu",
@@ -174,12 +178,16 @@ const base::Feature kIPHPwaInstallAvailableFeature{
     "IPH_PwaInstallAvailableFeature", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHShareScreenshotFeature{
     "IPH_ShareScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHSharingHubLinkToggleFeature{
+    "IPH_SharingHubLinkToggle", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHWebFeedFollowFeature{"IPH_WebFeedFollow",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHWebFeedPostFollowDialogFeature{
     "IPH_WebFeedPostFollowDialog", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHSharedHighlightingBuilder{
     "IPH_SharedHighlightingBuilder", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHSharedHighlightingReceiverFeature{
+    "IPH_SharedHighlightingReceiver", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHStartSurfaceTabSwitcherHomeButton{
     "IPH_StartSurfaceTabSwitcherHomeButton", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)

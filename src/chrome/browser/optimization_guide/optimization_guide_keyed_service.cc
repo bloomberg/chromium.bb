@@ -27,6 +27,7 @@
 #include "components/optimization_guide/core/optimization_guide_navigation_data.h"
 #include "components/optimization_guide/core/optimization_guide_permissions_util.h"
 #include "components/optimization_guide/core/optimization_guide_store.h"
+#include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/core/tab_url_provider.h"
 #include "components/optimization_guide/core/top_host_provider.h"
@@ -167,6 +168,9 @@ void OptimizationGuideKeyedService::Initialize() {
   // old paths. Remove this code in 04/2022 since it should be assumed that all
   // clients that had the previous path have had their previous stores deleted.
   DeleteOldStorePaths(profile_path);
+  if (optimization_guide::switches::IsDebugLogsEnabled()) {
+    DVLOG(0) << "OptimizationGuide: KeyedService is initalized";
+  }
 }
 
 optimization_guide::ChromeHintsManager*
@@ -230,8 +234,7 @@ OptimizationGuideKeyedService::CanApplyOptimization(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   optimization_guide::OptimizationTypeDecision optimization_type_decision =
-      hints_manager_->CanApplyOptimization(url, /*navigation_id=*/absl::nullopt,
-                                           optimization_type,
+      hints_manager_->CanApplyOptimization(url, optimization_type,
                                            optimization_metadata);
   base::UmaHistogramEnumeration(
       "OptimizationGuide.ApplyDecision." +
@@ -251,8 +254,7 @@ void OptimizationGuideKeyedService::CanApplyOptimizationAsync(
   DCHECK(navigation_handle->IsInMainFrame());
 
   hints_manager_->CanApplyOptimizationAsync(
-      navigation_handle->GetURL(), navigation_handle->GetNavigationId(),
-      optimization_type, std::move(callback));
+      navigation_handle->GetURL(), optimization_type, std::move(callback));
 }
 
 void OptimizationGuideKeyedService::AddHintForTesting(

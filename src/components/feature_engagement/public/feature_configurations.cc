@@ -41,6 +41,31 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
         EventConfig("profile_menu_shown", Comparator(EQUAL, 0), 360, 360);
     return config;
   }
+
+  if (kIPHReadingListInSidePanelFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    // Show the promo once a year if the side panel was not opened.
+    config->trigger =
+        EventConfig("side_panel_trigger", Comparator(EQUAL, 0), 360, 360);
+    config->used =
+        EventConfig("side_panel_shown", Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
+  if (kIPHGMCCastStartStopFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->trigger = EventConfig("gmc_start_stop_iph_trigger",
+                                  Comparator(EQUAL, 0), 180, 180);
+    config->used = EventConfig("media_route_stopped_from_gmc",
+                               Comparator(EQUAL, 0), 180, 180);
+    return config;
+  }
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
@@ -244,6 +269,120 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHVideoTutorialNTPChromeIntroFeature.name == feature->name) {
+    // A config that allows the chrome intro video tutorial card to show up
+    // until explicitly interacted upon.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(GREATER_THAN_OR_EQUAL, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger = EventConfig("tutorial_chrome_intro_iph_trigger",
+                                  Comparator(ANY, 0), 90, 90);
+    config->used = EventConfig("chrome_intro", Comparator(ANY, 0), 90, 90);
+    config->event_configs.insert(
+        EventConfig("video_tutorial_iph_clicked_chrome_intro",
+                    Comparator(EQUAL, 0), 90, 90));
+    config->event_configs.insert(
+        EventConfig("video_tutorial_iph_dismissed_chrome_intro",
+                    Comparator(EQUAL, 0), 90, 90));
+
+    SessionRateImpact session_rate_impact;
+    session_rate_impact.type = SessionRateImpact::Type::NONE;
+    config->session_rate_impact = session_rate_impact;
+
+    return config;
+  }
+
+  if (kIPHVideoTutorialNTPDownloadFeature.name == feature->name) {
+    // A config that allows the download video tutorial card to show up
+    // until explicitly interacted upon.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(GREATER_THAN_OR_EQUAL, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger = EventConfig("tutorial_download_iph_trigger",
+                                  Comparator(ANY, 0), 90, 90);
+    config->used = EventConfig("download", Comparator(ANY, 0), 90, 90);
+    config->event_configs.insert(EventConfig(
+        "video_tutorial_iph_clicked_download", Comparator(EQUAL, 0), 90, 90));
+    config->event_configs.insert(EventConfig(
+        "video_tutorial_iph_dismissed_download", Comparator(EQUAL, 0), 90, 90));
+
+    SessionRateImpact session_rate_impact;
+    session_rate_impact.type = SessionRateImpact::Type::NONE;
+    config->session_rate_impact = session_rate_impact;
+
+    return config;
+  }
+
+  if (kIPHVideoTutorialNTPSearchFeature.name == feature->name) {
+    // A config that allows the search video tutorial card to show up
+    // until explicitly interacted upon.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(GREATER_THAN_OR_EQUAL, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger =
+        EventConfig("tutorial_search_iph_trigger", Comparator(ANY, 0), 90, 90);
+    config->used = EventConfig("search", Comparator(ANY, 0), 90, 90);
+    config->event_configs.insert(EventConfig(
+        "video_tutorial_iph_clicked_search", Comparator(EQUAL, 0), 90, 90));
+    config->event_configs.insert(EventConfig(
+        "video_tutorial_iph_dismissed_search", Comparator(EQUAL, 0), 90, 90));
+
+    SessionRateImpact session_rate_impact;
+    session_rate_impact.type = SessionRateImpact::Type::NONE;
+    config->session_rate_impact = session_rate_impact;
+
+    return config;
+  }
+
+  if (kIPHVideoTutorialNTPVoiceSearchFeature.name == feature->name) {
+    // A config that allows the voice search video tutorial card to show up
+    // until explicitly interacted upon.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(GREATER_THAN_OR_EQUAL, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger = EventConfig("tutorial_voice_search_iph_trigger",
+                                  Comparator(ANY, 0), 90, 90);
+    config->used = EventConfig("voice_search", Comparator(ANY, 0), 90, 90);
+    config->event_configs.insert(
+        EventConfig("video_tutorial_iph_clicked_voice_search",
+                    Comparator(EQUAL, 0), 90, 90));
+    config->event_configs.insert(
+        EventConfig("video_tutorial_iph_dismissed_voice_search",
+                    Comparator(EQUAL, 0), 90, 90));
+
+    SessionRateImpact session_rate_impact;
+    session_rate_impact.type = SessionRateImpact::Type::NONE;
+    config->session_rate_impact = session_rate_impact;
+
+    return config;
+  }
+
+  if (kIPHVideoTutorialNTPSummaryFeature.name == feature->name) {
+    // A config that allows the summary video tutorial card to show up
+    // until explicitly interacted upon.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(GREATER_THAN_OR_EQUAL, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger =
+        EventConfig("tutorial_summary_iph_trigger", Comparator(ANY, 0), 90, 90);
+    config->used = EventConfig("summary", Comparator(ANY, 0), 90, 90);
+    config->event_configs.insert(EventConfig(
+        "video_tutorial_iph_clicked_summary", Comparator(EQUAL, 0), 90, 90));
+    config->event_configs.insert(EventConfig(
+        "video_tutorial_iph_dismissed_summary", Comparator(EQUAL, 0), 90, 90));
+
+    SessionRateImpact session_rate_impact;
+    session_rate_impact.type = SessionRateImpact::Type::NONE;
+    config->session_rate_impact = session_rate_impact;
+
+    return config;
+  }
+
   if (kIPHStartSurfaceTabSwitcherHomeButton.name == feature->name) {
     // A config that allows the StartSurfaceTabSwitcherHomeButton IPH to be
     // shown:
@@ -263,6 +402,27 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     config->event_configs.insert(
         EventConfig("start_surface_tab_switcher_home_button_iph_trigger",
                     Comparator(EQUAL, 0), 1, 360));
+    return config;
+  }
+
+  if (kIPHSharedHighlightingReceiverFeature.name == feature->name) {
+    // A config that allows the shared highlighting message IPH to be shown
+    // when a user receives a highlight:
+    // * Once per 7 days
+    // * Up to 5 times but only if unused in the last 7 days.
+    // * Used fewer than 2 times
+
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger = EventConfig("iph_shared_highlighting_receiver_trigger",
+                                  Comparator(LESS_THAN, 5), 360, 360);
+    config->used = EventConfig("iph_shared_highlighting_button_clicked",
+                               Comparator(LESS_THAN, 2), 360, 360);
+    config->event_configs.insert(
+        EventConfig("iph_shared_highlighting_receiver_trigger",
+                    Comparator(EQUAL, 0), 7, 360));
     return config;
   }
 #endif  // defined(OS_ANDROID)

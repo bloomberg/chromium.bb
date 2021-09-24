@@ -1448,9 +1448,10 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WizardControllerDeviceStateTest::SetUpCommandLine(command_line);
 
-    // Enable usage of fake PSM RLWE client (for tests checking initial
-    // enrollment).
-    command_line->AppendSwitch(switches::kEnterpriseUseFakePsmRlweClient);
+    // Enable usage of fake PSM (private set membership) RLWE client (for tests
+    // checking initial enrollment).
+    command_line->AppendSwitch(
+        switches::kEnterpriseUseFakePsmRlweClientForTesting);
 
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnableInitialEnrollment,
@@ -2752,8 +2753,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOnboardingResumeTest,
 IN_PROC_BROWSER_TEST_F(WizardControllerOnboardingResumeTest,
                        ControlFlowResumeInterruptedOnboarding) {
   login_mixin_.LoginAsNewRegularUser();
-  ash::LoginScreenTestApi::SubmitPassword(user_, "password",
-                                          /*check_if_submittable=*/false);
   OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
 }
 

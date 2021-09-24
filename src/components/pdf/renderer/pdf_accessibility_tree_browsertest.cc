@@ -89,6 +89,7 @@ class TestPdfAccessibilityActionHandler
   ~TestPdfAccessibilityActionHandler() override = default;
 
   // chrome_pdf::PdfAccessibilityActionHandler:
+  void EnableAccessibility() override {}
   void HandleAccessibilityAction(
       const chrome_pdf::AccessibilityActionData& action_data) override {
     received_action_data_ = action_data;
@@ -117,7 +118,7 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
     base::FilePath pak_file =
         pak_dir.Append(FILE_PATH_LITERAL("components_tests_resources.pak"));
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        pak_file, ui::SCALE_FACTOR_NONE);
+        pak_file, ui::kScaleFactorNone);
 
     viewport_info_.zoom = 1.0;
     viewport_info_.scale = 1.0;
